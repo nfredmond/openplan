@@ -1,0 +1,70 @@
+{
+  "recordedAt": "2026-10-09T15:05:02.775107+00:00",
+  "sourceSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "checksSha256": "7ff4f5299b6bf2cac9b524590a486228b424a18d8f3caba3e701a65f629095aa",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "null-claim",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "first claim incorrect",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "rebind-token",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "token rebound to another version",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "revive-expired",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "expired claim revived",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "ignore-owner-token",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "old token renewed new attempt",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "ignore-terminal-state",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "terminal version renewed",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "unguarded-output",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "expired owner wrote",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "proof_sha256": "85643e2f202ccbb9f58e10da9031e16b9f887bc55b6eded018c4c54c0f3d62e3",
+  "controls": [
+    {
+      "control": "baseline",
+      "unit": "openplan-engine-probe-0ba302c77c0f4842941b162b02d18b01.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
+    },
+    {
+      "control": "harmless",
+      "unit": "openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
+    },
+    {
+      "control": "process-group-only",
+      "detected": "Detached descendant escaped completion check"
+    },
+    {
+      "control": "restored",
+      "unit": "openplan-engine-probe-b78e1e8693e4482da767a5c1908b7fb8.scope",
+      "progress_channel_confirmed": true,
+      "completion_refused_while_descendant_live": true,
+      "scope_removed_after_descendant_exit": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/engine-scope-controls-20261008",
+  "limits": "Real Linux scope feasibility, mocked database transport. No production startup fence, parent-loss recovery, sandbox, output capture or dispatch activation."
+}

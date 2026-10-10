@@ -71,8 +71,57 @@ Container behavior:
 - bundle and config directories are mounted read-only into the container
 - the runtime directory is mounted read-write at `/openplan/runtime`
 - the worker defaults to `--network none` and, on Unix-like hosts, `--user <uid>:<gid>` for safer local output ownership
-- use `--container-network-mode bridge` (or payload `containerNetworkMode`) when the container must install or fetch dependencies at runtime
+- use `--container-network-mode bridge` (or operator environment `ACTIVITYSIM_CONTAINER_NETWORK_MODE`) when the container must install or fetch dependencies at runtime
 - a plain image such as `python:3.11-slim` still needs an inner command that installs or already contains ActivitySim; a future dedicated image can omit that bootstrap
+
+## Supervised local Docker execution
+
+The runtime can use an explicitly selected local Docker Unix socket:
+
+```bash
+python3 workers/activitysim_worker/main.py \
+  --bundle-path "$ACTIVITYSIM_BUNDLE_PATH" \
+  --runtime-dir "$ACTIVITYSIM_RUNTIME_DIR" \
+  --activitysim-container-image "$ACTIVITYSIM_CONTAINER_IMAGE" \
+  --container-memory-bytes "$ACTIVITYSIM_CONTAINER_MEMORY_BYTES" \
+  --container-tasks "$ACTIVITYSIM_CONTAINER_TASKS" \
+  --container-supervision-socket /run/docker.sock
+```
+
+Set these variables to the prepared bundle, a fresh output directory, an already
+installed reviewed image and resource limits appropriate to that model. This
+mode does not pull images. It records the immutable image ID and preserves the
+existing container template, layered config mounts and HOME mapping. A plain
+Python image needs an explicit command template; it does not contain ActivitySim.
+The 64 MiB limits in synthetic lifecycle tests are not a native model sizing rule.
+
+This mode requires the worker on a local Linux host with user systemd, cgroup v2,
+process descriptors and socket peer PID descriptors, plus rootful Docker using
+the systemd cgroup driver. It refuses custom engine argument lists. It has not
+been verified inside the worker Docker image or with remote/rootless Docker or
+Podman. The HTTP operator can set `ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET`,
+`ACTIVITYSIM_CONTAINER_MEMORY_BYTES` and `ACTIVITYSIM_CONTAINER_TASKS`; clients
+cannot override them in JSON.
+
+The database poller also reads these operator variables and forwards them through
+the behavioral pipeline. Host execution uses `ACTIVITYSIM_HOST_MEMORY_BYTES` and
+`ACTIVITYSIM_HOST_TASKS`. The standalone pipeline accepts matching CLI options.
+Configuration-forwarding tests cover these paths; live database-dispatched
+supervision and managed attempt binding remain unverified.
+
+Custody lives in a sibling `<runtime-directory>.container-custody` directory
+outside the model's writable mounts. Keep it with the runtime output for recovery.
+The controller retains intent, creation, bootstrap identity, command log hashes
+and confirmed exit/removal records. Existing custody and command logs are not
+reused; choose a new runtime directory after an interrupted attempt. `--force`
+refuses directories with retained sibling custody and preserves their output and logs. An interrupted run does not gain automatic retry
+or scientific acceptance from these records.
+
+Synthetic CLI checks cover normal detached completion and owner loss. Native
+ActivitySim, database dispatch and broader recovery acceptance remain open.
+Omitting the socket keeps the legacy container path, which does not stop a
+Docker workload merely because its runtime owner disappears. See the dated
+[execution evidence](../../docs/reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md).
 
 ## HTTP Wrapper
 
@@ -258,3 +307,49 @@ GB of RAM**, several vCPUs, minutes-to-hours of runtime, and an always-on poller
 Verified locally on 2026-07-22: `activitysim==1.5.1` runs an OpenPlan-built bundle
 end-to-end on Python 3.11 (`activitysim_cli`, settings-checker passes, 0 models →
 no fabricated demand). See `docs/ops/2026-07-22-activitysim-behavioral-lane-smoke.md`.
+
+## Same-host screening input identity
+
+For the local screening handoff, set `AEQ_WORK_DIR` to the AequilibraE worker's
+shared scratch root. If unset, both workers use the system temporary directory
+plus `openplan-model-runs`. Required inputs must be registered beneath
+`<AEQ_WORK_DIR>/runs/<full-run-uuid>` with their exact SHA-256 and byte size.
+The behavioral worker verifies copies inside its new execution directory before
+preflight. Missing, ambiguous, shortened-path or unverifiable inputs stop the
+handoff. Do not invent hashes or rename old files based on a shortened prefix.
+Cross-host Storage input delivery and automated legacy reconciliation remain open.
+
+The current handoff query also requires migration
+`20261016000014_model_attempt_command_custody.sql`. It reads the producing stage
+and refuses unfinished stages, inactive attempts and unconfirmed ownership. Apply
+the migration before updating this worker. This read is a snapshot; it does not
+enable attempt-aware execution or replace fenced writes during later recovery.
+
+## Blocked-stage command upgrade
+
+Before updating this worker, apply
+`20261016000020_model_blocked_stage_receipts.sql` and set the installation's
+stable `OPENPLAN_DEPLOYMENT_ID`. Retain
+`<ACTIVITYSIM_WORK_DIR>/<run-uuid>/skip-commands/<stage-uuid>/` with the database.
+The shared `workers/aequilibrae_worker/model_command_recovery.py` CLI reads that
+directory with `--journal` and recovers an original `--request-id`.
+
+Blocked stages now use the scoped retained command instead of a direct PATCH.
+The database derives the reason from its current predecessor record. Missing
+observation versions and uncertain delivery stop the operation; no-op receipts
+remain no-ops. This does not switch normal stage claims to managed attempts or
+authorize model restart. Both existing ActivitySim image builds include the
+repository tree containing the shared command modules.
+
+## Started-run recovery boundary
+
+Migration `20261016000022_model_reaper_recovery_boundary.sql` also protects
+ActivitySim runs from timestamp-only reaping. Only unstarted queued work remains
+eligible for automatic timeout. Running or previously started work can remain
+nonterminal after worker loss. Migration
+`20261016000023_model_recovery_decisions.sql` supplies an owner/admin abandonment
+review through the model's recovery panel. That decision revokes database write
+authority and preserves the prior state. It does not verify process termination,
+establish complete ActivitySim supervision or authorize continuation. Preserve
+retained stages, outputs and journals; follow the
+[v0.68 recovery instructions](../../openplan/docs/ops/V068_UPGRADE.md).

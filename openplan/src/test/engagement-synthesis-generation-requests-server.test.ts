@@ -45,6 +45,50 @@ describe("staff synthesis request custody adapter", () => {
     expect((await readSynthesisGenerationRequest(mock.db, scope, signal())).state).toEqual(saved);
     expect(mock.rpc.mock.calls).toEqual([["read_engagement_synthesis_generation_request", { p_campaign: scope.campaignId, p_request: scope.requestId }]]);
   });
+  it("recovers a busy read using the same scope and deadline", async () => {
+    const saved = state(), mock = client(saved);
+    mock.abortSignal.mockResolvedValueOnce({ data: null, error: { code: "PT503", message: "busy" } });
+    expect((await readSynthesisGenerationRequest(mock.db, scope, signal())).state).toEqual(saved);
+    expect(mock.rpc.mock.calls).toEqual(Array(2).fill(["read_engagement_synthesis_generation_request", {
+      p_campaign: scope.campaignId, p_request: scope.requestId,
+    }]));
+    expect(mock.abortSignal.mock.calls[0][0]).toBe(mock.abortSignal.mock.calls[1][0]);
+  });
+  it("limits persistent contention to three reads", async () => {
+    const mock = client(null, "PT503");
+    await expect(readSynthesisGenerationRequest(mock.db, scope, signal())).rejects.toMatchObject({ kind: "unavailable", status: 503 });
+    expect(mock.rpc).toHaveBeenCalledTimes(3);
+  });
+  it.each(["42501", "PT409", "unknown"])("does not retry a read with %s", async code => {
+    const mock = client(null, code);
+    await expect(readSynthesisGenerationRequest(mock.db, scope, signal())).rejects.toThrow();
+    expect(mock.rpc).toHaveBeenCalledTimes(1);
+  });
+  it("does not retry a busy cancellation", async () => {
+    const mock = client(null, "PT503");
+    await expect(cancelSynthesisGenerationRequest(mock.db, cancel, signal())).rejects.toMatchObject({ kind: "unavailable" });
+    expect(mock.rpc).toHaveBeenCalledTimes(1);
+  });
+  it.each(["caller", "deadline"])("stops during contention backoff on %s cancellation", async source => {
+    const controller = new AbortController();
+    const timeout = source === "deadline" ? vi.spyOn(AbortSignal, "timeout").mockReturnValueOnce(controller.signal) : null;
+    const mock = client(null, "PT503");
+    try {
+      const pending = readSynthesisGenerationRequest(mock.db, scope, source === "caller" ? controller.signal : signal());
+      const rejected = expect(pending).rejects.toMatchObject({ name: "AbortError" });
+      // Allow the resolved RPC to enter backoff before cancellation.
+      await Promise.resolve();
+      controller.abort();
+      await rejected;
+      expect(mock.rpc).toHaveBeenCalledTimes(1);
+    } finally { timeout?.mockRestore(); }
+  });
+  it("still rejects malformed custody returned after contention", async () => {
+    const mock = client({ private: "detail" });
+    mock.abortSignal.mockResolvedValueOnce({ data: null, error: { code: "PT503", message: "busy" } });
+    await expect(readSynthesisGenerationRequest(mock.db, scope, signal())).rejects.toMatchObject({ kind: "unavailable" });
+    expect(mock.rpc).toHaveBeenCalledTimes(2);
+  });
   it.each([false, true])("cancels with exact identity and reason, request existed %s", async exists => {
     const saved = state(exists, true), mock = client(saved);
     expect((await cancelSynthesisGenerationRequest(mock.db, cancel, signal())).state).toEqual(saved);

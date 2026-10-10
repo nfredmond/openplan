@@ -19,6 +19,7 @@ These checks pin that it did not:
 
 Run: python3 workers/aequilibrae_worker/test_push_trigger.py
 """
+import inspect
 import json
 import os
 import sys
@@ -324,7 +325,7 @@ def test_a_pushed_stage_is_taken_with_the_same_conditional_claim_as_a_polled_one
         def json():
             return []
 
-    def fake_patch(url, headers=None, json=None):
+    def fake_patch(url, headers=None, json=None, timeout=None):
         calls.append(url)
         return _Response()
 
@@ -396,6 +397,18 @@ def test_the_default_start_mode_is_still_polling():
     """An existing deployment upgrading this file must not suddenly open a port
     or stop serving its queue."""
     started = []
+    started_heartbeats = []
+    original_heartbeat_class = main.WorkerHeartbeat
+    original_heartbeat = main._WORKER_HEARTBEAT
+
+    class RecordedHeartbeat:
+        def __init__(self, **kwargs):
+            self.mode = kwargs['runtime_mode']
+
+        def start(self):
+            started_heartbeats.append(self.mode)
+
+    main.WorkerHeartbeat = RecordedHeartbeat
     original_poll, original_serve = main.poll_for_jobs, main.serve_push_trigger
     main.poll_for_jobs = lambda: started.append("poll")
     main.serve_push_trigger = lambda *a, **k: started.append("push")
@@ -407,6 +420,7 @@ def test_the_default_start_mode_is_still_polling():
         started.clear()
         main.run_worker("push")
         assert started == ["push"], started
+        assert started_heartbeats == ["poll", "push"], "startup must start the configured heartbeat"
 
         try:
             main.run_worker("sometimes")
@@ -415,10 +429,40 @@ def test_the_default_start_mode_is_still_polling():
         else:
             raise AssertionError("an unrecognized mode must refuse rather than guess")
     finally:
+        main.WorkerHeartbeat = original_heartbeat_class
+        main._WORKER_HEARTBEAT = original_heartbeat
         main.poll_for_jobs = original_poll
         main.serve_push_trigger = original_serve
         if original_mode is not None:
             os.environ["AEQ_WORKER_MODE"] = original_mode
+
+
+def test_start_mode_fixture_controls():
+    original = main.run_worker
+    source = inspect.getsource(original)
+    anchor = 'resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "poll")'
+    assert source.count(anchor) == 1
+    cases = [
+        (source + '\n# Harmless startup-fixture control.\n', None),
+        (source.replace(anchor, 'resolved = (mode or os.getenv("AEQ_WORKER_MODE") or "push")'), "['push']"),
+        (source.replace('_WORKER_HEARTBEAT.start()', 'pass'), 'startup must start the configured heartbeat'),
+    ]
+    try:
+        for modified, expected in cases:
+            namespace = dict(main.__dict__)
+            exec(compile(modified, main.__file__, 'exec'), namespace)
+            main.run_worker = types.FunctionType(namespace['run_worker'].__code__, main.__dict__, argdefs=original.__defaults__)
+            try:
+                test_the_default_start_mode_is_still_polling()
+            except AssertionError as error:
+                if expected is None or expected not in str(error):
+                    raise
+            else:
+                if expected is not None:
+                    raise AssertionError('Broken startup behavior escaped the fixture')
+    finally:
+        main.run_worker = original
+    test_the_default_start_mode_is_still_polling()
 
 
 def test_the_executor_survives_a_run_that_raises():
@@ -742,6 +786,361 @@ def test_the_run_work_directory_is_not_named_for_one_place():
     assert not hasattr(main, "PILOT_WORK_DIR")
     assert "nevada" not in main.RUN_WORK_ROOT.lower(), main.RUN_WORK_ROOT
     assert "pilot" not in main.RUN_WORK_ROOT.lower(), main.RUN_WORK_ROOT
+
+
+def test_stage_and_run_writes_require_the_exact_returned_record():
+    from unittest import mock
+
+    for writer, table in ((main.sb_patch_stage, "model_run_stages"), (main.sb_patch_run, "model_runs")):
+        payload = {"status": "succeeded", "completed_at": "2026-10-08T07:00:00+00:00"}
+        response = mock.Mock(status_code=200)
+        response.json.return_value = [{"id": RUN_ID, "status": "succeeded", "completed_at": "2026-10-08T07:00:00Z", "extra": "allowed"}]
+        with mock.patch.object(main.requests, "patch", return_value=response) as patch:
+            writer(RUN_ID, payload)
+        assert patch.call_args.kwargs.get("timeout") == 30, "state writes need a bounded transport"
+        assert patch.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert patch.call_args.args[0].endswith(f"/{table}?id=eq.{RUN_ID}")
+
+
+def test_stage_and_run_writes_refuse_failed_empty_or_different_receipts():
+    from unittest import mock
+
+    correct = {"id": RUN_ID, "status": "succeeded", "log_tail": "original"}
+    receipts = [
+        (503, [correct]), (403, [correct]), (204, None), (200, []),
+        (200, correct), (200, [{**correct, "id": "other"}]),
+        (200, [{**correct, "status": "running"}]),
+        (200, [correct] * 2),
+        (200, [{"id": RUN_ID, "status": "succeeded", "log_tail": "different"}]),
+    ]
+    for writer in (main.sb_patch_stage, main.sb_patch_run):
+        for status, rows in receipts:
+            response = mock.Mock(status_code=status, text="private response must not appear")
+            response.json.return_value = rows
+            with mock.patch.object(main.requests, "patch", return_value=response):
+                try:
+                    writer(RUN_ID, {"status": "succeeded", "log_tail": "original"})
+                except RuntimeError as error:
+                    assert "unconfirmed" in str(error)
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed state write accepted: {status}, {rows}")
+
+
+def test_stage_write_lost_ack_does_not_overwrite_possible_success_with_failure():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    for lost_table in ("model_run_stages", "model_runs"):
+        stage_patches = []
+        def patch(url, *, headers, json, timeout=None):
+            if "model_run_stages" in url:
+                stage_patches.append(dict(json))
+            if f"/{lost_table}?" in url and json.get("status") == "succeeded":
+                raise main.requests.Timeout("synthetic write committed, acknowledgement lost")
+            response = mock.Mock(status_code=200)
+            response.json.return_value = [{"id": RUN_ID, **json}]
+            return response
+
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main.requests, "patch", side_effect=patch), \
+             mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=200, json=lambda: [])):
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert "unconfirmed" in str(error)
+            else:
+                raise AssertionError("worker continued after an uncertain state write")
+        assert [item["status"] for item in stage_patches] == ["succeeded"], stage_patches
+        if lost_table == "model_run_stages":
+            assert "Setup succeeded" not in output.getvalue(), output.getvalue()
+        assert "complete!" not in output.getvalue(), output.getvalue()
+
+
+def test_run_completion_requires_a_confirmed_stage_list():
+    import contextlib
+    import io
+    import tempfile
+    from unittest import mock
+
+    cases = [(200, [], True), (200, [{"status": "running"}], False),
+             (200, None, None), (200, {}, None), (200, False, None),
+             (200, "", None), (503, [], None), (403, [], None),
+             (200, ValueError("private invalid JSON"), None),
+             (200, main.requests.Timeout("private transport detail"), None)]
+    for status, rows, complete in cases:
+        response = mock.Mock(status_code=status)
+        response.json.side_effect = rows if isinstance(rows, ValueError) else None
+        response.json.return_value = rows
+        get_args = {"side_effect": rows} if isinstance(rows, main.requests.RequestException) else {"return_value": response}
+        output = io.StringIO()
+        with tempfile.TemporaryDirectory() as work, contextlib.redirect_stdout(output), \
+             mock.patch.object(main, "RUN_WORK_ROOT", work), \
+             mock.patch.object(main, "sb_claim_stage", return_value=True), \
+             mock.patch.object(main, "sb_get_run", return_value={}), \
+             mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+             mock.patch.object(main, "stage_setup", return_value={"log": "synthetic completed computation"}), \
+             mock.patch.object(main, "sb_patch_stage") as stage_write, \
+             mock.patch.object(main, "sb_patch_run") as run_write, \
+             mock.patch.object(main.requests, "get", **get_args) as get:
+            try:
+                main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+            except RuntimeError as error:
+                assert complete is None, (status, rows, str(error))
+                assert "completion read unconfirmed" in str(error)
+                assert "private" not in str(error)
+            else:
+                assert complete is not None, f"Unconfirmed completion accepted: {status}, {rows}"
+            assert get.call_args.kwargs.get("timeout") == 30
+            assert get.call_args.args[0].endswith(f"model_run_stages?run_id=eq.{RUN_ID}&status=neq.succeeded")
+            assert [c.args[1]["status"] for c in run_write.call_args_list] == (["running", "succeeded"] if complete else ["running"])
+            assert [c.args[1]["status"] for c in stage_write.call_args_list] == ["succeeded"]
+            assert ("complete!" in output.getvalue()) == bool(complete)
+
+
+def test_claim_requires_exact_receipt_and_distinguishes_uncertainty_from_loss():
+    from unittest import mock
+
+    payload = {"status": "running", "started_at": "2026-10-08T07:00:00+00:00"}
+    valid = {"id": RUN_ID, **payload}
+    cases = [(200, [], False), (200, [{**valid, "started_at": "2026-10-08T07:00:00Z", "extra": "allowed"}], True),
+             (503, [], None), (204, None, None), (201, [valid], None),
+             (200, valid, None), (200, [valid, valid], None),
+             (200, [{**valid, "id": "other"}], None),
+             (200, [{**valid, "status": "queued"}], None),
+             (200, [{"id": RUN_ID, "status": "running"}], None)]
+    for status, rows, expected in cases:
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "patch", return_value=response) as patch:
+            try:
+                actual = main.sb_claim_stage(RUN_ID, payload)
+            except main.WorkerStateWriteUnconfirmed as error:
+                assert expected is None
+                assert "private" not in str(error)
+            else:
+                assert expected is not None, f"Unconfirmed claim accepted: {status}, {rows}"
+                assert actual is expected
+        assert patch.call_args.kwargs.get("timeout") == 30
+        assert patch.call_args.args[0].endswith(f"model_run_stages?id=eq.{RUN_ID}&status=eq.queued")
+    for error in (main.requests.Timeout("private transport"), ValueError("private JSON")):
+        response = mock.Mock(status_code=200)
+        response.json.side_effect = error
+        with mock.patch.object(main.requests, "patch", return_value=response):
+            try:
+                main.sb_claim_stage(RUN_ID, payload)
+            except main.WorkerStateWriteUnconfirmed as caught:
+                assert "private" not in str(caught)
+            else:
+                raise AssertionError("Claim uncertainty was treated as a definite outcome")
+
+
+def test_kpi_insert_requires_exact_receipt_and_preserves_null():
+    from unittest import mock
+    payload = {"run_id": RUN_ID, "value": None, "breakdown_json": {"status": "unassessed"}}
+    row = {"id": "synthetic-kpi", **payload}
+    for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [row, row], False), (201, [payload], False), (201, [{**row, "run_id": "other"}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [{**row, "value": 0}], False)):
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            if accepted:
+                main.sb_post_kpi(payload)
+            else:
+                try:
+                    main.sb_post_kpi(payload)
+                except main.WorkerStateWriteUnconfirmed as error:
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed KPI insert accepted: {status}")
+        assert post.call_count == 1
+        assert post.call_args.kwargs["timeout"] == 30
+        assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert post.call_args.kwargs["json"] == payload
+
+
+def test_insert_receipts_preserve_json_value_kinds():
+    from unittest import mock
+    cases = [(0, False, False), (False, 0, False), (None, 0, False),
+             ({"method": {"accepted": False}}, {"method": {"accepted": 0}}, False),
+             ({"values": [False, 1]}, {"values": [0, 1]}, False),
+             (1, 1.0, True), ({"values": [0, None, False]}, {"values": [0.0, None, False]}, True)]
+    for writer in (main.sb_post_kpi, main.sb_post_artifact):
+        for expected, actual, accepted in cases:
+            payload = {"run_id": RUN_ID, "metadata_json": expected}
+            response = mock.Mock(status_code=201, json=lambda: [{"id": "synthetic-record", **payload, "metadata_json": actual}])
+            with mock.patch.object(main.requests, 'post', return_value=response) as post:
+                try:
+                    writer(payload)
+                except main.WorkerStateWriteUnconfirmed:
+                    assert not accepted, 'equivalent JSON number was refused'
+                else:
+                    assert accepted, 'receipt conflated JSON value kinds'
+                assert post.call_count == 1
+
+
+def test_kpi_insert_transport_or_json_uncertainty_does_not_retry():
+    from unittest import mock
+    for problem in (main.requests.Timeout("private transport"), ValueError("private JSON")):
+        response = mock.Mock(status_code=201)
+        response.json.side_effect = problem
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            try:
+                main.sb_post_kpi({"value": None})
+            except main.WorkerStateWriteUnconfirmed as error:
+                assert "private" not in str(error)
+            else:
+                raise AssertionError("uncertain KPI receipt accepted")
+        assert post.call_count == 1
+    with mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("private transport")) as post:
+        try:
+            main.sb_post_kpi({"value": None})
+        except main.WorkerStateWriteUnconfirmed:
+            pass
+        else:
+            raise AssertionError("KPI transport failure accepted")
+        assert post.call_count == 1
+
+
+def test_uncertain_kpi_insert_stops_stage_without_terminal_rewrite():
+    import tempfile
+    from unittest import mock
+    def setup(*args, **kwargs):
+        main.sb_post_kpi({"run_id": RUN_ID, "value": None})
+        return {"log": "must not report this"}
+    with tempfile.TemporaryDirectory() as work, \
+         mock.patch.object(main, "RUN_WORK_ROOT", work), \
+         mock.patch.object(main, "sb_claim_stage", return_value=True), \
+         mock.patch.object(main, "sb_get_run", return_value={}), \
+         mock.patch.object(main, "ensure_dynamic_package", return_value={"package_dir": work, "bbox": [0, 0, 1, 1]}), \
+         mock.patch.object(main, "stage_setup", side_effect=setup), \
+         mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("acknowledgement lost")), \
+         mock.patch.object(main, "sb_patch_stage") as stage_write, \
+         mock.patch.object(main, "sb_patch_run") as run_write:
+        try:
+            main.process_stage({"id": RUN_ID, "run_id": RUN_ID, "stage_name": "AequilibraE Setup"})
+        except main.WorkerStateWriteUnconfirmed:
+            pass
+        else:
+            raise AssertionError("stage continued after uncertain KPI insert")
+        stage_write.assert_not_called()
+        assert all(call.args[1]["status"] == "running" for call in run_write.call_args_list)
+
+
+def test_artifact_insert_requires_exact_retained_receipt():
+    from unittest import mock
+    payload = {"run_id": RUN_ID, "value": None, "breakdown_json": {"status": "unassessed"}}
+    row = {"id": "synthetic-kpi", **payload}
+    for status, rows, accepted in ((201, [row], True), (503, [row], False), (204, None, False), (201, [], False), (201, [row, row], False), (201, [payload], False), (201, [{**row, "run_id": "other"}], False), (201, [{k: v for k, v in row.items() if k != "value"}], False), (201, [{**row, "value": 0}], False)):
+        response = mock.Mock(status_code=status, text="private response")
+        response.json.return_value = rows
+        with mock.patch.object(main.requests, "post", return_value=response) as post:
+            if accepted:
+                assert main.sb_post_artifact(payload) == row
+            else:
+                try:
+                    main.sb_post_artifact(payload)
+                except main.WorkerStateWriteUnconfirmed as error:
+                    assert "private response" not in str(error)
+                else:
+                    raise AssertionError(f"unconfirmed artifact insert accepted: {status}")
+        assert post.call_count == 1
+        assert post.call_args.kwargs["timeout"] == 30
+        assert post.call_args.kwargs["headers"]["Prefer"] == "return=representation"
+        assert post.call_args.kwargs["json"] == payload
+
+
+
+def test_volume_geojson_retains_registration_uncertainty():
+    import hashlib
+    import tempfile
+    from pathlib import Path
+    from unittest import mock
+    for uncertain in (False, True):
+        with tempfile.TemporaryDirectory() as work:
+            root = Path(work)
+            (root / "aeq_project").mkdir()
+            (root / "aeq_project/project_database.sqlite").touch()
+            (root / "run_output").mkdir()
+            (root / "run_output/link_volumes.csv").write_text("link_id,PCE_tot\n1,25\n")
+            connection = mock.Mock()
+            connection.execute.return_value.fetchone.return_value = (
+                1, "local", "Synthetic link", '{"type":"LineString","coordinates":[[0,0],[1,1]]}',
+            )
+            calls = []
+            def post(url, **kwargs):
+                calls.append((url, kwargs))
+                if "/storage/" in url:
+                    assert kwargs["timeout"] == 60
+                    assert kwargs["headers"]["x-upsert"] == "false"
+                    return mock.Mock(status_code=201)
+                if uncertain:
+                    raise main.requests.Timeout("synthetic registration acknowledgement lost")
+                payload = kwargs["json"]["p_payload"]
+                retained_bytes = (root / "run_output/volumes.geojson").read_bytes()
+                assert payload["content_hash"] == hashlib.sha256(retained_bytes).hexdigest()
+                assert payload["metadata_json"]["features"] == 1
+                return mock.Mock(status_code=200, json=lambda: {**payload, "attempt_id": None})
+            original_connect = main.sqlite3.connect
+            with mock.patch.dict(main.os.environ, {"OPENPLAN_DEPLOYMENT_ID": "synthetic"}), mock.patch.object(main.sqlite3, "connect", side_effect=lambda path,*a,**k: connection if str(path).endswith("project_database.sqlite") else original_connect(path,*a,**k)), mock.patch.object(main.requests, "post", side_effect=post), mock.patch.object(main.requests, "get", side_effect=lambda *a, **k: mock.Mock(status_code=200, content=(root / "run_output/volumes.geojson").read_bytes())):
+                try:
+                    result = main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+                except main.WorkerStateWriteUnconfirmed:
+                    assert uncertain
+                else:
+                    if uncertain:
+                        raise AssertionError("uncertain GeoJSON registration swallowed")
+                    assert "Uploaded volumes GeoJSON (1 features)" in result
+                    first_bytes=(root / "run_output/volumes.geojson").read_bytes()
+                    first_inode=(root / "run_output/volumes.geojson").stat().st_ino
+                    main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+                    assert (root / "run_output/volumes.geojson").read_bytes()==first_bytes
+                    assert (root / "run_output/volumes.geojson").stat().st_ino==first_inode
+                    (root / "run_output/volumes.geojson").write_bytes(b"changed local map")
+                    try:
+                        main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+                    except main.WorkerStateWriteUnconfirmed:
+                        pass
+                    else:
+                        raise AssertionError("changed local map was overwritten")
+                    assert (root / "run_output/volumes.geojson").read_bytes()==b"changed local map"
+            assert len(calls) == (2 if uncertain else 3), calls
+            assert connection.close.call_count == (1 if uncertain else 3)
+
+
+def test_volume_geojson_missing_database_remains_explicit():
+    import tempfile
+    from unittest import mock
+    with tempfile.TemporaryDirectory() as work, mock.patch.object(main.requests, "post") as post:
+        result = main.publish_volume_geojson(RUN_ID, "22222222-2222-4222-8222-222222222222", work, "synthetic-engine", {}, workspace_id=RUN_ID)
+    assert "Skipped GeoJSON generation because project database was missing" in result
+    post.assert_not_called()
+
+
+def test_geojson_storage_requires_exact_bytes_and_reconciles_lost_upload():
+    import hashlib
+    from unittest import mock
+    data = b'{"type":"FeatureCollection","features":[]}'
+    for status, retained, accepted in ((200, data, True), (200, b"changed", False), (404, data, False)):
+        with mock.patch.object(main.requests, "post", side_effect=main.requests.Timeout("lost upload acknowledgement")) as post, mock.patch.object(main.requests, "get", return_value=mock.Mock(status_code=status, content=retained)) as get:
+            try:
+                reference = main.upload_volume_geojson_bytes(RUN_ID, "stage", data)
+            except main.WorkerStateWriteUnconfirmed:
+                assert not accepted
+            else:
+                if not accepted:
+                    raise AssertionError("unverified GeoJSON bytes accepted")
+                assert hashlib.sha256(data).hexdigest() in reference
+            assert post.call_count == 1 and get.call_count == 1
+            assert post.call_args.kwargs["headers"]["x-upsert"] == "false"
+            assert get.call_args.kwargs["timeout"] == 60
 
 
 TESTS = [value for name, value in sorted(globals().items()) if name.startswith("test_")]

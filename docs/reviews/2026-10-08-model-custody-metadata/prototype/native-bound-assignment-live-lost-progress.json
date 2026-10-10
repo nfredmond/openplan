@@ -1,0 +1,38 @@
+{
+  "control": "lost-progress",
+  "live_parent_transport": true,
+  "parent_failure": "DeliveryUnconfirmed",
+  "replay": {
+    "request_id": "370cbdc3-57a9-46f3-8470-b05d18f07027",
+    "committed_reply_dropped": true,
+    "fresh_process_outcomes": [
+      {
+        "request_id": "370cbdc3-57a9-46f3-8470-b05d18f07027",
+        "outcome": "command_receipt_retained",
+        "model_resumed": false
+      },
+      {
+        "request_id": "370cbdc3-57a9-46f3-8470-b05d18f07027",
+        "outcome": "command_receipt_retained",
+        "model_resumed": false
+      }
+    ],
+    "http_calls_per_recovery": [
+      1,
+      0
+    ],
+    "database_state_unchanged": true,
+    "request_body_sha256": "c7b09a9b4bb3c0fa865a958a583c51d957ef297becf894ecd2bb45809027c3cd",
+    "model_resumed": false,
+    "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+  },
+  "child_failure": {
+    "error_type": "WorkerStateWriteUnconfirmed",
+    "active_project": false
+  },
+  "child_exit_code": 1,
+  "pending_commands": 1,
+  "final_outputs_absent": true,
+  "worker_sha256": "edc0b4dbf2921c9177038604abf47b10dda4803eda03f01282f9611b07a68105",
+  "limits": "Full synthetic native stage failure. Parent transport and replay evidence are recorded explicitly. Journal recovery uses a backup; original journal remains pending. No model restart, supervisor loss, escaped descendants or scientific acceptance."
+}

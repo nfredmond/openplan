@@ -1,0 +1,14 @@
+{
+  "second": {
+    "scanned": 0,
+    "reaped": []
+  },
+  "third": {
+    "scanned": 0,
+    "reaped": []
+  },
+  "storageAttempts": 2,
+  "finding": "pending removal survives database closure and retries after Storage interruption",
+  "scope": "native TypeScript and PostgREST database path; simulated Storage failure and successful removal"
+}
+

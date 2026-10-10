@@ -25,7 +25,7 @@
     "src/lib/api/county-geographies.ts": ["files"]
   },
   "ignoreDependencies": ["next-themes", "sonner", "supabase"],
-  "ignoreBinaries": ["sha256sum", "jq", "ogrinfo"],
+  "ignoreBinaries": ["sha256sum", "jq", "ogrinfo", "mkfifo"],
   "rules": {
     "files": "error",
     "dependencies": "error",

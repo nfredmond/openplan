@@ -23,6 +23,25 @@ afterEach(() => {
 });
 
 describe("ModelCreator planning context", () => {
+  it("keeps an unlinked model on the planning-work step", () => {
+    render(<ModelCreator projects={PROJECTS} scenarioSets={[]} />);
+    openProjectStep();
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    expect(screen.getByLabelText("Primary project")).toBeInTheDocument();
+    expect(screen.getAllByText("Choose a primary project or scenario set before continuing.").length).toBeGreaterThan(0);
+    expect(screen.queryByLabelText("Model family")).not.toBeInTheDocument();
+  });
+
+  it.each(["project", "scenario"])("accepts a %s link without requiring both", (kind) => {
+    render(<ModelCreator projects={PROJECTS} scenarioSets={[{ id: "scenario-1", title: "No Build" }]} />);
+    openProjectStep();
+    fireEvent.change(screen.getByLabelText(kind === "project" ? "Primary project" : "Primary scenario set"), {
+      target: { value: kind === "project" ? "project-1" : "scenario-1" },
+    });
+    fireEvent.click(screen.getByRole("button", { name: /^Next/ }));
+    expect(screen.getByLabelText("Model family")).toBeInTheDocument();
+  });
+
   it("preselects the project carried in planning context", () => {
     render(
       <ModelCreator

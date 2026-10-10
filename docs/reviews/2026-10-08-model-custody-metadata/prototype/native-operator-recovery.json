@@ -1,0 +1,64 @@
+{
+  "control": "baseline",
+  "database": "openplan_attempt_cli_5748536fee924f03a2724cee3a3e2172",
+  "run_id": "5336b63a-ef1f-4a26-96a4-d2dbf6538dc6",
+  "stage_id": "bb726e24-f8b7-49b3-90a4-526144d09ae3",
+  "attempt_id": "1d8fb02b-1871-4e28-96a8-5190c042df4f",
+  "native_interruption": {
+    "outcome": "scope_absent_observed",
+    "scope_has_live_processes": false
+  },
+  "guard_observation": {
+    "outcome": "guard_absent_observed",
+    "guard_has_live_processes": false
+  },
+  "upgraded_native_rows_unchanged": true,
+  "migration_sha256": {
+    "20261016000022_model_reaper_recovery_boundary.sql": "e94693fec4f95abda27fc627e2c3bf6888a60c19129fa313b72b5741c286b192",
+    "20261016000023_model_recovery_decisions.sql": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9"
+  },
+  "http_recovery": {
+    "control": "baseline",
+    "database": "openplan_attempt_cli_5748536fee924f03a2724cee3a3e2172",
+    "http_requests": [
+      {
+        "status": 200,
+        "sha256": "f27204a281ce36728dc21e106ee6a10ccb2687619e60c21eaa866b672cde6f51"
+      },
+      {
+        "status": 200,
+        "sha256": "f27204a281ce36728dc21e106ee6a10ccb2687619e60c21eaa866b672cde6f51"
+      }
+    ],
+    "recovery_request_counts": [
+      1,
+      0
+    ],
+    "fresh_cli": [
+      {
+        "request_id": "12be5667-9831-483c-9a2f-cf40be0f9857",
+        "outcome": "command_receipt_retained",
+        "model_resumed": false
+      },
+      {
+        "request_id": "12be5667-9831-483c-9a2f-cf40be0f9857",
+        "outcome": "command_receipt_retained",
+        "model_resumed": false
+      }
+    ],
+    "database_unchanged_after_retry": true,
+    "execution_starts_preserved": true,
+    "command_sha256": "80b53262ca518a42dacde3cbf3376b050b81ac0480ceecff34574b8d18a95273",
+    "receipt_sha256": "2275310b99563e1a2fcfe2d76862eabd0e9784e0d1990a64917b33b3825eb6fe",
+    "limits": "Synthetic operator through a service-role gateway, SQL commit followed by socket loss and fresh CLI recovery. No authenticated application route, human approval UI, physical process termination, restart or scientific acceptance."
+  },
+  "reported_inspection_retained_exactly": true,
+  "reported_evidence_remains_unverified": true,
+  "native_custody_and_journal_unchanged": true,
+  "late_attempt_write_refused": true,
+  "limits": [
+    "Synthetic operator with service-role gateway",
+    "No authenticated browser or practitioner acceptance",
+    "No restart, final publication, graceful-close or scientific claim"
+  ]
+}

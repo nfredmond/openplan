@@ -1,0 +1,42 @@
+[
+  {
+    "case": "completion_wins",
+    "observedLockWait": true,
+    "waiterReturnCode": 0,
+    "state": {
+      "status": "ready",
+      "fenced": false,
+      "routeRows": 1
+    }
+  },
+  {
+    "case": "cleanup_blocks_derived",
+    "observedLockWait": true,
+    "waiterReturnCode": 3,
+    "state": {
+      "status": "failed",
+      "fenced": true,
+      "routeRows": 0
+    }
+  },
+  {
+    "case": "cleanup_blocks_stage",
+    "observedLockWait": true,
+    "waiterReturnCode": 3,
+    "state": {
+      "status": "failed",
+      "fenced": true,
+      "routeRows": 0
+    }
+  },
+  {
+    "case": "cleanup_rollback",
+    "observedLockWait": true,
+    "waiterReturnCode": 0,
+    "state": {
+      "status": "parsing",
+      "fenced": false,
+      "routeRows": 1
+    }
+  }
+]

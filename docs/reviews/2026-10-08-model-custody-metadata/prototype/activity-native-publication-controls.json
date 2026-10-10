@@ -1,0 +1,76 @@
+{
+  "cases": [
+    {
+      "case": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, normal dispatch, full population or scientific acceptance."
+      }
+    },
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, normal dispatch, full population or scientific acceptance."
+      }
+    },
+    {
+      "case": "drop-demand-matrix",
+      "returncode": 1,
+      "expected_behavior_observed": true,
+      "result": {
+        "expected_missing_artifact_detected": true
+      }
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true,
+      "result": {
+        "control": "native-stage-publication",
+        "trip_rows": 779,
+        "artifacts": 4,
+        "kpis": 8,
+        "native_model_executed": true,
+        "container_removed": true,
+        "source_bundle_unchanged": true,
+        "source_bundle_sha256": "4b914da7e522e8d2c24947bdfb371b6c37c8cf4cd9fab2dc7e26173c0d09e66f",
+        "image_id": "sha256:472ad0ab51bbea22ca5816941a7b9bc04375efc577ef2f164e2f4db46368f676",
+        "scientific_acceptance": "unassessed",
+        "limits": "Prepared bundle builder is replaced with a copied development bundle and 100-household sample; actual native runtime, ingestion, demand packaging and managed database writes. Synthetic Storage bytes. No Census rebuild, normal dispatch, full population or scientific acceptance."
+      }
+    }
+  ],
+  "sources": {
+    "workers/activitysim_worker/supabase_poll.py": "e42596a4ff0969484596f18ea1a598f6b12408fa6db27b4c32c33b49003f1403",
+    "workers/activitysim_worker/runtime.py": "8d438d6b4bcade2021beb0dc565da96b4e4f9956175327e3d7a8931f0047d6c0",
+    "scripts/modeling/run_behavioral_demand_prototype.py": "5438ff45878e319e9fc4dbcb603f0be80e240cd8532d540670ecd8d5f94a27fb"
+  },
+  "limits": [
+    "Copied prepared development bundle; builder boundary substituted and sample limited to 100 households",
+    "Native scheduling log includes coerced departure choices; no scientific acceptance",
+    "Synthetic Storage byte service; no Census rebuild, full population, normal dispatcher or native-process recovery"
+  ]
+}

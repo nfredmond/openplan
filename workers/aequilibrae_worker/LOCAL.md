@@ -30,6 +30,7 @@ The worker needs a Supabase URL + **service-role** key. It reads, in order:
 ```
 SUPABASE_URL=<your-supabase-url>            # or NEXT_PUBLIC_SUPABASE_URL
 SUPABASE_SERVICE_ROLE_KEY=<service-role-key>
+OPENPLAN_DEPLOYMENT_ID=<stable identity for this database installation>
 # Optional, defaults shown:
 SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
 AEQ_WORK_DIR=<scratch dir; default is <system temp>/openplan-model-runs>
@@ -89,3 +90,203 @@ the system library path; install it via your OS package manager
 - `model_run_artifacts`: a `volumes_geojson` row whose `file_url` is a private
   `storage://run-artifacts/model-runs/<run-id>/volumes.geojson` path (not a
   public URL); the app resolves it with a service-role download.
+
+## Full run IDs in scratch paths
+
+New worker execution uses `AEQ_WORK_DIR/runs/<full-run-uuid>`. Configure the
+application's `OPENPLAN_WORKER_LOCAL_ROOT` to the same root. Shortened 12-character
+directories remain on disk but are not adopted automatically.
+
+Before upgrading an installation with unfinished runs, finish those runs using
+the existing worker checkout. The new worker refuses a later stage before
+claiming it when only shortened legacy scratch exists. Do not rename a prefix
+directory based on its name alone; it does not prove the complete run identity.
+Legacy `local://` references under shortened paths are refused by the updated
+application. Existing private Storage references keep their original identity.
+Automated reconciliation of legacy local files remains unfinished.
+
+## Retained assessment writes
+
+Before running this worker revision, apply migration
+`20261016000015_legacy_assessment_command_receipts.sql` to the intended database.
+Set `OPENPLAN_DEPLOYMENT_ID` to a stable installation identity. Keep it unchanged
+when restarting or restoring the same installation from coordinated backups.
+A different or newly initialized installation needs its own identity; do not
+retarget an old journal to it. Missing identity stops assessment delivery. There is no fallback to
+the old non-idempotent assessment RPC.
+
+Use a durable `AEQ_WORK_DIR`. Each assessment directory retains its exact command
+under `command-journal/model-commands.sqlite3`. Back up this journal together with
+the assessment files. An unconfirmed write stops the stage before publication.
+Use `model_command_recovery.py --help` to list or recover the original request,
+with the same deployment identity, URL and journal directory. Recovery confirms
+custody only. Automatic continuation of the original stage remains unfinished;
+do not regenerate an assessment with a new UUID as a substitute for recovery.
+
+
+Primary link-volume registration also requires migration
+`20261016000016_legacy_artifact_command_receipts.sql`. Apply it to the intended
+database before starting this worker version. Keep
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` with the prepared
+source files. An unconfirmed primary write stops the stage and retains its exact
+request for `model_command_recovery.py`. Recovering that receipt does not resume
+the stage or authorize replay of the complete stage.
+
+
+## Retained KPI writes
+
+Both normal assignment KPI writers require migration
+`20261016000017_legacy_kpi_command_receipts.sql` before this worker starts.
+They retain each complete request in the same stage journal used by artifacts.
+Keep `OPENPLAN_DEPLOYMENT_ID`, the database URL and that journal unchanged for
+recovery. A lost reply stops the stage; use `model_command_recovery.py` to
+recover its original receipt. Changed values under the same KPI identity are
+refused. Explicit null values remain null. Receipt recovery does not authorize
+whole-stage replay or establish model accuracy.
+
+
+## Inspect saved calculations
+
+Use the same deployment identity, URL and stage journal as the original worker:
+
+```bash
+python model_command_recovery.py --journal /path/to/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-computations
+```
+
+This read-only listing reports `result_retained` or `started_without_result` for
+each saved calculation. It prints identifiers and states, not inputs or result
+payloads. A missing journal or damaged record is refused. An older journal with
+no calculation records returns an empty list. This does not contact the server,
+claim the stage or resume work. Preserve an interrupted start and its source
+files for reconciliation. Do not delete it to make the calculation run again.
+Use `--list-pending` separately to inspect delivery requests.
+
+
+## Execution retention and recovery
+
+Migrations 18 and 19 add retained-start protection and a scoped recovery reader.
+Before migration 18, stop new dispatch, bring active work to a known retained
+stopping point, and confirm every model worker using the installation has
+stopped. These database guards do not stop an already-running local calculation.
+Existing worker runs retain their saved status and results, but historical
+writes remain blocked pending reconciliation. The recovery notice is an
+inspection result, not a permission to resume.
+
+Inspect the original journal from the worker's configured Python environment:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-pending
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-computations
+```
+
+A pending command means its reply remains unconfirmed. It does not mean the
+server rolled back. Recover only the original request ID against the same
+logical installation, using the retained journal and configured credential.
+An interrupted computation start does not authorize another calculation.
+
+A cached receipt can be returned without contacting PostgreSQL. After a restore,
+compare current database rows and server receipts with the restored journal and
+file inventory separately. A receipt message alone cannot prove that the
+restored database contains its output. An older database backup paired with a
+newer resolved journal is not a verified recovery point.
+
+Keep the same installation identity and base URL for a coordinated restoration
+of that installation. A new or unrelated database must not receive old commands
+by changing the journal or rebinding its identity. The synthetic coordinated
+restore proof preserves the logical endpoint while replacing the owned physical
+database; it does not prove arbitrary host migration or Storage restoration.
+See [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-worker-recovery-records)
+for the required inventory and current verification limits.
+
+## Inventory retained delivery records
+
+Use `--list-commands` with the original journal, base URL and installation
+identity to list both pending requests and saved receipts. This action needs no
+service credential and sends no request. It validates each saved command and
+receipt, returns their hashes and identities, and omits scientific payloads.
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-commands
+```
+
+`unconfirmed` means delivery has no retained reply. `receipt_retained` means the
+local receipt matches its saved request. Neither state establishes what the
+server contains now or which worker owns the stage. The output states those
+limits explicitly. Missing journals and invalid records fail inspection; they
+are not reported as an empty successful inventory. A different installation
+returns no matching records. Keep that scope in mind when checking completeness.
+
+## Inspect a retained managed claim
+
+For a retained `claim_model_stage_attempt` receipt, inspect current stage and
+parent ownership with the original request ID and explicit workspace scope:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --inspect-ownership "$CLAIM_REQUEST_ID" --workspace-id "$WORKSPACE_ID"
+```
+
+This action needs `SUPABASE_SERVICE_ROLE_KEY`. It makes a scoped read through
+the existing ownership reader. It does not replay a command or update the local
+journal. Pending claims, wrong installations, invalid receipts and missing
+scope are refused. Legacy claims without a retained managed-claim receipt do
+not qualify for this command.
+
+`ownership.owns_stage` describes the database snapshot at the read. It is not
+a lease, scientific permission or authority to continue later. The output keeps
+`point_in_time_only` true and `continuation_authorized` and `model_resumed` false.
+A failed or incomplete read returns `ownership_unconfirmed` with exit 2, not a
+confirmed negative ownership result. Current ownership and every later write
+still require the database attempt fence. Automatic restart remains unfinished.
+
+## App reads of local artifacts
+
+When the app uses `OPENPLAN_WORKER_LOCAL_ROOT`, secure local reads require the
+Linux reference host with `/proc/self/fd` available. The app holds directory
+handles while opening the file so parent-path replacements cannot redirect the
+read. Other hosts refuse local artifact reads; use retained Storage artifacts
+there. A configured root alias is supported, but a run directory cannot redirect
+to a different run. This does not make mutable local files immutable or establish
+worker write ownership. Keep the worker root under operator control.
+
+## Retained blocked-stage decisions
+
+Apply `20261016000020_model_blocked_stage_receipts.sql` before updating either
+model worker. Set `OPENPLAN_DEPLOYMENT_ID` to the installation's stable identity.
+The skip path preserves its request beneath
+`<AEQ_WORK_DIR>/runs/<run-uuid>/skip-commands/<stage-uuid>/`.
+The existing recovery CLI accepts this directory through `--journal` and the
+original request through `--request-id`. Retain these journals with the database.
+
+The same observed stage and predecessor versions reuse one request. A changed
+version receives a new decision; a no-op result is not reported as a skip.
+Missing versions or uncertain delivery stop that operation without a direct
+PATCH fallback. This connects blocked-stage decisions only. It does not enable
+managed claims, restart a stage or establish safe model continuation.
+
+## Started-run recovery boundary
+
+Apply `20261016000022_model_reaper_recovery_boundary.sql` with this checkpoint.
+The automatic reaper only times out queued work that has not started. Running,
+attempt-managed and previously started work requires explicit recovery; old
+progress timestamps alone do not prove engine loss. A lost worker can remain
+nonterminal pending that decision. Do not reset its stages or delete retained
+files to force a restart. Durable reconciliation and restart are still under
+development. The proof is in
+`docs/reviews/2026-10-08-model-custody-metadata/MANAGED_DISPATCH_JOIN.md`.
+
+Migration `20261016000023_model_recovery_decisions.sql` adds explicit operator
+abandonment receipts. The model run recovery API requires an authenticated
+workspace owner or administrator and an exact reviewed state. It cancels database
+execution authority without proving that an OS process stopped or authorizing a
+restart. The model run UI and its saved-request recovery controls are still under
+development. Explicit Planner Agent recovery requests currently refuse.

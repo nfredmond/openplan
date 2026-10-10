@@ -1,0 +1,46 @@
+{
+  "module_sha256": "43ffa657c4f668529f1a7e51c56492b10189b60a3b3a3f41d70c3f9c3a6d56c0",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "restore-false-absence",
+      "exit_code": 1,
+      "targeted_test": "test_actual_assignment_miss_branch_uses_shared_refusal"
+    },
+    {
+      "control": "erase-catalog-failure",
+      "exit_code": 1,
+      "targeted_test": "test_catalog_failure_and_selected_refusal_keep_distinct_reasons"
+    },
+    {
+      "control": "skip-coverage",
+      "exit_code": 1,
+      "targeted_test": "test_every_loaded_origin_miss_remains_unavailable"
+    },
+    {
+      "control": "mark-covered-unavailable",
+      "exit_code": 1,
+      "targeted_test": "test_covered_origins_compute_and_preserve_provenance"
+    },
+    {
+      "control": "accept-unknown-origin",
+      "exit_code": 1,
+      "targeted_test": "test_unknown_origin_is_not_given_a_coverage_claim"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real synthetic GTFS skims and executed actual assignment coverage-miss AST block. Not full assignment, general child channel, native registration, external catalog completeness or scientific acceptance."
+}

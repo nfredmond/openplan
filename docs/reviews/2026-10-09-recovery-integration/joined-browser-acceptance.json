@@ -1,0 +1,105 @@
+{
+  "sourceCommit": "f2e1d19176edd53852896e5fe2ff1119f4337353",
+  "browser": "T3 preview",
+  "gtfsLayout": {
+    "checkedAt": "2026-10-09T21:42:00Z",
+    "candidate": "f2e1d19176edd53852896e5fe2ff1119f4337353",
+    "healthCommit": "f2e1d19176ed",
+    "url": "http://127.0.0.1:3520/data-hub",
+    "browser": "T3 preview tab_1",
+    "desktop": {
+      "viewport": [
+        1280,
+        800
+      ],
+      "screenshot": "browser-screenshot-127-0-0-1-mv1hpvvh-625105db.png",
+      "bothUploadInputsVisuallyInspected": true
+    },
+    "mobile": {
+      "viewport": [
+        390,
+        844
+      ],
+      "documentWidth": 390,
+      "panelClientWidth": 351,
+      "panelScrollWidth": 351,
+      "newerArchiveInputWidth": 271.70257568359375,
+      "newArchiveInputWidth": 303.4698181152344,
+      "screenshot": "browser-screenshot-127-0-0-1-mv1hq3xr-c33eb556.png",
+      "bothUploadInputsVisuallyInspected": true
+    },
+    "console": "No new entries during current candidate review; older probe, fixture transfer and deliberate invalid ZIP errors retained.",
+    "limits": [
+      "Fixture assignment used DataTransfer, not the native OS chooser.",
+      "Current candidate layout inspection supplements the preceding identified-build ingest and failure-preservation journey.",
+      "Synthesis browser acceptance and current-head CI remain open."
+    ]
+  },
+  "gtfsCleanup": {
+    "anonymousCronStatus": 401,
+    "failedObjectStillPresentAfterRefusal": true,
+    "authenticatedCronStatus": 200,
+    "sweep": {
+      "scanned": 0,
+      "reaped": 0
+    },
+    "failedObjectStatusAfterSweep": 400,
+    "readyObjectSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+    "pendingCleanupRows": 0,
+    "repeatStatus": 200,
+    "repeat": {
+      "scanned": 0,
+      "reaped": 0
+    },
+    "failedObjectError": {
+      "statusCode": "404",
+      "error": "not_found",
+      "message": "Object not found",
+      "code": "NoSuchKey"
+    }
+  },
+  "synthesisLocks": [
+    {
+      "mode": "transient",
+      "database": "openplan_acceptance_0c03584249c04ac990c9214566bf2fc0",
+      "requestId": "7d752450-6d07-4460-8631-b86fe4e875f4",
+      "startedAt": "2026-10-09T21:51:44.872461+00:00",
+      "nativeBusyErrors": 1,
+      "releaseTrigger": "first native busy error",
+      "lockProcessExit": 0,
+      "finishedAt": "2026-10-09T21:51:49.291882+00:00"
+    },
+    {
+      "mode": "persistent",
+      "database": "openplan_acceptance_0c03584249c04ac990c9214566bf2fc0",
+      "requestId": "7d752450-6d07-4460-8631-b86fe4e875f4",
+      "startedAt": "2026-10-09T21:51:56.824057+00:00",
+      "nativeBusyErrors": 9,
+      "releaseTrigger": "nine native busy errors across client retries",
+      "lockProcessExit": 0,
+      "finishedAt": "2026-10-09T21:52:03.949347+00:00"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1hpvvh-625105db.png",
+      "sha256": "24ee83279d466dd3f5bcf27541f84ef81ef75974fb92856a8a312f8a6e011451"
+    },
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1hq3xr-c33eb556.png",
+      "sha256": "5a0e3c6fb7c93fd903617ab603b7a9038e2bf071fac854483908a7fd729fc0da"
+    },
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1i3o6s-8bfdcbc0.png",
+      "sha256": "216190b2f6d3d6558ec221706d813feb93484000e876bedcf37ca258062f492c"
+    },
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1i3tit-c0697b3d.png",
+      "sha256": "8c2812375f616efb04f4555fa32e0932e0d6db64d175e05f078d10fb6e33431a"
+    },
+    {
+      "name": "browser-screenshot-127-0-0-1-mv1i499i-cf4ed05b.png",
+      "sha256": "f69a216691f145749a90ee19d608a20c0199ff8c3ff223a19f1eb17dc3b6794a"
+    }
+  ]
+}

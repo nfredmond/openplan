@@ -1,0 +1,56 @@
+[
+  {
+    "control": "harmless",
+    "exit_code": 0,
+    "failures": []
+  },
+  {
+    "control": "aeq-noop-success",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='main')"
+    ]
+  },
+  {
+    "control": "activity-noop-success",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='supabase_poll')"
+    ]
+  },
+  {
+    "control": "reuse-stale-observation",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='main')",
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='supabase_poll')"
+    ]
+  },
+  {
+    "control": "aeq-missing-projection",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_both_workers_retain_recover_and_do_not_patch (test_model_skip_dispatch.SkipDispatchTests.test_both_workers_retain_recover_and_do_not_patch) (worker='main')"
+    ]
+  },
+  {
+    "control": "activity-missing-projection",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_both_workers_retain_recover_and_do_not_patch (test_model_skip_dispatch.SkipDispatchTests.test_both_workers_retain_recover_and_do_not_patch) (worker='supabase_poll')"
+    ]
+  },
+  {
+    "control": "reuse-stale-predecessor-observation",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='main')",
+      "FAIL: test_changed_observation_gets_new_decision_and_noop_stays_false (test_model_skip_dispatch.SkipDispatchTests.test_changed_observation_gets_new_decision_and_noop_stays_false) (worker='supabase_poll')"
+    ]
+  },
+  {
+    "control": "restored",
+    "exit_code": 0,
+    "failures": []
+  }
+]

@@ -99,3 +99,32 @@ def import_worker_main():
     import main  # noqa: PLC0415
 
     return main
+
+
+def mock_engine_runtime(project_factory):
+    """Scoped unit-test imports only; any unconfigured native computation fails.
+
+    Unlike the module-load stub, this explicit context is used only by tests
+    exercising pre-computation refusal or project cleanup. It restores installed
+    modules on exit and supplies no numerical engine behavior.
+    """
+    from contextlib import contextmanager
+    from unittest.mock import patch
+
+    class UnexpectedNativeComputation:
+        def __init__(self, *args, **kwargs):
+            raise AssertionError("Unit fixture reached unconfigured native computation")
+
+    @contextmanager
+    def installed():
+        engine = types.ModuleType("aequilibrae")
+        engine.Project = project_factory
+        matrix = types.ModuleType("aequilibrae.matrix")
+        matrix.AequilibraeMatrix = UnexpectedNativeComputation
+        paths = types.ModuleType("aequilibrae.paths")
+        for name in ("TrafficAssignment", "TrafficClass", "NetworkSkimming"):
+            setattr(paths, name, UnexpectedNativeComputation)
+        with patch.dict(sys.modules, {"aequilibrae": engine, "aequilibrae.matrix": matrix, "aequilibrae.paths": paths}):
+            yield
+
+    return installed()

@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "bundle",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "basis",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "identity",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "invalid",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrapper-wrong-run",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "74b84e1281f5ca21bbd2c09a664a038444424f3743829c03e3a8435255aaa379",
+  "limits": [
+    "Synthetic exact-file evaluation and wrapper forwarding",
+    "No admitted preparation producer, independent timing, source validity or scientific acceptance"
+  ]
+}

@@ -50,17 +50,194 @@ Not done: address search, a map that works without a Mapbox key, replies on the
 map, and observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
-## 0.68.0 (development candidate)
+## 0.68.0 (2026-10-09)
 
-This candidate collects the land-use, engagement and evidence corrections below.
-It is not tagged or released. Final combined checks remain pending. Version 1.0,
-independent nationwide scientific acceptance and observed practitioner outcomes
-remain unfinished.
+This development version includes land-use and engagement workflows, model
+recovery safeguards, GTFS failure cleanup, restore integrity and navigation
+corrections. The [release evidence](docs/reviews/2026-10-09-v068-final/RELEASE_RECORD.md)
+records the application checks, populated upgrade, archive restore and identified
+workflow builds. Version 1.0 and its scientific and observed practitioner
+outcomes remain unfinished.
+
+There are 399 migrations through
+`20261016000027_run_project_workspace_foreign_keys.sql`, including 26 additions
+since v0.67.0. Stop model workers, preserve a restorable backup, and apply the
+migrations in order before updating the app and workers. Migration 27 validates
+existing project relationships and takes table locks; schedule a maintenance
+window. Follow the [upgrade and recovery guide](openplan/docs/ops/V068_UPGRADE.md)
+for retained worker journals, installation identity and interrupted-run review.
+The detailed changes and unfinished boundaries follow.
+
+My Work names the stage-gate decision's original project relationship explicitly.
+This keeps blocked-project reads working after migration 27 adds a second,
+workspace-scoped project foreign key. Permissions and latest-decision rules stay
+unchanged.
+
+Navigation links stay in place during pointer and keyboard focus in short
+desktop windows. Group headings retain their compact spacing rather than moving
+later destinations while a click is in progress.
+
+GTFS failure messages wrap long source details and file controls fit their panel
+on narrow screens, keeping the current feed and failed-attempt history readable.
+
+Model recovery controls now wrap within narrow run cards. Review, restore, retry
+and download actions remain inside the card at a 390-pixel viewport.
+
+Migration `20261016000027_run_project_workspace_foreign_keys.sql` replaces
+project-lookup CHECK constraints with validated composite foreign keys for
+analysis, model and county runs and stage-gate decisions. Project links retain
+the same workspace boundary and deletion behavior. The relationships restore
+after table data, avoiding the reproduced nonempty model-run restore failure.
+Invalid existing relationships refuse the migration rather than being rewritten.
+Apply during a maintenance window because validation acquires table locks.
+
+Migration `20261016000026_gtfs_failure_closure.sql` makes normal GTFS failure
+cleanup transactional. Ready versions remain available even if a late failure
+arrives. Unfinished versions retain their failure receipt and private-object
+cleanup request; the scheduled sweep retries object removal. Apply migrations
+25 and 26 before the updated app. This does not provide resumable worker execution.
+
+Migration `20261016000025_gtfs_abandonment_fence.sql` protects completed GTFS
+versions from stale cleanup and prevents abandoned attempts from resuming writes.
+Apply it before deploying the updated app and scheduled GTFS sweep. Private-file
+cleanup requests remain saved through Storage interruption and are retried by
+later sweeps. A closed attempt requires a new ingest version; existing current
+feeds remain available. This does not move long ingestion into a resumable worker
+or establish a local process timeout.
+
+Apply `20261016000024_model_attempt_instrument_member_read.sql` before using
+retained instrument evidence in planner views and exports. Workspace members
+may read evidence only through a visible model run in the same workspace.
+Client roles cannot write instrument custody or read private command records.
+
+Apply `20261016000022_model_reaper_recovery_boundary.sql` before deploying.
+Automatic timeout now applies only to unstarted queued model work. Started or
+managed work retains its execution records for explicit recovery review.
+
+Apply `20261016000023_model_recovery_decisions.sql` for owner/admin abandonment
+review and exact retry receipts. Abandonment revokes database write authority;
+it does not verify process termination or authorize restart. Recovery decisions
+retain the original execution snapshots. Normal managed dispatch remains off.
+
+Count-source summaries distinguish acquisition history from current file
+availability. Missing or unreadable files cannot retain an available label or
+report zero eligible rows as though those rows were measured.
+
+Assignment now retains the selected count CSV and source metadata before engine
+work. Later stages receive the retained path. Interrupted captures are preserved
+for reconciliation instead of being overwritten or silently reused.
+
+Count validation no longer substitutes a default when the assignment's recorded
+count file is missing. It reports unavailable observations with no measured
+station count, error metric or validation gate. Explicitly recorded defaults
+remain usable.
+
+Bound model state publication now retains and registers a separate original-state
+file before completion. Lost registration replies require receipt recovery; they
+do not resume computation. Package transfer and consumer path mapping remain open.
+
+Migration `20261016000021_model_attempt_prepared_artifact_identity.sql`
+allows the managed artifact command to retain an explicitly prepared artifact ID.
+Existing callers can still request a generated ID. ID collisions refuse the new
+registration, and receipt failure rolls back the artifact insert. Apply this
+migration before using prepared IDs with managed output commands. Both workers
+now route artifact and KPI registration through the admitted attempt when a
+managed writer is explicitly bound. Normal claim dispatch remains unchanged;
+complete managed continuation is still unfinished. Bound invocations now allocate
+exclusive attempt directories with retained ownership records and descriptor-based
+state publication. They refuse existing attempt directories. ActivitySim retains
+registered predecessor files through verified, no-overwrite copies and checks a
+bound destination against its owned attempt directory. Complete AequilibraE
+predecessor handoff and full normal dispatcher activation remain unfinished. Agreement input reads now also require a completed producing stage and consistent active-attempt ownership before reading its local artifact. The calculation uses separate copies verified
+against registered hashes and byte sizes; interrupted copies are not overwritten.
+
+Migration `20261016000020_model_blocked_stage_receipts.sql` adds a
+service-only blocked-stage command with immutable retry receipts. It checks the
+current predecessor under lifecycle locks before skipping unclaimed queued work.
+A successful skip protects that stage history; a no-op receipt alone does not
+count as execution or prevent a first claim. Apply the migration before using
+the updated workers. Both normal workers now retain blocked-stage decisions and
+stop on uncertain delivery. Set `OPENPLAN_DEPLOYMENT_ID` and preserve their
+skip-command journals. Stage claims and the remaining writes still need the
+complete managed execution and recovery integration.
+
+Migration `20261016000019_model_recovery_status.sql` adds a private,
+workspace-scoped recovery reader. Historical worker runs display a reconciliation
+notice beside their saved status. Unavailable recovery records have a separate
+warning. These states withhold relaunch and live progress claims while preserving
+saved outputs. The page does not automatically reap these records. Unfinished
+ActivitySim runs now reach the same recovery panel as AequilibraE runs.
+This is an inspection step, not a completed reconciliation or stage-resume
+workflow. Apply the migration before deploying its reader. The
+[recovery acceptance record](docs/reviews/2026-10-09-recovery-mobile/VERIFICATION.md)
+covers the bounded rendered review and exact retry controls; it does not
+establish continuation.
+
+Migration `20261016000018_model_execution_retention.sql` protects
+retained model outputs and records stage starts before local computation. The
+launch route refuses retained or unreconciled work before changing its inputs
+or records. Stop model workers before applying this migration. Existing
+worker-backed runs remain readable but refuse writes until reconciled; new runs
+receive separate enrollment records. Historical reconciliation and full
+continuation remain unfinished. Retention and explicit abandonment do not
+authorize restarting interrupted computation.
+
+
+Migration `20261016000017_legacy_kpi_command_receipts.sql` adds private KPI
+recovery receipts. It preserves exact requests and rejects old rows whose stage
+cannot be established. Both normal worker KPI writers now retain exact requests
+and stop on unconfirmed delivery. Apply this migration before starting the
+updated worker. The recovery CLI retrieves the original receipt after a lost
+reply. Isolated upgrade, reapply and native lost-reply checks pass. Complete
+stage replay remains disabled.
+
+Migration `20261016000016_legacy_artifact_command_receipts.sql` adds private
+artifact recovery receipts. Apply it before starting the updated AequilibraE
+worker. Primary link-volume registration retains its prepared identity and
+request in the stage journal. The recovery CLI can retrieve a committed receipt
+after a lost reply. Keep the journal with the original source files. Secondary
+computation and stage ownership recovery still prevent safe replay of the complete stage.
+
+Migration `20261016000015_legacy_assessment_command_receipts.sql` adds private
+assessment command receipts. Apply it before starting the updated AequilibraE
+worker. Configure `OPENPLAN_DEPLOYMENT_ID` and retain the worker's assessment
+journals with their source files. A lost reply can be recovered through the saved
+request without creating another assessment. This does not resume the full stage
+or establish scientific acceptance.
+
+Migration `20261016000014_model_attempt_command_custody.sql` adds private model
+attempts, exact command receipts and guarded output writes. Apply it before
+deploying code that uses these commands. Normal stage claims still use the
+legacy path; managed-attempt dispatch remains disabled. Migration 18 separately
+records execution enrollment and protects historical records. These changes
+prepare recoverable model execution; they do not establish scientific acceptance
+or enable complete managed continuation.
+
+A Linux setup command generates reviewable systemd user units for the existing
+synthesis preparation and execution workers. It checks private paths and pins
+the chosen checkout and journal directory without installing or starting a
+service. Initial supervision evidence covers a synthetic process, not real
+worker dispatch, boot or host-loss recovery.
 
 Project evidence now distinguishes linked engagement campaigns from retained
 report evidence. My Work preserves conflicting award and milestone deadlines
 and asks staff to review them. Project delivery displays calendar-only dates
 without shifting them to the preceding day in western time zones.
+
+Closed awards with recorded obligation deadlines remain visible for review.
+Invoice coverage or an imported closure does not establish timely obligation.
+Reopening requires a written reason and an explicit destination status. The
+reopen form fits narrow cards and identifies the previous closure basis.
+
+The historical observation-study verifier accepts an explicit original matcher
+source file. It verifies retained bytes without executing that source or
+presenting an old study as validation of the current matcher. The default
+continues to reject mismatched source bytes; scientific outcomes are unchanged.
+
+New rules-v4 assessments exclude observations with unknown source-supported
+bounds from decisive metrics and scientific pass/fail decisions. Raw diagnostics
+and original grades remain visible. This corrects a possible grade-B false pass;
+it does not rewrite historical assessments or establish model accuracy.
 
 Published distributed model results verify retained hashes, identities, summary
 agreement and required values before display. Missing evidence stays unavailable.
@@ -138,7 +315,7 @@ direct frozen-content and receipt protections. Migration
 Release verification must retain the separate restore-drill result; migration
 inventory checks alone do not establish restoration.
 
-Apply these additive migrations in order before using these candidate changes:
+Apply these additive migrations in order before using these changes:
 
 - `20261016000002_land_use_plan_context.sql` adds nullable historical context and
   private exact-command custody. It infers no authority for existing plans.
@@ -166,10 +343,11 @@ browser retains stop intent before sending, and imported receipts require server
 confirmation before the form treats creation or stopping as settled. After a
 confirmed stop, staff can restore the draft to a new copy and review current rules.
 
-The migrations are installed only on the isolated verification stack. The
-[context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
+The [context editor evidence](docs/reviews/2026-10-07-land-use-authority/CONTEXT_EDITOR.md)
 and subsequent creation acceptance report retain the original partial results
-and later bounded rendered checks. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits. These changes are not a released version.
+and later bounded rendered checks. The [creation workflow evidence](docs/reviews/2026-10-07-land-use-authority/CREATION_WORKFLOW.md) records request recovery, stopping and their remaining acceptance limits.
+These records describe isolated verification, not acceptance of an agency
+installation. The GitHub release and tag identify the published source.
 
 ## 0.67.0 (2026-10-07)
 

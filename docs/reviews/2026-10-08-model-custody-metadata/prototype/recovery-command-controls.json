@@ -1,0 +1,36 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "detected": null
+    },
+    {
+      "control": "omit-reason",
+      "returncode": 1,
+      "detected": "Expected 'mock' to not have been called."
+    },
+    {
+      "control": "omit-receipt",
+      "returncode": 1,
+      "detected": "DeliveryUnconfirmed not raised"
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "detected": null
+    }
+  ],
+  "source_sha256": {
+    "model_recovery_decision_command.py": "b8f09b6162b49dadd9bee171018ecf7ace8e4e717fb435a7bb22ee243c9c117e",
+    "model_command_client.py": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
+    "test_model_recovery_decision_command.py": "b753ff0a4454ef61795bf2c22d95fac477f51dda7ca957507f0f6da2885a51e9"
+  },
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/recovery-command-controls-20261008-model-scope",
+  "limits": "Copied-module unit controls establish local validation and journal behavior. Actual SQL and HTTP are covered separately; no route authentication or physical process behavior is established."
+}

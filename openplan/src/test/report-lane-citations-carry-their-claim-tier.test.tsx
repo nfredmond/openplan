@@ -1,3 +1,5 @@
+import { attemptInstrumentFixture } from "./fixtures/attempt-instruments";
+import { ATTEMPT_INSTRUMENT_PROJECTION } from "@/lib/models/attempt-instrument-read";
 import { readFileSync } from "node:fs";
 import path from "node:path";
 import { cleanup, render, screen } from "@testing-library/react";
@@ -60,15 +62,18 @@ let tableErrors: Record<string, { message: string; code?: string }>;
 type FakeResult = { data: unknown; error: { message: string; code?: string } | null };
 
 function fakeQuery(tableName: string) {
+  let rangeStart = 0;
+  let rangeEnd: number | undefined;
   const resolveResult = (): FakeResult => {
     const error = tableErrors[tableName];
     // A failed read carries no rows. Returning the fixture AND an error would
     // let a surface look correct while ignoring the error entirely.
     if (error) return { data: null, error };
     const seeded = tableData[tableName];
-    return { data: seeded === undefined ? [] : seeded, error: null };
+    return { data: Array.isArray(seeded) ? seeded.slice(rangeStart, rangeEnd) : seeded === undefined ? [] : seeded, error: null };
   };
   const q: Record<string, unknown> = {};
+  q.range = (from: number, to: number) => { rangeStart = from; rangeEnd = to + 1; return q; };
   for (const method of ["eq", "in", "order", "limit", "not", "is", "gte", "lte", "or", "neq"]) {
     q[method] = () => q;
   }
@@ -465,6 +470,29 @@ describe("report-lane run citations carry their claim tier", () => {
         citedModelRuns,
       };
     }
+
+    it("renders every retained method and attempt from the real reader", async () => {
+      const records = Array.from({ length: 4 }, (_, i) => attemptInstrumentFixture(MODEL_RUN_ROW.id, "workspace-1", i));
+      tableData.model_attempt_instrument_custody = records;
+      const cited = await withCitedModelRunClaimTiers(client(), [MODEL_RUN_ROW]);
+      expect(cited[0].attemptInstrumentCustody).toEqual(records);
+      expect(selectCalls.model_attempt_instrument_custody).toEqual([ATTEMPT_INSTRUMENT_PROJECTION, ATTEMPT_INSTRUMENT_PROJECTION]);
+      const html = buildReportHtml(packetData(cited));
+      expect(html).toContain("Every assessment remains inconclusive");
+      for (const record of records) {
+        for (const value of Object.values(record)) expect(html).toContain(String(value));
+      }
+    });
+
+    it("renders a failed attempt read without claiming no evidence exists", async () => {
+      tableErrors.model_attempt_instrument_custody = { message: "private backend detail" };
+      const cited = await withCitedModelRunClaimTiers(client(), [MODEL_RUN_ROW]);
+      expect(cited[0].attemptInstrumentCustodyReadFailed).toBe(true);
+      const html = buildReportHtml(packetData(cited));
+      expect(html).toContain("Attempt-specific validation evidence could not be read");
+      expect(html).not.toContain("No attempt-specific validation evidence is attached");
+      expect(html).not.toContain("private backend detail");
+    });
 
     it("renders the tier the REAL loader resolved, not one a fixture described", async () => {
       const cited = await withCitedModelRunClaimTiers(client(), [

@@ -46,8 +46,14 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from typing import Tuple
 
 import requests
+from network_settings import assignment_network_settings, canonical_network_settings
+from model_validation_receipts import (
+    assessment_receipt, verify_assessment_artifacts,
+    ASSESSMENT_ARTIFACTS, ASSESSMENT_ARTIFACT_PROJECTION,
+)
 import numpy as np
 import pandas as pd
+from model_zone_geometry import assignment_zone_order, read_assignment_geometry
 from network_ids import renumber_nodes
 from shapely.geometry import box, shape
 from dotenv import load_dotenv
@@ -101,6 +107,10 @@ from gateways import (
 from centroid_geometry import candidates_on_routable_component, insert_distinct_centroid
 import mode_choice
 import gtfs_skim
+from model_transit_skim import (
+    _transit_feed_summary, _feed_expiry_log_note,
+    _INGEST_AUTHORITATIVE_FEED_KEYS, skim_prepared_feed_version, transit_coverage_refusal,
+)
 import count_validation
 import model_validation_core
 import model_validation_core_v5
@@ -110,6 +120,7 @@ import emissions
 import equity
 import model_credibility
 from worker_heartbeat import WorkerHeartbeat
+from model_receipt_values import same_json_value
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -566,9 +577,66 @@ def _parse_speed(val):
 
 
 # ─── Supabase helpers ───────────────────────────────────────────────────
+class WorkerStateWriteUnconfirmed(RuntimeError):
+    """A state update has no matching receipt; it may already be committed."""
+
+
+def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_claim: bool = False) -> bool:
+    """Require a returned row without exposing provider response bodies.
+
+    An absent acknowledgement is not proof of rollback. Callers must not turn
+    this exception into a contradictory failed-stage update.
+    """
+    try:
+        response = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 200:
+            raise WorkerStateWriteUnconfirmed(
+                f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
+            )
+        rows = response.json()
+        if queued_claim and rows == []:
+            return False
+        if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get("id") != record_id:
+            raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: missing matching row")
+        for field, expected in payload.items():
+            actual = rows[0].get(field)
+            if field.endswith("_at") and isinstance(expected, str) and isinstance(actual, str):
+                matches = datetime.fromisoformat(expected.replace("Z", "+00:00")) == datetime.fromisoformat(actual.replace("Z", "+00:00"))
+            else:
+                matches = field in rows[0] and actual == expected
+            if not matches:
+                raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: returned values differ")
+        return True
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: no valid receipt") from error
+
+
+def _call_engine_binding(engine, method, *args):
+    """Never fall back to direct database or file operations after channel failure."""
+    try:
+        return getattr(engine, method)(*args)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Engine parent channel requires reconciliation") from error
+
+
 def sb_patch_stage(stage_id: str, payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}"
-    requests.patch(url, headers=HEADERS, json=payload)
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "patch_stage", stage_id, payload)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_stage(stage_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed stage write requires reconciliation; no PATCH fallback") from error
+    _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
 def sb_claim_stage(stage_id: str, payload: dict) -> bool:
@@ -579,57 +647,113 @@ def sb_claim_stage(stage_id: str, payload: dict) -> bool:
     means a second worker that lost the race gets an empty result set and skips,
     so two replicas never double-process the same stage.
     """
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&status=eq.queued"
-    res = requests.patch(url, headers=HEADERS, json=payload)
-    if res.status_code not in (200, 201, 204):
-        print(f"  Claim PATCH returned {res.status_code}: {res.text[:200]}")
-        return False
-    try:
-        rows = res.json()
-    except ValueError:
-        rows = []
-    return bool(rows)
+    return _confirmed_state_patch("model_run_stages", stage_id, payload, queued_claim=True)
 
 
 def sb_patch_run(run_id: str, payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
-    requests.patch(url, headers=HEADERS, json=payload)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_run(run_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed run write requires reconciliation; no PATCH fallback") from error
+    _confirmed_state_patch("model_runs", run_id, payload)
 
 
 def sb_post_artifact(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    response = requests.post(url, headers=HEADERS, json=payload, timeout=30)
-    if not 200 <= response.status_code < 300:
-        raise RuntimeError(
-            "Failed to register model artifact: "
-            f"{response.status_code} {response.text[:200]}"
-        )
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
+    return _confirmed_record_insert("model_run_artifacts", payload)
+
+
+def sb_record_retained_artifact(payload: dict, *, workspace_id: str, journal_dir: str, logical_name: str | None = None) -> dict:
+    """Retain an explicit or named artifact request and stop on unconfirmed delivery."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload, workspace_id=workspace_id, logical_name=logical_name)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no legacy fallback") from error
+    from pathlib import Path
+    import model_legacy_artifact_command
+    import model_command_client
     try:
-        rows = response.json()
-    except ValueError:
-        rows = []
-    return rows[0] if isinstance(rows, list) and rows else None
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        if not deployment.strip():
+            raise ValueError("Artifact recovery deployment identity is missing")
+        directory = Path(journal_dir)
+        if logical_name is None:
+            command = model_legacy_artifact_command.prepare(
+                directory, workspace_id, payload, base_url=SUPABASE_URL, deployment_id=deployment,
+            )
+        else:
+            command = model_legacy_artifact_command.prepare_named(
+                directory, workspace_id, payload, name=logical_name,
+                base_url=SUPABASE_URL, deployment_id=deployment,
+            )
+        return model_command_client.deliver(
+            directory, command, base_url=SUPABASE_URL, deployment_id=deployment,
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Artifact delivery unconfirmed; recover the saved request before continuing") from None
+
+
+def sb_record_retained_modeling_validation_assessment(payload: dict, *, assessment_id: str, journal_dir: str) -> dict:
+    """Retain this assessment request before transport; never fall back on uncertainty."""
+    from pathlib import Path
+    import model_assessment_command
+    import model_command_client
+    try:
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        if not deployment.strip():
+            raise ValueError("Assessment recovery deployment identity is missing")
+        directory = Path(journal_dir)
+        command = model_assessment_command.prepare(
+            directory, assessment_id, payload, base_url=SUPABASE_URL, deployment_id=deployment,
+        )
+        response = model_command_client.deliver(
+            directory, command, base_url=SUPABASE_URL, deployment_id=deployment,
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return response["assessment"]
+    except Exception:
+        # A delivery failure can follow commit. Preserve the exact journal and
+        # let the stage's uncertainty handler stop before further publication.
+        raise WorkerStateWriteUnconfirmed("Retained assessment custody unconfirmed; recover the saved request before continuing") from None
 
 
 def sb_record_modeling_validation_assessment(payload: dict) -> dict:
-    response = requests.post(
-        f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_validation_assessment",
-        headers=HEADERS,
-        json=payload,
-        timeout=30,
-    )
-    if not 200 <= response.status_code < 300:
-        raise RuntimeError(
-            "validation evidence write failed: "
-            f"{response.status_code} {response.text[:200]}"
-        )
+    """Confirm the returned assessment before callers acknowledge its custody."""
     try:
-        result = response.json()
-    except ValueError as exc:
-        raise RuntimeError("validation evidence write failed: custody RPC returned no JSON") from exc
-    if not result:
-        raise RuntimeError("validation evidence write failed: custody RPC returned no row")
-    return result[0] if isinstance(result, list) else result
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/rpc/record_modeling_validation_assessment",
+            headers=HEADERS, json=payload, timeout=30, allow_redirects=False,
+        )
+        if response.status_code not in (200, 201):
+            raise WorkerStateWriteUnconfirmed("Validation assessment write unconfirmed")
+        receipt = assessment_receipt(payload, response.json())
+        artifact_ids = [receipt[key] for _, key, _ in ASSESSMENT_ARTIFACTS]
+        artifacts = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_artifacts", headers=HEADERS,
+            params={"id": "in.(" + ",".join(artifact_ids) + ")", "select": ASSESSMENT_ARTIFACT_PROJECTION},
+            timeout=30, allow_redirects=False,
+        )
+        if artifacts.status_code != 200:
+            raise WorkerStateWriteUnconfirmed("Validation assessment artifact read unconfirmed")
+        verify_assessment_artifacts(payload, receipt, artifacts.json())
+        return receipt
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError, KeyError):
+        raise WorkerStateWriteUnconfirmed("Validation assessment receipt unconfirmed") from None
 
 
 def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
@@ -658,68 +782,57 @@ def sb_record_modeling_structural_demand_diagnosis(payload: dict) -> dict:
     return result[0] if isinstance(result, list) else result
 
 
+def upload_verified_immutable_bytes(object_path: str, data: bytes, content_type: str) -> str:
+    """Resolve upload custody through exact stored bytes, including lost replies."""
+    headers = {"apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}"}
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={**headers, "Content-Type": content_type, "x-upsert": "false"},
+            data=data, timeout=60, allow_redirects=False,
+        )
+    except requests.RequestException:
+        # A missing reply cannot distinguish an absent object from a committed one.
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=headers, timeout=60, allow_redirects=False,
+        )
+        if retained.status_code != 200 or retained.content != data:
+            raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed")
+    except requests.RequestException as error:
+        raise WorkerStateWriteUnconfirmed("Artifact stored bytes unconfirmed") from error
+    return f"storage://run-artifacts/{object_path}"
+
+
 def upload_immutable_validation_json(run_id: str, assessment_id: str, path: str) -> str:
-    """Upload one assessment file to a unique private object.
-
-    A local computation may survive a failed upload, but a local path is not
-    immutable evidence custody and must never be recorded as though it were.
-    """
-    object_path = (
-        f"model-runs/{run_id}/validation-assessments/{assessment_id}/"
-        f"{os.path.basename(path)}"
-    )
+    """Verify one private assessment object without replacing existing bytes."""
+    object_path = f"model-runs/{run_id}/validation-assessments/{assessment_id}/{os.path.basename(path)}"
     with open(path, "rb") as handle:
-        response = requests.post(
-            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "x-upsert": "false",
-            },
-            data=handle.read(),
-            timeout=60,
-        )
-    if response.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    raise RuntimeError(
-        "validation evidence write failed: immutable storage upload returned "
-        f"{response.status_code} {response.text[:200]}"
-    )
+        data = handle.read()
+    try:
+        return upload_verified_immutable_bytes(object_path, data, "application/json")
+    except WorkerStateWriteUnconfirmed as error:
+        raise WorkerStateWriteUnconfirmed("validation evidence write failed: stored bytes unconfirmed") from error
 
 
-def upload_immutable_structural_demand_json(
-    run_id: str, diagnosis_id: str, path: str
-) -> str:
-    """Upload one structural record to a unique, non-upserted private object."""
-    object_path = (
-        f"model-runs/{run_id}/structural-demand-diagnoses/{diagnosis_id}/"
-        f"{os.path.basename(path)}"
-    )
+def upload_immutable_structural_demand_json(run_id: str, diagnosis_id: str, path: str) -> str:
+    """Verify one private structural object without replacing existing bytes."""
+    object_path = f"model-runs/{run_id}/structural-demand-diagnoses/{diagnosis_id}/{os.path.basename(path)}"
     with open(path, "rb") as handle:
-        response = requests.post(
-            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
-            headers={
-                "apikey": SUPABASE_KEY,
-                "Authorization": f"Bearer {SUPABASE_KEY}",
-                "Content-Type": "application/json",
-                "x-upsert": "false",
-            },
-            data=handle.read(),
-            timeout=60,
-        )
-    if response.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    raise RuntimeError(
-        "structural demand evidence write failed: immutable storage upload returned "
-        f"{response.status_code} {response.text[:200]}"
-    )
+        data = handle.read()
+    try:
+        return upload_verified_immutable_bytes(object_path, data, "application/json")
+    except WorkerStateWriteUnconfirmed as error:
+        raise WorkerStateWriteUnconfirmed("structural demand evidence write failed: stored bytes unconfirmed") from error
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=artifact_type,file_url,content_hash,metadata_json,created_at"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,created_at"
+        ",model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"
         "&order=created_at.desc"
     )
     response = requests.get(url, headers=HEADERS, timeout=30)
@@ -731,10 +844,377 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return response.json()
 
 
+def select_managed_predecessor_input(artifact_type: str, *, method: str | None = None) -> dict:
+    """Read the current consumer and its declared producer before file access."""
+    import model_attempt_writer
+    import model_predecessor_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Predecessor selection requires a managed invocation")
+    writer.require_open()
+    try:
+        get = writer.get or requests.get
+        headers = {"apikey": writer.service_key, "Authorization": "Bearer " + writer.service_key}
+        response = get(
+            writer.base_url.rstrip("/") + "/rest/v1/model_run_stages", headers=headers,
+            params={"run_id": "eq." + writer.context.run_id,
+                    "select": "id,run_id,stage_name,sort_order,status,attempt_managed,active_attempt_id"},
+            timeout=30, allow_redirects=False,
+        )
+        if response.status_code != 200:
+            raise ValueError("Predecessor stage read did not succeed")
+        artifacts = get(
+            writer.base_url.rstrip("/") + "/rest/v1/model_run_artifacts", headers=headers,
+            params={"run_id": "eq." + writer.context.run_id,
+                    "artifact_type": "eq." + artifact_type,
+                    "select": "id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages(id,run_id,status,attempt_managed,active_attempt_id)"},
+            timeout=30, allow_redirects=False,
+        )
+        if artifacts.status_code != 200:
+            raise ValueError("Predecessor artifact read did not succeed")
+        selected = model_predecessor_inputs.select(
+            writer.context, response.json(), artifacts.json(), artifact_type, method=method,
+        )
+        require_completed_artifact_producer(selected, writer.context.run_id)
+        writer.require_open()
+        return selected
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Predecessor input requires reconciliation") from error
+
+
+def retain_managed_validation_preparation(method: str) -> dict:
+    """Retain a named completed producer's preparation without launching an engine."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_validation_preparation
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Preparation handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Preparation handoff requires an owned consumer workspace")
+        selected = select_managed_predecessor_input("model_validation_preparation", method=method)
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"]
+                    / ("validation_preparation_" + method) / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Preparation reference differs from selected producer directory")
+        metadata = selected.get("metadata_json") or {}
+        if metadata.get("schema") != "openplan.validation-preparation-files.v1" or metadata.get("execution_authorized") is not False:
+            raise ValueError("Unsupported preparation artifact state")
+        source = {"manifest_path": str(expected), "manifest_sha256": selected.get("content_hash"),
+                  "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_validation_preparation.consume(root=writer.files.root.parent, source=source,
+            destination=writer.files.path / ("predecessor_preparation_" + method),
+            expected_context={"workspace_id": writer.context.workspace_id, "run_id": writer.context.run_id,
+                              "stage_id": selected["stage_id"], "attempt_id": selected["attempt_id"],
+                              "destination": writer.context.destination, "method": method})
+        writer.files.verify()
+        producer = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                    "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({"run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_validation_preparation_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.validation-preparation-consumption.v1", "producer": producer,
+                              "demand_method": method, "execution_authorized": False, "scientific_acceptance": "unassessed"},
+        }, logical_name="predecessor-validation-preparation-" + method)
+        return {**retained, "producer": producer}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Preparation handoff requires reconciliation") from error
+
+
+def retain_managed_predecessor_package() -> dict:
+    """Bind the selected producer's package bytes to an owned consumer snapshot."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_package_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Package handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Package handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_package_inputs")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "package_inputs" / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Package reference differs from selected producer directory")
+        if (selected.get("metadata_json") or {}).get("schema") != "openplan.package-inputs.v1":
+            raise ValueError("Selected package has no supported inventory schema")
+        source = {"manifest_path": str(expected), "package_directory": str(expected.parent / "files"),
+                  "manifest_sha256": selected.get("content_hash"), "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_package_inputs.consume(source, writer.files.path / "predecessor_package")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_package_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.package-consumption.v1", "producer": provenance,
+                              "scientific_acceptance": "unassessed", "database_consistency": "unassessed"},
+        }, logical_name="predecessor-package-inputs")
+        return {**retained, "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Package handoff requires reconciliation") from error
+
+
+def retain_managed_predecessor_outputs() -> dict:
+    """Bind the selected producer's assignment outputs to an owned consumer snapshot."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_package_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Output handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Output handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_assignment_outputs")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "assignment_outputs" / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Output reference differs from selected producer directory")
+        if ((selected.get("metadata_json") or {}).get("schema") != "openplan.assignment-outputs.v1"
+                or (selected.get("metadata_json") or {}).get("inventory_schema") != "openplan.package-inputs.v1"):
+            raise ValueError("Selected outputs has no supported inventory schema")
+        source = {"manifest_path": str(expected), "package_directory": str(expected.parent / "files"),
+                  "manifest_sha256": selected.get("content_hash"), "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_package_inputs.consume(source, writer.files.path / "predecessor_outputs")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_output_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.output-consumption.v1", "inventory_schema": "openplan.package-inputs.v1", "producer": provenance,
+                              "scientific_acceptance": "unassessed", "database_consistency": "unassessed"},
+        }, logical_name="predecessor-assignment-outputs")
+        return {**retained, "outputs_directory": retained["package_directory"], "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Output handoff requires reconciliation") from error
+
+
+def retain_managed_predecessor_project() -> dict:
+    """Bind the selected producer's project bytes to an owned consumer snapshot."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_project_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Project handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("Project handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_project_inputs")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "project_inputs" / "manifest.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("Project reference differs from selected producer directory")
+        metadata = selected.get("metadata_json") or {}
+        if (metadata.get("schema") != "openplan.project-inputs.v1"
+                or metadata.get("inventory_schema") != "openplan.package-inputs.v1"
+                or metadata.get("execution_ready") is not False
+                or metadata.get("database_consistency") != "individual_sqlite_integrity_checked"
+                or any(metadata.get(field) != "unassessed" for field in
+                       ("engine_closure", "cross_database_consistency", "scientific_acceptance"))):
+            raise ValueError("Selected project has unsupported metadata or readiness claims")
+        source = {"manifest_path": str(expected), "package_directory": str(expected.parent / "files"),
+                  "manifest_sha256": selected.get("content_hash"), "manifest_size_bytes": selected.get("file_size_bytes")}
+        retained = model_project_inputs.consume(source, writer.files.path / "predecessor_project")
+        if retained["database_checks"] != metadata.get("database_checks"):
+            raise ValueError("Project database checks differ from producer record")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "manifest_sha256": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_project_consumption", "file_url": "local://" + retained["manifest_path"],
+            "content_hash": retained["manifest_sha256"], "file_size_bytes": retained["manifest_size_bytes"],
+            "metadata_json": {"schema": "openplan.project-consumption.v1", "producer": provenance,
+                              "inventory_schema": "openplan.package-inputs.v1",
+                              "database_checks": retained["database_checks"],
+                              "database_consistency": retained["database_consistency"],
+                              "engine_closure": "unassessed", "cross_database_consistency": "unassessed",
+                              "execution_ready": False, "scientific_acceptance": "unassessed"},
+        }, logical_name="predecessor-project-inputs")
+        return {**retained, "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Project handoff requires reconciliation") from error
+
+
+def retain_managed_predecessor_state() -> dict:
+    """Retain original predecessor JSON without relocating any recorded path."""
+    from pathlib import Path
+    import model_attempt_writer
+    import model_handoff_files
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("State handoff requires a managed invocation")
+    try:
+        writer.require_open()
+        if writer.files is None:
+            raise ValueError("State handoff requires an owned consumer directory")
+        selected = select_managed_predecessor_input("model_predecessor_state")
+        installation = hashlib.sha256(writer.context.destination.encode()).hexdigest()
+        expected = (writer.files.root / writer.context.run_id / "attempts" / installation
+                    / selected["stage_id"] / selected["attempt_id"] / "predecessor_state.json")
+        if selected.get("file_url") != "local://" + str(expected) or expected.resolve(strict=True) != expected:
+            raise ValueError("State reference differs from selected producer directory")
+        if (selected.get("metadata_json") or {}).get("schema") != "openplan.predecessor-state.v1":
+            raise ValueError("Selected state has no supported schema")
+        retained_path = model_handoff_files.copy_registered(
+            writer.files.root.parent, writer.context.run_id, expected,
+            writer.files.path / "predecessor_state_input.json",
+            sha256=selected.get("content_hash"), size_bytes=selected.get("file_size_bytes"),
+        )
+        content = Path(retained_path).read_bytes()
+        if hashlib.sha256(content).hexdigest() != selected["content_hash"] or len(content) != selected["file_size_bytes"]:
+            raise ValueError("Retained state changed before decoding")
+        def unique_object(pairs):
+            result = {}
+            for key, value in pairs:
+                if key in result:
+                    raise ValueError("Duplicate predecessor state key")
+                result[key] = value
+            return result
+        def invalid_constant(value):
+            raise ValueError("Nonfinite predecessor state value")
+        state = json.loads(content, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+        if not isinstance(state, dict):
+            raise ValueError("Predecessor state must be an object")
+        writer.files.verify()
+        provenance = {"artifact_id": selected["id"], "stage_id": selected["stage_id"],
+                      "attempt_id": selected["attempt_id"], "content_hash": selected["content_hash"]}
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_state_consumption", "file_url": "local://" + retained_path,
+            "content_hash": selected["content_hash"], "file_size_bytes": selected["file_size_bytes"],
+            "metadata_json": {"schema": "openplan.state-consumption.v1", "producer": provenance,
+                              "paths_relocated": False, "scientific_acceptance": "unassessed"},
+        }, logical_name="predecessor-state-input")
+        return {"state": state, "retained_path": retained_path, "producer": provenance}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("State handoff requires reconciliation") from error
+
+
+def retain_managed_state_and_package(*, include_project: bool = False, include_outputs: bool = False) -> dict:
+    """Pair verified inputs and map the package without claiming full execution readiness."""
+    import model_attempt_writer
+    import model_predecessor_inputs
+    writer = model_attempt_writer.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Paired handoff requires a managed invocation")
+    try:
+        if include_outputs and not include_project:
+            raise ValueError("Output preparation requires project and package working copies")
+        state_input = retain_managed_predecessor_state()
+        package_input = retain_managed_predecessor_package()
+        mapped = model_predecessor_inputs.map_package(state_input, package_input)
+        writer.require_open()
+        mapping = {"schema": "openplan.input-mapping.v1", "state": mapped,
+                   "inputs": {"state": state_input["producer"], "package": package_input["producer"]},
+                   "mapped_fields": ["package.package_dir"], "execution_ready": False}
+        project_records = {}
+        if include_project:
+            project_input = retain_managed_predecessor_project()
+            if any(project_input["producer"].get(key) != state_input["producer"].get(key)
+                   or not state_input["producer"].get(key) for key in ("stage_id", "attempt_id")):
+                raise ValueError("State and project must belong to the same producer attempt")
+            working_project = writer.prepare_project_working_copy(project_input)
+            working_package = writer.prepare_package_working_copy(package_input)
+            mapped = model_predecessor_inputs.map_package(
+                state_input, {**package_input, "package_directory": working_package["package_directory"]})
+            mapping["state"] = mapped
+            mapping["working_package"] = {
+                "initial_manifest_path": working_package["initial_manifest_path"],
+                "initial_manifest_sha256": working_package["initial_manifest_sha256"],
+                "input_manifest_sha256": working_package["input_manifest_sha256"],
+            }
+            mapping["inputs"]["project"] = project_input["producer"]
+            mapping["execution_paths"] = {"project_directory": working_project["project_directory"]}
+            mapping["working_project"] = {
+                "initial_manifest_path": working_project["initial_manifest_path"],
+                "initial_manifest_sha256": working_project["initial_manifest_sha256"],
+                "input_manifest_sha256": working_project["input_manifest_sha256"],
+            }
+            project_records = {"project_input": project_input, "project_working_copy": working_project,
+                               "package_working_copy": working_package}
+        if include_outputs:
+            output_input = retain_managed_predecessor_outputs()
+            mapped = model_predecessor_inputs.map_assignment_counts(
+                {**state_input, "state": mapped}, output_input)
+            working_outputs = writer.prepare_output_working_copy(output_input)
+            mapping["state"] = mapped
+            mapping["inputs"]["outputs"] = output_input["producer"]
+            mapping["execution_paths"]["outputs_directory"] = working_outputs["outputs_directory"]
+            mapping["working_outputs"] = {
+                "initial_manifest_path": working_outputs["initial_manifest_path"],
+                "initial_manifest_sha256": working_outputs["initial_manifest_sha256"],
+                "input_manifest_sha256": working_outputs["input_manifest_sha256"],
+            }
+            mapping["mapped_fields"].extend([
+                "assignment.counts_path", "assignment.count_inputs.counts_path",
+                "assignment.count_inputs.counts_input_directory", "assignment.count_inputs.manifest_path"])
+            project_records.update(output_input=output_input, output_working_copy=working_outputs)
+        retained_mapping = writer.retain_input_mapping(mapping)
+        return {**project_records, "state_input": state_input, "package_input": package_input,
+                "package_mapped_state": mapped, "mapping_record": retained_mapping,
+                "execution_ready": mapping["execution_ready"]}
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Paired predecessor inputs require reconciliation") from error
+
+
+def require_completed_artifact_producer(artifact: dict, run_id: str) -> None:
+    """Refuse incomplete or superseded inputs before checking scientific identity.
+
+    This read-time check does not fence later stage writes or make a local file
+    immutable. Legacy producers remain explicitly unmanaged.
+    """
+    try:
+        for value in (run_id, artifact["id"], artifact["stage_id"]):
+            if not isinstance(value, str) or str(uuid.UUID(value)) != value:
+                raise ValueError("Noncanonical identity")
+        producer = artifact["model_run_stages"]
+        if (artifact["run_id"] != run_id or not isinstance(producer, dict)
+                or producer.get("id") != artifact["stage_id"] or producer.get("run_id") != run_id
+                or producer.get("status") != "succeeded"):
+            raise ValueError("Producing stage is not completed in this run")
+        managed = producer.get("attempt_managed")
+        if type(managed) is not bool:
+            raise ValueError("Producer enrollment is missing")
+        if managed:
+            attempt = artifact["attempt_id"]
+            if (not isinstance(attempt, str) or str(uuid.UUID(attempt)) != attempt
+                    or producer.get("active_attempt_id") != attempt):
+                raise ValueError("Artifact belongs to an inactive attempt")
+        elif artifact.get("attempt_id") is not None or producer.get("active_attempt_id") is not None:
+            raise ValueError("Legacy producer has inconsistent attempt ownership")
+    except (KeyError, TypeError, ValueError, AttributeError) as error:
+        raise RuntimeError("Artifact requires a confirmed completed producer: " + str(error)) from error
+
+
 def verified_latest_local_artifact(
     run_id: str,
     artifact_type: str,
     *,
+    retained_directory: str,
     expected_assignment_profile: dict,
     expected_assignment_profile_payload_json: str,
     expected_assignment_profile_digest: str,
@@ -751,6 +1231,7 @@ def verified_latest_local_artifact(
     if not matches:
         raise RuntimeError(f"No {artifact_type} artifact was registered for this run")
     selected = matches[0]
+    require_completed_artifact_producer(selected, run_id)
     file_url = str(selected.get("file_url") or "")
     if not file_url.startswith("local://"):
         raise RuntimeError(f"{artifact_type} is not available on the shared worker volume")
@@ -802,12 +1283,31 @@ def verified_latest_local_artifact(
         raise RuntimeError(f"{artifact_type} assignment network-state metadata does not match")
     if actual_state[0].get("network_settings_digest") != actual_settings[2]:
         raise RuntimeError(f"{artifact_type} network state names different settings")
-    expected_hash = str(selected.get("content_hash") or "")
-    with open(path, "rb") as handle:
-        actual_hash = hashlib.sha256(handle.read()).hexdigest()
-    if not _is_sha256(expected_hash) or actual_hash != expected_hash:
-        raise RuntimeError(f"{artifact_type} failed its content-hash check")
-    return path
+    from pathlib import Path
+    import model_handoff_files
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    try:
+        if artifact_type not in {"link_volumes", "link_volumes_calibrated", "activitysim_link_volumes"}:
+            raise ValueError("Unsupported agreement input type")
+        directory = Path(retained_directory)
+        run_root = Path(RUN_WORK_ROOT).resolve(strict=True) / "runs" / run_id
+        if not directory.is_absolute() or not directory.resolve(strict=True).is_relative_to(run_root):
+            raise ValueError("Agreement input destination is outside its run")
+        if writer is not None:
+            writer.require_open()
+            if writer.files is None or directory != writer.files.path or writer.context.run_id != run_id:
+                raise ValueError("Agreement input destination is not the owned attempt")
+        retained = model_handoff_files.copy_registered(
+            RUN_WORK_ROOT, run_id, path, directory / ("agreement-input-" + artifact_type + ".csv"),
+            sha256=selected.get("content_hash"), size_bytes=selected.get("file_size_bytes"))
+        if writer is not None:
+            writer.files.verify()
+        return retained
+    except (OSError, ValueError) as error:
+        if writer is not None:
+            writer.stopped = True
+        raise RuntimeError(f"{artifact_type} content-hash or file retention check failed: {error}") from error
 
 
 def register_agreement_artifact(
@@ -817,6 +1317,8 @@ def register_agreement_artifact(
     path: str,
     content_type: str,
     *,
+    workspace_id: str,
+    journal_dir: str,
     first_assignment_convergence: dict,
     second_assignment_convergence: dict,
     assignment_profile: dict,
@@ -832,24 +1334,10 @@ def register_agreement_artifact(
     with open(path, "rb") as handle:
         payload = handle.read()
     filename = os.path.basename(path)
-    object_path = f"model-runs/{run_id}/agreement/{filename}"
-    upload_url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
-    response = requests.post(
-        upload_url,
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": content_type,
-            "x-upsert": "true",
-        },
-        data=payload,
-        timeout=60,
-    )
-    file_url = (
-        f"storage://run-artifacts/{object_path}"
-        if response.status_code in (200, 201)
-        else f"local://{path}"
-    )
+    try:
+        file_url = upload_content_addressed_artifact(run_id, stage_id, filename, payload, content_type)
+    except WorkerStateWriteUnconfirmed:
+        file_url = f"local://{path}"
     profile, profile_payload, profile_digest = validated_assignment_profile(
         assignment_profile,
         assignment_profile_payload_json,
@@ -889,7 +1377,7 @@ def register_agreement_artifact(
     )
     if state.get("network_settings_digest") != settings_digest:
         raise RuntimeError("Agreement artifact network state names different settings")
-    sb_post_artifact({
+    sb_record_retained_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
         "artifact_type": artifact_type,
@@ -909,9 +1397,9 @@ def register_agreement_artifact(
             "network_settings_digest": settings_digest,
             "network_state_record": state,
             "network_state_digest": state_digest,
-            "upload_status": "stored" if response.status_code in (200, 201) else "local_fallback",
+            "upload_status": "stored" if file_url.startswith("storage://") else "local_fallback",
         },
-    })
+    }, workspace_id=workspace_id, journal_dir=journal_dir, logical_name=artifact_type)
 
 
 def write_agreement_network_geojson(
@@ -922,7 +1410,7 @@ def write_agreement_network_geojson(
     network_state_digest: str,
 ) -> str:
     """Export the complete retained roadway set, never modeling connectors."""
-    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
     if not os.path.isfile(db_path):
         raise RuntimeError("The retained AequilibraE project is missing its network database")
     selected_state, selected_state_digest = validated_network_state(
@@ -990,9 +1478,30 @@ def write_agreement_network_geojson(
         },
         "features": features,
     }
-    with open(output_path, "w") as handle:
-        json.dump(feature_collection, handle, allow_nan=False)
+    from pathlib import Path
+    import model_record_files
+    target = Path(output_path)
+    try:
+        model_record_files.materialize(target.parent, {
+            target.name: json.dumps(feature_collection, allow_nan=False).encode("utf-8"),
+        })
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Agreement geometry bytes differ; reconcile before continuing") from None
     return output_path
+
+
+def retain_agreement_comparison(run_id: str, stage_id: str, work_dir: str, *, compare, **arguments) -> dict:
+    """Retain comparison results and output bytes without replaying interrupted work."""
+    from pathlib import Path
+    import model_agreement_computation
+    try:
+        return model_agreement_computation.retain(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id, compare=compare, arguments=arguments,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Agreement computation or files unconfirmed; reconcile original records before continuing") from None
 
 
 def activitysim_assignment_package(run_id: str) -> str | None:
@@ -1045,9 +1554,262 @@ def activitysim_assignment_package(run_id: str) -> str | None:
     return package_dir
 
 
+def _confirmed_record_insert(table: str, payload: dict) -> dict:
+    """Require the retained output receipt without retrying an uncertain insert."""
+    try:
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 201:
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: HTTP {response.status_code}")
+        rows = response.json()
+        if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
+        return rows[0]
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
+
+
+def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str, journal_dir: str) -> dict:
+    """Keep the complete KPI request pending until its exact receipt is confirmed."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload, workspace_id=workspace_id, stage_id=stage_id)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no legacy fallback") from error
+    from pathlib import Path
+    import model_legacy_kpi_command
+    import model_command_client
+    try:
+        if not isinstance(payload, dict) or set(payload) - (model_legacy_kpi_command.FIELDS - {"id", "stage_id"}):
+            raise ValueError("Unexpected KPI input fields")
+        normalized = {"kpi_category": "accessibility", "unit": "", "geometry_ref": None, "breakdown_json": {}, **payload, "stage_id": stage_id}
+        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
+        directory = Path(journal_dir)
+        command = model_legacy_kpi_command.prepare(
+            directory, workspace_id, normalized,
+            name=normalized["kpi_category"] + "." + normalized["kpi_name"],
+            base_url=SUPABASE_URL, deployment_id=deployment,
+        )
+        return model_command_client.deliver(directory, command, base_url=SUPABASE_URL,
+            deployment_id=deployment, service_key=SUPABASE_KEY, post=requests.post)
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("KPI delivery unconfirmed; recover the saved request before continuing") from None
+
+
 def sb_post_kpi(payload: dict):
-    url = f"{SUPABASE_URL}/rest/v1/model_run_kpis"
-    requests.post(url, headers=HEADERS, json=payload)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
+    _confirmed_record_insert("model_run_kpis", payload)
+
+
+def build_model_run_modeling_evidence(
+    run_id: str,
+    workspace_id: str | None,
+    validation: dict | None,
+    calibration: dict | None = None,
+    independent_validation: dict | None = None,
+    track: str = "assignment",
+) -> dict:
+    """Calculate one complete publication payload without performing writes."""
+    matched = int((validation or {}).get("stations_matched", 0) or 0)
+    median_ape = (validation or {}).get("median_ape")
+    max_ape = (validation or {}).get("max_ape")
+    gate = (validation or {}).get("screening_gate")
+    assessment = (validation or {}).get("model_validation_assessment") or {}
+    rules_v4 = (validation or {}).get("validation_rules_version") == 4
+    scientific_outcome = assessment.get("scientific_outcome")
+    evidence_write = assessment.get("validation_evidence_write")
+    # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
+    #
+    # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
+    # of evidence: modelled link volumes compared to observed counts. Where
+    # a large share of travel never reaches a link, that comparison
+    # establishes nothing, so NEITHER tier is established — and this must be
+    # checked before the calibration branch, not after, because
+    # `calibrated_to_counts` outranks `screening_grade` and closing only the
+    # lower one would leave the hole open at the higher.
+    #
+    # Calibration is the sharper case. Tuning a model until coarse-zone link
+    # volumes match observed counts does not recover the missing intrazonal
+    # travel; it distorts the parameters that CAN move until they absorb its
+    # absence. The held-out APE improves and the model gets worse.
+    #
+    # This only ever LOWERS a tier. `prototype_only` is the floor already
+    # used for a failed gate and for a coverage gap, so nothing here can
+    # promote anything — only the reason changes, and only to a truer one.
+    zone_block = (validation or {}).get("zone_resolution") or {}
+    zone_support = zone_block.get("supports_link_level_validation")
+    if rules_v4 and assessment and evidence_write != "recorded":
+        claim_status, reason = "prototype_only", (
+            "Validation evidence storage is not confirmed. The computation remains available, but "
+            "its exact inputs and output do not have a confirmed custody write, so this run is scientifically unchecked."
+        )
+    elif rules_v4 and not assessment:
+        claim_status, reason = "prototype_only", (
+            "Rules-v4 validation did not produce a model-validation assessment. A point-count "
+            "diagnostic without the assessment cannot support an outward claim."
+        )
+    elif rules_v4 and scientific_outcome != "pass":
+        claim_status, reason = "prototype_only", (
+            f"The rules-v4 scientific outcome is {scientific_outcome or 'inconclusive'}. "
+            + " ".join(str(item) for item in assessment.get("reasons", [])[:2])
+        ).strip()
+    elif rules_v4:
+        claim_status, reason = "screening_grade", (
+            "The rules-v4 assessment passed its exact frozen, use-specific acceptance rule. "
+            "That result applies only to the recorded planning use and partition."
+        )
+    elif zone_support is False:
+        zone_note = zone_block.get("note") or (
+            "At this zone resolution a large share of travel never reaches a link."
+        )
+        if calibration:
+            detail = (
+                "Count calibration ran, but is not recorded as a calibrated tier: tuning to "
+                "link volumes cannot recover travel that never reaches a link, and may instead "
+                "absorb its absence into the calibrated parameters."
+            )
+        elif zone_block.get("gate_withheld"):
+            detail = (
+                f"The count comparison ({matched} stations, median APE {median_ape}%) met the "
+                "screening thresholds, but a screening claim is NOT recorded from it, because "
+                "at this zone resolution matching the counts does not establish one."
+            )
+        else:
+            detail = (
+                f"The count comparison ({matched} stations, median APE {median_ape}%) did not "
+                "meet the screening thresholds, and at this zone resolution it could not have "
+                "settled the question either way."
+            )
+        claim_status, reason = "prototype_only", (
+            f"{detail} {zone_note} Trip totals, mode share and VMT do count intrazonal travel "
+            "and remain usable; a finer zone system is what would let a link-level comparison "
+            "support a claim. This banding is OpenPlan's own screening heuristic, not an "
+            "adopted standard."
+        )
+    elif validation and matched > 0 and zone_support is not True:
+        claim_status, reason = "prototype_only", (
+            f"The observed-count check ran ({matched} stations, median APE {median_ape}%), "
+            "but no screening claim is recorded because the share of travel that never "
+            "reaches a link was not measured. The check remains part of this run's evidence; "
+            "an unmeasured zone-resolution qualification cannot establish a passing tier."
+        )
+    elif calibration:
+        independent = model_credibility.summarize_independent_validation(
+            validation, calibration, independent_validation
+        )
+        if independent["supports_claim_tier"]:
+            claim_status, reason = "calibrated_to_counts", (
+                "The selected calibration passed a separate untouched observed-count "
+                f"validation ({independent['stations_matched']} stations, median APE "
+                f"{independent['median_ape']}%). Calibration-selection results remain "
+                "distinct from this independent accuracy result."
+            )
+        else:
+            claim_status, reason = "prototype_only", (
+                "Count calibration ran, but no calibrated tier is recorded. "
+                f"{independent['reason']} Calibrated VMT remains under distinct KPI names "
+                "and is not the CEQA screening input."
+            )
+    elif gate == "bounded screening-ready":
+        claim_status, reason = "screening_grade", (
+            f"Observed-count validation passed the screening gate ({matched} stations, "
+            f"median APE {median_ape}%)."
+        )
+    elif validation and matched > 0:
+        claim_status, reason = "prototype_only", (
+            f"Observed-count validation did not meet the screening gate ({matched} stations, "
+            f"median APE {median_ape}%)."
+        )
+    elif (validation or {}).get("coverage") and not (validation or {})["coverage"].get("covered", True):
+        # A coverage gap is not a validation failure, and must not be
+        # reported as one. Name the gap so the planner knows it is about
+        # data availability in their state, not about their model.
+        claim_status, reason = "prototype_only", (
+            f"{(validation or {})['coverage'].get('reason', 'No observed-count source covers this study area.')} "
+            "Screening-grade claims require a validation pass against local counts."
+        )
+    else:
+        claim_status, reason = "prototype_only", (
+            "No observed-count validation for this study area; screening-grade claims require a "
+            "validation pass."
+        )
+    if track not in {"assignment", "behavioral_demand"}:
+        raise ValueError(f"unsupported modeling evidence track: {track}")
+    claim = {
+        "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+        "claim_status": claim_status, "status_reason": reason,
+        "validation_summary_json": {
+            **(validation or {}),
+            **({"calibration": calibration} if calibration else {}),
+            "independent_validation": model_credibility.summarize_independent_validation(
+                validation, calibration, independent_validation
+            ),
+        },
+    }
+    rows = []
+    if validation and matched > 0:
+        # Same zone qualification the claim decision above applied, so the
+        # metric row and the claim beside it cannot tell a planner two
+        # different stories about one comparison.
+        if rules_v4:
+            status = (
+                "pass" if scientific_outcome == "pass"
+                else "fail" if scientific_outcome == "fail"
+                else "warn"
+            )
+            detail = (
+                f"Raw median APE {median_ape}% across {matched} station(s). The rules-v4 "
+                f"scientific outcome is {scientific_outcome or 'inconclusive'}; this raw point-count "
+                "metric does not decide the claim without proven comparable quantities."
+            )
+        elif zone_support is None:
+            status, detail = "warn", (
+                f"Median APE {median_ape}% across {matched} station(s), but the share of "
+                "travel that never reaches a link was not measured, so this comparison "
+                "does not establish screening grade."
+            )
+        else:
+            status, detail = count_validation.metric_status_for_gate(
+                median_ape, max_ape, matched,
+                intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
+            )
+        rows = [{
+            "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+            "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
+            "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
+            "detail": detail,
+            "metadata_json": {
+                "median_ape": median_ape, "max_ape": max_ape,
+                "percent_rmse": (validation or {}).get("percent_rmse"),
+                "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
+                "spearman_rho": (validation or {}).get("spearman_rho"),
+                "scientific_outcome": scientific_outcome,
+            },
+        }, {
+            "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
+            "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
+            "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
+            "blocks_claim_grade": True,
+            "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
+            "metadata_json": {"stations_matched": matched},
+        }]
+    # Copy nested source records and reject values JSON delivery cannot retain.
+    return json.loads(json.dumps({"claim": claim, "metrics": rows}, allow_nan=False))
 
 
 def write_model_run_modeling_evidence(
@@ -1058,215 +1820,57 @@ def write_model_run_modeling_evidence(
     independent_validation: dict | None = None,
     track: str = "assignment",
 ) -> None:
-    """Write the shared modeling claim-grade spine for THIS model run — the same
-    tables the county lane populates (modeling_validation_results +
-    modeling_claim_decisions) so reports read one consistent claim grade. Derived
-    from the observed-count gate. NEVER 'claim_grade_passed' (that needs the
-    county-lane validation-threshold pass). A calibration selection holdout is
-    not independent accuracy evidence: a calibrated tier requires a separate,
-    untouched validation result. Best-effort; never fails a run."""
+    """Deliver legacy evidence while retaining uncertainty at every write boundary.
+
+    Atomic publication and durable request reconciliation remain unfinished.
+    """
     if not workspace_id:
-        return
+        raise WorkerStateWriteUnconfirmed("Modeling evidence workspace is unavailable")
     try:
-        matched = int((validation or {}).get("stations_matched", 0) or 0)
-        median_ape = (validation or {}).get("median_ape")
-        max_ape = (validation or {}).get("max_ape")
-        gate = (validation or {}).get("screening_gate")
-        assessment = (validation or {}).get("model_validation_assessment") or {}
-        rules_v4 = (validation or {}).get("validation_rules_version") == 4
-        scientific_outcome = assessment.get("scientific_outcome")
-        evidence_write = assessment.get("validation_evidence_write")
-        # THE ZONE SYSTEM GATES BOTH LINK-BASED TIERS.
-        #
-        # `screening_grade` and `calibrated_to_counts` rest on exactly one kind
-        # of evidence: modelled link volumes compared to observed counts. Where
-        # a large share of travel never reaches a link, that comparison
-        # establishes nothing, so NEITHER tier is established — and this must be
-        # checked before the calibration branch, not after, because
-        # `calibrated_to_counts` outranks `screening_grade` and closing only the
-        # lower one would leave the hole open at the higher.
-        #
-        # Calibration is the sharper case. Tuning a model until coarse-zone link
-        # volumes match observed counts does not recover the missing intrazonal
-        # travel; it distorts the parameters that CAN move until they absorb its
-        # absence. The held-out APE improves and the model gets worse.
-        #
-        # This only ever LOWERS a tier. `prototype_only` is the floor already
-        # used for a failed gate and for a coverage gap, so nothing here can
-        # promote anything — only the reason changes, and only to a truer one.
-        zone_block = (validation or {}).get("zone_resolution") or {}
-        zone_support = zone_block.get("supports_link_level_validation")
-        if rules_v4 and evidence_write == "validation evidence write failed":
-            claim_status, reason = "prototype_only", (
-                "Validation evidence write failed. The computation remains available, but its "
-                "exact inputs and output are not in immutable custody, so this run is scientifically unchecked."
-            )
-        elif rules_v4 and not assessment:
-            claim_status, reason = "prototype_only", (
-                "Rules-v4 validation did not produce a model-validation assessment. A point-count "
-                "diagnostic without the assessment cannot support an outward claim."
-            )
-        elif rules_v4 and scientific_outcome != "pass":
-            claim_status, reason = "prototype_only", (
-                f"The rules-v4 scientific outcome is {scientific_outcome or 'inconclusive'}. "
-                + " ".join(str(item) for item in assessment.get("reasons", [])[:2])
-            ).strip()
-        elif rules_v4:
-            claim_status, reason = "screening_grade", (
-                "The rules-v4 assessment passed its exact frozen, use-specific acceptance rule. "
-                "That result applies only to the recorded planning use and partition."
-            )
-        elif zone_support is False:
-            zone_note = zone_block.get("note") or (
-                "At this zone resolution a large share of travel never reaches a link."
-            )
-            if calibration:
-                detail = (
-                    "Count calibration ran, but is not recorded as a calibrated tier: tuning to "
-                    "link volumes cannot recover travel that never reaches a link, and may instead "
-                    "absorb its absence into the calibrated parameters."
-                )
-            elif zone_block.get("gate_withheld"):
-                detail = (
-                    f"The count comparison ({matched} stations, median APE {median_ape}%) met the "
-                    "screening thresholds, but a screening claim is NOT recorded from it, because "
-                    "at this zone resolution matching the counts does not establish one."
-                )
-            else:
-                detail = (
-                    f"The count comparison ({matched} stations, median APE {median_ape}%) did not "
-                    "meet the screening thresholds, and at this zone resolution it could not have "
-                    "settled the question either way."
-                )
-            claim_status, reason = "prototype_only", (
-                f"{detail} {zone_note} Trip totals, mode share and VMT do count intrazonal travel "
-                "and remain usable; a finer zone system is what would let a link-level comparison "
-                "support a claim. This banding is OpenPlan's own screening heuristic, not an "
-                "adopted standard."
-            )
-        elif validation and matched > 0 and zone_support is not True:
-            claim_status, reason = "prototype_only", (
-                f"The observed-count check ran ({matched} stations, median APE {median_ape}%), "
-                "but no screening claim is recorded because the share of travel that never "
-                "reaches a link was not measured. The check remains part of this run's evidence; "
-                "an unmeasured zone-resolution qualification cannot establish a passing tier."
-            )
-        elif calibration:
-            independent = model_credibility.summarize_independent_validation(
-                validation, calibration, independent_validation
-            )
-            if independent["supports_claim_tier"]:
-                claim_status, reason = "calibrated_to_counts", (
-                    "The selected calibration passed a separate untouched observed-count "
-                    f"validation ({independent['stations_matched']} stations, median APE "
-                    f"{independent['median_ape']}%). Calibration-selection results remain "
-                    "distinct from this independent accuracy result."
-                )
-            else:
-                claim_status, reason = "prototype_only", (
-                    "Count calibration ran, but no calibrated tier is recorded. "
-                    f"{independent['reason']} Calibrated VMT remains under distinct KPI names "
-                    "and is not the CEQA screening input."
-                )
-        elif gate == "bounded screening-ready":
-            claim_status, reason = "screening_grade", (
-                f"Observed-count validation passed the screening gate ({matched} stations, "
-                f"median APE {median_ape}%)."
-            )
-        elif validation and matched > 0:
-            claim_status, reason = "prototype_only", (
-                f"Observed-count validation did not meet the screening gate ({matched} stations, "
-                f"median APE {median_ape}%)."
-            )
-        elif (validation or {}).get("coverage") and not (validation or {})["coverage"].get("covered", True):
-            # A coverage gap is not a validation failure, and must not be
-            # reported as one. Name the gap so the planner knows it is about
-            # data availability in their state, not about their model.
-            claim_status, reason = "prototype_only", (
-                f"{(validation or {})['coverage'].get('reason', 'No observed-count source covers this study area.')} "
-                "Screening-grade claims require a validation pass against local counts."
-            )
-        else:
-            claim_status, reason = "prototype_only", (
-                "No observed-count validation for this study area; screening-grade claims require a "
-                "validation pass."
-            )
+        publication = build_model_run_modeling_evidence(
+            run_id, workspace_id, validation, calibration, independent_validation, track,
+        )
         upsert_headers = dict(HEADERS)
         upsert_headers["Prefer"] = "resolution=merge-duplicates,return=minimal"
-        if track not in {"assignment", "behavioral_demand"}:
-            raise ValueError(f"unsupported modeling evidence track: {track}")
-        requests.post(
+        claim_response = requests.post(
             f"{SUPABASE_URL}/rest/v1/modeling_claim_decisions?on_conflict=model_run_id,track",
-            headers=upsert_headers,
-            json={
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "claim_status": claim_status, "status_reason": reason,
-                "validation_summary_json": {
-                    **(validation or {}),
-                    **({"calibration": calibration} if calibration else {}),
-                    "independent_validation": model_credibility.summarize_independent_validation(
-                        validation, calibration, independent_validation
-                    ),
-                },
-            }, timeout=20,
+            headers=upsert_headers, json=publication["claim"], timeout=20, allow_redirects=False,
         )
-        # Refresh the per-metric validation rows for this run/track.
-        requests.delete(
+        if claim_response.status_code not in (200, 201):
+            raise WorkerStateWriteUnconfirmed("Modeling claim update unconfirmed")
+        delete_response = requests.delete(
             f"{SUPABASE_URL}/rest/v1/modeling_validation_results?model_run_id=eq.{run_id}&track=eq.{track}",
-            headers=HEADERS, timeout=20,
+            headers=HEADERS, timeout=20, allow_redirects=False,
         )
-        if validation and matched > 0:
-            # Same zone qualification the claim decision above applied, so the
-            # metric row and the claim beside it cannot tell a planner two
-            # different stories about one comparison.
-            if rules_v4:
-                status = (
-                    "pass" if scientific_outcome == "pass"
-                    else "fail" if scientific_outcome == "fail"
-                    else "warn"
-                )
-                detail = (
-                    f"Raw median APE {median_ape}% across {matched} station(s). The rules-v4 "
-                    f"scientific outcome is {scientific_outcome or 'inconclusive'}; this raw point-count "
-                    "metric does not decide the claim without proven comparable quantities."
-                )
-            elif zone_support is None:
-                status, detail = "warn", (
-                    f"Median APE {median_ape}% across {matched} station(s), but the share of "
-                    "travel that never reaches a link was not measured, so this comparison "
-                    "does not establish screening grade."
-                )
-            else:
-                status, detail = count_validation.metric_status_for_gate(
-                    median_ape, max_ape, matched,
-                    intrazonal_share_pct=zone_block.get("intrazonal_share_pct"),
-                )
-            rows = [{
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "metric_key": "count_median_ape", "metric_label": "Median APE vs observed counts",
-                "threshold_comparator": "lte", "status": status, "blocks_claim_grade": True,
-                "detail": detail,
-                "metadata_json": {
-                    "median_ape": median_ape, "max_ape": max_ape,
-                    "percent_rmse": (validation or {}).get("percent_rmse"),
-                    "geh_mean": ((validation or {}).get("geh") or {}).get("mean"),
-                    "spearman_rho": (validation or {}).get("spearman_rho"),
-                    "scientific_outcome": scientific_outcome,
-                },
-            }, {
-                "workspace_id": workspace_id, "model_run_id": run_id, "track": track,
-                "metric_key": "count_stations_matched", "metric_label": "Matched count stations",
-                "threshold_comparator": "gte", "status": "pass" if matched >= 3 else "fail",
-                "blocks_claim_grade": True,
-                "detail": f"{matched} station(s) matched; >=3 required for a screening claim.",
-                "metadata_json": {"stations_matched": matched},
-            }]
-            requests.post(f"{SUPABASE_URL}/rest/v1/modeling_validation_results", headers=HEADERS, json=rows, timeout=20)
+        if delete_response.status_code not in (200, 204):
+            raise WorkerStateWriteUnconfirmed("Modeling metric replacement unconfirmed")
+        if publication["metrics"]:
+            metric_response = requests.post(
+                f"{SUPABASE_URL}/rest/v1/modeling_validation_results",
+                headers=HEADERS, json=publication["metrics"], timeout=20, allow_redirects=False,
+            )
+            if metric_response.status_code not in (200, 201):
+                raise WorkerStateWriteUnconfirmed("Modeling metric write unconfirmed")
+    except WorkerStateWriteUnconfirmed:
+        raise
     except Exception:
-        pass  # evidence spine is best-effort; never fail the run over it
+        # A missing reply can follow a commit. Do not convert it into success
+        # or issue more writes against an uncertain publication.
+        raise WorkerStateWriteUnconfirmed("Modeling evidence update unconfirmed") from None
 
 
 def sb_get_run(run_id: str) -> dict:
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "read_run", run_id)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.read_run(run_id)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed run read requires reconciliation; no legacy read fallback") from error
     url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}&select=id,workspace_id,scenario_entry_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -1567,96 +2171,6 @@ _GTFS_VERSION_SELECT = (
 )
 
 
-def _transit_feed_summary(los) -> dict:
-    """What a successfully skimmed feed reports about ITSELF, for the evidence panel.
-
-    Extracted so the two skim paths — a run's chosen workspace feed and the
-    discovered/operator/bundled feed — cannot report a different set of facts.
-    A shared capability living inside one of its two callers gets reimplemented
-    wrongly by the other; that has already happened twice in this repo.
-
-    Every value here is derived by the worker's OWN parser from the bytes it
-    read. The `feed_service_*_date` values that sit beside these in the packet
-    come from the database instead, and the two are deliberately kept apart:
-    migration 20260805000006 records that a feed's calendar-derived window and
-    the window its ingest recorded legitimately disagree, and collapsing them
-    would destroy the evidence that they did.
-    """
-    return {
-        "service_day": los.service_day,
-        "service_start": los.service_start,
-        "service_end": los.service_end,
-        # None — not the string "None..None" — when the feed's calendar states no
-        # window. An unknown service window must not render downstream as a
-        # confident one.
-        "service_period": (
-            f"{los.service_start}..{los.service_end}"
-            if los.service_start and los.service_end
-            else None
-        ),
-        "n_routes": los.n_routes,
-        "n_served_stops": los.n_stops,
-        "n_lines": len(los.lines),
-        "access_buffer_miles": gtfs_skim.GTFS_ACCESS_MILES,
-        "flat_fare_usd": gtfs_skim.GTFS_FLAT_FARE,
-        # Trips published as a headway band rather than departure times. Excluded
-        # from the skim and counted, so a transit share built from part of a feed
-        # never presents itself as one built from all of it.
-        "frequency_trips_excluded": los.frequency_trips_excluded,
-        "scheduled_trips_used": los.scheduled_trips_used,
-        # ── THE EXPIRY DISCLOSURE, ON EVERY ORIGIN ────────────────────────────
-        # `schedule_expired` had exactly ONE caller — the chosen-workspace-feed
-        # path — so a run that used the operator's GTFS_URL, a discovered catalog
-        # feed, or the feed bundled with the worker modeled from a schedule of
-        # any age with nothing on any surface admitting it. That is not a corner
-        # case: the bundled feed is expired TODAY, and it is what every
-        # deployment without a workspace feed models transit from.
-        #
-        # Derived from the PARSER'S OWN calendar window here, so the disclosure
-        # is produced by the same function that produces the skim summary and
-        # cannot be present on one path and missing on the other. The chosen-feed
-        # path overwrites these three with the values its INGEST recorded — see
-        # `skim_selected_feed_version` — because migration 20260805000006 records
-        # that the two windows legitimately disagree.
-        "feed_service_end_date": gtfs_skim.iso_service_date(los.service_end),
-        "feed_schedule_expired": gtfs_skim.schedule_expired(
-            gtfs_skim.iso_service_date(los.service_end)
-        ),
-        # "Expired" is a claim about a MOMENT, and this run is the moment. A
-        # packet re-read next year must not present today's answer as timeless.
-        "feed_expiry_evaluated_at": datetime.now(timezone.utc).isoformat(),
-    }
-
-
-# The three keys `_transit_feed_summary` derives from the parser that the chosen
-# feed's INGEST is authoritative for. Named once so the two sides cannot drift.
-_INGEST_AUTHORITATIVE_FEED_KEYS = (
-    "feed_service_start_date",
-    "feed_service_end_date",
-    "feed_schedule_expired",
-    "feed_expiry_evaluated_at",
-)
-
-
-def _feed_expiry_log_note(meta: dict) -> str:
-    """The run-log sentence for a schedule that has already ended, or "".
-
-    ONE sentence, shared by both skim paths. An expired schedule is the ORDINARY
-    case — three of four real Sacramento-area feeds are expired, SacRT's by
-    sixteen months — and is usually still the right thing to model with, being
-    the last schedule the agency published. It must simply never be silent, and
-    it must not be silent on some origins and loud on others.
-    """
-    if not meta.get("feed_schedule_expired"):
-        return ""
-    return (
-        "NOTE: this feed's published service ended on "
-        f"{meta.get('feed_service_end_date')}. It is still the schedule the agency last "
-        "published, and it is what this run's transit level of service was built from — "
-        "but it is not the schedule in force today.\n"
-    )
-
-
 def _feed_version_agency_name(feed_id: str | None) -> str | None:
     """The agency label for a feed, or None. Best-effort: a miss costs a display
     string, never the run, so it is fetched separately rather than as an embedded
@@ -1797,10 +2311,10 @@ def download_selected_feed_bytes(row: dict) -> bytes:
     return raw
 
 
-def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
+def _prepare_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
     """Resolve, download, verify and parse a run's chosen feed version.
 
-    Returns ``(los, meta)`` where every value in `meta` was read from the database
+    Returns ``(raw, los, meta)`` where every value in `meta` was read from the database
     or computed here — NOTHING comes from the run snapshot, which a workspace
     member can write. Raises `SelectedFeedError` on every failure, and the caller
     must not fall back to another feed on any of them.
@@ -1853,7 +2367,188 @@ def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | Non
         "frequency_trips_excluded": los.frequency_trips_excluded,
         "scheduled_trips_used": los.scheduled_trips_used,
     }
+    return raw, los, meta
+
+
+def load_selected_feed_version(feed_version_id: str, run_workspace_id: str | None) -> tuple:
+    """Preserve the existing loaded-feed interface using the exact selected bytes."""
+    _raw, los, meta = _prepare_selected_feed_version(feed_version_id, run_workspace_id)
     return los, meta
+
+
+def _owned_transit_writer(out_dir):
+    """Validate the bound attempt before any source acquisition."""
+    from pathlib import Path
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Transit retention requires a bound parent writer")
+    writer.require_open()
+    try:
+        if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
+            raise ValueError("Transit retention requires owned outputs")
+        writer.files.verify()
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Transit destination requires reconciliation") from error
+    return writer
+
+
+def _confirm_managed_transit_bundle(writer, out_dir, raw, metadata):
+    from pathlib import Path
+    import model_transit_inputs
+    try:
+        writer.require_open()
+        retained = model_transit_inputs.retain(raw, metadata, gtfs_skim.skim_settings(),
+                                               Path(out_dir) / "transit_inputs")
+        writer.files.verify()
+        writer.record_artifact({
+            "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+            "artifact_type": "model_transit_inputs", "file_url": "local://" + retained["manifest_path"],
+            "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+            "metadata_json": {"schema": model_transit_inputs.SCHEMA, "scientific_acceptance": "unassessed"},
+        }, logical_name="transit-inputs")
+        return retained
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Transit retention requires reconciliation") from error
+
+
+
+def retain_managed_selected_transit(out_dir: str) -> dict:
+    """Prepare this owned run's selected feed and confirm its retained artifact."""
+    writer = _owned_transit_writer(out_dir)
+    run_row = writer.read_run(writer.context.run_id)
+    selection = gtfs_skim.parse_feed_selection(run_row)
+    if selection is None or selection.status != "selected":
+        raise gtfs_skim.SelectedFeedError(
+            selection.no_feed_reason if selection is not None else "selected_feed_not_selected",
+            "This preparation requires the run's selected feed; no substitute was acquired.",
+        )
+    raw, los, meta = _prepare_selected_feed_version(selection.feed_version_id, writer.context.workspace_id)
+    metadata = {**meta, "source_url": los.source_url, "source_name": los.source_name}
+    return _confirm_managed_transit_bundle(writer, out_dir, raw, metadata)
+
+
+def prepare_managed_selected_transit_for_engine(out_dir: str) -> dict:
+    """Keep ordinary selected-feed refusal distinct from uncertain custody."""
+    try:
+        record = retain_managed_selected_transit(out_dir)
+    except gtfs_skim.SelectedFeedError as error:
+        return {"status": "unavailable", "no_feed_reason": error.no_feed_reason}
+    return {"status": "retained", "record": record}
+
+
+
+def managed_assignment_zone_geometry(setup_result: dict) -> dict:
+    """Read geometry from this attempt's confirmed working package."""
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Assignment geometry requires a bound parent writer")
+    try:
+        writer.require_open()
+        package = writer.package_directory(writer.files.path)
+        geometry = read_assignment_geometry(package, assignment_zone_order(setup_result["centroid_map"]))
+        writer.package_directory(writer.files.path)
+        writer.require_open()
+        return geometry
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Assignment geometry requires reconciliation") from error
+
+
+def managed_assignment_transit_preparer(setup_result: dict, *, deadline):
+    """Bind parent-owned zone order and deadline before accepting child requests."""
+    import copy
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Transit preparation requires a bound parent writer")
+    writer.require_open()
+    setup = copy.deepcopy(setup_result)
+
+    def prepare(out_dir):
+        if managed.current() is not writer:
+            raise WorkerStateWriteUnconfirmed("Transit preparation requires its original parent writer")
+        geometry = managed_assignment_zone_geometry(setup)
+        result = prepare_managed_transit_for_engine(
+            out_dir, lons=np.asarray(geometry["lons"], dtype=float),
+            lats=np.asarray(geometry["lats"], dtype=float), deadline=deadline,
+        )
+        from pathlib import Path
+        import model_geometry_inputs
+        try:
+            writer.require_open()
+            retained = model_geometry_inputs.retain(geometry, Path(out_dir) / "geometry_inputs")
+            writer.files.verify()
+            writer.record_artifact({
+                "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+                "artifact_type": "model_assignment_geometry", "file_url": "local://" + retained["manifest_path"],
+                "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+                "metadata_json": {"schema": geometry["schema"], "scientific_acceptance": "unassessed"},
+            }, logical_name="assignment-geometry")
+            return {**result, "geometry_record": retained, "deadline": deadline}
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed("Geometry retention requires reconciliation") from error
+
+    return prepare
+
+
+def resolve_transit_feed_plan(run_row, lons, lats):
+    """Use the existing feed precedence and actual centroid extent for discovery."""
+    env_url, env_path = os.getenv("GTFS_URL"), os.getenv("GTFS_PATH")
+    feed_selection = gtfs_skim.parse_feed_selection(run_row)
+    explicit_feed = bool(env_path or env_url)
+    discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
+    discovery = None
+    if discovering:
+        study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
+        discovery = gtfs_skim.discover_feed(study_bbox)
+    return gtfs_skim.plan_feed(discovery, discovering=discovering, env_url=env_url,
+                               env_path=env_path, selection=feed_selection,), discovery
+
+
+def prepare_managed_transit_for_engine(out_dir: str, *, lons, lats, deadline) -> dict:
+    """Retain the owned run's selected, operator, discovered or bundled archive.
+
+    Coordinates and deadline come from trusted parent preparation, not a child
+    request. Coverage remains a later numerical decision against these inputs.
+    """
+    writer = _owned_transit_writer(out_dir)
+    run_row = writer.read_run(writer.context.run_id)
+    plan, _discovery = resolve_transit_feed_plan(run_row, lons, lats)
+    provenance = {
+        "feed_origin": plan.origin,
+        "fallback_after_catalog_failure": plan.fallback_after_catalog_failure,
+        "operator_env_overridden": plan.operator_env_overridden,
+        "selection_reason": (plan.selection_reason or "")[:300] or None,
+        "discovery_error": (plan.discovery_error or "")[:300] or None,
+    }
+    if not plan.load:
+        return {"status": "unavailable", "transit_status": plan.status,
+                "metadata": {**provenance, "no_feed_reason": plan.no_feed_reason}}
+    try:
+        if plan.feed_version_id:
+            raw, los, metadata = _prepare_selected_feed_version(plan.feed_version_id, writer.context.workspace_id)
+        else:
+            raw, source_url, source_name = gtfs_skim.acquire_feed_archive(url=plan.url)
+            los = gtfs_skim.load_feed(raw=raw, source_url=source_url, source_name=source_name)
+            metadata = _transit_feed_summary(los)
+            metadata["feed_checksum_sha256"] = hashlib.sha256(raw).hexdigest()
+        gtfs_skim.check_deadline(deadline, "preparing the retained transit archive")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except Exception as error:
+        reason = (error.no_feed_reason if isinstance(error, gtfs_skim.SelectedFeedError) else
+                  "feed_publishes_frequencies_only" if isinstance(error, gtfs_skim.GtfsFrequencyOnly) else
+                  "transit_skim_timed_out" if isinstance(error, gtfs_skim.GtfsTimeout) else "feed_load_failed")
+        return {"status": "unavailable", "transit_status": "feed_unavailable",
+                "metadata": {**provenance, "no_feed_reason": reason}}
+    metadata = {**metadata, **provenance, "source_url": los.source_url, "source_name": los.source_name}
+    record = _confirm_managed_transit_bundle(writer, out_dir, raw, metadata)
+    return {"status": "retained", "record": record}
 
 
 def build_mode_provenance(mode_split: dict | None) -> str:
@@ -1968,54 +2663,8 @@ def skim_selected_feed_version(
     dispatch and everything that could be WRONG is on this side of it.
     """
     los, meta = load_selected_feed_version(feed_version_id, run_workspace_id)
-    meta = dict(meta)
-    meta["source_url"] = los.source_url
-    meta["source_name"] = los.source_name
-
-    log = _feed_expiry_log_note(meta)
-    if meta.get("feed_version_is_current") is False:
-        log += (
-            "NOTE: a newer ingest of this feed exists and is the one the Data Hub now shows. "
-            "This run deliberately skimmed the version it was launched with, so its numbers "
-            "stay reproducible.\n"
-        )
-    if los.frequency_trips_excluded:
-        log += (
-            f"{los.frequency_trips_excluded} trip(s) in this feed are defined by "
-            "frequencies.txt (a published headway band rather than departure times) and were "
-            f"excluded; {los.scheduled_trips_used} scheduled trip(s) were skimmed.\n"
-        )
-
-    gtfs_skim.check_deadline(deadline, "reading and parsing the chosen feed")
-    if not gtfs_skim.feed_covers(los, lons, lats):
-        # A chosen feed with no stops in the study area is a fact about THAT FEED.
-        # It must not be reported as `no_local_feed`, which asserts that a feed was
-        # looked for and none covers the area — nobody checked that here, and the
-        # claim would then sit under a VMT number a planner has to defend.
-        raise gtfs_skim.SelectedFeedError(
-            "selected_feed_has_no_stops_in_study_area",
-            "The transit feed chosen for this run has no stops inside this study area, so it "
-            "was not skimmed. Pick the feed that serves this area, or launch without one and "
-            "let the worker look for a covering feed.",
-        )
-
-    skim = gtfs_skim.transit_skim(los, lons, lats, deadline=deadline)
-    # THE INGEST'S OWN SERVICE WINDOW WINS ON THIS PATH. `_transit_feed_summary`
-    # derives an expiry from the parser's calendar for the origins that have no
-    # database row behind them; here there IS one, and migration 20260805000006
-    # records that the two windows legitimately disagree in real feeds. Letting
-    # the summary overwrite them would destroy the evidence that they did — and
-    # would silently change what the expiry statement above was computed from.
-    _from_ingest = {k: meta[k] for k in _INGEST_AUTHORITATIVE_FEED_KEYS if k in meta}
-    meta.update(_transit_feed_summary(los))
-    meta.update(_from_ingest)
-    log += (
-        f"Transit LOS from {los.source_url or los.source_name} "
-        f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
-        f"service day {los.service_day}, service window "
-        f"{meta['service_period'] or 'not stated in the feed calendar'}.\n"
-    )
-    return meta, skim, log
+    return skim_prepared_feed_version(los, meta, lons, lats,
+                                      deadline=deadline, feed_origin=feed_origin)
 
 
 def acs_row_from_equity_measures(measures: dict[str, float]) -> dict[str, float]:
@@ -2245,16 +2894,15 @@ def stage_setup(run_id: str, stage_id: str, work_dir: str, bbox: tuple, pkg_dir:
     if os.path.exists(proj_dir):
         shutil.rmtree(proj_dir)
 
-    project = Project()
-    project.new(proj_dir)
-    # Download OSM for a buffered bbox so boundary-crossing highways extend past
-    # the study area and can be detected as external gateways below. Zone
-    # selection stays on the un-buffered bbox.
-    b = GATEWAY_BUFFER_DEG
-    buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
-    model_area = box(*buffered_bbox)
-    project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
-    project.close()
+    from model_engine_scope import project_scope
+    with project_scope(Project, proj_dir, create=True) as project:
+        # Download OSM for a buffered bbox so boundary-crossing highways extend past
+        # the study area and can be detected as external gateways below. Zone
+        # selection stays on the un-buffered bbox.
+        b = GATEWAY_BUFFER_DEG
+        buffered_bbox = (bbox[0] - b, bbox[1] - b, bbox[2] + b, bbox[3] + b)
+        model_area = box(*buffered_bbox)
+        project.network.create_from_osm(model_area=model_area, modes=["car"], clean=True)
 
     log += "OSM download complete.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
@@ -2914,47 +3562,6 @@ def should_apply_trip_based_mode_split(
     return mode_split_enabled and not demand_is_vehicle
 
 
-def assignment_network_settings(road_class_factors: dict | None = None) -> dict:
-    """Build the one versioned settings object for baseline and calibrated networks."""
-    factors: dict[str, float] = {}
-    for road_class, raw_factor in (road_class_factors or {}).items():
-        if isinstance(raw_factor, bool):
-            raise AssignmentSettingsError("Network calibration factors cannot be boolean")
-        try:
-            factor = float(raw_factor)
-        except (TypeError, ValueError, OverflowError) as error:
-            raise AssignmentSettingsError("Network calibration factors must be numeric") from error
-        if not isinstance(road_class, str) or not road_class or not np.isfinite(factor) or factor <= 0:
-            raise AssignmentSettingsError("Network calibration factors must have a name and be finite and positive")
-        factors[road_class] = factor
-    return {
-        "schema_version": "openplan.network-calibration.v1",
-        "road_class_factors": dict(sorted(factors.items())),
-        "application": {
-            "travel_time": "baseline_travel_time / factor",
-            "capacity": "baseline_capacity * factor",
-        },
-        "excludes": ["trip_based_od_adjustments"],
-    }
-
-
-def canonical_network_settings(settings: dict) -> dict:
-    """Validate a persisted network-settings object without trusting its spelling."""
-    if not isinstance(settings, dict):
-        raise AssignmentSettingsError("Network settings are missing")
-    expected_keys = {"schema_version", "road_class_factors", "application", "excludes"}
-    if set(settings) != expected_keys:
-        raise AssignmentSettingsError("Network settings fields do not match the v1 schema")
-    canonical = assignment_network_settings(settings.get("road_class_factors"))
-    if settings.get("schema_version") != canonical["schema_version"]:
-        raise AssignmentSettingsError("Unsupported network-settings schema")
-    if settings.get("application") != canonical["application"]:
-        raise AssignmentSettingsError("Network-settings application semantics do not match v1")
-    if settings.get("excludes") != canonical["excludes"]:
-        raise AssignmentSettingsError("Network-settings exclusions do not match v1")
-    return canonical
-
-
 def network_settings_payload_json(settings: dict) -> str:
     canonical = canonical_network_settings(settings)
     return json.dumps(
@@ -3564,6 +4171,107 @@ def apply_persisted_network_settings(graph, proj_dir: str, settings: dict | None
     return changed
 
 
+def retain_assignment_counts(counts_path: str | None, out_dir: str, *, status_directory: str, retained_record: dict | None = None, artifact_consumer: bool = False) -> dict:
+    """Capture this assignment's selected inputs without substituting other counts."""
+    from pathlib import Path
+    import model_count_inputs
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    input_directory = Path(out_dir) / ("artifact_count_inputs" if artifact_consumer else "count_inputs")
+    try:
+        if writer is not None:
+            writer.require_open()
+            if writer.files is None or not Path(out_dir).resolve(strict=True).is_relative_to(writer.files.path):
+                raise ValueError("Count input retention requires an owned attempt output directory")
+        retained = (model_count_inputs.consume(retained_record, input_directory)
+                    if retained_record is not None else
+                    model_count_inputs.retain(counts_path, status_directory, input_directory))
+        if writer is not None:
+            writer.files.verify()
+            writer.record_artifact({
+                "run_id": writer.context.run_id, "stage_id": writer.context.stage_id,
+                "artifact_type": "model_count_inputs", "file_url": "local://" + retained["manifest_path"],
+                "file_size_bytes": retained["manifest_size_bytes"], "content_hash": retained["manifest_sha256"],
+                "metadata_json": {"schema": "openplan.count-inputs.v1", "scientific_acceptance": "unassessed"},
+            }, logical_name="artifact-count-inputs" if artifact_consumer else "count-inputs")
+        return retained
+    except Exception as error:
+        if writer is not None:
+            writer.stopped = True
+            raise WorkerStateWriteUnconfirmed("Count input retention requires reconciliation") from error
+        raise
+
+
+def prepare_assignment_count_inputs(run_row: dict, setup_result: dict, proj_dir: str,
+                                    out_dir: str, *, calibrate_requested: bool,
+                                    counts_path_override: str | None = None,
+                                    count_inputs_override: dict | None = None) -> dict:
+    """Prepare and confirm count inputs before native engine work begins.
+
+    A retained record is authoritative. Consuming it never acquires replacement
+    counts, even when its original source is no longer available.
+    """
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "prepare_counts", out_dir, counts_path_override, count_inputs_override)
+    if count_inputs_override is not None:
+        if not isinstance(count_inputs_override, dict) or not isinstance(count_inputs_override.get("counts_path"), str):
+            raise ValueError("Retained count preparation requires its recorded path")
+        recorded_path = count_inputs_override["counts_path"]
+        if counts_path_override is not None and counts_path_override != recorded_path:
+            raise ValueError("Count path override differs from the retained record")
+        return retain_assignment_counts(recorded_path, out_dir,
+            status_directory=os.path.dirname(recorded_path), retained_record=count_inputs_override)
+    counts_path = counts_path_override or (
+        auto_ingest_counts(run_row, setup_result.get("bbox"), proj_dir, out_dir,
+                           calibrate_requested=calibrate_requested)
+        or VALIDATION_COUNTS_PATH
+    )
+    return retain_assignment_counts(counts_path, out_dir,
+        status_directory=os.path.dirname(counts_path_override) if counts_path_override else out_dir)
+
+
+
+def managed_assignment_count_preparer(setup_result: dict, *,
+                                      counts_path_override: str | None = None,
+                                      count_inputs_override: dict | None = None):
+    """Fix parent inputs before launch; read current owned configuration on request."""
+    import copy
+    import model_attempt_writer as managed
+    writer = managed.current()
+    if writer is None:
+        raise WorkerStateWriteUnconfirmed("Count preparation requires a bound parent writer")
+    writer.require_open()
+    setup = copy.deepcopy(setup_result)
+    retained = copy.deepcopy(count_inputs_override)
+
+    def prepare(out_dir):
+        if managed.current() is not writer:
+            raise WorkerStateWriteUnconfirmed("Count preparation differs from its parent invocation")
+        writer.require_open()
+        run_row = writer.read_run(writer.context.run_id)
+        project = writer.project_directory(writer.files.path)
+        return prepare_assignment_count_inputs(
+            run_row, setup, project, out_dir,
+            calibrate_requested=resolve_calibration_enabled(run_row),
+            counts_path_override=counts_path_override, count_inputs_override=retained,
+        )
+
+    return prepare
+
+
+def consume_assignment_transit(prepared: dict, zone_geometry: dict, out_dir: str) -> dict:
+    """Refuse an uncertain retained handoff rather than assigning fallback demand."""
+    from pathlib import Path
+    from model_transit_execution import consume_and_skim
+    try:
+        return consume_and_skim(prepared, Path(out_dir) / "assignment_transit",
+                                expected_geometry=zone_geometry)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Retained assignment transit requires reconciliation") from error
+
+
 def stage_assignment(
     run_id: str,
     stage_id: str,
@@ -3574,6 +4282,8 @@ def stage_assignment(
     output_dir_name: str = "run_output",
     demand_is_vehicle: bool = False,
     counts_path_override: str | None = None,
+    count_inputs_override: dict | None = None,
+    transit_inputs_override: dict | None = None,
     persisted_network_settings: dict | None = None,
     persisted_network_settings_payload_json: str | None = None,
     persisted_network_settings_digest: str | None = None,
@@ -3583,13 +4293,9 @@ def stage_assignment(
     expected_network_state_record: dict | None = None,
     expected_network_state_digest: str | None = None,
 ) -> dict:
-    from aequilibrae import Project
-    from aequilibrae.matrix import AequilibraeMatrix
-    from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
-
-    proj_dir = os.path.join(work_dir, "aeq_project")
-    out_dir = os.path.join(work_dir, output_dir_name)
-    os.makedirs(out_dir, exist_ok=True)
+    proj_dir = project_work_directory(work_dir)
+    pkg_dir = package_work_directory(work_dir, pkg_dir)
+    out_dir = create_assignment_output_directory(work_dir, output_dir_name)
 
     centroid_map = setup_result["centroid_map"]
     # Keys might be strings after JSON round-trip
@@ -3661,717 +4367,707 @@ def stage_assignment(
     # process (or after this process has handled a different run), where a global
     # would silently be someone else's count set. See the note by
     # VALIDATION_COUNTS_PATH.
-    counts_path = counts_path_override or (
-        auto_ingest_counts(run_row, setup_result.get("bbox"), proj_dir, out_dir,
-                           calibrate_requested=calibrate_requested)
-        or VALIDATION_COUNTS_PATH
+    count_inputs = prepare_assignment_count_inputs(
+        run_row, setup_result, proj_dir, out_dir, calibrate_requested=calibrate_requested,
+        counts_path_override=counts_path_override, count_inputs_override=count_inputs_override,
     )
-    if counts_path != VALIDATION_COUNTS_PATH:
-        log += f"Auto-ingested local DOT AADT counts for validation ({os.path.basename(counts_path)}).\n"
+    counts_path = count_inputs["counts_path"]
+    log += ("Selected count inputs retained before assignment.\n" if count_inputs["counts_status"] == "retained"
+            else "Selected count inputs are unavailable; no substitute was selected during retention.\n")
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    project = Project()
-    project.open(proj_dir)
-    project.network.build_graphs(modes=["c"])
-    graph = project.network.graphs["c"]
-    # distance_net zeroes virtual centroid connectors so the routed-distance
-    # skim shares resident_vmt_network's connector-excluded basis (the
-    # convergence diagnostic compares like with like; connectors are modeling
-    # artifacts, counted by neither VMT estimator). graph.network carries no
-    # link_type column, so connector ids come from the project DB. Added
-    # BEFORE prepare_graph so the field is carried into the compressed graph.
-    # Diagnostic-only plumbing: any failure here must degrade to the plain
-    # travel-time skim (diagnostic silently absent), never fail the stage.
-    skim_fields = ["travel_time"]
-    try:
-        _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+    # Validate retained paths and count inputs before loading native engine code.
+    from aequilibrae import Project
+    from aequilibrae.matrix import AequilibraeMatrix
+    from aequilibrae.paths import TrafficAssignment, TrafficClass, NetworkSkimming
+
+    from model_engine_scope import project_scope, matrix_scope
+    with project_scope(Project, proj_dir) as project, matrix_scope() as own_matrix:
+        project.network.build_graphs(modes=["c"])
+        graph = project.network.graphs["c"]
+        # distance_net zeroes virtual centroid connectors so the routed-distance
+        # skim shares resident_vmt_network's connector-excluded basis (the
+        # convergence diagnostic compares like with like; connectors are modeling
+        # artifacts, counted by neither VMT estimator). graph.network carries no
+        # link_type column, so connector ids come from the project DB. Added
+        # BEFORE prepare_graph so the field is carried into the compressed graph.
+        # Diagnostic-only plumbing: any failure here must degrade to the plain
+        # travel-time skim (diagnostic silently absent), never fail the stage.
+        skim_fields = ["travel_time"]
         try:
-            connector_ids = {
-                int(r[0]) for r in _conn_db.execute(
-                    "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
-                )
-            }
-        finally:
-            _conn_db.close()
-        graph.network["distance_net"] = np.where(
-            graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
-        )
-        skim_fields = ["travel_time", "distance", "distance_net"]
-    except Exception as e:
-        log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
-    graph.set_graph("travel_time")
-    graph.prepare_graph(np.array(assignment_centroids))
-    graph.set_blocked_centroid_flows(True)
-    if persisted_network_settings is None:
-        if (
-            persisted_network_settings_payload_json is not None
-            or persisted_network_settings_digest is not None
-        ):
-            raise AssignmentSettingsError(
-                "Network-settings payload/digest were supplied without a settings object"
-            )
-        applied_network_settings = assignment_network_settings()
-        applied_network_settings_payload = network_settings_payload_json(
-            applied_network_settings
-        )
-        applied_network_settings_digest = network_settings_digest(
-            applied_network_settings, applied_network_settings_payload
-        )
-    else:
-        (
-            applied_network_settings,
-            applied_network_settings_payload,
-            applied_network_settings_digest,
-        ) = validated_network_settings_record(
-            persisted_network_settings,
-            persisted_network_settings_payload_json,
-            persisted_network_settings_digest,
-            "assignment-stage handoff",
-        )
-    reused_network_links = apply_persisted_network_settings(
-        graph, proj_dir, applied_network_settings
-    )
-    if persisted_network_settings is not None:
-        log += (
-            "Applied the trip-based assignment's persisted, accepted road-class "
-            f"speed/capacity factors to {reused_network_links} retained-network links; "
-            "no trip-based OD adjustment was reused. "
-            f"Settings SHA-256: {applied_network_settings_digest}.\n"
-        )
-    # "distance"/"distance_net" ride along so the assignment classes carry
-    # blended, flow-consistent routed-distance skims (diagnostic inputs).
-    graph.set_skimming(skim_fields)
-
-    log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
-    log += "Running skims...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    skimming = NetworkSkimming(graph)
-    skimming.set_cores(AEQ_CORES)
-    skimming.execute()
-    skim_mat = skimming.results.skims
-    time_skim_full = skim_mat.matrix["travel_time"]          # (n_assign × n_assign)
-    time_skim = time_skim_full[np.ix_(ii, ii)]               # internal sub-block
-
-    finite = np.isfinite(time_skim) & (time_skim > 0)
-    np.fill_diagonal(finite, False)
-    n_reachable = int(finite.sum())
-    n_pairs = n_zones * (n_zones - 1)
-
-    avg_time = float(np.mean(time_skim[finite])) if n_reachable > 0 else None
-    max_time = float(np.max(time_skim[finite])) if n_reachable > 0 else None
-
-    skim_mat.export(os.path.join(out_dir, "travel_time_skims.omx"))
-    log += f"Reachable OD pairs: {n_reachable}/{n_pairs}\n"
-
-    # Load demand
-    log += "Loading demand...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
-    remap_inv = {v: k for k, v in centroid_map.items()}
-    ordered_zone_ids = [int(remap_inv[c]) for c in centroids_sorted]
-    od_array = np.zeros((n_zones, n_zones))
-    for i, ci in enumerate(centroids_sorted):
-        for j, cj in enumerate(centroids_sorted):
+            _conn_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
             try:
-                od_array[i, j] = od_full.loc[remap_inv[ci], str(remap_inv[cj])]
-            except KeyError:
-                pass
-
-    internal_person_trips = float(od_array.sum())
-
-    # --- Mode choice: split internal person-trips into auto / transit / active;
-    # only the auto matrix is assigned. Transit LOS comes from the bundled GTFS
-    # (gtfs_skim); transit share is 0 where no service. Through-traffic (gateways,
-    # below) stays 100% auto. ---
-    # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
-    # must never outlive a disabled/failed split, or stage_artifacts would
-    # mislabel the resident VMT basis. Remove it unless THIS invocation writes
-    # a fresh one below.
-    auto_od_path = os.path.join(pkg_dir, "od_auto_matrix.csv")
-
-    def _clear_stale_auto_od():
-        if os.path.exists(auto_od_path):
-            try:
-                os.remove(auto_od_path)
-            except OSError:
-                pass
-
-    mode_split = (
-        {
-            "method": "supplied_vehicle_trip_matrix",
-            "note": (
-                "ActivitySim person trips were converted to vehicles before assignment; "
-                "the trip-based mode split was not applied a second time."
-            ),
-        }
-        if demand_is_vehicle
-        else None
-    )
-    if should_apply_trip_based_mode_split(demand_is_vehicle):
-        try:
-            zattr_mc = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-            zattr_mc["zone_id"] = zattr_mc["zone_id"].astype(int)
-            zattr_mc = zattr_mc.set_index("zone_id", drop=False)
-            zc = zattr_mc.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat", "area_sq_mi"]]
-            lons = zc["centroid_lon"].to_numpy(dtype=float)
-            lats = zc["centroid_lat"].to_numpy(dtype=float)
-            areas = zc["area_sq_mi"].to_numpy(dtype=float)
-            dist_miles = np.zeros((n_zones, n_zones))
-            for i in range(n_zones):
-                for j in range(n_zones):
-                    dist_miles[i, j] = (
-                        intrazonal_miles(areas[i]) if i == j
-                        else haversine_miles(lons[i], lats[i], lons[j], lats[j])
+                connector_ids = {
+                    int(r[0]) for r in _conn_db.execute(
+                        "SELECT link_id FROM links WHERE link_type = 'centroid_connector'"
                     )
-
-            # Transit LOS from a published GTFS feed. A feed failure falls back to
-            # the auto/active split, but records transit_status so a 0 transit
-            # share is never mistaken for "no transit demand".
-            #
-            # `transit_los_meta` is written on EVERY outcome, hits and misses
-            # alike, because it is what the run-detail evidence panel reads. A
-            # planner defending a VMT number has to be able to say which feed and
-            # from when; a run with no feed has to state that as a coverage fact
-            # rather than by leaving the provenance blank.
-            transit_skim = None
-            transit_status = "modeled"
-            transit_los_meta = {}
-            try:
-                # One wall-clock budget for the WHOLE transit stage — discovery,
-                # feed download and skim together — started before any of it runs.
-                # The worker's stages are serial inside one queued job, so an
-                # unbounded transit stage stalls every run behind this one. The
-                # budget is COOPERATIVE — it stops the stage at the next
-                # check_deadline call, not the instant it expires, so a stalled
-                # download is still bounded by requests' own timeout rather than by
-                # this. It never changes a modeled number, only converts an
-                # open-ended stall into a named refusal.
-                transit_deadline = gtfs_skim.stage_deadline()
-                discovery = None
-                env_url = os.getenv("GTFS_URL")
-                env_path = os.getenv("GTFS_PATH")
-                explicit_feed = bool(env_path or env_url)
-                # The run's OWN choice of feed, if the planner made one. It
-                # outranks the operator's env feed and the catalog both — see
-                # gtfs_skim.plan_feed for why a per-run act beats a
-                # deployment-wide default — so discovery is not even attempted
-                # when one is present, rather than attempted and then discarded.
-                feed_selection = gtfs_skim.parse_feed_selection(run_row)
-                discovering = GTFS_DISCOVER and not explicit_feed and feed_selection is None
-                if discovering:
-                    study_bbox = (float(lons.min()), float(lats.min()), float(lons.max()), float(lats.max()))
-                    discovery = gtfs_skim.discover_feed(study_bbox)
-                    if discovery.url:
-                        log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
-
-                # WHICH feed this run tries, and what it may say when it has none.
-                # The decision itself lives in gtfs_skim.plan_feed so it is unit
-                # testable — main.py cannot be imported by the stdlib worker suites.
-                feed_plan = gtfs_skim.plan_feed(
-                    discovery, discovering=discovering, env_url=env_url, env_path=env_path,
-                    selection=feed_selection,
-                )
-                feed_origin = feed_plan.origin
-                transit_los_meta = {"feed_origin": feed_origin}
-                if feed_plan.operator_env_overridden:
-                    # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
-                    # skimmed something else is owed the reason, on the run, not
-                    # in a changelog. This is the disclosure that makes the
-                    # precedence reversal honest rather than surprising.
-                    transit_los_meta["operator_env_overridden"] = True
-                    log += (
-                        "This run names its own transit feed, which takes precedence over the "
-                        "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
-                    )
-                if feed_plan.selection_reason:
-                    transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
-                if feed_plan.discovery_error:
-                    # Kept even when the fallback below goes on to model transit
-                    # successfully: a run that says "modeled" must still disclose
-                    # that discovery never actually ran for this study area.
-                    # Truncated so an unexpectedly long message cannot bloat the packet.
-                    transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
-                if feed_plan.fallback_after_catalog_failure:
-                    log += (
-                        "GTFS feed catalog could not be reached "
-                        f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
-                        "bundled with the worker, which is applied only if its own stops fall inside "
-                        "this study area. Discovery did NOT run for this study area, so a published "
-                        "feed covering it may exist and was not looked for.\n"
-                    )
-
-                if not feed_plan.load:
-                    # Two very different refusals share this branch, and each says
-                    # its own sentence. Neither may fall back to another feed:
-                    # discovery's is a checked coverage fact about the AREA, and a
-                    # selection's is a fact about the feed the planner CHOSE.
-                    transit_status = feed_plan.status
-                    transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
-                    if feed_plan.origin == "workspace_feed_version":
-                        log += (
-                            "The transit feed chosen for this run could not be used "
-                            f"({feed_plan.no_feed_reason}"
-                            + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
-                            + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
-                            "No other feed was substituted: a run that names one feed must not "
-                            "report numbers produced by another.\n"
-                        )
-                    else:
-                        log += (
-                            "GTFS discovery found no scheduled feed covering this study area; "
-                            "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
-                        )
-                elif feed_plan.feed_version_id:
-                    # The run named one of the workspace's own ingested feeds.
-                    # Everything this path does lives in one function so a test can
-                    # DRIVE it — the rest of this stage cannot be called without a
-                    # built AequilibraE project, which is how a branch that does
-                    # nothing would otherwise reach production green.
-                    _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
-                        feed_plan.feed_version_id,
-                        run_row.get("workspace_id"),
-                        lons,
-                        lats,
-                        deadline=transit_deadline,
-                        feed_origin=feed_origin,
-                    )
-                    transit_los_meta.update(_sel_meta)
-                    log += _sel_log
-                else:
-                    los = gtfs_skim.load_feed(url=feed_plan.url)
-                    transit_los_meta["source_url"] = los.source_url
-                    transit_los_meta["source_name"] = los.source_name
-                    # A slow-drip download can outlast requests' per-read timeout;
-                    # check before committing to the skim rather than starting one
-                    # there is no longer time to finish.
-                    gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
-                    if not gtfs_skim.feed_covers(los, lons, lats):
-                        # The feed loaded but none of its stops fall within the study
-                        # area — skimming it would report a misleading transit_status
-                        # of "modeled" with a 0 share.
-                        if feed_plan.fallback_after_catalog_failure:
-                            # The bundled feed was standing in for a catalog we could
-                            # not read, so its miss says only that IT is the wrong
-                            # feed. Nothing was established about this area, and
-                            # calling that "no local feed" would state a coverage
-                            # fact nobody checked.
-                            transit_status = "feed_unavailable"
-                            transit_los_meta["no_feed_reason"] = "feed_catalog_unavailable"
-                            log += (
-                                "The bundled fallback feed has no stops in this study area, and the "
-                                "feed catalog could not be reached — so whether a feed covers this "
-                                "study area is UNKNOWN, not an absence of local service.\n"
-                            )
-                        else:
-                            transit_status = "no_local_feed"
-                            transit_los_meta["no_feed_reason"] = "feed_has_no_stops_in_study_area"
-                            log += (
-                                "No GTFS feed covers this study area; transit not modeled "
-                                "(transit share 0 — NOT 'no transit demand'). Provide a local feed "
-                                "via GTFS_PATH/GTFS_URL to model transit for this area.\n"
-                            )
-                    else:
-                        transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
-                        transit_los_meta.update(_transit_feed_summary(los))
-                        log += (
-                            f"Transit LOS from {los.source_url or los.source_name} "
-                            f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
-                            f"service day {los.service_day}, service window "
-                            f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
-                        )
-                        # The SAME sentence the chosen-feed path prints. The
-                        # operator-env, discovered-catalog and bundled feeds are
-                        # exactly the origins that used to say nothing about an
-                        # expired schedule — and the bundled feed is expired
-                        # today, so this is the ordinary deployment rather than
-                        # an edge case.
-                        log += _feed_expiry_log_note(transit_los_meta)
-            except Exception as te:
-                transit_status = "feed_unavailable"
-                # Carry forward whatever provenance was already established, then
-                # name the REAL reason (e.g. the loud frequencies.txt rejection).
-                # Truncated so an unexpectedly long message cannot bloat the packet.
-                #
-                # Which failure it was decides what we may say. `load_feed` stamps
-                # the feed's identity the moment it succeeds, so the presence of a
-                # source is the evidence that the feed WAS read and something after
-                # it — the coverage check or the skim itself — is what failed.
-                # Reporting that as "the feed could not be read" would give a real
-                # refusal the wrong reason, and would send a planner off to fix a
-                # feed that is fine.
-                _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
-                if isinstance(te, gtfs_skim.SelectedFeedError):
-                    # A run that NAMED a feed already knows exactly what went
-                    # wrong with it, and that specificity is the whole value of
-                    # letting a planner choose. Flattening it into
-                    # "feed_load_failed" would send someone to re-upload an
-                    # archive when the real answer was "that feed does not serve
-                    # this study area".
-                    _no_feed_reason = te.no_feed_reason
-                elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
-                    # Not a broken feed: an agency that publishes headway bands
-                    # instead of a timetable. Named separately so nobody is sent
-                    # to fix a feed that is fine.
-                    _no_feed_reason = "feed_publishes_frequencies_only"
-                elif isinstance(te, gtfs_skim.GtfsTimeout):
-                    # Ran out of time, not out of data. Reported separately because
-                    # nothing about the feed is wrong — a rerun, a smaller zone
-                    # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
-                    # calling it a feed problem would send a planner to their
-                    # transit agency over a budget the operator sets.
-                    _no_feed_reason = "transit_skim_timed_out"
-                elif _feed_was_read:
-                    _no_feed_reason = "transit_skim_failed"
-                else:
-                    _no_feed_reason = "feed_load_failed"
-                transit_los_meta = {
-                    **transit_los_meta,
-                    "no_feed_reason": _no_feed_reason,
-                    "error": str(te)[:300],
                 }
-                log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
-
-            auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
-                od_array, time_skim, dist_miles, transit=transit_skim
-            )
-            _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
-            od_array = auto_float
-            # Shares from the INTEGER trip counts so the percent KPIs agree with
-            # the *_person_trips count KPIs (active is the residual → sums to 100).
-            total_int = mm["auto_trips"] + mm["transit_trips"] + mm["active_trips"]
-            if total_int > 0:
-                share_auto = round(100.0 * mm["auto_trips"] / total_int, 2)
-                share_transit = round(100.0 * mm["transit_trips"] / total_int, 2)
-                shares = {
-                    "auto": share_auto,
-                    "transit": share_transit,
-                    "active": round(max(100.0 - share_auto - share_transit, 0.0), 2),
-                }
-            else:
-                shares = {"auto": 100.0, "transit": 0.0, "active": 0.0}
-            mode_split = {
-                **mm,
-                "shares_pct": shares,
-                "transit_status": transit_status,
-                "transit_los": transit_los_meta,
-            }
-            log += (
-                f"Mode choice: auto {mm['auto_trips']:,} / transit {mm['transit_trips']:,} / "
-                f"active {mm['active_trips']:,} "
-                f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
-                f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
-            )
-        except Exception as e:
-            log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
-            mode_split = None
-            _clear_stale_auto_od()
-    else:
-        _clear_stale_auto_od()
-
-    # The guided build lane may carry one explicit planner-entered screening
-    # adjustment. It changes internal assigned-auto demand only; external
-    # gateway counts remain observed inputs. Missing or malformed evidence is
-    # exactly no adjustment, never an inferred project benefit.
-    guided_adjustment = scenario_adjustment.resolve_assigned_auto_trip_adjustment(run_row)
-    if guided_adjustment is not None:
-        od_array = scenario_adjustment.apply_assigned_auto_trip_adjustment(
-            od_array, guided_adjustment
-        )
-        log += (
-            "Guided build assumption: assigned daily auto trips "
-            f"{guided_adjustment['auto_trip_change_pct']:+.1f}% versus no-build "
-            f"(planner basis: {guided_adjustment['basis'][:300]}). This is a "
-            "screening input, not a calibrated forecast. External gateway demand unchanged.\n"
-        )
-
-    # --- Assemble the full assignment demand matrix over internal + cordon
-    # zones. Internal auto demand (od_array = auto_float from mode choice, or the
-    # full internal OD if mode choice is off) sits in the internal block.
-    # External gateway trips enter/exit at CORDON centroids placed on the
-    # boundary highways, so through-traffic is forced ACROSS the crossing highway
-    # link instead of dumping onto local roads. Each cordon's boundary-crossing
-    # volume splits into an internal-destined portion (1−share; distributed by
-    # job/pop share) and a pass-through portion (share; routed to the SAME route's
-    # other cordon) — this loads the interior mainline ONLY for routes detected
-    # crossing the boundary at two cordons (e.g. an interstate that traverses the
-    # county); single-crossing routes have no partner and stay 100% internal. The
-    # share is a fixed, documented screening assumption — NOT tuned to counts. ---
-    # Demand is kept in TWO matrices so the assignment can run one traffic
-    # class per matrix (M7): `resident` = internal auto demand; `external` =
-    # cordon-injected boundary trips + routed pass-through. Per-class link
-    # flows then give network-routed resident VMT with through-traffic
-    # isolated exactly (link_vmt.py) instead of the circuity approximation.
-    resident_od = np.zeros((n_assign, n_assign))
-    resident_od[np.ix_(ii, ii)] = od_array
-    external_od = np.zeros((n_assign, n_assign))
-    external_gateway_trips = 0.0
-    passthrough_trips = 0.0
-    gateways = setup_result.get("gateways") or []
-    active_gws = [g for g in gateways if g.get("cordon_zone_id") and int(g["cordon_zone_id"]) in cordon_map]
-    if active_gws:
-        try:
-            zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-            zattr["zone_id"] = zattr["zone_id"].astype(int)
-            zattr = zattr.set_index("zone_id", drop=False)
-            ordered_df = zattr.loc[ordered_zone_ids, ["est_population", "total_jobs"]].reset_index(drop=True)
-            job_shares, pop_shares = build_cordon_injections(ordered_df)
-            partners = pair_passthrough_cordons(active_gws)  # cordon_zid → same-route partners
-            for g in active_gws:
-                cordon_zid = int(g["cordon_zone_id"])
-                cpos = _pos[cordon_map[cordon_zid]]
-                pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
-                internal_frac = 1.0 - pt
-                external_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
-                external_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
-                external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
-                if pt > 0.0:
-                    through_vol = float(g["daily_in"]) * pt
-                    dest_cordons = partners[cordon_zid]
-                    per_dest = through_vol / len(dest_cordons)
-                    for dest_zid in dest_cordons:
-                        dpos = _pos[cordon_map[int(dest_zid)]]
-                        external_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
-                        passthrough_trips += per_dest
-            log += (
-                f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
-                f"cordon centroid(s) on boundary highways ({passthrough_trips:,.0f} routed as "
-                f"pass-through at share {PASSTHROUGH_SHARE:.2f} across {len(partners)} paired cordon(s)).\n"
-            )
-        except Exception as e:
-            log += f"Cordon gateway loading warning: {e}\n"
-
-    # total_trips stays person-scale (internal person + gateway); routable_trips
-    # reflects the assigned (auto + gateway) demand.
-    total_trips = internal_person_trips + external_gateway_trips
-    unreachable = ~np.isfinite(time_skim_full)
-    resident_od[unreachable] = 0
-    external_od[unreachable] = 0
-    routable_trips = float(resident_od.sum() + external_od.sum())
-
-    # NOTE: AequilibraE names assignment-result columns after the matrix CORE
-    # (matrix.view_names), NOT the TrafficClass name — so each class's matrix
-    # needs a distinct core name or the per-class columns collide. The cores
-    # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
-    # and external_ab/ba/tot, which link_vmt.py reads.
-    def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
-        mat = AequilibraeMatrix()
-        mat.create_empty(
-            file_name=os.path.join(out_dir, f"{file_stem}.omx"),
-            zones=n_assign, matrix_names=[core_name], memory_only=False,
-        )
-        mat.index = np.array(assignment_centroids)
-        mat.matrix[core_name][:, :] = demand_array
-        mat.computational_view([core_name])
-        return mat
-
-    # demand.omx keeps its historical meaning (the full assigned demand) for
-    # artifact continuity; the per-class matrices are what get assigned.
-    _demand_matrix("demand", "demand", resident_od + external_od)
-    resident_mat = _demand_matrix("resident_demand", "resident", resident_od)
-    external_mat = _demand_matrix("external_demand", "external", external_od)
-
-    log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable "
-    log += f"(resident {resident_od.sum():,.0f} · external {external_od.sum():,.0f})\n"
-    log += "Running BFW assignment (2 classes: resident, external)...\n"
-    sb_patch_stage(stage_id, {"log_tail": log})
-
-    resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
-    external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
-    assig = build_traffic_assignment(
-        TrafficAssignment,
-        (resident_class, external_class),
-        profile=assignment_profile,
-    )
-
-    # Select-link corridor attribution: resolve the validation-station
-    # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
-    # execute (aequilibrae copies each class's _selected_links into its results
-    # at execute start; setting after has no effect). Purely diagnostic — any
-    # failure logs and skips, and set_select_links is all-or-nothing on an
-    # unknown link_id, so screenlines are pre-filtered to graph-present links.
-    select_link_sets: dict[str, list[tuple[int, int]]] = {}
-    try:
-        if COUNT_VALIDATION_ENABLED and os.path.exists(counts_path):
-            import csv as _csv
-            with open(counts_path) as _f:
-                _sl_stations = list(_csv.DictReader(_f))
-            _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
-            _sl_db.enable_load_extension(True)
-            _sl_db.load_extension(SPATIALITE_PATH)
-            try:
-                _sl_rows = _sl_db.execute(
-                    "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
-                    "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
-                    "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
-                ).fetchall()
             finally:
-                _sl_db.close()
-            _sl_modeled = [
-                {"link_id": int(lid), "name": nm, "link_type": lt,
-                 "lon": float(cx) if cx is not None else None,
-                 "lat": float(cy) if cy is not None else None}
-                for lid, nm, lt, cx, cy in _sl_rows
-            ]
-            _screenlines = select_link.select_link_screenlines(_sl_stations, _sl_modeled)
-            _graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
-            for _name, _link_ids in _screenlines.items():
-                _present = [lid for lid in _link_ids if lid in _graph_link_ids]
-                if _present:
-                    select_link_sets[_name] = [(lid, 0) for lid in _present]  # dir 0 = both
-            if select_link_sets:
-                resident_class.set_select_links(select_link_sets)
-                external_class.set_select_links(select_link_sets)
-                log += (
-                    f"Select-link: {len(select_link_sets)} corridor screenline(s) attached "
-                    f"({sum(len(v) for v in select_link_sets.values())} links).\n"
+                _conn_db.close()
+            graph.network["distance_net"] = np.where(
+                graph.network["link_id"].isin(connector_ids), 0.0, graph.network["distance"]
+            )
+            skim_fields = ["travel_time", "distance", "distance_net"]
+        except Exception as e:
+            log += f"Convergence skim setup warning ({e}); routed-circuity diagnostic disabled.\n"
+        graph.set_graph("travel_time")
+        graph.prepare_graph(np.array(assignment_centroids))
+        graph.set_blocked_centroid_flows(True)
+        if persisted_network_settings is None:
+            if (
+                persisted_network_settings_payload_json is not None
+                or persisted_network_settings_digest is not None
+            ):
+                raise AssignmentSettingsError(
+                    "Network-settings payload/digest were supplied without a settings object"
                 )
-                sb_patch_stage(stage_id, {"log_tail": log})
-    except Exception as e:
-        select_link_sets = {}
-        log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
+            applied_network_settings = assignment_network_settings()
+            applied_network_settings_payload = network_settings_payload_json(
+                applied_network_settings
+            )
+            applied_network_settings_digest = network_settings_digest(
+                applied_network_settings, applied_network_settings_payload
+            )
+        else:
+            (
+                applied_network_settings,
+                applied_network_settings_payload,
+                applied_network_settings_digest,
+            ) = validated_network_settings_record(
+                persisted_network_settings,
+                persisted_network_settings_payload_json,
+                persisted_network_settings_digest,
+                "assignment-stage handoff",
+            )
+        reused_network_links = apply_persisted_network_settings(
+            graph, proj_dir, applied_network_settings
+        )
+        if persisted_network_settings is not None:
+            log += (
+                "Applied the trip-based assignment's persisted, accepted road-class "
+                f"speed/capacity factors to {reused_network_links} retained-network links; "
+                "no trip-based OD adjustment was reused. "
+                f"Settings SHA-256: {applied_network_settings_digest}.\n"
+            )
+        # "distance"/"distance_net" ride along so the assignment classes carry
+        # blended, flow-consistent routed-distance skims (diagnostic inputs).
+        graph.set_skimming(skim_fields)
 
-    network_state_record, network_state_digest_value = assignment_network_state(
-        assig,
-        graph,
-        assignment_centroids,
-        proj_dir,
-        network_settings_digest_value=applied_network_settings_digest,
-    )
-    require_expected_network_state(
-        network_state_record,
-        network_state_digest_value,
-        expected_network_state_record,
-        expected_network_state_digest,
-        applied_network_settings_digest,
-        "assignment-stage handoff",
-    )
-
-    # The assignment is one blocking call that can run for minutes. Without
-    # this the stage log froze on its last line and a healthy long run looked
-    # identical to a hung one — the stuck-run banner only fires after ten
-    # minutes, which is longer than many assignments take in total. The engine
-    # already logs an iteration line; this forwards it, throttled.
-    def _emit_progress(line: str) -> None:
-        nonlocal log
-        log += line + "\n"
+        log += f"Graph: {graph.num_links} links, {graph.num_nodes} nodes\n"
+        log += "Running skims...\n"
         sb_patch_stage(stage_id, {"log_tail": log})
 
-    with stream_assignment_progress(
-        _emit_progress,
-        target_gap=assig.rgap_target,
-        max_iterations=assig.max_iter,
-    ):
-        assig.execute()
+        skimming = NetworkSkimming(graph)
+        own_matrix(skimming.results.skims)
+        skimming.set_cores(AEQ_CORES)
+        skimming.execute()
+        skim_mat = skimming.results.skims
+        time_skim_full = skim_mat.matrix["travel_time"]          # (n_assign × n_assign)
+        time_skim = time_skim_full[np.ix_(ii, ii)]               # internal sub-block
 
-    rgap = getattr(assig.assignment, "rgap", float("nan"))
-    iters = assignment_iteration_count(assig.assignment)
+        finite = np.isfinite(time_skim) & (time_skim > 0)
+        np.fill_diagonal(finite, False)
+        n_reachable = int(finite.sum())
+        n_pairs = n_zones * (n_zones - 1)
 
-    results_df = assig.results()
-    convergence_record = assignment_convergence_record(rgap, iters, assignment_profile)
-    results_df.attrs["convergence"] = convergence_record
-    results_df.attrs["network_state_record"] = network_state_record
-    results_df.attrs["network_state_digest"] = network_state_digest_value
-    results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
-    loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
+        avg_time = float(np.mean(time_skim[finite])) if n_reachable > 0 else None
+        max_time = float(np.max(time_skim[finite])) if n_reachable > 0 else None
 
-    # Convergence diagnostic: what circuity does THIS run's routing imply?
-    # Demand-weighted routed distance (blended assignment skim, resident class)
-    # over great-circle distance, interzonal pairs only. Diagnostic — never
-    # alters the OD estimator's fixed 1.30, never fails the run.
-    convergence_diag = None
-    try:
-        zattr_cd = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
-        zattr_cd["zone_id"] = zattr_cd["zone_id"].astype(int)
-        zattr_cd = zattr_cd.set_index("zone_id", drop=False)
-        zc_cd = zattr_cd.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat"]]
-        lons_cd = zc_cd["centroid_lon"].to_numpy(dtype=float)
-        lats_cd = zc_cd["centroid_lat"].to_numpy(dtype=float)
-        straight_mi = np.zeros((n_zones, n_zones))
-        for i in range(n_zones):
-            for j in range(n_zones):
-                if i != j:
-                    straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
-        routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
-        convergence_diag = convergence.routed_effective_circuity(
-            resident_od[np.ix_(ii, ii)], routed_m, straight_mi
-        )
-        if convergence_diag:
-            log += (
-                f"Routed effective circuity (resident, demand-weighted): "
-                f"{convergence_diag['effective_circuity']} vs {convergence_diag['assumed_circuity']} assumed\n"
-            )
-    except Exception as e:
-        log += f"Convergence diagnostic warning: {e}\n"
+        skim_mat.export(os.path.join(out_dir, "travel_time_skims.omx"))
+        log += f"Reachable OD pairs: {n_reachable}/{n_pairs}\n"
 
-    # Select-link corridor attribution: classify each screenline's OD (the
-    # trips that route through it) into local / commute / through by cordon
-    # endpoint. Diagnostic; the SL-OD matrices are indexed over the assignment
-    # centroids, so cordon membership marks the boundary-injection zones.
-    select_link_analysis = None
-    if select_link_sets:
-        cordon_nodes = set(cordon_map.values())
-        is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+        # Load demand
+        log += "Loading demand...\n"
+        sb_patch_stage(stage_id, {"log_tail": log})
 
-        def _sl_od(cls, name):
-            arr = np.asarray(cls.results.select_link_od.matrix[name])
-            return arr[:, :, 0] if arr.ndim == 3 else arr
+        od_full = pd.read_csv(os.path.join(pkg_dir, "od_trip_matrix.csv"), index_col=0)
+        remap_inv = {v: k for k, v in centroid_map.items()}
+        ordered_zone_ids = assignment_zone_order(centroid_map)
+        od_array = np.zeros((n_zones, n_zones))
+        for i, ci in enumerate(centroids_sorted):
+            for j, cj in enumerate(centroids_sorted):
+                try:
+                    od_array[i, j] = od_full.loc[remap_inv[ci], str(remap_inv[cj])]
+                except KeyError:
+                    pass
 
-        # Per-screenline try/except: one anomalous screenline logs and skips
-        # rather than voiding the whole run's corridor attribution.
-        screenlines_out = []
-        for name in select_link_sets:
-            try:
-                combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
-                attr = select_link.link_attribution(combined, is_cordon)
-                attr["screenline"] = name
-                attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
-                screenlines_out.append(attr)
-            except Exception as e:
-                log += f"Select-link screenline {name} skipped ({e}).\n"
-        if screenlines_out:
-            select_link_analysis = {
-                "screenlines": screenlines_out,
-                "cordon_zone_count": int(is_cordon.sum()),
+        internal_person_trips = float(od_array.sum())
+
+        # --- Mode choice: split internal person-trips into auto / transit / active;
+        # only the auto matrix is assigned. Transit LOS comes from the bundled GTFS
+        # (gtfs_skim); transit share is 0 where no service. Through-traffic (gateways,
+        # below) stays 100% auto. ---
+        # A stale od_auto_matrix.csv from a prior in-place run of the same run_id
+        # must never outlive a disabled/failed split, or stage_artifacts would
+        # mislabel the resident VMT basis. Remove it unless THIS invocation writes
+        # a fresh one below.
+        auto_od_path = os.path.join(pkg_dir, "od_auto_matrix.csv")
+
+        def _clear_stale_auto_od():
+            if os.path.exists(auto_od_path):
+                try:
+                    os.remove(auto_od_path)
+                except OSError:
+                    pass
+
+        mode_split = (
+            {
+                "method": "supplied_vehicle_trip_matrix",
+                "note": (
+                    "ActivitySim person trips were converted to vehicles before assignment; "
+                    "the trip-based mode split was not applied a second time."
+                ),
             }
-            reached = [s for s in screenlines_out if s["total_trips"] > 0]
-            if reached:
-                log += (
-                    f"Select-link attribution: {len(reached)}/{len(screenlines_out)} screenline(s) "
-                    f"reached; through share "
-                    f"{min(s['through_share'] for s in reached):.0%}–"
-                    f"{max(s['through_share'] for s in reached):.0%}.\n"
+            if demand_is_vehicle
+            else None
+        )
+        if should_apply_trip_based_mode_split(demand_is_vehicle):
+            import model_engine_binding
+            engine = model_engine_binding.current()
+            if engine is not None:
+                transit_inputs_override = _call_engine_binding(engine, "prepare_transit", out_dir, transit_inputs_override)
+            try:
+                zone_geometry = read_assignment_geometry(pkg_dir, ordered_zone_ids)
+                lons = np.asarray(zone_geometry["lons"], dtype=float)
+                lats = np.asarray(zone_geometry["lats"], dtype=float)
+                areas = np.asarray(zone_geometry["areas_sq_mi"], dtype=float)
+                dist_miles = np.zeros((n_zones, n_zones))
+                for i in range(n_zones):
+                    for j in range(n_zones):
+                        dist_miles[i, j] = (
+                            intrazonal_miles(areas[i]) if i == j
+                            else haversine_miles(lons[i], lats[i], lons[j], lats[j])
+                        )
+
+                # Transit LOS from a published GTFS feed. A feed failure falls back to
+                # the auto/active split, but records transit_status so a 0 transit
+                # share is never mistaken for "no transit demand".
+                #
+                # `transit_los_meta` is written on EVERY outcome, hits and misses
+                # alike, because it is what the run-detail evidence panel reads. A
+                # planner defending a VMT number has to be able to say which feed and
+                # from when; a run with no feed has to state that as a coverage fact
+                # rather than by leaving the provenance blank.
+                transit_skim = None
+                transit_status = "modeled"
+                transit_los_meta = {}
+                if transit_inputs_override is not None:
+                    retained_transit = consume_assignment_transit(transit_inputs_override, zone_geometry, out_dir)
+                    transit_skim = retained_transit["skim"]
+                    transit_status = retained_transit["transit_status"]
+                    transit_los_meta = retained_transit["metadata"]
+                    log += retained_transit["log"]
+                else:
+                    try:
+                        # One wall-clock budget for the WHOLE transit stage — discovery,
+                        # feed download and skim together — started before any of it runs.
+                        # The worker's stages are serial inside one queued job, so an
+                        # unbounded transit stage stalls every run behind this one. The
+                        # budget is COOPERATIVE — it stops the stage at the next
+                        # check_deadline call, not the instant it expires, so a stalled
+                        # download is still bounded by requests' own timeout rather than by
+                        # this. It never changes a modeled number, only converts an
+                        # open-ended stall into a named refusal.
+                        transit_deadline = gtfs_skim.stage_deadline()
+                        feed_plan, discovery = resolve_transit_feed_plan(run_row, lons, lats)
+                        if discovery is not None and discovery.url:
+                            log += f"GTFS discovery selected a feed covering this study area: {discovery.url}\n"
+                        feed_origin = feed_plan.origin
+                        transit_los_meta = {"feed_origin": feed_origin}
+                        if feed_plan.operator_env_overridden:
+                            # An operator who pinned GTFS_URL/GTFS_PATH and finds a run
+                            # skimmed something else is owed the reason, on the run, not
+                            # in a changelog. This is the disclosure that makes the
+                            # precedence reversal honest rather than surprising.
+                            transit_los_meta["operator_env_overridden"] = True
+                            log += (
+                                "This run names its own transit feed, which takes precedence over the "
+                                "deployment-wide GTFS_URL/GTFS_PATH feed for this run only.\n"
+                            )
+                        if feed_plan.selection_reason:
+                            transit_los_meta["selection_reason"] = feed_plan.selection_reason[:300]
+                        if feed_plan.discovery_error:
+                            # Kept even when the fallback below goes on to model transit
+                            # successfully: a run that says "modeled" must still disclose
+                            # that discovery never actually ran for this study area.
+                            # Truncated so an unexpectedly long message cannot bloat the packet.
+                            transit_los_meta["discovery_error"] = feed_plan.discovery_error[:300]
+                        if feed_plan.fallback_after_catalog_failure:
+                            log += (
+                                "GTFS feed catalog could not be reached "
+                                f"({feed_plan.discovery_error or 'reason not reported'}); falling back to the feed "
+                                "bundled with the worker, which is applied only if its own stops fall inside "
+                                "this study area. Discovery did NOT run for this study area, so a published "
+                                "feed covering it may exist and was not looked for.\n"
+                            )
+                        if not feed_plan.load:
+                            # Two very different refusals share this branch, and each says
+                            # its own sentence. Neither may fall back to another feed:
+                            # discovery's is a checked coverage fact about the AREA, and a
+                            # selection's is a fact about the feed the planner CHOSE.
+                            transit_status = feed_plan.status
+                            transit_los_meta["no_feed_reason"] = feed_plan.no_feed_reason
+                            if feed_plan.origin == "workspace_feed_version":
+                                log += (
+                                    "The transit feed chosen for this run could not be used "
+                                    f"({feed_plan.no_feed_reason}"
+                                    + (f": {feed_plan.selection_reason}" if feed_plan.selection_reason else "")
+                                    + "); transit not modeled (transit share 0 — NOT 'no transit demand'). "
+                                    "No other feed was substituted: a run that names one feed must not "
+                                    "report numbers produced by another.\n"
+                                )
+                            else:
+                                log += (
+                                    "GTFS discovery found no scheduled feed covering this study area; "
+                                    "transit not modeled (transit share 0 — NOT 'no transit demand').\n"
+                                )
+                        elif feed_plan.feed_version_id:
+                            # The run named one of the workspace's own ingested feeds.
+                            # Everything this path does lives in one function so a test can
+                            # DRIVE it — the rest of this stage cannot be called without a
+                            # built AequilibraE project, which is how a branch that does
+                            # nothing would otherwise reach production green.
+                            _sel_meta, transit_skim, _sel_log = skim_selected_feed_version(
+                                feed_plan.feed_version_id,
+                                run_row.get("workspace_id"),
+                                lons,
+                                lats,
+                                deadline=transit_deadline,
+                                feed_origin=feed_origin,
+                            )
+                            transit_los_meta.update(_sel_meta)
+                            log += _sel_log
+                        else:
+                            los = gtfs_skim.load_feed(url=feed_plan.url)
+                            transit_los_meta["source_url"] = los.source_url
+                            transit_los_meta["source_name"] = los.source_name
+                            # A slow-drip download can outlast requests' per-read timeout;
+                            # check before committing to the skim rather than starting one
+                            # there is no longer time to finish.
+                            gtfs_skim.check_deadline(transit_deadline, "downloading and parsing the feed")
+                            if not gtfs_skim.feed_covers(los, lons, lats):
+                                # The feed loaded but none of its stops fall within the study
+                                # area — skimming it would report a misleading transit_status
+                                # of "modeled" with a 0 share.
+                                refusal = transit_coverage_refusal(feed_origin)
+                                transit_status = refusal["transit_status"]
+                                transit_los_meta["no_feed_reason"] = refusal["no_feed_reason"]
+                                log += refusal["log"]
+                            else:
+                                transit_skim = gtfs_skim.transit_skim(los, lons, lats, deadline=transit_deadline)
+                                transit_los_meta.update(_transit_feed_summary(los))
+                                log += (
+                                    f"Transit LOS from {los.source_url or los.source_name} "
+                                    f"({feed_origin}): {los.n_routes} route(s), {los.n_stops} served stop(s), "
+                                    f"service day {los.service_day}, service window "
+                                    f"{transit_los_meta['service_period'] or 'not stated in the feed calendar'}.\n"
+                                )
+                                # The SAME sentence the chosen-feed path prints. The
+                                # operator-env, discovered-catalog and bundled feeds are
+                                # exactly the origins that used to say nothing about an
+                                # expired schedule — and the bundled feed is expired
+                                # today, so this is the ordinary deployment rather than
+                                # an edge case.
+                                log += _feed_expiry_log_note(transit_los_meta)
+                    except Exception as te:
+                        transit_status = "feed_unavailable"
+                        # Carry forward whatever provenance was already established, then
+                        # name the REAL reason (e.g. the loud frequencies.txt rejection).
+                        # Truncated so an unexpectedly long message cannot bloat the packet.
+                        #
+                        # Which failure it was decides what we may say. `load_feed` stamps
+                        # the feed's identity the moment it succeeds, so the presence of a
+                        # source is the evidence that the feed WAS read and something after
+                        # it — the coverage check or the skim itself — is what failed.
+                        # Reporting that as "the feed could not be read" would give a real
+                        # refusal the wrong reason, and would send a planner off to fix a
+                        # feed that is fine.
+                        _feed_was_read = bool(transit_los_meta.get("source_url") or transit_los_meta.get("source_name"))
+                        if isinstance(te, gtfs_skim.SelectedFeedError):
+                            # A run that NAMED a feed already knows exactly what went
+                            # wrong with it, and that specificity is the whole value of
+                            # letting a planner choose. Flattening it into
+                            # "feed_load_failed" would send someone to re-upload an
+                            # archive when the real answer was "that feed does not serve
+                            # this study area".
+                            _no_feed_reason = te.no_feed_reason
+                        elif isinstance(te, gtfs_skim.GtfsFrequencyOnly):
+                            # Not a broken feed: an agency that publishes headway bands
+                            # instead of a timetable. Named separately so nobody is sent
+                            # to fix a feed that is fine.
+                            _no_feed_reason = "feed_publishes_frequencies_only"
+                        elif isinstance(te, gtfs_skim.GtfsTimeout):
+                            # Ran out of time, not out of data. Reported separately because
+                            # nothing about the feed is wrong — a rerun, a smaller zone
+                            # system or a larger GTFS_STAGE_BUDGET_S is the answer, and
+                            # calling it a feed problem would send a planner to their
+                            # transit agency over a budget the operator sets.
+                            _no_feed_reason = "transit_skim_timed_out"
+                        elif _feed_was_read:
+                            _no_feed_reason = "transit_skim_failed"
+                        else:
+                            _no_feed_reason = "feed_load_failed"
+                        transit_los_meta = {
+                            **transit_los_meta,
+                            "no_feed_reason": _no_feed_reason,
+                            "error": str(te)[:300],
+                        }
+                        log += f"Transit LOS unavailable ({te}); transit reported as 0 (feed_unavailable).\n"
+                auto_float, auto_int, transit_int, active_int, mm = mode_choice.split_matrix(
+                    od_array, time_skim, dist_miles, transit=transit_skim
                 )
+                _write_auto_od_matrix(auto_od_path, auto_int, ordered_zone_ids, od_full)
+                od_array = auto_float
+                # Shares from the INTEGER trip counts so the percent KPIs agree with
+                # the *_person_trips count KPIs (active is the residual → sums to 100).
+                total_int = mm["auto_trips"] + mm["transit_trips"] + mm["active_trips"]
+                if total_int > 0:
+                    share_auto = round(100.0 * mm["auto_trips"] / total_int, 2)
+                    share_transit = round(100.0 * mm["transit_trips"] / total_int, 2)
+                    shares = {
+                        "auto": share_auto,
+                        "transit": share_transit,
+                        "active": round(max(100.0 - share_auto - share_transit, 0.0), 2),
+                    }
+                else:
+                    shares = {"auto": 100.0, "transit": 0.0, "active": 0.0}
+                mode_split = {
+                    **mm,
+                    "shares_pct": shares,
+                    "transit_status": transit_status,
+                    "transit_los": transit_los_meta,
+                }
+                log += (
+                    f"Mode choice: auto {mm['auto_trips']:,} / transit {mm['transit_trips']:,} / "
+                    f"active {mm['active_trips']:,} "
+                    f"(auto {shares['auto']:.1f}% · transit {shares['transit']:.2f}% · active {shares['active']:.1f}%; "
+                    f"transit {transit_status}, {mm['transit_available_pairs']}/{mm['transit_total_pairs']} pairs served)\n"
+                )
+            except WorkerStateWriteUnconfirmed:
+                raise
+            except Exception as e:
+                if transit_inputs_override is not None:
+                    raise WorkerStateWriteUnconfirmed("Retained mode choice requires reconciliation") from e
+                log += f"Mode choice warning ({e}); assigning all internal trips as auto.\n"
+                mode_split = None
+                _clear_stale_auto_od()
+        else:
+            _clear_stale_auto_od()
 
-    # ── Count-based calibration (OPT-IN, off by default) ──────────────────
-    # Staged: (1) per-road-class free-flow speed + capacity toward counts, then
-    # (2) a select-link-guided demand nudge on the resident internal OD. Each
-    # step re-runs equilibrium and is kept ONLY if it improves a held-out
-    # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
-    # touched; calibrated outputs get distinct KPI names.
-    calibration_result = None
-    if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
-        try:
-            def _make_resident_mat(demand_array):
-                m = AequilibraeMatrix()
-                m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
-                m.index = np.array(assignment_centroids)
-                m.matrix["resident"][:, :] = demand_array
-                m.computational_view(["resident"])
-                return m
-
-            calibration_result, log = _run_calibration(
-                proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
-                counts_path=counts_path,
-                resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
-                make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
-                assignment_profile=assignment_profile,
+        # The guided build lane may carry one explicit planner-entered screening
+        # adjustment. It changes internal assigned-auto demand only; external
+        # gateway counts remain observed inputs. Missing or malformed evidence is
+        # exactly no adjustment, never an inferred project benefit.
+        guided_adjustment = scenario_adjustment.resolve_assigned_auto_trip_adjustment(run_row)
+        if guided_adjustment is not None:
+            od_array = scenario_adjustment.apply_assigned_auto_trip_adjustment(
+                od_array, guided_adjustment
             )
-        except Exception as e:
-            log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
+            log += (
+                "Guided build assumption: assigned daily auto trips "
+                f"{guided_adjustment['auto_trip_change_pct']:+.1f}% versus no-build "
+                f"(planner basis: {guided_adjustment['basis'][:300]}). This is a "
+                "screening input, not a calibrated forecast. External gateway demand unchanged.\n"
+            )
 
-    project.close()
+        # --- Assemble the full assignment demand matrix over internal + cordon
+        # zones. Internal auto demand (od_array = auto_float from mode choice, or the
+        # full internal OD if mode choice is off) sits in the internal block.
+        # External gateway trips enter/exit at CORDON centroids placed on the
+        # boundary highways, so through-traffic is forced ACROSS the crossing highway
+        # link instead of dumping onto local roads. Each cordon's boundary-crossing
+        # volume splits into an internal-destined portion (1−share; distributed by
+        # job/pop share) and a pass-through portion (share; routed to the SAME route's
+        # other cordon) — this loads the interior mainline ONLY for routes detected
+        # crossing the boundary at two cordons (e.g. an interstate that traverses the
+        # county); single-crossing routes have no partner and stay 100% internal. The
+        # share is a fixed, documented screening assumption — NOT tuned to counts. ---
+        # Demand is kept in TWO matrices so the assignment can run one traffic
+        # class per matrix (M7): `resident` = internal auto demand; `external` =
+        # cordon-injected boundary trips + routed pass-through. Per-class link
+        # flows then give network-routed resident VMT with through-traffic
+        # isolated exactly (link_vmt.py) instead of the circuity approximation.
+        resident_od = np.zeros((n_assign, n_assign))
+        resident_od[np.ix_(ii, ii)] = od_array
+        external_od = np.zeros((n_assign, n_assign))
+        external_gateway_trips = 0.0
+        passthrough_trips = 0.0
+        gateways = setup_result.get("gateways") or []
+        active_gws = [g for g in gateways if g.get("cordon_zone_id") and int(g["cordon_zone_id"]) in cordon_map]
+        if active_gws:
+            try:
+                zattr = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+                zattr["zone_id"] = zattr["zone_id"].astype(int)
+                zattr = zattr.set_index("zone_id", drop=False)
+                ordered_df = zattr.loc[ordered_zone_ids, ["est_population", "total_jobs"]].reset_index(drop=True)
+                job_shares, pop_shares = build_cordon_injections(ordered_df)
+                partners = pair_passthrough_cordons(active_gws)  # cordon_zid → same-route partners
+                for g in active_gws:
+                    cordon_zid = int(g["cordon_zone_id"])
+                    cpos = _pos[cordon_map[cordon_zid]]
+                    pt = PASSTHROUGH_SHARE if partners.get(cordon_zid) else 0.0  # only paired routes pass through
+                    internal_frac = 1.0 - pt
+                    external_od[cpos, ii] += float(g["daily_in"]) * internal_frac * job_shares    # external → internal
+                    external_od[ii, cpos] += float(g["daily_out"]) * internal_frac * pop_shares   # internal → external
+                    external_gateway_trips += float(g["daily_in"]) + float(g["daily_out"])
+                    if pt > 0.0:
+                        through_vol = float(g["daily_in"]) * pt
+                        dest_cordons = partners[cordon_zid]
+                        per_dest = through_vol / len(dest_cordons)
+                        for dest_zid in dest_cordons:
+                            dpos = _pos[cordon_map[int(dest_zid)]]
+                            external_od[cpos, dpos] += per_dest   # enter at this cordon, exit at same-route cordon
+                            passthrough_trips += per_dest
+                log += (
+                    f"Loaded {external_gateway_trips:,.0f} external gateway trips via {len(active_gws)} "
+                    f"cordon centroid(s) on boundary highways ({passthrough_trips:,.0f} routed as "
+                    f"pass-through at share {PASSTHROUGH_SHARE:.2f} across {len(partners)} paired cordon(s)).\n"
+                )
+            except Exception as e:
+                log += f"Cordon gateway loading warning: {e}\n"
+
+        # total_trips stays person-scale (internal person + gateway); routable_trips
+        # reflects the assigned (auto + gateway) demand.
+        total_trips = internal_person_trips + external_gateway_trips
+        unreachable = ~np.isfinite(time_skim_full)
+        resident_od[unreachable] = 0
+        external_od[unreachable] = 0
+        routable_trips = float(resident_od.sum() + external_od.sum())
+
+        # NOTE: AequilibraE names assignment-result columns after the matrix CORE
+        # (matrix.view_names), NOT the TrafficClass name — so each class's matrix
+        # needs a distinct core name or the per-class columns collide. The cores
+        # "resident"/"external" become link_volumes.csv columns resident_ab/ba/tot
+        # and external_ab/ba/tot, which link_vmt.py reads.
+        def _demand_matrix(file_stem: str, core_name: str, demand_array: np.ndarray) -> AequilibraeMatrix:
+            mat = own_matrix(AequilibraeMatrix())
+            mat.create_empty(
+                file_name=os.path.join(out_dir, f"{file_stem}.aem"),
+                zones=n_assign, matrix_names=[core_name], memory_only=False,
+            )
+            mat.index[:] = np.array(assignment_centroids)
+            mat.matrix[core_name][:, :] = demand_array
+            mat.computational_view([core_name])
+            mat.export(os.path.join(out_dir, f"{file_stem}.omx"))
+            return mat
+
+        # demand.omx keeps its historical meaning (the full assigned demand) for
+        # artifact continuity; the per-class matrices are what get assigned.
+        _demand_matrix("demand", "demand", resident_od + external_od)
+        resident_mat = _demand_matrix("resident_demand", "resident", resident_od)
+        external_mat = _demand_matrix("external_demand", "external", external_od)
+
+        log += f"Demand: {total_trips:,.0f} total, {routable_trips:,.0f} routable "
+        log += f"(resident {resident_od.sum():,.0f} · external {external_od.sum():,.0f})\n"
+        log += "Running BFW assignment (2 classes: resident, external)...\n"
+        sb_patch_stage(stage_id, {"log_tail": log})
+
+        resident_class = TrafficClass(name="resident", graph=graph, matrix=resident_mat)
+        external_class = TrafficClass(name="external", graph=graph, matrix=external_mat)
+        assig = build_traffic_assignment(
+            TrafficAssignment,
+            (resident_class, external_class),
+            profile=assignment_profile,
+        )
+
+        # Select-link corridor attribution: resolve the validation-station
+        # screenlines to link_ids and attach them to BOTH traffic classes BEFORE
+        # execute (aequilibrae copies each class's _selected_links into its results
+        # at execute start; setting after has no effect). Purely diagnostic — any
+        # failure logs and skips, and set_select_links is all-or-nothing on an
+        # unknown link_id, so screenlines are pre-filtered to graph-present links.
+        select_link_sets: dict[str, list[tuple[int, int]]] = {}
+        try:
+            if COUNT_VALIDATION_ENABLED and os.path.exists(counts_path):
+                import csv as _csv
+                with open(counts_path) as _f:
+                    _sl_stations = list(_csv.DictReader(_f))
+                _sl_db = sqlite3.connect(os.path.join(proj_dir, "project_database.sqlite"))
+                try:
+                    _sl_db.enable_load_extension(True)
+                    _sl_db.load_extension(SPATIALITE_PATH)
+                    _sl_rows = _sl_db.execute(
+                        "SELECT link_id, COALESCE(name,''), COALESCE(link_type,''), "
+                        "X(Centroid(geometry)), Y(Centroid(geometry)) FROM links "
+                        "WHERE name IS NOT NULL AND name != '' AND link_type != 'centroid_connector'"
+                    ).fetchall()
+                finally:
+                    _sl_db.close()
+                _sl_modeled = [
+                    {"link_id": int(lid), "name": nm, "link_type": lt,
+                     "lon": float(cx) if cx is not None else None,
+                     "lat": float(cy) if cy is not None else None}
+                    for lid, nm, lt, cx, cy in _sl_rows
+                ]
+                _screenlines = select_link.select_link_screenlines(_sl_stations, _sl_modeled)
+                _graph_link_ids = {int(x) for x in graph.graph["link_id"].values}
+                for _name, _link_ids in _screenlines.items():
+                    _present = [lid for lid in _link_ids if lid in _graph_link_ids]
+                    if _present:
+                        select_link_sets[_name] = [(lid, 0) for lid in _present]  # dir 0 = both
+                if select_link_sets:
+                    resident_class.set_select_links(select_link_sets)
+                    external_class.set_select_links(select_link_sets)
+                    log += (
+                        f"Select-link: {len(select_link_sets)} corridor screenline(s) attached "
+                        f"({sum(len(v) for v in select_link_sets.values())} links).\n"
+                    )
+                    sb_patch_stage(stage_id, {"log_tail": log})
+        except WorkerStateWriteUnconfirmed:
+            raise
+        except Exception as e:
+            select_link_sets = {}
+            log += f"Select-link setup warning ({e}); corridor attribution skipped.\n"
+
+        network_state_record, network_state_digest_value = assignment_network_state(
+            assig,
+            graph,
+            assignment_centroids,
+            proj_dir,
+            network_settings_digest_value=applied_network_settings_digest,
+        )
+        require_expected_network_state(
+            network_state_record,
+            network_state_digest_value,
+            expected_network_state_record,
+            expected_network_state_digest,
+            applied_network_settings_digest,
+            "assignment-stage handoff",
+        )
+
+        # The assignment is one blocking call that can run for minutes. Without
+        # this the stage log froze on its last line and a healthy long run looked
+        # identical to a hung one — the stuck-run banner only fires after ten
+        # minutes, which is longer than many assignments take in total. The engine
+        # already logs an iteration line; this forwards it, throttled.
+        def _emit_progress(line: str) -> None:
+            nonlocal log
+            log += line + "\n"
+            sb_patch_stage(stage_id, {"log_tail": log})
+
+        with stream_assignment_progress(
+            _emit_progress,
+            fatal_exceptions=(WorkerStateWriteUnconfirmed,),
+            logger_name=project.logger.name,
+            target_gap=assig.rgap_target,
+            max_iterations=assig.max_iter,
+        ):
+            import model_assignment_input_snapshot
+            initial_assignment_inputs = model_assignment_input_snapshot.retain_and_execute(
+                assig, directory=os.path.join(out_dir, "initial_assignment_inputs"),
+                context={"run_id": run_id, "stage_id": stage_id,
+                         "demand_method": "activitysim" if demand_is_vehicle else "aequilibrae"},
+                profile=assignment_profile, network_state=network_state_record,
+                network_database=os.path.join(proj_dir, "project_database.sqlite"),
+                network_settings=applied_network_settings,
+            )
+
+        rgap = getattr(assig.assignment, "rgap", float("nan"))
+        iters = assignment_iteration_count(assig.assignment)
+
+        results_df = assig.results()
+        convergence_record = assignment_convergence_record(rgap, iters, assignment_profile)
+        results_df.attrs["convergence"] = convergence_record
+        results_df.attrs["network_state_record"] = network_state_record
+        results_df.attrs["network_state_digest"] = network_state_digest_value
+        results_df.to_csv(os.path.join(out_dir, "link_volumes.csv"))
+        loaded_links = int((results_df["PCE_tot"] > 0).sum()) if "PCE_tot" in results_df.columns else 0
+
+        # Convergence diagnostic: what circuity does THIS run's routing imply?
+        # Demand-weighted routed distance (blended assignment skim, resident class)
+        # over great-circle distance, interzonal pairs only. Diagnostic — never
+        # alters the OD estimator's fixed 1.30, never fails the run.
+        convergence_diag = None
+        try:
+            zattr_cd = pd.read_csv(os.path.join(pkg_dir, "zone_attributes.csv"))
+            zattr_cd["zone_id"] = zattr_cd["zone_id"].astype(int)
+            zattr_cd = zattr_cd.set_index("zone_id", drop=False)
+            zc_cd = zattr_cd.loc[ordered_zone_ids, ["centroid_lon", "centroid_lat"]]
+            lons_cd = zc_cd["centroid_lon"].to_numpy(dtype=float)
+            lats_cd = zc_cd["centroid_lat"].to_numpy(dtype=float)
+            straight_mi = np.zeros((n_zones, n_zones))
+            for i in range(n_zones):
+                for j in range(n_zones):
+                    if i != j:
+                        straight_mi[i, j] = haversine_miles(lons_cd[i], lats_cd[i], lons_cd[j], lats_cd[j])
+            routed_m = resident_class.results.skims.matrix["distance_net"][np.ix_(ii, ii)]
+            convergence_diag = convergence.routed_effective_circuity(
+                resident_od[np.ix_(ii, ii)], routed_m, straight_mi
+            )
+            if convergence_diag:
+                log += (
+                    f"Routed effective circuity (resident, demand-weighted): "
+                    f"{convergence_diag['effective_circuity']} vs {convergence_diag['assumed_circuity']} assumed\n"
+                )
+        except Exception as e:
+            log += f"Convergence diagnostic warning: {e}\n"
+
+        # Select-link corridor attribution: classify each screenline's OD (the
+        # trips that route through it) into local / commute / through by cordon
+        # endpoint. Diagnostic; the SL-OD matrices are indexed over the assignment
+        # centroids, so cordon membership marks the boundary-injection zones.
+        select_link_analysis = None
+        if select_link_sets:
+            cordon_nodes = set(cordon_map.values())
+            is_cordon = np.array([c in cordon_nodes for c in assignment_centroids])
+
+            def _sl_od(cls, name):
+                arr = np.asarray(cls.results.select_link_od.matrix[name])
+                return arr[:, :, 0] if arr.ndim == 3 else arr
+
+            # Per-screenline try/except: one anomalous screenline logs and skips
+            # rather than voiding the whole run's corridor attribution.
+            screenlines_out = []
+            for name in select_link_sets:
+                try:
+                    combined = _sl_od(resident_class, name) + _sl_od(external_class, name)
+                    attr = select_link.link_attribution(combined, is_cordon)
+                    attr["screenline"] = name
+                    attr["link_ids"] = [lid for lid, _ in select_link_sets[name]]
+                    screenlines_out.append(attr)
+                except Exception as e:
+                    log += f"Select-link screenline {name} skipped ({e}).\n"
+            if screenlines_out:
+                select_link_analysis = {
+                    "screenlines": screenlines_out,
+                    "cordon_zone_count": int(is_cordon.sum()),
+                }
+                reached = [s for s in screenlines_out if s["total_trips"] > 0]
+                if reached:
+                    log += (
+                        f"Select-link attribution: {len(reached)}/{len(screenlines_out)} screenline(s) "
+                        f"reached; through share "
+                        f"{min(s['through_share'] for s in reached):.0%}–"
+                        f"{max(s['through_share'] for s in reached):.0%}.\n"
+                    )
+
+        # ── Count-based calibration (OPT-IN, off by default) ──────────────────
+        # Staged: (1) per-road-class free-flow speed + capacity toward counts, then
+        # (2) a select-link-guided demand nudge on the resident internal OD. Each
+        # step re-runs equilibrium and is kept ONLY if it improves a held-out
+        # (never-fit) count set. The OD-based resident_vmt (CEQA input) is never
+        # touched; calibrated outputs get distinct KPI names.
+        calibration_result = None
+        if should_run_calibration(calibrate_requested and not demand_is_vehicle, counts_path):
+            try:
+                def _make_resident_mat(demand_array):
+                    m = own_matrix(AequilibraeMatrix())
+                    m.create_empty(zones=n_assign, matrix_names=["resident"], memory_only=True)
+                    m.index = np.array(assignment_centroids)
+                    m.matrix["resident"][:, :] = demand_array
+                    m.computational_view(["resident"])
+                    return m
+
+                calibration_result, log = _run_calibration(
+                    proj_dir, out_dir, graph, resident_mat, external_mat, results_df, log,
+                    counts_path=counts_path,
+                    resident_od=resident_od, ii=ii, assignment_centroids=assignment_centroids,
+                    make_resident_mat=_make_resident_mat, pkg_dir=pkg_dir, ordered_zone_ids=ordered_zone_ids,
+                    assignment_profile=assignment_profile,
+                )
+            except Exception as e:
+                log += f"Calibration warning ({e}); keeping the uncalibrated screening result.\n"
+
 
     log += (
         f"Converged: {'yes' if convergence_record['converged'] else 'NO'}, "
@@ -4395,6 +5091,7 @@ def stage_assignment(
         "convergence_diagnostic": convergence_diag,
         "select_link_analysis": select_link_analysis,
         "calibration": calibration_result,
+        "initial_assignment_inputs": initial_assignment_inputs,
         "network_settings": applied_network_settings,
         "network_settings_payload_json": applied_network_settings_payload,
         "network_settings_digest": applied_network_settings_digest,
@@ -4404,6 +5101,7 @@ def stage_assignment(
         # run used, whichever process picks that stage up. Persisted in the run's
         # state.json by process_stage.
         "counts_path": counts_path,
+        "count_inputs": count_inputs,
         "log": log,
     }
 
@@ -4464,15 +5162,14 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
                           intrazonal_share_pct: float | None = None,
                           zone_count: int | None = None) -> dict | None:
     """Match assigned link volumes to observed traffic counts → screening-grade
-    fit summary. Returns None when disabled or inputs are missing (never fails
-    the run).
+    fit summary. Missing recorded counts return an unavailable summary. Disabled
+    validation or missing model outputs return None.
 
-    `counts_path` is THIS RUN's count set, recorded by its assignment stage.
-    Falling back to the configured default when it is absent (or no longer on
-    disk, e.g. an artifact stage running on a different machine) is safe rather
-    than merely convenient: the coverage check below compares the count set's own
-    station extent against the study area first, so a default that does not cover
-    this area reports a coverage gap instead of a fit.
+    `counts_path` is the assignment stage's recorded count set. A missing file
+    remains unavailable. Never substitute a configured default during artifact
+    extraction: overlapping geography does not establish the same source, year
+    or observation set. The assignment stage may explicitly select the default
+    and record its path before this function is called.
 
     COVERAGE FIRST. When the available count set does not cover the study area —
     the case for any state with no registered count source, which falls back to
@@ -4488,9 +5185,14 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
     the worker measures this share as a FRACTION everywhere else, and the
     conversion happens at the one call site below."""
     import csv as _csv
-    resolved_counts = counts_path if (counts_path and os.path.exists(counts_path)) else VALIDATION_COUNTS_PATH
-    if not (COUNT_VALIDATION_ENABLED and os.path.exists(resolved_counts)
-            and os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
+    if not COUNT_VALIDATION_ENABLED:
+        return None
+    if not counts_path or not os.path.isfile(counts_path):
+        reason = ("The assignment count file is unavailable. No substitute count set was used."
+                  if counts_path else "No assignment count file was recorded. No substitute count set was used.")
+        return count_validation.unavailable_validation_summary(reason)
+    resolved_counts = counts_path
+    if not (os.path.exists(db_path) and os.path.exists(link_volumes_csv)):
         return None
     with open(resolved_counts) as f:
         stations = list(_csv.DictReader(f))
@@ -4541,6 +5243,8 @@ def _run_count_validation(db_path: str, link_volumes_csv: str, study_bbox=None,
 def build_rules_v4_validation_records(
     *,
     run_id: str,
+    stage_id: str,
+    journal_dir: str,
     model_output_artifact_id: str,
     model_output_artifact_type: str,
     link_volumes_csv: str,
@@ -4585,11 +5289,9 @@ def build_rules_v4_validation_records(
             "pre-volume match audit",
         ],
     }
-    bundle_sha256 = model_validation_core.sha256_payload(validation_input_bundle)
     scenario_role = sb_get_scenario_role(run_row.get("scenario_entry_id"))
     basis = {
         "schema": model_validation_core.COMPARISON_BASIS_SCHEMA,
-        "basis_id": str(uuid.uuid4()),
         "model_run_id": run_id,
         "model_output_artifact": {
             "artifact_id": model_output_artifact_id,
@@ -4619,18 +5321,38 @@ def build_rules_v4_validation_records(
         },
         "network_state_hashes": {"network_state": network_state_digest},
         "acceptance_rule": "unknown",
-        "frozen_at": datetime.now(timezone.utc).isoformat(),
     }
-    assessment = model_validation_core.uncontracted_v4_assessment(
-        validation or {},
-        basis,
-        assessment_id=str(uuid.uuid4()),
-        validation_input_bundle_sha256=bundle_sha256,
-    )
-    # The immutable bytes say pending. A successful custody row proves the
-    # transition to recorded; on failure the caller rewrites only the unbound
-    # local computation to the explicit failure state.
-    return validation_input_bundle, basis, assessment
+    from pathlib import Path
+    import model_stage_computation
+    import model_command_journal
+    inputs = json.loads(model_command_journal.canonical({
+        "workspace_id": run_row.get("workspace_id"),
+        "bundle": validation_input_bundle, "basis": basis,
+    }))
+
+    def compute_records():
+        frozen_basis = json.loads(model_command_journal.canonical(inputs["basis"]))
+        frozen_basis["basis_id"] = str(uuid.uuid4())
+        frozen_basis["frozen_at"] = datetime.now(timezone.utc).isoformat()
+        frozen_bundle = inputs["bundle"]
+        assessment = model_validation_core.uncontracted_v4_assessment(
+            frozen_bundle["raw_point_count_diagnostic"], frozen_basis,
+            assessment_id=str(uuid.uuid4()),
+            validation_input_bundle_sha256=model_validation_core.sha256_payload(frozen_bundle),
+        )
+        return {"bundle": frozen_bundle, "basis": frozen_basis, "assessment": assessment}
+
+    try:
+        retained = model_stage_computation.compute_once(
+            Path(journal_dir), base_url=SUPABASE_URL,
+            deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id,
+            name="legacy-rules-v4:" + model_output_artifact_type,
+            inputs=inputs, compute=compute_records,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Assessment computation unconfirmed; reconcile the original checkpoint before continuing") from None
+    return retained["bundle"], retained["basis"], retained["assessment"]
 
 
 def assess_rules_v5_validation_instrument(
@@ -4642,20 +5364,28 @@ def assess_rules_v5_validation_instrument(
     structural_input_audit_path: str,
     link_volumes_csv: str,
     assessment_id: str,
+    expected_model_run_id: str,
+    expected_input_bundle_sha256: str,
+    expected_comparison_basis_sha256: str,
+    expected_structural_audit_sha256: str,
+    expected_method: str,
+    expected_geography: dict,
+    expected_structural_sources: dict,
     readiness_root: str | None = None,
 ) -> dict:
     """Use the same rules-v5 evaluator as the controlled development study.
 
-    The normal local worker accepts only a caller-frozen v2 package, audit,
-    bundle, and basis. It verifies every input before opening link-volume bytes.
+    This wrapper has no normal dispatch caller yet. It verifies retained structural audit
+    and source bytes, then delegates assessment to the shared evaluator. It does
+    not establish independent preparation or bind structural sources to a run.
     """
-    with open(structural_input_audit_path, encoding="utf-8") as handle:
-        structural_input = json.load(handle)
-    model_structural_input_audit.validate_structural_input_audit(structural_input)
-    if structural_input.get("model_output_bytes_read") is not False:
-        raise model_structural_input_audit.StructuralAuditRefused(
-            "Model output cannot open before the structural input audit passes"
-        )
+    root = readiness_root or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
+    model_structural_input_audit.verify_structural_input_files(
+        structural_input_audit_path, root=root, model_output_path=link_volumes_csv,
+        expected_audit_sha256=expected_structural_audit_sha256,
+        expected_method=expected_method, expected_geography=expected_geography,
+        expected_sources=expected_structural_sources,
+    )
     return model_validation_core_v5.assess_frozen_instrument_files(
         observation_package_path=observation_package_path,
         pre_volume_match_audit_path=pre_volume_match_audit_path,
@@ -4663,8 +5393,28 @@ def assess_rules_v5_validation_instrument(
         comparison_basis_path=comparison_basis_path,
         model_output_path=link_volumes_csv,
         assessment_id=assessment_id,
-        readiness_root=readiness_root or os.path.abspath(os.path.join(os.path.dirname(__file__), "..", "..")),
+        readiness_root=root,
+        prepared_context=model_validation_core_v5.PreparedValidationContext(
+            model_run_id=expected_model_run_id, method=expected_method,
+            input_bundle_sha256=expected_input_bundle_sha256,
+            comparison_basis_sha256=expected_comparison_basis_sha256,
+        ),
     )
+
+
+def materialize_validation_records(record_dir: str, bundle: dict, basis: dict, assessment: dict) -> dict:
+    """Reuse exact retained JSON files and refuse any conflicting local bytes."""
+    import model_record_files
+    values = {"validation_input_bundle": bundle, "model_comparison_basis": basis,
+              "model_validation_assessment": assessment}
+    try:
+        paths = model_record_files.materialize(record_dir, {
+            kind + ".json": model_validation_core.canonical_json(value).encode("utf-8")
+            for kind, value in values.items()
+        })
+        return {kind: paths[kind + ".json"] for kind in values}
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Retained assessment files differ or cannot be materialized; reconcile original bytes") from None
 
 
 def persist_rules_v4_validation_records(
@@ -4683,22 +5433,12 @@ def persist_rules_v4_validation_records(
 
     Storage uploads precede the database transaction and are immutable unique
     objects. If the transaction fails they remain unreferenced pending objects;
-    the returned local assessment says the evidence write failed and no claim
-    path treats it as checked.
+    the returned in-memory assessment says the evidence write failed and no claim
+    path treats it as checked. Retained file bytes remain unchanged.
     """
-    os.makedirs(record_dir, exist_ok=False)
-    paths = {
-        "validation_input_bundle": os.path.join(record_dir, "validation_input_bundle.json"),
-        "model_comparison_basis": os.path.join(record_dir, "model_comparison_basis.json"),
-        "model_validation_assessment": os.path.join(record_dir, "model_validation_assessment.json"),
-    }
-    for artifact_type, payload in (
-        ("validation_input_bundle", validation_input_bundle),
-        ("model_comparison_basis", comparison_basis),
-        ("model_validation_assessment", assessment),
-    ):
-        with open(paths[artifact_type], "w") as handle:
-            handle.write(model_validation_core.canonical_json(payload))
+    paths = materialize_validation_records(
+        record_dir, validation_input_bundle, comparison_basis, assessment,
+    )
 
     try:
         urls = {
@@ -4716,7 +5456,7 @@ def persist_rules_v4_validation_records(
         assessment_size, assessment_hash = facts("model_validation_assessment")
         if basis_hash != model_validation_core.sha256_payload(comparison_basis):
             raise RuntimeError("comparison-basis byte hash drifted")
-        sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_retained_modeling_validation_assessment({
             "p_workspace_id": workspace_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -4754,15 +5494,19 @@ def persist_rules_v4_validation_records(
             "p_planning_use": str(assessment["planning_use"]),
             "p_scientific_outcome": assessment["scientific_outcome"],
             "p_reasons": assessment["reasons"],
-        })
+        }, assessment_id=assessment["assessment_id"], journal_dir=os.path.join(record_dir, "command-journal"))
+        assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         assessment["validation_evidence_write"] = "recorded"
+    except WorkerStateWriteUnconfirmed:
+        assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
+        assessment.pop("validation_custody_receipt", None)
         assessment["validation_evidence_write"] = "validation evidence write failed"
         assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
         )
-        with open(paths["model_validation_assessment"], "w") as handle:
-            handle.write(model_validation_core.canonical_json(assessment))
+        # Keep failure status outside the original retained assessment bytes.
         assessment["validation_evidence_write_error"] = str(exc)
     return assessment
 
@@ -4906,6 +5650,163 @@ def _network_coverage_for_run(run_id: str, db_path: str, link_volumes_csv: str) 
         return {"measured": False, "reason": f"{type(error).__name__}: {error}"}
 
 
+def upload_content_addressed_artifact(
+    run_id: str, stage_id: str, filename: str, data: bytes, content_type: str,
+) -> str:
+    """Retain content-addressed artifact bytes and reconcile through an exact read."""
+    digest = hashlib.sha256(data).hexdigest()
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
+    return upload_verified_immutable_bytes(object_path, data, content_type)
+
+
+def upload_volume_geojson_bytes(run_id: str, stage_id: str, data: bytes) -> str:
+    return upload_content_addressed_artifact(
+        run_id, stage_id, "volumes.geojson", data, "application/geo+json",
+    )
+
+
+def publish_volume_geojson(
+    run_id: str, stage_id: str, work_dir: str,
+    verified_engine_stamp: str, baseline_assignment_metadata: dict, *, workspace_id: str,
+) -> str:
+    """Publish the map artifact while preserving uncertain registration writes."""
+    out_dir = output_work_directory(work_dir)
+    log = ""
+    # Generate GeoJSON for the map and upload to Supabase Storage
+    try:
+        import csv as csv_mod
+        db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
+        if os.path.exists(db_path):
+            conn = sqlite3.connect(db_path)
+            conn.enable_load_extension(True)
+            conn.load_extension(SPATIALITE_PATH)
+
+            volumes = {}
+            vol_path = os.path.join(out_dir, "link_volumes.csv")
+            with open(vol_path) as f:
+                for row in csv_mod.DictReader(f):
+                    lid = int(float(row.get("link_id", row.get("", 0))))
+                    pce = float(row.get("PCE_tot", 0))
+                    if pce > 0:
+                        volumes[lid] = {
+                            "pce_tot": round(pce),
+                            "pce_ab": round(float(row.get("PCE_AB", 0))),
+                            "pce_ba": round(float(row.get("PCE_BA", 0))),
+                            "voc_max": round(float(row.get("VOC_max", 0)), 3),
+                            "delay_factor": round(float(row.get("Delay_factor_Max", 0)), 3),
+                        }
+
+            features = []
+            for lid, vol in volumes.items():
+                row = conn.execute(
+                    "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links WHERE link_id=?", (lid,)
+                ).fetchone()
+                if row and row[3]:
+                    features.append({
+                        "type": "Feature",
+                        "properties": {"link_id": row[0], "name": row[2] or "", "link_type": row[1], **vol},
+                        "geometry": json.loads(row[3]),
+                    })
+            conn.close()
+
+            max_vol = max((v["pce_tot"] for v in volumes.values()), default=0)
+            fc = {
+                "type": "FeatureCollection",
+                "features": features,
+                "metadata": {
+                    "totalLinks": len(features),
+                    "maxVolume": max_vol,
+                    "engine": verified_engine_stamp,
+                    "modelRunId": run_id,
+                    **baseline_assignment_metadata,
+                },
+            }
+
+            import model_record_files
+            geojson_bytes = json.dumps(fc, allow_nan=False).encode("utf-8")
+            try:
+                model_record_files.materialize(out_dir, {"volumes.geojson": geojson_bytes})
+            except Exception:
+                raise WorkerStateWriteUnconfirmed("Volume map bytes differ or local publication is unconfirmed; reconcile before continuing") from None
+            storage_ref = upload_volume_geojson_bytes(run_id, stage_id, geojson_bytes)
+            sb_record_retained_artifact({
+                "run_id": run_id,
+                "stage_id": stage_id,
+                "artifact_type": "volumes_geojson",
+                "file_url": storage_ref,
+                "file_size_bytes": len(geojson_bytes),
+                "content_hash": hashlib.sha256(geojson_bytes).hexdigest(),
+                "metadata_json": {
+                    **baseline_assignment_metadata,
+                    "format": "geojson",
+                    "features": len(features),
+                    "maxVolume": max_vol,
+                },
+            }, workspace_id=workspace_id,
+                journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                logical_name="volumes.geojson")
+            log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
+        else:
+            log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except Exception as e:
+        log += f"GeoJSON generation warning: {e}\n"
+
+    return log
+
+
+def retain_model_evidence_packet(run_id: str, stage_id: str, work_dir: str, evidence: dict) -> tuple[dict, bytes]:
+    """Retain the original summary timestamp and bytes after assessment custody."""
+    from pathlib import Path
+    import model_stage_computation
+    import model_record_files
+    try:
+        inputs = json.loads(model_validation_core.canonical_json(evidence))
+        retained = model_stage_computation.compute_once(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id, name="evidence-packet",
+            inputs=inputs,
+            compute=lambda: {**inputs, "created_at": datetime.now(timezone.utc).isoformat()},
+        )
+        content = model_validation_core.canonical_json(retained).encode("utf-8")
+        model_record_files.materialize(Path(output_work_directory(work_dir)), {"evidence_packet.json": content})
+        return retained, content
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Evidence packet retention unconfirmed; reconcile original records before continuing") from None
+
+
+def prepare_primary_model_output(run_id: str, stage_id: str, work_dir: str, setup_result: dict, assign_result: dict, package_meta: dict | None) -> dict:
+    """Keep the primary artifact identity bound to measured bytes and saved inputs."""
+    from pathlib import Path
+    import model_stage_preparation
+    try:
+        package_work_directory(work_dir, package_meta.get("package_dir") if isinstance(package_meta, dict) else None)
+        return model_stage_preparation.prepare_files(
+            Path(work_dir) / "stage-journals" / stage_id,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            run_id=run_id, stage_id=stage_id,
+            source_paths={
+                "link_volumes": Path(output_work_directory(work_dir)) / "link_volumes.csv",
+                "network": Path(project_work_directory(work_dir)) / "project_database.sqlite",
+            },
+            inputs={"setup": setup_result, "assignment": assign_result, "package": package_meta},
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Primary model output preparation unconfirmed; reconcile saved inputs before continuing") from None
+
+
+def bind_prepared_primary_output(prepared: dict, artifact_payload: dict) -> None:
+    """Refuse changed primary bytes before registering the prepared artifact ID."""
+    facts = prepared["source_files"]["link_volumes"]
+    if artifact_payload["content_hash"] != facts["sha256"] or artifact_payload["file_size_bytes"] != facts["size_bytes"]:
+        raise WorkerStateWriteUnconfirmed("Primary model output bytes changed after preparation")
+    if artifact_payload["run_id"] != prepared["run_id"] or artifact_payload["stage_id"] != prepared["stage_id"] or artifact_payload["artifact_type"] != "link_volumes":
+        raise WorkerStateWriteUnconfirmed("Primary model output scope differs from preparation")
+    artifact_payload["id"] = prepared["output_artifact_id"]
+
+
 def stage_artifacts(
     run_id: str,
     stage_id: str,
@@ -4914,7 +5815,18 @@ def stage_artifacts(
     assign_result: dict,
     package_meta: dict | None = None,
 ) -> str:
-    out_dir = os.path.join(work_dir, "run_output")
+    package_work_directory(work_dir, package_meta.get("package_dir") if isinstance(package_meta, dict) else None)
+    out_dir = output_work_directory(work_dir)
+    # Preserve the assignment record while deriving a verified consumer-local
+    # input set before any validation or evidence publication can occur.
+    if assign_result.get("count_inputs") is not None:
+        retained_counts = retain_assignment_counts(
+            assign_result.get("counts_path"), out_dir,
+            status_directory=out_dir, retained_record=assign_result["count_inputs"],
+            artifact_consumer=True,
+        )
+        assign_result = {**assign_result, "count_inputs": retained_counts,
+                         "counts_path": retained_counts["counts_path"]}
     (
         verified_assignment_profile,
         verified_assignment_profile_payload,
@@ -4944,9 +5856,10 @@ def stage_artifacts(
         json.dump(setup_result, setup_summary_file, indent=2)
 
     # ── Daily VMT (Σ link volume × length in miles) and per-capita VMT ──
-    db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
+    db_path = os.path.join(project_work_directory(work_dir), "project_database.sqlite")
     link_volumes_csv = os.path.join(out_dir, "link_volumes.csv")
-    model_output_artifact_id = str(uuid.uuid4())
+    prepared_output = prepare_primary_model_output(run_id, stage_id, work_dir, setup_result, assign_result, package_meta)
+    model_output_artifact_id = prepared_output["output_artifact_id"]
     calibration_result = assign_result.get("calibration")
     daily_vmt = None
     vmt_per_capita = None
@@ -5351,7 +6264,8 @@ def stage_artifacts(
     run_row_for_validation = sb_get_run(run_id)
     validation_input_bundle, comparison_basis, validation_assessment = (
         build_rules_v4_validation_records(
-            run_id=run_id,
+            run_id=run_id, stage_id=stage_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
             model_output_artifact_id=model_output_artifact_id,
             model_output_artifact_type="link_volumes",
             link_volumes_csv=link_volumes_csv,
@@ -5379,19 +6293,9 @@ def stage_artifacts(
     validation_record_dir = os.path.join(
         out_dir, "validation_assessments", validation_assessment["assessment_id"]
     )
-    os.makedirs(validation_record_dir, exist_ok=False)
-    validation_record_paths = {
-        "validation_input_bundle": os.path.join(validation_record_dir, "validation_input_bundle.json"),
-        "model_comparison_basis": os.path.join(validation_record_dir, "model_comparison_basis.json"),
-        "model_validation_assessment": os.path.join(validation_record_dir, "model_validation_assessment.json"),
-    }
-    for artifact_type, payload in (
-        ("validation_input_bundle", validation_input_bundle),
-        ("model_comparison_basis", comparison_basis),
-        ("model_validation_assessment", validation_assessment),
-    ):
-        with open(validation_record_paths[artifact_type], "w") as handle:
-            handle.write(model_validation_core.canonical_json(payload))
+    validation_record_paths = materialize_validation_records(
+        validation_record_dir, validation_input_bundle, comparison_basis, validation_assessment,
+    )
 
     # One artifact contract for the evidence that may (or may not) support a
     # count-backed claim. Calibration's own holdout is selection evidence, so
@@ -5399,7 +6303,7 @@ def stage_artifacts(
     independent_validation_result = assign_result.get("independent_validation")
     credibility_evidence = model_credibility.build_model_credibility_evidence(
         counts_path=assign_result.get("counts_path"),
-        out_dir=out_dir,
+        out_dir=(assign_result.get("count_inputs") or {}).get("counts_input_directory") or out_dir,
         gateways=gateways,
         validation=validation,
         calibration=calibration_result,
@@ -5541,14 +6445,10 @@ def stage_artifacts(
             ]
             if c
         ],
-        "created_at": datetime.now(timezone.utc).isoformat(),
         "model_area": model_area_label,
     }
 
     evidence_path = os.path.join(out_dir, "evidence_packet.json")
-    with open(evidence_path, "w") as f:
-        json.dump(evidence, f, indent=2)
-    log += f"Wrote evidence packet to {evidence_path}.\n"
 
     # Register non-validation artifacts first. The exact link-volume artifact id
     # is already frozen into the comparison basis and is the parent of the
@@ -5581,8 +6481,16 @@ def stage_artifacts(
                 "metadata_json": metadata,
             }
             if atype == "link_volumes":
-                artifact_payload["id"] = model_output_artifact_id
-            registered = sb_post_artifact(artifact_payload)
+                bind_prepared_primary_output(prepared_output, artifact_payload)
+                registered = sb_record_retained_artifact(
+                    artifact_payload, workspace_id=_ws_id,
+                    journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                )
+            else:
+                registered = sb_record_retained_artifact(
+                    artifact_payload, workspace_id=_ws_id, logical_name=fname,
+                    journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                )
             if registered:
                 registered_artifacts[atype] = registered
 
@@ -5611,7 +6519,7 @@ def stage_artifacts(
         expected_basis_hash = model_validation_core.sha256_payload(comparison_basis)
         if basis_hash != expected_basis_hash:
             raise RuntimeError("validation evidence write failed: comparison-basis byte hash drifted")
-        sb_record_modeling_validation_assessment({
+        custody_receipt = sb_record_retained_modeling_validation_assessment({
             "p_workspace_id": _ws_id,
             "p_model_run_id": run_id,
             "p_stage_id": stage_id,
@@ -5651,18 +6559,22 @@ def stage_artifacts(
             "p_planning_use": str(validation_assessment["planning_use"]),
             "p_scientific_outcome": validation_assessment["scientific_outcome"],
             "p_reasons": validation_assessment["reasons"],
-        })
+        }, assessment_id=validation_assessment["assessment_id"], journal_dir=os.path.join(os.path.dirname(validation_record_paths["model_validation_assessment"]), "command-journal"))
         validation["validation_evidence_write"] = "recorded"
+        validation_assessment["validation_custody_receipt"] = json.loads(json.dumps(custody_receipt, allow_nan=False))
         validation_assessment["validation_evidence_write"] = "recorded"
         log += "Rules-v4 validation assessment recorded in immutable custody.\n"
+    except WorkerStateWriteUnconfirmed:
+        validation_assessment.pop("validation_custody_receipt", None)
+        raise
     except Exception as exc:
         validation["validation_evidence_write"] = "validation evidence write failed"
+        validation_assessment.pop("validation_custody_receipt", None)
         validation_assessment["validation_evidence_write"] = "validation evidence write failed"
         validation_assessment["reasons"].append(
             "Validation evidence write failed. The computation is scientifically unchecked until custody succeeds."
         )
-        with open(validation_record_paths["model_validation_assessment"], "w") as handle:
-            handle.write(model_validation_core.canonical_json(validation_assessment))
+        # Keep failure status outside the original retained assessment bytes.
         log += f"Validation evidence write failed: {exc}\n"
 
     try:
@@ -5673,36 +6585,23 @@ def stage_artifacts(
             calibration_result,
             independent_validation_result,
         )
-        log += "Modeling claim spine updated from the rules-v4 scientific outcome.\n"
+        log += "Modeling evidence update acknowledged.\n"
+    except WorkerStateWriteUnconfirmed:
+        raise
     except Exception as exc:
         log += f"Modeling evidence spine warning: {exc}\n"
 
     # The evidence packet is a readable summary rather than a bound assessment.
     # Write it after custody so it carries the actual persistence state.
-    with open(evidence_path, "w") as handle:
-        json.dump(evidence, handle, indent=2)
+    evidence, evidence_bytes = retain_model_evidence_packet(run_id, stage_id, work_dir, evidence)
     evidence_storage_ref = None
     try:
-        ev_object_path = f"model-runs/{run_id}/evidence_packet.json"
-        with open(evidence_path, "rb") as handle:
-            ev_upload_res = requests.post(
-                f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{ev_object_path}",
-                headers={
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/json",
-                    "x-upsert": "true",
-                },
-                data=handle.read(),
-                timeout=60,
-            )
-        if ev_upload_res.status_code in (200, 201):
-            evidence_storage_ref = f"storage://run-artifacts/{ev_object_path}"
-    except Exception as exc:
+        evidence_storage_ref = upload_content_addressed_artifact(
+            run_id, stage_id, "evidence_packet.json", evidence_bytes, "application/json",
+        )
+    except WorkerStateWriteUnconfirmed as exc:
         log += f"Evidence packet Storage upload warning: {exc}\n"
-    with open(evidence_path, "rb") as handle:
-        evidence_bytes = handle.read()
-    sb_post_artifact({
+    sb_record_retained_artifact({
         "run_id": run_id,
         "stage_id": stage_id,
         "artifact_type": "evidence_packet",
@@ -5710,18 +6609,21 @@ def stage_artifacts(
         "file_size_bytes": len(evidence_bytes),
         "content_hash": hashlib.sha256(evidence_bytes).hexdigest(),
         "metadata_json": evidence,
-    })
+    }, workspace_id=_ws_id,
+        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+        logical_name="evidence_packet.json")
 
     # Register the zone-attributes package input (local:// — same-host consumers
     # only). The ActivitySim behavioral worker reads this + travel_time_skims.omx
     # to build a real ActivitySim input bundle; it's also useful screening
     # provenance for any run. Lives in package/, not run_output/, so it's not in
     # the loop above.
-    zone_attr_path = os.path.join(work_dir, "package", "zone_attributes.csv")
+    zone_package_dir = (package_meta or {}).get("package_dir") or os.path.join(work_dir, "package")
+    zone_attr_path = os.path.join(zone_package_dir, "zone_attributes.csv")
     if os.path.exists(zone_attr_path):
         with open(zone_attr_path, "rb") as fh:
             za_hash = hashlib.sha256(fh.read()).hexdigest()
-        sb_post_artifact({
+        sb_record_retained_artifact({
             "run_id": run_id,
             "stage_id": stage_id,
             "artifact_type": "zone_attributes",
@@ -5729,7 +6631,9 @@ def stage_artifacts(
             "file_size_bytes": os.path.getsize(zone_attr_path),
             "content_hash": za_hash,
             "metadata_json": {"filename": "zone_attributes.csv"},
-        })
+        }, workspace_id=_ws_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+            logical_name="zone_attributes.csv")
 
     # Register KPIs
     kpis = [
@@ -5866,7 +6770,7 @@ def stage_artifacts(
     # Observed-count validation KPIs (screening-grade diagnostic). Emitted only
     # when >=1 station matched — a 0-match run is not a validation. The gate
     # label + per-station detail live in evidence.validation.
-    if validation and validation.get("stations_matched", 0) > 0:
+    if validation and (validation.get("stations_matched") or 0) > 0:
         kpis.append(("general", "validation_stations_matched", "Validation Stations Matched", validation["stations_matched"], "count"))
         if validation.get("median_ape") is not None:
             kpis.append(("assignment", "validation_median_ape", "Validation Median APE", validation["median_ape"], "percent"))
@@ -6012,102 +6916,13 @@ def stage_artifacts(
                 "equity_focus": equity_screen.get("equity_focus"),
                 "rest_of_area": equity_screen.get("rest_of_area"),
             }
-        sb_post_kpi(kpi_payload)
+        sb_record_retained_kpi(kpi_payload, workspace_id=_ws_id, stage_id=stage_id,
+            journal_dir=os.path.join(work_dir, "stage-journals", stage_id))
 
-    # Generate GeoJSON for the map and upload to Supabase Storage
-    try:
-        import csv as csv_mod
-        db_path = os.path.join(work_dir, "aeq_project", "project_database.sqlite")
-        if os.path.exists(db_path):
-            conn = sqlite3.connect(db_path)
-            conn.enable_load_extension(True)
-            conn.load_extension(SPATIALITE_PATH)
-
-            volumes = {}
-            vol_path = os.path.join(out_dir, "link_volumes.csv")
-            with open(vol_path) as f:
-                for row in csv_mod.DictReader(f):
-                    lid = int(float(row.get("link_id", row.get("", 0))))
-                    pce = float(row.get("PCE_tot", 0))
-                    if pce > 0:
-                        volumes[lid] = {
-                            "pce_tot": round(pce),
-                            "pce_ab": round(float(row.get("PCE_AB", 0))),
-                            "pce_ba": round(float(row.get("PCE_BA", 0))),
-                            "voc_max": round(float(row.get("VOC_max", 0)), 3),
-                            "delay_factor": round(float(row.get("Delay_factor_Max", 0)), 3),
-                        }
-
-            features = []
-            for lid, vol in volumes.items():
-                row = conn.execute(
-                    "SELECT link_id, link_type, name, AsGeoJSON(geometry) FROM links WHERE link_id=?", (lid,)
-                ).fetchone()
-                if row and row[3]:
-                    features.append({
-                        "type": "Feature",
-                        "properties": {"link_id": row[0], "name": row[2] or "", "link_type": row[1], **vol},
-                        "geometry": json.loads(row[3]),
-                    })
-            conn.close()
-
-            max_vol = max((v["pce_tot"] for v in volumes.values()), default=0)
-            fc = {
-                "type": "FeatureCollection",
-                "features": features,
-                "metadata": {
-                    "totalLinks": len(features),
-                    "maxVolume": max_vol,
-                    "engine": verified_engine_stamp,
-                    "modelRunId": run_id,
-                    **baseline_assignment_metadata,
-                },
-            }
-
-            geojson_path = os.path.join(out_dir, "volumes.geojson")
-            with open(geojson_path, "w") as f:
-                json.dump(fc, f)
-
-            # Upload to the (private) run-artifacts bucket. Store the storage
-            # PATH — not a public URL — so the app resolves it through a
-            # service-role signed URL and workspace RLS is never bypassed.
-            bucket = "run-artifacts"
-            object_path = f"model-runs/{run_id}/volumes.geojson"
-            upload_url = f"{SUPABASE_URL}/storage/v1/object/{bucket}/{object_path}"
-            with open(geojson_path, "rb") as f:
-                upload_headers = {
-                    "apikey": SUPABASE_KEY,
-                    "Authorization": f"Bearer {SUPABASE_KEY}",
-                    "Content-Type": "application/geo+json",
-                    "x-upsert": "true",
-                }
-                upload_res = requests.post(upload_url, headers=upload_headers, data=f.read())
-
-            if upload_res.status_code in (200, 201):
-                storage_ref = f"storage://{bucket}/{object_path}"
-                with open(geojson_path, "rb") as geojson_file:
-                    geojson_hash = hashlib.sha256(geojson_file.read()).hexdigest()
-                sb_post_artifact({
-                    "run_id": run_id,
-                    "stage_id": stage_id,
-                    "artifact_type": "volumes_geojson",
-                    "file_url": storage_ref,
-                    "file_size_bytes": os.path.getsize(geojson_path),
-                    "content_hash": geojson_hash,
-                    "metadata_json": {
-                        **baseline_assignment_metadata,
-                        "format": "geojson",
-                        "features": len(features),
-                        "maxVolume": max_vol,
-                    },
-                })
-                log += f"Uploaded volumes GeoJSON ({len(features)} features) to private Storage as {storage_ref}.\n"
-            else:
-                log += f"Storage upload failed ({upload_res.status_code}): {upload_res.text[:200]}\n"
-        else:
-            log += f"Skipped GeoJSON generation because project database was missing at {db_path}.\n"
-    except Exception as e:
-        log += f"GeoJSON generation warning: {e}\n"
+    log += publish_volume_geojson(
+        run_id, stage_id, work_dir, verified_engine_stamp, baseline_assignment_metadata,
+        workspace_id=_ws_id,
+    )
 
     log += "Artifact extraction complete.\n"
     return log
@@ -6198,6 +7013,99 @@ def process_stage(stage: dict) -> bool:
                 _WORKER_HEARTBEAT.set_current_work(None)
 
 
+def write_run_state(work_dir: str, state: dict) -> None:
+    """Stop the stage when publication of its local handoff state is uncertain."""
+    import model_run_state
+    import model_attempt_writer
+    try:
+        writer = model_attempt_writer.current()
+        if writer is not None:
+            return writer.publish_state(work_dir, state)
+        model_run_state.publish(work_dir, state)
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Run state publication unconfirmed; inspect the saved state before continuing") from None
+
+
+def package_work_directory(work_dir: str, package_directory: str | None) -> str | None:
+    """Validate the supplied managed package path without substituting inputs."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "package_directory", work_dir, package_directory)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return package_directory
+    try:
+        expected = writer.package_directory(work_dir)
+        if package_directory != expected:
+            raise ValueError("Managed package path differs from confirmed working copy")
+        return expected
+    except Exception as error:
+        writer.stopped = True
+        raise WorkerStateWriteUnconfirmed("Managed package path requires reconciliation") from error
+
+
+def project_work_directory(work_dir: str) -> str:
+    """Use confirmed managed working files, with legacy layout outside a binding."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "project_directory", work_dir)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return os.path.join(work_dir, "aeq_project")
+    try:
+        return writer.project_directory(work_dir)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Managed project path requires reconciliation") from error
+
+
+def create_assignment_output_directory(work_dir: str, name: str) -> str:
+    """Reserve fresh managed outputs without adopting previous assignment files."""
+    import model_engine_binding
+    engine = model_engine_binding.current()
+    if engine is not None:
+        return _call_engine_binding(engine, "create_outputs", work_dir, name)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        path = os.path.join(work_dir, name)
+        os.makedirs(path, exist_ok=True)
+        return path
+    try:
+        return writer.create_assignment_outputs(work_dir, name)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Assignment output creation requires reconciliation") from error
+
+
+def output_work_directory(work_dir: str) -> str:
+    """Use confirmed managed working files, with legacy layout outside a binding."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is None:
+        return os.path.join(work_dir, "run_output")
+    try:
+        return writer.output_directory(work_dir)
+    except Exception as error:
+        raise WorkerStateWriteUnconfirmed("Managed output path requires reconciliation") from error
+
+
+def run_work_directory(run_id: str) -> str:
+    """Use the complete database identity; never adopt ambiguous legacy scratch."""
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return str(writer.workspace(os.path.join(RUN_WORK_ROOT, "runs"), run_id))
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Attempt workspace requires reconciliation") from error
+    return os.path.join(RUN_WORK_ROOT, "runs", run_id)
+
+
 def _claim_and_run_stage(stage: dict) -> bool:
     """The body of `process_stage`, which owns the serialization above it.
 
@@ -6210,6 +7118,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
     print(f"[{time.strftime('%X')}] Processing: {stage_name} (run={run_id[:8]}…)")
 
+    work_dir = run_work_directory(run_id)
+    if stage_name != "AequilibraE Setup" and not os.path.exists(work_dir) and os.path.exists(os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])):
+        raise RuntimeError("Legacy model scratch needs explicit full-run identity reconciliation before this stage can be claimed")
+
     # Atomic claim: only one worker may transition this stage queued -> running.
     claimed = sb_claim_stage(
         stage_id,
@@ -6221,7 +7133,6 @@ def _claim_and_run_stage(stage: dict) -> bool:
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
-    work_dir = os.path.join(RUN_WORK_ROOT, "runs", run_id[:12])
     os.makedirs(work_dir, exist_ok=True)
     state_file = os.path.join(work_dir, f"state.json")
 
@@ -6234,8 +7145,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
             result = stage_setup(run_id, stage_id, work_dir, bbox, pkg_dir)
             os.makedirs(os.path.join(work_dir, "run_output"), exist_ok=True)
-            with open(state_file, "w") as f:
-                json.dump({"setup": result, "package": package_meta}, f)
+            write_run_state(work_dir, {"setup": result, "package": package_meta})
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -6248,8 +7158,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
             pkg_dir = state["package"]["package_dir"]
             result = stage_assignment(run_id, stage_id, work_dir, state["setup"], pkg_dir)
             state["assignment"] = result
-            with open(state_file, "w") as f:
-                json.dump(state, f)
+            write_run_state(work_dir, state)
             sb_patch_stage(stage_id, {
                 "status": "succeeded",
                 "completed_at": datetime.now(timezone.utc).isoformat(),
@@ -6328,6 +7237,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     output_dir_name="activitysim_assignment_output",
                     demand_is_vehicle=True,
                     counts_path_override=first_assignment.get("counts_path"),
+                    count_inputs_override=first_assignment.get("count_inputs"),
                     persisted_network_settings=accepted_settings,
                     persisted_network_settings_payload_json=accepted_settings_payload,
                     persisted_network_settings_digest=expected_settings_digest,
@@ -6363,13 +7273,12 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     "ActivitySim assignment handoff",
                 )
                 state["activitysim_assignment"] = result
-                with open(state_file, "w") as f:
-                    json.dump(state, f)
+                write_run_state(work_dir, state)
                 volume_path = os.path.join(
                     work_dir, "activitysim_assignment_output", "link_volumes.csv"
                 )
                 activitysim_daily_vmt = compute_daily_vmt(
-                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    os.path.join(project_work_directory(work_dir), "project_database.sqlite"),
                     volume_path,
                 )
                 if activitysim_daily_vmt is None:
@@ -6386,9 +7295,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     )
                 with open(volume_path, "rb") as volume_handle:
                     volume_bytes = volume_handle.read()
-                activitysim_artifact_id = str(uuid.uuid4())
-                sb_post_artifact({
-                    "id": activitysim_artifact_id,
+                run_row = sb_get_run(run_id)
+                activitysim_artifact = sb_record_retained_artifact({
                     "run_id": run_id,
                     "stage_id": stage_id,
                     "artifact_type": "activitysim_link_volumes",
@@ -6414,7 +7322,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             ),
                         },
                     },
-                })
+                }, workspace_id=str(run_row.get("workspace_id") or ""),
+                    journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
+                    logical_name="activitysim_link_volumes.csv")
+                activitysim_artifact_id = activitysim_artifact["id"]
                 for kpi_name, kpi_label, value, unit, provenance in (
                     (
                         "activitysim_assigned_vehicle_trips",
@@ -6438,7 +7349,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         ),
                     ),
                 ):
-                    sb_post_kpi({
+                    sb_record_retained_kpi({
                         "run_id": run_id,
                         "kpi_category": "assignment",
                         "kpi_name": kpi_name,
@@ -6451,16 +7362,16 @@ def _claim_and_run_stage(stage: dict) -> bool:
                             "assignment_engine": "AequilibraE",
                             "uncalibrated": True,
                         },
-                    })
+                    }, workspace_id=str(run_row.get("workspace_id") or ""), stage_id=stage_id,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id))
                 activitysim_validation = _run_count_validation(
-                    os.path.join(work_dir, "aeq_project", "project_database.sqlite"),
+                    os.path.join(project_work_directory(work_dir), "project_database.sqlite"),
                     volume_path,
                     state.get("setup", {}).get("bbox"),
                     counts_path=result.get("counts_path") or first_assignment.get("counts_path"),
                     intrazonal_share_pct=None,
                     zone_count=(result.get("network") or {}).get("zones"),
                 )
-                run_row = sb_get_run(run_id)
                 activitysim_profile, _profile_payload, activitysim_profile_digest = (
                     validated_convergence_profile(
                         result.get("convergence"), "ActivitySim validation assessment"
@@ -6468,7 +7379,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 )
                 input_bundle, comparison_basis, activitysim_assessment = (
                     build_rules_v4_validation_records(
-                        run_id=run_id,
+                        run_id=run_id, stage_id=stage_id,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
                         model_output_artifact_id=activitysim_artifact_id,
                         model_output_artifact_type="activitysim_link_volumes",
                         link_volumes_csv=volume_path,
@@ -6614,6 +7526,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 first_volumes = verified_latest_local_artifact(
                     run_id,
                     "link_volumes_calibrated" if calibrated_comparison else "link_volumes",
+                    retained_directory=work_dir,
                     expected_assignment_profile=shared_assignment_profile,
                     expected_assignment_profile_payload_json=shared_assignment_profile_payload,
                     expected_assignment_profile_digest=shared_assignment_profile_digest,
@@ -6626,6 +7539,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                 second_volumes = verified_latest_local_artifact(
                     run_id,
                     "activitysim_link_volumes",
+                    retained_directory=work_dir,
                     expected_assignment_profile=shared_assignment_profile,
                     expected_assignment_profile_payload_json=shared_assignment_profile_payload,
                     expected_assignment_profile_digest=shared_assignment_profile_digest,
@@ -6649,7 +7563,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     sys.path.insert(0, scripts_dir)
                 from compare_behavioral_demand_outputs import compare_link_volume_runs
 
-                result = compare_link_volume_runs(
+                result = retain_agreement_comparison(
+                    run_id, stage_id, work_dir, compare=compare_link_volume_runs,
                     first_csv=first_volumes,
                     second_csv=second_volumes,
                     first_label=(
@@ -6676,6 +7591,7 @@ def _claim_and_run_stage(stage: dict) -> bool:
                     second_network_state_record=shared_network_state,
                     second_network_state_digest=shared_network_state_digest,
                 )
+                agreement_workspace = str(sb_get_run(run_id).get("workspace_id") or "")
                 for artifact_type, path, content_type in (
                     ("demand_model_agreement", result["json_path"], "application/json"),
                     ("demand_model_agreement_report", result["markdown_path"], "text/markdown"),
@@ -6687,6 +7603,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
                         artifact_type,
                         path,
                         content_type,
+                        workspace_id=agreement_workspace,
+                        journal_dir=os.path.join(work_dir, "stage-journals", stage_id),
                         first_assignment_convergence=first_convergence_record,
                         second_assignment_convergence=second_convergence_record,
                         assignment_profile=shared_assignment_profile,
@@ -6729,6 +7647,10 @@ def _claim_and_run_stage(stage: dict) -> bool:
 
         print(f"[{time.strftime('%X')}] ✅ {stage_name} succeeded")
 
+    except WorkerStateWriteUnconfirmed:
+        # A lost acknowledgement can follow a committed success. Stop this
+        # attempt and leave the persisted state for reconciliation.
+        raise
     except Exception as e:
         error_msg = f"{type(e).__name__}: {e}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed: {error_msg}")
@@ -6757,13 +7679,22 @@ def _claim_and_run_stage(stage: dict) -> bool:
         return True
 
     # Check if run is complete
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded",
-        headers=HEADERS,
-    )
-    if res.status_code == 200 and not res.json():
-        print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded",
+            headers=HEADERS,
+            timeout=30,
+        )
+        if res.status_code != 200:
+            raise RuntimeError("Worker completion read unconfirmed: HTTP response failed")
+        unfinished_stages = res.json()
+        if not isinstance(unfinished_stages, list):
+            raise RuntimeError("Worker completion read unconfirmed: expected a stage list")
+    except (requests.RequestException, ValueError) as error:
+        raise RuntimeError("Worker completion read unconfirmed: no valid response") from error
+    if not unfinished_stages:
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": datetime.now(timezone.utc).isoformat()})
+        print(f"[{time.strftime('%X')}] 🎉 Run {run_id[:8]}… complete!")
 
     return True
 
@@ -6803,7 +7734,7 @@ def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
         return []
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_stages"
-        f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+        f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}&select=id,stage_name,sort_order,status,error_message,updated_at&order=sort_order.asc"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -6828,12 +7759,23 @@ def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
 
 
 def mark_stage_skipped(stage: dict, reason: str):
-    sb_patch_stage(stage["id"], {
-        "status": "skipped",
-        "error_message": reason[:2000],
-        "completed_at": datetime.now(timezone.utc).isoformat(),
-        "log_tail": reason,
-    })
+    """Retain the exact blocked decision; the database derives its current reason."""
+    import model_skip_command
+    try:
+        prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+        blockers = [row for row in prior if row["status"] in {"failed", "cancelled", "skipped"}]
+        if not blockers:
+            return False
+        run = sb_get_run(stage["run_id"])
+        receipt = model_skip_command.deliver(
+            os.path.join(run_work_directory(stage["run_id"]), "skip-commands", stage["id"]),
+            stage=stage, blocker=blockers[-1], workspace_id=run["workspace_id"],
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return receipt["outcome"] == "skipped"
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Blocked stage decision unconfirmed; recover the saved request before continuing") from None
 
 
 # This worker owns exactly these stage names. Other workers (e.g. the
@@ -6867,7 +7809,7 @@ def fetch_queued_stages(run_id: str | None = None, limit: int = 25) -> list[dict
     if run_id:
         url += f"&run_id=eq.{urllib.parse.quote(run_id, safe='')}"
     url += (
-        "&select=id,run_id,stage_name,status,sort_order,created_at"
+        "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
         f"&order=created_at.asc,sort_order.asc&limit={int(limit)}"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
@@ -6894,9 +7836,8 @@ def process_first_actionable_stage(stages: list[dict]) -> str:
         if readiness == "ready":
             return "processed" if process_stage(stage) else "lost"
         if readiness == "blocked_terminal":
-            print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
-            mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-            return "skipped"
+            print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
+            return "skipped" if mark_stage_skipped(stage, reason or "Skipped due to failed prior stage") else "lost"
     return "idle"
 
 
@@ -7170,14 +8111,12 @@ class RunTriggerExecutor:
                 # "looks fine, does nothing" failure this whole lane exists to
                 # remove. The run id is printed IN FULL and the consequence is
                 # spelled out, because this line is the only trace that a pushed
-                # run stopped here — process_stage records its own failures, so
-                # what lands here is a failure above it (a stage read, a network
-                # blip) that left the run queued rather than failed.
+                # run stopped here. A lost state-write acknowledgement may
+                # follow a committed change, so do not infer its database state.
                 print(
                     f"[{time.strftime('%X')}] Pushed run {run_id} errored before reaching a stage "
-                    f"outcome: {type(e).__name__}: {e}. Its stages are unchanged, so a polling "
-                    "worker can still take it and OpenPlan's staleness sweep will fail it if "
-                    "nothing does."
+                    f"outcome: {type(e).__name__}: {e}. Inspect persisted stage state before retrying; "
+                    "an acknowledgement can be lost after a write commits."
                 )
             finally:
                 with self._lock:

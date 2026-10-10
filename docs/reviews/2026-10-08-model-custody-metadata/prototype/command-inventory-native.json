@@ -1,0 +1,24 @@
+{
+  "result": "passed",
+  "retained_native_kpi_commands": 1,
+  "journal_rows_unchanged": true,
+  "credentials_removed": true,
+  "gateway": "already removed by dispatcher proof",
+  "inventory": {
+    "commands": [
+      {
+        "request_id": "69d2d904-d1f4-504c-8019-a2953d874dc0",
+        "operation": "record_legacy_model_kpi",
+        "run_id": "1eac93f4-7614-424b-8377-cf465ba02fd1",
+        "stage_id": "adc7d94c-39cd-469f-a293-e800e3899baa",
+        "delivery": "receipt_retained",
+        "request_sha256": "8384e97547cf0ebb1cf7c34c8695c05bf83fd404813dece2c9a46ba9a94619f3",
+        "receipt_sha256": "6e6b2dd1b1da469aec520180a14c08f6261bdabcb47650c43fee803ac5d28d0b"
+      }
+    ],
+    "server_state_checked": false,
+    "ownership_checked": false,
+    "model_resumed": false
+  },
+  "scope": "Fresh CLI reads a receipt created by actual dispatcher HTTP delivery. Does not query PostgreSQL or prove current ownership/output existence."
+}

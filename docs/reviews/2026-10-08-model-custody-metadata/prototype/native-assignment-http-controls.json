@@ -1,0 +1,53 @@
+{
+  "proof_sha256": "e6ece0a2870a11fa60b2e334a994a4059d603782e044a61e30991d0cdf43a20f",
+  "controls": [
+    {
+      "control": "baseline",
+      "native_converged": true,
+      "modeled_transit": "modeled",
+      "registered_artifacts": [
+        "model_assignment_geometry",
+        "model_count_inputs",
+        "model_package_working_copy",
+        "model_project_working_copy",
+        "model_transit_inputs"
+      ],
+      "stage_remains_running": true,
+      "database": "openplan_attempt_cli_4efa080d3ce14c7392d8acfc335ad69e"
+    },
+    {
+      "control": "harmless",
+      "native_converged": true,
+      "modeled_transit": "modeled",
+      "registered_artifacts": [
+        "model_assignment_geometry",
+        "model_count_inputs",
+        "model_package_working_copy",
+        "model_project_working_copy",
+        "model_transit_inputs"
+      ],
+      "stage_remains_running": true,
+      "database": "openplan_attempt_cli_cdc5ddbef1a744e1b1fde8fabeb03dd5"
+    },
+    {
+      "control": "omit-geometry-registration",
+      "detected": "Installed input registration differs"
+    },
+    {
+      "control": "restored",
+      "native_converged": true,
+      "modeled_transit": "modeled",
+      "registered_artifacts": [
+        "model_assignment_geometry",
+        "model_count_inputs",
+        "model_package_working_copy",
+        "model_project_working_copy",
+        "model_transit_inputs"
+      ],
+      "stage_remains_running": true,
+      "database": "openplan_attempt_cli_41cda42b5a7c476f90092ee10375a23c"
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-assignment-http-controls-20261008",
+  "limits": "Full synthetic native stage with live isolated PostgREST and installed commands. No lost-commit recovery, final publication, model restart, larger-network or scientific acceptance."
+}

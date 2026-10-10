@@ -1,0 +1,26 @@
+{
+  "proof_sha256": "f0b0664011c0818b918e81327a91396faf9e3973b6b89f57fbf25cdc3de1c55c",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "matched": true
+    },
+    {
+      "control": "matrix-mismatch",
+      "returncode": 1,
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "matched": true
+    }
+  ],
+  "limits": "Readback of one completed synthetic native assignment; deliberate mismatch changes only an in-memory expected array."
+}

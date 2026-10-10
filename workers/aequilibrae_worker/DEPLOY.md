@@ -215,3 +215,125 @@ another worker can still take.
 - **RAM:** ~200MB peak during assignment
 - **Disk:** ~50MB temp space per run (cleaned after completion)
 - **Network:** Downloads ~5MB OSM data per run, uploads ~1MB results
+
+## Assessment recovery configuration
+
+This revision requires `OPENPLAN_DEPLOYMENT_ID`, migration
+`20261016000015_legacy_assessment_command_receipts.sql`, and persistent storage
+for `AEQ_WORK_DIR`. Keep the deployment identity stable across restarts and
+coordinated restoration of the same installation. A different or newly
+initialized installation needs its own identity; do not retarget an old journal
+to it. Retain each assessment's `command-journal` with its source files.
+See [local assessment recovery](LOCAL.md#retained-assessment-writes) before
+operating this revision. Receipt recovery does not automatically resume a stage.
+
+
+Primary link-volume registration also requires migration
+`20261016000016_legacy_artifact_command_receipts.sql`. Apply it to the intended
+database before starting this worker version. Keep
+`<work_dir>/stage-journals/<stage_id>/model-commands.sqlite3` with the prepared
+source files. An unconfirmed primary write stops the stage and retains its exact
+request for `model_command_recovery.py`. Recovering that receipt does not resume
+the stage or authorize replay of the complete stage.
+
+
+## Retained KPI writes
+
+Both normal assignment KPI writers require migration
+`20261016000017_legacy_kpi_command_receipts.sql` before this worker starts.
+They retain each complete request in the same stage journal used by artifacts.
+Keep `OPENPLAN_DEPLOYMENT_ID`, the database URL and that journal unchanged for
+recovery. A lost reply stops the stage; use `model_command_recovery.py` to
+recover its original receipt. Changed values under the same KPI identity are
+refused. Explicit null values remain null. Receipt recovery does not authorize
+whole-stage replay or establish model accuracy.
+
+
+## Inspect saved calculations
+
+Use the same deployment identity, URL and stage journal as the original worker:
+
+```bash
+python model_command_recovery.py --journal /path/to/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-computations
+```
+
+This read-only listing reports `result_retained` or `started_without_result` for
+each saved calculation. It prints identifiers and states, not inputs or result
+payloads. A missing journal or damaged record is refused. An older journal with
+no calculation records returns an empty list. This does not contact the server,
+claim the stage or resume work. Preserve an interrupted start and its source
+files for reconciliation. Do not delete it to make the calculation run again.
+Use `--list-pending` separately to inspect delivery requests.
+
+
+## Execution-retention upgrade and recovery
+
+Stop new dispatch and let active work reach a known, retained stopping point
+before applying `20261016000018_model_execution_retention.sql`. Confirm that all
+model worker processes using this installation have stopped before the upgrade.
+The migration blocks historical database writes; it cannot stop a calculation
+that is already reading local evidence. A terminated process and a saved
+`running` status do not establish what computation completed.
+
+Apply `20261016000019_model_recovery_status.sql` before deploying the recovery
+status reader. Historical worker runs display a reconciliation notice, and an
+unavailable read has its own warning. Neither state permits relaunch from that
+control. Preserved outputs remain readable. The migration does not invent past
+stage starts or convert historical enrollment into new work.
+
+Follow [local recovery inspection](LOCAL.md#execution-retention-and-recovery)
+and [backup and restore](../../openplan/docs/ops/BACKUP_AND_RESTORE.md#model-worker-recovery-records).
+With migration `20261016000023_model_recovery_decisions.sql`, an owner or
+administrator can review nonterminal work and record an abandonment decision
+through the model's recovery panel. It preserves the original state and revokes
+write authority without confirming process termination or authorizing restart.
+Historical reconciliation for continuation and full stage resume remain
+unfinished. Do not change enrollment rows, clear journals or generate replacement
+request IDs to get past that boundary. Follow the
+[v0.68 upgrade and recovery instructions](../../openplan/docs/ops/V068_UPGRADE.md).
+
+## Inventory retained delivery records
+
+Use `--list-commands` with the original journal, base URL and installation
+identity to list both pending requests and saved receipts. This action needs no
+service credential and sends no request. It validates each saved command and
+receipt, returns their hashes and identities, and omits scientific payloads.
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --list-commands
+```
+
+`unconfirmed` means delivery has no retained reply. `receipt_retained` means the
+local receipt matches its saved request. Neither state establishes what the
+server contains now or which worker owns the stage. The output states those
+limits explicitly. Missing journals and invalid records fail inspection; they
+are not reported as an empty successful inventory. A different installation
+returns no matching records. Keep that scope in mind when checking completeness.
+
+## Inspect a retained managed claim
+
+For a retained `claim_model_stage_attempt` receipt, inspect current stage and
+parent ownership with the original request ID and explicit workspace scope:
+
+```bash
+python3 model_command_recovery.py --journal /path/to/original/stage-journal \
+  --base-url "$SUPABASE_URL" --deployment-id "$OPENPLAN_DEPLOYMENT_ID" \
+  --inspect-ownership "$CLAIM_REQUEST_ID" --workspace-id "$WORKSPACE_ID"
+```
+
+This action needs `SUPABASE_SERVICE_ROLE_KEY`. It makes a scoped read through
+the existing ownership reader. It does not replay a command or update the local
+journal. Pending claims, wrong installations, invalid receipts and missing
+scope are refused. Legacy claims without a retained managed-claim receipt do
+not qualify for this command.
+
+`ownership.owns_stage` describes the database snapshot at the read. It is not
+a lease, scientific permission or authority to continue later. The output keeps
+`point_in_time_only` true and `continuation_authorized` and `model_resumed` false.
+A failed or incomplete read returns `ownership_unconfirmed` with exit 2, not a
+confirmed negative ownership result. Current ownership and every later write
+still require the database attempt fence. Automatic restart remains unfinished.

@@ -1,0 +1,25 @@
+{
+  "control": "lost-response",
+  "live_parent_transport": false,
+  "parent_failure": "BrokenPipeError",
+  "replay": {
+    "request_sha256": "34f95d6b29fca1ceb4b48c4d2ecba8b75b069d29cc155bbdd2857540bc274e4b",
+    "initially_resolved": true,
+    "successful_posts": 0,
+    "wrong_receipt_detected": false,
+    "wrong_deployment_refused": true,
+    "command_inventory_unchanged": true,
+    "pending_after": 0,
+    "model_resumed": false,
+    "limits": "Fresh recovery process and native-failure journal snapshot; mocked RPC receipts. No live database replay, model restart, ownership lease or execution authorization."
+  },
+  "child_failure": {
+    "error_type": "WorkerStateWriteUnconfirmed",
+    "active_project": false
+  },
+  "child_exit_code": 1,
+  "pending_commands": 0,
+  "final_outputs_absent": true,
+  "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+  "limits": "Full synthetic native stage failure. Parent transport and replay evidence are recorded explicitly. Journal recovery uses a backup; original journal remains pending. No model restart, supervisor loss, escaped descendants or scientific acceptance."
+}

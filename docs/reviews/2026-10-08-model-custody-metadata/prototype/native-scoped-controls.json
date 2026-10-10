@@ -1,0 +1,68 @@
+{
+  "proof_sha256": "8a5c799e677f8b8a0453347f7814b4ee1f8770169de9198ddf68da730f2a042a",
+  "controls": [
+    {
+      "control": "baseline",
+      "scope": {
+        "schema": "openplan.engine-scope.v1",
+        "unit": "openplan-engine-ac2746480c2f4dd584fb344f71abf6d5.scope",
+        "invocation_id": "80b5036481e849429bb464d28420c2ec",
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-ac2746480c2f4dd584fb344f71abf6d5.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1546640,
+        "bootstrap_pid": 244290,
+        "memory_bytes": 1073741824,
+        "tasks": 128,
+        "observed_scope_empty": true,
+        "scope_result": "success"
+      },
+      "converged": true,
+      "modeled_transit": "modeled",
+      "artifact_count": 20
+    },
+    {
+      "control": "harmless",
+      "scope": {
+        "schema": "openplan.engine-scope.v1",
+        "unit": "openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+        "invocation_id": "c668121ed13f416c8087b8c583f76f95",
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1546691,
+        "bootstrap_pid": 245081,
+        "memory_bytes": 1073741824,
+        "tasks": 128,
+        "observed_scope_empty": true,
+        "scope_result": "success"
+      },
+      "converged": true,
+      "modeled_transit": "modeled",
+      "artifact_count": 20
+    },
+    {
+      "control": "omit-scope",
+      "detected": "Native scope supervision missing"
+    },
+    {
+      "control": "restored",
+      "scope": {
+        "schema": "openplan.engine-scope.v1",
+        "unit": "openplan-engine-a9176c6f58aa416790f6c20dcdc8a430.scope",
+        "invocation_id": "08fad604030240bfb74eddc0f6da5d9e",
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-a9176c6f58aa416790f6c20dcdc8a430.scope",
+        "cgroup_device": 30,
+        "cgroup_inode": 1546742,
+        "bootstrap_pid": 246123,
+        "memory_bytes": 1073741824,
+        "tasks": 128,
+        "observed_scope_empty": true,
+        "scope_result": "success"
+      },
+      "converged": true,
+      "modeled_transit": "modeled",
+      "artifact_count": 20
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-scoped-controls-20261008",
+  "limits": "Full small synthetic native assignment and production scoped launch. Mocked parent database transport, no recovery/cancellation, completed publication, scientific acceptance or normal dispatch."
+}

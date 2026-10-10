@@ -1,0 +1,32 @@
+[
+  {
+    "case": "baseline",
+    "exitCode": 0,
+    "expectedPass": true
+  },
+  {
+    "case": "harmless",
+    "exitCode": 0,
+    "expectedPass": true
+  },
+  {
+    "case": "wrong-version",
+    "exitCode": 1,
+    "expectedPass": false
+  },
+  {
+    "case": "false-success",
+    "exitCode": 1,
+    "expectedPass": false
+  },
+  {
+    "case": "discard-confirmed-receipt",
+    "exitCode": 1,
+    "expectedPass": false
+  },
+  {
+    "case": "restored",
+    "exitCode": 0,
+    "expectedPass": true
+  }
+]

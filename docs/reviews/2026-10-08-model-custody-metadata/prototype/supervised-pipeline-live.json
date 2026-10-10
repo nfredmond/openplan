@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "owner_lost": false,
+      "pipeline_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": true,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    },
+    {
+      "owner_lost": true,
+      "pipeline_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": false,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    }
+  ],
+  "sources": {
+    "scripts/modeling/run_behavioral_demand_prototype.py": "0932aa534fb51e8fb182f87a39bdcdfc6d38903889742296ec26a1907730baf1",
+    "workers/activitysim_worker/runtime.py": "ce3761061d9e57bdd99acbd4960a0d87b75148eef13a997548e6f956c515cbb9",
+    "workers/activitysim_worker/container_execution.py": "91c106e5186991590038b0b988c179195b9f7dac695a6cfc6f3fc655a867c202"
+  },
+  "limits": [
+    "Actual behavioral pipeline CLI and controller with synthetic workload",
+    "Explicit local socket opt-in; legacy container path remains available",
+    "No native ActivitySim, database dispatch, scientific or human acceptance"
+  ]
+}

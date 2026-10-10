@@ -1,0 +1,10 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_attempt_cli_6f9ac02409884be888c0833872cbb36b",
+  "workspace": "601a07d0-24ab-45bc-a3c7-d51280781c4a",
+  "schema": "http_recovery_14d269830da1456ab7eaa8a723b7e533",
+  "exitCode": 0,
+  "checkoutCommit": "091861d72c866c4ac13c904c0e7d51dda6b58190",
+  "gatewayImage": "public.ecr.aws/supabase/postgrest:v14.15",
+  "scope": "Production parse, begin, stage, write and promote through private schema; no archive storage or browser journey."
+}

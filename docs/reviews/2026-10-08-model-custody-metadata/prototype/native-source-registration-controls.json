@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "method": "aequilibrae",
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "drop-write",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "wrong-request",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "bypass-stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "method": "activitysim",
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "proof_sha256": "d43b521272de45ff22d46d8e2be6e5c7e9822a830f2edd5b3bfc510bdbb991bd",
+  "limits": "Native artifact registration, local object hashes and separate-process receipt recovery over synthetic fixtures. No Storage upload, native model execution, independent preparation, normal dispatch or scientific acceptance."
+}

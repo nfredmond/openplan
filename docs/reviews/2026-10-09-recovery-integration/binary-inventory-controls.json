@@ -1,0 +1,21 @@
+{
+  "sourceSha256": "70b4752235c406c4a281f8331dda8dac9c3a846d732ade1b005631beb2905a7e",
+  "cases": [
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0
+    },
+    {
+      "case": "missing-system-tool",
+      "expectedPass": false,
+      "exitCode": 1
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0
+    }
+  ],
+  "trackedConfigUnchanged": true
+}

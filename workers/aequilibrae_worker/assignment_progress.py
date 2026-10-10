@@ -60,9 +60,11 @@ class AssignmentProgress(logging.Handler):
         max_iterations: int | None = None,
         interval_seconds: float = DEFAULT_INTERVAL_SECONDS,
         now: Callable[[], float] = time.monotonic,
+        fatal_exceptions: tuple[type[Exception], ...] = (),
     ) -> None:
         super().__init__(level=logging.INFO)
         self._emit_line = emit_line
+        self._fatal_exceptions = fatal_exceptions
         self._target_gap = target_gap
         self._max_iterations = max_iterations
         self._interval = interval_seconds
@@ -117,7 +119,10 @@ class AssignmentProgress(logging.Handler):
         self._last_sent_at = self._now()
         try:
             self._emit_line(line)
-        except Exception:  # pragma: no cover - progress reporting must never fail a run
+        except self._fatal_exceptions:
+            # Unconfirmed custody writes must stop the caller, even for progress.
+            raise
+        except Exception:  # best-effort display callbacks remain nonfatal
             pass
 
     def close(self) -> None:
@@ -153,7 +158,9 @@ def stream_assignment_progress(
             yield handler
         finally:
             logger.removeHandler(handler)
-            handler.close()
-            logger.setLevel(previous_level)
+            try:
+                handler.close()
+            finally:
+                logger.setLevel(previous_level)
 
     return _attached()

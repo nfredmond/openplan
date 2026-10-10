@@ -1,0 +1,27 @@
+[
+  {
+    "case": "baseline",
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "case": "harmless",
+    "exit": 0,
+    "expected_failure": null
+  },
+  {
+    "case": "retain-symlink",
+    "exit": 1,
+    "expected_failure": "mutation fixture must own"
+  },
+  {
+    "case": "unsafe-copy",
+    "exit": 1,
+    "expected_failure": "fixture mutation reached source bytes"
+  },
+  {
+    "case": "restored",
+    "exit": 0,
+    "expected_failure": null
+  }
+]

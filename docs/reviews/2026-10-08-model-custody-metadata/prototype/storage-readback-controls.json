@@ -1,0 +1,61 @@
+{
+  "source_sha256": "632297c402aa05cdd3867f3337b73f058cbc606ee31f2cd4986836d86abb8494",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "native-error-code",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "native-error-status",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "size",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "status",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "absence",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "encoding",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "redirect",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "stream",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Bounded raw read tests and a loopback HTTP server. No native Storage, resumable upload, publication or scientific acceptance."
+}

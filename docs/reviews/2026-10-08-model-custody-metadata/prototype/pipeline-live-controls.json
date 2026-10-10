@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-cli-socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "drop-runtime-socket",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "case": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "run_behavioral_demand_prototype.py": "0932aa534fb51e8fb182f87a39bdcdfc6d38903889742296ec26a1907730baf1"
+  },
+  "limits": [
+    "Actual pipeline CLI with synthetic command, not native ActivitySim or scientific acceptance"
+  ]
+}

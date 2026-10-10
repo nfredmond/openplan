@@ -1,3 +1,5 @@
+import { loadModelRecoveryStatuses } from "@/lib/models/recovery-status-server";
+import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -177,7 +179,7 @@ export default async function ModelDetailPage({
     notFound();
   }
 
-  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult, workspaceResult] =
+  const [projectsResult, scenarioOptionsResult, primaryProjectResult, primaryScenarioResult, plansResult, reportsResult, datasetsResult, runsResult, linksResult, scenarioEntriesResult, modelRunsResult, scenarioAssumptionSetsResult, scenarioDataPackagesResult, scenarioIndicatorSnapshotsResult, workspaceResult, recoveryMembershipResult] =
     await Promise.all([
       supabase.from("projects").select("id, name").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
       supabase.from("scenario_sets").select("id, title").eq("workspace_id", model.workspace_id).order("updated_at", { ascending: false }),
@@ -250,6 +252,7 @@ export default async function ModelDetailPage({
       // inherits when neither the model nor its project carries an area. Same
       // read as county-runs/page.tsx and safety/page.tsx.
       supabase.from("workspaces").select(HOME_GEOGRAPHY_COLUMNS).eq("id", model.workspace_id).maybeSingle(),
+      supabase.from("workspace_members").select("workspace_id, user_id, role").eq("workspace_id", model.workspace_id).eq("user_id", user.id).maybeSingle(),
     ]);
 
   /**
@@ -394,6 +397,8 @@ export default async function ModelDetailPage({
   const primaryProjectUnreadable = reads.check("the primary project", primaryProjectResult);
   const primaryScenarioUnreadable = reads.check("the primary scenario set", primaryScenarioResult);
   const scenarioEntriesUnreadable = reads.check("scenario entries", scenarioEntriesResult);
+  const recoveryMembershipUnreadable = reads.check("model recovery permissions", recoveryMembershipResult);
+  const recoveryPermission = recoveryMembershipUnreadable ? "unavailable" : recoveryMembershipResult.data?.workspace_id === model.workspace_id && recoveryMembershipResult.data?.user_id === user.id && ["owner", "admin"].includes(recoveryMembershipResult.data?.role ?? "") ? "allowed" : "denied";
   const homeGeographyUnreadable = reads.check("this workspace's home geography", workspaceResult);
 
   // The link set itself. Everything downstream of it — the six linked-record
@@ -652,6 +657,10 @@ export default async function ModelDetailPage({
 
   const modelRunsUnreadable = modelRunsSchemaPending ? false : reads.check("this model's runs", modelRunsResult);
 
+  const modelRecoveryStatuses = modelRunsSchemaPending || modelRunsUnreadable
+    ? new Map<string, ModelRecoveryStatus>()
+    : await loadModelRecoveryStatuses(model.workspace_id, modelRunsResult.data ?? []);
+
   // Reconcile-on-read: reap runs whose worker crashed or never picked them up
   // so the UI never shows a run stuck "running"/"queued" forever. The client
   // re-triggers this loader every 5s (router.refresh) while a run is active,
@@ -660,7 +669,8 @@ export default async function ModelDetailPage({
   // is the no-viewer backstop.
   const reapedRunMessages = modelRunsSchemaPending
     ? new Map<string, string>()
-    : await reconcileStaleModelRuns((modelRunsResult.data ?? []) as unknown as ReaperRun[]);
+    : await reconcileStaleModelRuns(((modelRunsResult.data ?? []) as unknown as ReaperRun[])
+        .filter((run) => !modelRecoveryNeedsReview(modelRecoveryStatuses.get(run.id))));
 
   // Real claim tier per run (from modeling_claim_decisions), so the evidence
   // panel surfaces a genuinely calibrated_to_counts run as such instead of the
@@ -691,8 +701,9 @@ export default async function ModelDetailPage({
   }>).map((r) => {
     const engine_key = r.engine_key ?? "deterministic_corridor_v1";
     const claimDecision = modelRunClaimStatuses.get(r.id) ?? null;
+    const recovery = modelRecoveryStatuses.get(r.id);
     const reapMessage = reapedRunMessages.get(r.id);
-    if (!reapMessage) return { ...r, engine_key, claimDecision };
+    if (!reapMessage) return { ...r, engine_key, claimDecision, recovery };
     // Reflect the reap in the rendered payload without a re-query. completed_at
     // is set by the DB write and picked up on the next poll — omitting it here
     // keeps the loader pure.
@@ -700,6 +711,7 @@ export default async function ModelDetailPage({
       ...r,
       engine_key,
       claimDecision,
+      recovery,
       status: "failed",
       error_message: reapMessage,
       stages: (r.stages ?? []).map((s) =>
@@ -900,6 +912,8 @@ export default async function ModelDetailPage({
           <div className="space-y-6">
             <div id="run-model">
             <ModelRunManager
+              recoveryUserId={user.id}
+              recoveryPermission={recoveryPermission}
               modelId={model.id}
               modelTitle={model.title}
               defaultQueryText={launchTemplate.queryText ?? ""}

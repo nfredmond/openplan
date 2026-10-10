@@ -58,11 +58,13 @@ const RAW_FEED_TABLES = [
 ] as const;
 
 /** The tables the transit lane is allowed to write. */
-const DERIVED_TABLES = [
+const TRANSIT_WRITE_TABLES = [
   "gtfs_feeds",
   "gtfs_feed_versions",
   "gtfs_route_service_levels",
   "gtfs_stop_service_levels",
+  // Private object-removal work, not raw schedule rows.
+  "gtfs_ingest_storage_cleanup",
 ] as const;
 
 const TRANSIT_LANE_PREFIXES = ["src/lib/gtfs/", "src/app/api/gtfs/"];
@@ -95,7 +97,7 @@ describe("the timetable is not persisted", () => {
     const derived = sites.filter((site) => site.table?.startsWith("gtfs_"));
     expect(derived.length).toBeGreaterThan(0);
     expect(new Set(derived.map((site) => site.table))).toEqual(
-      new Set(["gtfs_feeds", "gtfs_feed_versions", "gtfs_route_service_levels", "gtfs_stop_service_levels"])
+      new Set(TRANSIT_WRITE_TABLES)
     );
   });
 
@@ -151,16 +153,16 @@ describe("the timetable is not persisted", () => {
     ).toEqual([]);
   });
 
-  it("writes only the four derived tables from inside the transit lane", { timeout: 30_000 }, () => {
+  it("writes only transit records and private object cleanup from inside the transit lane", { timeout: 30_000 }, () => {
     const unexpected = collectSupabaseWriteSites()
       .filter((site) => TRANSIT_LANE_PREFIXES.some((prefix) => site.file.startsWith(prefix)))
       .filter((site) => site.table !== null)
-      .filter((site) => !(DERIVED_TABLES as readonly string[]).includes(site.table as string))
+      .filter((site) => !(TRANSIT_WRITE_TABLES as readonly string[]).includes(site.table as string))
       .map((site) => `${site.file}:${site.line} ${site.verb} ${site.table}`);
 
     expect(
       unexpected,
-      "the transit lane writes a table outside the four derived ones it owns. That is not necessarily " +
+      "the transit lane writes a table outside its derived records and private object cleanup. That is not necessarily " +
         "wrong, but it is not something to do by accident — a feed ingest reaching into another " +
         "module's table is how one lane's failure becomes another's corrupted data."
     ).toEqual([]);

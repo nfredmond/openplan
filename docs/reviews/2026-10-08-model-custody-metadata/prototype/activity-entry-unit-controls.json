@@ -1,0 +1,63 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "legacy-entry",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "unknown-handler",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "cross-scope",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-handler",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "continue-after-error",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "missing-name-projection",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "empty-name",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "parent-completion",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "sources": {
+    "workers/activitysim_worker/supabase_poll.py": "d5d9ffdf4d07e2e25ceea7b0da82d2f36e471e58ae135c7da3445d2e48ce2f18",
+    "workers/aequilibrae_worker/model_attempt_writer.py": "b06aa3034acc0cae8e57a6cfbb3c9f771d737afc2430d74def42bc5551f3b16f"
+  },
+  "limits": [
+    "Real local journals, injected HTTP receipts and synthetic handler",
+    "Native scaffold entry is a separate campaign",
+    "No automatic poll enrollment, native engine or scientific acceptance"
+  ]
+}

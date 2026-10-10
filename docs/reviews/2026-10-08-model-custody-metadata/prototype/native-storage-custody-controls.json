@@ -1,0 +1,40 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-write",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "changed-output",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "wrong-reference",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "proof_sha256": "46d978f8b087f77d7f2c98716cb33adde09f46c22ec52e365f08a47d90041ca8",
+  "limits": [
+    "Actual worker wrapper/evaluator, native object readback and native database custody for two synthetic method fixtures",
+    "Wrong-reference control is detected by the proof, not rejected by the custody RPC itself",
+    "No independent preparation, real model run, full source publication, normal dispatcher, full RLS matrix or scientific acceptance"
+  ]
+}

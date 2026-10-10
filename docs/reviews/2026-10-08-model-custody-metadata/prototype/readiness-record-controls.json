@@ -1,0 +1,44 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-partial",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-empty",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "drop-scalar",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ignore-size",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "conflate-size-type",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "2239cf643b324eca078765bdb3f30d3e433b0d2176ef3ee2f8c25bfc839f620b",
+  "limits": [
+    "Synthetic readiness records and instrumented model-output read",
+    "No source validity, complete readiness coverage, immutable filesystem or scientific acceptance proof"
+  ]
+}

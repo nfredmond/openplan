@@ -1,0 +1,41 @@
+{
+  "module_sha256": "2e8b389415d28f3409715b1c35d006629de32dad0e177cbfca13719c31c16060",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-deadline",
+      "exit_code": 1,
+      "targeted_test": "test_deadline_prevents_feed_consumption"
+    },
+    {
+      "control": "replace-settings",
+      "exit_code": 1,
+      "targeted_test": "test_exact_geometry_settings_and_bytes_drive_skim"
+    },
+    {
+      "control": "replace-coordinates",
+      "exit_code": 1,
+      "targeted_test": "test_exact_geometry_settings_and_bytes_drive_skim"
+    },
+    {
+      "control": "erase-unavailable-status",
+      "exit_code": 1,
+      "targeted_test": "test_unavailable_remains_unavailable_without_feed_read"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real retained synthetic feed and geometry computation. No full native assignment, external catalog coverage, recovery or scientific acceptance."
+}

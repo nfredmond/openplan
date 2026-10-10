@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "bc6a067f64fdb7ff241449d0b811f85c0c99c1da14d875a5a45b9ce656bf1ed3",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "ignore-calibration-choice",
+      "exit_code": 1,
+      "targeted_test": "test_fresh_acquisition_preserves_run_geography_and_calibration_choice"
+    },
+    {
+      "control": "reacquire-retained-input",
+      "exit_code": 1,
+      "targeted_test": "test_retained_record_consumes_without_any_new_acquisition"
+    },
+    {
+      "control": "ignore-explicit-source",
+      "exit_code": 1,
+      "targeted_test": "test_explicit_missing_source_does_not_select_default"
+    },
+    {
+      "control": "allow-conflicting-path",
+      "exit_code": 1,
+      "targeted_test": "test_conflicting_override_refused_before_copy"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual extracted preparation function with real count files and manifests; acquisition mocked. No live providers, parent channel, native database registration or scientific acceptance."
+}

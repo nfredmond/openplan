@@ -577,3 +577,12 @@ export function buildProgramWorkflowSummary({
     reviewNotes,
   };
 }
+
+/** Closure records do not establish whether a recorded obligation deadline was met. */
+export function fundingAwardObligationReview(
+  spendingStatus: string | null | undefined,
+  closureBasis: string | null | undefined,
+): string | null {
+  if (spendingStatus !== FUNDING_AWARD_CLOSED_SPENDING_STATUS) return null;
+  return `${formatFundingAwardClosureBasisLabel(closureBasis)}. Obligation timing is not established by this closure record. Review the award terms and obligation evidence.`;
+}

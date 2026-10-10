@@ -1,0 +1,94 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "pending removal survives database closure and retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "pending removal survives database closure and retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "lost_acknowledgment",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "fault": "acknowledgment",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "pending removal survives database closure and retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  },
+  {
+    "case": "omit_removal",
+    "expectedPass": false,
+    "returnCode": 1,
+    "result": null
+  },
+  {
+    "case": "ignore_acknowledgment_error",
+    "expectedPass": false,
+    "returnCode": 1,
+    "result": null
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0,
+    "result": {
+      "second": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "third": {
+        "scanned": 0,
+        "reaped": []
+      },
+      "storageAttempts": 2,
+      "fault": "storage",
+      "nativeObjectUploadedAndRemoved": true,
+      "finding": "pending removal survives database closure and retries after Storage interruption",
+      "scope": "native TypeScript, PostgREST and private Storage; one cleanup boundary interrupted with injected 503"
+    }
+  }
+]

@@ -1,0 +1,54 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "database": "openplan_attempt_cli_647ed4bd9425463bb428692530791e2d",
+      "scope_empty": true,
+      "native_failure_record": null,
+      "records_unchanged": true,
+      "database_state_unchanged": true,
+      "command_inventory_unchanged": true,
+      "final_outputs_absent": true,
+      "stage_remains_running": true
+    },
+    {
+      "case": "harmless",
+      "database": "openplan_attempt_cli_8e8d8095a4a242e2b28304761a271e7e",
+      "scope_empty": true,
+      "native_failure_record": null,
+      "records_unchanged": true,
+      "database_state_unchanged": true,
+      "command_inventory_unchanged": true,
+      "final_outputs_absent": true,
+      "stage_remains_running": true
+    },
+    {
+      "case": "omit-parent-loss",
+      "detected": "Native supervisor loss was not observed"
+    },
+    {
+      "case": "restored",
+      "database": "openplan_attempt_cli_1c48db24cc0240b7bb519a110297a6e4",
+      "scope_empty": true,
+      "native_failure_record": null,
+      "records_unchanged": true,
+      "database_state_unchanged": true,
+      "command_inventory_unchanged": true,
+      "final_outputs_absent": true,
+      "stage_remains_running": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-guard-controls-20261008",
+  "sources": {
+    "verify_native_guard_parent_loss.py": "6cc6e879f90b452df09023c7c37830886c444ab322e842886a84852be997395a",
+    "verify_native_parent_loss.py": "77729f7ddbfcf4d523cbad780a67bc847ecd4d36055cc2056c01e9513417f047",
+    "verify_native_parent_supervisor.py": "d1fcae06ca0b5afff4cb73e86bb0f58b141739a4dd34d56ba498553026fd9ac2",
+    "verify_native_assignment_http.py": "2bbffccb6c5073f5c8f2d89b62eaf055ca082f89a6a4b4831ad305fbb6c641be"
+  },
+  "limits": [
+    "Confirmed native iteration boundary only",
+    "No graceful-close claim after forced termination",
+    "No arbitrary busy-native interruption",
+    "No database reconciliation, restart, publication or scientific acceptance"
+  ]
+}

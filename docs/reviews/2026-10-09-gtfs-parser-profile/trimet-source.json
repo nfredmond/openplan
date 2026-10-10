@@ -1,0 +1,11 @@
+{
+  "source": "https://developer.trimet.org/schedule/gtfs.zip",
+  "resolvedUrl": "https://developer.trimet.org/schedule/gtfs.zip",
+  "downloadedAt": "2026-10-09T14:24:49.873162+00:00",
+  "archiveBytes": 43392539,
+  "sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5",
+  "lastModified": "Wed, 07 Oct 2026 16:32:13 GMT",
+  "publisher": "https://developer.trimet.org/GTFS.shtml",
+  "terms": "https://developer.trimet.org/terms_of_use.shtml",
+  "use": "Local parser measurement only; raw feed is not committed or redistributed."
+}

@@ -1,0 +1,141 @@
+{
+  "routeRowsBefore": 95,
+  "stopRowsBefore": 717,
+  "lateFailure": {
+    "recorded": true,
+    "feedStatusChanged": true
+  },
+  "after": {
+    "success": true,
+    "error": null,
+    "data": {
+      "status": "failed",
+      "is_current": false,
+      "route_service_level_rows": 0,
+      "stop_service_level_rows": 0
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "actualRouteRows": 0,
+  "actualStopRows": 0,
+  "inputSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "archiveBytes": 892312,
+  "parseMs": 363.29967899999997,
+  "persistenceMs": 93.35828000000004,
+  "processMaxRssKiB": 143980,
+  "begin": {
+    "ok": true,
+    "feedId": "d1ef70fd-9eb0-46f8-ba0a-04c1b338e476",
+    "versionId": "7ee05e00-890c-49bd-a64c-54a7accc547e",
+    "createdFeed": true
+  },
+  "result": {
+    "ok": false,
+    "code": "partial_write",
+    "detail": "Storing this feed's service levels stopped part-way (gtfs_stop_service_levels, rows 1-717): injected lost derived-row reply"
+  },
+  "promotion": null,
+  "version": {
+    "success": true,
+    "error": null,
+    "data": {
+      "status": "parsing",
+      "is_current": false,
+      "route_service_level_rows": 0,
+      "stop_service_level_rows": 0,
+      "tract_service_rows": null,
+      "tract_service_computed_at": null
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/gtfs_feeds",
+      "bodyBytes": 262,
+      "status": 201,
+      "elapsedMs": 14.970287999999982
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 303,
+      "status": 201,
+      "elapsedMs": 4.482296999999903
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 20,
+      "status": 200,
+      "elapsedMs": 4.58084400000007
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 68464,
+      "status": 201,
+      "elapsedMs": 11.599888000000078
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 506461,
+      "status": 201,
+      "elapsedMs": 69.22360000000003
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 2.2537929999999733
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 3.0917440000000624
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.6661940000000186
+    },
+    {
+      "method": "POST",
+      "path": "/rpc/close_failed_gtfs_version",
+      "bodyBytes": 165,
+      "status": 200,
+      "elapsedMs": 5.278209000000061
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 2.241059000000064
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 2.0040319999999383
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.5287139999999226
+    }
+  ]
+}

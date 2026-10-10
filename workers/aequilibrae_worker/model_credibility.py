@@ -69,12 +69,17 @@ def summarize_count_source(counts_path: str | None, out_dir: str) -> dict[str, A
     source = source if isinstance(source, dict) else {}
 
     rows: list[dict[str, str]] = []
+    file_status = "unavailable" if counts_path else "not_recorded"
+    file_error = None
     if counts_path and os.path.isfile(counts_path):
         try:
             with open(counts_path, newline="") as handle:
                 rows = list(csv.DictReader(handle))
-        except (OSError, csv.Error):
+            file_status = "readable"
+        except (OSError, csv.Error, UnicodeError):
             rows = []
+            file_status = "read_failed"
+            file_error = "The recorded count file could not be read."
 
     status = _string(status_record.get("status"))
     if status not in {
@@ -87,6 +92,16 @@ def summarize_count_source(counts_path: str | None, out_dir: str) -> dict[str, A
         "no_eligible_sections", "no_traffic_found",
     }:
         status = "available" if rows else "not_recorded"
+
+    recorded_status = _string(status_record.get("status")) or _string((source_record or {}).get("status"))
+    availability_lost = (status == "available" and file_status != "readable") or (
+        status == "not_recorded" and file_status in {"unavailable", "read_failed"}
+    )
+    if availability_lost:
+        status = "source_unavailable"
+        file_error = file_error or (
+            "The recorded count file is unavailable." if counts_path else "No count file was recorded."
+        )
 
     source_failed = status in {
         "source_unavailable", "geography_unsupported", "no_eligible_sections", "no_traffic_found"
@@ -156,6 +171,8 @@ def summarize_count_source(counts_path: str | None, out_dir: str) -> dict[str, A
 
     return {
         "status": status,
+        "recorded_acquisition_status": recorded_status,
+        "file_status": file_status,
         "source_id": _string(source.get("source_id")) or _string(status_record.get("source_id")),
         "dataset_id": dataset_id,
         "adapter": _string(source.get("adapter")) or _string(status_record.get("adapter")),
@@ -165,14 +182,14 @@ def summarize_count_source(counts_path: str | None, out_dir: str) -> dict[str, A
         "source_agencies": agencies,
         "coverage_statement": coverage_statement,
         "supported_road_classes": classes,
-        "eligible_rows": len(eligible_rows),
+        "eligible_rows": None if availability_lost else len(eligible_rows),
         "excluded_rows": int((source_record or {}).get("excluded_rows") or sum(exclusion_reasons.values())),
         "exclusion_reasons": dict(sorted(exclusion_reasons.items())),
         "measurement_dates": dates,
         "counts_file": os.path.basename(counts_path) if counts_path else None,
         "fallback_file_present": bool(source_failed and counts_path and os.path.isfile(counts_path)),
-        "error": _string(status_record.get("error")) or _string((source_record or {}).get("error")),
-        "limitation": (
+        "error": file_error or _string(status_record.get("error")) or _string((source_record or {}).get("error")),
+        "limitation": (file_error + " " if file_error else "") + (
             "An unsupported or absent road class is not evidence of zero traffic. "
             "Use only the road classes listed for this run."
         ),

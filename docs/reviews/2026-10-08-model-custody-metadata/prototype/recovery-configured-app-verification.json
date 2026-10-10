@@ -1,0 +1,54 @@
+{
+  "checkout": "/home/nathaniel/.local/state/openplan/recovery-acceptance-3cfaae4e",
+  "head": "3cfaae4ea88b8d81ecf9fa443131670957ef4648",
+  "build_exit_code": 0,
+  "build_log_sha256": "254bb3a054098f5556202d578db564380d7768b06e4c3dd02d8e102d3096d2e1",
+  "build_lines": [
+    "\u2713 Compiled successfully in 50s",
+    "  Finished TypeScript in 63s ...",
+    "  Collecting page data using 2 workers ...",
+    "  Generating static pages using 2 workers (0/137) ...",
+    "  Generating static pages using 2 workers (34/137) ",
+    "  Generating static pages using 2 workers (68/137) ",
+    "  Generating static pages using 2 workers (102/137) ",
+    "\u2713 Generating static pages using 2 workers (137/137) in 1154ms",
+    "  Finalizing page optimization ..."
+  ],
+  "build_limits": {
+    "memory": "7G",
+    "swap": "0",
+    "tasks": 256,
+    "affinity": "0,1",
+    "CIRCLE_NODE_TOTAL": "3"
+  },
+  "service": {
+    "unit": "openplan-recovery-acceptance-3cfaae4e.service",
+    "ActiveState": "active",
+    "InvocationID": "12aaeceb6d4f4a768a3c6b4617038be1",
+    "MainPID": "1638606",
+    "cwd": "/home/nathaniel/.local/state/openplan/recovery-acceptance-3cfaae4e/openplan",
+    "url": "http://127.0.0.1:3516"
+  },
+  "browser": {
+    "system": "T3 preview only",
+    "tab_id": "tab_16",
+    "viewport": {
+      "width": 1280,
+      "height": 800
+    },
+    "observed_steps": [
+      "Landing page loaded",
+      "Followed Sign in to existing workspace link",
+      "Entered synthetic account through email/password controls",
+      "Submitted Sign in button",
+      "Dashboard showed owner role and automatically created workspace",
+      "Travel modeling link click returned without observed navigation",
+      "Navigated to the models URL observed on that link; authenticated full page load succeeded"
+    ],
+    "current_url": "http://127.0.0.1:3516/models",
+    "snapshot_error": "Preview automation snapshot failed on client preview-f07599c0933f53222dd8b3633c13d8cf",
+    "visual_acceptance": false,
+    "console_review_complete": false
+  },
+  "limits": "No project or model created in the browser yet. No recovery command submitted. Screenshot and 390px visual evidence remain unavailable. Storage, external providers, model computation and scientific acceptance not configured or proved."
+}

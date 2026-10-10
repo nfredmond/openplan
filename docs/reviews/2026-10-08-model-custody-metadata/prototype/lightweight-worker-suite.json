@@ -1,0 +1,649 @@
+{
+  "environment": "Python 3.11.15, numpy 2.0.2, pandas 3.0.6, shapely 2.2.0, requests 2.34.2, python-dotenv 1.2.4; aequilibrae absent",
+  "suite_count": 127,
+  "failed_suites": [],
+  "seconds": 88.07,
+  "suite_result_sha256": "c171305c8526b0f4759153e778b09b251923716915bd9492c70e7df69cb4f558",
+  "source_sha256": {
+    "workers/aequilibrae_worker/main.py": "892cadd344b07b8e92f5f8c4e9688d8d1043b07cdaa7e3626b7e6e8ed573a4e1",
+    "workers/aequilibrae_worker/worker_import_for_tests.py": "12011f4e33161cf05bfe66f6527e557e7ac1aa1f4f904d75c91712fe1667c63e"
+  },
+  "records": [
+    {
+      "suite": "test_activitysim_assignment_handoff.py",
+      "exit_code": 0,
+      "seconds": 0.99
+    },
+    {
+      "suite": "test_artifact_package_reference.py",
+      "exit_code": 0,
+      "seconds": 0.82
+    },
+    {
+      "suite": "test_assignment_count_mapping.py",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "suite": "test_assignment_count_preparation.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_assignment_engine_binding.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_assignment_engine_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_assignment_output_creation.py",
+      "exit_code": 0,
+      "seconds": 1.01
+    },
+    {
+      "suite": "test_assignment_progress.py",
+      "exit_code": 0,
+      "seconds": 0.9
+    },
+    {
+      "suite": "test_assignment_retained_transit.py",
+      "exit_code": 0,
+      "seconds": 1.08
+    },
+    {
+      "suite": "test_assignment_settings.py",
+      "exit_code": 0,
+      "seconds": 0.35
+    },
+    {
+      "suite": "test_calibration.py",
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "suite": "test_centroid_geometry.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_convergence.py",
+      "exit_code": 0,
+      "seconds": 0.12
+    },
+    {
+      "suite": "test_count_coverage.py",
+      "exit_code": 0,
+      "seconds": 0.02
+    },
+    {
+      "suite": "test_count_ingest.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_count_input_custody.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_count_manifest_consumption.py",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "suite": "test_count_source_availability.py",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "suite": "test_count_validation.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_emissions.py",
+      "exit_code": 0,
+      "seconds": 0.02
+    },
+    {
+      "suite": "test_engine_count_channel.py",
+      "exit_code": 0,
+      "seconds": 0.93
+    },
+    {
+      "suite": "test_engine_launch_channel.py",
+      "exit_code": 0,
+      "seconds": 0.9
+    },
+    {
+      "suite": "test_engine_output_channel.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_engine_path_channel.py",
+      "exit_code": 0,
+      "seconds": 1.0
+    },
+    {
+      "suite": "test_engine_run_channel.py",
+      "exit_code": 0,
+      "seconds": 0.93
+    },
+    {
+      "suite": "test_engine_scope_cancellation.py",
+      "exit_code": 0,
+      "seconds": 0.9
+    },
+    {
+      "suite": "test_engine_scope_recovery.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_engine_transit_channel.py",
+      "exit_code": 0,
+      "seconds": 1.17
+    },
+    {
+      "suite": "test_engine_unit_boundary.py",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "suite": "test_equity.py",
+      "exit_code": 0,
+      "seconds": 0.02
+    },
+    {
+      "suite": "test_gateways.py",
+      "exit_code": 0,
+      "seconds": 0.67
+    },
+    {
+      "suite": "test_gtfs_discovery.py",
+      "exit_code": 0,
+      "seconds": 0.14
+    },
+    {
+      "suite": "test_gtfs_skim.py",
+      "exit_code": 0,
+      "seconds": 0.16
+    },
+    {
+      "suite": "test_link_endpoint_renumbering.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_link_vmt.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_lodes.py",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "suite": "test_managed_count_preparer.py",
+      "exit_code": 0,
+      "seconds": 0.98
+    },
+    {
+      "suite": "test_managed_execution_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_managed_output_handoff.py",
+      "exit_code": 0,
+      "seconds": 0.9
+    },
+    {
+      "suite": "test_managed_output_mapping.py",
+      "exit_code": 0,
+      "seconds": 0.94
+    },
+    {
+      "suite": "test_managed_package_handoff.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_managed_paired_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_managed_project_capture.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_managed_project_handoff.py",
+      "exit_code": 0,
+      "seconds": 0.87
+    },
+    {
+      "suite": "test_managed_run_read.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_managed_state_handoff.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_managed_transit_geometry.py",
+      "exit_code": 0,
+      "seconds": 1.65
+    },
+    {
+      "suite": "test_managed_transit_origins.py",
+      "exit_code": 0,
+      "seconds": 0.95
+    },
+    {
+      "suite": "test_managed_transit_retention.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_mode_choice.py",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "suite": "test_model_agreement_computation.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_model_agreement_recovery.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_model_assessment_client.py",
+      "exit_code": 0,
+      "seconds": 0.08
+    },
+    {
+      "suite": "test_model_assessment_command.py",
+      "exit_code": 0,
+      "seconds": 0.11
+    },
+    {
+      "suite": "test_model_assessment_worker_delivery.py",
+      "exit_code": 0,
+      "seconds": 0.86
+    },
+    {
+      "suite": "test_model_attempt_invocation.py",
+      "exit_code": 0,
+      "seconds": 0.2
+    },
+    {
+      "suite": "test_model_attempt_outputs.py",
+      "exit_code": 0,
+      "seconds": 0.92
+    },
+    {
+      "suite": "test_model_attempt_workspace.py",
+      "exit_code": 0,
+      "seconds": 0.92
+    },
+    {
+      "suite": "test_model_attempt_writer.py",
+      "exit_code": 0,
+      "seconds": 0.9
+    },
+    {
+      "suite": "test_model_command_client.py",
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    {
+      "suite": "test_model_command_instrument.py",
+      "exit_code": 0,
+      "seconds": 0.11
+    },
+    {
+      "suite": "test_model_command_inventory.py",
+      "exit_code": 0,
+      "seconds": 0.11
+    },
+    {
+      "suite": "test_model_command_journal.py",
+      "exit_code": 0,
+      "seconds": 0.25
+    },
+    {
+      "suite": "test_model_command_kpi.py",
+      "exit_code": 0,
+      "seconds": 0.09
+    },
+    {
+      "suite": "test_model_command_mutations.py",
+      "exit_code": 0,
+      "seconds": 6.76
+    },
+    {
+      "suite": "test_model_command_ownership.py",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "suite": "test_model_command_recovery.py",
+      "exit_code": 0,
+      "seconds": 0.15
+    },
+    {
+      "suite": "test_model_command_saved_ownership.py",
+      "exit_code": 0,
+      "seconds": 0.18
+    },
+    {
+      "suite": "test_model_computation_inspection.py",
+      "exit_code": 0,
+      "seconds": 0.09
+    },
+    {
+      "suite": "test_model_count_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_model_credibility.py",
+      "exit_code": 0,
+      "seconds": 0.89
+    },
+    {
+      "suite": "test_model_engine_channel.py",
+      "exit_code": 0,
+      "seconds": 0.93
+    },
+    {
+      "suite": "test_model_engine_process.py",
+      "exit_code": 0,
+      "seconds": 1.17
+    },
+    {
+      "suite": "test_model_engine_scope.py",
+      "exit_code": 0,
+      "seconds": 0.86
+    },
+    {
+      "suite": "test_model_engine_supervision.py",
+      "exit_code": 0,
+      "seconds": 0.87
+    },
+    {
+      "suite": "test_model_evidence_delivery.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_model_geometry_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.18
+    },
+    {
+      "suite": "test_model_handoff_files.py",
+      "exit_code": 0,
+      "seconds": 0.86
+    },
+    {
+      "suite": "test_model_kpi_worker_delivery.py",
+      "exit_code": 0,
+      "seconds": 0.94
+    },
+    {
+      "suite": "test_model_legacy_artifact_client.py",
+      "exit_code": 0,
+      "seconds": 0.09
+    },
+    {
+      "suite": "test_model_legacy_kpi_client.py",
+      "exit_code": 0,
+      "seconds": 0.1
+    },
+    {
+      "suite": "test_model_package_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_model_predecessor_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.91
+    },
+    {
+      "suite": "test_model_primary_output_preparation.py",
+      "exit_code": 0,
+      "seconds": 1.4
+    },
+    {
+      "suite": "test_model_project_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "suite": "test_model_publication_client.py",
+      "exit_code": 0,
+      "seconds": 0.09
+    },
+    {
+      "suite": "test_model_receipt_values.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_model_record_files.py",
+      "exit_code": 0,
+      "seconds": 0.05
+    },
+    {
+      "suite": "test_model_recovery_decision_command.py",
+      "exit_code": 0,
+      "seconds": 0.07
+    },
+    {
+      "suite": "test_model_run_state.py",
+      "exit_code": 0,
+      "seconds": 0.99
+    },
+    {
+      "suite": "test_model_skip_command.py",
+      "exit_code": 0,
+      "seconds": 0.11
+    },
+    {
+      "suite": "test_model_skip_dispatch.py",
+      "exit_code": 0,
+      "seconds": 0.86
+    },
+    {
+      "suite": "test_model_stage_computation.py",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "suite": "test_model_stage_preparation.py",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "suite": "test_model_stage_source_files.py",
+      "exit_code": 0,
+      "seconds": 0.06
+    },
+    {
+      "suite": "test_model_transit_execution.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_model_transit_inputs.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_model_validation_core.py",
+      "exit_code": 0,
+      "seconds": 0.03
+    },
+    {
+      "suite": "test_model_validation_publication_custody.py",
+      "exit_code": 0,
+      "seconds": 1.16
+    },
+    {
+      "suite": "test_model_validation_receipts.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_model_zone_geometry.py",
+      "exit_code": 0,
+      "seconds": 0.89
+    },
+    {
+      "suite": "test_od_matrix.py",
+      "exit_code": 0,
+      "seconds": 0.77
+    },
+    {
+      "suite": "test_output_execution_path.py",
+      "exit_code": 0,
+      "seconds": 0.95
+    },
+    {
+      "suite": "test_output_working_copy.py",
+      "exit_code": 0,
+      "seconds": 0.93
+    },
+    {
+      "suite": "test_package_execution_path.py",
+      "exit_code": 0,
+      "seconds": 0.96
+    },
+    {
+      "suite": "test_package_working_copy.py",
+      "exit_code": 0,
+      "seconds": 0.88
+    },
+    {
+      "suite": "test_prepared_feed_skim.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_project_execution_path.py",
+      "exit_code": 0,
+      "seconds": 0.95
+    },
+    {
+      "suite": "test_project_working_copy.py",
+      "exit_code": 0,
+      "seconds": 0.89
+    },
+    {
+      "suite": "test_push_trigger.py",
+      "exit_code": 0,
+      "seconds": 6.28
+    },
+    {
+      "suite": "test_resident_vmt.py",
+      "exit_code": 0,
+      "seconds": 0.02
+    },
+    {
+      "suite": "test_retained_rules_v4_computation.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_run_scratch_identity.py",
+      "exit_code": 0,
+      "seconds": 0.84
+    },
+    {
+      "suite": "test_scale.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_scenario_adjustment.py",
+      "exit_code": 0,
+      "seconds": 0.16
+    },
+    {
+      "suite": "test_select_link.py",
+      "exit_code": 0,
+      "seconds": 0.13
+    },
+    {
+      "suite": "test_select_link_custody.py",
+      "exit_code": 0,
+      "seconds": 1.03
+    },
+    {
+      "suite": "test_structural_demand_custody.py",
+      "exit_code": 0,
+      "seconds": 0.83
+    },
+    {
+      "suite": "test_time_of_day.py",
+      "exit_code": 0,
+      "seconds": 0.01
+    },
+    {
+      "suite": "test_transit_archive_acquisition.py",
+      "exit_code": 0,
+      "seconds": 0.82
+    },
+    {
+      "suite": "test_transit_coverage_outcomes.py",
+      "exit_code": 0,
+      "seconds": 0.89
+    },
+    {
+      "suite": "test_transit_feed_handoff.py",
+      "exit_code": 0,
+      "seconds": 1.07
+    },
+    {
+      "suite": "test_transit_skim_module.py",
+      "exit_code": 0,
+      "seconds": 1.01
+    },
+    {
+      "suite": "test_transit_skim_settings.py",
+      "exit_code": 0,
+      "seconds": 1.0
+    },
+    {
+      "suite": "test_worker_heartbeat.py",
+      "exit_code": 0,
+      "seconds": 0.15
+    },
+    {
+      "suite": "test_zone_attributes.py",
+      "exit_code": 0,
+      "seconds": 0.85
+    },
+    {
+      "suite": "test_zone_resolution.py",
+      "exit_code": 0,
+      "seconds": 0.02
+    }
+  ],
+  "limits": "Serial execution of every top-level worker test script with lightweight CI dependencies and no installed native engine. Native-engine optional branches do not establish scientific acceptance. Remote exact-head CI remains separate."
+}

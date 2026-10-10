@@ -1,0 +1,27 @@
+[
+  {
+    "case": "baseline",
+    "exitCode": 0,
+    "expectedPass": true
+  },
+  {
+    "case": "harmless",
+    "exitCode": 0,
+    "expectedPass": true
+  },
+  {
+    "case": "ignore-version-error",
+    "exitCode": 1,
+    "expectedPass": false
+  },
+  {
+    "case": "ignore-feed-error",
+    "exitCode": 1,
+    "expectedPass": false
+  },
+  {
+    "case": "restored",
+    "exitCode": 0,
+    "expectedPass": true
+  }
+]

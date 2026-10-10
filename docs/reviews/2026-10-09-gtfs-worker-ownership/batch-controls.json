@@ -1,0 +1,57 @@
+{
+  "recordedAt": "2026-10-09T15:10:47.933080+00:00",
+  "sourceSha256": "26e3ed5f5602d288e671e1cfc7eb0c3402a29c7e9492a14e2b661a8624dd4b14",
+  "ownershipSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "checksSha256": "3bf173f418f068d5ac4ff1467fa713cae45d6117abbe779209d16f232ed87789",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "changed-payload",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Changed batch payload accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-ownership",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Wrong owner batch accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "public-execute",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Authenticated caller wrote batch",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-ordinal-identity",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Duplicate batch ordinal accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    }
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "cases": [
+    {
+      "test": "src/test/migrations/inventory.test.ts",
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "sourceSha256": "5ce38cc3d1526daebdaa1a551e2a2e2b470465e192a75a693ce3854688727976"
+    },
+    {
+      "test": "src/test/migrations/inventory.test.ts",
+      "case": "broken",
+      "expectedPass": false,
+      "exitCode": 1,
+      "sourceSha256": "5ce38cc3d1526daebdaa1a551e2a2e2b470465e192a75a693ce3854688727976"
+    },
+    {
+      "test": "src/test/migrations/inventory.test.ts",
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "sourceSha256": "5ce38cc3d1526daebdaa1a551e2a2e2b470465e192a75a693ce3854688727976"
+    },
+    {
+      "test": "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "sourceSha256": "26b73c07236c294ef81d9d17ed892946c526ed617594a633acddfccb564437af"
+    },
+    {
+      "test": "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "case": "broken",
+      "expectedPass": false,
+      "exitCode": 1,
+      "sourceSha256": "26b73c07236c294ef81d9d17ed892946c526ed617594a633acddfccb564437af"
+    },
+    {
+      "test": "src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "sourceSha256": "26b73c07236c294ef81d9d17ed892946c526ed617594a633acddfccb564437af"
+    }
+  ],
+  "trackedTestsUnchanged": true
+}

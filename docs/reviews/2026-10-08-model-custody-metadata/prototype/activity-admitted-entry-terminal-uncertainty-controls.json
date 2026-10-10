@@ -1,0 +1,32 @@
+{
+  "boundary": "terminal",
+  "cases": [
+    {
+      "control": "lost-reply",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-wrong-request",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "worker_sha256": "d5d9ffdf4d07e2e25ceea7b0da82d2f36e471e58ae135c7da3445d2e48ce2f18",
+  "limits": [
+    "Actual ActivitySim process_stage entry and scaffold handler with native database commands",
+    "Storage byte service is synthetic; no real Storage acceptance",
+    "No automatic poll enrollment, native engine execution, concurrent revocation fence or scientific acceptance"
+  ],
+  "entry": "process_stage with a fresh admitted and bound writer"
+}

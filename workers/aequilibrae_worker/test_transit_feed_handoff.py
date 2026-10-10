@@ -946,9 +946,9 @@ def test_the_budget_reaches_the_skim_itself_and_not_only_the_check_before_it():
     seen = []
     original = gs.transit_skim
 
-    def recording(los, lons, lats, deadline=None):
+    def recording(los, lons, lats, deadline=None, *, settings=None):
         seen.append(deadline)
-        return original(los, lons, lats, deadline=deadline)
+        return original(los, lons, lats, deadline=deadline, settings=settings)
 
     gs.transit_skim = recording
     try:
@@ -1222,7 +1222,8 @@ def test_the_transit_stage_prints_the_expiry_note_for_the_workers_OWN_feed_too()
     # Asserted as an AST call rather than a substring: `_feed_expiry_log_note`
     # appears in this file several times, and a substring check is satisfied by
     # any of them.
-    tree = ast.parse(_main_src())
+    import inspect
+    tree = ast.parse(_main_src() + "\n" + inspect.getsource(main.skim_prepared_feed_version))
     calls = [
         node for node in ast.walk(tree)
         if isinstance(node, ast.Call)

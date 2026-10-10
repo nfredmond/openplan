@@ -496,8 +496,8 @@ const RELEASES: ReadonlyArray<{ tag: string; lastMigration: string; migrationsAt
   },
   {
     tag: "0.68.0",
-    lastMigration: "20261016000013_synthesis_execution_queue.sql",
-    migrationsAtRelease: 385,
+    lastMigration: "20261016000027_run_project_workspace_foreign_keys.sql",
+    migrationsAtRelease: 399,
   },
 ];
 

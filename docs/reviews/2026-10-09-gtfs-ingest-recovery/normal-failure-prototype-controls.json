@@ -1,0 +1,44 @@
+[
+  {
+    "case": "baseline",
+    "exitCode": 0,
+    "expectedPass": true,
+    "failureReason": null
+  },
+  {
+    "case": "harmless",
+    "exitCode": 0,
+    "expectedPass": true,
+    "failureReason": null
+  },
+  {
+    "case": "allow-ready",
+    "exitCode": 3,
+    "expectedPass": false,
+    "failureReason": "noncurrent ready version changed"
+  },
+  {
+    "case": "omit-route-cleanup",
+    "exitCode": 3,
+    "expectedPass": false,
+    "failureReason": "partial rows survived"
+  },
+  {
+    "case": "omit-stage-fence",
+    "exitCode": 3,
+    "expectedPass": false,
+    "failureReason": "closed stage reopened"
+  },
+  {
+    "case": "omit-derived-fence",
+    "exitCode": 3,
+    "expectedPass": false,
+    "failureReason": "closed derived write accepted"
+  },
+  {
+    "case": "restored",
+    "exitCode": 0,
+    "expectedPass": true,
+    "failureReason": null
+  }
+]

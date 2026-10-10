@@ -1,0 +1,41 @@
+{
+  "worker_sha256": "693ad955223b27523a596705d0ff13311a2e4c9bd4b9de2d6ef677db9b735231",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "legacy-path-retain_model_evidence_packet",
+      "exit_code": 1,
+      "targeted_test": "test_evidence_packet_uses_working_outputs"
+    },
+    {
+      "control": "legacy-path-stage_artifacts",
+      "exit_code": 1,
+      "targeted_test": "test_artifact_counts_use_confirmed_output_directory"
+    },
+    {
+      "control": "legacy-path-prepare_primary_model_output",
+      "exit_code": 1,
+      "targeted_test": "test_primary_preparation_uses_working_volume_file"
+    },
+    {
+      "control": "legacy-path-publish_volume_geojson",
+      "exit_code": 1,
+      "targeted_test": "test_volume_publication_refuses_unprepared_outputs_before_database"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual artifact entry points with prepared output copies; package and project prerequisites mocked in focused tests. No complete extraction, publication, full dispatch or scientific acceptance."
+}

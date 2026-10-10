@@ -1,0 +1,62 @@
+{
+  "cases": [
+    {
+      "mode": "baseline",
+      "native_calls_before": 10,
+      "native_calls_after": 270,
+      "cpu_ticks_advanced": 29,
+      "scope_empty": true,
+      "completion_absent": true
+    },
+    {
+      "mode": "owner-alive",
+      "native_calls_before": 20,
+      "native_calls_after": 320,
+      "cpu_ticks_advanced": 27,
+      "completion": {
+        "completed_native_calls": 2400,
+        "positive_loaded_flow": true,
+        "aequilibrae": "1.6.2",
+        "nodes": 14400,
+        "zones": 2400,
+        "links": 28560,
+        "elapsed": 2.2477626890176907
+      }
+    },
+    {
+      "mode": "harmless",
+      "native_calls_before": 10,
+      "native_calls_after": 290,
+      "cpu_ticks_advanced": 28,
+      "scope_empty": true,
+      "completion_absent": true
+    },
+    {
+      "mode": "ignore-owner-loss",
+      "native_calls_before": 20,
+      "native_calls_after": 320,
+      "cpu_ticks_advanced": 27,
+      "fault_detected": "Native assignment completed after owner loss"
+    },
+    {
+      "mode": "restored",
+      "native_calls_before": 10,
+      "native_calls_after": 310,
+      "cpu_ticks_advanced": 27,
+      "scope_empty": true,
+      "completion_absent": true
+    }
+  ],
+  "source_sha256": {
+    "verify_busy_native_owner_loss.py": "31ab018d9d0e74c9a6341572049c13d38b7c56520a55066575fb6357ec322075",
+    "native_busy_assignment_child.py": "09c8cb4a3d3885eca832e9dd7565f25d6d118cba5389d7bcbd07aa887baf0a64",
+    "model_engine_owner_guard.py": "6a4abf9cddf42ec1d05c1d2c52e09baa813e389a3c97ea6a0ced697776ffc105",
+    "model_engine_supervision.py": "0a799a458fc3ae5c3e08a14a3976643d6d24df52128ef0c3ef2cfa5516ff325d"
+  },
+  "cleanup": "Owned engine and guard scopes observed empty or stopped",
+  "limits": [
+    "Synthetic native all-or-nothing assignment, not a validated planning model",
+    "Samples establish advancing native calls and CPU activity, not the exact machine instruction at termination",
+    "No installed worker database, ActivitySim, restart, publication or scientific acceptance"
+  ]
+}

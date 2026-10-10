@@ -1,0 +1,36 @@
+{
+  "source_sha256": "d24eb20a997092d1bf44f699197e6db1ec3e03f2b46da27fbe933d0291bd7223",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "alias-retained-input",
+      "exit_code": 1,
+      "targeted_test": "test_mutating_working_file_preserves_retained_input"
+    },
+    {
+      "control": "erase-producer-reference",
+      "exit_code": 1,
+      "targeted_test": "test_mutating_working_file_preserves_retained_input"
+    },
+    {
+      "control": "ignore-foreign-path",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_manifest_stops_before_copy"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Owned mutable working copy with real package file writes and mocked transport. Native receipt recovery, closure enforcement, cross-database consistency, normal dispatch and scientific acceptance remain unproved."
+}

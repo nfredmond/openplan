@@ -247,19 +247,9 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     await member?.auth.signOut();
     await viewer?.auth.signOut();
     await outsider?.auth.signOut();
-    if (service && workspaceA && workspaceB) {
-      const removed = await service.from("workspaces").delete().in("id", [workspaceA, workspaceB]);
-      if (removed.error) throw new Error(removed.error.message);
-      for (const userId of userIds) {
-        const memberships = await service.from("workspace_members").select("workspace_id").eq("user_id", userId);
-        for (const row of (memberships.data ?? []) as Array<{ workspace_id: string }>) {
-          const personal = await service.from("workspaces").delete().eq("id", row.workspace_id);
-          if (personal.error) throw new Error(personal.error.message);
-        }
-        const deleted = await service.auth.admin.deleteUser(userId);
-        if (deleted.error) throw new Error(deleted.error.message);
-      }
-    }
+    // Enrollment intentionally prevents deleting these synthetic runs or their
+    // workspace. Keep the fixture until the isolated test stack is discarded.
+    // Do not disable retention triggers or delete custody records for cleanup.
   }, 60_000);
 
   it("lets the member read the four exact links while the outsider reads none", async () => {
@@ -299,5 +289,18 @@ liveDescribe("guided model truth live RLS and trigger enforcement", () => {
     expect(delta.error?.message ?? "").toMatch(/indicator deltas are immutable/i);
     const artifact = await member.from("model_run_artifacts").update({ content_hash: "f".repeat(64) }).eq("id", artifactIds[0]);
     expect(artifact.error?.message ?? "").toMatch(/artifact is immutable/i);
+  });
+
+  it("preserves enrolled model runs when workspace deletion is attempted", async () => {
+    const removed = await service.from("workspaces").delete().eq("id", workspaceA);
+    expect(removed.error?.code).toBe("23503");
+    expect(removed.error?.message).toContain("model_execution_custody_enrollment_run_id_fkey");
+    const retained = await service.from("model_runs").select("id,workspace_id").in("id", runIds);
+    expect(retained.error).toBeNull();
+    expect(retained.data?.map((row) => row.id).sort()).toEqual([...runIds].sort());
+    expect(retained.data?.every((row) => row.workspace_id === workspaceA)).toBe(true);
+    const workspace = await service.from("workspaces").select("id").eq("id", workspaceA).single();
+    expect(workspace.error).toBeNull();
+    expect(workspace.data?.id).toBe(workspaceA);
   });
 });

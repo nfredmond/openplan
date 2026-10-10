@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "authorize-start",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_verified_observation_does_not_authorize_execution"
+    },
+    {
+      "case": "ignore-daemon",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_other_daemon_is_refused"
+    },
+    {
+      "case": "ignore-image",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_policy_and_identity_changes_are_refused"
+    },
+    {
+      "case": "ignore-environment",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_policy_and_identity_changes_are_refused"
+    },
+    {
+      "case": "ignore-mounts",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_changed_or_additional_mount_is_refused"
+    },
+    {
+      "case": "allow-mutable-command",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_mutable_plan_and_tag_only_image_are_refused"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": "03bb4ea50ad6ad3e8d3233f58ca356a911a7f264c81ffddcf29bbb02a27d74be",
+  "limits": [
+    "Supplied synthetic inspection facts",
+    "Separate created-container test uses live Docker",
+    "No controller or startup authority"
+  ]
+}

@@ -1,0 +1,47 @@
+{
+  "inputSha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5",
+  "archiveBytes": 43392539,
+  "limits": {
+    "maxArchiveBytes": 201326592,
+    "maxCatalogBytes": 16777216,
+    "maxMemberUncompressedBytes": 2147483648,
+    "maxTotalUncompressedBytes": 3221225472,
+    "maxDeclaredCompressionRatio": 100,
+    "maxRowsPerTable": 40000000,
+    "maxStopServicePairs": 1500000,
+    "maxRouteServicePairs": 200000,
+    "maxBufferedFrequencyStopTimes": 3000000,
+    "maxExpandedFrequencyDepartures": 20000000,
+    "maxServiceDates": 1100,
+    "parseBudgetMs": 180000,
+    "maxWarningExamples": 20,
+    "maxWarningExampleChars": 200
+  },
+  "elapsedMs": 18215.270518,
+  "processMaxRssKiB": 203212,
+  "nodeVersion": "v24.21.0",
+  "ok": true,
+  "stats": {
+    "archiveBytes": 43392539,
+    "bytesDecompressed": 230891350,
+    "elapsedMs": 18216,
+    "stopTimesRows": 3403393,
+    "stopTimesWithoutTime": 0,
+    "tripRows": 67515,
+    "stopServicePairs": 68613,
+    "routeServicePairs": 1697,
+    "scheduledTrips": 67515,
+    "frequencyTrips": 0,
+    "exactTimesFrequencyTrips": 0
+  },
+  "routeCount": 81,
+  "stopCount": 6027,
+  "derivedRouteRows": 1023,
+  "derivedStopRows": 39272,
+  "serviceWindow": {
+    "startDate": "2026-09-27",
+    "endDate": "2027-02-27",
+    "source": "both"
+  },
+  "warnings": []
+}

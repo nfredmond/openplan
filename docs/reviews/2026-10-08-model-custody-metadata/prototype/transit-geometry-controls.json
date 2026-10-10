@@ -1,0 +1,41 @@
+{
+  "module_sha256": "d6e669e2a05df05a75617c33717bdf31b3727dec49dad78d382669dc065e8e6b",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "mutable-setup",
+      "exit_code": 1,
+      "targeted_test": "test_callback_uses_owned_coordinates_and_frozen_zone_order"
+    },
+    {
+      "control": "omit-deadline",
+      "exit_code": 1,
+      "targeted_test": "test_deadline_is_forwarded_with_owned_geometry"
+    },
+    {
+      "control": "wrong-longitudes",
+      "exit_code": 1,
+      "targeted_test": "test_callback_uses_owned_coordinates_and_frozen_zone_order"
+    },
+    {
+      "control": "omit-registration",
+      "exit_code": 1,
+      "targeted_test": "test_real_child_consumes_registered_geometry"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Synthetic CSV and owned package fixtures. Real child geometry handoff with synthetic no-match discovery and mocked registration. No general modeled child transit, full native assignment, original producer authority or scientific acceptance."
+}

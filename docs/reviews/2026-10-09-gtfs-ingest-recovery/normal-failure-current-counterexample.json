@@ -1,0 +1,190 @@
+{
+  "lateFailure": {
+    "recorded": true,
+    "feedStatusChanged": false
+  },
+  "after": {
+    "success": true,
+    "error": null,
+    "data": {
+      "status": "failed",
+      "is_current": true,
+      "route_service_level_rows": 0,
+      "stop_service_level_rows": 0
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "actualRouteRows": 0,
+  "actualStopRows": 0,
+  "inputSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "archiveBytes": 892312,
+  "parseMs": 674.7158780000001,
+  "persistenceMs": 112.98589599999991,
+  "processMaxRssKiB": 136980,
+  "begin": {
+    "ok": true,
+    "feedId": "8594de40-dac9-4b4a-aa97-53203af62293",
+    "versionId": "6d5e6a98-ee67-441c-8ed9-95e35a104532",
+    "createdFeed": true
+  },
+  "result": {
+    "ok": true,
+    "routeServiceLevelRows": 95,
+    "stopServiceLevelRows": 717,
+    "droppedForMissingCoordinates": 0,
+    "displayName": "Bay Area Rapid Transit",
+    "tractService": {
+      "computed": true,
+      "rows": 0
+    }
+  },
+  "promotion": {
+    "ok": true,
+    "promoted": true
+  },
+  "version": {
+    "success": true,
+    "error": null,
+    "data": {
+      "status": "ready",
+      "is_current": true,
+      "route_service_level_rows": 95,
+      "stop_service_level_rows": 717,
+      "tract_service_rows": 0,
+      "tract_service_computed_at": "2026-10-09T14:33:09.622+00:00"
+    },
+    "count": null,
+    "status": 200,
+    "statusText": "OK"
+  },
+  "requests": [
+    {
+      "method": "POST",
+      "path": "/gtfs_feeds",
+      "bodyBytes": 262,
+      "status": 201,
+      "elapsedMs": 17.36846300000002
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 303,
+      "status": 201,
+      "elapsedMs": 6.144735000000082
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 20,
+      "status": 200,
+      "elapsedMs": 3.7874360000000706
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 68464,
+      "status": 201,
+      "elapsedMs": 11.908820999999989
+    },
+    {
+      "method": "POST",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 506461,
+      "status": 201,
+      "elapsedMs": 76.07369500000004
+    },
+    {
+      "method": "POST",
+      "path": "/rpc/compute_gtfs_tract_service",
+      "bodyBytes": 60,
+      "status": 200,
+      "elapsedMs": 6.2946680000000015
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 860,
+      "status": 200,
+      "elapsedMs": 4.054660999999896
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.8033430000000408
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.719274999999925
+    },
+    {
+      "method": "POST",
+      "path": "/rpc/promote_gtfs_feed_version",
+      "bodyBytes": 55,
+      "status": 204,
+      "elapsedMs": 3.6458489999999983
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.9469429999999193
+    },
+    {
+      "method": "DELETE",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 4.2149730000001
+    },
+    {
+      "method": "DELETE",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 3.734927000000198
+    },
+    {
+      "method": "PATCH",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 221,
+      "status": 200,
+      "elapsedMs": 2.7659900000001016
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feeds",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.2837919999999485
+    },
+    {
+      "method": "GET",
+      "path": "/gtfs_feed_versions",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.6669550000001436
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_route_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 2.9019960000000538
+    },
+    {
+      "method": "HEAD",
+      "path": "/gtfs_stop_service_levels",
+      "bodyBytes": 0,
+      "status": 200,
+      "elapsedMs": 1.427793999999949
+    }
+  ]
+}

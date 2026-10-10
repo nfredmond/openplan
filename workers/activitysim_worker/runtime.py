@@ -83,12 +83,18 @@ def _file_metadata(path: Path, base_dir: Path) -> dict[str, Any]:
 
 
 def _tail_text(path: Path, max_chars: int = 4000) -> str | None:
-    if not path.exists():
+    if type(max_chars) is not int or max_chars <= 0:
+        raise ValueError("Log tail size must be a positive integer")
+    try:
+        with path.open("rb") as handle:
+            # Four bytes cover one UTF-8 character. Slicing decoded text drops
+            # any partial leading character while retaining the requested tail.
+            size = handle.seek(0, os.SEEK_END)
+            handle.seek(max(0, size - max_chars * 4))
+            text = handle.read(max_chars * 4).decode("utf-8", errors="replace")
+    except FileNotFoundError:
         return None
-    text = path.read_text()
-    if not text:
-        return None
-    return text[-max_chars:]
+    return text[-max_chars:] if text else None
 
 
 def _is_relative_to(path: Path, parent: Path) -> bool:
@@ -219,6 +225,15 @@ def resolve_layered_config_dirs(config_dir: Path) -> list[Path]:
     return [stock_path]
 
 
+def _validate_container_limits(memory_bytes: int | None, tasks: int | None) -> None:
+    if (memory_bytes is None) != (tasks is None):
+        raise ValueError("Container limits require both memory and task limits")
+    if memory_bytes is not None:
+        for value in (memory_bytes, tasks):
+            if type(value) is not int or value <= 0:
+                raise ValueError("Container limits must be positive integers")
+
+
 def build_container_command(
     *,
     bundle_dir: Path,
@@ -229,7 +244,10 @@ def build_container_command(
     container_template: str | None = None,
     network_mode: str | None = "none",
     layered_config_dirs: list[Path] | None = None,
+    memory_bytes: int | None = None,
+    tasks: int | None = None,
 ) -> tuple[list[str], dict[str, Any]]:
+    _validate_container_limits(memory_bytes, tasks)
     engine = _resolve_cli_command(engine_command or [DEFAULT_CONTAINER_ENGINE])
     if not engine:
         raise RuntimeError("Container engine executable is not available")
@@ -268,6 +286,8 @@ def build_container_command(
         mounts.append({"source": str(Path(layered_dir).resolve()), "target": target, "read_only": True})
 
     command: list[str] = [*engine, "run", "--rm"]
+    if memory_bytes is not None:
+        command.extend(["--memory", str(memory_bytes), "--memory-swap", str(memory_bytes), "--pids-limit", str(tasks)])
     if network_mode:
         command.extend(["--network", network_mode])
     if hasattr(os, "getuid") and hasattr(os, "getgid"):
@@ -303,6 +323,7 @@ def build_container_command(
         "container_paths": container_mapping,
         "inner_command": inner_command,
         "network_mode": network_mode,
+        "resource_limits": {"memory_bytes": memory_bytes, "memory_plus_swap_bytes": memory_bytes, "tasks": tasks},
     }
 
 
@@ -526,6 +547,16 @@ def detect_activitysim_capability(
     return capability
 
 
+def require_no_host_custody(path: Path) -> None:
+    """Preserve host launch records even when the containing runtime is replaced."""
+    # Python 3.11 glob omits a dangling link in a literal final component.
+    # Enumerate the parents so the record's own link identity is still checked.
+    for stage in (path / "stages").glob("*"):
+        records = stage / "host_supervision"
+        if records.exists() or records.is_symlink():
+            raise RuntimeError("Retained host custody exists; choose a new runtime directory")
+
+
 def prepare_runtime_directory(
     *,
     bundle_dir: Path,
@@ -539,6 +570,10 @@ def prepare_runtime_directory(
         timestamp = datetime.now(UTC).strftime("%Y%m%dT%H%M%SZ")
         label = _slugify(run_label or bundle_dir.name)
         path = bundle_dir / DEFAULT_RUNTIME_PARENT / f"{timestamp}-{label}"
+    custody = path.with_name(path.name + ".container-custody")
+    if custody.exists() or custody.is_symlink():
+        raise RuntimeError("Retained container custody exists; choose a new runtime directory")
+    require_no_host_custody(path)
     if path.exists():
         if not force:
             raise RuntimeError(f"Runtime output directory already exists: {path}")
@@ -577,7 +612,27 @@ def run_activitysim_runtime(
     container_network_mode: str | None = "none",
     run_label: str | None = None,
     force: bool = False,
+    host_memory_bytes: int | None = None,
+    host_tasks: int | None = None,
+    container_memory_bytes: int | None = None,
+    container_tasks: int | None = None,
+    container_supervision_socket: str | None = None,
 ) -> dict[str, Any]:
+    _validate_container_limits(container_memory_bytes, container_tasks)
+    if container_supervision_socket is not None:
+        if not container_image or container_memory_bytes is None:
+            raise ValueError("Container supervision requires an image and explicit memory/task limits")
+        if not isinstance(container_supervision_socket, str) or not Path(container_supervision_socket).is_absolute():
+            raise ValueError("Container supervision requires an absolute socket path")
+    if container_memory_bytes is not None and not container_image:
+        raise ValueError("Container limits require a container image")
+    if (host_memory_bytes is None) != (host_tasks is None):
+        raise ValueError("Host supervision requires both memory and task limits")
+    if host_memory_bytes is not None:
+        from host_supervision import ScopeLimits
+        ScopeLimits(host_memory_bytes, host_tasks)
+        if container_image:
+            raise ValueError("Host supervision cannot supervise container daemon workloads")
     bundle_dir, bundle_manifest_path = resolve_bundle_paths(bundle_path, manifest_path)
     output_dir = prepare_runtime_directory(
         bundle_dir=bundle_dir,
@@ -734,11 +789,13 @@ def run_activitysim_runtime(
                                 engine_command=capability["container_engine_command"],
                                 container_template=container_template,
                                 network_mode=capability.get("container_network_mode"),
+                                memory_bytes=container_memory_bytes, tasks=container_tasks,
                                 layered_config_dirs=layered_config_dirs,
                             )
                             runtime_manifest["execution"].update(
                                 {
                                     "container_image": container_execution["image"],
+                                    "container_resource_limits": container_execution["resource_limits"],
                                     "container_engine_command": container_execution["engine_command"],
                                     "container_network_mode": container_execution["network_mode"],
                                     "container_mounts": container_execution["mounts"],
@@ -790,19 +847,40 @@ def run_activitysim_runtime(
                                 "layered_config_dirs": [str(p) for p in layered_config_dirs],
                             }
                         (output_dir / DEFAULT_OUTPUT_SUBDIR).mkdir(parents=True, exist_ok=True)
-                        logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
-                        completed = subprocess.run(
-                            command,
-                            cwd=str(output_dir / "workdir"),
-                            capture_output=True,
-                            text=True,
-                            check=False,
-                        )
-                        run_log_path.write_text(
-                            (completed.stdout or "")
-                            + ("\n" if completed.stdout and completed.stderr else "")
-                            + (completed.stderr or "")
-                        )
+                        if container_supervision_socket is not None:
+                            stage.metadata["requested_container_cli_command"] = stage.metadata.pop("command")
+                            logger.log("Executing ActivitySim through supervised local Docker")
+                        else:
+                            logger.log(f"Executing ActivitySim command: {' '.join(shlex.quote(part) for part in command)}")
+                        # Retain output while the command runs. Capturing pipes
+                        # buffers the entire log and loses it with this owner.
+                        if container_supervision_socket is not None:
+                            from container_execution import run_supervised_execution
+                            custody = output_dir.with_name(output_dir.name + ".container-custody")
+                            completed, supervision = run_supervised_execution(
+                                container_execution, socket_path=container_supervision_socket,
+                                records=custody, log_path=run_log_path,
+                            )
+                            stage.metadata.update(supervision)
+                            runtime_manifest["execution"].update(supervision)
+                        else:
+                            with run_log_path.open("wb") as run_log:
+                                if host_memory_bytes is not None:
+                                    from host_supervision import run_host_command
+                                    completed = run_host_command(
+                                        command, cwd=output_dir / "workdir", log=run_log,
+                                        records=stage_dir / "host_supervision",
+                                        memory_bytes=host_memory_bytes, tasks=host_tasks,
+                                    )
+                                    stage.metadata["host_supervision"] = "owned_linux_scope"
+                                else:
+                                    completed = subprocess.run(
+                                        command,
+                                        cwd=str(output_dir / "workdir"),
+                                        stdout=run_log,
+                                        stderr=subprocess.STDOUT,
+                                        check=False,
+                                    )
                         stage.artifacts.append({"artifact_type": "activitysim_stdout_log", "path": str(run_log_path)})
                         stage.metadata["returncode"] = completed.returncode
                         if completed.returncode == 0:

@@ -1,0 +1,48 @@
+{
+  "recordedAt": "2026-10-09T15:29:21.993196+00:00",
+  "sourceSha256": "92e712dce8aea3e0332cd06945e67a181d370fd2689c43a442049ce2b680a04e",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailingTest": null
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailingTest": null
+    },
+    {
+      "case": "ignore-hash",
+      "expectedPass": false,
+      "exitCode": 1,
+      "expectedFailingTest": "refuses altered, truncated or oversized bytes"
+    },
+    {
+      "case": "ignore-path",
+      "expectedPass": false,
+      "exitCode": 1,
+      "expectedFailingTest": "refuses a mismatched path before I/O"
+    },
+    {
+      "case": "ignore-size-limit",
+      "expectedPass": false,
+      "exitCode": 1,
+      "expectedFailingTest": "refuses declared oversize before I/O"
+    },
+    {
+      "case": "wrong-timeout-outcome",
+      "expectedPass": false,
+      "exitCode": 1,
+      "expectedFailingTest": "times out a stalled body"
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailingTest": null
+    }
+  ]
+}

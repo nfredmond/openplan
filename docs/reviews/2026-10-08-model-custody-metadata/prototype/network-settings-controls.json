@@ -1,0 +1,42 @@
+{
+  "source_sha256": "397d5ff52ca6158b4a23acf6c29a1b109861e89a24c510b8486f7baf6eb23458",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "persisted-null",
+      "returncode": 1,
+      "expected_failure": "AssignmentSettingsError not raised",
+      "matched": true
+    },
+    {
+      "control": "builder-falsy",
+      "returncode": 1,
+      "expected_failure": "AssignmentSettingsError not raised",
+      "matched": true
+    },
+    {
+      "control": "snapshot-null",
+      "returncode": 1,
+      "expected_failure": "AssignmentSettingsError not raised",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Validator and pre-execution synthetic solver checks. No native engine, database, demand-equivalence or scientific acceptance claim."
+}

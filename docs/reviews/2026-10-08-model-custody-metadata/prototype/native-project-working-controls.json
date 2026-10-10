@@ -1,0 +1,22 @@
+{
+  "proof_sha256": "3fc0672cb8b24b01d2f3c511986903158a9c6bc74989bbec81cac4c1948676d9",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0
+    },
+    {
+      "control": "retained-input-as-working",
+      "exit_code": 1
+    },
+    {
+      "control": "restored",
+      "exit_code": 0
+    }
+  ],
+  "limits": "Native spatial project reopen through writer preparation and resolver; registration mocked. Wrong-path control stops before native reopen. No assignment or scientific acceptance."
+}

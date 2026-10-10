@@ -1,0 +1,62 @@
+{
+  "gtfs_sha256": "cff5258104ed0bd2dd07c63756bcf3f36dfed29033965c3bf0fb610a5af50c52",
+  "transit_module_sha256": "7925e06cda9422dc0ab75df72da14a6ee062aedb4b39788ad209fdc1e227b58d",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-bool",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_record_refuses_missing_extra_nonfinite_and_invalid_numbers"
+    },
+    {
+      "control": "ignore-access",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_explicit_access_changes_served_pairs"
+    },
+    {
+      "control": "ignore-transfer",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_transfer_penalty_changes_selected_itinerary"
+    },
+    {
+      "control": "omit-settings-metadata",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_child_uses_record_despite_different_environment"
+    },
+    {
+      "control": "ignore-fare",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_child_uses_record_despite_different_environment"
+    },
+    {
+      "control": "ignore-walk",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_child_uses_record_despite_different_environment"
+    },
+    {
+      "control": "ignore-coverage-setting",
+      "exit_code": 1,
+      "targeted_test": "test_transit_skim_settings.TransitSettingsTests.test_explicit_access_controls_prepared_coverage"
+    },
+    {
+      "control": "drop-deadline",
+      "exit_code": 1,
+      "targeted_test": "budget"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Synthetic feed and transfer network, real separate-process numerical comparison, mocked parent feed metadata/storage. No retained archive authority, full assignment handoff, all optional provider paths or scientific acceptance."
+}

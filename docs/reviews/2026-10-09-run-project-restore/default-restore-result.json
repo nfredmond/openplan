@@ -1,0 +1,14 @@
+{
+  "source": "openplan_project_restore_source_ebe8a0180bfb487b9b7a5761a8a47c09",
+  "target": "openplan_project_restore_target_ebe8a0180bfb487b9b7a5761a8a47c09",
+  "originalFailure": "model_runs_project_workspace_match",
+  "failedRestoreRolledBack": true,
+  "defaultRestoreAfterMigration": true,
+  "tablesCompared": 340,
+  "rowsCompared": 966,
+  "recordsMatch": true,
+  "validatedForeignKeys": 4,
+  "restoredIntegrityChecksPass": true,
+  "controlsRolledBack": true,
+  "migrationSha256": "d1142e76d242f9e11def5d16e4d5be6dc673678c7b78a1042faf11cd8c456ca6"
+}

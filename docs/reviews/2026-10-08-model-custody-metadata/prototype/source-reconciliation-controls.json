@@ -1,0 +1,56 @@
+{
+  "source_sha256": "f87f0038a3bc732391c2d585484f3380f5b696133312f57337e778ef0629bb88",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "local-artifact-scope",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "admission",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "attempt-owner",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "saved-manifest",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "other-pending",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ownership-before",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "ownership-after",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "model-resume-claim",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Actual files, journals, saved admission and publisher with injected ownership/database responses and synthetic TUS peer. No native whole-source reconciliation or fresh-process CLI proof."
+}

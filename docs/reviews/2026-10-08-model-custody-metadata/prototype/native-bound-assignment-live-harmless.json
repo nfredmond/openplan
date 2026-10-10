@@ -1,0 +1,156 @@
+{
+  "control": "harmless",
+  "live_parent_transport": true,
+  "worker_sha256": "edc0b4dbf2921c9177038604abf47b10dda4803eda03f01282f9611b07a68105",
+  "source_sha256": {
+    "model_engine_binding.py": "9d52976d12bcbc65ede273278bd001dc7ea4f4f0b3e091b1632fb22ea9294901",
+    "model_engine_channel.py": "9eced6696938e6ad4783d7e6fbfdc4d7b6c63abb3796944dd9dd18c723c9267f",
+    "model_engine_process.py": "1c57e57d1b4aba289d85e46186c3f3251a4b5b0db66cd9fbad775e77392daa23",
+    "model_transit_execution.py": "32c876e43befd4f43da6f26f6dd3197919c49f4f79778c5f7ab5bafc12022f7e",
+    "model_geometry_inputs.py": "13790ab924a1878c0f75976282ca4ecdc49d514eaf15086a14a57e4a1b8330dd",
+    "model_count_inputs.py": "5b0b5b2af6b09907a8d43ad1e9d9ca0f9e9807ecbf82b55ccc9b977fd894e594"
+  },
+  "engine_version": "1.6.2",
+  "convergence": {
+    "final_gap": 0.0,
+    "iterations": 2,
+    "target_gap": 0.0005,
+    "max_iterations": 3000,
+    "algorithm": "bfw",
+    "converged": true,
+    "assignment_profile": {
+      "schema_version": "openplan.assignment-profile.v1",
+      "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+      "engine": "aequilibrae",
+      "algorithm": "bfw",
+      "vdf": "BPR",
+      "vdf_parameters": {
+        "alpha": 0.15,
+        "beta": 4
+      },
+      "capacity_field": "capacity",
+      "time_field": "travel_time",
+      "class_pce": 1,
+      "engine_version": "1.6.2",
+      "target_gap": 0.0005,
+      "max_iterations": 3000,
+      "cores": 1
+    },
+    "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+    "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157"
+  },
+  "loaded_links": 1,
+  "mode_split": {
+    "auto_trips": 173,
+    "transit_trips": 4,
+    "active_trips": 43,
+    "auto_share": 0.7903933432086736,
+    "transit_share": 0.01803444002142706,
+    "distance_bands": [
+      {
+        "band_miles": "0-1",
+        "person_trips": 20.0,
+        "auto_share_pct": 71.6
+      },
+      {
+        "band_miles": "1-3",
+        "person_trips": 200.0,
+        "auto_share_pct": 79.8
+      },
+      {
+        "band_miles": "3-5",
+        "person_trips": 0.0,
+        "auto_share_pct": null
+      },
+      {
+        "band_miles": "5-inf",
+        "person_trips": 0.0,
+        "auto_share_pct": null
+      }
+    ],
+    "walk_mph": 3.0,
+    "bike_mph": 10.0,
+    "transit_modeled": true,
+    "transit_available_pairs": 1,
+    "transit_total_pairs": 2,
+    "avg_transit_ivtt_min": 20.0,
+    "avg_transit_wait_min": 15.0,
+    "shares_pct": {
+      "auto": 78.64,
+      "transit": 1.82,
+      "active": 19.54
+    },
+    "transit_status": "modeled",
+    "transit_los": {
+      "access_buffer_miles": 0.5,
+      "discovery_error": null,
+      "fallback_after_catalog_failure": false,
+      "feed_checksum_sha256": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
+      "feed_expiry_evaluated_at": "2026-10-09T11:25:45.873982+00:00",
+      "feed_origin": "operator_path",
+      "feed_schedule_expired": false,
+      "feed_service_end_date": "2026-12-31",
+      "flat_fare_usd": 1.5,
+      "frequency_trips_excluded": 0,
+      "n_lines": 1,
+      "n_routes": 1,
+      "n_served_stops": 3,
+      "operator_env_overridden": false,
+      "scheduled_trips_used": 2,
+      "selection_reason": null,
+      "service_day": "monday",
+      "service_end": "20261231",
+      "service_period": "20250101..20261231",
+      "service_start": "20250101",
+      "skim_settings": {
+        "access_miles": 0.5,
+        "transfer_penalty_min": 5.0,
+        "flat_fare_usd": 1.5,
+        "walk_mph": 3.0
+      },
+      "source_name": "synthetic-feed.zip",
+      "source_url": null
+    }
+  },
+  "artifacts": {
+    "run_output/external_demand.omx": "133e8c87ba5a14281cfeed0a9e3c5c9f544a6814f1ba5a07c243e28e062e7b1a",
+    "run_output/resident_demand.omx": "ad16d492318286632a3e06b6c6aaa30edca2092e69ad963a2c4d5eb3c74d67cd",
+    "run_output/demand.aem": "3dcb59d398c12e21df3bfc7c95c969348775a439f92251ea3e15e23593ac1e21",
+    "run_output/travel_time_skims.omx": "34a19e374f747ed7475f2016ea51784df7fe95b3d3f4400cae2d3f20ace7b8cd",
+    "run_output/link_volumes.csv": "0363855364f05c3dac0f1ff9153babde381745f177472e6b7854353be1cf883d",
+    "run_output/resident_demand.aem": "6d7d472fab7c5cc996a97a871887fcb17fb48bfbd3491c0493d3dbb749bc48ed",
+    "run_output/demand.omx": "752e7b0baecc9260cdfc98fad9dedfee0669e27c274e19a6f95b24851e6258e6",
+    "run_output/external_demand.aem": "8120aec0542cfadc988280d7d2c25f08ddc3e9289e242f8f209bc3cf7a7dc677",
+    "run_output/transit_inputs/manifest.json": "3fe6733df8b1b946c1b24512b8b8c33cb69f0032d7b0cff54b490afec1b09a01",
+    "run_output/child_count_inputs/manifest.json": "a9455afaf11d7ad7e4e16ddf520f624649d673bef8873a10a01bbdbefb43d60a",
+    "run_output/geometry_inputs/manifest.json": "cda5a7f05ab2db44369ac47785b6ab1f05e97247f3237d20a3a7c883d88a9ae2",
+    "run_output/count_inputs/manifest.json": "f66c22e12ade135497e6f4a9bd29414c1e2d8ea9d1167d5ddee8b12007f751c5",
+    "run_output/initial_assignment_inputs/external_centroids.npy": "2130c4794a154e5eec689e9ab1cfd5a425ec91771b34bb51e0eaa2040221d8a4",
+    "run_output/initial_assignment_inputs/external_demand.npy": "7f23df45f96f5c4c013a1fd754eb49fe33ff5d113c6464ad649a1e15a79f0ab5",
+    "run_output/initial_assignment_inputs/resident_centroids.npy": "2130c4794a154e5eec689e9ab1cfd5a425ec91771b34bb51e0eaa2040221d8a4",
+    "run_output/initial_assignment_inputs/manifest.json": "e993fc0219919ee616ffb5798e6d5ee40731013e2dfa078a6804e74676236b57",
+    "run_output/initial_assignment_inputs/resident_demand.npy": "c13bff1b732cb7c4d08af3421a0d2db03edd9b9d96b120871da8aa4e7d439871",
+    "run_output/geometry_inputs/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
+    "run_output/assignment_transit/geometry/manifest.json": "fc33c10820d88a7112494c5115bed9dcc275040926a62035a291bd4527f55a5c",
+    "run_output/assignment_transit/transit/manifest.json": "54f58fc6e9bbf6666bc9490b10acd0ee2ea6104f76c0bc1a8a422ac40d9bae31",
+    "run_output/assignment_transit/transit/files/transit.json": "a3c47ea8dee6c919ba4f9575e36bd7deda572ef2dd1218983a6982e62651725d",
+    "run_output/assignment_transit/transit/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd",
+    "run_output/assignment_transit/geometry/files/geometry.json": "823edb36e6e7518a16c7b3cfc7dc4cd2612bd1d7b3285aa1701bd4ad191e61e8",
+    "run_output/transit_inputs/files/transit.json": "a3c47ea8dee6c919ba4f9575e36bd7deda572ef2dd1218983a6982e62651725d",
+    "run_output/transit_inputs/files/feed.zip": "fb679fb4b835fd1e1b4bd1eb1b9d52adcfde62d3ea3b0048bcfdfe2dfb0cebfd"
+  },
+  "exit_receipt": {
+    "schema": "openplan.engine-process.v1",
+    "run_id": "49928994-380e-4e73-8bc8-7b4092e6b1fa",
+    "stage_id": "d432b1ec-2104-4e76-a9a7-3e9c2fda1f23",
+    "attempt_id": "acf8778b-692a-4f45-adb5-5c048c4160d6",
+    "command_sha256": "d71c47d7717b1ff0fc3f3e9cc0509f25d9dcea7802af24a926d57328d02b5749",
+    "pid": 3409136,
+    "returncode": 0,
+    "observed_original_process_group_empty": true,
+    "execution_ready": false,
+    "scientific_acceptance": "unassessed"
+  },
+  "initial_input_registration_confirmed": true,
+  "limits": "Full native stage_assignment with two synthetic centroid nodes and one link. Parent transport mode is recorded explicitly. Directly constructed consumed predecessor fixtures, no calibration/cordons. No interruption recovery, scientific validity, normal dispatcher or release acceptance."
+}

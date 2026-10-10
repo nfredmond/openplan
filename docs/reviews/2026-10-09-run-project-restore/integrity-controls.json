@@ -1,0 +1,41 @@
+{
+  "migrationSha256": "d1142e76d242f9e11def5d16e4d5be6dc673678c7b78a1042faf11cd8c456ca6",
+  "checksSha256": "7cdfef34fa6b820a2dd4a2611e2e826e92a9eebf13f9f79b329c140ac05ae724",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "rolledBack": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "rolledBack": true
+    },
+    {
+      "case": "missing-model-scope",
+      "expectedPass": false,
+      "exitCode": 3,
+      "expectedFailure": "foreign workspace accepted: model_runs",
+      "rolledBack": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "rolledBack": true
+    },
+    {
+      "case": "invalid-existing-attribution",
+      "expectedPass": false,
+      "exitCode": 3,
+      "expectedFailure": "runs_project_workspace_fk",
+      "rolledBack": true
+    }
+  ]
+}

@@ -17,6 +17,7 @@ from typing import Any, Iterable, Mapping, Sequence
 
 
 VALIDATION_RULES_VERSION = 4
+DECISIVE_OBSERVATION_POLICY = "source-supported-bounds-required.v1"
 OBSERVATION_SCHEMA = "openplan.observed-traffic-observation.v1"
 COMPARISON_BASIS_SCHEMA = "openplan.model-comparison-basis.v1"
 ASSESSMENT_SCHEMA = "openplan.model-validation-assessment.v1"
@@ -302,7 +303,7 @@ def _metric_row(observation: Mapping[str, Any], modeled_volume: float, findings:
     return {
         "observation_id": observation["observation_id"],
         "evidence_grade": grade,
-        "decisive": grade in {"A", "B"} and comparable,
+        "decisive": grade in {"A", "B"} and comparable and interval is not None,
         "diagnostic": grade == "C" and comparable,
         "observed_center": center,
         "observed_bounds": list(interval) if interval is not None else UNKNOWN,
@@ -450,13 +451,19 @@ def assess_validation(
             reasons.append(f"Observation {observation['observation_id']} matched link {link_id}, but the exact model artifact has no value for it.")
             continue
         findings = comparability_findings(observation, basis)
-        rows.append(_metric_row(observation, modeled, findings))
+        row = _metric_row(observation, modeled, findings)
+        rows.append(row)
+        if row["evidence_grade"] in {"A", "B"} and row["observed_bounds"] == UNKNOWN:
+            reasons.append(
+                f"Observation {observation['observation_id']} has no source-supported bounds; "
+                "its raw diagnostics are retained but it cannot be decisive."
+            )
 
     decisive = [row for row in rows if row["decisive"]]
     diagnostic = [row for row in rows if row["diagnostic"]]
     outcome = _decision(decisive, basis, reasons)
     if not decisive:
-        reasons.append("No Grade A or B observation has a fully comparable year, day, period, direction, and vehicle basis.")
+        reasons.append("No Grade A or B observation has both source-supported bounds and a fully comparable year, day, period, direction, and vehicle basis.")
         outcome = "inconclusive"
 
     observation_hashes = [sha256_payload(observation) for observation in observations]
@@ -479,6 +486,7 @@ def assess_validation(
         "created_at": created_at or datetime.now(timezone.utc).isoformat(),
         "exact_inputs": exact_inputs,
         "planning_use": basis["planning_use"],
+        "decisive_observation_policy": DECISIVE_OBSERVATION_POLICY,
         "partition": dict(partition),
         "comparability_findings": {row["observation_id"]: row["comparability"] for row in rows},
         "observation_results": rows,

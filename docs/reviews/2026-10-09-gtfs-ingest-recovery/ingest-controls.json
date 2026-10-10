@@ -1,0 +1,42 @@
+[
+  {
+    "case": "baseline",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "harmless",
+    "expectedPass": true,
+    "returnCode": 0
+  },
+  {
+    "case": "ignore_fetching_refusal",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_parsing_refusal",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "ignore_object_refusal",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "misreport_stage_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "misreport_object_error",
+    "expectedPass": false,
+    "returnCode": 1
+  },
+  {
+    "case": "restored",
+    "expectedPass": true,
+    "returnCode": 0
+  }
+]

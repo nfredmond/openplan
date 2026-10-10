@@ -1,0 +1,101 @@
+{
+  "proof_sha256": {
+    "verify_native_assignment_http.py": "e4414f203e319accf878ce373af124ccfffb3b60386571d266850ec970394a09",
+    "verify_native_bound_assignment.py": "c1d21fb6e273c82e618ccc31c04a25431a3445168efb43191987c1e639b66234"
+  },
+  "controls": [
+    {
+      "control": "baseline",
+      "database": "openplan_attempt_cli_340828ac28d3428a88296465c6ffa95c",
+      "replay": {
+        "request_id": "efcce49a-a015-48b1-845e-103c91328d27",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "efcce49a-a015-48b1-845e-103c91328d27",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "efcce49a-a015-48b1-845e-103c91328d27",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "a284a807683821ccec656c432830d1947613497c10b649bc9839ba6015983fd6",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    },
+    {
+      "control": "harmless",
+      "database": "openplan_attempt_cli_b0604136c21a4057a21f5597a1b4afea",
+      "replay": {
+        "request_id": "f5f973e5-67a8-4ca7-b87c-8601b8d8b736",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "f5f973e5-67a8-4ca7-b87c-8601b8d8b736",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "f5f973e5-67a8-4ca7-b87c-8601b8d8b736",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "a82fdd50f7f2c73be4e1cb6b3917bb860b3eb8ec1d35c465981cf7da1f3313fd",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    },
+    {
+      "control": "omit-disconnect",
+      "detected": "Native interruption did not stop both sides"
+    },
+    {
+      "control": "restored",
+      "database": "openplan_attempt_cli_b3f590cee39847a2a18089a458a1cde5",
+      "replay": {
+        "request_id": "64572b7e-7591-4af1-89e3-6f7c00751d6f",
+        "committed_reply_dropped": true,
+        "fresh_process_outcomes": [
+          {
+            "request_id": "64572b7e-7591-4af1-89e3-6f7c00751d6f",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          },
+          {
+            "request_id": "64572b7e-7591-4af1-89e3-6f7c00751d6f",
+            "outcome": "command_receipt_retained",
+            "model_resumed": false
+          }
+        ],
+        "http_calls_per_recovery": [
+          1,
+          0
+        ],
+        "database_state_unchanged": true,
+        "request_body_sha256": "94689af05c3d68e06f1dfa1f171eef8b02bd76dce3e49f6a1b973eef7cdde60c",
+        "model_resumed": false,
+        "limits": "Real installed SQL receipt replay from a journal backup. Original journal remains pending. No model continuation or supervisor restart."
+      },
+      "final_outputs_absent": true
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-http-replay-controls-20261008",
+  "limits": "Small synthetic native assignment and actual installed SQL. Backup journal replay only; no model restart, supervisor recovery, scientific acceptance or dispatcher activation."
+}

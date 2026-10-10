@@ -45,7 +45,7 @@ requirements below.
 | CORE-GEO-01 | All 50 states and DC, California deepest; respect tribal sovereignty, regional and overlapping authority, with explicit territory coverage and limitations. | Existing geographic adapters and workspace identity do not establish plan-specific legal applicability. Territory contract/gate interpretation remains open. | M1/G1 throughout every milestone. Job-by-authority-by-place evidence, unsupported states retained; no narrowed gate to obtain a pass. |
 | CORE-MODEL-01 | Credible, use-specific AequilibraE and ActivitySim validation across US geographies, kept separate. | Development studies and custody exist; inconclusive outcomes and consumed holdouts remain binding. | S1–S3. Preregistered independent evidence, valid quantity/use comparisons, untouched holdouts and honest unsupported outcomes. Everyday planning work progresses alongside this program. |
 | CORE-WORKPLAN-01 | Maintain comprehensive, adaptable transportation and land-use work-plan templates, including the full core practice taxonomy. | Direct August 11 request; 24 existing standard-practice templates. Template presence is not completed practice or statutory sufficiency. | M2a with the named family cases below. Select, tailor, assign, amend and review an appropriate real work plan; preserve existing work on template updates. |
-| CORE-OWP-01 | Treat complete Overall Work Program administration as a high-priority core agency workflow, connected throughout OpenPlan: preparation, funding, work elements, delivery, amendments, reporting, reimbursement and closeout. | Explicit September 4 user priority. Generic work plans, Projects, Programs, costs and reports are foundations; preparation and review/adoption are implemented, and v0.45 adds a synthetic internal reporting period with corrected PDF/XLSX versions. v0.47 retains supporting reimbursement packets; v0.48 saved reconciliation, period closure and [refund matching](../reviews/2026-09-09-m2d4-refund-matching/VERIFICATION.md) extend internal closeout. The v0.48 [multiple-allocation increment](../reviews/2026-09-09-m2d4-multi-carryover/VERIFICATION.md) extends successor work/fund mappings. The complete agency cycle, prescribed forms and independent finance reconstruction remain undemonstrated. | M2d.1–4 with M11/M13/M12 and shared records. Preparation uses independent agent source reconstruction, implementation review, automated checks and inspected artifacts, without requiring Nathaniel or a recruited finance reviewer. Later adoption, spending, submissions and full-cycle agency cases retain their actual responsible people and authority. |
+| CORE-OWP-01 | Treat complete Overall Work Program administration as a high-priority core agency workflow, connected throughout OpenPlan: preparation, funding, work elements, delivery, amendments, reporting, reimbursement and closeout. | Explicit September 4 user priority. Generic work plans, Projects, Programs, costs and reports are foundations; preparation and review/adoption are implemented, and v0.45 adds a synthetic internal reporting period with corrected PDF/XLSX versions. v0.47 retains supporting reimbursement packets; v0.48 saved reconciliation, period closure and [refund matching](../reviews/2026-09-09-m2d4-refund-matching/VERIFICATION.md) extend internal closeout. The v0.48 [multiple-allocation increment](../reviews/2026-09-09-m2d4-multi-carryover/VERIFICATION.md) extends successor work/fund mappings. The v0.49 [full default-local recovery increment](../reviews/2026-09-09-owp-full-recovery/VERIFICATION.md) adds independent computational reconstruction of two overlapping synthetic cycles, unchanged original/corrected approvals, unresolved balances, full database/Storage restore, restored sign-in and resumed-work browser evidence. The complete agency cycle, prescribed forms and practicing-finance usefulness remain undemonstrated; external worker/configuration recovery and production cutover remain M3 work. | M2d.1–4 with M11/M13/M12 and shared records. Preparation uses independent agent source reconstruction, implementation review, automated checks and inspected artifacts, without requiring Nathaniel or a recruited finance reviewer. Later adoption, spending, submissions and full-cycle agency cases retain their actual responsible people and authority. |
 | CORE-AERIAL-01 | Complete the full aerial lane including in-house ODM processing and reusable planning evidence. | Explicit August 11 choice; Aerial, survey/flight exports, ODM contract, artifact custody and report integration exist. Full outcome unverified. | M5b/M3. Mission and permitted photos through quality-reviewed outputs and independent downstream use; distinguish processing, flight compatibility and measurement suitability. |
 | CORE-DOCUMENTS-01 | Find project files and all-project files together; reuse uploaded/generated artifacts and create/review complete human-authored documents. | Direct August 11 library requests; existing Document Library, Knowledge Base, Reports and plan editors. | M2b/M5. Filtered complete permitted library, source/OCR fidelity, versioned review and independent document/archive recipient. Resident photos remain excluded from general library inclusion unless separately authorized with privacy controls. |
 | CORE-INTAKE-01 | Preserve named agency GIS/spreadsheet formats and general document OCR with useful map/attribute exploration. | Direct August 11 shapefile, KML/KMZ, geodatabase, CSV/XLS/XLSX and scanned-PDF requests. Existing importers and export contracts are partial foundations. | M5a/M6. Explicit variant/field/CRS/unit/coverage matrix; real source-to-recipient reuse and all-field crash filtering. Unsupported variants remain visible. |
@@ -304,3 +304,44 @@ September 30 unreleased generation execution: [worker evidence](../reviews/2026-
 The [release verification](../reviews/2026-09-30-synthesis-generation/RELEASE_VERIFICATION.md) advances the execution foundation for CORE-ENG-03/04. Complete selected-source preparation, immutable plans, explicit resource grants, retained original responses and interrupted local task scheduling preserve incomplete and uncertain work. [Publication](../reviews/2026-09-30-synthesis-generation/PUBLICATION.md) records passing exact-commit checks and the release tag. Record/context consolidation, machine-draft import, complete staff generation and measured usefulness remain open. No capability rating or national scientific claim changes.
 
 September 30 context execution follow-through: the [v0.66.0 context CLI release](../reviews/2026-09-30-synthesis-generation/CONTEXT_CLI_PUBLICATION.md) extends the CORE-ENG-01/03 source and synthesis custody evidence with dependent task scheduling and recoverable original responses. Final exact-commit QA, shuffle, isolation and populated upgrade checks pass. Staff generation, explicit proposal import, complete CORE-ENG-04 reporting and the wider M9b outcome remain unfinished. Synthetic-provider custody checks do not establish interpretation quality or representative participation.
+
+## October 7 queued synthesis and staff follow-through
+
+CORE-ENG-03/04 now have a retained synthetic case through queued contribution,
+context and thematic execution, explicit proposal import, staff revision and
+approval, response links, decision-context history and internal/public review
+files. The [queue record](../reviews/2026-10-07-synthesis-execution-queue/DESIGN.md)
+identifies the native task, interruption and recovery checks. The
+[staff-response record](../reviews/2026-10-07-synthesis-execution-queue/STAFF_RESPONSE_ACCEPTANCE.md)
+records exact imported revisions and downloaded PDF/XLSX/ZIP files, including
+private-history exclusion from the public review copy. This advances the
+September 30 implementation boundary; do not rebuild those controls from the
+earlier pending-work statements.
+
+The machine proposal has zero groups and two unassigned contributions. Staff
+creates the groups and retains the original proposal. The response remains a
+draft and the decision remains proposed. Synthetic execution and staff actions
+do not prove model interpretation quality, agency approval, representative
+participation or observed human usefulness. Native spreadsheet operation,
+host-loss recovery, boot supervision and capacity evidence remain open.
+The October 8 [supervision record](../reviews/2026-10-07-synthesis-execution-queue/SUPERVISION_VERIFICATION.md)
+adds bounded M3 evidence for these synthesis services. Both real entry points
+restart in a disposable Linux guest after clean reboot and abrupt guest loss,
+retaining identical empty-coordinator journals. A separate native case kills the
+CLI after syncing a provider result but before its output write; restart delivers
+the original result with one provider call total. These are distinct tests, not
+a combined populated-host recovery demonstration. The supervisor and follow-up
+evidence are development work pending main integration. Agency commissioning,
+nonempty guest-loss recovery, full external-worker restore, demand-worker
+operation and capacity remain open; CORE-OPS-CONTROL-01 native-GUI acceptance is
+unchanged.
+
+Transient database-lock contention produces console-visible read failures;
+later successful retries do not establish an uninterrupted workflow.
+
+The [release-check record](../reviews/2026-10-07-synthesis-execution-queue/RELEASE_VERIFICATION.md)
+separates failed and corrected checkpoints and records PR #139's integration.
+Later candidate integration and release status belong to the
+[v0.68 record](../reviews/2026-10-07-v068-release/VERIFICATION.md).
+This mapping does not declare a release or complete CORE-ENG-01 through 04,
+M9b, any nationwide capability or the V1 contract.

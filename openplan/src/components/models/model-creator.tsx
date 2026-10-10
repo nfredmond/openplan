@@ -128,7 +128,11 @@ export function ModelCreator({
       {
         id: "anchor",
         title: "What work does it belong to?",
-        hint: "Both are optional. Linking it now means the project page can find the model later.",
+        hint: "Choose a primary project, a scenario set, or both so this model stays connected to its planning work.",
+        check: (values) =>
+          values.projectId || values.scenarioSetId
+            ? null
+            : { field: "projectId", message: "Choose a primary project or scenario set before continuing." },
         fields: [
           { name: "projectId", label: "a project" },
           { name: "scenarioSetId", label: "a scenario set" },

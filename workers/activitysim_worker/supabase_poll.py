@@ -15,11 +15,10 @@ Stage pipeline (L1 preflight — two stages this worker owns):
   2. "Runtime Staging & Readiness"   — report runtime capability (preflight_only on
                                         this infra) + write the evidence packet
 
-This mirrors workers/aequilibrae_worker/main.py's REST poll/claim contract exactly:
-there are NO Postgres RPCs; the atomic stage claim is a conditional PATCH
-(`?id=eq.<id>&status=eq.queued` with Prefer: return=representation — a lost race
-matches zero rows). Both workers poll the same table, so each scopes its poll query
-by the stage names it owns.
+Stage claims still use the conditional REST PATCH shared with AequilibraE.
+Blocked-stage decisions use a retained database command. Both workers scope
+their poll query by the stage names they own. Full managed execution and
+continuation reconciliation remain separate integration work.
 """
 from __future__ import annotations
 
@@ -28,6 +27,8 @@ import json
 import os
 import sys
 import time
+import tempfile
+import uuid
 import urllib.parse
 from datetime import datetime, timezone
 from pathlib import Path
@@ -39,6 +40,13 @@ from worker_heartbeat import WorkerHeartbeat
 
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
+
+# The AequilibraE image ships sibling Python files; both ActivitySim images ship
+# the repository tree. Share this stdlib-only receipt check without copying it.
+_SHARED_WORKER_DIR = str(_WORKER_DIR.parent / "aequilibrae_worker")
+if _SHARED_WORKER_DIR not in sys.path:
+    sys.path.append(_SHARED_WORKER_DIR)
+from model_receipt_values import same_json_value
 
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
@@ -98,6 +106,11 @@ def _activitysim_exec_config() -> dict:
         "container_engine_cli": os.getenv("ACTIVITYSIM_CONTAINER_ENGINE") or None,
         "activitysim_container_cli_template": os.getenv("ACTIVITYSIM_CONTAINER_CLI_TEMPLATE") or None,
         "container_network_mode": os.getenv("ACTIVITYSIM_CONTAINER_NETWORK_MODE", "none"),
+        "host_memory_bytes": int(os.environ["ACTIVITYSIM_HOST_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_HOST_MEMORY_BYTES") else None,
+        "host_tasks": int(os.environ["ACTIVITYSIM_HOST_TASKS"]) if os.getenv("ACTIVITYSIM_HOST_TASKS") else None,
+        "container_memory_bytes": int(os.environ["ACTIVITYSIM_CONTAINER_MEMORY_BYTES"]) if os.getenv("ACTIVITYSIM_CONTAINER_MEMORY_BYTES") else None,
+        "container_tasks": int(os.environ["ACTIVITYSIM_CONTAINER_TASKS"]) if os.getenv("ACTIVITYSIM_CONTAINER_TASKS") else None,
+        "container_supervision_socket": os.getenv("ACTIVITYSIM_CONTAINER_SUPERVISION_SOCKET") or None,
     }
 
 
@@ -198,43 +211,130 @@ def _utc_now() -> str:
 # ---------------------------------------------------------------------------
 # Supabase REST helpers (mirror workers/aequilibrae_worker/main.py:304-437).
 # ---------------------------------------------------------------------------
-def sb_patch_stage(stage_id: str, payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}"
-    requests.patch(url, headers=HEADERS, json=payload, timeout=30)
+class WorkerStateWriteUnconfirmed(RuntimeError):
+    """A state update has no matching receipt; it may already be committed."""
+
+
+def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_claim: bool = False) -> bool:
+    """Require a returned row without exposing provider response bodies.
+
+    An absent acknowledgement is not proof of rollback. Callers must not turn
+    this exception into a contradictory failed-stage update.
+    """
+    try:
+        response = requests.patch(
+            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 200:
+            raise WorkerStateWriteUnconfirmed(
+                f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
+            )
+        rows = response.json()
+        if queued_claim and rows == []:
+            return False
+        if not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict) or rows[0].get("id") != record_id:
+            raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: missing matching row")
+        for field, expected in payload.items():
+            actual = rows[0].get(field)
+            if field.endswith("_at") and isinstance(expected, str) and isinstance(actual, str):
+                matches = datetime.fromisoformat(expected.replace("Z", "+00:00")) == datetime.fromisoformat(actual.replace("Z", "+00:00"))
+            else:
+                matches = field in rows[0] and actual == expected
+            if not matches:
+                raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: returned values differ")
+        return True
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker state write unconfirmed for {table}: no valid receipt") from error
+
+
+def sb_patch_stage(stage_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_stage(stage_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed stage write requires reconciliation; no PATCH fallback") from error
+    _confirmed_state_patch("model_run_stages", stage_id, payload)
 
 
 def sb_claim_stage(stage_id: str, payload: dict) -> bool:
-    """Atomically claim a queued stage: transition queued -> running only if the row
-    is still queued. The conditional filter + return=representation means a worker
-    that lost the race gets an empty result and skips, so no double-processing."""
-    url = f"{SUPABASE_URL}/rest/v1/model_run_stages?id=eq.{stage_id}&status=eq.queued"
-    res = requests.patch(url, headers=HEADERS, json=payload, timeout=30)
-    if res.status_code not in (200, 201, 204):
-        print(f"  Claim PATCH returned {res.status_code}: {res.text[:200]}")
-        return False
+    """Atomically claim a queued stage.
+
+    Transitions status queued -> running only if the row is still queued. Using
+    a conditional PATCH (id=eq.X & status=eq.queued) with return=representation
+    means a second worker that lost the race gets an empty result set and skips,
+    so two replicas never double-process the same stage.
+    """
+    return _confirmed_state_patch("model_run_stages", stage_id, payload, queued_claim=True)
+
+
+def sb_patch_run(run_id: str, payload: dict):
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.patch_run(run_id, payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed run write requires reconciliation; no PATCH fallback") from error
+    _confirmed_state_patch("model_runs", run_id, payload)
+
+
+
+def _confirmed_record_insert(table: str, payload: dict) -> None:
+    """Confirm retained fields without retrying a possibly committed insert."""
     try:
-        rows = res.json()
-    except ValueError:
-        rows = []
-    return bool(rows)
-
-
-def sb_patch_run(run_id: str, payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
-    requests.patch(url, headers=HEADERS, json=payload, timeout=30)
+        response = requests.post(
+            f"{SUPABASE_URL}/rest/v1/{table}",
+            headers=HEADERS, json=payload, timeout=30,
+        )
+        if response.status_code != 201:
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: HTTP response failed")
+        rows = response.json()
+        if (not isinstance(rows, list) or len(rows) != 1 or not isinstance(rows[0], dict)
+                or not isinstance(rows[0].get("id"), str) or not rows[0]["id"]):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: missing retained record")
+        if any(field not in rows[0] or not same_json_value(rows[0][field], value) for field, value in payload.items()):
+            raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: returned values differ")
+    except WorkerStateWriteUnconfirmed:
+        raise
+    except (requests.RequestException, ValueError, TypeError) as error:
+        raise WorkerStateWriteUnconfirmed(f"Worker insert unconfirmed for {table}: no valid receipt") from error
 
 
 def sb_post_kpi(payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_kpis"
-    requests.post(url, headers=HEADERS, json=payload, timeout=30)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
+    _confirmed_record_insert("model_run_kpis", payload)
 
 
 def sb_post_artifact(payload: dict) -> None:
-    url = f"{SUPABASE_URL}/rest/v1/model_run_artifacts"
-    requests.post(url, headers=HEADERS, json=payload, timeout=30)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
+    _confirmed_record_insert("model_run_artifacts", payload)
 
 
 def sb_get_run(run_id: str) -> dict:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.read_run(run_id)
+        except Exception as error:
+            raise WorkerStateReadUnconfirmed("Managed run read requires reconciliation; no legacy read fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_runs?id=eq.{run_id}"
         "&select=id,workspace_id,corridor_geojson,query_text,engine_key,run_title,input_snapshot_json"
@@ -249,9 +349,18 @@ def sb_get_run(run_id: str) -> dict:
 
 
 def sb_get_run_artifacts(run_id: str) -> list[dict]:
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        from model_activitysim_handoff import read_screening_artifacts
+        try:
+            return read_screening_artifacts(writer, run_id)
+        except Exception as error:
+            writer.stopped = True
+            raise WorkerStateReadUnconfirmed("Managed screening handoff requires reconciliation; no legacy fallback") from error
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_artifacts?run_id=eq.{run_id}"
-        "&select=artifact_type,file_url,metadata_json"
+        "&select=id,run_id,stage_id,attempt_id,artifact_type,file_url,file_size_bytes,content_hash,metadata_json,model_run_stages!inner(id,run_id,status,attempt_managed,active_attempt_id)"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -259,25 +368,33 @@ def sb_get_run_artifacts(run_id: str) -> list[dict]:
     return res.json()
 
 
-def sb_upload_evidence(run_id: str, filename: str, data: bytes, content_type: str) -> str | None:
-    """Upload to the private run-artifacts bucket. Returns the storage:// ref the app
-    resolves via a service-role signed URL, or None on failure (best-effort)."""
-    object_path = f"model-runs/{run_id}/{filename}"
-    url = f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}"
-    res = requests.post(
-        url,
-        headers={
-            "apikey": SUPABASE_KEY,
-            "Authorization": f"Bearer {SUPABASE_KEY}",
-            "Content-Type": content_type,
-            "x-upsert": "true",
-        },
-        data=data,
-        timeout=60,
-    )
-    if res.status_code in (200, 201):
-        return f"storage://run-artifacts/{object_path}"
-    print(f"  Evidence upload returned {res.status_code}: {res.text[:200]}")
+def sb_upload_evidence(
+    run_id: str, filename: str, data: bytes, content_type: str, *, stage_id: str,
+) -> str | None:
+    """Return verified content-addressed evidence, or explicit unavailability."""
+    digest = hashlib.sha256(data).hexdigest()
+    object_path = f"model-runs/{run_id}/stages/{stage_id}/sha256-{digest}/{filename}"
+    try:
+        requests.post(
+            f"{SUPABASE_URL}/storage/v1/object/run-artifacts/{object_path}",
+            headers={
+                "apikey": SUPABASE_KEY, "Authorization": f"Bearer {SUPABASE_KEY}",
+                "Content-Type": content_type, "x-upsert": "false",
+            },
+            data=data, timeout=60,
+        )
+    except requests.RequestException:
+        pass
+    try:
+        retained = requests.get(
+            f"{SUPABASE_URL}/storage/v1/object/authenticated/run-artifacts/{object_path}",
+            headers=HEADERS, timeout=60,
+        )
+        if retained.status_code == 200 and retained.content == data:
+            return f"storage://run-artifacts/{object_path}"
+    except requests.RequestException:
+        pass
+    print("  Evidence Storage bytes could not be verified")
     return None
 
 
@@ -290,7 +407,7 @@ def get_prior_stage_statuses(run_id: str, sort_order: int) -> list[dict]:
     url = (
         f"{SUPABASE_URL}/rest/v1/model_run_stages"
         f"?run_id=eq.{run_id}&sort_order=lt.{sort_order}"
-        "&select=id,stage_name,sort_order,status,error_message&order=sort_order.asc"
+        "&select=id,stage_name,sort_order,status,error_message,updated_at&order=sort_order.asc"
     )
     res = requests.get(url, headers=HEADERS, timeout=30)
     if res.status_code != 200:
@@ -311,30 +428,51 @@ def classify_stage_readiness(stage: dict) -> tuple[str, str | None]:
     return "ready", None
 
 
-def mark_stage_skipped(stage: dict, reason: str) -> None:
-    sb_patch_stage(
-        stage["id"],
-        {
-            "status": "skipped",
-            "error_message": reason[:2000],
-            "completed_at": _utc_now(),
-            "log_tail": reason,
-        },
-    )
+def mark_stage_skipped(stage: dict, reason: str) -> bool:
+    """Retain the exact blocked decision; the database derives its current reason."""
+    import model_skip_command
+    try:
+        validate_run_identity(stage["run_id"])
+        prior = get_prior_stage_statuses(stage["run_id"], int(stage.get("sort_order") or 0))
+        blockers = [row for row in prior if row["status"] in {"failed", "cancelled", "skipped"}]
+        if not blockers:
+            return False
+        run = sb_get_run(stage["run_id"])
+        receipt = model_skip_command.deliver(
+            os.path.join(ACTIVITYSIM_WORK_DIR, stage["run_id"], "skip-commands", stage["id"]),
+            stage=stage, blocker=blockers[-1], workspace_id=run["workspace_id"],
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+        return receipt["outcome"] == "skipped"
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Blocked stage decision unconfirmed; recover the saved request before continuing") from None
+
+
+class WorkerStateReadUnconfirmed(RuntimeError):
+    """The worker cannot determine whether unfinished stages remain."""
 
 
 def maybe_mark_run_succeeded(run_id: str) -> None:
-    """Mark the run succeeded once no non-succeeded stage remains. Idempotent and
-    safe when a run's stages are split across this worker and the AequilibraE
-    worker (whichever finishes the final stage flips the run)."""
-    res = requests.get(
-        f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded&select=id",
-        headers=HEADERS,
-        timeout=30,
-    )
-    if res.status_code == 200 and not res.json():
-        print(f"[{time.strftime('%X')}] behavioral preflight run {run_id[:8]}… complete")
+    """Require a stage-list response before requesting run completion.
+
+    The read and write are separate operations; this is not attempt fencing.
+    """
+    try:
+        res = requests.get(
+            f"{SUPABASE_URL}/rest/v1/model_run_stages?run_id=eq.{run_id}&status=neq.succeeded&select=id",
+            headers=HEADERS, timeout=30,
+        )
+        if res.status_code != 200:
+            raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: HTTP response failed")
+        unfinished = res.json()
+        if not isinstance(unfinished, list):
+            raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: expected a stage list")
+    except (requests.RequestException, ValueError) as error:
+        raise WorkerStateReadUnconfirmed("Worker completion read unconfirmed: no valid response") from error
+    if not unfinished:
         sb_patch_run(run_id, {"status": "succeeded", "completed_at": _utc_now()})
+        print(f"[{time.strftime('%X')}] behavioral preflight run {run_id[:8]} complete")
 
 
 # ---------------------------------------------------------------------------
@@ -360,13 +498,63 @@ def _local_path(file_url: str | None) -> str | None:
     return None
 
 
-def _find_artifact_path(artifacts: list[dict], artifact_type: str) -> str | None:
-    for art in artifacts:
-        if art.get("artifact_type") == artifact_type:
-            path = _local_path(art.get("file_url"))
-            if path and os.path.exists(path):
-                return path
-    return None
+def _retain_handoff_file(artifacts: list[dict], artifact_type: str, run_id: str, execution_dir: str) -> str:
+    """Copy and verify registered bytes before the preflight pipeline sees them."""
+    validate_run_identity(run_id)
+    if not isinstance(artifacts, list) or any(not isinstance(row, dict) for row in artifacts):
+        raise RuntimeError("Invalid screening handoff inventory")
+    candidates = [row for row in artifacts if row.get("artifact_type") == artifact_type]
+    if len(candidates) != 1:
+        raise RuntimeError("Missing or ambiguous AequilibraE screening handoff: " + artifact_type)
+    artifact = candidates[0]
+    if artifact.get("run_id") != run_id:
+        raise RuntimeError("Screening handoff run identity differs")
+    validate_run_identity(artifact.get("id"))
+    producer = artifact.get("model_run_stages")
+    if not isinstance(producer, dict) or producer.get("id") != artifact.get("stage_id") or producer.get("run_id") != run_id or producer.get("status") != "succeeded":
+        raise RuntimeError("Screening handoff requires a completed producing stage of this run")
+    validate_run_identity(producer.get("id"))
+    managed = producer.get("attempt_managed")
+    if type(managed) is not bool:
+        raise RuntimeError("Screening handoff producer ownership is unconfirmed")
+    if managed:
+        validate_run_identity(artifact.get("attempt_id"))
+        if producer.get("active_attempt_id") != artifact["attempt_id"]:
+            raise RuntimeError("Screening handoff belongs to an inactive attempt")
+    elif artifact.get("attempt_id") is not None or producer.get("active_attempt_id") is not None:
+        raise RuntimeError("Screening handoff legacy ownership is inconsistent")
+    source = _local_path(artifact.get("file_url"))
+    if not source or not os.path.isabs(source):
+        raise RuntimeError("Screening handoff requires an absolute local:// reference")
+    shared_root = Path(os.getenv("AEQ_WORK_DIR", os.path.join(tempfile.gettempdir(), "openplan-model-runs"))).resolve()
+    run_root = shared_root / "runs" / run_id
+    resolved = Path(source).resolve(strict=True)
+    if not resolved.is_relative_to(run_root) or not resolved.is_file():
+        raise RuntimeError("Screening handoff path is outside the complete run identity")
+    expected_hash, expected_size = artifact.get("content_hash"), artifact.get("file_size_bytes")
+    if not isinstance(expected_hash, str) or len(expected_hash) != 64 or any(c not in "0123456789abcdef" for c in expected_hash):
+        raise RuntimeError("Screening handoff hash is unavailable")
+    if type(expected_size) is not int or expected_size < 0:
+        raise RuntimeError("Screening handoff byte size is unavailable")
+    destination = Path(execution_dir) / (artifact_type + ".retained")
+    import model_handoff_files
+    import model_attempt_writer
+    managed = model_attempt_writer.current()
+    try:
+        if managed is not None:
+            managed.require_open()
+            if managed.files is None or Path(execution_dir) != managed.files.path:
+                raise ValueError("Screening handoff destination is not the owned attempt directory")
+        retained = model_handoff_files.copy_registered(shared_root, run_id, resolved, destination,
+            sha256=expected_hash, size_bytes=expected_size)
+        if managed is not None:
+            managed.files.verify()
+        return retained
+    except (OSError, ValueError) as error:
+        if managed is not None:
+            managed.stopped = True
+        reason = str(error) if isinstance(error, ValueError) else "Local filesystem operation failed"
+        raise RuntimeError("Screening handoff file copy was not confirmed: " + reason) from error
 
 
 def _adapt_zone_attributes(src_csv: str, dest_csv: str) -> int:
@@ -411,6 +599,7 @@ def _materialize_screening_dir(
     zone_attr_path: str,
     setup_summary_path: str,
     dest_root: str,
+    *, source_artifacts: list[dict], consumer_stage_id: str,
 ) -> str:
     """Lay out the screening-run-dir the bundle builder expects:
     <dir>/bundle_manifest.json, <dir>/package/zone_attributes.csv,
@@ -418,22 +607,44 @@ def _materialize_screening_dir(
     import shutil
 
     screening_dir = os.path.join(dest_root, "screening")
-    if os.path.exists(screening_dir):
-        shutil.rmtree(screening_dir)
-    os.makedirs(os.path.join(screening_dir, "run_output"), exist_ok=True)
+    # A fresh attempt must not replace evidence from an earlier preparation.
+    os.mkdir(screening_dir, mode=0o700)
+    os.mkdir(os.path.join(screening_dir, "run_output"), mode=0o700)
 
     zones = _adapt_zone_attributes(zone_attr_path, os.path.join(screening_dir, "package", "zone_attributes.csv"))
     shutil.copy2(skim_path, os.path.join(screening_dir, "run_output", "travel_time_skims.omx"))
     os.makedirs(os.path.join(screening_dir, "work"), exist_ok=True)
     shutil.copy2(setup_summary_path, os.path.join(screening_dir, "work", "network_setup_summary.json"))
 
-    # Minimal source manifest — the builder requires the file but tolerates missing
-    # fields (they only feed a provenance excerpt).
+    # Preserve original registered inputs separately from adapted pipeline files.
+    source_records = []
+    for kind in ("skim_matrix", "zone_attributes", "network_setup_summary"):
+        matches = [row for row in source_artifacts if row.get("artifact_type") == kind]
+        if len(matches) != 1 or matches[0].get("run_id") != run_id:
+            raise RuntimeError("Screening provenance requires one exact run artifact per input")
+        row = matches[0]
+        source_records.append({key: row.get(key) for key in ("id", "run_id", "stage_id", "attempt_id", "artifact_type", "content_hash", "file_size_bytes", "model_run_stages")})
+    materialized = []
+    for relative, transformation in (
+        ("run_output/travel_time_skims.omx", "exact_copy"),
+        ("package/zone_attributes.csv", "zone_attributes_adapter"),
+        ("work/network_setup_summary.json", "exact_copy"),
+    ):
+        file_path = Path(screening_dir) / relative
+        digest = hashlib.sha256()
+        with file_path.open("rb") as handle:
+            while chunk := handle.read(1024 * 1024):
+                digest.update(chunk)
+        materialized.append({"path": relative, "sha256": digest.hexdigest(), "bytes": file_path.stat().st_size, "transformation": transformation})
     manifest = {
         "schema_version": "openplan.screening_handoff.v0",
-        "run_name": f"behavioral-{run_id[:12]}",
+        "run_name": f"behavioral-{run_id}",
         "screening_grade": True,
         "source": "aequilibrae_worker",
+        "model_run_id": run_id,
+        "consumer_stage_id": consumer_stage_id,
+        "source_artifacts": source_records,
+        "materialized_files": materialized,
         "zones": {"count": zones},
         "caveats": ["Screening-grade AequilibraE handoff; not calibrated."],
     }
@@ -442,11 +653,30 @@ def _materialize_screening_dir(
     return screening_dir
 
 
+def validate_run_identity(run_id: str) -> None:
+    if not isinstance(run_id, str) or str(uuid.UUID(run_id)) != run_id:
+        raise ValueError("Model run identity must be a canonical UUID")
+
+
+def create_run_workspace(run_id: str) -> str:
+    """Retain each execution separately without deleting predecessor files."""
+    validate_run_identity(run_id)
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return str(writer.workspace(ACTIVITYSIM_WORK_DIR, run_id))
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Attempt workspace requires reconciliation") from error
+    directory = os.path.join(ACTIVITYSIM_WORK_DIR, run_id)
+    os.makedirs(directory, exist_ok=True)
+    return tempfile.mkdtemp(prefix="execution-", dir=directory)
+
+
 def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dict:
     """Build a REAL ActivitySim input bundle from the AequilibraE screening
     artifacts, then run the preflight pipeline (no execution on $0 infra) and
     write an honest, NON-forecast evidence packet + structural KPIs."""
-    import shutil
     import sys
 
     corridor = _require_study_area(run)
@@ -457,27 +687,16 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     # 1. Locate the screening handoff (skim + zone attributes) the AequilibraE
     #    worker registered as local:// artifacts (same-host consumers only).
     artifacts = sb_get_run_artifacts(run_id)
-    skim_path = _find_artifact_path(artifacts, "skim_matrix")
-    zone_attr_path = _find_artifact_path(artifacts, "zone_attributes")
-    setup_summary_path = _find_artifact_path(artifacts, "network_setup_summary")
-    if not skim_path or not zone_attr_path or not setup_summary_path:
-        raise RuntimeError(
-            "Missing AequilibraE screening handoff (skim_matrix / zone_attributes / "
-            "network_setup_summary local:// "
-            "artifacts). The behavioral lane needs the ActivitySim worker co-located with "
-            "the AequilibraE worker (shared filesystem)."
-        )
-    log += f"- Screening handoff located (skim + zone attributes).\n"
+    run_root = create_run_workspace(run_id)
+    skim_path = _retain_handoff_file(artifacts, "skim_matrix", run_id, run_root)
+    zone_attr_path = _retain_handoff_file(artifacts, "zone_attributes", run_id, run_root)
+    setup_summary_path = _retain_handoff_file(artifacts, "network_setup_summary", run_id, run_root)
+    log += "- Screening handoff copied and verified against registered bytes.\n"
     sb_patch_stage(stage_id, {"log_tail": log})
 
-    # 2. Materialize the screening-run-dir + build the bundle + run the preflight
-    #    pipeline. All stdlib; no ActivitySim needed for the preflight path.
-    run_root = os.path.join(ACTIVITYSIM_WORK_DIR, run_id[:12])
-    if os.path.exists(run_root):
-        shutil.rmtree(run_root)
-    os.makedirs(run_root, exist_ok=True)
     screening_dir = _materialize_screening_dir(
-        run_id, skim_path, zone_attr_path, setup_summary_path, run_root
+        run_id, skim_path, zone_attr_path, setup_summary_path, run_root,
+        source_artifacts=artifacts, consumer_stage_id=stage_id,
     )
 
     scripts_dir = str(_REPO_ROOT / "scripts" / "modeling")
@@ -582,7 +801,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         "caveats": lead_caveats + list(pipeline.get("caveats", [])),
     }
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
-    storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json")
+    storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json", stage_id=stage_id)
     if storage_ref:
         sb_post_artifact(
             {
@@ -735,11 +954,42 @@ STAGE_DISPATCH = {
 }
 
 
+def _process_admitted_stage(stage: dict, writer) -> None:
+    """Execute an already admitted attempt without legacy claims or parent writes."""
+    try:
+        writer.require_open()
+        if stage['id'] != writer.context.stage_id or stage['run_id'] != writer.context.run_id:
+            raise ValueError("Managed dispatch crosses invocation scope")
+        stage_name = stage['stage_name']
+        handler = STAGE_DISPATCH.get(stage_name)
+        if handler is None:
+            raise ValueError("Managed dispatch has no owned handler")
+        run = writer.read_run(stage['run_id'], expected_stage_name=stage_name)
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(
+                {'runId': stage['run_id'], 'stageId': stage['id'], 'stageName': stage_name})
+        result = handler(stage['run_id'], run, stage['id'])
+        sb_patch_stage(stage['id'], {'status': 'succeeded', 'log_tail': result['log']})
+    except BaseException:
+        # The handler may have committed a command before losing its reply.
+        # Reconciliation owns the outcome; never infer a failed terminal write.
+        writer.stopped = True
+        raise
+    finally:
+        if _WORKER_HEARTBEAT is not None:
+            _WORKER_HEARTBEAT.set_current_work(None)
+
+
 def process_stage(stage: dict) -> None:
+    import model_attempt_writer
+    admitted = model_attempt_writer.current()
+    if admitted is not None:
+        return _process_admitted_stage(stage, admitted)
     stage_id = stage["id"]
     run_id = stage["run_id"]
     stage_name = stage["stage_name"]
 
+    validate_run_identity(run_id)
     claimed = sb_claim_stage(
         stage_id,
         {"status": "running", "started_at": _utc_now(), "log_tail": f"Starting {stage_name}..."},
@@ -765,6 +1015,9 @@ def process_stage(stage: dict) -> None:
             {"status": "succeeded", "completed_at": _utc_now(), "log_tail": result["log"]},
         )
         maybe_mark_run_succeeded(run_id)
+    except (WorkerStateWriteUnconfirmed, WorkerStateReadUnconfirmed):
+        # A completion may already be committed. Preserve state for reconciliation.
+        raise
     except Exception as exc:  # noqa: BLE001 — record any failure honestly on the stage
         error_msg = f"{type(exc).__name__}: {exc}"
         print(f"[{time.strftime('%X')}] ❌ {stage_name} failed (run={run_id[:8]}…): {error_msg}")
@@ -802,7 +1055,7 @@ def poll_for_jobs() -> None:
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
-                "&select=id,run_id,stage_name,status,sort_order,created_at"
+                "&select=id,run_id,stage_name,status,sort_order,created_at,updated_at"
                 "&order=created_at.asc,sort_order.asc&limit=25"
             )
             res = requests.get(url, headers=HEADERS, timeout=30)
@@ -824,9 +1077,8 @@ def poll_for_jobs() -> None:
                     processed = True
                     break
                 if readiness == "blocked_terminal":
-                    print(f"[{time.strftime('%X')}] ⏭️ Skipping {stage['stage_name']}: {reason}")
-                    mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
-                    processed = True
+                    print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']}: {reason}")
+                    processed = mark_stage_skipped(stage, reason or "Skipped due to failed prior stage")
                     break
 
             if not processed:

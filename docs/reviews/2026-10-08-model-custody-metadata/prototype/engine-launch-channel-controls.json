@@ -1,0 +1,41 @@
+{
+  "source_sha256": "c8b0d8363a7b4ca7d3ed16eede852ba01bdd28b44c3417c074b527cf366e3871",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "leak-parent-endpoint",
+      "exit_code": 1,
+      "targeted_test": "test_spawn_failure_closes_both_endpoints_and_retains_reservation"
+    },
+    {
+      "control": "leak-child-endpoint",
+      "exit_code": 1,
+      "targeted_test": "test_spawn_failure_closes_both_endpoints_and_retains_reservation"
+    },
+    {
+      "control": "accept-foreign-descriptor",
+      "exit_code": 1,
+      "targeted_test": "test_foreign_descriptor_setting_refused_before_launch"
+    },
+    {
+      "control": "leave-completed-channel-open",
+      "exit_code": 1,
+      "targeted_test": "test_reserved_child_uses_parent_writer_then_closes_channel"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real reserved child and inherited socket; command journal with mocked HTTP. No native solver, run/path/count protocol, supervisor restart or descendant containment."
+}

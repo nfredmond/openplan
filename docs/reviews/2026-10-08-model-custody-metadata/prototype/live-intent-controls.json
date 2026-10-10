@@ -1,0 +1,82 @@
+{
+  "cases": [
+    {
+      "case": "harmless",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    },
+    {
+      "case": "allow-repeat",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_intent_and_reservation_survive_missing_reply_without_retry"
+    },
+    {
+      "case": "writable-custody",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_custody_inside_writable_mount_is_refused"
+    },
+    {
+      "case": "ignore-intent-change",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_changed_intent_refuses_create_and_receipt"
+    },
+    {
+      "case": "ignore-directory-change",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_replaced_directory_refuses_receipt"
+    },
+    {
+      "case": "accept-unverified-container",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_wrong_container_is_not_retained_as_created"
+    },
+    {
+      "case": "invent-start-authority",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_verified_creation_is_recorded_once_without_start_authority"
+    },
+    {
+      "case": "replace-live-plan",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_replaced_live_plan_cannot_reserve_original_intent"
+    },
+    {
+      "case": "ignore-creation-receipt",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_bootstrap_requires_live_creation_and_unchanged_record"
+    },
+    {
+      "case": "ignore-live-creation",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_bootstrap_requires_live_creation_and_unchanged_record"
+    },
+    {
+      "case": "substitute-bootstrap-id",
+      "verified": true,
+      "returncode": 1,
+      "expected_failure": "test_bootstrap_cannot_substitute_another_created_id"
+    },
+    {
+      "case": "restored",
+      "verified": true,
+      "returncode": 0,
+      "expected_failure": null
+    }
+  ],
+  "source_sha256": "e6838368fb0a70f3e7bc1c1f5705bebcb5ae2ff1deb0f5ab2923cd62bd69f0f2",
+  "limits": [
+    "Private synthetic creation records",
+    "Separate local Docker proof covers actual created containers",
+    "No network reply loss, controller crash, startup or owner-loss termination"
+  ]
+}

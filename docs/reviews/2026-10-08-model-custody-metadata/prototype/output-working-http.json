@@ -1,0 +1,62 @@
+{
+  "writer_sha256": "d24eb20a997092d1bf44f699197e6db1ec3e03f2b46da27fbe933d0291bd7223",
+  "worker_sha256": "e28362799b7f3bd0ab690d74a53ef7ead3e1e2ebab11821baf86169d5d2fa592",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "erase-working-role",
+      "expected_failure": "Native output working copy lost its retained input boundary"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "package_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 9,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Actual output working-copy writer after native selected-output consumption, real file mutation with retained input unchanged, and fresh CLI receipt recovery. Synthetic skim bytes; no format validation, engine closure, stage integration, normal managed dispatch or scientific acceptance."
+}

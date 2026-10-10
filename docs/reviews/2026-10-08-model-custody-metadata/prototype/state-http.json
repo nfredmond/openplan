@@ -1,0 +1,61 @@
+{
+  "writer_sha256": "cdb667e37e31edd70f808a03ca7d0d14e9ba00b322169dd926e1d97461da3e4d",
+  "controls": [
+    {
+      "control": "baseline",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "state_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "harmless",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "state_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    },
+    {
+      "control": "wrong-state-hash",
+      "expected_failure": "Native predecessor state differs from retained bytes"
+    },
+    {
+      "control": "restored",
+      "result": {
+        "cases": [
+          {
+            "worker": "main",
+            "lost_reply": "state_artifact",
+            "handler_calls": 1,
+            "fresh_cli_recovered": true,
+            "native_records_unchanged": true,
+            "cached_no_http": true
+          }
+        ],
+        "http_calls": 6,
+        "gateway_removed": true
+      }
+    }
+  ],
+  "limits": "Installed native artifact registration, actual bound AequilibraE state publication, retained original bytes and fresh CLI recovery. No package snapshot, consumer path relocation, full dispatcher activation or scientific acceptance."
+}

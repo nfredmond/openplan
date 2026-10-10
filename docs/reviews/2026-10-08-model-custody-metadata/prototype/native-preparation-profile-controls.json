@@ -1,0 +1,61 @@
+{
+  "proof_sha256": "a21cca77c1088f60bc58b76dfd2bffbfb853333c04a3eb0c8bfbc6ff5de08919",
+  "handoff_sha256": "fd070f2de43dfe7c321b9c36dc39da0628215fb1e02b9358803d3ed33a16dcef",
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "mismatch",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "incomplete",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-comparison",
+      "returncode": 1,
+      "expected_failure": "Prepared input defect reached assignment without refusal",
+      "matched": true
+    },
+    {
+      "control": "network-metadata",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "network-mismatch",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "skip-network-comparison",
+      "returncode": 1,
+      "expected_failure": "Prepared input defect reached assignment without refusal",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Native PostgreSQL and PostgREST transactions for both methods, with synthetic prepared inputs and solver objects. Declared profile comparison does not establish full live solver settings, network or demand equivalence, normal dispatch or scientific acceptance."
+}

@@ -1,0 +1,44 @@
+{
+  "aequilibrae_version": "1.6.2",
+  "writer_sha256": "7c750d28ddf50432445bb5f32817b4b140e6b727ebaea512dd997c1b0668668c",
+  "worker_sha256": "cc136a610865b9ea42a5bf741e302ff57d7cd54bfb18d741df4c9cf1a221a09b",
+  "copied_files": 5,
+  "native_nodes": [
+    [
+      1,
+      1,
+      "POINT(-121 38)"
+    ],
+    [
+      2,
+      1,
+      "POINT(-120.99 38)"
+    ]
+  ],
+  "native_links": [
+    [
+      1,
+      1,
+      2,
+      "c",
+      "LINESTRING(-121 38, -120.99 38)"
+    ]
+  ],
+  "databases": {
+    "project_database.sqlite": {
+      "integrity": "ok",
+      "sha256": "cf2ccbc52bb0a5800ec4f30f103749d337875d581bd429438f1080f31b1c7127",
+      "size_bytes": 6397952
+    },
+    "public_transport.sqlite": {
+      "integrity": "ok",
+      "sha256": "182a82202d4fe6421b64c2d94e61020833402afa3f644d9081be23c858a74a3e",
+      "size_bytes": 6483968
+    }
+  },
+  "source_unchanged": true,
+  "working_bytes_equal_before_open": true,
+  "retained_input_unchanged": true,
+  "resolver_selected_working_copy": true,
+  "limits": "Synthetic native two-node one-link project opened through actual writer preparation and managed resolver. Registration uses mocked transport; consumed inventory fixture is created directly. No assignment, native registration in this proof, interrupted closure, normal dispatch or scientific acceptance."
+}

@@ -12,6 +12,10 @@ agency deployment and full recovery procedure remain to be proved. No response
 time or recovery objective is promised by OpenPlan. The operator must establish
 those from their actual installation and rehearsals.
 
+For the accumulated v0.68 candidate, use the
+[upgrade and recovery instructions](V068_UPGRADE.md). That guide does not
+declare the candidate released; confirm its final GitHub release and commit.
+
 ## Identify the incident before changing the system
 
 Record when the failure began, the affected user task, public/private surface,
@@ -164,12 +168,20 @@ in each direction and the worker's reachable callback origin. After environment
 changes, the affected processes need the correct restart/recreation sequence;
 changing the app alone does not replace a container's startup environment.
 
-Current model recovery needs care: the reaper uses run/stage timestamps, while
-workers can send a separate heartbeat. A fresh worker heartbeat is not proof that
-the reaper will leave a long stage alone. Preserve both timelines and any late
-result; do not manually rewrite a failed/inconclusive outcome to completed or
-blindly resubmit work whose worker may still be running. Diagnose and rehearse
-recovery on a disposable case before changing the production job's custody.
+With migration `20261016000022_model_reaper_recovery_boundary.sql`, automatic
+timeout applies only to unstarted queued model work. The database refuses to
+reap running, attempt-managed or previously started work based on age alone.
+Earlier deployments do not have this protection. A retained running status is
+still not proof of a live process. Preserve stage and worker timelines, local
+journals and late results before making a recovery decision.
+
+Migration `20261016000023_model_recovery_decisions.sql` lets an owner or
+administrator review and abandon nonterminal execution through the model's
+recovery panel. It preserves the reviewed records and revokes database write
+authority. It neither proves process termination nor authorizes restart.
+Do not manually rewrite outcomes, clear enrollment or replace request IDs to
+resume a stage. Use the [bounded recovery procedure](V068_UPGRADE.md#review-an-interrupted-model)
+and retain uncertain requests for explicit retry.
 
 Check the three authenticated schedules and cadences in SELF_HOSTING. Capture
 scheduler delivery, authentication failures and the resulting state changes.
@@ -229,7 +241,9 @@ Only explicitly enqueued requests are eligible. Preparation reconstructs retaine
 segment, context and thematic inputs, stages their deterministic plans and records
 completion receipts. Provider execution still requires its separate native
 resource authorization. Preparation neither calls a model nor approves or
-publishes a result. Staff generation controls remain under development.
+publishes a result. Staff generation controls have bounded synthetic workflow
+evidence in the [queue acceptance record](../../../docs/reviews/2026-10-07-synthesis-execution-queue/DESIGN.md);
+observed interpretation quality and human usefulness remain unproved.
 
 `--once` retries up to 64 pending attempts and reads one candidate page of up to
 64 requests. It is not a queue drain. No arguments keeps polling, with a
@@ -351,13 +365,22 @@ A task-byte diagnostic reports the complete task size and saved limit. Preserve
 the original request and journals. Review saved results before creating a separate
 request with an explicit larger budget and separate execution permission. Do not
 truncate source text or treat a larger budget as permission to repeat an uncertain
-call. This detailed diagnostic is currently in worker output, not the staff page.
+call. Worker output reports the task-byte refusal. The staff results page also
+assesses required bytes from saved source material and verified earlier results,
+and compares them with the saved limit. That assessment does not establish whether
+a provider call occurred. The [combined candidate acceptance](../../../docs/reviews/2026-10-07-v068-release/COMBINED_ACCEPTANCE.md)
+records desktop and 390px inspection of that distinction.
 
 Exit 0 means the bounded pass returned without a schedule exception, not that all
 outputs exist. Exit 2 means at least one schedule was unconfirmed. Exit 1 means the
 pass failed or a one-pass invocation was interrupted. Keep the journal directory
 and database target unchanged when recovering. Host-loss, boot supervision and
 capacity acceptance remain separate from the recorded process-restart checks.
+
+The [Linux user-service recipe](SYNTHESIS_SUPERVISION.md) generates reviewable
+systemd units for the existing preparation and execution workers. Generation
+does not install or start a service. Preserve the same private configuration and
+journals; supervisor process checks do not establish host-loss recovery.
 
 ## Separate inspection from changes
 

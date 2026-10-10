@@ -1,0 +1,51 @@
+{
+  "recordedAt": "2026-10-09T15:15:19.940649+00:00",
+  "sourceSha256": "d754da392218f7dbad8c2161c233df045a477d524e766e59aa09ce71d25e8cfb",
+  "batchWithContextSha256": "c34bc1f3d46326e25d6a1a5928eabbbc8b92106906084fec61eb67e631aa5942",
+  "ownershipSha256": "8003d889ab22b55baadf1f91b0808fde4b5f34cb7c00e90683341eeb59dbb30c",
+  "checksSha256": "2bc76a3c6c2561491938715f7c4c7717c96e9cc16078738df167c5bb44ac7473",
+  "cases": [
+    {
+      "case": "baseline",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "harmless",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-derived-fence",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Direct managed insert accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "missing-version-fence",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Direct managed stage accepted",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "forge-context",
+      "expectedPass": false,
+      "exitCode": 3,
+      "failureReason": "Service role forged command context",
+      "schemaAbsentAfterRollback": true
+    },
+    {
+      "case": "restored",
+      "expectedPass": true,
+      "exitCode": 0,
+      "failureReason": null,
+      "schemaAbsentAfterRollback": true
+    }
+  ]
+}

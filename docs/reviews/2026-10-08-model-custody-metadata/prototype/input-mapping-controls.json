@@ -1,0 +1,32 @@
+{
+  "writer_sha256": "f5f32253e496a8a1bee5b00b5aec33a1dc41b6710dab8291ea19b64e67cd5387",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "overwrite-existing-mapping",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_mapping_record_never_overwrites_existing_bytes"
+    },
+    {
+      "control": "erase-mapping-inputs",
+      "exit_code": 1,
+      "targeted_test": "PairedInputTests.test_real_join_maps_only_package_and_preserves_original"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Actual paired helper and pinned immutable mapping files; mocked transport. No native mapping lost-reply recovery, project transfer, normal dispatch or scientific acceptance.",
+  "workspace_sha256": "8d1f755ac6f6a7be25930c6d3dcf3d06b0297896e6a709d4f84800e7e98e6f97"
+}

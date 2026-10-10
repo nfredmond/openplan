@@ -1,0 +1,29 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    },
+    {
+      "control": "omit-source",
+      "returncode": 1,
+      "expected_failure": "Native assignment source network identity missing or different",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_failure": null,
+      "matched": true
+    }
+  ],
+  "limits": "Actual AequilibraE 1.6.2 assignment with synthetic two-centroid, one-link inputs and injected parent transport. Exact logical working source readback, not prepared graph transformation equivalence or scientific acceptance."
+}

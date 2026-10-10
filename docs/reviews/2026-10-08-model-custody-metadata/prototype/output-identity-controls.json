@@ -1,0 +1,34 @@
+{
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "duplicate-columns",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "duplicate-links",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "empty-link",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "source_sha256": "9d020bebd771b1d400b40539bb89eef7612b8c36a04cd8b6b37909144b58a468",
+  "limits": [
+    "Synthetic CSV identity integrity only",
+    "No complete output schema, source validity, general quantity comparability or scientific acceptance proof"
+  ]
+}

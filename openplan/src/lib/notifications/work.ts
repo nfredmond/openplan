@@ -1,3 +1,4 @@
+import { fundingAwardObligationReview } from "@/lib/programs/catalog";
 /**
  * THE DAILY DEADLINE SWEEP — the one place OpenPlan tells a planner that
  * something is due.
@@ -565,12 +566,12 @@ const grantDecisionsSource: SweepSource = {
 const awardObligationsSource: SweepSource = {
   kind: "award_obligation_due",
   table: "funding_awards",
-  select: "id, workspace_id, project_id, title, obligation_due_at, spending_status, created_by",
+  select: "id, workspace_id, project_id, title, obligation_due_at, spending_status, closure_basis, created_by",
   dateColumn: "obligation_due_at",
   dateColumnKind: "timestamptz",
   recipientColumn: "created_by",
-  // Money already fully spent has met its obligation deadline by definition.
-  staticFilters: [{ kind: "neq", column: "spending_status", value: "fully_spent" }],
+  // Spending and imported closure do not establish obligation timing.
+  staticFilters: [],
   toCandidates: (rows, now) =>
     rows.flatMap((row) => {
       const workspaceId = asString(row.workspace_id);
@@ -578,6 +579,7 @@ const awardObligationsSource: SweepSource = {
       const recipient = asString(row.created_by);
       if (!workspaceId || !dueOn || !recipient) return [];
       const isOverdue = isDeadlinePast(asString(row.obligation_due_at), now);
+      const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
       return [
         {
           workspace_id: workspaceId,
@@ -588,7 +590,9 @@ const awardObligationsSource: SweepSource = {
           project_id: asString(row.project_id),
           due_on: dueOn,
           title: asString(row.title) ?? "(untitled award)",
-          body: `${deadlineSentence("Award funds must be obligated", null, dueOn, isOverdue)} You recorded this award; obligation deadlines carry no assignee.`,
+          body: review
+            ? `Review recorded obligation deadline ${dueOn}. ${review}`
+            : `${deadlineSentence("Award funds must be obligated", null, dueOn, isOverdue)} You recorded this award; obligation deadlines carry no assignee.`,
           isOverdue,
         },
       ];
@@ -818,8 +822,8 @@ const awardExpendituresSource: SweepSource = {
   dateColumn: "expenditure_deadline_at",
   dateColumnKind: "timestamptz",
   recipientColumn: "created_by",
-  // Money already fully spent cannot lapse — the same filter the obligation
-  // source uses, and for the same reason.
+  // This source reports unclaimed expenditure balances. Obligation review
+  // remains separate and does not infer timing from the spending status.
   staticFilters: [{ kind: "neq", column: "spending_status", value: "fully_spent" }],
   loadContext: loadAwardDrawdownLedgers,
   toCandidates: (rows, now, context) =>

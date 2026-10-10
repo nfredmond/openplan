@@ -1,0 +1,41 @@
+{
+  "control": "harmless",
+  "unit": "openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope",
+  "scope_identity": {
+    "LoadState": "loaded",
+    "ActiveState": "active",
+    "InvocationID": "a5a6adff6d0347798bf520b709715f29",
+    "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope",
+    "MemoryMax": "134217728",
+    "TasksMax": "16"
+  },
+  "leader": {
+    "pid": 173352,
+    "pgid": 173352,
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope\n"
+  },
+  "detached_descendant": {
+    "pid": 173353,
+    "pgid": 173353,
+    "sid": 173353,
+    "cgroup": "0::/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-probe-8e8685ab159346f8a460ea75ae868b75.scope\n"
+  },
+  "progress_channel_confirmed": true,
+  "original_group_empty_while_scope_populated": true,
+  "completion_refused_while_descendant_live": true,
+  "scope_removed_after_descendant_exit": true,
+  "legacy_exit_receipt": {
+    "schema": "openplan.engine-process.v1",
+    "run_id": "00000002-1111-4111-8111-111111111111",
+    "stage_id": "00000003-1111-4111-8111-111111111111",
+    "attempt_id": "00000004-1111-4111-8111-111111111111",
+    "command_sha256": "d0461a7b850988f85c502fcc27719502ab5f29ba4b9db04a49e43e49ebe0b84b",
+    "pid": 173352,
+    "returncode": 0,
+    "observed_original_process_group_empty": true,
+    "execution_ready": false,
+    "scientific_acceptance": "unassessed"
+  },
+  "worker_sha256": "c93ef15317e2bef824bf44547320a45884cabda4643e3b75cfe4c9c78a222b31",
+  "limits": "Linux user scope feasibility with real launch and progress channel. No production scope adapter, startup gate, parent-loss recovery, migration-resistant sandbox, output publication or scientific acceptance."
+}

@@ -1,0 +1,104 @@
+{
+  "application_head": "3cfaae4ea88b8d81ecf9fa443131670957ef4648",
+  "service": {
+    "unit": "openplan-recovery-acceptance-3cfaae4e.service",
+    "ActiveState": "active",
+    "InvocationID": "c657ac7be4534c8181ee3345c0ba133e",
+    "MainPID": "1718347"
+  },
+  "containers": {
+    "rest": {
+      "name": "openplan-recovery-acceptance-rest-89dfa2a2066e",
+      "image": "public.ecr.aws/supabase/postgrest:v14.15",
+      "status": "ready",
+      "id": "fe35c678fecefe8b251d641720676e55c220bd27090c3c6ec70fc9658f21f388",
+      "url": "http://127.0.0.1:33016",
+      "memory_bytes": 536870912
+    },
+    "auth": {
+      "name": "openplan-recovery-acceptance-auth-611202dde530",
+      "image": "public.ecr.aws/supabase/gotrue:v2.194.0",
+      "status": "ready",
+      "id": "dcf9906584e2eaeddefead80c2759f93e2553917e2006cb0b4396d7f92cbfd30",
+      "url": "http://127.0.0.1:33015",
+      "memory_bytes": 268435456
+    },
+    "gateway": {
+      "name": "openplan-recovery-acceptance-gateway-c5da7ce9f438",
+      "image": "public.ecr.aws/supabase/kong:2.8.1",
+      "status": "ready",
+      "url": "http://127.0.0.1:29831",
+      "id": "1b332481e3c995ce820efc3a746f83aa5db3bf1327fb15ff144cb2ef7513fae5",
+      "memory_bytes": 268435456
+    }
+  },
+  "source_ingestion": [
+    {
+      "httpStatus": 200,
+      "result": {
+        "results": [
+          {
+            "countyFips": "057",
+            "error": "Upsert failed at 06057000900: An invalid response was received from the upstream server",
+            "stateFips": "06",
+            "status": "failed",
+            "tractsUpserted": 0,
+            "unmatched": 0
+          }
+        ],
+        "tractsUpserted": 0
+      },
+      "startedAt": "2026-10-09T03:04:06.268Z",
+      "status": "finished"
+    },
+    {
+      "attempt": 2,
+      "httpStatus": 200,
+      "result": {
+        "results": [
+          {
+            "countyFips": "057",
+            "error": null,
+            "stateFips": "06",
+            "status": "ingested",
+            "tractsUpserted": 26,
+            "unmatched": 0
+          }
+        ],
+        "tractsUpserted": 26
+      },
+      "startedAt": "2026-10-09T03:04:51.969Z",
+      "status": "finished"
+    }
+  ],
+  "app_flow": "T3 DOM controls: project form, model form, boundary file change handler, launch, recovery inspection, reason and acknowledgement, abandonment. Reload retained the confirmed decision.",
+  "interaction_limits": "Native DOM clicks and in-page File/DataTransfer through T3 evaluate, not physical pointer or native file chooser acceptance.",
+  "receipt_copy_sha256": "94e57e893746925392dc0f2ae8530897dfde3a84f2d062bd9b3a0dbe8a30d9fd",
+  "api_controls": {
+    "changedAccountError": "The signed-in account or workspace changed. Reopen recovery from the current session.",
+    "changedAccountStatus": 403,
+    "collisionError": "This request identity belongs to a different decision",
+    "collisionStatus": 409,
+    "exactReceiptMatches": true,
+    "exactRetryStatus": 200,
+    "localPhase": "confirmed"
+  },
+  "database": {
+    "run_id": "80ef9d23-b1d4-424f-97df-771ff898b61d",
+    "request_id": "3a3a78a5-64a5-4075-9268-3797736f98d4",
+    "receipt_equals_browser_copy": true,
+    "receipt_count": 1,
+    "run_state": "cancelled:true",
+    "cancelled_managed_stages_without_active_attempt": 3,
+    "direct_service_stage_write": {
+      "http_status": 400,
+      "error_code": "P0001",
+      "message": "Managed model stage requires an attempt command"
+    },
+    "state_unchanged_after_refusal": true,
+    "limits": "Fresh unstarted queued run only. No active numerical child existed; no physical termination, long-running interruption or scientific acceptance claim."
+  },
+  "download": "Button invoked; no resulting file found in Downloads. Usable downloaded artifact not verified.",
+  "mobile": "390x844 resize timed out, then T3 reported no preview automation host. No image or final viewport dimensions obtained.",
+  "limits": "Queued unstarted run only. No active worker, physical termination, restart, scientific output, full visual or practitioner acceptance."
+}

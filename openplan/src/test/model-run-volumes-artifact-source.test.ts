@@ -13,9 +13,15 @@ vi.mock("@/lib/supabase/server", () => ({
   }),
 }));
 
+// Filesystem race behavior is covered by the native containment suites.
+vi.mock("@/lib/models/local-artifact-file", () => ({
+  readPinnedLocalFile: (_root: string, file: string) => readFileMock(file, { flag: 0 }),
+}));
+
 vi.mock("node:fs/promises", () => {
   const readFile = (...args: unknown[]) => readFileMock(...args);
-  return { readFile, default: { readFile } };
+  const realpath = async (value: string) => value;
+  return { readFile, realpath, default: { readFile, realpath } };
 });
 
 import {
@@ -61,7 +67,7 @@ describe("workerLocalRoot", () => {
     expect(workerLocalRoot()).toBeNull();
     process.env.OPENPLAN_WORKER_LOCAL_ROOT = "/srv/runs";
     expect(workerLocalRoot()).toBe("/srv/runs");
-    expect(resolveRunWorkDir("/srv/runs", "abcdef0123456789")).toBe("/srv/runs/runs/abcdef012345");
+    expect(resolveRunWorkDir("/srv/runs", "12345678-1234-4123-8123-123456789abc")).toBe("/srv/runs/runs/12345678-1234-4123-8123-123456789abc");
   });
 });
 
@@ -121,7 +127,7 @@ describe("loadJsonArtifact", () => {
     const result = await loadJsonArtifact("local:///srv/runs/runs/abc/volumes.geojson");
 
     expect(result).toEqual(payload);
-    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson");
+    expect(readFileMock).toHaveBeenCalledWith("/srv/runs/runs/abc/volumes.geojson", expect.objectContaining({ flag: expect.any(Number) }));
   });
 
   it("refuses local paths that escape the worker root", async () => {

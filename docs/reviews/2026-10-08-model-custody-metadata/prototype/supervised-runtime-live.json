@@ -1,0 +1,30 @@
+{
+  "cases": [
+    {
+      "owner_lost": false,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": true,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    },
+    {
+      "owner_lost": true,
+      "runtime_cli_supervised": true,
+      "command_log_retained": true,
+      "normal_completion_observed": false,
+      "owned_container_removed": true,
+      "scientific_acceptance": "unassessed"
+    }
+  ],
+  "sources": {
+    "runtime.py": "ce3761061d9e57bdd99acbd4960a0d87b75148eef13a997548e6f956c515cbb9",
+    "main.py": "ad4cf2346fc82b79260f9bd4916a2dc435ca11bf8905cedfed551d6c2c7fbf6e",
+    "container_execution.py": "91c106e5186991590038b0b988c179195b9f7dac695a6cfc6f3fc655a867c202"
+  },
+  "limits": [
+    "Actual runtime CLI and controller with synthetic workload",
+    "Explicit local socket opt-in; legacy container path remains available",
+    "No native ActivitySim, database dispatch, scientific or human acceptance"
+  ]
+}

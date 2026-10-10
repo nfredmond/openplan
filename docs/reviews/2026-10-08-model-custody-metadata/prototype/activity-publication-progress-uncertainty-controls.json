@@ -1,0 +1,31 @@
+{
+  "boundary": "progress",
+  "cases": [
+    {
+      "control": "lost-reply",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-bypass-stop",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "lost-reply-restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "worker_sha256": "e42596a4ff0969484596f18ea1a598f6b12408fa6db27b4c32c33b49003f1403",
+  "limits": [
+    "Actual scaffold stage handler with native managed database commands",
+    "Storage byte service is synthetic; no real Storage acceptance",
+    "No normal dispatcher, native engine execution, concurrent revocation fence or scientific acceptance"
+  ]
+}

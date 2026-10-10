@@ -1,0 +1,58 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "database": "openplan_attempt_cli_90cc042548f4423390f3c51aa18f2547",
+      "native_and_guard_stopped": true,
+      "reported_inspection_retained_exactly": true,
+      "reported_evidence_remains_unverified": true,
+      "native_custody_and_journal_unchanged": true,
+      "late_attempt_write_refused": true,
+      "retry_request_counts": [
+        1,
+        0
+      ]
+    },
+    {
+      "case": "harmless",
+      "database": "openplan_attempt_cli_aa42ca8859564188a589762e7e48a372",
+      "native_and_guard_stopped": true,
+      "reported_inspection_retained_exactly": true,
+      "reported_evidence_remains_unverified": true,
+      "native_custody_and_journal_unchanged": true,
+      "late_attempt_write_refused": true,
+      "retry_request_counts": [
+        1,
+        0
+      ]
+    },
+    {
+      "case": "omit-disconnect",
+      "detected": "Recovery reply loss was not observed"
+    },
+    {
+      "case": "restored",
+      "database": "openplan_attempt_cli_5748536fee924f03a2724cee3a3e2172",
+      "native_and_guard_stopped": true,
+      "reported_inspection_retained_exactly": true,
+      "reported_evidence_remains_unverified": true,
+      "native_custody_and_journal_unchanged": true,
+      "late_attempt_write_refused": true,
+      "retry_request_counts": [
+        1,
+        0
+      ]
+    }
+  ],
+  "evidence_directory": "/home/nathaniel/.local/state/openplan/native-operator-controls-20261008",
+  "sources": {
+    "verify_native_operator_recovery.py": "5a184861d2b536cff10b7c4b926b9116201630ad3eba9a243082a4dfd3558bea",
+    "verify_recovery_decision_http.py": "55cd4f0bfd207b5b868103352def48b0eaa88ba1c483606b1aaad469602c7fab",
+    "verify_native_guard_parent_loss.py": "6cc6e879f90b452df09023c7c37830886c444ab322e842886a84852be997395a"
+  },
+  "limits": [
+    "Synthetic operator with service-role gateway",
+    "No authenticated browser or practitioner acceptance",
+    "No restart, final publication, graceful-close or scientific claim"
+  ]
+}

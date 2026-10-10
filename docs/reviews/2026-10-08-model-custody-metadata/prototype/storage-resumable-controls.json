@@ -1,0 +1,61 @@
+{
+  "source_sha256": "1b1e44ccf65602a67790fea2aeaf983aa6303c15a15384e679ffd5d860bfd988",
+  "cases": [
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "protocol-version",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "state-lock",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "source-hash",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "retained-identity",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "upload-origin",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "server-offset",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "patch-offset",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "final-readback",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "upsert",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "limits": "Synthetic TUS peer and local retained state. No native Storage, fresh process restart, publisher integration or scientific acceptance."
+}

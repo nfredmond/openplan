@@ -1,0 +1,29 @@
+{
+  "cases": [
+    {
+      "control": "normal",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "harmless",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "upsert",
+      "returncode": 1,
+      "expected_behavior_observed": true
+    },
+    {
+      "control": "restored",
+      "returncode": 0,
+      "expected_behavior_observed": true
+    }
+  ],
+  "proof_sha256": "425559d32d825e51f4d305dba903a848864435d568f53c36e6e3506d782af33e",
+  "limits": [
+    "Actual worker upload, prefix-only proxy and isolated native private Storage",
+    "Fault changes x-upsert at transport; no custody RPC, full user RLS matrix, lost acknowledgement recovery, full source publication or scientific acceptance"
+  ]
+}

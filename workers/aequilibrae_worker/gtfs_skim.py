@@ -52,6 +52,7 @@ budget then aborts at the next checkpoint rather than at the moment it expires.
 from __future__ import annotations
 
 import csv
+from dataclasses import dataclass, asdict
 import datetime
 import hashlib
 import io
@@ -282,28 +283,14 @@ class TransitLos:
         self.source_name: str | None = None  # feed file name, when read from disk
 
 
-def load_feed(
-    path: str | None = None,
-    url: str | None = None,
-    *,
-    raw: bytes | None = None,
-    source_url: str | None = None,
-    source_name: str | None = None,
-) -> TransitLos:
-    """Load + reduce a GTFS feed to per-line transit patterns.
+def acquire_feed_archive(
+    path: str | None = None, url: str | None = None, *, raw: bytes | None = None,
+    source_url: str | None = None, source_name: str | None = None,
+) -> tuple[bytes, str | None, str | None]:
+    """Return the exact archive and resolved identity before numerical parsing.
 
-    Raises GtfsError on any structural problem so callers fail loudly rather than
-    silently degrade to transit=0 while claiming transit is modeled.
-
-    `raw` hands over BYTES THAT HAVE ALREADY BEEN OBTAINED, which is how a run
-    that named a workspace feed version is skimmed: the caller reads the exact
-    archive OpenPlan parsed out of private storage and verifies its checksum
-    before calling here, so this function does no network work and cannot reach
-    for a different copy. `source_url` / `source_name` then carry the provenance,
-    because bytes in hand know nothing about where they came from. Neither the
-    `url` cache nor `GTFS_URL` / `GTFS_PATH` is consulted on that path — a
-    refetch of `source_url` could return bytes the operator republished since,
-    and the run would cite a URL for numbers those bytes never produced.
+    Preserve supplied bytes, URL-cache behavior and operator/bundled precedence.
+    Callers can retain this result without downloading the feed a second time.
     """
     supplied_bytes = raw is not None
     if not supplied_bytes:
@@ -343,6 +330,39 @@ def load_feed(
         with open(path, "rb") as fh:
             raw = fh.read()
 
+    if supplied_bytes:
+        return raw, source_url, source_name
+    if url:
+        return raw, url, None
+    return raw, None, os.path.basename(path)
+
+
+def load_feed(
+    path: str | None = None,
+    url: str | None = None,
+    *,
+    raw: bytes | None = None,
+    source_url: str | None = None,
+    source_name: str | None = None,
+) -> TransitLos:
+    """Load + reduce a GTFS feed to per-line transit patterns.
+
+    Raises GtfsError on any structural problem so callers fail loudly rather than
+    silently degrade to transit=0 while claiming transit is modeled.
+
+    `raw` hands over BYTES THAT HAVE ALREADY BEEN OBTAINED, which is how a run
+    that named a workspace feed version is skimmed: the caller reads the exact
+    archive OpenPlan parsed out of private storage and verifies its checksum
+    before calling here, so this function does no network work and cannot reach
+    for a different copy. `source_url` / `source_name` then carry the provenance,
+    because bytes in hand know nothing about where they came from. Neither the
+    `url` cache nor `GTFS_URL` / `GTFS_PATH` is consulted on that path — a
+    refetch of `source_url` could return bytes the operator republished since,
+    and the run would cite a URL for numbers those bytes never produced.
+    """
+    raw, source_url, source_name = acquire_feed_archive(
+        path, url, raw=raw, source_url=source_url, source_name=source_name)
+
     try:
         zf = zipfile.ZipFile(io.BytesIO(raw))
     except zipfile.BadZipFile as exc:
@@ -352,13 +372,8 @@ def load_feed(
     # Record the feed's identity before parsing so the caller can name it in the
     # evidence packet. Only the file NAME of a local feed is kept — the absolute
     # path is the operator's server layout, not planning provenance.
-    if supplied_bytes:
-        los.source_url = source_url
-        los.source_name = source_name
-    elif url:
-        los.source_url = url
-    else:
-        los.source_name = os.path.basename(path)
+    los.source_url = source_url
+    los.source_name = source_name
     with zf:
         # Trips whose stop_times are a TEMPLATE for a published headway band
         # rather than real departures. They are dropped from the skim below (the
@@ -1170,19 +1185,53 @@ def feed_covers(los: TransitLos, lons, lats, buffer_miles: float | None = None) 
     return False
 
 
-def _access_stops(lon: float, lat: float, los: TransitLos) -> list[tuple[str, float]]:
+@dataclass(frozen=True)
+class TransitSkimSettings:
+    """Explicit numerical assumptions, transferable without process defaults."""
+    access_miles: float
+    transfer_penalty_min: float
+    flat_fare_usd: float
+    walk_mph: float
+
+    def __post_init__(self):
+        for name, value in asdict(self).items():
+            if type(value) not in (int, float) or not math.isfinite(value) or value < 0:
+                raise ValueError("Transit skim settings require finite nonnegative numbers")
+        if self.walk_mph == 0:
+            raise ValueError("Transit walk speed must be positive")
+
+    def to_record(self):
+        return asdict(self)
+
+    @classmethod
+    def from_record(cls, record):
+        if not isinstance(record, dict) or set(record) != set(cls.__dataclass_fields__):
+            raise ValueError("Transit skim settings fields differ")
+        return cls(**record)
+
+
+def skim_settings() -> TransitSkimSettings:
+    """Capture this process's defaults once before computing a skim."""
+    return TransitSkimSettings(GTFS_ACCESS_MILES, GTFS_TRANSFER_PENALTY_MIN,
+                               GTFS_FLAT_FARE, WALK_MPH)
+
+
+def _access_stops(lon: float, lat: float, los: TransitLos,
+                  settings: TransitSkimSettings | None = None) -> list[tuple[str, float]]:
     """Served stops within the walk-access buffer, as (stop_id, walk_minutes)."""
+    settings = skim_settings() if settings is None else settings
     out = []
     for sid in los.stop_lines:
         slon, slat = los.stops[sid]
         d = haversine_miles(lon, lat, slon, slat)
-        if d <= GTFS_ACCESS_MILES:
-            out.append((sid, d / WALK_MPH * 60.0))
+        if d <= settings.access_miles:
+            out.append((sid, d / settings.walk_mph * 60.0))
     return out
 
 
 def transit_skim(
-    los: TransitLos, lons: np.ndarray, lats: np.ndarray, deadline: float | None = None
+    los: TransitLos, lons: np.ndarray, lats: np.ndarray, deadline: float | None = None,
+    *, settings: TransitSkimSettings | None = None
 ) -> dict[str, np.ndarray]:
     """Per-OD transit LOS matrices from the reduced feed.
 
@@ -1198,6 +1247,7 @@ def transit_skim(
     zero out transit for whichever zones came last, which is a wrong number rather
     than a missing one.
     """
+    settings = skim_settings() if settings is None else settings
     n = len(lons)
     ivtt = np.zeros((n, n))
     wait = np.zeros((n, n))
@@ -1211,7 +1261,7 @@ def transit_skim(
     access = []
     for i in range(n):
         check_deadline(deadline, "matching zone centroids to walk-accessible stops")
-        access.append(_access_stops(float(lons[i]), float(lats[i]), los))
+        access.append(_access_stops(float(lons[i]), float(lats[i]), los, settings))
     lines = los.lines
 
     for i in range(n):
@@ -1251,7 +1301,7 @@ def transit_skim(
                                     continue
                                 iv = (cum_a[t_sid] - cum_a[a_sid]) / 60.0 + (cum_b[b_sid] - cum_b[t_sid]) / 60.0
                                 wt = lines[la]["headway_min"] / 2.0 + lines[lb]["headway_min"] / 2.0
-                                cost = a_walk + wt + iv + GTFS_TRANSFER_PENALTY_MIN + b_walk
+                                cost = a_walk + wt + iv + settings.transfer_penalty_min + b_walk
                                 if best is None or cost < best[0]:
                                     best = (cost, iv, wt, a_walk + b_walk)
             if best is not None:
@@ -1259,5 +1309,5 @@ def transit_skim(
                 ivtt[i, j] = best[1]
                 wait[i, j] = best[2]
                 walk[i, j] = best[3]
-                fare[i, j] = GTFS_FLAT_FARE
+                fare[i, j] = settings.flat_fare_usd
     return {"ivtt": ivtt, "wait": wait, "walk": walk, "fare": fare, "available": available}

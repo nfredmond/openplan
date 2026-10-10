@@ -1,0 +1,14 @@
+[
+  {
+    "control": "harmless",
+    "exit_code": 0
+  },
+  {
+    "control": "missing-rls",
+    "exit_code": 1
+  },
+  {
+    "control": "restored",
+    "exit_code": 0
+  }
+]

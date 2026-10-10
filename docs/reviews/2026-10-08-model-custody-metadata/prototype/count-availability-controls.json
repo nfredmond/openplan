@@ -1,0 +1,36 @@
+{
+  "source_sha256": "eadd20cc326be06e2b56d6f0dc8c18ecf6b56dd2c87f5d73192000925e696a3f",
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "trust-stale-availability",
+      "exit_code": 1,
+      "targeted_test": "test_missing_file_cannot_inherit_available_acquisition"
+    },
+    {
+      "control": "missing-means-zero",
+      "exit_code": 1,
+      "targeted_test": "test_missing_file_cannot_inherit_available_acquisition"
+    },
+    {
+      "control": "erase-acquisition-status",
+      "exit_code": 1,
+      "targeted_test": "test_missing_file_cannot_inherit_available_acquisition"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "limits": "Real synthetic CSV/metadata, injected read denial and actual summary function. No retained hash verification, rendered browser journey or scientific acceptance."
+}

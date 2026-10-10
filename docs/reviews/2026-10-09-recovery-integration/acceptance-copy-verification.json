@@ -1,0 +1,12 @@
+{
+  "harmlessCommentMatches": true,
+  "changedProjectNameRefused": true,
+  "mutationRolledBack": true,
+  "sourceDatabase": "openplan_attempt_cli_be567f0764bd46ab97bdb99e51c1502f",
+  "targetDatabase": "openplan_acceptance_0c03584249c04ac990c9214566bf2fc0",
+  "tablesCompared": 339,
+  "rowsCompared": 966,
+  "originalColumnValuesMatch": true,
+  "sourceStableAcrossComparison": true,
+  "method": "Sorted JSON row counts and MD5 across original columns, repeatable-read transactions; excludes extension-owned relations."
+}

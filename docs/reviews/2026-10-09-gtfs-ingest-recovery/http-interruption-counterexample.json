@@ -1,0 +1,16 @@
+{
+  "first": {
+    "scanned": 1,
+    "reaped": [
+      "17b90f98-7298-4a4a-8d97-f901335c81a8"
+    ]
+  },
+  "second": {
+    "scanned": 0,
+    "reaped": []
+  },
+  "storageAttempts": 1,
+  "finding": "Storage failure is ignored and a subsequent sweep does not retry it",
+  "scope": "native TypeScript and PostgREST database path; injected Storage 503"
+}
+

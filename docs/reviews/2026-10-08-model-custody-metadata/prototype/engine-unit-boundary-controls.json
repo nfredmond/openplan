@@ -1,0 +1,32 @@
+{
+  "controls": [
+    {
+      "control": "baseline",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "harmless",
+      "exit_code": 0,
+      "targeted_test": null
+    },
+    {
+      "control": "allow-computation",
+      "exit_code": 1,
+      "targeted_test": "test_unconfigured_computation_cannot_succeed"
+    },
+    {
+      "control": "retain-imports",
+      "exit_code": 1,
+      "targeted_test": "test_restores_modules_even_after_interruption"
+    },
+    {
+      "control": "restored",
+      "exit_code": 0,
+      "targeted_test": null
+    }
+  ],
+  "fixture_sha256": "12011f4e33161cf05bfe66f6527e557e7ac1aa1f4f904d75c91712fe1667c63e",
+  "test_sha256": "0be1748aa1cffa46162ccf2b6fba8c0ecc77a74a0742bab61e7d82dd6a2f7fa9",
+  "limits": "Explicit mocked import boundary only. No native numerical engine, installed runtime, process cleanup or scientific acceptance."
+}

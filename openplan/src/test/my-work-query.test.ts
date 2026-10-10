@@ -9,6 +9,7 @@ import {
 import { FAILED_RUN_QUEUE_WINDOW_DAYS, MY_WORK_SOURCES } from "@/lib/my-work/sources";
 import { MY_WORK_SOURCE_IDS, groupMyWorkItemsByBlock } from "@/lib/my-work/types";
 import {
+  buildDb,
   AWARD_MIRRORED,
   AWARD_PLAIN,
   CAMPAIGN_A,
@@ -214,9 +215,14 @@ describe("my work — the union read", () => {
   });
 
   it("blocks a project on its LATEST gate decision, not on any hold ever recorded", async () => {
-    const { result } = await load();
+    const { result, selects } = await load();
     const blocks = groupMyWorkItemsByBlock(result.items);
 
+    // Both project foreign keys exist after the restore correction. The fake
+    // does not resolve schema ambiguity, so assert the actual query projection.
+    expect(selects.stage_gate_decisions).toBe(
+      "id, project_id, gate_id, decision, rationale, decided_at, projects!stage_gate_decisions_project_id_fkey!inner(id, name)"
+    );
     expect(idsOf(blocks.blocked_projects)).toEqual(["g-hold-p1"]);
     expect(blocks.blocked_projects[0].title).toBe("Corridor Rehabilitation");
     // P2's programming gate was held in July and passed in August.
@@ -257,8 +263,8 @@ describe("my work — the union read", () => {
     expect(idsOf(assigned.deadlines)).toContain("m-obligation");
     expect(idsOf(assigned.workspace_deadlines)).not.toContain(AWARD_MIRRORED);
     expect(idsOf(assigned.workspace_deadlines)).toContain(AWARD_PLAIN);
-    // A fully-spent award has met its obligation deadline.
-    expect(idsOf(assigned.workspace_deadlines)).not.toContain("a-spent");
+    // Spending status does not establish obligation timing.
+    expect(idsOf(assigned.workspace_deadlines)).toContain("a-spent");
 
     // VARY THE BINDING: under the unassigned scope the mirroring milestone is
     // filtered out, so the workspace still has to show the obligation. A
@@ -269,11 +275,33 @@ describe("my work — the union read", () => {
     expect(idsOf(unassigned.workspace_deadlines)).toContain(AWARD_MIRRORED);
   });
 
+  it.each([
+    ["earned_coverage", "Closed out on invoice coverage"],
+    ["recorded_on_import", "Recorded as closed on import"],
+    ["unrecorded_legacy", "Closure basis not recorded"],
+    [null, "Closure basis not loaded"],
+  ])("keeps %s closure review visible beside a mirrored milestone", async (basis, label) => {
+    const db = buildDb();
+    const award = db.funding_awards.find(row => row.id === AWARD_MIRRORED)!;
+    award.spending_status = "fully_spent";
+    award.closure_basis = basis;
+    const { result, selects } = await load({ db });
+    const item = result.items.find(row => row.id === AWARD_MIRRORED)!;
+    expect(item).toBeDefined();
+    expect(item.badge).toEqual({ label: "Review obligation", tone: "warning" });
+    expect(item.detail).toContain(label);
+    expect(item.detail).toContain("Obligation timing is not established");
+    expect(item.detail).not.toContain("Funds must be obligated");
+    expect(item.dueOn).toBe(award.obligation_due_at);
+    expect(idsOf(result.items)).toContain("m-obligation");
+    expect(selects.funding_awards.split(",").map(x => x.trim())).toContain("closure_basis");
+  });
+
   it("reports each source's own count after de-duplication", async () => {
     const { result } = await load();
 
     expect(result.perSource.deliverables).toEqual({ count: 2, pending: false, failed: false });
-    expect(result.perSource.award_obligations?.count).toBe(1);
+    expect(result.perSource.award_obligations?.count).toBe(2);
     expect(Object.keys(result.perSource).sort()).toEqual([...MY_WORK_SOURCE_IDS].sort());
   });
 

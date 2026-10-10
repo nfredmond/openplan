@@ -1,0 +1,79 @@
+[
+  {
+    "case": "baseline",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "harmless_comment",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  },
+  {
+    "case": "omit_pending_cleanup",
+    "expectedFailure": "pending object cleanup not retained",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  pending object cleanup not retained\nCONTEXT:  PL/pgSQL function inline_code_block line 6 at RAISE\n"
+  },
+  {
+    "case": "omit_status_guard",
+    "expectedFailure": "noncurrent ready version was reaped",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\n",
+    "stderr": "ERROR:  noncurrent ready version was reaped\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n"
+  },
+  {
+    "case": "omit_stop_trigger",
+    "expectedFailure": "late stop write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nDROP TRIGGER\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late stop write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 12 at RAISE\n"
+  },
+  {
+    "case": "omit_tract_trigger",
+    "expectedFailure": "late tract write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nDROP TRIGGER\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late tract write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 17 at RAISE\n"
+  },
+  {
+    "case": "grant_authenticated",
+    "expectedFailure": "cleanup privilege boundary changed",
+    "returnCode": 3,
+    "stdout": "BEGIN\nGRANT\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  cleanup privilege boundary changed\nCONTEXT:  PL/pgSQL function inline_code_block line 8 at RAISE\n"
+  },
+  {
+    "case": "omit_freshness_guard",
+    "expectedFailure": "fresh version was reaped",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  fresh version was reaped\nCONTEXT:  PL/pgSQL function inline_code_block line 4 at RAISE\n"
+  },
+  {
+    "case": "omit_version_fence",
+    "expectedFailure": "late stage write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late stage write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 11 at RAISE\n"
+  },
+  {
+    "case": "omit_derived_fence",
+    "expectedFailure": "late derived write accepted",
+    "returnCode": 3,
+    "stdout": "BEGIN\nCREATE FUNCTION\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\n",
+    "stderr": "ERROR:  late derived write accepted\nCONTEXT:  PL/pgSQL function inline_code_block line 16 at RAISE\n"
+  },
+  {
+    "case": "restored",
+    "expectedFailure": null,
+    "returnCode": 0,
+    "stdout": "BEGIN\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nSELECT 5\nINSERT 0 1\nINSERT 0 1\nUPDATE 1\n\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nDO\nINSERT 0 1\nINSERT 0 1\nINSERT 0 1\nDO\nROLLBACK\n",
+    "stderr": ""
+  }
+]

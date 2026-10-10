@@ -1,0 +1,82 @@
+{
+  "control": "harmless",
+  "scope_start": {
+    "attempt_id": "00000004-1111-4111-8111-111111111111",
+    "command_sha256": "7fd4e6a2312070cd1242eccc37d04c411eb171f77b050524f12036421f958c8f",
+    "run_id": "00000002-1111-4111-8111-111111111111",
+    "schema": "openplan.engine-process.v1",
+    "scope": {
+      "bootstrap_pid": 245081,
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+      "cgroup_device": 30,
+      "cgroup_inode": 1546691,
+      "invocation_id": "c668121ed13f416c8087b8c583f76f95",
+      "memory_bytes": 1073741824,
+      "schema": "openplan.engine-scope.v1",
+      "tasks": 128,
+      "unit": "openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope"
+    },
+    "scope_unit": "openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+    "stage_id": "00000003-1111-4111-8111-111111111111"
+  },
+  "exit_receipt": {
+    "schema": "openplan.engine-process.v1",
+    "run_id": "00000002-1111-4111-8111-111111111111",
+    "stage_id": "00000003-1111-4111-8111-111111111111",
+    "attempt_id": "00000004-1111-4111-8111-111111111111",
+    "command_sha256": "7fd4e6a2312070cd1242eccc37d04c411eb171f77b050524f12036421f958c8f",
+    "scope_unit": "openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+    "pid": 245081,
+    "returncode": 0,
+    "observed_original_process_group_empty": true,
+    "execution_ready": false,
+    "scientific_acceptance": "unassessed",
+    "scope": {
+      "schema": "openplan.engine-scope.v1",
+      "unit": "openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+      "invocation_id": "c668121ed13f416c8087b8c583f76f95",
+      "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-engine-d4c1a74b02c54490ac58681f50a94942.scope",
+      "cgroup_device": 30,
+      "cgroup_inode": 1546691,
+      "bootstrap_pid": 245081,
+      "memory_bytes": 1073741824,
+      "tasks": 128,
+      "observed_scope_empty": true,
+      "scope_result": "success"
+    }
+  },
+  "engine_version": "1.6.2",
+  "convergence": {
+    "final_gap": 0.0,
+    "iterations": 2,
+    "target_gap": 0.0005,
+    "max_iterations": 3000,
+    "algorithm": "bfw",
+    "converged": true,
+    "assignment_profile": {
+      "schema_version": "openplan.assignment-profile.v1",
+      "profile_id": "aequilibrae-bfw-bpr-tight-v1",
+      "engine": "aequilibrae",
+      "algorithm": "bfw",
+      "vdf": "BPR",
+      "vdf_parameters": {
+        "alpha": 0.15,
+        "beta": 4
+      },
+      "capacity_field": "capacity",
+      "time_field": "travel_time",
+      "class_pce": 1,
+      "engine_version": "1.6.2",
+      "target_gap": 0.0005,
+      "max_iterations": 3000,
+      "cores": 1
+    },
+    "assignment_profile_payload_json": "{\"algorithm\":\"bfw\",\"capacity_field\":\"capacity\",\"class_pce\":1,\"cores\":1,\"engine\":\"aequilibrae\",\"engine_version\":\"1.6.2\",\"max_iterations\":3000,\"profile_id\":\"aequilibrae-bfw-bpr-tight-v1\",\"schema_version\":\"openplan.assignment-profile.v1\",\"target_gap\":0.0005,\"time_field\":\"travel_time\",\"vdf\":\"BPR\",\"vdf_parameters\":{\"alpha\":0.15,\"beta\":4}}",
+    "assignment_profile_digest": "5fcab976e435801f5a04d7f6b37e467850cbcc7d1f650e7cf8c13f625d565157"
+  },
+  "loaded_links": 1,
+  "modeled_transit": "modeled",
+  "artifact_count": 20,
+  "worker_sha256": "6c4999f1050fb081855331292c387df05613a36c484be8c5d1c8dbf6f1c00b1f",
+  "limits": "Full synthetic native assignment with production scope startup and exit checks. Mocked parent database transport. No parent-loss recovery, cancellation, output publication, scientific acceptance or normal dispatch activation."
+}

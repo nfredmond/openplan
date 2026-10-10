@@ -1,0 +1,52 @@
+[
+  {
+    "control": "harmless",
+    "exit_code": 0,
+    "failures": []
+  },
+  {
+    "control": "scope",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='request_id')",
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='workspace_id')",
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='run_id')",
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='stage_id')",
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='blocker_id')"
+    ]
+  },
+  {
+    "control": "outcome",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='status')",
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='observed_blocker_status')"
+    ]
+  },
+  {
+    "control": "extra-fields",
+    "exit_code": 1,
+    "failures": [
+      "FAIL: test_foreign_or_inconsistent_receipts_remain_pending (test_model_skip_command.SkipCommandTests.test_foreign_or_inconsistent_receipts_remain_pending) (key='attempt_id')"
+    ]
+  },
+  {
+    "control": "request-status",
+    "exit_code": 1,
+    "failures": [
+      "ERROR: test_bad_request_is_refused_before_transport_or_journal_creation (test_model_skip_command.SkipCommandTests.test_bad_request_is_refused_before_transport_or_journal_creation) (key='blocker_status')"
+    ]
+  },
+  {
+    "control": "rpc-scope",
+    "exit_code": 1,
+    "failures": [
+      "ERROR: test_scope_and_exact_rpc_payload_are_retained_before_send (test_model_skip_command.SkipCommandTests.test_scope_and_exact_rpc_payload_are_retained_before_send)"
+    ]
+  },
+  {
+    "control": "restored",
+    "exit_code": 0,
+    "failures": []
+  }
+]

@@ -1,0 +1,63 @@
+{
+  "source": "/home/nathaniel/.local/state/openplan/native-guard-controls-20261008/restored",
+  "fresh_inspections": [
+    {
+      "attempt_id": "90e3be74-9cd4-4863-b7a4-bfe346c6bd69",
+      "cancellation_observed": false,
+      "cancellation_requested": false,
+      "cancellation_signal_written": false,
+      "continuation_authorized": false,
+      "database_status_changed": false,
+      "model_resumed": false,
+      "outcome": "scope_absent_observed",
+      "owner_guard": {
+        "guard_has_live_processes": false,
+        "outcome": "guard_absent_observed"
+      },
+      "record_sha256": {
+        "attempt_owner.json": "f3cca4d9a9e063ab14c4170e069de293279c64f8077868b98264274a6dffe476",
+        "launch-reserved.json": "36c661c39d110f05720828160c63ade5296f858a3732f106976ea5f589deaebb",
+        "owner-guard-started.json": "505021d656ca2000daee6313081e678d056a69f2b1d5a88c5a0d86f1d25ebe9a",
+        "scope-started.json": "4d951d4486bf58e0c00946d1b477fde30043c8c8129abe0da07fda65e633154c"
+      },
+      "run_id": "909f5c51-1131-4f92-abe3-81cf182273ea",
+      "scope_has_live_processes": false,
+      "server_ownership_checked": false,
+      "signal_sent": false,
+      "stage_id": "88b9d4ff-e013-4520-9513-aa246a29f369",
+      "termination_cause": "unconfirmed"
+    },
+    {
+      "attempt_id": "90e3be74-9cd4-4863-b7a4-bfe346c6bd69",
+      "cancellation_observed": false,
+      "cancellation_requested": false,
+      "cancellation_signal_written": false,
+      "continuation_authorized": false,
+      "database_status_changed": false,
+      "model_resumed": false,
+      "outcome": "scope_absent_observed",
+      "owner_guard": {
+        "guard_has_live_processes": false,
+        "outcome": "guard_absent_observed"
+      },
+      "record_sha256": {
+        "attempt_owner.json": "f3cca4d9a9e063ab14c4170e069de293279c64f8077868b98264274a6dffe476",
+        "launch-reserved.json": "36c661c39d110f05720828160c63ade5296f858a3732f106976ea5f589deaebb",
+        "owner-guard-started.json": "505021d656ca2000daee6313081e678d056a69f2b1d5a88c5a0d86f1d25ebe9a",
+        "scope-started.json": "4d951d4486bf58e0c00946d1b477fde30043c8c8129abe0da07fda65e633154c"
+      },
+      "run_id": "909f5c51-1131-4f92-abe3-81cf182273ea",
+      "scope_has_live_processes": false,
+      "server_ownership_checked": false,
+      "signal_sent": false,
+      "stage_id": "88b9d4ff-e013-4520-9513-aa246a29f369",
+      "termination_cause": "unconfirmed"
+    }
+  ],
+  "custody_and_journal_unchanged": true,
+  "limits": [
+    "Retained native case only",
+    "No live database ownership check",
+    "No signal, restart or publication authority"
+  ]
+}

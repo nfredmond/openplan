@@ -1,0 +1,83 @@
+{
+  "container": "supabase_db_openplan-restore-target-2026091050",
+  "database": "openplan_retention_upgrade_824628bc78714072918a6ce44595994f",
+  "source_database": "openplan_retention_upgrade_e8ae02076a454b6692bc08e83067b1a9",
+  "source_version": "20261016000019",
+  "status": "migration applied and reapplied; retained rows and installed cases passed",
+  "migration_sha256": "995d4ef236c751b206ed5a9620c9e7e99ea1b44daf4eb95348f7cb782197cce3",
+  "compared_tables": {
+    "model_artifact_write_context": "0:d751713988987e9331980363e24189ce",
+    "model_artifact_write_receipts": "61:8f88d79e8b1aa19915a9a5fb30366797",
+    "model_assessment_command_receipts": "1:ac07f4d67e3bc7d626d10e79493145be",
+    "model_attempt_instrument_custody": "8:25dd916ed1a6f0e3748faaf16592f607",
+    "model_attempt_instrument_receipts": "8:9451a8f0a0a626cd26156bfe62cdd231",
+    "model_execution_custody_enrollment": "111:ac0bafec904616944eb6aa814d89c3db",
+    "model_kpi_write_context": "0:d751713988987e9331980363e24189ce",
+    "model_kpi_write_receipts": "18:e79c2e223fca1277a8d29634ddf55f42",
+    "model_legacy_artifact_receipts": "0:d751713988987e9331980363e24189ce",
+    "model_legacy_kpi_receipts": "0:d751713988987e9331980363e24189ce",
+    "model_links": "0:d751713988987e9331980363e24189ce",
+    "model_run_artifacts": "243:178e955dd5ec56f69ece75a62b444bd4",
+    "model_run_kpis": "20:e39dcf2bf9c0e338079b6a237834cdb7",
+    "model_run_relaunch_receipts": "0:d751713988987e9331980363e24189ce",
+    "model_run_stages": "52:2072c1b570ca02bed66a86c47e098046",
+    "model_run_write_context": "0:d751713988987e9331980363e24189ce",
+    "model_runs": "111:96a2df02622b1bf83d151eda56b72a65",
+    "model_stage_attempts": "13:6b13ee392de5f22b648f0b4895f8eb0f",
+    "model_stage_claim_receipts": "13:06dfad5de4bb9751a6f1ee7ae491eecc",
+    "model_stage_execution_starts": "0:d751713988987e9331980363e24189ce",
+    "model_stage_write_context": "0:d751713988987e9331980363e24189ce",
+    "model_stage_write_receipts": "11:d054776b5f7530c4308fc5d1b4d80c64",
+    "modeling_claim_decisions": "59:2eec55247cfbce3a0b68191d3ac8c7bf",
+    "modeling_distributed_work_loading_custody": "0:d751713988987e9331980363e24189ce",
+    "modeling_source_manifests": "0:d751713988987e9331980363e24189ce",
+    "modeling_structural_demand_diagnosis_custody": "0:d751713988987e9331980363e24189ce",
+    "modeling_validation_assessments": "45:2ca0afbe7b636b1ffa237bec3ea3133a",
+    "modeling_validation_instrument_v2_custody": "1:906db41532e5123096ebb189b28af4d4",
+    "modeling_validation_results": "19:ff6fa6e287d5f555b6980627b6969e5f",
+    "modeling_validation_structural_diagnoses": "0:d751713988987e9331980363e24189ce",
+    "modeling_worker_heartbeats": "0:d751713988987e9331980363e24189ce",
+    "models": "1:d808a3555fd12c4abceaad1b6c29b5ea"
+  },
+  "installed_role_and_retention_cases": true,
+  "source_unchanged": true,
+  "advisor_exit_code": 0,
+  "limits": "Owned populated clone and actual CLI; no normal dispatcher, application database, browser, scientific or full-host restore proof.",
+  "advisor_comparison": {
+    "source_and_candidate_findings_identical": true,
+    "findings": [
+      {
+        "level": "WARN",
+        "detail": "Function `public.apply_engagement_item_vote_delta` has a role mutable search_path"
+      },
+      {
+        "level": "WARN",
+        "detail": "Function `public.refuse_project_decision_package_change` has a role mutable search_path"
+      },
+      {
+        "level": "WARN",
+        "detail": "Function `public.refuse_scenario_comparison_model_run_link_change` has a role mutable search_path"
+      },
+      {
+        "level": "WARN",
+        "detail": "Function `public.set_rtp_financial_updated_at` has a role mutable search_path"
+      },
+      {
+        "level": "ERROR",
+        "detail": "Table `public.spatial_ref_sys` is public, but RLS has not been enabled."
+      },
+      {
+        "level": "WARN",
+        "detail": "Extension `btree_gist` is installed in the public schema. Move it to another schema."
+      },
+      {
+        "level": "WARN",
+        "detail": "Extension `pg_trgm` is installed in the public schema. Move it to another schema."
+      },
+      {
+        "level": "WARN",
+        "detail": "Extension `postgis` is installed in the public schema. Move it to another schema."
+      }
+    ]
+  }
+}

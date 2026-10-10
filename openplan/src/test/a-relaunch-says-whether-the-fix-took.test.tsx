@@ -63,6 +63,7 @@ function renderPanel() {
       modelRunId={MODEL_RUN_ID}
       runTitle="Grass Valley screening run"
       runStatus="failed"
+      recovery={{ state: "new_run", relaunchCustody: "unstarted", enrolledAt: "2026-10-08T10:00:00Z", observedStarts: 0, lastStartObservedAt: null }}
       engineKey="aequilibrae"
       comparisonCandidates={[]}
     />
