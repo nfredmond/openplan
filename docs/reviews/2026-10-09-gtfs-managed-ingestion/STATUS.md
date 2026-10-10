@@ -247,3 +247,19 @@ parser child, then recovers a lost completion reply across processes without
 reprocessing. Its database replies remain controlled. Native lifecycle RPCs,
 source acquisition, Storage reconciliation, cleanup, adoption, polling and the
 previously stated database/browser boundaries remain unfinished.
+
+## Native committed worker recovery
+
+[The database recovery checkpoint](WORKER_DATABASE.md) replaces controlled
+lifecycle replies with actual PostgreSQL commands through an owned PostgREST
+and Storage stack. Completion and first-batch reply loss survive process-group
+termination and fresh-process recovery. Independent SQL retains 95 route rows,
+717 stop rows and nine receipts without duplicate publication. Six native HTTP
+refusals and eight intended database-corruption assertions pass, with a harmless
+control and restored-state checks. The final bounded worker service peaks at
+151.4 MB; separate containers have their own limits.
+
+The clone has 393 recorded migrations plus GTFS DDL outside that ledger. This
+adds native recovery evidence, not current-main upgrade, concurrent replacement,
+adoption, browser, scientific or release acceptance. No application source or
+candidate migration changes, import enrollment or main merge occur here.
