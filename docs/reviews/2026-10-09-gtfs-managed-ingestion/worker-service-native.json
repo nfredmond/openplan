@@ -1,0 +1,10 @@
+{
+  "migrationSha256": "86f28712ea5c4068a5185d501d2070d6fc99fe093770d5d91bcc8e96357b80a2",
+  "serviceSha256": "e7e82c7e9caef60954c75f30633676b8f09094cc2f002801aed6cfaf4ff7a050",
+  "checksSha256": "ce016cf6a6f9c289296a3a96674cbb17e432cd98512f39375690fdf846d2cd02",
+  "snapshotsSha256": "6ed9451aa0bdafb09f0078d1925392c115f6e058b42fdc34a8ea9f627e77d174",
+  "schemaAbsentAfterRollback": true,
+  "result": {
+    "verifiedNativeSnapshots": 3
+  }
+}

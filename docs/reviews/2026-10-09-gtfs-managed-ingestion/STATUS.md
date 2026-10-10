@@ -159,3 +159,12 @@ this candidate. Queue results do not grant ownership, and reads do not renew
 leases. Worker response validation, durable journals, actual polling/renewal,
 Storage reconciliation, route integration and committed recovery/contention still
 remain. No managed import route is enabled.
+
+## Typed worker service and bounded acknowledgements
+
+[The worker service checkpoint](WORKER_SERVICE.md) adds typed queue, claim, read,
+renewal and member-status calls. It validates cross-field identity and custody,
+bounds acknowledgements independently of transport compliance, and preserves
+unknown outcomes for later reconciliation. Sixty-four focused tests, 36 source
+controls, three actual PostgreSQL response snapshots, scoped TypeScript and ESLint
+pass. Durable journals, mutation calls and worker/route enrollment remain open.
