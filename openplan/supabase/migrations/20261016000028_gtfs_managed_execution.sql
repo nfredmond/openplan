@@ -471,6 +471,190 @@ END $$;
 REVOKE ALL ON FUNCTION public.write_gtfs_ingest_batch(uuid,uuid,uuid,text,integer,jsonb) FROM PUBLIC,anon,authenticated;
 GRANT EXECUTE ON FUNCTION public.write_gtfs_ingest_batch(uuid,uuid,uuid,text,integer,jsonb) TO service_role;
 
+-- The expected artifact and totals are committed before the first derived batch.
+CREATE FUNCTION openplan_gtfs.check_derived(p_version uuid,p_token uuid,p_plan jsonb,p_manifest jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE prepared openplan_gtfs.prepare_receipts%ROWTYPE; actual_manifest jsonb;
+ routes integer; stops integer; route_batches integer; stop_batches integer;
+BEGIN
+ IF openplan_gtfs.owns_attempt(p_version,p_token) IS NOT TRUE OR NOT EXISTS(
+   SELECT 1 FROM openplan_gtfs.executions j JOIN public.gtfs_feed_versions v ON v.id=j.version_id
+   WHERE j.version_id=p_version AND j.prepared_token=p_token AND v.status='parsing') THEN
+  RAISE EXCEPTION 'GTFS derived attempt is not active and prepared' USING ERRCODE='55000';
+ END IF;
+ SELECT * INTO prepared FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;
+ IF NOT FOUND OR prepared.plan IS DISTINCT FROM p_plan THEN
+  RAISE EXCEPTION 'GTFS derived output plan differs' USING ERRCODE='22023';
+ END IF;
+ SELECT jsonb_agg(jsonb_build_object('kind',kind,'ordinal',ordinal,'hash',payload_hash,'rows',row_count)
+   ORDER BY kind,ordinal) INTO actual_manifest FROM openplan_gtfs.batch_receipts WHERE version_id=p_version AND token=p_token;
+ IF actual_manifest IS NULL OR actual_manifest IS DISTINCT FROM p_manifest THEN
+  RAISE EXCEPTION 'GTFS derived batch manifest differs' USING ERRCODE='22023';
+ END IF;
+ SELECT count(*) INTO routes FROM public.gtfs_route_service_levels WHERE feed_version_id=p_version;
+ SELECT count(*) INTO stops FROM public.gtfs_stop_service_levels WHERE feed_version_id=p_version;
+ SELECT count(*) FILTER(WHERE kind='route'),count(*) FILTER(WHERE kind='stop') INTO route_batches,stop_batches
+ FROM openplan_gtfs.batch_receipts WHERE version_id=p_version AND token=p_token;
+ IF routes IS DISTINCT FROM (p_plan->>'routeRows')::integer OR stops IS DISTINCT FROM (p_plan->>'stopRows')::integer
+   OR route_batches IS DISTINCT FROM (p_plan->>'routeBatches')::integer OR stop_batches IS DISTINCT FROM (p_plan->>'stopBatches')::integer THEN
+  RAISE EXCEPTION 'GTFS derived output is incomplete' USING ERRCODE='22023';
+ END IF;
+ IF routes IS DISTINCT FROM (SELECT sum(row_count) FROM openplan_gtfs.batch_receipts WHERE version_id=p_version AND token=p_token AND kind='route')
+   OR stops IS DISTINCT FROM (SELECT sum(row_count) FROM openplan_gtfs.batch_receipts WHERE version_id=p_version AND token=p_token AND kind='stop') THEN
+  RAISE EXCEPTION 'GTFS derived stored counts differ from receipts' USING ERRCODE='22023';
+ END IF;
+ RETURN jsonb_build_object('routeRows',routes,'stopRows',stops);
+END $$;
+
+CREATE TABLE openplan_gtfs.tract_receipts (
+ command_id uuid PRIMARY KEY,
+ version_id uuid NOT NULL REFERENCES public.gtfs_feed_versions(id) ON DELETE CASCADE,
+ token uuid NOT NULL REFERENCES openplan_gtfs.claims(token) ON DELETE CASCADE,
+ payload_hash text NOT NULL,
+ computed boolean NOT NULL,
+ row_count integer,
+ computed_at timestamptz,
+ error_code text,
+ error_detail text,
+ response jsonb NOT NULL,
+ UNIQUE(version_id,token),
+ CHECK((computed AND row_count>=0 AND row_count IS NOT NULL AND computed_at IS NOT NULL AND error_code IS NULL)
+   OR (NOT computed AND row_count IS NULL AND computed_at IS NULL AND error_code IS NOT NULL))
+);
+CREATE TABLE openplan_gtfs.completion_receipts (
+ command_id uuid PRIMARY KEY,
+ version_id uuid NOT NULL UNIQUE REFERENCES public.gtfs_feed_versions(id) ON DELETE CASCADE,
+ token uuid NOT NULL REFERENCES openplan_gtfs.claims(token) ON DELETE CASCADE,
+ payload_hash text NOT NULL,
+ response jsonb NOT NULL
+);
+ALTER TABLE openplan_gtfs.tract_receipts ENABLE ROW LEVEL SECURITY;
+ALTER TABLE openplan_gtfs.completion_receipts ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON openplan_gtfs.tract_receipts,openplan_gtfs.completion_receipts FROM PUBLIC,anon,authenticated,service_role;
+CREATE INDEX gtfs_tract_receipts_token ON openplan_gtfs.tract_receipts(token);
+CREATE INDEX gtfs_completion_receipts_token ON openplan_gtfs.completion_receipts(token);
+
+-- Record the existing spatial join once per attempt, including its failure.
+-- SQL cannot verify the supplied parsed artifact bytes; the worker must do that.
+CREATE FUNCTION public.compute_managed_gtfs_tracts(p_version uuid,p_token uuid,p_command uuid,p_plan jsonb,p_manifest jsonb)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE saved openplan_gtfs.tract_receipts%ROWTYPE; submission openplan_gtfs.submissions%ROWTYPE;
+ hash text; computed boolean:=false; rows integer; at_time timestamptz; code text; detail text; result jsonb;
+BEGIN
+ IF p_version IS NULL OR p_token IS NULL OR p_command IS NULL THEN
+  RAISE EXCEPTION 'GTFS tract command identity is required' USING ERRCODE='22023';
+ END IF;
+ PERFORM 1 FROM public.gtfs_feed_versions WHERE id=p_version FOR UPDATE;
+ SELECT s.* INTO submission FROM openplan_gtfs.submissions s JOIN openplan_gtfs.executions j ON j.request_id=s.request_id WHERE j.version_id=p_version;
+ IF NOT FOUND OR openplan_gtfs.actor_can_write(submission.workspace_id,submission.actor_id) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS tract actor is unavailable' USING ERRCODE='42501';
+ END IF;
+ hash:=encode(extensions.digest(jsonb_build_object('version',p_version,'token',p_token,'plan',p_plan,'manifest',p_manifest)::text,'sha256'),'hex');
+ SELECT * INTO saved FROM openplan_gtfs.tract_receipts WHERE command_id=p_command;
+ IF FOUND THEN
+  IF saved.payload_hash IS DISTINCT FROM hash THEN RAISE EXCEPTION 'GTFS tract command payload changed' USING ERRCODE='22023'; END IF;
+  RETURN saved.response;
+ END IF;
+ PERFORM openplan_gtfs.check_derived(p_version,p_token,p_plan,p_manifest);
+ IF EXISTS(SELECT 1 FROM openplan_gtfs.tract_receipts WHERE version_id=p_version AND token=p_token) THEN
+  RAISE EXCEPTION 'GTFS tract outcome already recorded for this attempt' USING ERRCODE='55000';
+ END IF;
+ INSERT INTO openplan_gtfs.write_context VALUES(txid_current(),p_version,'tract','DELETE',p_token),
+   (txid_current(),p_version,'tract','INSERT',p_token);
+ BEGIN
+  rows:=public.compute_gtfs_tract_service(p_version);
+  IF rows IS NULL OR rows<0 THEN RAISE EXCEPTION 'Tract computation did not return a row count'; END IF;
+  computed:=true; at_time:=clock_timestamp();
+ EXCEPTION WHEN SQLSTATE '55000' OR query_canceled THEN RAISE;
+ WHEN OTHERS THEN
+  GET STACKED DIAGNOSTICS code=RETURNED_SQLSTATE,detail=MESSAGE_TEXT;
+  rows:=NULL; at_time:=NULL; computed:=false; detail:=left(detail,500);
+ END;
+ DELETE FROM openplan_gtfs.write_context WHERE transaction_id=txid_current() AND version_id=p_version;
+ IF openplan_gtfs.owns_attempt(p_version,p_token) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS attempt lost ownership during tract computation' USING ERRCODE='55000';
+ END IF;
+ result:=jsonb_build_object('command',p_command,'version',p_version,'computed',computed,'rows',rows,'computedAt',at_time,'errorCode',code,'errorDetail',detail);
+ INSERT INTO openplan_gtfs.tract_receipts VALUES(p_command,p_version,p_token,hash,computed,rows,at_time,code,detail,result);
+ RETURN result;
+END $$;
+REVOKE ALL ON FUNCTION public.compute_managed_gtfs_tracts(uuid,uuid,uuid,jsonb,jsonb) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.compute_managed_gtfs_tracts(uuid,uuid,uuid,jsonb,jsonb) TO service_role;
+
+CREATE FUNCTION public.complete_gtfs_ingest(
+ p_version uuid,p_token uuid,p_command uuid,p_archive jsonb,p_plan jsonb,p_manifest jsonb,p_metadata jsonb,p_tract_command uuid
+) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE v public.gtfs_feed_versions%ROWTYPE; m public.gtfs_feed_versions%ROWTYPE;
+ saved openplan_gtfs.completion_receipts%ROWTYPE; tract openplan_gtfs.tract_receipts%ROWTYPE;
+ submission openplan_gtfs.submissions%ROWTYPE; hash text; counts jsonb; result jsonb; field text; actual_tracts integer;
+BEGIN
+ IF p_version IS NULL OR p_token IS NULL OR p_command IS NULL OR p_tract_command IS NULL
+   OR p_metadata IS NULL OR jsonb_typeof(p_metadata)<>'object' THEN
+  RAISE EXCEPTION 'GTFS completion arguments are required' USING ERRCODE='22023';
+ END IF;
+ SELECT * INTO v FROM public.gtfs_feed_versions WHERE id=p_version FOR UPDATE;
+ SELECT s.* INTO submission FROM openplan_gtfs.submissions s JOIN openplan_gtfs.executions j ON j.request_id=s.request_id WHERE j.version_id=p_version;
+ IF NOT FOUND OR openplan_gtfs.actor_can_write(submission.workspace_id,submission.actor_id) IS NOT TRUE THEN
+  RAISE EXCEPTION 'GTFS completion actor is unavailable' USING ERRCODE='42501';
+ END IF;
+ hash:=encode(extensions.digest(jsonb_build_object('version',p_version,'token',p_token,'archive',p_archive,
+   'plan',p_plan,'manifest',p_manifest,'metadata',p_metadata,'tractCommand',p_tract_command)::text,'sha256'),'hex');
+ SELECT * INTO saved FROM openplan_gtfs.completion_receipts WHERE command_id=p_command;
+ IF FOUND THEN
+  IF saved.payload_hash IS DISTINCT FROM hash THEN RAISE EXCEPTION 'GTFS completion payload changed' USING ERRCODE='22023'; END IF;
+  RETURN saved.response;
+ END IF;
+ counts:=openplan_gtfs.check_derived(p_version,p_token,p_plan,p_manifest);
+ IF p_archive IS NULL OR p_archive IS DISTINCT FROM jsonb_build_object('path',v.storage_path,'sha256',v.checksum_sha256,'bytes',v.byte_size)
+   OR NOT EXISTS(SELECT 1 FROM openplan_gtfs.executions WHERE version_id=p_version AND archive_available AND archive_identity=p_archive) THEN
+  RAISE EXCEPTION 'GTFS completion archive identity differs' USING ERRCODE='22023';
+ END IF;
+ SELECT * INTO tract FROM openplan_gtfs.tract_receipts WHERE command_id=p_tract_command;
+ IF NOT FOUND OR tract.version_id IS DISTINCT FROM p_version OR tract.token IS DISTINCT FROM p_token
+  OR tract.payload_hash IS DISTINCT FROM encode(extensions.digest(jsonb_build_object('version',p_version,'token',p_token,'plan',p_plan,'manifest',p_manifest)::text,'sha256'),'hex') THEN
+  RAISE EXCEPTION 'GTFS completion tract outcome differs' USING ERRCODE='22023';
+ END IF;
+ SELECT count(*) INTO actual_tracts FROM public.gtfs_tract_service WHERE feed_version_id=p_version;
+ IF (tract.computed AND actual_tracts IS DISTINCT FROM tract.row_count) OR (NOT tract.computed AND actual_tracts<>0) THEN
+  RAISE EXCEPTION 'GTFS completion tract rows differ' USING ERRCODE='22023';
+ END IF;
+ IF EXISTS(SELECT 1 FROM jsonb_object_keys(p_metadata) key WHERE NOT key=ANY(ARRAY['agency_count','route_count','stop_count','trip_count','stop_time_row_count','calendar_service_count','frequency_trip_count','scheduled_trip_count','service_start_date','service_end_date','feed_info_version','feed_info_publisher_name','feed_info_start_date','feed_info_end_date','parse_warnings'])) THEN
+  RAISE EXCEPTION 'Unexpected GTFS completion metadata' USING ERRCODE='22023';
+ END IF;
+ FOREACH field IN ARRAY ARRAY['agency_count','route_count','stop_count','trip_count','stop_time_row_count','calendar_service_count','frequency_trip_count','scheduled_trip_count'] LOOP
+  IF jsonb_typeof(p_metadata->field) IS DISTINCT FROM 'number' THEN RAISE EXCEPTION 'GTFS parser counts must be numeric' USING ERRCODE='22023'; END IF;
+  IF (p_metadata->>field)::numeric NOT BETWEEN 0 AND 2147483647 OR trunc((p_metadata->>field)::numeric)<>(p_metadata->>field)::numeric THEN
+   RAISE EXCEPTION 'GTFS parser counts must be bounded nonnegative integers' USING ERRCODE='22023';
+  END IF;
+ END LOOP;
+ IF (p_metadata->>'route_count')::numeric=0 OR (p_metadata->>'stop_count')::numeric=0 OR jsonb_typeof(p_metadata->'parse_warnings') IS DISTINCT FROM 'array' THEN
+  RAISE EXCEPTION 'Invalid GTFS parser metadata' USING ERRCODE='22023';
+ END IF;
+ FOREACH field IN ARRAY ARRAY['service_start_date','service_end_date','feed_info_version','feed_info_publisher_name','feed_info_start_date','feed_info_end_date'] LOOP
+  IF p_metadata ? field AND jsonb_typeof(p_metadata->field) NOT IN ('string','null') THEN
+   RAISE EXCEPTION 'GTFS parser descriptive metadata must be text' USING ERRCODE='22023';
+  END IF;
+ END LOOP;
+ SELECT * INTO m FROM jsonb_populate_record(NULL::public.gtfs_feed_versions,p_metadata);
+ INSERT INTO openplan_gtfs.write_context VALUES(txid_current(),p_version,'version','UPDATE',p_token);
+ UPDATE public.gtfs_feed_versions SET status='ready',failure_code=NULL,failure_detail=NULL,
+  route_service_level_rows=(counts->>'routeRows')::integer,stop_service_level_rows=(counts->>'stopRows')::integer,
+  tract_service_rows=tract.row_count,tract_service_computed_at=tract.computed_at,shape_count=0,shapes_status='not_ingested',
+  agency_count=m.agency_count,route_count=m.route_count,stop_count=m.stop_count,trip_count=m.trip_count,
+  stop_time_row_count=m.stop_time_row_count,calendar_service_count=m.calendar_service_count,
+  frequency_trip_count=m.frequency_trip_count,scheduled_trip_count=m.scheduled_trip_count,
+  service_start_date=m.service_start_date,service_end_date=m.service_end_date,feed_info_version=m.feed_info_version,
+  feed_info_publisher_name=m.feed_info_publisher_name,feed_info_start_date=m.feed_info_start_date,feed_info_end_date=m.feed_info_end_date,
+  parse_warnings=m.parse_warnings,last_checked_at=clock_timestamp() WHERE id=p_version;
+ DELETE FROM openplan_gtfs.write_context WHERE transaction_id=txid_current() AND version_id=p_version;
+ UPDATE openplan_gtfs.executions SET state='ready',token=NULL,lease_until=NULL WHERE version_id=p_version;
+ result:=jsonb_build_object('command',p_command,'version',p_version,'status','ready','routeRows',counts->'routeRows','stopRows',counts->'stopRows','tractOutcome',tract.response);
+ INSERT INTO openplan_gtfs.completion_receipts VALUES(p_command,p_version,p_token,hash,result);
+ RETURN result;
+END $$;
+REVOKE ALL ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) TO service_role;
+
 -- Lifecycle commands will populate this private transaction context. Until
 -- they are connected, enrollment refuses every legacy mutation of managed work.
 CREATE FUNCTION openplan_gtfs.guard_version() RETURNS trigger

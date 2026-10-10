@@ -17,12 +17,24 @@ command = ['docker', 'exec', '-i', config['container'], 'psql', '-U', 'postgres'
 source = (root / 'openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql').read_text()
 checks = (Path(__file__).parent / 'admission-checks.sql').read_text()
 checks += '\n' + (Path(__file__).parent / 'batch-checks.sql').read_text()
+checks += '\n' + (Path(__file__).parent / 'completion-checks.sql').read_text()
 results = []
 
 
 def mutation(old, new):
     assert source.count(old) == 1, ('mutation target changed', old)
     return source.replace(old, new)
+
+
+def remove_guard(message):
+    marker = "RAISE EXCEPTION '" + message + "'"
+    assert source.count(marker) == 1, ('guard message changed', message)
+    position = source.index(marker)
+    start = max(source.rfind('\n IF ', 0, position), source.rfind('\n  IF ', 0, position), source.rfind('\n   IF ', 0, position))
+    assert start >= 0, message
+    end = source.rfind('THEN', start, position) + 4
+    assert end > start, message
+    return source[:start] + '\n IF false THEN' + source[end:]
 
 
 cases = [
@@ -53,7 +65,7 @@ cases = [
     ('preparation-stage', mutation("WHERE v.id=p_version AND v.status='parsing' AND j.archive_available)", "WHERE v.id=p_version AND j.archive_available)"), 'preparation accepted before parsing'),
     ('prepared-owner', source.replace("WHERE j.version_id=p_version AND j.prepared_token=p_token AND candidate_version.status='parsing')", "WHERE j.version_id=p_version AND candidate_version.status='parsing')").replace('SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;', "SELECT plan INTO output_plan FROM openplan_gtfs.prepare_receipts WHERE token=p_token AND version_id=p_version;\n output_plan:=coalesce(output_plan,'{\"routeRows\":2,\"routeBatches\":2,\"stopRows\":1,\"stopBatches\":1}'::jsonb);"), 'unprepared owner wrote batch'),
     ('batch-ordinal', mutation("IF p_ordinal IS DISTINCT FROM (SELECT count(*)::integer FROM openplan_gtfs.batch_receipts\n   WHERE version_id=p_version AND token=p_token AND kind=p_kind) THEN", 'IF false THEN'), 'batch ordinal gap accepted'),
-    ('batch-replay-payload', mutation('IF saved.payload_hash IS DISTINCT FROM hash THEN', 'IF false THEN'), 'changed batch replay accepted'),
+    ('batch-replay-payload', mutation("IF saved.payload_hash IS DISTINCT FROM hash THEN\n   RAISE EXCEPTION 'Batch command payload changed'", "IF false THEN\n   RAISE EXCEPTION 'Batch command payload changed'"), 'changed batch replay accepted'),
     ('batch-scope', source.replace("row->>'workspace_id' IS DISTINCT FROM v.workspace_id::text", 'false'), 'batch workspace scope change accepted'),
     ('batch-fields', source.replace('WHERE NOT key=ANY(allowed)', 'WHERE false'), 'unexpected batch field accepted'),
     ('prepare-routes', mutation('DELETE FROM public.gtfs_route_service_levels WHERE feed_version_id=p_version;', 'DELETE FROM public.gtfs_route_service_levels WHERE false;'), 'preparation omitted prior output'),
@@ -70,6 +82,28 @@ cases = [
     ('derived-plan-digest-type', mutation("OR jsonb_typeof(p_plan->'sha256') IS DISTINCT FROM 'string'", ''), 'numeric derived digest accepted'),
     ('derived-plan-fields', mutation("WHERE key NOT IN\n     ('sha256','bytes','routeRows','stopRows','routeBatches','stopBatches')", 'WHERE false'), 'invalid derived output plan accepted'),
     ('derived-plan-capacity', mutation("IF (p_plan->>'routeBatches')::numeric NOT BETWEEN ceil((p_plan->>'routeRows')::numeric/1000) AND (p_plan->>'routeRows')::numeric\n   OR (p_plan->>'stopBatches')::numeric NOT BETWEEN ceil((p_plan->>'stopRows')::numeric/1000) AND (p_plan->>'stopRows')::numeric THEN", 'IF false THEN'), 'invalid derived output plan accepted'),
+    ('completion-plan', remove_guard('GTFS derived output plan differs'), 'different completion plan accepted'),
+    ('completion-manifest', remove_guard('GTFS derived batch manifest differs'), 'incomplete manifest accepted'),
+    ('completion-declared-totals', remove_guard('GTFS derived output is incomplete'), 'truncated declared output accepted'),
+    ('completion-stored-totals', remove_guard('GTFS derived stored counts differ from receipts'), 'stored counts differing from receipts accepted'),
+    ('tract-replay-payload', remove_guard('GTFS tract command payload changed'), 'changed tract replay accepted'),
+    ('tract-recomputed', remove_guard('GTFS tract outcome already recorded for this attempt').replace('UNIQUE(version_id,token),', ''), 'tract computation repeated under new command'),
+    ('tract-failed-as-zero', mutation('rows:=NULL; at_time:=NULL; computed:=false; detail:=left(detail,500);', 'rows:=0; at_time:=clock_timestamp(); computed:=true; code:=NULL; detail:=NULL;'), 'tract failure became computed zero'),
+    ('tract-expired-after-compute', remove_guard('GTFS attempt lost ownership during tract computation'), 'tract computation accepted expired ownership'),
+    ('completion-archive', remove_guard('GTFS completion archive identity differs'), 'changed completion archive accepted'),
+    ('completion-tract-receipt', remove_guard('GTFS completion tract outcome differs'), 'unrecorded tract outcome accepted'),
+    ('completion-tract-count', remove_guard('GTFS completion tract rows differ'), 'changed stored tract count accepted'),
+    ('completion-metadata-fields', remove_guard('Unexpected GTFS completion metadata'), 'invalid completion metadata accepted'),
+    ('completion-metadata-types', remove_guard('GTFS parser counts must be numeric'), 'invalid completion metadata accepted'),
+    ('completion-metadata-integers', remove_guard('GTFS parser counts must be bounded nonnegative integers'), 'invalid completion metadata accepted'),
+    ('completion-warning-metadata', remove_guard('Invalid GTFS parser metadata'), 'invalid completion metadata accepted'),
+    ('completion-descriptive-metadata', remove_guard('GTFS parser descriptive metadata must be text'), 'invalid completion metadata accepted'),
+    ('completion-replay-payload', remove_guard('GTFS completion payload changed'), 'changed completion replay accepted'),
+    ('completion-revoked-actor', remove_guard('GTFS completion actor is unavailable'), 'revoked actor recovered completion'),
+    ('tract-revoked-actor', remove_guard('GTFS tract actor is unavailable'), 'revoked actor recovered tract outcome'),
+    ('completion-execution-state', mutation("UPDATE openplan_gtfs.executions SET state='ready',token=NULL,lease_until=NULL WHERE version_id=p_version;", 'UPDATE openplan_gtfs.executions SET token=NULL,lease_until=NULL WHERE version_id=p_version;'), 'completion state or adoption incorrect'),
+    ('completion-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.complete_gtfs_ingest(uuid,uuid,uuid,jsonb,jsonb,jsonb,jsonb,uuid) TO anon;\nCOMMIT;'), 'client called completion'),
+    ('tract-client-execution', mutation('COMMIT;', 'GRANT EXECUTE ON FUNCTION public.compute_managed_gtfs_tracts(uuid,uuid,uuid,jsonb,jsonb) TO anon;\nCOMMIT;'), 'client called tract computation'),
     ('restored', source, None),
 ]
 

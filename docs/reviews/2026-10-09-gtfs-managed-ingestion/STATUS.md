@@ -119,3 +119,11 @@ merge-ready PR. No route uses the new commands and no persistent database schema
 is changed by these tests. Lifecycle completion, tract computation, adoption,
 failure/cancellation, worker/journal/Storage connection, native concurrent and
 committed recovery, upgrade/restore and rendered journeys remain required.
+
+## Atomic completion checkpoint
+
+The later [completion record](COMPLETION.md) supersedes the open completion and
+tract-command items above. Its 67 native control outcomes identify the current
+candidate. Adoption, terminal failure/cancellation, worker connection and the
+stated independent recovery/acceptance checks remain open. The earlier records
+retain the source hashes and limits that applied at their own checkpoint.
