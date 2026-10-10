@@ -12,6 +12,10 @@ agency deployment and full recovery procedure remain to be proved. No response
 time or recovery objective is promised by OpenPlan. The operator must establish
 those from their actual installation and rehearsals.
 
+For the accumulated v0.68 candidate, use the
+[upgrade and recovery instructions](V068_UPGRADE.md). That guide does not
+declare the candidate released; confirm its final GitHub release and commit.
+
 ## Identify the incident before changing the system
 
 Record when the failure began, the affected user task, public/private surface,
@@ -164,12 +168,20 @@ in each direction and the worker's reachable callback origin. After environment
 changes, the affected processes need the correct restart/recreation sequence;
 changing the app alone does not replace a container's startup environment.
 
-Current model recovery needs care: the reaper uses run/stage timestamps, while
-workers can send a separate heartbeat. A fresh worker heartbeat is not proof that
-the reaper will leave a long stage alone. Preserve both timelines and any late
-result; do not manually rewrite a failed/inconclusive outcome to completed or
-blindly resubmit work whose worker may still be running. Diagnose and rehearse
-recovery on a disposable case before changing the production job's custody.
+With migration `20261016000022_model_reaper_recovery_boundary.sql`, automatic
+timeout applies only to unstarted queued model work. The database refuses to
+reap running, attempt-managed or previously started work based on age alone.
+Earlier deployments do not have this protection. A retained running status is
+still not proof of a live process. Preserve stage and worker timelines, local
+journals and late results before making a recovery decision.
+
+Migration `20261016000023_model_recovery_decisions.sql` lets an owner or
+administrator review and abandon nonterminal execution through the model's
+recovery panel. It preserves the reviewed records and revokes database write
+authority. It neither proves process termination nor authorizes restart.
+Do not manually rewrite outcomes, clear enrollment or replace request IDs to
+resume a stage. Use the [bounded recovery procedure](V068_UPGRADE.md#review-an-interrupted-model)
+and retain uncertain requests for explicit retry.
 
 Check the three authenticated schedules and cadences in SELF_HOSTING. Capture
 scheduler delivery, authentication failures and the resulting state changes.

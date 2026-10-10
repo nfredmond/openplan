@@ -346,6 +346,10 @@ repository tree containing the shared command modules.
 Migration `20261016000022_model_reaper_recovery_boundary.sql` also protects
 ActivitySim runs from timestamp-only reaping. Only unstarted queued work remains
 eligible for automatic timeout. Running or previously started work can remain
-nonterminal after worker loss until explicit recovery is available. This shared
-database boundary does not establish ActivitySim process supervision, durable
-reconciliation or safe restart. Preserve retained stages and outputs.
+nonterminal after worker loss. Migration
+`20261016000023_model_recovery_decisions.sql` supplies an owner/admin abandonment
+review through the model's recovery panel. That decision revokes database write
+authority and preserves the prior state. It does not verify process termination,
+establish complete ActivitySim supervision or authorize continuation. Preserve
+retained stages, outputs and journals; follow the
+[v0.68 recovery instructions](../../openplan/docs/ops/V068_UPGRADE.md).
