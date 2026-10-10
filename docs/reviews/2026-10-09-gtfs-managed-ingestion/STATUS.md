@@ -279,3 +279,18 @@ The observer sees the expected blocking backend, and stale tokens cannot renew
 or write after replacement. Synthetic expiry is explicitly advanced; this is not
 a complete replacement worker journey or a real-clock expiry test. Mixed
 legacy/managed promotion and termination lock ordering remains the next concern.
+
+## October 10: legacy lifecycle lock order
+
+[The lock-order fix](LEGACY_LOCK_ORDER.md) reproduces native deadlocks between
+legacy promotion/reaping/closure and managed adoption/cancellation. The candidate
+now locks the feed before its version in all three legacy functions and rechecks
+the version's feed after waiting. Twenty-seven native interleaving and association
+cases include the three original deadlocks, harmless controls and six intended
+mutation failures. Privileges and resulting current/closed states are checked.
+
+All 121 lifecycle SQL controls retain their expected outcomes. Populated CLI
+upgrade, native worker recovery and the pinned advisor comparison pass against
+the revised migration. The advisor's unprotected-table control fails as intended.
+The branch remains an unenrolled implementation checkpoint, with intake,
+reconciliation, polling, complete worker replacement and release checks open.

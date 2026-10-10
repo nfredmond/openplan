@@ -1000,4 +1000,143 @@ REVOKE ALL ON FUNCTION public.admit_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb),
 GRANT EXECUTE ON FUNCTION public.admit_gtfs_ingest(uuid,uuid,uuid,uuid,jsonb),
   public.claim_gtfs_ingest(uuid,uuid,integer),public.renew_gtfs_ingest(uuid,uuid,integer),
   public.prepare_gtfs_archive(uuid,uuid,jsonb),public.confirm_gtfs_archive(uuid,uuid,jsonb),public.stage_gtfs_ingest(uuid,uuid,text) TO service_role;
+
+-- Begin legacy feed lock order
+-- These existing entry points share the managed adoption/termination lock order.
+-- Existing privileges, readiness checks and exact failure receipts are retained.
+CREATE OR REPLACE FUNCTION public.promote_gtfs_feed_version(p_version_id uuid)
+RETURNS void
+LANGUAGE plpgsql
+SECURITY INVOKER
+SET search_path = public, pg_catalog
+AS $$
+DECLARE
+  v_feed_id uuid;
+  v_status text;
+BEGIN
+  -- Serialize the feed before inspecting its incoming and current versions.
+  -- Recheck the incoming association after waiting for the feed lock.
+  SELECT feed_id INTO v_feed_id FROM public.gtfs_feed_versions WHERE id=p_version_id;
+  IF v_feed_id IS NULL THEN
+    RAISE EXCEPTION 'gtfs_feed_version % does not exist', p_version_id USING ERRCODE='no_data_found';
+  END IF;
+  PERFORM 1 FROM public.gtfs_feeds WHERE id=v_feed_id FOR UPDATE;
+  SELECT status INTO v_status FROM public.gtfs_feed_versions
+    WHERE id=p_version_id AND feed_id=v_feed_id FOR UPDATE;
+  IF NOT FOUND THEN
+    RAISE EXCEPTION 'gtfs_feed_version % does not exist', p_version_id USING ERRCODE='no_data_found';
+  END IF;
+
+  -- Preserve the ready-only promotion rule after acquiring both locks.
+  IF v_status IS DISTINCT FROM 'ready' THEN
+    RAISE EXCEPTION
+      'refusing to promote gtfs_feed_version % because its status is %, not ready',
+      p_version_id, coalesce(v_status, '<null>')
+      USING ERRCODE = 'check_violation';
+  END IF;
+
+  -- Order inside the transaction still matters, because the partial unique
+  -- index is checked per statement: the outgoing version must lose the flag
+  -- before the incoming one takes it.
+  UPDATE public.gtfs_feed_versions
+     SET is_current = false
+   WHERE feed_id = v_feed_id
+     AND is_current
+     AND id <> p_version_id;
+
+  UPDATE public.gtfs_feed_versions
+     SET is_current = true
+   WHERE id = p_version_id;
+
+  -- `status` is the mirror; `loaded_at` is what the Data Hub card renders as
+  -- "when this feed was last brought in", and the moment a version becomes
+  -- current is exactly that moment.
+  UPDATE public.gtfs_feeds
+     SET current_version_id = p_version_id,
+         status = v_status,
+         loaded_at = now()
+   WHERE id = v_feed_id;
+END;
+$$;
+
+CREATE OR REPLACE FUNCTION public.reap_gtfs_feed_version(p_version_id uuid, p_cutoff timestamptz)
+RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog, public AS $$
+DECLARE v public.gtfs_feed_versions%ROWTYPE; target_feed uuid;
+BEGIN
+  SELECT feed_id INTO target_feed FROM public.gtfs_feed_versions WHERE id=p_version_id;
+  IF NOT FOUND THEN RETURN false; END IF;
+  PERFORM 1 FROM public.gtfs_feeds WHERE id=target_feed FOR UPDATE;
+  SELECT candidate.* INTO v FROM public.gtfs_feed_versions candidate
+    WHERE candidate.id=p_version_id AND candidate.feed_id=target_feed FOR UPDATE;
+  IF NOT FOUND OR p_cutoff IS NULL OR v.status NOT IN ('pending','fetching','parsing')
+    OR v.updated_at >= p_cutoff OR v.is_current OR v.ingest_abandoned_at IS NOT NULL THEN
+    RETURN false;
+  END IF;
+  IF EXISTS(SELECT 1 FROM public.gtfs_feeds WHERE id=v.feed_id AND current_version_id=v.id) THEN
+    RETURN false;
+  END IF;
+  IF v.storage_path IS NOT NULL THEN
+    INSERT INTO public.gtfs_ingest_storage_cleanup(version_id,storage_path)
+    VALUES(v.id,v.storage_path);
+  END IF;
+  DELETE FROM public.gtfs_route_service_levels WHERE feed_version_id=v.id;
+  DELETE FROM public.gtfs_stop_service_levels WHERE feed_version_id=v.id;
+  DELETE FROM public.gtfs_tract_service WHERE feed_version_id=v.id;
+  UPDATE public.gtfs_feed_versions SET status='failed', failure_code='abandoned',
+    failure_detail='This ingest stopped responding and was closed by the scheduled sweep. Start a new version to retry.',
+    route_service_level_rows=0, stop_service_level_rows=0, tract_service_rows=NULL,
+    tract_service_computed_at=NULL, last_checked_at=clock_timestamp(), ingest_abandoned_at=clock_timestamp()
+  WHERE id=v.id;
+  UPDATE public.gtfs_feeds SET status='failed' WHERE id=v.feed_id AND current_version_id IS NULL;
+  RETURN true;
+END $$;
+
+CREATE OR REPLACE FUNCTION public.close_failed_gtfs_version(p_version_id uuid,p_code text,p_detail text,p_storage_path text DEFAULT NULL)
+RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public AS $$
+DECLARE v public.gtfs_feed_versions%ROWTYPE; target_feed uuid; object_path text; changed integer; request jsonb; receipt jsonb;
+BEGIN
+ SELECT feed_id INTO target_feed FROM public.gtfs_feed_versions WHERE id=p_version_id;
+ IF NOT FOUND THEN RETURN jsonb_build_object('recorded',false,'feedStatusChanged',false); END IF;
+ PERFORM 1 FROM public.gtfs_feeds WHERE id=target_feed FOR UPDATE;
+ SELECT candidate.* INTO v FROM public.gtfs_feed_versions candidate
+   WHERE candidate.id=p_version_id AND candidate.feed_id=target_feed FOR UPDATE;
+ request:=jsonb_build_object('code',p_code,'detail',p_detail,'storagePath',p_storage_path);
+ IF FOUND AND v.ingest_closed_at IS NOT NULL AND v.ingest_failure_receipt->'request'=request THEN
+  RETURN v.ingest_failure_receipt->'result';
+ END IF;
+ IF NOT FOUND OR p_code IS NULL OR p_detail IS NULL OR v.status NOT IN ('pending','fetching','parsing')
+ OR v.is_current OR v.ingest_closed_at IS NOT NULL OR v.ingest_abandoned_at IS NOT NULL THEN
+  RETURN jsonb_build_object('recorded',false,'feedStatusChanged',false);
+ END IF;
+ IF EXISTS(SELECT 1 FROM public.gtfs_feeds WHERE id=v.feed_id AND current_version_id=v.id) THEN
+  RETURN jsonb_build_object('recorded',false,'feedStatusChanged',false);
+ END IF;
+ -- An object whose row update was refused can still be cleaned up, but only
+ -- at this version's deterministic private key. Never accept another scope.
+ IF p_storage_path IS NOT NULL AND p_storage_path IS DISTINCT FROM
+  v.workspace_id::text||'/'||v.feed_id::text||'/'||v.id::text||'.zip' THEN
+  RAISE EXCEPTION 'GTFS cleanup object does not belong to this version' USING ERRCODE='22023';
+ END IF;
+ IF v.storage_path IS NOT NULL AND p_storage_path IS NOT NULL AND v.storage_path<>p_storage_path THEN
+  RAISE EXCEPTION 'GTFS cleanup object conflicts with recorded custody' USING ERRCODE='22023';
+ END IF;
+ object_path:=coalesce(v.storage_path,p_storage_path);
+ IF object_path IS NOT NULL THEN
+  INSERT INTO public.gtfs_ingest_storage_cleanup(version_id,storage_path) VALUES(v.id,object_path);
+ END IF;
+ DELETE FROM public.gtfs_route_service_levels WHERE feed_version_id=v.id;
+ DELETE FROM public.gtfs_stop_service_levels WHERE feed_version_id=v.id;
+ DELETE FROM public.gtfs_tract_service WHERE feed_version_id=v.id;
+ UPDATE public.gtfs_feeds SET status='failed' WHERE id=v.feed_id AND current_version_id IS NULL;
+ GET DIAGNOSTICS changed=ROW_COUNT;
+ receipt:=jsonb_build_object('recorded',true,'feedStatusChanged',changed>0);
+ UPDATE public.gtfs_feed_versions SET status='failed',failure_code=p_code,failure_detail=p_detail,
+  route_service_level_rows=0,stop_service_level_rows=0,tract_service_rows=NULL,tract_service_computed_at=NULL,
+  storage_path=object_path,ingest_closed_at=clock_timestamp(),
+  ingest_failure_receipt=jsonb_build_object('request',request,'result',receipt),
+  last_checked_at=clock_timestamp() WHERE id=v.id;
+ RETURN receipt;
+END $$;
+-- End legacy feed lock order
+
 COMMIT;
