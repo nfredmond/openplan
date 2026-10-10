@@ -5,7 +5,7 @@ import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { withGtfsAttemptJournal, type GtfsAttemptJournal } from "@/lib/gtfs/managed-worker-journal";
-import { deliverGtfsJournalCommand, type GtfsDurableMutation } from "@/lib/gtfs/managed-worker-dispatch";
+import { deliverGtfsJournalCommand, restoreGtfsTerminalMutation, type GtfsDurableMutation } from "@/lib/gtfs/managed-worker-dispatch";
 const id=(n:number)=>`e8000000-0000-4000-8000-${String(n).padStart(12,"0")}`;
 const context={workspaceId:id(1),feedId:id(2),actorId:id(3)}, versionId=id(4);
 const date="2026-10-09T12:00:00.123456+00:00";
@@ -116,5 +116,34 @@ describe("durable GTFS operation dispatcher",()=>{
    basis:{feedId:context.feedId,versionId,routeCount:1,stopCount:1,previousVersionId:id(7),previousRouteCount:10,previousStopCount:10}}));
   expect((await f.run(cases[8].mutation)).receipt).toMatchObject({adopted:false,withheld:true});
   expect(JSON.parse(String(f.fetcher.mock.calls[0][1]?.body)).p_review).toBeNull();
+ });
+});
+
+
+describe("retained GTFS terminal decoding",()=>{
+ const scope={...context,versionId,token:id(10)},commandId=id(11);
+ const payload=(mutation:GtfsDurableMutation)=>JSON.parse(JSON.stringify({operation:mutation.operation,arguments:{context,input:mutation.input}}));
+ it.each([cases[6],cases[7]])("restores validated $rpc input without transport",c=>{
+  expect(restoreGtfsTerminalMutation(payload(c.mutation),scope,commandId)).toEqual(c.mutation);
+ });
+ it.each(["archive","plan","manifest","metadata","tract"])("rejects invalid saved completion %s",field=>{
+  const saved=payload(cases[6].mutation);saved.arguments.input[field]=null;
+  expect(()=>restoreGtfsTerminalMutation(saved,scope,commandId)).toThrow();
+ });
+ it("rejects invalid saved failure details",()=>{
+  const saved=payload(cases[7].mutation);saved.arguments.input.detail="";
+  expect(()=>restoreGtfsTerminalMutation(saved,scope,commandId)).toThrow();
+ });
+ it("rejects a different submitting actor",()=>{
+  const saved=payload(cases[7].mutation);saved.arguments.context.actorId=id(99);
+  expect(()=>restoreGtfsTerminalMutation(saved,scope,commandId)).toThrow("retained terminal context differs");
+ });
+ it.each(["operation","root","arguments","context"])("rejects unsupported retained %s",field=>{
+  const saved=payload(cases[7].mutation);
+  if(field==="operation")saved.operation="adopt";
+  else if(field==="root")saved.extra=true;
+  else if(field==="arguments")saved.arguments.extra=true;
+  else saved.arguments.context.extra=true;
+  expect(()=>restoreGtfsTerminalMutation(saved,scope,commandId)).toThrow();
  });
 });

@@ -1,0 +1,22 @@
+{
+  "sourceSha256": "b2eac2d56b24166a8cf2b8932e8df087380fab9faaa8bd30f447b7e048c2b578",
+  "killedOwnChildAfterPreparedDispatch": true,
+  "observedLockRelease": true,
+  "recovery": [
+    {
+      "mode": "recover",
+      "sameCommand": true,
+      "sameAttempt": true,
+      "retained": false,
+      "logSha256": "b9a6d8ffd92f34aafd34fa3697103f3da7f8a683507d5f67369fb9dd985f7829"
+    },
+    {
+      "mode": "retained",
+      "sameCommand": true,
+      "sameAttempt": true,
+      "retained": true,
+      "logSha256": "b14e94df60eca57e17b6635832b7e18ee67a187b1283b543b434fe4f2461ba2c"
+    }
+  ],
+  "scope": "Native filesystem/process proof with synthetic delivery, not PostgreSQL or power-loss recovery"
+}

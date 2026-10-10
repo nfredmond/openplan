@@ -32,6 +32,13 @@ cases.extend([
     ('changed-version', changed('versionId: id.parse(journal.identity.versionId)', 'versionId: "00000000-0000-4000-8000-000000000000"'), True),
     ('changed-token', changed('token: id.parse(journal.identity.token)', 'token: "00000000-0000-4000-8000-000000000000"'), True),
     ('changed-command', changed('sendGtfsPreparedCommand(service, prepare(commandId), signal)', 'sendGtfsPreparedCommand(service, prepare("00000000-0000-4000-8000-000000000000"), signal)'), True),
+    ('retained-context', changed('if (!isDeepStrictEqual(saved.arguments.context, expected))', 'if (false)'), True),
+    ('unvalidated-completion', changed('if (mutation.operation === "complete") completeGtfsAttemptCommand(scope, { ...mutation.input, id: commandId });', 'if (mutation.operation === "complete") void 0;'), True),
+    ('unvalidated-failure', changed('else failGtfsAttemptCommand(scope, { ...mutation.input, id: commandId });', 'else void 0;'), True),
+    ('unsupported-terminal', changed('z.enum(["complete", "fail"])', 'z.enum(["complete", "fail", "adopt"])'), True),
+    ('loose-terminal-root', changed('}).strict() }).strict().parse(payload)', '}).strict() }).strip().parse(payload)'), True),
+    ('loose-terminal-arguments', changed('}).strict() }).strict().parse(payload)', '}).strip() }).strict().parse(payload)'), True),
+    ('loose-terminal-context', changed('actorId: id }).strict()', 'actorId: id }).strip()'), True),
     ('restored', source, False),
 ])
 

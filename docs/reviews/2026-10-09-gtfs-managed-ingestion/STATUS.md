@@ -210,3 +210,15 @@ tests and 19 controls pass. Controlled SDK transport and real private journals
 do not establish a native database worker journey. Retained-terminal inspection,
 actual archive/parser/output flow, adoption recovery and queue polling remain
 open; no import route is enrolled.
+
+## Retained terminal command recovery
+
+[The recovery checkpoint](TERMINAL_RECOVERY.md) inspects saved completion and
+failure requests and replays them without invoking processing again. It validates
+saved scope and inputs, preserves live ownership checks when renewal applies,
+and returns the current snapshot separately from historical acknowledgement.
+The 133 focused tests, 78 source-control runs, native journal process proof,
+scoped TypeScript and ESLint pass. Transport remains controlled, and the native
+process proof covers the journal rather than a database worker. Actual artifacts,
+publication, adoption recovery, queue polling and the previously stated native
+and browser boundaries remain unfinished. No import route is enrolled.

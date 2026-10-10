@@ -38,6 +38,10 @@ cases.extend([
     ('mutable-terminal', changed('structuredClone(await work({', '(await work({'), True),
     ('renewal-race', changed('await heartbeat;\n      signal.throwIfAborted();', 'void 0;\n      signal.throwIfAborted();'), True),
     ('unsafe-interval', changed('.min(1).max(60_000).parse', '.min(1).parse'), True),
+    ('ignored-retained-terminal', changed('if (retained) {', 'if (false) {'), True),
+    ('missing-recovery-renewal', changed('if (!retained.resolved && claim.active && snapshot.active) await renew();', 'void 0;'), True),
+    ('renew-closed-terminal', changed('if (!retained.resolved && claim.active && snapshot.active) await renew();', 'await renew();'), True),
+    ('renew-cached-terminal', changed('!retained.resolved && claim.active && snapshot.active', 'claim.active && snapshot.active'), True),
     ('restored', source, False),
 ])
 

@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtemp, readFile, writeFile, rm, chmod, stat, symlink } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm, chmod, stat, symlink, rename } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterEach, describe, expect, it, vi } from "vitest";
@@ -170,4 +170,47 @@ describe("managed GTFS private command journal", () => {
     if(kind==="malformed")await writeFile(f.path,"not JSON");
     await expect(f.run()).rejects.toThrow(); expect(f.send).toHaveBeenCalledTimes(1);
   });
+  it("inspects a missing command without creating its directory", async () => {
+    const f=await fixture(); await withGtfsAttemptJournal(f.options, async j=>{
+      expect(await j.inspect("missing")).toBeNull();
+      await expect(stat(join(f.directory,"command-missing"))).rejects.toMatchObject({code:"ENOENT"});
+    }); expect(f.send).not.toHaveBeenCalled();
+  });
+  it("inspects exact unresolved inputs without exposing or changing a receipt", async () => {
+    const f=await fixture(); f.send.mockRejectedValueOnce(new Error("unknown")); await expect(f.run()).rejects.toThrow("unknown");
+    const before=await readFile(f.path,"utf8"), saved=await f.saved();
+    await withGtfsAttemptJournal(f.options, async j=>{
+      const found=await j.inspect("route-0"); expect(found).toEqual({commandId:saved.commandId,payload:f.payload,resolved:false});
+      found!.payload.arguments.kind="changed"; expect((await j.inspect("route-0"))!.payload).toEqual(f.payload);
+    }); expect(await readFile(f.path,"utf8")).toBe(before); expect(f.send).toHaveBeenCalledTimes(1);
+  });
+  it("inspects resolved metadata without treating its receipt as current ownership", async () => {
+    const f=await fixture(); await f.run(); await withGtfsAttemptJournal(f.options, async j=>{
+      expect(await j.inspect("route-0")).toEqual({commandId:(await f.saved()).commandId,payload:f.payload,resolved:true});
+    }); expect(f.send).toHaveBeenCalledTimes(1);
+  });
+  it.each(["token","slot"])("refuses inspection of changed %s", async kind=>{
+    const f=await fixture(); await f.run(); const saved=await f.saved();
+    if(kind==="token")saved.identity.token=id(99);else saved.slot="other";
+    await writeFile(f.path,JSON.stringify(saved));
+    await expect(withGtfsAttemptJournal(f.options,j=>j.inspect("route-0"))).rejects.toThrow("command scope differs");
+  });
+  it("refuses inspection while its command is running", async () => {
+    const f=await fixture(); await withGtfsAttemptJournal(f.options, async j=>{
+      const running=j.deliver("route-0",f.payload,{send:f.send,verify:f.verify});
+      expect(()=>j.inspect("route-0")).toThrow("inspection is busy"); await running;
+    });
+  });
+  it.each(["public","symlink"])("refuses a %s command directory during inspection", async kind=>{
+    const f=await fixture(); await f.run(); const directory=join(f.directory,"command-route-0");
+    if(kind==="public")await chmod(directory,0o755);
+    else {await rename(directory,join(f.directory,"original"));await symlink(join(f.directory,"original"),directory);}
+    await expect(withGtfsAttemptJournal(f.options,j=>j.inspect("route-0"))).rejects.toThrow("inspection directory is not private");
+  });
+  it("refuses unsafe inspection paths and inspection after release", async () => {
+    const f=await fixture(); let saved: GtfsAttemptJournal|undefined;
+    await withGtfsAttemptJournal(f.options,async j=>{saved=j;expect(()=>j.inspect("../escape")).toThrow();});
+    expect(()=>saved!.inspect("route-0")).toThrow("session is closed");
+  });
+
 });

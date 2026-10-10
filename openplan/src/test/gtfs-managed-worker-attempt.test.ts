@@ -1,5 +1,5 @@
 // @vitest-environment node
-import { mkdtemp, readFile, rm } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { createClient } from "@supabase/supabase-js";
@@ -146,9 +146,52 @@ describe("owned GTFS attempt execution",()=>{
  it("retains the terminal command after an unknown acknowledgement",async()=>{
   const f=await fixture();let failed=false;f.respond.mockImplementation(async(rpc,args)=>{if(rpc==="fail_gtfs_ingest"&&!failed){failed=true;throw new Error("lost finish");}return f.native(rpc,args);});
   await expect(f.run()).rejects.toThrow("acknowledgement unavailable");const saved=await f.command("terminal");expect(saved.resolved).toBe(false);
-  await f.run();const endings=f.respond.mock.calls.filter(([name])=>name==="fail_gtfs_ingest");expect(endings[0][1]).toEqual(endings[1][1]);
+  await f.run();const endings=f.respond.mock.calls.filter(([name])=>name==="fail_gtfs_ingest");expect(endings[0][1]).toEqual(endings[1][1]);expect(f.work).toHaveBeenCalledTimes(1);
  });
  it.each([0,-1,60_001,NaN,Infinity])("refuses unsafe renewal interval %s before claim",async renewEveryMs=>{
   const f=await fixture();f.options.renewEveryMs=renewEveryMs;await expect(f.run()).rejects.toThrow();expect(f.fetcher).not.toHaveBeenCalled();await expect(f.identity()).rejects.toMatchObject({code:"ENOENT"});
  });
+ it("recovers a lost terminal response after the database closes the attempt",async()=>{
+  const f=await fixture();let closed=false;
+  f.respond.mockImplementation(async(rpc,args)=>{
+   if(rpc==="fail_gtfs_ingest"&&!closed){closed=true;throw new Error("lost after commit");}
+   if(closed&&rpc==="claim_gtfs_ingest")return {claim:f.claim(String(args.p_token)),active:false};
+   if(closed&&rpc==="read_gtfs_ingest_attempt")return {...f.snapshot(String(args.p_token)),state:"failed",stage:"failed",active:false};
+   return f.native(rpc,args);
+  });
+  await expect(f.run()).rejects.toThrow("acknowledgement unavailable");const saved=await f.command("terminal"), offset=f.calls().length;
+  await expect(f.run()).resolves.toMatchObject({state:"recovered_terminal",operation:"fail",snapshotBeforeDelivery:{state:"failed"},result:{retained:false,commandId:saved.commandId}});
+  expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt","fail_gtfs_ingest"]);
+  expect((await f.command("terminal")).resolved).toBe(true);expect(f.work).toHaveBeenCalledTimes(1);
+ });
+ it("keeps an acknowledged receipt separate from the newly observed snapshot",async()=>{
+  const f=await fixture();await f.run();const offset=f.calls().length;
+  await expect(f.run()).resolves.toMatchObject({state:"recovered_terminal",operation:"fail",snapshotBeforeDelivery:{state:"running"},result:{retained:true}});
+  expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt"]);expect(f.work).toHaveBeenCalledTimes(1);
+ });
+ it.each(["context","operation","input"])("refuses changed retained terminal %s before renewal or delivery",async kind=>{
+  const f=await fixture();f.respond.mockImplementation(async(rpc,args)=>{if(rpc==="fail_gtfs_ingest")throw new Error("lost");return f.native(rpc,args);});
+  await expect(f.run()).rejects.toThrow();const saved=await f.command("terminal");
+  if(kind==="context")saved.payload.arguments.context.actorId=id(99);
+  if(kind==="operation")saved.payload.operation="stage";
+  if(kind==="input")saved.payload.arguments.input.detail="";
+  await writeFile(join(f.directory,"command-terminal","pending.json"),JSON.stringify(saved));const offset=f.calls().length;
+  if(kind==="context")await expect(f.run()).rejects.toThrow("retained terminal context differs");else await expect(f.run()).rejects.toThrow();
+  expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt"]);expect(f.work).toHaveBeenCalledTimes(1);
+ });
+
+ it.each([false,null,"error"])("preserves an unresolved terminal command after uncertain recovery renewal %s",async value=>{
+  const f=await fixture();f.respond.mockImplementation(async(rpc,args)=>{if(rpc==="fail_gtfs_ingest")throw new Error("lost");return f.native(rpc,args);});
+  await expect(f.run()).rejects.toThrow();const saved=await f.command("terminal"),offset=f.calls().length;
+  f.respond.mockImplementation(async(rpc,args)=>{if(rpc==="renew_gtfs_ingest"){if(value==="error")throw new Error("lost renewal");return value;}return f.native(rpc,args);});
+  await expect(f.run()).rejects.toThrow();
+  expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt","renew_gtfs_ingest"]);
+  expect(await f.command("terminal")).toEqual(saved);expect(f.work).toHaveBeenCalledTimes(1);
+ });
+ it("does not return cached success when the retained claim becomes unavailable",async()=>{
+  const f=await fixture();await f.run();const offset=f.calls().length;f.respond.mockResolvedValue(null);
+  expect(await f.run()).toEqual({state:"unavailable"});expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest"]);
+  expect(f.work).toHaveBeenCalledTimes(1);
+ });
+
 });

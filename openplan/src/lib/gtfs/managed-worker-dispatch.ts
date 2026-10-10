@@ -21,6 +21,25 @@ const id = z.string().uuid().transform(value => value.toLowerCase());
 const contextSchema = z.object({ workspaceId: id, feedId: id, actorId: id }).strict();
 export type GtfsWorkerContext = z.infer<typeof contextSchema>;
 
+/** Decode saved terminal input through the same command constructors used by
+ * fresh delivery. The journal has already checked command and attempt identity.
+ */
+export function restoreGtfsTerminalMutation(payload: GtfsJournalPayload,
+  scope: GtfsWorkerContext & { versionId: string; token: string }, commandId: string) {
+  const saved = z.object({ operation: z.enum(["complete", "fail"]), arguments: z.object({
+    context: contextSchema, input: z.record(z.string(), z.json()),
+  }).strict() }).strict().parse(payload);
+  const expected = contextSchema.parse({ workspaceId: scope.workspaceId, feedId: scope.feedId, actorId: scope.actorId });
+  if (!isDeepStrictEqual(saved.arguments.context, expected)) throw new Error("GTFS retained terminal context differs");
+  // This JSON boundary becomes typed only after the native command constructor
+  // checks every field used by the operation. No I/O occurs during validation.
+  const mutation = { operation: saved.operation, input: saved.arguments.input } as unknown as
+    Extract<GtfsDurableMutation, { operation: "complete" | "fail" }>;
+  if (mutation.operation === "complete") completeGtfsAttemptCommand(scope, { ...mutation.input, id: commandId });
+  else failGtfsAttemptCommand(scope, { ...mutation.input, id: commandId });
+  return mutation;
+}
+
 /** Deliver only the journal's exact command and attempt. A retained result is
  * rechecked by the same prepared verifier used for a fresh response. It grants
  * no live ownership; claim/read/renewal stay outside this completion cache.

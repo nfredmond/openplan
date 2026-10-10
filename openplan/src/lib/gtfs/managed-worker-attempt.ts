@@ -2,7 +2,7 @@ import { setTimeout as delay } from "node:timers/promises";
 import { isDeepStrictEqual } from "node:util";
 import { z } from "zod";
 import { withGtfsAttemptJournal, type GtfsJournalOptions } from "./managed-worker-journal";
-import { deliverGtfsJournalCommand, type GtfsDurableMutation } from "./managed-worker-dispatch";
+import { deliverGtfsJournalCommand, restoreGtfsTerminalMutation, type GtfsDurableMutation } from "./managed-worker-dispatch";
 import { claimGtfsAttempt, readGtfsAttempt, renewGtfsAttempt, type GtfsAttemptSnapshot, type GtfsWorkerService } from "./managed-worker-service";
 
 type TerminalMutation = Extract<GtfsDurableMutation, { operation: "complete" | "fail" }>;
@@ -35,10 +35,6 @@ export async function runGtfsOwnedAttempt(options: GtfsJournalOptions & {
     if (!claim) return { state: "unavailable" as const };
     const snapshot = await readGtfsAttempt(service, scope, signal);
     if (!isDeepStrictEqual(snapshot.claim, claim.claim)) throw new Error("GTFS live claim receipt changed");
-    if (["ready", "failed", "cancelled"].includes(snapshot.state)) {
-      return { state: "observed_terminal" as const, snapshot };
-    }
-    if (!claim.active || !snapshot.active) return { state: "not_active" as const, snapshot };
     const context = { workspaceId: snapshot.workspaceId, feedId: snapshot.feedId, actorId: snapshot.actorId };
     const renew = async () => {
       try {
@@ -48,6 +44,17 @@ export async function runGtfsOwnedAttempt(options: GtfsJournalOptions & {
         throw error;
       }
     };
+    const retained = await journal.inspect("terminal");
+    if (retained) {
+      const terminal = restoreGtfsTerminalMutation(retained.payload, { ...context, ...scope }, retained.commandId);
+      if (!retained.resolved && claim.active && snapshot.active) await renew();
+      const result = await deliverGtfsJournalCommand(journal, service, context, "terminal", terminal);
+      return { state: "recovered_terminal" as const, operation: terminal.operation, result, snapshotBeforeDelivery: snapshot };
+    }
+    if (["ready", "failed", "cancelled"].includes(snapshot.state)) {
+      return { state: "observed_terminal" as const, snapshot };
+    }
+    if (!claim.active || !snapshot.active) return { state: "not_active" as const, snapshot };
     // A recovered claim can be close to expiry. Do not begin work on the age
     // or active flag of its saved claim; extend it through the live service.
     await renew();
