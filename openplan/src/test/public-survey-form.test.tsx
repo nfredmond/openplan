@@ -15,6 +15,14 @@ import {
 } from "@/lib/engagement/portal-i18n/operator-text";
 import { formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 
+/*
+  fa stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/fa", () => ({ FA_PORTAL_MESSAGES: {} }));
+
 /**
  * THE SEAM THIS FILE GUARDS.
  *

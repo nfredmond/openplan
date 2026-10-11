@@ -28,6 +28,15 @@ import { CampaignTranslationsPanel } from "@/components/engagement/campaign-tran
 import { confirmDestructiveAction, confirmDialogText, declineConfirmation } from "./helpers/confirm-dialog";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 
+/*
+  ar, ko stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ar", () => ({ AR_PORTAL_MESSAGES: {} }));
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ko", () => ({ KO_PORTAL_MESSAGES: {} }));
+
 /**
  * THE TWO THINGS A DEPLOYMENT WITHOUT 20260729000004 ACTUALLY SAYS.
  *
