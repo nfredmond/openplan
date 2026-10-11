@@ -188,7 +188,7 @@ export default async function InvoicingPage({
     <section className="space-y-6">
       <PageHeader title={navLabel("/invoicing")} description={DIRECTION_DESCRIPTIONS[direction]}>
         <p className="text-sm text-muted-foreground">
-          Workspace: <strong className="font-semibold text-foreground">{selection.workspace.name ?? formatWorkspaceIdSnippet(workspaceId)}</strong>.
+          Showing <strong className="font-semibold text-foreground">{selection.workspace.name ?? formatWorkspaceIdSnippet(workspaceId)}</strong>.
           Your role: <strong className="font-semibold text-foreground">{titleCase(membership.role)}</strong>. {ACCESS_NOTE}
         </p>
       </PageHeader>
