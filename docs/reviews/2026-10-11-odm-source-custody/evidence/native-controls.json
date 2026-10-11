@@ -1,0 +1,386 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-key-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "producerExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "producerExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "producerExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotPublishedBeforeInterruption-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotPublishedBeforeInterruption-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "firstSlotPublishedBeforeInterruption-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotUnpublishedAfterInterruption-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotUnpublishedAfterInterruption-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "secondSlotUnpublishedAfterInterruption-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "manifestUnpublishedAfterInterruption-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "manifestUnpublishedAfterInterruption-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "manifestUnpublishedAfterInterruption-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completePlanBeforeInterruption-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completePlanBeforeInterruption-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completePlanBeforeInterruption-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPlanUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPlanUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalPlanUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedSlotNeedsNoOriginalSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedSlotNeedsNoOriginalSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedSlotNeedsNoOriginalSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "remainingSlotMatchesOriginalBytes-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "remainingSlotMatchesOriginalBytes-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "remainingSlotMatchesOriginalBytes-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextAndRequestRetained-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextAndRequestRetained-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalContextAndRequestRetained-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeReplayNeedsNoOriginalSources-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeReplayNeedsNoOriginalSources-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeReplayNeedsNoOriginalSources-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedPackReplayUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedPackReplayUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedPackReplayUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "relocatedManifestIdentity-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "relocatedManifestIdentity-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "relocatedManifestIdentity-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceRefusal-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceRefusal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRawSourceRefusal-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotRefusal-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotRefusal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedRetainedSlotRefusal-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorRefusal-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorRefusal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedOriginalActorRefusal-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackageBeforeResume-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackageBeforeResume-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackageBeforeResume-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  }
+]

@@ -59,6 +59,8 @@ The [October 11 aerial admission counterexample](reviews/2026-10-11-odm-restart-
 
 The [October 11 disconnected aerial journal candidate](reviews/2026-10-11-odm-admission-journal/STATUS.md) preserves original admission and start-intent records through actual stopped-root capture and relocated journal replay. The HTTP worker remains disconnected; the native restart defect and source/engine/result/artifact integration remain open.
 
+The [October 11 disconnected aerial source candidate](reviews/2026-10-11-odm-source-custody/STATUS.md) preserves exact complete local source bytes and their original plan through an actual interrupted copy, stopped-root capture and fresh-copy resumption. The HTTP worker remains disconnected; downloads, engine effects and full worker recovery stay open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

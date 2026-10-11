@@ -30,3 +30,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-admission-journal/native_recovery.py \
             --out "$RUNNER_TEMP/odm-admission-journal-native"
+      - name: Source custody harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-source-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-source-custody-controls"
+      - name: Interrupted source copy and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-source-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-source-custody-native"
