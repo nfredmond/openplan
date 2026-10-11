@@ -43,6 +43,16 @@ publish partial archives. Recurring cleanup preserves open imports, ready feeds
 and files without recorded deletion authority. Candidate migrations have not
 been applied to the walkthrough instance.
 
+**A meeting room on one Wi-Fi can take part.** Public comment limits were per
+connection, so everyone sharing a network counted as one person. Each browser
+now sends a random token, stored only as a hash and identifying no one. Support
+is one per device per comment instead of one per connection. Per connection,
+the limits are now 12 comments (was 3), 120 support votes (was 30, now 30 per
+device), 15 photo uploads (was 5) and 12 sign-ups for project updates (was 3)
+per 10 minutes. The same text twice is
+refused only from the same device, so two neighbours may say the same thing.
+Comments are still moderated before they appear. No migration.
+
 **Public pages in 21 languages.** The participant pages (map, comments, form,
 survey, "You said / We did") now carry OpenPlan's own wording in every offered
 language except Diné Bizaad, which OpenPlan does not machine-translate. The 19

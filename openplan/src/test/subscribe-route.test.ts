@@ -23,6 +23,7 @@ vi.mock("@/lib/notifications/engagement", () => ({
 vi.mock("@/lib/notifications/email", () => ({ isEmailTransportConfigured: () => isEmailTransportConfigured() }));
 
 import { POST } from "@/app/api/engage/[shareToken]/subscribe/route";
+import { PUBLIC_SUBMISSION_MAX_PER_WINDOW } from "@/lib/engagement/public-submit";
 
 const TOKEN = "share-token-123456";
 const ctx = { params: Promise.resolve({ shareToken: TOKEN }) };
@@ -106,10 +107,14 @@ describe("POST /api/engage/[shareToken]/subscribe", () => {
     expect(enqueueEmail).not.toHaveBeenCalled();
   });
 
-  it("429 when the per-connection rate limit is exceeded", async () => {
+  it("429 when the per-connection rate limit is exceeded, and not one sign-up before", async () => {
+    // The comment limit, shared: a meeting room on one Wi-Fi may sign up too.
+    expect(PUBLIC_SUBMISSION_MAX_PER_WINDOW).toBe(12);
     const now = new Date().toISOString();
-    loadRecentSubscriptionsByFingerprint.mockResolvedValue([{ created_at: now }, { created_at: now }, { created_at: now }]);
-    const res = await POST(req({ email: "a@example.com" }), ctx);
-    expect(res.status).toBe(429);
+    const rows = (count: number) => Array.from({ length: count }, () => ({ created_at: now }));
+    loadRecentSubscriptionsByFingerprint.mockResolvedValue(rows(PUBLIC_SUBMISSION_MAX_PER_WINDOW - 1));
+    expect((await POST(req({ email: "a@example.com" }), ctx)).status).toBe(201);
+    loadRecentSubscriptionsByFingerprint.mockResolvedValue(rows(PUBLIC_SUBMISSION_MAX_PER_WINDOW));
+    expect((await POST(req({ email: "a@example.com" }), ctx)).status).toBe(429);
   });
 });
