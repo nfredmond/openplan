@@ -46,6 +46,8 @@ export type PortalMessageBundle = {
    * can say what is not translated; a page that never got it cannot.
    */
   fallbackKeys: PortalMessageKey[];
+  /** OpenPlan's own wording here came from a machine-translated catalog. */
+  machineTranslated?: boolean;
 };
 
 /**
