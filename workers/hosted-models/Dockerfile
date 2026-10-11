@@ -13,6 +13,8 @@ RUN python -m venv /opt/activitysim && /opt/activitysim/bin/pip install --no-cac
 COPY workers/aequilibrae_worker ./workers/aequilibrae_worker
 COPY workers/activitysim_worker ./workers/activitysim_worker
 COPY scripts/modeling ./scripts/modeling
+COPY data/modeling ./data/modeling
+RUN /opt/activitysim/bin/python -c "import sys; sys.path.insert(0, '/app/scripts/modeling'); from activitysim_accepted_components import resolve_accepted_components; print('Verified accepted component assets:', len(resolve_accepted_components()))"
 COPY workers/hosted-models/supervise.py ./supervise.py
 ENV PYTHONUNBUFFERED=1
 ENV SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
