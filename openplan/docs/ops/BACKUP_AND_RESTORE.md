@@ -74,8 +74,8 @@ python3 scripts/ops/installation_worker_inventory.py \
   --verify /private/recovery/worker-inventory
 ```
 
-Require exit 0 and verification before using `worker-inventory/inventory.json`
-with the worker-root set command below. The package retains the exact profile,
+Require exit 0 and verification before using the generated `inventory.json`
+from that private destination with the worker-root set command below. The package retains the exact profile,
 known entrypoint/launcher catalogue, selected configuration bytes and one final
 receipt. It rechecks sources and never overwrites a destination. Retain failed
 destinations for diagnosis and retry in a new directory. Keep the entire verified
