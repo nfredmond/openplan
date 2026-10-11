@@ -1,0 +1,35 @@
+{
+  "records": [
+    {
+      "control": "baseline",
+      "exitCode": 0,
+      "expectedAssertion": null,
+      "matched": true
+    },
+    {
+      "control": "harmless-comment",
+      "exitCode": 0,
+      "expectedAssertion": null,
+      "matched": true
+    },
+    {
+      "control": "changed-setup-bytes",
+      "exitCode": 1,
+      "expectedAssertion": "The handoff must preserve exact setup bytes",
+      "matched": true
+    },
+    {
+      "control": "reuse-screening-directory",
+      "exitCode": 1,
+      "expectedAssertion": "A repeated handoff must refuse the existing screening directory",
+      "matched": true
+    },
+    {
+      "control": "restored",
+      "exitCode": 0,
+      "expectedAssertion": null,
+      "matched": true
+    }
+  ],
+  "boundary": "Local synthetic file materialization only. No live worker, scientific accuracy or hosted commissioning acceptance."
+}

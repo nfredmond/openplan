@@ -1,0 +1,8 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "unit": "openplan-gtfs-full-candidate-small-batches-20261010-01",
+  "outcome": "Stopped first five-file process before another heap exhaustion. No complete report or acceptance credit. Isolate each remaining file and enable verbose progress to identify a single-file resource need.",
+  "memoryCurrentObservedBytes": 1092231168,
+  "memoryPeakObservedBytes": 1092231168,
+  "nodeHeapMiB": 1024
+}

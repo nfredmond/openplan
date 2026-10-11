@@ -1,0 +1,34 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "migrationFiles": [
+    {
+      "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+      "sha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+      "bytes": 82850
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql",
+      "sha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645",
+      "bytes": 1113
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql",
+      "sha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+      "bytes": 6489
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+      "sha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+      "bytes": 6025
+    }
+  ],
+  "publicSchemaDependency": "public.reconcile_gtfs_storage_cleanup is called by the existing reaper even when managed admission is disabled.",
+  "hostedObservedMigration": "20261016000027",
+  "deploymentAcceptance": false,
+  "requirements": [
+    "Coordinate reviewed SQL and additive schema-first rollout before joined app deployment.",
+    "Seven hosted queues do not include the candidate GTFS queue.",
+    "Native recovery, hosted queue commissioning and scheduled cleanup remain separate."
+  ],
+  "limits": "Read-only file hash inventory. No cloud schema or deployment change, spend or signup change."
+}

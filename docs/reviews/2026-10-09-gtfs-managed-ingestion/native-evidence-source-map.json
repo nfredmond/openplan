@@ -1,0 +1,287 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "records": [
+    {
+      "report": "intake-native.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-intake.ts",
+          "recordedSha256": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+          "currentSha256": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_intake_native.mts",
+          "recordedSha256": "6be379087f8d4cd7aefa2c6904bb50f180a9adc04b24d6fca5ec505cfa85448c",
+          "currentSha256": "6be379087f8d4cd7aefa2c6904bb50f180a9adc04b24d6fca5ec505cfa85448c",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_intake_native.py",
+          "recordedSha256": "8dfbb4d4bdbe87feaae33eb4f04ef6f61cf92c8928450456a0a15d6ba42fb023",
+          "currentSha256": "8dfbb4d4bdbe87feaae33eb4f04ef6f61cf92c8928450456a0a15d6ba42fb023",
+          "matches": true
+        }
+      ],
+      "allNamedSourcesMatch": true,
+      "recordedBoundary": "Actual local HTTP, PostgreSQL, PostgREST, Storage and parser. Controlled public DNS/transport mapping. No public TLS, browser, power-loss, full restore or capacity acceptance."
+    },
+    {
+      "report": "human-native.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-human-command.ts",
+          "recordedSha256": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+          "currentSha256": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-request-cancellation.ts",
+          "recordedSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "currentSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "matches": true
+        },
+        {
+          "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+          "recordedSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+          "currentSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+          "matches": true
+        },
+        {
+          "path": "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql",
+          "recordedSha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+          "currentSha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_human_native.mts",
+          "recordedSha256": "8bd8bc7b8789dbc7ac48cdcf0e3c466bbf1bb666404ea0d44fda65cf72f61560",
+          "currentSha256": "8bd8bc7b8789dbc7ac48cdcf0e3c466bbf1bb666404ea0d44fda65cf72f61560",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_human_native.py",
+          "recordedSha256": "4d682ccfd793158abeec2fdbd00906213f99772cf36e7181d83cef3c0f31f830",
+          "currentSha256": "4d682ccfd793158abeec2fdbd00906213f99772cf36e7181d83cef3c0f31f830",
+          "matches": true
+        }
+      ],
+      "allNamedSourcesMatch": true,
+      "recordedBoundary": "Actual PostgreSQL/PostgREST service, viewer, anon/authenticated roles and real committed-reply process interruption through private human journals. Synthetic completed counts and archive confirmation identities do not establish actual Storage custody, parser publication, scheduled or observed service, application session authorization, official CLI migration/restore or browser acceptance."
+    },
+    {
+      "report": "submission-poll-native.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-submission-recovery.ts",
+          "recordedSha256": "2fc806ad193defbddfb7ae30bd2c6283a5514b826483afcf1c21cb200f67c36b",
+          "currentSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+          "matches": false
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-source.ts",
+          "recordedSha256": "ca4f9c8515e1adfd10b2381233c3862f50efa3534788fa733cc12570f974f1c7",
+          "currentSha256": "ca4f9c8515e1adfd10b2381233c3862f50efa3534788fa733cc12570f974f1c7",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-admission.ts",
+          "recordedSha256": "36c1d6ddedfe5d5e819b8e01b2c50cd629c2f7ef995ec17c7552db616c78f18a",
+          "currentSha256": "36c1d6ddedfe5d5e819b8e01b2c50cd629c2f7ef995ec17c7552db616c78f18a",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-queue.ts",
+          "recordedSha256": "7308abbc185826aaf0c20a0c955f1f4d3b669c3299844cde49a3dbf3be396ccd",
+          "currentSha256": "7308abbc185826aaf0c20a0c955f1f4d3b669c3299844cde49a3dbf3be396ccd",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-service.ts",
+          "recordedSha256": "6e0baee3466d5419daef83a7add1237081131db42c4ff1b57e96fb27945c8593",
+          "currentSha256": "6e0baee3466d5419daef83a7add1237081131db42c4ff1b57e96fb27945c8593",
+          "matches": true
+        },
+        {
+          "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+          "recordedSha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+          "currentSha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.mts",
+          "recordedSha256": "1625b7cf7dccadfae6f115279a11e381db83eaba472e5e0eaeff6e0cf9610bc3",
+          "currentSha256": "40821c71f5972ba51aee9b378af3d1a524ea61f8bfb7cabc0ab1a3627f80740b",
+          "matches": false
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.py",
+          "recordedSha256": "832099c58581b2524b17a215f562db04c7c60f4253a9e8ddcb7b6e29d2132328",
+          "currentSha256": "1ded94b2c6382c153038e221f3286d9c1ab3ee324f41e118e2100aa52980859c",
+          "matches": false
+        }
+      ],
+      "allNamedSourcesMatch": false,
+      "recordedBoundary": "Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance."
+    },
+    {
+      "report": "submission-cancel-native.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-submission-recovery.ts",
+          "recordedSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+          "currentSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-request-cancellation.ts",
+          "recordedSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "currentSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "matches": true
+        },
+        {
+          "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+          "recordedSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+          "currentSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-source.ts",
+          "recordedSha256": "ca4f9c8515e1adfd10b2381233c3862f50efa3534788fa733cc12570f974f1c7",
+          "currentSha256": "ca4f9c8515e1adfd10b2381233c3862f50efa3534788fa733cc12570f974f1c7",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-admission.ts",
+          "recordedSha256": "36c1d6ddedfe5d5e819b8e01b2c50cd629c2f7ef995ec17c7552db616c78f18a",
+          "currentSha256": "36c1d6ddedfe5d5e819b8e01b2c50cd629c2f7ef995ec17c7552db616c78f18a",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-queue.ts",
+          "recordedSha256": "7308abbc185826aaf0c20a0c955f1f4d3b669c3299844cde49a3dbf3be396ccd",
+          "currentSha256": "7308abbc185826aaf0c20a0c955f1f4d3b669c3299844cde49a3dbf3be396ccd",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-service.ts",
+          "recordedSha256": "6e0baee3466d5419daef83a7add1237081131db42c4ff1b57e96fb27945c8593",
+          "currentSha256": "6e0baee3466d5419daef83a7add1237081131db42c4ff1b57e96fb27945c8593",
+          "matches": true
+        },
+        {
+          "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+          "recordedSha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+          "currentSha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.mts",
+          "recordedSha256": "40821c71f5972ba51aee9b378af3d1a524ea61f8bfb7cabc0ab1a3627f80740b",
+          "currentSha256": "40821c71f5972ba51aee9b378af3d1a524ea61f8bfb7cabc0ab1a3627f80740b",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.py",
+          "recordedSha256": "1ded94b2c6382c153038e221f3286d9c1ab3ee324f41e118e2100aa52980859c",
+          "currentSha256": "1ded94b2c6382c153038e221f3286d9c1ab3ee324f41e118e2100aa52980859c",
+          "matches": true
+        }
+      ],
+      "allNamedSourcesMatch": true,
+      "recordedBoundary": "Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. Early cancellation after exact private ZIP retention prevents admission and skips cancelled history. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance."
+    },
+    {
+      "report": "queue-native.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-queue.ts",
+          "recordedSha256": "915a1b895c85ede8262c7d4aad29ec549a066dcdc4573406f93615a2ee84e23f",
+          "currentSha256": "7308abbc185826aaf0c20a0c955f1f4d3b669c3299844cde49a3dbf3be396ccd",
+          "matches": false
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-worker-intake.ts",
+          "recordedSha256": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+          "currentSha256": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+          "matches": true
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.mts",
+          "recordedSha256": "66286f1cdd738e9ac89adb63557b50c31cbdcbb788a89710eba9767da740acb4",
+          "currentSha256": "4d8ee04639acef6e5361eb6e62391bf8d835d13bfe062b09f9d98cece9da3388",
+          "matches": false
+        },
+        {
+          "path": "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.py",
+          "recordedSha256": "d7b70f9a5267e654a9d2e137070c2d26e8a17c4c647d7226f8c8920f0090c45c",
+          "currentSha256": "d2325223f110dc12df52e1d83bb2ef0a9e10d711842f944b79af2faa41dbe719",
+          "matches": false
+        }
+      ],
+      "allNamedSourcesMatch": false,
+      "recordedBoundary": "Actual server-clock expiry. Actual database queue, process loss, live ownership recovery/replacement, local HTTP, Storage and parser. No application routes, full restore, capacity or browser acceptance."
+    },
+    {
+      "report": "request-cancellation-controls.json",
+      "files": [
+        {
+          "path": "openplan/src/lib/gtfs/managed-request-cancellation.ts",
+          "recordedSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "currentSha256": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-human-route.ts",
+          "recordedSha256": "9daaceed3185e57a5138b1e8d46b9a3f574762933d428cedbb3fb1b3082d0209",
+          "currentSha256": "9daaceed3185e57a5138b1e8d46b9a3f574762933d428cedbb3fb1b3082d0209",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-submission-recovery.ts",
+          "recordedSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+          "currentSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/lib/gtfs/managed-route.ts",
+          "recordedSha256": "b60be33527f2562f3cfc4d88ce48d18295294350ea133ca012a8ea090e235f01",
+          "currentSha256": "b60be33527f2562f3cfc4d88ce48d18295294350ea133ca012a8ea090e235f01",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/app/api/gtfs/submissions/[requestId]/route.ts",
+          "recordedSha256": "c1f63b77e9bf519cce55731d013bd04d345ad4ac55d7b58881f164ce3b59aa02",
+          "currentSha256": "c1f63b77e9bf519cce55731d013bd04d345ad4ac55d7b58881f164ce3b59aa02",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/app/api/gtfs/submissions/[requestId]/cancel/route.ts",
+          "recordedSha256": "b86fc32cd0cd1cd69269b9878f7a6afa69512403298991eb575eec0b7f82d76a",
+          "currentSha256": "b86fc32cd0cd1cd69269b9878f7a6afa69512403298991eb575eec0b7f82d76a",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/app/api/gtfs/versions/[versionId]/adopt/route.ts",
+          "recordedSha256": "768aeb387d95ef47a9f117d3da12a5f70789c963d20a93032f423d0af981028b",
+          "currentSha256": "768aeb387d95ef47a9f117d3da12a5f70789c963d20a93032f423d0af981028b",
+          "matches": true
+        },
+        {
+          "path": "openplan/src/app/api/gtfs/versions/[versionId]/review/route.ts",
+          "recordedSha256": "506f7128d08268e63f02ef2bccc23b4a84dc8dd108206bdb13a645db12dc0893",
+          "currentSha256": "506f7128d08268e63f02ef2bccc23b4a84dc8dd108206bdb13a645db12dc0893",
+          "matches": true
+        }
+      ],
+      "allNamedSourcesMatch": true,
+      "recordedBoundary": "Private files and controlled service transport, route sessions and query projections. No actual route HTTP authorization, live SQL/RLS, complete worker service installation, Storage custody or browser acceptance."
+    }
+  ],
+  "unchangedSinceParserBuild": true,
+  "limits": [
+    "Exact named-file hash comparison, not a rerun of native SQL or worker tests.",
+    "Each historical proof retains its recorded transport, synthetic lease and observation boundary.",
+    "No complete current-main, hosted, scientific or practitioner acceptance inferred."
+  ]
+}

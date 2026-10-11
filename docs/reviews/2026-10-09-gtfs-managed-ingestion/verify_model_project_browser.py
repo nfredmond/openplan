@@ -1,7 +1,8 @@
 """Check recorded browser geography against the current isolated native database."""
-import copy,hashlib,json,subprocess
+import copy,hashlib,json,subprocess,sys
 from pathlib import Path
-base=Path(__file__).parent;b=base/'browser-full-restore-02'
+base=Path(sys.argv[1]).resolve() if len(sys.argv)>1 else Path(__file__).parent
+b=base/'browser-full-restore-02'
 def read_native():
  s=json.loads((b/'fresh-services-private.json').read_text())
  def sql(db,q):return subprocess.check_output(['docker','exec','supabase_db_openplan-restore-target-2026091050','psql','-U','supabase_admin','-d',db,'-XAt','-c',q],text=True).strip()

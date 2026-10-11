@@ -1,0 +1,16 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "records": [
+    {
+      "check": "all-workers",
+      "exitCode": 1,
+      "seconds": 120.09
+    }
+  ],
+  "boundary": "Each discovered Python worker suite under its existing interpreter. Live RLS and scientific accuracy are separate. No downloaded dependency or virtualenv mutation.",
+  "suitesPassed": 187,
+  "suitesFailed": 1,
+  "suitesNotRun": 0,
+  "memoryPeakBytes": 374042624,
+  "failure": "ActivitySim screening-handoff fixture omitted the production-created destination directory."
+}

@@ -1,0 +1,78 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "buildId": "OtS1dhNAWFSbvpN5eAXRv",
+  "records": [
+    {
+      "path": "current-active-after-native-public.json",
+      "bytes": 6764,
+      "sha256": "e6d55a026a2759065d7e6886713a88c7be9c0e902f602425b85be6fe5488214a"
+    },
+    {
+      "path": "current-active-before-native.json",
+      "bytes": 4112,
+      "sha256": "21309fbc7b6f059b609dd06d5f1bad96823c9b6a50cdfd5b3f0243baf8050b10"
+    },
+    {
+      "path": "current-active-cancel-browser-public.json",
+      "bytes": 3484,
+      "sha256": "23f6c2a687b0d58ee55ab8ef407e624fe4bf5aa349bbd5dc03acac5a9c79f863"
+    },
+    {
+      "path": "current-admission-drop-public.json",
+      "bytes": 8258,
+      "sha256": "1c5c8876f0394a2c0f89829234790a0f9bac7ccadcfef2a19613edf459730ad3"
+    },
+    {
+      "path": "current-cancel-receipt-390.png",
+      "bytes": 153484,
+      "sha256": "3ad8c7defa6647a5997e2e8c3ae3f839757dc4259ad1e9813f61d31040ba4bc8"
+    },
+    {
+      "path": "current-cancellation-observer-controls.json",
+      "bytes": 2652,
+      "sha256": "ed53314a4065cfaca7dd1e0a51b5740323b360b473107f184bacad70cacd1e52"
+    },
+    {
+      "path": "current-cancelled-390.png",
+      "bytes": 141093,
+      "sha256": "7f480d7fd0b8a58482a7b7630e28971342d6b14adddfdcebe27d6026d6780778"
+    },
+    {
+      "path": "current-cancelled-desktop.png",
+      "bytes": 344499,
+      "sha256": "a8e41fee7ffb11a03750789af0ce293478650e6cc9b0533dd4bb6bca03c9a973"
+    },
+    {
+      "path": "current-journey-final-public.json",
+      "bytes": 1830,
+      "sha256": "874bf82f1b511540ae3a39bb7ff31d2cae999dd2a1cc075b1a93a3d7353adb55"
+    },
+    {
+      "path": "current-observer-initial-failures.json",
+      "bytes": 1781,
+      "sha256": "04284d17ceea03eb02345126df3c2ee2a9de23f9854d40f389dcb79b206bb48c"
+    },
+    {
+      "path": "current-parsing-390.png",
+      "bytes": 132459,
+      "sha256": "c5c10b9bfe04ec583d388bb87ccaa3cfc97b68cb109b18dcf1975ef15f6062c2"
+    },
+    {
+      "path": "current-waiting-desktop.png",
+      "bytes": 325274,
+      "sha256": "280d5b1caa4f90dca682c6383b78576c6aaeda2c2c47557c57ecff63ab999ff7"
+    },
+    {
+      "path": "production-current-build-public.json",
+      "bytes": 592,
+      "sha256": "22b42a55c54bc895cb6b1da7fb1f1a096e2fbbf82346763e025f3340c790f699"
+    },
+    {
+      "path": "production-current-runtime-public.json",
+      "bytes": 550,
+      "sha256": "ae29041b961d72ed965aadb1f6f0ffa00e622e3eb37d5cacdfa2116a24e2da57"
+    }
+  ],
+  "imageSource": "T3 preview screenshots inspected during actual identified-build journey.",
+  "limits": "390 CSS pixels in desktop browser. The restored same-cluster installation and future-only console interval remain distinct from hosted, physical mobile and practitioner acceptance."
+}

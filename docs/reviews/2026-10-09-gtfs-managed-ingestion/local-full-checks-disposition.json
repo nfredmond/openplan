@@ -1,0 +1,23 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "localCompleteSuite": false,
+  "completedFiles": 623,
+  "passed": 7659,
+  "skipped": 1230,
+  "failedAssertions": 0,
+  "recordsFiles": [
+    "full-candidate-corrected-batch-checks.json",
+    "full-candidate-single-file-checks.json",
+    "full-candidate-adaptive-batch-checks.json",
+    "full-candidate-bounded-batch-checks.json"
+  ],
+  "isolatedAuthorityTest": {
+    "passed": 82,
+    "heapMiB": 2048,
+    "serviceLimitGiB": 3,
+    "servicePeakBytes": 2404225024
+  },
+  "disposition": "Stop duplicate full local inventory after exact-commit GitHub full QA and shuffled suite both pass 21405 tests, with 1595 skipped. Preserve all local partial/failed runs. No interrupted in-flight file receives acceptance credit. Continue the remaining Python worker families and final integration.",
+  "remoteSummary": "ci-f639-full-suite-summary.json",
+  "limits": "Remote QA does not replace live RLS, restore, native worker, browser, hosted or scientific acceptance."
+}

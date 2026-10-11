@@ -1,0 +1,11 @@
+{
+  "unit": "openplan-gtfs-full-candidate-resumed-batches-20261010-01",
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "outcome": "Stopped owned service after its first 30-file process hit a 1024 MiB V8 heap limit. No completed report and no acceptance credit.",
+  "failedBatchLog": "resumed-batch-01.log",
+  "batchSize": 30,
+  "nodeHeapMiB": 1024,
+  "systemdMemoryPeakBytes": 1372037120,
+  "cause": "V8 heap exhaustion, not a confirmed host OOM",
+  "boundary": "Does not establish the cause of any unrelated desktop crash."
+}

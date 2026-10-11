@@ -1,0 +1,34 @@
+{
+  "recordedFromObservedToolOutput": true,
+  "records": [
+    {
+      "case": "initial-browser-observer",
+      "failure": "The fetch observer did not handle URL objects used in client navigation.",
+      "acceptance": false,
+      "correction": "Handle string, Request and URL inputs before the actual admission experiment."
+    },
+    {
+      "case": "initial-storage-removal-probe",
+      "status": 401,
+      "body": "{\n  \"message\":\"No API key found in request\"\n}",
+      "acceptance": false,
+      "correction": "Supply the gateway API key and service authorization privately. The corrected authenticated request returns NoSuchKey, and native Storage inventory is empty."
+    },
+    {
+      "case": "initial-terminal-observer-expectation",
+      "failure": "cancelled-terminal-not-established",
+      "acceptance": false,
+      "correction": "The existing schema records managed cancelled state separately from legacy failed status and abandoned failure code. Check those exact fields."
+    },
+    {
+      "case": "committed-geography-observer-invocation",
+      "failure": "FileNotFoundError for browser-full-restore-02/model-project-browser-public.json relative to the repository report directory.",
+      "acceptance": false,
+      "correction": "The retained private copy passes three positive and seven targeted broken observation controls. An explicit proof-directory argument remains to be added to the repository copy after the active full-suite run."
+    }
+  ],
+  "limits": [
+    "The URL-input diagnosis follows reproduction and successful corrected navigation. It is not an OpenPlan application defect.",
+    "These failed observers establish no browser, storage-removal or native terminal acceptance. Separate corrected records carry those outcomes."
+  ]
+}

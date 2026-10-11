@@ -1,0 +1,173 @@
+{
+  "claims": 1,
+  "retired": [
+    {
+      "created_at": "2026-10-11T03:14:59.685401+00:00",
+      "version_id": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "storage_path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/eea1b4cd-0402-4bb9-906e-cff7eceedbbb/1ca4fa87-713d-4a0e-8015-9edd428f1640.zip",
+      "last_selected_at": "2026-10-11T03:15:50.954317+00:00"
+    }
+  ],
+  "version": {
+    "id": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+    "status": "failed",
+    "feed_id": "eea1b4cd-0402-4bb9-906e-cff7eceedbbb",
+    "byte_size": 43392539,
+    "created_at": "2026-10-11T03:13:55.402249+00:00",
+    "fetched_at": "2026-10-11T03:14:42.909009+00:00",
+    "is_current": false,
+    "source_url": "https://developer.trimet.org/schedule/gtfs.zip",
+    "stop_count": 0,
+    "trip_count": 0,
+    "updated_at": "2026-10-11T03:14:59.680744+00:00",
+    "route_count": 0,
+    "shape_count": 0,
+    "source_kind": "url",
+    "agency_count": 0,
+    "failure_code": "abandoned",
+    "requested_by": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "storage_path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/eea1b4cd-0402-4bb9-906e-cff7eceedbbb/1ca4fa87-713d-4a0e-8015-9edd428f1640.zip",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "shapes_status": "not_ingested",
+    "failure_detail": "Synthetic planner cancellation while the restored installation reads the TriMet schedule.",
+    "parse_warnings": [],
+    "checksum_sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5",
+    "last_checked_at": "2026-10-11T03:14:59.687279+00:00",
+    "catalog_provider": null,
+    "ingest_closed_at": "2026-10-11T03:14:59.687279+00:00",
+    "service_end_date": null,
+    "catalog_source_id": null,
+    "feed_info_version": null,
+    "catalog_row_status": null,
+    "feed_info_end_date": null,
+    "service_start_date": null,
+    "tract_service_rows": null,
+    "ingest_abandoned_at": null,
+    "stop_time_row_count": 0,
+    "feed_info_start_date": null,
+    "frequency_trip_count": 0,
+    "scheduled_trip_count": 0,
+    "calendar_service_count": 0,
+    "ingest_failure_receipt": {
+      "result": {
+        "recorded": true,
+        "feedStatusChanged": true
+      },
+      "request": {
+        "code": "abandoned",
+        "detail": "Synthetic planner cancellation while the restored installation reads the TriMet schedule.",
+        "storagePath": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/eea1b4cd-0402-4bb9-906e-cff7eceedbbb/1ca4fa87-713d-4a0e-8015-9edd428f1640.zip"
+      }
+    },
+    "stop_service_level_rows": 0,
+    "feed_info_publisher_name": null,
+    "route_service_level_rows": 0,
+    "tract_service_computed_at": null
+  },
+  "terminal": [
+    {
+      "actor_id": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+      "response": {
+        "state": "cancelled",
+        "closure": {
+          "recorded": true,
+          "feedStatusChanged": true
+        },
+        "command": "667ec610-0cdf-44c8-a2e7-1fe3491b57c7",
+        "version": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+        "closedAt": "2026-10-11T03:14:59.687279+00:00",
+        "cleanupPending": true
+      },
+      "command_id": "667ec610-0cdf-44c8-a2e7-1fe3491b57c7",
+      "created_at": "2026-10-11T03:14:59.688295+00:00",
+      "version_id": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "payload_hash": "8f3008099193ea1d3244423b8471bfd8c4f726d821e925193a6f25ab3adb279f",
+      "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    }
+  ],
+  "execution": {
+    "state": "cancelled",
+    "token": null,
+    "attempt": 1,
+    "request_id": "b8362580-4aee-4156-aff7-e504ba83c64d",
+    "version_id": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+    "lease_until": null,
+    "prepared_token": null,
+    "archive_identity": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/eea1b4cd-0402-4bb9-906e-cff7eceedbbb/1ca4fa87-713d-4a0e-8015-9edd428f1640.zip",
+      "bytes": 43392539,
+      "sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5"
+    },
+    "archive_available": true,
+    "archive_prepared_at": "2026-10-11T03:14:42.909009+00:00",
+    "archive_confirmed_at": "2026-10-11T03:14:44.336849+00:00"
+  },
+  "submission": {
+    "feed_id": "eea1b4cd-0402-4bb9-906e-cff7eceedbbb",
+    "payload": {
+      "feed": "eea1b4cd-0402-4bb9-906e-cff7eceedbbb",
+      "actor": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+      "source": {
+        "kind": "url",
+        "sourceUrl": "https://developer.trimet.org/schedule/gtfs.zip",
+        "catalogProvider": null,
+        "catalogSourceId": null,
+        "provisionalName": "developer.trimet.org",
+        "catalogRowStatus": null,
+        "normalizedSourceUrl": "https://developer.trimet.org/schedule/gtfs.zip"
+      },
+      "workspace": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    },
+    "actor_id": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "response": {
+      "feedId": "eea1b4cd-0402-4bb9-906e-cff7eceedbbb",
+      "requestId": "b8362580-4aee-4156-aff7-e504ba83c64d",
+      "versionId": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "createdFeed": false
+    },
+    "created_at": "2026-10-11T03:13:55.405415+00:00",
+    "request_id": "b8362580-4aee-4156-aff7-e504ba83c64d",
+    "version_id": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+  },
+  "cancellation": {
+    "actor_id": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "response": {
+      "state": "cancelled",
+      "command": "667ec610-0cdf-44c8-a2e7-1fe3491b57c7",
+      "requestId": "b8362580-4aee-4156-aff7-e504ba83c64d",
+      "versionId": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "cancelledAt": "2026-10-11T03:14:59.688458+00:00",
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+      "versionCancellation": {
+        "state": "cancelled",
+        "closure": {
+          "recorded": true,
+          "feedStatusChanged": true
+        },
+        "command": "667ec610-0cdf-44c8-a2e7-1fe3491b57c7",
+        "version": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+        "closedAt": "2026-10-11T03:14:59.687279+00:00",
+        "cleanupPending": true
+      }
+    },
+    "command_id": "667ec610-0cdf-44c8-a2e7-1fe3491b57c7",
+    "request_id": "b8362580-4aee-4156-aff7-e504ba83c64d",
+    "payload_hash": "b60885501a754b8a95f86d2895ba3ed893798a19bedd8167a85c031c27e2dbdc",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+  },
+  "currentVersion": null,
+  "storageObjects": 0,
+  "derivedStopRows": 0,
+  "derivedRouteRows": 0,
+  "storageDownload": {
+    "status": 400,
+    "body": "{\"statusCode\":\"404\",\"error\":\"not_found\",\"message\":\"Object not found\",\"code\":\"NoSuchKey\"}"
+  },
+  "localSource": {
+    "bytes": 43392539,
+    "sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5"
+  },
+  "parserAlive": false,
+  "sourceCommit": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e"
+}
