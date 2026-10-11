@@ -21,6 +21,27 @@ const SUPABASE_CONNECT_SRC = (() => {
   }
 })();
 
+// A map without a Mapbox key loads the operator's MapLibre style, and its
+// tiles, glyphs and sprites, from wherever that style says. Its origin is
+// allowed here, plus any extra origins the operator lists for tiles or fonts
+// served from elsewhere. A same-origin style (fully local) needs neither.
+const OPEN_MAP_SRC = (() => {
+  const origins = new Set<string>();
+  const add = (raw: string | undefined) => {
+    const value = raw?.trim();
+    if (!value || value.startsWith("/")) return;
+    try {
+      const url = new URL(value);
+      if (url.protocol === "https:" || url.protocol === "http:") origins.add(url.origin);
+    } catch {
+      // Not a URL; the map treats it as unset too.
+    }
+  };
+  add(process.env.NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL);
+  for (const extra of (process.env.OPENPLAN_MAP_EXTRA_ORIGINS ?? "").split(",")) add(extra);
+  return [...origins];
+})();
+
 // The CSP differs on exactly ONE directive between normal pages and embeddable
 // widgets: frame-ancestors. Normal pages forbid all framing ('none'); the
 // (embed)/* segment allows any site to frame it ('*') so agencies can iframe a
@@ -31,7 +52,7 @@ function buildCsp(frameAncestors: string): string {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co",
+    ["img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co", ...OPEN_MAP_SRC].join(" "),
     [
       "connect-src 'self'",
       "https://*.supabase.co",
@@ -41,6 +62,7 @@ function buildCsp(frameAncestors: string): string {
       "https://api.mapbox.com",
       "https://events.mapbox.com",
       "https://*.tiles.mapbox.com",
+      ...OPEN_MAP_SRC,
     ].join(" "),
     "worker-src 'self' blob:",
     "font-src 'self' data:",

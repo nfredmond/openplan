@@ -3,6 +3,8 @@
 import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import "maplibre-gl/dist/maplibre-gl.css";
+import { resolveOpenMapStyleUrl } from "@/lib/cartographic/open-map-style";
 import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
@@ -57,8 +59,55 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
  * Read at module scope like the token itself: `NEXT_PUBLIC_*` is inlined at
  * build time and cannot change while the page is open.
  */
-export const PARTICIPANT_MAP_CAN_DRAW = Boolean(MAPBOX_ACCESS_TOKEN);
+/**
+ * A deployment with no Mapbox key may still draw a map: MapLibre with the
+ * operator's own style (see `open-map-style.ts`). A key, when set, wins.
+ */
+const OPEN_MAP_STYLE_URL = resolveOpenMapStyleUrl(process.env.NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL);
+const MAP_ENGINE: "mapbox" | "maplibre" | null = MAPBOX_ACCESS_TOKEN ? "mapbox" : OPEN_MAP_STYLE_URL ? "maplibre" : null;
 
+export const PARTICIPANT_MAP_CAN_DRAW = MAP_ENGINE !== null;
+
+/**
+ * MapLibre, loaded only on a deployment that uses it, with the `pmtiles://`
+ * protocol registered once so a style can point at a local `.pmtiles` file.
+ * Typed as Mapbox's module: the stage uses only the API the two share.
+ */
+let mapLibreLoad: Promise<typeof mapboxgl> | null = null;
+function loadMapLibre(): Promise<typeof mapboxgl> {
+  mapLibreLoad ??= Promise.all([import("maplibre-gl"), import("pmtiles")]).then(([maplibre, pmtiles]) => {
+    // The bundler may hand the module over as its namespace or under `default`.
+    const loaded = maplibre as unknown as { default?: unknown };
+    const gl = (loaded.default ?? maplibre) as unknown as typeof mapboxgl & {
+      addProtocol: (name: string, load: unknown) => void;
+      setWorkerUrl: (url: string) => void;
+    };
+    // MapLibre finds its tile worker beside its own file, which a bundle moves.
+    // The bundler emits the worker as a file and hands back where it put it.
+    gl.setWorkerUrl(new URL("maplibre-gl/dist/maplibre-gl-worker.mjs", import.meta.url).href);
+    gl.addProtocol("pmtiles", new pmtiles.Protocol().tile);
+    return gl;
+  });
+  return mapLibreLoad;
+}
+
+/**
+ * Fonts for the cluster counts. Mapbox serves its own. An operator's style
+ * serves whatever its own labels use, so borrow theirs; a style with no fonts
+ * at all gets circles without a count rather than a layer that fails.
+ */
+function clusterFonts(map: mapboxgl.Map): string[] | null {
+  if (MAP_ENGINE === "mapbox") return ["DIN Pro Medium", "Arial Unicode MS Bold"];
+  const style = map.getStyle() as { glyphs?: string; layers?: Array<{ layout?: Record<string, unknown> }> } | undefined;
+  if (!style?.glyphs) return null;
+  for (const layer of style.layers ?? []) {
+    const font = layer.layout?.["text-font"];
+    if (Array.isArray(font) && font.length > 0 && font.every((name) => typeof name === "string")) return font;
+  }
+  return ["Noto Sans Regular"];
+}
+
+const NO_BASEMAP_CHOICES: PublicBasemapChoice[] = [];
 const DEFAULT_MAP_COLOR = "#38bdf8";
 const CLOSE_RING_PIXEL_TOLERANCE = 12;
 const KEYBOARD_PAN_STEP_PX = 64;
@@ -134,7 +183,12 @@ class BuildingsControl {
 
   constructor(onToggle: () => void) {
     this.container = document.createElement("div");
-    this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+    // The drawing library's own class names, so it matches that library's buttons.
+    const prefix = MAP_ENGINE === "maplibre" ? "maplibregl" : "mapboxgl";
+    this.container.className = `${prefix}-ctrl ${prefix}-ctrl-group`;
+    // A little more room above than the 10px between the library's own groups,
+    // so it does not read as part of find-my-location.
+    this.container.style.marginTop = "14px";
     this.button = document.createElement("button");
     this.button.type = "button";
     this.button.textContent = "3D";
@@ -153,34 +207,68 @@ class BuildingsControl {
 }
 
 /**
- * Extruded buildings from the background's own street data, under the labels.
- * Backgrounds without building data get the tilt alone.
+ * Where each background family keeps building footprints and heights: Mapbox's
+ * streets data, the OpenMapTiles schema (OpenFreeMap and most open styles) and
+ * Protomaps. A background with none of them gets the tilt alone.
  */
+const BUILDING_SOURCES = [
+  { source: "composite", layer: "building", height: "height", base: "min_height", filter: ["==", ["get", "extrude"], "true"] },
+  { source: "openmaptiles", layer: "building", height: "render_height", base: "render_min_height", filter: null },
+  { source: "protomaps", layer: "buildings", height: "height", base: "min_height", filter: null },
+] as const;
+
+/** Extruded buildings from the background's own street data, under the labels. */
 function syncBuildings(map: mapboxgl.Map, on: boolean): void {
   const present = Boolean(map.getLayer(BUILDINGS_LAYER));
   if (!on) {
     if (present) map.removeLayer(BUILDINGS_LAYER);
     return;
   }
-  if (present || !map.getSource("composite")) return;
-  const firstLabel = map.getStyle()?.layers?.find((layer) => layer.type === "symbol")?.id;
+  const found = BUILDING_SOURCES.find((candidate) => map.getSource(candidate.source));
+  if (present || !found) return;
+  // Under the first label, and always under the comments: a style with no labels
+  // would otherwise put the buildings on top of every pin.
+  const firstLabel = map
+    .getStyle()
+    ?.layers?.find((layer) => layer.type === "symbol" || layer.id.startsWith("engagement-"))?.id;
   map.addLayer(
     {
       id: BUILDINGS_LAYER,
       type: "fill-extrusion",
-      source: "composite",
-      "source-layer": "building",
-      filter: ["==", ["get", "extrude"], "true"],
+      source: found.source,
+      "source-layer": found.layer,
+      ...(found.filter ? { filter: found.filter as unknown as mapboxgl.FilterSpecification } : {}),
       minzoom: 13,
       paint: {
         "fill-extrusion-color": "#cbd5e1",
-        "fill-extrusion-height": ["get", "height"],
-        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-height": ["coalesce", ["get", found.height], 0],
+        "fill-extrusion-base": ["coalesce", ["get", found.base], 0],
         "fill-extrusion-opacity": 0.8,
       },
     },
     firstLabel
   );
+}
+
+/**
+ * Zoom that opens a group of pins. Mapbox answers through a callback; MapLibre
+ * returns a promise. Both are handled, so the same tap works on either.
+ */
+function expandCluster(map: mapboxgl.Map, source: mapboxgl.GeoJSONSource, clusterId: number, center: [number, number]) {
+  const ease = (zoom: unknown) => {
+    if (typeof zoom === "number") map.easeTo({ center, zoom });
+  };
+  const result = (
+    source.getClusterExpansionZoom as unknown as (
+      id: number,
+      callback: (error: unknown, zoom?: number) => void
+    ) => Promise<number> | void
+  )(clusterId, (error, zoom) => {
+    if (!error) ease(zoom);
+  });
+  if (result && typeof (result as Promise<number>).then === "function") {
+    (result as Promise<number>).then(ease, () => undefined);
+  }
 }
 
 /**
@@ -290,6 +378,10 @@ export function PublicMapStage({
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
+  /** The map library in use: Mapbox, or MapLibre once loaded. */
+  const glRef = useRef<typeof mapboxgl>(mapboxgl);
+  /** Bumped when an asynchronously loaded map exists, so the paint runs on it. */
+  const [mapGeneration, setMapGeneration] = useState(0);
   const [draw, setDraw] = useState<DrawState>(() => initialGeometry?.type === "Point" ? {mode:"point",vertices:[initialGeometry.coordinates],areaClosed:false} : initialGeometry?.type === "LineString" ? {mode:"line",vertices:initialGeometry.coordinates,areaClosed:false} : initialGeometry?.type === "Polygon" ? {mode:"area",vertices:initialGeometry.coordinates[0].slice(0,-1),areaClosed:true} : { mode: drawMode, vertices: [], areaClosed: false });
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -335,7 +427,9 @@ export function PublicMapStage({
     below, in the same words as a missing key.
   */
   const selectedStyleUrl =
-    (basemapChoices.find((choice) => choice.id === selectedBasemapId) ?? basemapChoices[0])?.styleUrl ?? null;
+    MAP_ENGINE === "maplibre"
+      ? OPEN_MAP_STYLE_URL
+      : ((basemapChoices.find((choice) => choice.id === selectedBasemapId) ?? basemapChoices[0])?.styleUrl ?? null);
 
   /** The same backgrounds with the picker's words in the participant's language. */
   const translatedBasemapChoices = useMemo(
@@ -423,7 +517,7 @@ export function PublicMapStage({
       }
       return;
     }
-    const bounds = new mapboxgl.LngLatBounds();
+    const bounds = new glRef.current.LngLatBounds();
     collectGeometryPositions(geometry).forEach((position) => bounds.extend(position));
     map.fitBounds(bounds, {
       padding: { top: padding.top + 40, right: padding.right + 40, bottom: padding.bottom + 40, left: padding.left + 40 },
@@ -501,202 +595,230 @@ export function PublicMapStage({
 
   useEffect(() => {
     const container = mapContainerRef.current;
-    if (!container || mapRef.current || !MAPBOX_ACCESS_TOKEN || !selectedStyleUrl) return;
+    if (!container || mapRef.current || !MAP_ENGINE || !selectedStyleUrl) return;
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    /*
+      ONE MOUNT, EITHER LIBRARY. Mapbox is built synchronously, as it always
+      was; MapLibre is fetched first, then built the same way, and the paint
+      effect is told the map now exists.
+    */
+    const mount = (gl: typeof mapboxgl, container: HTMLDivElement) => {
+      const map = new gl.Map({
+        container,
+        style: selectedStyleUrl,
+        center: initialView?.center ?? CONTINENTAL_US_CENTER,
+        zoom: initialView?.zoom ?? NEUTRAL_ZOOM,
+        // Mapbox's own buttons, in the resident's language.
+        locale: {
+          "NavigationControl.ZoomIn": translatorRef.current.t("portal.mapZoomIn"),
+          "NavigationControl.ZoomOut": translatorRef.current.t("portal.mapZoomOut"),
+          "NavigationControl.ResetBearing": translatorRef.current.t("portal.mapResetNorth"),
+          "GeolocateControl.FindMyLocation": translatorRef.current.t("portal.mapFindMe"),
+          "GeolocateControl.LocationNotAvailable": translatorRef.current.t("portal.mapFindMeUnavailable"),
+        },
+        /*
+          ATTRIBUTION IS ON — added explicitly below rather than by the default,
+          so its compactness is stated rather than inferred from the viewport.
 
-    const map = new mapboxgl.Map({
-      container,
-      style: selectedStyleUrl,
-      center: initialView?.center ?? CONTINENTAL_US_CENTER,
-      zoom: initialView?.zoom ?? NEUTRAL_ZOOM,
-      // Mapbox's own buttons, in the resident's language.
-      locale: {
-        "NavigationControl.ZoomIn": translatorRef.current.t("portal.mapZoomIn"),
-        "NavigationControl.ZoomOut": translatorRef.current.t("portal.mapZoomOut"),
-        "NavigationControl.ResetBearing": translatorRef.current.t("portal.mapResetNorth"),
-        "GeolocateControl.FindMyLocation": translatorRef.current.t("portal.mapFindMe"),
-        "GeolocateControl.LocationNotAvailable": translatorRef.current.t("portal.mapFindMeUnavailable"),
-      },
+          Every map in this product was constructed with `attributionControl:
+          false` and nothing anywhere rendered "© Mapbox © OpenStreetMap". That is
+          a licence term unmet, and on the one surface a member of the public reads
+          it is unmet in public. Fixed here because this is the map a resident
+          sees; the other ten instances are reported, not silently changed by a
+          lane that does not own them.
+
+          Compact rather than full because on a phone the bottom of this stage is
+          the only strip the sheet does not cover.
+        */
+        attributionControl: false,
+      });
+
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+
       /*
-        ATTRIBUTION IS ON — added explicitly below rather than by the default,
-        so its compactness is stated rather than inferred from the viewport.
+        ═══ THE TWO HANDLERS THAT DECIDE WHETHER THIS STAGE IS HONEST ═══
 
-        Every map in this product was constructed with `attributionControl:
-        false` and nothing anywhere rendered "© Mapbox © OpenStreetMap". That is
-        a licence term unmet, and on the one surface a member of the public reads
-        it is unmet in public. Fixed here because this is the map a resident
-        sees; the other ten instances are reported, not silently changed by a
-        lane that does not own them.
-
-        Compact rather than full because on a phone the bottom of this stage is
-        the only strip the sheet does not cover.
+        `style.load` is the only proof a background actually arrived. It clears
+        the failure state, so a resident who switches to a background that works
+        gets the map back with no reload.
       */
-      attributionControl: false,
-    });
+      map.on("style.load", () => {
+        styleLoadedRef.current = true;
+        everLoadedRef.current = true;
+        setStyleFailed(false);
+        setFailedBasemapId((previous) => (previous === selectedBasemapIdRef.current ? null : previous));
+      });
 
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
+      map.on("error", () => {
+        // The style on screen is up: this is a tile or a source, not the map.
+        if (styleLoadedRef.current) return;
+        setFailedBasemapId(selectedBasemapIdRef.current);
+        // Something has drawn before, so the resident still has a usable map on
+        // the previous background — mark the failed choice and leave the map
+        // alone. Nothing has ever drawn: the stage is blank and must say so.
+        if (!everLoadedRef.current) setStyleFailed(true);
+      });
 
-    /*
-      ═══ THE TWO HANDLERS THAT DECIDE WHETHER THIS STAGE IS HONEST ═══
+      /*
+        AND THE CASE WHERE NOTHING IS REPORTED AT ALL. A request that hangs — a
+        captive portal, a proxy that swallows the connection — fires no `error`
+        and no `style.load`, and the resident waits forever in front of a grey
+        box. After this long, say so; `style.load` clears it if the map is merely
+        slow, so a bad connection costs a notice rather than the map.
+      */
+      const watchdog = window.setTimeout(() => {
+        if (everLoadedRef.current) return;
+        setFailedBasemapId(selectedBasemapIdRef.current);
+        setStyleFailed(true);
+      }, STYLE_LOAD_WATCHDOG_MS);
 
-      `style.load` is the only proof a background actually arrived. It clears
-      the failure state, so a resident who switches to a background that works
-      gets the map back with no reload.
-    */
-    map.on("style.load", () => {
-      styleLoadedRef.current = true;
-      everLoadedRef.current = true;
-      setStyleFailed(false);
-      setFailedBasemapId((previous) => (previous === selectedBasemapIdRef.current ? null : previous));
-    });
+      // The notice about an unframed map is for a resident who has not moved yet.
+      map.on("movestart", () => setUnframedNoticeDismissed(true));
 
-    map.on("error", () => {
-      // The style on screen is up: this is a tile or a source, not the map.
-      if (styleLoadedRef.current) return;
-      setFailedBasemapId(selectedBasemapIdRef.current);
-      // Something has drawn before, so the resident still has a usable map on
-      // the previous background — mark the failed choice and leave the map
-      // alone. Nothing has ever drawn: the stage is blank and must say so.
-      if (!everLoadedRef.current) setStyleFailed(true);
-    });
+      // The stage can be mounted inside a collapsed sheet or a hidden tab, which
+      // measures 0x0; the observer re-measures the moment it gets a box.
+      const stopSizing = keepMapSizedToContainer(map, container);
 
-    /*
-      AND THE CASE WHERE NOTHING IS REPORTED AT ALL. A request that hangs — a
-      captive portal, a proxy that swallows the connection — fires no `error`
-      and no `style.load`, and the resident waits forever in front of a grey
-      box. After this long, say so; `style.load` clears it if the map is merely
-      slow, so a bad connection costs a notice rather than the map.
-    */
-    const watchdog = window.setTimeout(() => {
-      if (everLoadedRef.current) return;
-      setFailedBasemapId(selectedBasemapIdRef.current);
-      setStyleFailed(true);
-    }, STYLE_LOAD_WATCHDOG_MS);
+      // The wrapper div is the single keyboard widget (WCAG 2.1.1), so Mapbox's
+      // own keyboard handling is off — otherwise every arrow key is handled twice
+      // and the canvas becomes a second tab stop with no accessible name.
+      map.keyboard.disable();
+      // The compass shows once the map is turned or tilted, and puts it back.
+      map.addControl(new gl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
+      // Moves the camera only. The resident still taps, or presses Enter, to mark.
+      map.addControl(
+        new gl.GeolocateControl({
+          positionOptions: { enableHighAccuracy: true },
+          trackUserLocation: false,
+          fitBoundsOptions: { maxZoom: 16 },
+        }),
+        "top-right"
+      );
+      const buildingsControl = new BuildingsControl(() => setBuildings3d((previous) => !previous));
+      buildingsControlRef.current = buildingsControl;
+      map.addControl(buildingsControl, "top-right");
 
-    // The notice about an unframed map is for a resident who has not moved yet.
-    map.on("movestart", () => setUnframedNoticeDismissed(true));
+      /*
+        READING SOMEBODY'S COMMENT IS NOT MARKING YOUR OWN PLACE.
 
-    // The stage can be mounted inside a collapsed sheet or a hidden tab, which
-    // measures 0x0; the observer re-measures the moment it gets a box.
-    const stopSizing = keepMapSizedToContainer(map, container);
+        Every tap used to go to the drawing tool, so tapping a neighbour's pin to
+        read it also moved the resident's own mark onto that pin, observed in a
+        browser on 2026-10-10. A tap now goes to what is under it first: a group
+        of pins zooms in, a pin or a line opens that comment. Only an empty spot
+        marks.
 
-    // The wrapper div is the single keyboard widget (WCAG 2.1.1), so Mapbox's
-    // own keyboard handling is off — otherwise every arrow key is handled twice
-    // and the canvas becomes a second tab stop with no accessible name.
-    map.keyboard.disable();
-    // The compass shows once the map is turned or tilted, and puts it back.
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
-    // Moves the camera only. The resident still taps, or presses Enter, to mark.
-    map.addControl(
-      new mapboxgl.GeolocateControl({
-        positionOptions: { enableHighAccuracy: true },
-        trackUserLocation: false,
-        fitBoundsOptions: { maxZoom: 16 },
-      }),
-      "top-right"
-    );
-    const buildingsControl = new BuildingsControl(() => setBuildings3d((previous) => !previous));
-    buildingsControlRef.current = buildingsControl;
-    map.addControl(buildingsControl, "top-right");
+        An area is the exception while drawing is on. One comment can outline a
+        whole neighbourhood, and letting it swallow taps would leave nowhere
+        inside it to mark. Those comments open from the list instead.
+      */
+      map.on("click", (event) => {
+        const current = drawRef.current;
+        const next = drawCoordinate(event.lngLat.lng, event.lngLat.lat);
+        const drawing = drawEnabledRef.current;
 
-    /*
-      READING SOMEBODY'S COMMENT IS NOT MARKING YOUR OWN PLACE.
+        // Area mode: clicking near the first vertex closes the ring. Pointer-only;
+        // keyboard users press C. Checked before anything else so a pin under the
+        // first point cannot stop a resident finishing their own shape.
+        if (drawing && current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
+          const firstPixel = map.project(current.vertices[0]);
+          const clickPixel = map.project(next);
+          if (Math.hypot(firstPixel.x - clickPixel.x, firstPixel.y - clickPixel.y) <= CLOSE_RING_PIXEL_TOLERANCE) {
+            applyDraw((previous) => ({ ...previous, areaClosed: true }));
+            announce(translatorRef.current.t("portal.drawAreaClosed"));
+            return;
+          }
+        }
 
-      Every tap used to go to the drawing tool, so tapping a neighbour's pin to
-      read it also moved the resident's own mark onto that pin, observed in a
-      browser on 2026-10-10. A tap now goes to what is under it first: a group
-      of pins zooms in, a pin or a line opens that comment. Only an empty spot
-      marks.
+        const pickable = ["engagement-clusters", "engagement-points", "engagement-shapes-line"];
+        if (!drawing) pickable.push("engagement-shapes-fill");
+        const layers = pickable.filter((id) => map.getLayer(id));
+        const { x, y } = event.point;
+        const hits = layers.length
+          ? map.queryRenderedFeatures(
+              [
+                [x - PICK_TOLERANCE_PX, y - PICK_TOLERANCE_PX],
+                [x + PICK_TOLERANCE_PX, y + PICK_TOLERANCE_PX],
+              ],
+              { layers }
+            )
+          : [];
+        const hit = hits[0];
 
-      An area is the exception while drawing is on. One comment can outline a
-      whole neighbourhood, and letting it swallow taps would leave nowhere
-      inside it to mark. Those comments open from the list instead.
-    */
-    map.on("click", (event) => {
-      const current = drawRef.current;
-      const next = drawCoordinate(event.lngLat.lng, event.lngLat.lat);
-      const drawing = drawEnabledRef.current;
-
-      // Area mode: clicking near the first vertex closes the ring. Pointer-only;
-      // keyboard users press C. Checked before anything else so a pin under the
-      // first point cannot stop a resident finishing their own shape.
-      if (drawing && current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
-        const firstPixel = map.project(current.vertices[0]);
-        const clickPixel = map.project(next);
-        if (Math.hypot(firstPixel.x - clickPixel.x, firstPixel.y - clickPixel.y) <= CLOSE_RING_PIXEL_TOLERANCE) {
-          applyDraw((previous) => ({ ...previous, areaClosed: true }));
-          announce(translatorRef.current.t("portal.drawAreaClosed"));
+        if (hit?.layer?.id === "engagement-clusters") {
+          const clusterId = hit.properties?.cluster_id as number | undefined;
+          const source = map.getSource(POINT_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+          if (clusterId === undefined || !source || hit.geometry.type !== "Point") return;
+          const center = hit.geometry.coordinates as [number, number];
+          expandCluster(map, source, clusterId, center);
           return;
         }
-      }
 
-      const pickable = ["engagement-clusters", "engagement-points", "engagement-shapes-line"];
-      if (!drawing) pickable.push("engagement-shapes-fill");
-      const layers = pickable.filter((id) => map.getLayer(id));
-      const { x, y } = event.point;
-      const hits = layers.length
-        ? map.queryRenderedFeatures(
-            [
-              [x - PICK_TOLERANCE_PX, y - PICK_TOLERANCE_PX],
-              [x + PICK_TOLERANCE_PX, y + PICK_TOLERANCE_PX],
-            ],
-            { layers }
-          )
-        : [];
-      const hit = hits[0];
+        const itemId = hit?.properties?.itemId as string | undefined;
+        if (itemId) {
+          onSelectItemRef.current?.(itemId);
+          return;
+        }
 
-      if (hit?.layer?.id === "engagement-clusters") {
-        const clusterId = hit.properties?.cluster_id as number | undefined;
-        const source = map.getSource(POINT_SOURCE) as mapboxgl.GeoJSONSource | undefined;
-        if (clusterId === undefined || !source || hit.geometry.type !== "Point") return;
-        const center = hit.geometry.coordinates as [number, number];
-        source.getClusterExpansionZoom(clusterId, (error, zoom) => {
-          if (error || typeof zoom !== "number") return;
-          map.easeTo({ center, zoom });
+        if (!drawing) {
+          onSelectItemRef.current?.(null);
+          return;
+        }
+        commitVertex(next);
+      });
+
+      for (const layerId of ["engagement-clusters", "engagement-points", "engagement-shapes-line"]) {
+        map.on("mouseenter", layerId, () => {
+          map.getCanvas().style.cursor = "pointer";
         });
-        return;
+        map.on("mouseleave", layerId, () => {
+          map.getCanvas().style.cursor = "";
+        });
       }
 
-      const itemId = hit?.properties?.itemId as string | undefined;
-      if (itemId) {
-        onSelectItemRef.current?.(itemId);
-        return;
-      }
-
-      if (!drawing) {
-        onSelectItemRef.current?.(null);
-        return;
-      }
-      commitVertex(next);
-    });
-
-    for (const layerId of ["engagement-clusters", "engagement-points", "engagement-shapes-line"]) {
-      map.on("mouseenter", layerId, () => {
-        map.getCanvas().style.cursor = "pointer";
+      map.on("contextmenu", (event) => {
+        event.preventDefault();
+        undo();
       });
-      map.on("mouseleave", layerId, () => {
-        map.getCanvas().style.cursor = "";
-      });
+
+      mapRef.current = map;
+      // The style this map was BUILT with. The repaint effect compares against it
+      // to decide whether it must swap; leaving it unset is what silently broke
+      // the background picker.
+      appliedStyleRef.current = selectedStyleUrl;
+
+      return () => {
+        window.clearTimeout(watchdog);
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+        buildingsControlRef.current = null;
+      };
+    };
+
+    if (MAP_ENGINE === "mapbox") {
+      mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN as string;
+      glRef.current = mapboxgl;
+      return mount(mapboxgl, container);
     }
 
-    map.on("contextmenu", (event) => {
-      event.preventDefault();
-      undo();
-    });
-
-    mapRef.current = map;
-    // The style this map was BUILT with. The repaint effect compares against it
-    // to decide whether it must swap; leaving it unset is what silently broke
-    // the background picker.
-    appliedStyleRef.current = selectedStyleUrl;
-
+    let cancelled = false;
+    let unmount: (() => void) | null = null;
+    loadMapLibre().then(
+      (gl) => {
+        if (cancelled) return;
+        glRef.current = gl;
+        unmount = mount(gl, container);
+        setMapGeneration((previous) => previous + 1);
+      },
+      () => {
+        // The library itself could not load: the same honest notice as a
+        // background that never arrived.
+        if (!cancelled) setStyleFailed(true);
+      }
+    );
     return () => {
-      window.clearTimeout(watchdog);
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      buildingsControlRef.current = null;
+      cancelled = true;
+      unmount?.();
     };
     // Registered once; the handlers above read live state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -838,19 +960,22 @@ export function PublicMapStage({
             "circle-stroke-width": 2,
           },
         });
-        map.addLayer({
-          id: "engagement-cluster-count",
-          type: "symbol",
-          source: POINT_SOURCE,
-          filter: ["has", "point_count"],
-          layout: {
-            "text-field": ["get", "point_count_abbreviated"],
-            "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"],
-            "text-size": 13,
-            "text-allow-overlap": true,
-          },
-          paint: { "text-color": "#ffffff" },
-        });
+        const fonts = clusterFonts(map);
+        if (fonts) {
+          map.addLayer({
+            id: "engagement-cluster-count",
+            type: "symbol",
+            source: POINT_SOURCE,
+            filter: ["has", "point_count"],
+            layout: {
+              "text-field": ["get", "point_count_abbreviated"],
+              "text-font": fonts,
+              "text-size": 13,
+              "text-allow-overlap": true,
+            },
+            paint: { "text-color": "#ffffff" },
+          });
+        }
         map.addLayer({
           id: "engagement-points",
           type: "circle",
@@ -947,7 +1072,7 @@ export function PublicMapStage({
       if (!initialView && !framedRef.current) {
         // Once. A filter or a vote repaints the data; it must not move the camera.
         framedRef.current = true;
-        const bounds = new mapboxgl.LngLatBounds();
+        const bounds = new glRef.current.LngLatBounds();
         pointItems.forEach((item) => bounds.extend([item.longitude, item.latitude]));
         shapeItems.forEach((item) =>
           collectGeometryPositions(item.parsedGeometry).forEach((position) => bounds.extend(position))
@@ -969,7 +1094,7 @@ export function PublicMapStage({
     if (!styleChanged && styleLoadedRef.current) paint();
     else map.once("style.load", paint);
     // `basemap` is a dependency because a style swap wipes the registry above.
-  }, [items, contextLayers, initialView, selectedStyleUrl, visibleLayerIds]);
+  }, [items, contextLayers, initialView, selectedStyleUrl, visibleLayerIds, mapGeneration]);
 
   /*
     THE SELECTED COMMENT: ring it, and bring it into view if it is not.
@@ -1142,7 +1267,7 @@ export function PublicMapStage({
     be constructed without a token under any caller: `new mapboxgl.Map` with an
     empty token throws in the browser.
   */
-  if (!MAPBOX_ACCESS_TOKEN) return null;
+  if (!MAP_ENGINE) return null;
 
   /*
     THE TWO WAYS A TOKEN CAN BE PRESENT AND THE MAP STILL ABSENT. Both end in
@@ -1232,7 +1357,8 @@ export function PublicMapStage({
           // take keyboard focus (WCAG 2.4.11).
           inert={feed?.open || undefined}
         >
-        {placeSearch ? (
+        {/* Place search uses Mapbox's geocoder, so it needs the Mapbox key. */}
+        {placeSearch && MAPBOX_ACCESS_TOKEN ? (
           <div className="pointer-events-auto">
             <PublicMapPlaceSearch
               token={MAPBOX_ACCESS_TOKEN}
@@ -1261,7 +1387,8 @@ export function PublicMapStage({
             which is why the style lookup above still reads the untranslated
             `basemapChoices`.
           */
-          basemapChoices={translatedBasemapChoices}
+          // The backgrounds are Mapbox styles; a MapLibre map has the operator's one.
+          basemapChoices={MAP_ENGINE === "maplibre" ? NO_BASEMAP_CHOICES : translatedBasemapChoices}
           selectedBasemapId={selectedBasemapId}
           onBasemapSelect={onBasemapSelect}
           failedBasemapId={failedBasemapId}
@@ -1339,6 +1466,13 @@ export function PublicMapStage({
                   This deployment offers no map background, so no map can be drawn. Check
                   OPENPLAN_PUBLIC_BASEMAPS — every id it names is one OpenPlan does not know — or unset it
                   to use the default set.
+                </p>
+              ) : MAP_ENGINE === "maplibre" ? (
+                <p>
+                  The map style in NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL did not load, or the map library
+                  itself did not. Check that the style address opens in a browser, and that its tile, font
+                  and sprite hosts are listed in OPENPLAN_MAP_EXTRA_ORIGINS when they differ from the
+                  style&apos;s own host. The browser console holds the exact error.
                 </p>
               ) : (
                 <p>

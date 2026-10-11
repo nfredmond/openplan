@@ -46,6 +46,7 @@ import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { groupApprovedItems } from "@/lib/engagement/approved-item-grouping";
 import { placeSearchEnabled } from "@/lib/engagement/place-search";
+import { OPEN_MAP_STYLE_ENV, resolveOpenMapStyleUrl } from "@/lib/cartographic/open-map-style";
 import {
   resolveParticipantCategoryColors,
   UNCATEGORIZED_MAP_COLOR,
@@ -169,7 +170,8 @@ export function buildPortalMapShellProps(
     campaignTitle: campaignText.title,
     campaignDescription: campaignText.publicDescription ?? campaignText.summary ?? null,
     detailsContents,
-    mapAvailable: Boolean(mapboxToken),
+    // A Mapbox key, or the operator's own MapLibre style when there is none.
+    mapAvailable: Boolean(mapboxToken) || Boolean(resolveOpenMapStyleUrl(env[OPEN_MAP_STYLE_ENV])),
     placeSearchAvailable: Boolean(mapboxToken) && placeSearchEnabled(env),
     basemapChoices: basemapConfig.choices,
     defaultBasemapId: basemapConfig.defaultId,
