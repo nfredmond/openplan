@@ -132,6 +132,20 @@ Photos uploaded before this branch keep their metadata until an operator runs
 flag). The local stack had no stored engagement photos, so it was dry-run
 there only; tests use real images in an in-memory bucket.
 
+## Later fixes on the branch
+
+- **Rate limit on busy consultations.** The submit route read the campaign's
+  25 newest public comments and filtered them in memory, so one connection's
+  earlier comments could fall outside the sample and the three-per-ten-minutes
+  limit stopped applying (September gap 4, the correctness half). Each check
+  now asks the database for exactly the rows it compares. The JSON-field filter
+  was verified read-only against the local database. The policy half of gap 4
+  (a shared connection at a public meeting) is unchanged and is a product
+  decision.
+- **Older photos.** `npm run ops:strip-engagement-photo-metadata` (see above).
+- **Sentence case.** After the UI overhaul merged (#186), the engagement
+  surfaces this lane owns dropped tracked capitals and joined the guard's list.
+
 ## How it was checked
 
 - Browser, dev server on port 3530 from this worktree (base `565cd983`),
