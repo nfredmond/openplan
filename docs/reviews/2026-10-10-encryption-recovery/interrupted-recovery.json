@@ -1,0 +1,11 @@
+{
+  "atomicReplacementObserved": true,
+  "interruptedBeforeRestart": true,
+  "targetObservedStopped": true,
+  "freshProcessRecovered": true,
+  "decryptionMatches": true,
+  "oldTargetKeyRetained": true,
+  "sourceRootUnchanged": true,
+  "sourceFileSha256": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+  "boundary": "Synthetic fixture and one owned local new cluster. No whole-installation or physical-host power-loss acceptance."
+}

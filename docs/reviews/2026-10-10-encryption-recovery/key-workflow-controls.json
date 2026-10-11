@@ -1,0 +1,51 @@
+{
+  "workflowSha256": "75e5b207bd523105646ee1c730cbab2e3e0ac49e257fd80abcbcac7c0ac2b06f",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "output": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "name": "harmless comment",
+      "result": "survived",
+      "output": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n"
+    },
+    {
+      "name": "omit openplan/scripts/ops/database_key_custody.py",
+      "result": "intended assertion failure",
+      "output": ".F.\n======================================================================\nFAIL: test_key_only_changes_trigger_restore (test_key_restore_workflow.KeyRestoreWorkflowTests.test_key_only_changes_trigger_restore) (path='openplan/scripts/ops/database_key_custody.py')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 22, in test_key_only_changes_trigger_restore\n    self.assertIn(path, patterns, 'Key-only change needs an explicit restore path: ' + path)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'openplan/scripts/ops/database_key_custody.py' not found in ['openplan/scripts/ops/disposable-restore-drill.sh', 'openplan/scripts/ops/*restore*.py', 'openplan/scripts/ops/seed-owp-restore.ts', 'openplan/scripts/ops/tests/test_*restore*.py', 'openplan/scripts/ops/tests/fixtures/*recovery*.json', 'openplan/scripts/ops/tests/fixtures/restore-mutations.json', 'openplan/scripts/ops/tests/prove_restore_mutations.py', 'openplan/scripts/ops/tests/test_database_key_custody.py', 'openplan/scripts/ops/tests/prove_key_custody_mutations.py', 'openplan/src/test/local-supabase-env.ts', 'openplan/supabase/migrations/**', '.github/workflows/restore-drill.yml'] : Key-only change needs an explicit restore path: openplan/scripts/ops/database_key_custody.py\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "omit openplan/scripts/ops/tests/test_database_key_custody.py",
+      "result": "intended assertion failure",
+      "output": ".F.\n======================================================================\nFAIL: test_key_only_changes_trigger_restore (test_key_restore_workflow.KeyRestoreWorkflowTests.test_key_only_changes_trigger_restore) (path='openplan/scripts/ops/tests/test_database_key_custody.py')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 22, in test_key_only_changes_trigger_restore\n    self.assertIn(path, patterns, 'Key-only change needs an explicit restore path: ' + path)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'openplan/scripts/ops/tests/test_database_key_custody.py' not found in ['openplan/scripts/ops/disposable-restore-drill.sh', 'openplan/scripts/ops/*restore*.py', 'openplan/scripts/ops/database_key_custody.py', 'openplan/scripts/ops/seed-owp-restore.ts', 'openplan/scripts/ops/tests/test_*restore*.py', 'openplan/scripts/ops/tests/fixtures/*recovery*.json', 'openplan/scripts/ops/tests/fixtures/restore-mutations.json', 'openplan/scripts/ops/tests/prove_restore_mutations.py', 'openplan/scripts/ops/tests/prove_key_custody_mutations.py', 'openplan/src/test/local-supabase-env.ts', 'openplan/supabase/migrations/**', '.github/workflows/restore-drill.yml'] : Key-only change needs an explicit restore path: openplan/scripts/ops/tests/test_database_key_custody.py\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "omit openplan/scripts/ops/tests/prove_key_custody_mutations.py",
+      "result": "intended assertion failure",
+      "output": ".F.\n======================================================================\nFAIL: test_key_only_changes_trigger_restore (test_key_restore_workflow.KeyRestoreWorkflowTests.test_key_only_changes_trigger_restore) (path='openplan/scripts/ops/tests/prove_key_custody_mutations.py')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 22, in test_key_only_changes_trigger_restore\n    self.assertIn(path, patterns, 'Key-only change needs an explicit restore path: ' + path)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'openplan/scripts/ops/tests/prove_key_custody_mutations.py' not found in ['openplan/scripts/ops/disposable-restore-drill.sh', 'openplan/scripts/ops/*restore*.py', 'openplan/scripts/ops/database_key_custody.py', 'openplan/scripts/ops/seed-owp-restore.ts', 'openplan/scripts/ops/tests/test_*restore*.py', 'openplan/scripts/ops/tests/fixtures/*recovery*.json', 'openplan/scripts/ops/tests/fixtures/restore-mutations.json', 'openplan/scripts/ops/tests/prove_restore_mutations.py', 'openplan/scripts/ops/tests/test_database_key_custody.py', 'openplan/src/test/local-supabase-env.ts', 'openplan/supabase/migrations/**', '.github/workflows/restore-drill.yml'] : Key-only change needs an explicit restore path: openplan/scripts/ops/tests/prove_key_custody_mutations.py\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "omit key proof command",
+      "result": "intended assertion failure",
+      "output": "F..\n======================================================================\nFAIL: test_key_controls_run_and_retain_evidence (test_key_restore_workflow.KeyRestoreWorkflowTests.test_key_controls_run_and_retain_evidence)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 30, in test_key_controls_run_and_retain_evidence\n    self.assertIn(['python3', '-B', 'scripts/ops/tests/prove_key_custody_mutations.py',\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                   '$RUNNER_TEMP/openplan-restore-evidence/key-custody-mutations.json'], commands)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['python3', '-B', 'scripts/ops/tests/prove_key_custody_mutations.py', '$RUNNER_TEMP/openplan-restore-evidence/key-custody-mutations.json'] not found in [['mkdir', '-p', '$RUNNER_TEMP/openplan-restore-evidence'], ['python3', '-B', 'scripts/ops/tests/prove_restore_mutations.py', '$RUNNER_TEMP/openplan-restore-evidence/mutations.json']]\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "comment instead of execution",
+      "result": "intended assertion failure",
+      "output": "F..\n======================================================================\nFAIL: test_key_controls_run_and_retain_evidence (test_key_restore_workflow.KeyRestoreWorkflowTests.test_key_controls_run_and_retain_evidence)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 30, in test_key_controls_run_and_retain_evidence\n    self.assertIn(['python3', '-B', 'scripts/ops/tests/prove_key_custody_mutations.py',\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n                   '$RUNNER_TEMP/openplan-restore-evidence/key-custody-mutations.json'], commands)\n                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['python3', '-B', 'scripts/ops/tests/prove_key_custody_mutations.py', '$RUNNER_TEMP/openplan-restore-evidence/key-custody-mutations.json'] not found in [['mkdir', '-p', '$RUNNER_TEMP/openplan-restore-evidence'], ['python3', '-B', 'scripts/ops/tests/prove_restore_mutations.py', '$RUNNER_TEMP/openplan-restore-evidence/mutations.json']]\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "representative sample instead of full archive",
+      "result": "intended assertion failure",
+      "output": "..F\n======================================================================\nFAIL: test_native_command_uses_full_archive (test_key_restore_workflow.KeyRestoreWorkflowTests.test_native_command_uses_full_archive)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-workflow-controls-qb92078m/openplan/scripts/ops/tests/test_key_restore_workflow.py\", line 37, in test_native_command_uses_full_archive\n    self.assertIn(['npm', 'run', 'ops:restore-drill', '--', '--full-archive'], commands)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['npm', 'run', 'ops:restore-drill', '--', '--full-archive'] not found in [['npm', 'ci'], ['python3', '-B', '-m', 'unittest', 'discover', '-s', 'scripts/ops/tests', '-p', 'test_*restore*.py'], ['npm', 'run', 'ops:restore-drill']]\n\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "output": "...\n----------------------------------------------------------------------\nRan 3 tests in 0.001s\n\nOK\n"
+    }
+  ],
+  "limits": "Declarative paths and executable command shape. Does not emulate GitHub events, prove runner permissions or establish native restore acceptance."
+}

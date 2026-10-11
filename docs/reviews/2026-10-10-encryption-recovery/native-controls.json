@@ -1,0 +1,58 @@
+{
+  "helperSha256": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+  "targetId": "de06f69da2845b2ce0a3cb9a9e819296b5cbb977aad4f261613b507d10896ac7",
+  "sourceDatabase": "openplan_crypto_source_20727a8b94ab40bd8822a02702986592",
+  "targetDatabase": "openplan_crypto_source_20727a8b94ab40bd8822a02702986592",
+  "controls": [
+    {
+      "name": "baseline",
+      "expected": "pass",
+      "observed": "actual decryption and atomic replacement pass",
+      "helperRefusal": null,
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "harmless",
+      "expected": "pass",
+      "observed": "actual decryption and atomic replacement pass",
+      "helperRefusal": null,
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "omit replacement",
+      "expected": "targeted broken behavior",
+      "observed": "actual SQLSTATE22000 invalid ciphertext",
+      "helperRefusal": "Database key write is unconfirmed",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "in-place replacement",
+      "expected": "targeted broken behavior",
+      "observed": "native decryption succeeds but atomic identity assertion fails",
+      "helperRefusal": null,
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "tampered retained payload",
+      "expected": "targeted broken behavior",
+      "observed": "actual SQLSTATE22000 invalid ciphertext",
+      "helperRefusal": "Database key recovery payload differs",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "omit restart",
+      "expected": "targeted broken behavior",
+      "observed": "native owned target remains stopped",
+      "helperRefusal": "Database key target did not become ready after restart",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "restored",
+      "expected": "pass",
+      "observed": "actual decryption and atomic replacement pass",
+      "helperRefusal": null,
+      "sourceRootUnchanged": true
+    }
+  ],
+  "boundary": "One synthetic Vault record in an independently initialized owned local PostgreSQL cluster. No full installation, remote host or physical power-loss acceptance."
+}

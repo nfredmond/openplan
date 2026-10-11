@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-11T06:43:11.281479+00:00",
+  "command": "python3 -B -m unittest discover -s openplan/scripts/ops/tests -p test_*.py",
+  "cwd": "restore-mounted-key-check-20261011",
+  "tests": 115,
+  "failures": 0,
+  "errors": 0,
+  "durationSeconds": 12.993,
+  "privateLogSha256": "1f1185b2a9c2095350b555f7c70b962b408fe3679d2055c16c7cf5e69e680d6a",
+  "limits": "Operations unit tests with mocked Docker. No whole installation or full native restore acceptance."
+}
