@@ -1,5 +1,7 @@
 # Managed GTFS ingestion implementation checkpoint
 
+Current candidate authority: [retained planner imports](CLIENT_PANEL.md), [dependent service reads](EQUITY_REFRESH.md) and [the browser-discovered sibling correction](SIBLING_IDENTITY.md). Routes and the installed worker are connected behind an opt-in candidate switch. Migrations 28 through 31 remain unreleased. Earlier paragraphs below are historical checkpoints, including earlier unconnected-route and unfinished-source statements. Browser, complete restore, capacity, CI and release verification remain open.
+
 Latest source-intake preparation, October 10: [interruptible downloads](FETCH_CANCELLATION.md)
 now accept the owned worker signal, bound stalled DNS and dispose interrupted
 bodies without publishing partial bytes. Durable source intake, exact-byte upload

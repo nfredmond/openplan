@@ -21,7 +21,8 @@ add('unchanged-bounded-list','mount','read: randomUUID(),','read: \"unchanged\",
 add('missing-version-projection','mount','id, feed_id, workspace_id, service_start_date','feed_id, workspace_id, service_start_date','mount','projects adopted version identity')
 add('feed-id-for-version','mount','.map(version => version.id).sort()','.map(version => version.feed_id).sort()','mount','projects adopted version identity')
 add('missing-equity-revision','mount','feedVersionRevision={transitFeedRevision}','','mount','projects adopted version identity')
-add('missing-equity-account-key','mount','<TitleViServiceEquityPanel\n        key={`${workspaceId}:${user.id}`}','<TitleViServiceEquityPanel','mount','projects adopted version identity')
+add('missing-equity-account-key','mount','<TitleViServiceEquityPanel\n        key={`equity:${workspaceId}:${user.id}`}','<TitleViServiceEquityPanel','mount','projects adopted version identity')
+add('colliding-sibling-keys','mount','key={`equity:${workspaceId}:${user.id}`}','key={`transit:${workspaceId}:${user.id}`}','mount','keeps sibling transit and equity identity distinct')
 variants.append(('restored',{},list(tests.values()),None));records=[]
 try:
  for name,changes,selected,assertion in variants:

@@ -645,7 +645,7 @@ export default async function DataHubPage() {
         a client component may not read it directly.
       */}
       <GtfsIngestPanel
-        key={`${workspaceId}:${user.id}`}
+        key={`transit:${workspaceId}:${user.id}`}
         managed={gtfsManagedClientMode(workspaceId, user.id)}
         workspaceId={workspaceId}
         maxUploadBytes={BODY_LIMITS.gtfsFeedRaw}
@@ -661,7 +661,7 @@ export default async function DataHubPage() {
         which is this repository's most-repeated defect class.
       */}
       <TitleViServiceEquityPanel
-        key={`${workspaceId}:${user.id}`}
+        key={`equity:${workspaceId}:${user.id}`}
         feedVersionRevision={transitFeedRevision}
         workspaceId={workspaceId}
         today={todayIso}

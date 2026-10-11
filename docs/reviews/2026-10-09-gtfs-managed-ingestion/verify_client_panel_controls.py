@@ -58,7 +58,7 @@ add('configuration-fallback','config','return { enabled: true, unavailable:','re
 add('configuration-private','config','return { enabled: true, scope };','return { enabled: true, scope, env };','config','exposes only installation')
 add('mount-config','mount','managed={gtfsManagedClientMode(workspaceId, user.id)}','','mount','binds the visible panel')
 add('mount-actor','mount','gtfsManagedClientMode(workspaceId, user.id)','gtfsManagedClientMode(workspaceId, workspaceId)','mount','binds the visible panel')
-add('mount-scope-key','mount','<GtfsIngestPanel\n        key={`${workspaceId}:${user.id}`}','<GtfsIngestPanel\n        key={workspaceId}','mount','binds the visible panel')
+add('mount-scope-key','mount','<GtfsIngestPanel\n        key={`transit:${workspaceId}:${user.id}`}','<GtfsIngestPanel\n        key={workspaceId}','mount','binds the visible panel')
 add('route-refusal','route','if ("response" in authorized) return authorized.response;','if (false && "response" in authorized) return authorized.response;','route','authorization refusal 401')
 add('route-actor','route','actorId: authorized.actorId','actorId: params.data.versionId','route','current member without original-actor impersonation',2)
 add('route-cancellation','route','const cancellation = await readGtfsRequestCancellation(authorized.service, { workspaceId: query.data.workspaceId, requestId: status.requestId, actorId: authorized.actorId }, request.signal);','const cancellation = null;','route','does not fabricate cancellation')

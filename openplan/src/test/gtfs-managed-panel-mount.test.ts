@@ -6,7 +6,7 @@ describe("managed transit Data Hub mount", () => {
   const source = readFileSync("src/app/(app)/data-hub/page.tsx", "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
   const panel = source.match(/<GtfsIngestPanel\b[\s\S]*?\/>/)?.[0]; expect(panel).toBeDefined();
   expect(panel).toMatch(/managed=\{gtfsManagedClientMode\(workspaceId, user\.id\)\}/);
-  expect(panel).toContain('key={`${workspaceId}:${user.id}`}');
+  expect(panel).toContain('key={`transit:${workspaceId}:${user.id}`}');
   expect(panel).toContain("readOnly={isReadOnlyWorkspaceRole(membership.role)}");
  });
  it("projects adopted version identity and refreshes the dependent equity read", () => {
@@ -17,6 +17,16 @@ describe("managed transit Data Hub mount", () => {
   expect(source).toContain("read: randomUUID(),");
   const equity = source.match(/<TitleViServiceEquityPanel\b[\s\S]*?\/>/)?.[0];
   expect(equity).toContain("feedVersionRevision={transitFeedRevision}");
-  expect(equity).toContain('key={`${workspaceId}:${user.id}`}');
+  expect(equity).toContain('key={`equity:${workspaceId}:${user.id}`}');
+ });
+ it("keeps sibling transit and equity identity distinct during server refresh", () => {
+  const source = readFileSync("src/app/(app)/data-hub/page.tsx", "utf8").replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/[^\n]*/g, "");
+  const transit = source.match(/<GtfsIngestPanel\b[\s\S]*?\/>/)?.[0];
+  const equity = source.match(/<TitleViServiceEquityPanel\b[\s\S]*?\/>/)?.[0];
+  const transitKey = transit?.match(/key=\{(`[^`]+`)\}/)?.[1];
+  const equityKey = equity?.match(/key=\{(`[^`]+`)\}/)?.[1];
+  expect(transitKey).toBeDefined();
+  expect(equityKey).toBeDefined();
+  expect(transitKey).not.toBe(equityKey);
  });
 });
