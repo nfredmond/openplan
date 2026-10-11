@@ -4,6 +4,7 @@ const generateTextMock = vi.fn();
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({

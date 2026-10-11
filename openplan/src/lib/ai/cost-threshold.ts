@@ -1,3 +1,5 @@
+import { estimateClaudeListPriceUsd } from "./model-policy";
+
 export const ANALYSIS_SINGLE_CALL_COST_WARN_USD = 0.5;
 
 export type AnalysisCostThresholdWarning = {
@@ -20,7 +22,8 @@ export function buildAnalysisCostThresholdWarning(
 }
 
 /**
- * Approximate USD-per-million-token list prices by Anthropic model family,
+ * Fallback USD-per-million-token prices by Anthropic model family, for IDs
+ * the exact list-price table in model-policy.ts does not carry,
  * matched by id substring (model ids are configurable via env overrides, so
  * exact-id tables would silently stop estimating on every override). An
  * unrecognized id estimates to null — the threshold warning then simply does
@@ -42,6 +45,12 @@ export function estimateAnthropicCostUsd(
   outputTokens: number | null | undefined,
 ): number | null {
   if (!modelId) return null;
+  const listed = estimateClaudeListPriceUsd(
+    modelId,
+    typeof inputTokens === "number" && Number.isFinite(inputTokens) ? inputTokens : null,
+    typeof outputTokens === "number" && Number.isFinite(outputTokens) ? outputTokens : null,
+  );
+  if (listed !== null) return listed;
   const normalized = modelId.toLowerCase();
   const pricing = ANTHROPIC_FAMILY_PRICING.find((entry) => normalized.includes(entry.match));
   if (!pricing) return null;

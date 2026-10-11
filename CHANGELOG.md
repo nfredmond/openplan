@@ -20,7 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes are recorded here.
+**Model defaults.** Without an override, the assistant, narrative drafts and
+plan extraction use Claude Opus 5.5, and comment moderation, synthesis,
+translation and grant interpretation use Claude Haiku 5.5, both at high effort.
+The `OPENPLAN_*_MODEL` overrides still take precedence; an override to a model
+outside the defaults is sent without an effort setting. Cost estimates use the
+current list prices.
 
 ## 0.68.0 (2026-10-09)
 

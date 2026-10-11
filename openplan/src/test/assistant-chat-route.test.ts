@@ -56,6 +56,7 @@ vi.mock("@/lib/assistant/context", async () => {
 vi.mock("ai", () => ({
   streamText: (...args: unknown[]) => streamTextMock(...args),
   stepCountIs: (...args: unknown[]) => stepCountIsMock(...(args as [number])),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@/lib/assistant/chat-tools", () => ({
@@ -273,7 +274,7 @@ describe("/api/assistant/chat", () => {
       stopWhen: { __stepCountIs: number };
     };
 
-    expect(callArgs.model).toEqual({ __modelId: "claude-opus-4-8" });
+    expect(callArgs.model).toEqual({ __modelId: "claude-opus-5-5" });
     expect(callArgs.system).toContain("Workspace: Foothill COG");
     expect(callArgs.system).toContain("Never invent workspace data.");
     expect(Object.keys(callArgs.tools)).toContain("list_projects");
@@ -368,15 +369,15 @@ describe("/api/assistant/chat", () => {
     }) => unknown;
     expect(typeof messageMetadata).toBe("function");
 
-    // Heavy call on the opus default (~$0.75) exceeds the $0.50 threshold.
+    // Heavy call on the Opus 5.5 default ($0.60) exceeds the $0.50 threshold.
     expect(
-      messageMetadata({ part: { type: "finish", totalUsage: { inputTokens: 20_000, outputTokens: 6_000 } } })
+      messageMetadata({ part: { type: "finish", totalUsage: { inputTokens: 100_000, outputTokens: 10_000 } } })
     ).toEqual({
-      costWarning: { thresholdKind: "single_call", thresholdUsd: 0.5, estimatedCostUsd: 0.75 },
+      costWarning: { thresholdKind: "single_call", thresholdUsd: 0.5, estimatedCostUsd: 0.6 },
     });
     expect(mockAudit.warn).toHaveBeenCalledWith(
       "assistant_chat_cost_threshold_exceeded",
-      expect.objectContaining({ estimatedCostUsd: 0.75, workspaceId: WORKSPACE_ID })
+      expect.objectContaining({ estimatedCostUsd: 0.6, workspaceId: WORKSPACE_ID })
     );
 
     // Small calls and non-finish parts carry no metadata.

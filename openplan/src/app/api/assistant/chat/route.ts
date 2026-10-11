@@ -18,9 +18,10 @@ import {
 } from "@/lib/ai/cost-threshold";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
 import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
-const ASSISTANT_CHAT_DEFAULT_MODEL = "claude-opus-4-8";
+const ASSISTANT_CHAT_DEFAULT_MODEL = defaultClaudeModelId("orchestrator");
 const ASSISTANT_CHAT_MAX_OUTPUT_TOKENS = 2000;
 const ASSISTANT_CHAT_MAX_HISTORY_ENTRIES = 12;
 /** Tool-use loop bound: at most 6 model steps (5 tool rounds + the final reply). */

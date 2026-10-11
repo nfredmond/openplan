@@ -12,7 +12,7 @@ import { generateText } from "ai";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 
 const TRANSLATION_MODEL_ID =
-  process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || "claude-haiku-4-5-20251001";
+  process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || defaultClaudeModelId("quick");
 
 /** Bound model input without replacing a supported source with its prefix. */
 const TRANSLATION_INPUT_MAX_BYTES = 32_000;
@@ -28,6 +28,7 @@ export {
   type TranslationLanguage,
 } from "./translation-languages";
 import { TRANSLATION_CAVEAT, TRANSLATION_LANGUAGE_LABELS, type TranslationLanguage } from "./translation-languages";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 export type TranslationResult = {
   source: "ai" | "unavailable";

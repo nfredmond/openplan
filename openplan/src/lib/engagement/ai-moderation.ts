@@ -11,7 +11,7 @@ import { generateText } from "ai";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 
 const MODERATION_MODEL_ID =
-  process.env.OPENPLAN_ENGAGEMENT_MODERATION_MODEL?.trim() || "claude-haiku-4-5-20251001";
+  process.env.OPENPLAN_ENGAGEMENT_MODERATION_MODEL?.trim() || defaultClaudeModelId("quick");
 
 /** Cap items per scan so a huge campaign can't blow the token budget. */
 export const MODERATION_MAX_ITEMS = 100;
@@ -47,6 +47,7 @@ import {
   type ModerationResult,
   type ModerationSeverity,
 } from "./ai-moderation-shared";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 // ── deterministic (AI-offline) heuristics: PII + spam only ──────────────────
 const EMAIL_RE = /[\w.+-]+@[\w-]+\.[\w.-]{2,}/;
