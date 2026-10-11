@@ -77,10 +77,17 @@ export default async function LandUsePlansPage() {
           })}
         </section>
       ) : !unreadable ? <p className="rounded-xl border border-dashed border-border p-6 text-sm text-muted-foreground">No land use plans yet. The setup below creates the first working version and its requirements checklist.</p> : null}
-      <div id="create-land-use-plan" className="scroll-mt-24">
-        <LandUsePlanCreator actorId={auth.user.id} workspaceId={membership.workspace_id}
-          canWrite={canAccessWorkspaceAction("plans.write", membership.role)} descriptorHashes={descriptorHashes} />
-      </div>
+      {/* The setup form, about thirty fields, sat open under the plan list.
+          It opens here when the workspace has no plan yet; otherwise the
+          header button's #create-land-use-plan link opens it, because Chrome
+          expands a closed disclosure that holds the link's target. */}
+      <details className="rtp-cycle-more" open={!unreadable && !plans?.length ? true : undefined}>
+        <summary>Start a land use plan</summary>
+        <div id="create-land-use-plan" className="mt-3 scroll-mt-24">
+          <LandUsePlanCreator actorId={auth.user.id} workspaceId={membership.workspace_id}
+            canWrite={canAccessWorkspaceAction("plans.write", membership.role)} descriptorHashes={descriptorHashes} />
+        </div>
+      </details>
     </div>
   );
 }

@@ -191,7 +191,7 @@ export function MyWorkBoard({
         title={navLabel("/my-work")}
         description="Assignments and deadlines across this workspace, including plan actions without a due date, unassigned work, held stage gates, and shared grant and invoice deadlines."
       >
-        <p className="module-note">{describeMyWorkOrdering(limitPerSource)}</p>
+        <p className="module-section-description">{describeMyWorkOrdering(limitPerSource)}</p>
         {readFailureSummary ? (
           <p className="module-alert" role="status">
             {readFailureSummary}
@@ -245,7 +245,7 @@ export function MyWorkBoard({
 
       <article className="module-section-surface">
         <h2 className="module-section-title">{BLOCK_HEADINGS.deadlines}</h2>
-        <p className="module-note">{BLOCK_NOTES.deadlines}</p>
+        <p className="module-section-description">{BLOCK_NOTES.deadlines}</p>
         {blocks.deadlines.length > 0 ? (
           <div className="module-record-list">
             {blocks.deadlines.map((item) => (
@@ -285,7 +285,7 @@ export function MyWorkBoard({
       {blocks.undated.length > 0 || blockHasUnreadableSource("undated") ? (
         <article className="module-section-surface">
           <h2 className="module-section-title">{BLOCK_HEADINGS.undated}</h2>
-          <p className="module-note">{BLOCK_NOTES.undated}</p>
+          <p className="module-section-description">{BLOCK_NOTES.undated}</p>
           {blocks.undated.length > 0 ? (
             <div className="module-record-list">
               {blocks.undated.map((item) => (
@@ -304,7 +304,7 @@ export function MyWorkBoard({
 
       <article className="module-section-surface">
         <h2 className="module-section-title">{BLOCK_HEADINGS.blocked_projects}</h2>
-        <p className="module-note">{BLOCK_NOTES.blocked_projects}</p>
+        <p className="module-section-description">{BLOCK_NOTES.blocked_projects}</p>
         {blocks.blocked_projects.length > 0 ? (
           <div className="module-record-list">
             {blocks.blocked_projects.map((item) => (
@@ -326,7 +326,7 @@ export function MyWorkBoard({
 
       <article className="module-section-surface" data-testid="my-work-needs-review">
         <h2 className="module-section-title">{BLOCK_HEADINGS.needs_review}</h2>
-        <p className="module-note">{BLOCK_NOTES.needs_review}</p>
+        <p className="module-section-description">{BLOCK_NOTES.needs_review}</p>
         {blocks.needs_review.length > 0 ? (
           <div className="module-record-list">
             {blocks.needs_review.map((item) => (
@@ -352,7 +352,7 @@ export function MyWorkBoard({
 
       <article className="module-section-surface">
         <h2 className="module-section-title">{BLOCK_HEADINGS.workspace_deadlines}</h2>
-        <p className="module-note">{BLOCK_NOTES.workspace_deadlines}</p>
+        <p className="module-section-description">{BLOCK_NOTES.workspace_deadlines}</p>
         {blocks.workspace_deadlines.length > 0 ? (
           <div className="module-record-list">
             {blocks.workspace_deadlines.map((item) => (
