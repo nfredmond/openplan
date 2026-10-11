@@ -77,6 +77,22 @@ export function PortalLanguagePicker({
           <span lang={locale.locale} dir={PORTAL_LOCALE_DIRECTION[locale.locale]}>
             {currentName}
           </span>
+          {/*
+            A machine wrote this language's buttons and instructions: said as a
+            label on the language itself, not as another notice box above the
+            page. The full sentence is the label's description.
+          */}
+          {messages.machineTranslated ? (
+            <span
+              className="rounded-full border border-border/70 px-2 py-0.5 text-xs font-medium text-muted-foreground"
+              lang={locale.locale}
+              title={translator.t("language.machineNotice")}
+              data-testid="portal-language-machine-label"
+            >
+              {translator.t("provenance.machine.label")}
+              <span className="sr-only">. {translator.t("language.machineNotice")}</span>
+            </span>
+          ) : null}
           <ChevronDown
             className="ml-auto h-4 w-4 text-muted-foreground transition-transform group-open:rotate-180"
             aria-hidden="true"
