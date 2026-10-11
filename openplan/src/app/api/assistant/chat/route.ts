@@ -171,7 +171,15 @@ export async function POST(request: NextRequest) {
 
       const result = streamText({
         model: anthropicModel(modelId),
-        system: systemPrompt,
+        // One cache breakpoint on the system prompt caches the tool
+        // definitions and the prompt (about 9,000 tokens), so steps after the
+        // first in a question read them at a tenth of the input price. A live
+        // test on 2026-10-11 found every step paying full price for them.
+        system: {
+          role: "system" as const,
+          content: systemPrompt,
+          providerOptions: { anthropic: { cacheControl: { type: "ephemeral" } } },
+        },
         messages: [...history, { role: "user" as const, content: parsed.data.question }],
         tools,
         stopWhen: stepCountIs(ASSISTANT_CHAT_MAX_STEPS),

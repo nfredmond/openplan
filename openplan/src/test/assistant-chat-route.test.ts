@@ -267,7 +267,7 @@ describe("/api/assistant/chat", () => {
     expect(streamTextMock).toHaveBeenCalledTimes(1);
     const callArgs = streamTextMock.mock.calls[0][0] as {
       model: { __modelId: string };
-      system: string;
+      system: { role: string; content: string; providerOptions: unknown };
       messages: Array<{ role: string; content: string }>;
       maxOutputTokens: number;
       tools: Record<string, unknown>;
@@ -275,8 +275,12 @@ describe("/api/assistant/chat", () => {
     };
 
     expect(callArgs.model).toEqual({ __modelId: "claude-opus-5-5" });
-    expect(callArgs.system).toContain("Workspace: Foothill COG");
-    expect(callArgs.system).toContain("Never invent workspace data.");
+    expect(callArgs.system.role).toBe("system");
+    expect(callArgs.system.content).toContain("Workspace: Foothill COG");
+    expect(callArgs.system.content).toContain("Never invent workspace data.");
+    // The tool definitions and system prompt are cached across the steps of
+    // one question; without this every step pays full input price for them.
+    expect(callArgs.system.providerOptions).toEqual({ anthropic: { cacheControl: { type: "ephemeral" } } });
     expect(Object.keys(callArgs.tools)).toContain("list_projects");
     expect(Object.keys(callArgs.tools)).toContain("propose_generate_report_artifact");
     expect(callArgs.stopWhen).toEqual({ __stepCountIs: 6 });
@@ -305,8 +309,8 @@ describe("/api/assistant/chat", () => {
         await postAssistantChat(
           jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due soon?" })
         );
-        const callArgs = streamTextMock.mock.calls[0][0] as { system: string };
-        expect(callArgs.system).toContain(`TODAY: ${expected} (UTC calendar date).`);
+        const callArgs = streamTextMock.mock.calls[0][0] as { system: { content: string } };
+        expect(callArgs.system.content).toContain(`TODAY: ${expected} (UTC calendar date).`);
       }
     } finally {
       vi.useRealTimers();
