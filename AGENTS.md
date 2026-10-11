@@ -196,7 +196,7 @@ Read the [demo AI and schema catch-up](docs/ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2
 [hosted recovery](openplan/docs/ops/HOSTED_RECOVERY.md),
 [self-hosting](openplan/docs/SELF_HOSTING.md) and
 [runbook](openplan/docs/ops/RUNBOOK.md) before operating this installation.
-Consult `~/.local/state/openplan/COORDINATION.md` before any merge, and honor its
+Consult `$HOME/.local/state/openplan/COORDINATION.md` before any merge, and honor its
 current hold or explicit exception. Verify live platform state rather than treating
 these dated settings or a prior agent's report as current acceptance evidence.
 The hosted relaunch does not establish complete v1 or scientific validation.
