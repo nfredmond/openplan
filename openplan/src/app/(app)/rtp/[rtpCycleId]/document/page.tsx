@@ -296,7 +296,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
           </Link>
         </div>
 
-        <p className="mt-8 flex items-center gap-2 text-compact font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="mt-8 flex items-center gap-2 text-compact font-semibold text-muted-foreground">
           <BookOpenText className="h-3.5 w-3.5" />
           Regional Transportation Plan
         </p>
@@ -500,7 +500,7 @@ export default async function RtpCycleDocumentPage({ params }: RouteContext) {
                 id={slugify(chapter.chapter_key || chapter.title)}
                 className={SECTION_SPACING}
               >
-                <p className="text-compact font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-compact font-semibold text-muted-foreground">
                   Chapter {index + 1} · {titleizeRtpValue(chapter.section_type)}
                 </p>
                 <h2 className={`mt-3 ${SECTION_HEADING}`}>{chapter.title}</h2>

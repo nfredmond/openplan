@@ -416,12 +416,12 @@ export function ReportCreator({
                     Modeling evidence
                   </label>
                   {selectedModelingCountyRun?.claimStatus ? (
-                    <span className="inline-flex items-center gap-1 text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="inline-flex items-center gap-1 text-label font-semibold text-muted-foreground">
                       <ShieldCheck className="h-3.5 w-3.5" />
                       {modelingClaimStatusLabel(selectedModelingCountyRun.claimStatus)}
                     </span>
                   ) : (
-                    <span className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-label font-semibold text-muted-foreground">
                       Optional
                     </span>
                   )}
@@ -458,7 +458,7 @@ export function ReportCreator({
               <div className="space-y-2">
                 <div className="flex items-center justify-between gap-3">
                   <p className="text-compact font-semibold">Linked analysis runs</p>
-                  <span className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="text-label font-semibold text-muted-foreground">
                     {flowState.values.runIds.length} selected
                   </span>
                 </div>
@@ -502,7 +502,7 @@ export function ReportCreator({
                             <span className="block text-sm font-medium text-foreground">
                               {run.title}
                             </span>
-                            <span className="block text-label uppercase tracking-[0.12em] text-muted-foreground">
+                            <span className="block text-label text-muted-foreground">
                               {new Date(run.created_at).toLocaleString("en-US")}
                             </span>
                           </span>

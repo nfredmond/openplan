@@ -79,7 +79,7 @@ export default async function InvoicingPage({
     return (
       <section className="space-y-6">
         <header className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+          <p className="text-xs font-semibold text-muted-foreground">Invoices &amp; Reimbursements</p>
           <h1 className="text-3xl font-semibold tracking-tight">Invoices &amp; Reimbursements could not be opened</h1>
         </header>
         <StateBlock
@@ -115,7 +115,7 @@ export default async function InvoicingPage({
       <section className="space-y-6">
         <header className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_300px] xl:items-end">
           <div className="space-y-2">
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoices &amp; Reimbursements</p>
+            <p className="text-xs font-semibold text-muted-foreground">Invoices &amp; Reimbursements</p>
             <h1 className="text-3xl font-semibold tracking-tight">Choose a workspace</h1>
             <p className="text-sm text-muted-foreground sm:text-base">
               Invoice registers are workspace-specific. This account has access to multiple workspaces, so pick the one whose reimbursement invoices you want to review.
@@ -149,7 +149,7 @@ export default async function InvoicingPage({
                     <div className="flex flex-wrap items-center gap-2">
                       <h3 className="text-base font-semibold tracking-tight text-foreground">{workspaceOption?.name ?? "Workspace"}</h3>
                     </div>
-                    <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                    <p className="text-xs text-muted-foreground">
                       Workspace ID {formatWorkspaceIdSnippet(membershipOption.workspace_id)} · Role {membershipOption.role}
                     </p>
                   </div>

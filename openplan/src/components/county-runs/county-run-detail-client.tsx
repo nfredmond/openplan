@@ -318,7 +318,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           action={
             <Link
               href={safeBackHref}
-              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+              className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary/35 hover:text-primary"
             >
               Return to that view
             </Link>
@@ -374,7 +374,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
         </CardHeader>
         <CardContent className="grid gap-5 text-sm xl:grid-cols-[1.1fr_1.1fr_1fr]">
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Inputs captured</div>
+            <div className="text-xs font-semibold text-muted-foreground">Inputs captured</div>
             <dl className="mt-3 space-y-3">
               {manifestProof.inputRows.map((row) => (
                 <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
@@ -386,7 +386,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
           </div>
 
           <div>
-            <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Generated artifacts</div>
+            <div className="text-xs font-semibold text-muted-foreground">Generated artifacts</div>
             <dl className="mt-3 space-y-3">
               {manifestProof.artifactRows.map((row) => (
                 <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
@@ -399,7 +399,7 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
 
           <div className="space-y-5">
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Validation status</div>
+              <div className="text-xs font-semibold text-muted-foreground">Validation status</div>
               <dl className="mt-3 space-y-3">
                 {manifestProof.validationRows.map((row) => (
                   <div key={`${row.label}:${row.value}`} className="border-b border-border/60 pb-2 last:border-0 last:pb-0">
@@ -411,12 +411,12 @@ export function CountyRunDetailClient({ countyRunId }: { countyRunId: string }) 
             </div>
 
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Operator next action</div>
+              <div className="text-xs font-semibold text-muted-foreground">Operator next action</div>
               <p className="mt-3 text-muted-foreground">{manifestProof.operatorNextAction}</p>
             </div>
 
             <div>
-              <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Caveat boundaries</div>
+              <div className="text-xs font-semibold text-muted-foreground">Caveat boundaries</div>
               <ul className="mt-3 list-disc space-y-2 pl-5 text-muted-foreground">
                 {manifestProof.caveatRows.map((caveat) => (
                   <li key={caveat}>{caveat}</li>

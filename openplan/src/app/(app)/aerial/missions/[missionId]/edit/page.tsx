@@ -117,7 +117,7 @@ export default async function EditMissionAoiPage({ params, searchParams }: EditM
         Back to mission
       </Link>
       <div className="flex flex-col gap-2">
-        <div className="flex items-center gap-2 text-label uppercase tracking-[0.12em] text-muted-foreground">
+        <div className="flex items-center gap-2 text-label text-muted-foreground">
           <PlaneTakeoff className="h-3 w-3" />
           Mission AOI
         </div>

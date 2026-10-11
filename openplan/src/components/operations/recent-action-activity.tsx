@@ -140,7 +140,7 @@ export function RecentActionActivity({
         <>
           <div className="mt-4 grid gap-3 md:grid-cols-[minmax(0,0.9fr)_minmax(0,1.1fr)]">
             <div className="module-subpanel">
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-label font-semibold text-muted-foreground">
                 What still needs a person
               </p>
               <p className="mt-2 text-sm leading-relaxed text-foreground">
@@ -157,7 +157,7 @@ export function RecentActionActivity({
             </div>
             {showNoWritePosture ? (
               <div className="module-subpanel">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   What this panel does, and does not do
                 </p>
                 <p className="mt-2 text-sm leading-relaxed text-foreground">
@@ -179,10 +179,10 @@ export function RecentActionActivity({
                       <div className="module-record-kicker">
                         <StatusBadge tone={getOutcomeTone(execution.outcome)}>{execution.outcome}</StatusBadge>
                         <StatusBadge tone="neutral">{execution.approval}</StatusBadge>
-                        <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <span className="text-label font-semibold text-muted-foreground">
                           {getTriageReason(execution)}
                         </span>
-                        <span className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                        <span className="text-label font-semibold text-muted-foreground">
                           {formatActionTimestamp(execution.completed_at)}
                         </span>
                       </div>

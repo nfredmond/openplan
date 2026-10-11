@@ -188,7 +188,7 @@ function ArtifactList({
 
   return (
     <div className="mt-3">
-      <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <p className="text-label font-semibold text-muted-foreground">
         Outputs the worker reported
       </p>
       <ul className="mt-1.5 space-y-1.5">

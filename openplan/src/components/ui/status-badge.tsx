@@ -27,7 +27,7 @@ export function StatusBadge({ tone = "neutral", className, children, ...props }:
     <Badge
       variant="outline"
       data-tone={tone}
-      className={cn("min-h-8 px-2.5 py-1 text-label tracking-[0.12em]", toneClasses[tone], className)}
+      className={cn("min-h-6 px-2 py-0.5 text-label", toneClasses[tone], className)}
       {...props}
     >
       {children}

@@ -176,7 +176,7 @@ export function WorkPlanTemplateApplier({
               */}
               {template ? (
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 px-3 py-3">
-                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <p className="text-label font-semibold text-muted-foreground">
                     Before you apply this
                   </p>
                   {template.description ? (

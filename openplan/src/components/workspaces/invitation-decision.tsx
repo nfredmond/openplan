@@ -102,7 +102,7 @@ export function InvitationDecision({
 
   return (
     <section className="rounded-lg border border-border/70 bg-background/60 px-6 py-6">
-      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <p className="text-label font-semibold text-muted-foreground">
         Workspace invitation
       </p>
       <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">

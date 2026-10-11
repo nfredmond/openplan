@@ -121,7 +121,7 @@ export function TranscribedChapterDraftCard({
             )}
           </span>
         ) : null}
-        <span className="text-label uppercase tracking-wide text-muted-foreground">{status}</span>
+        <span className="text-label text-muted-foreground">{status}</span>
       </div>
 
       {described ? <p className="text-xs text-muted-foreground">{described.detail}</p> : null}

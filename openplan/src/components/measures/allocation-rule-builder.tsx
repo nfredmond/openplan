@@ -163,7 +163,7 @@ export function AllocationRuleBuilder({
               className="rounded-[0.5rem] border border-border/50 p-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Figure {index + 1}
                 </span>
                 <RowControls
@@ -280,7 +280,7 @@ export function AllocationRuleBuilder({
               className="rounded-[0.5rem] border border-border/50 p-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Deduction {index + 1}
                 </span>
                 <RowControls
@@ -423,7 +423,7 @@ export function AllocationRuleBuilder({
               className="rounded-[0.5rem] border border-border/50 p-3"
             >
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <span className="text-xs font-semibold text-muted-foreground">
                   Reserve {index + 1}
                 </span>
                 <RowControls
@@ -516,7 +516,7 @@ export function AllocationRuleBuilder({
                 className="rounded-[0.5rem] border border-border/50 p-3"
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <span className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                  <span className="text-xs font-semibold text-muted-foreground">
                     Category {index + 1}
                   </span>
                   <RowControls
@@ -588,7 +588,7 @@ export function AllocationRuleBuilder({
 
                 {category.distributionKind === "return_to_source" ? (
                   <div className="mt-3 rounded-[0.5rem] border border-border/50 bg-muted/20 p-3">
-                    <h4 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <h4 className="text-xs font-semibold text-muted-foreground">
                       How it is divided between them
                     </h4>
                     <p className="mt-1 text-xs text-muted-foreground">

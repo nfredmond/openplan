@@ -60,9 +60,9 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     const groups = buildRailGroups();
     expect(groups.map((group) => group.title)).toEqual([
       "Workspace",
-      "Plans & Programming",
+      "Plans & programming",
       "Funding",
-      "Analysis & Modeling",
+      "Analysis & modeling",
       "Community",
       "Library",
     ]);
@@ -70,7 +70,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
       group.items.map((item) => `${item.href}·${item.label}`),
     );
     expect(items[0]).toEqual([
-      "/dashboard·Overview",
+      "/dashboard·Dashboard",
       "/workspace·Workspace setup & health",
       // Position 2 in the Workspace group, above Projects: the personal work
       // queue is the one surface that comes to the planner rather than being
@@ -92,6 +92,10 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     ]);
     expect(items[3]).toEqual([
       "/models·Travel modeling",
+      // On the rail since October 10, 2026 (decision D4 of the October 1 UI
+      // review): the modeling job's other two pages sit directly under it.
+      "/scenarios·Scenarios",
+      "/county-runs·Model Validation",
       "/explore·Corridor Analysis",
       "/safety·Safety",
     ]);
@@ -124,9 +128,10 @@ describe("nav registry — the single source for every nav and the auth proxy", 
     // The old "billing" habit still finds the LAPM invoice register.
     const invoicing = commands.find((command) => command.href === "/invoicing");
     expect(invoicing?.keywords).toContain("billing");
-    // The retired "Command Center" name still lands on Overview…
+    // The retired "Command Center" and "Overview" names still land on the dashboard…
     const overview = commands.find((command) => command.href === "/dashboard");
     expect(overview?.keywords).toContain("command center");
+    expect(overview?.keywords).toContain("overview");
     // …and the retired "Analysis Studio" name still lands on Corridor Analysis.
     const explore = commands.find((command) => command.href === "/explore");
     expect(explore?.keywords).toContain("analysis studio");
@@ -174,19 +179,19 @@ describe("nav registry — the single source for every nav and the auth proxy", 
 
   it("resolves canonical labels and falls back to the href for unregistered surfaces", () => {
     expect(navLabel("/explore")).toBe("Corridor Analysis");
-    expect(navLabel("/dashboard")).toBe("Overview");
+    expect(navLabel("/dashboard")).toBe("Dashboard");
     expect(navLabel("/knowledge-base")).toBe("Documents");
     expect(navLabel("/invoicing")).toBe("Invoices & Reimbursements");
     expect(navLabel("/not-a-registered-surface")).toBe("/not-a-registered-surface");
   });
 
-  it("keeps specialist modeling pages in the palette but off the compact rail", () => {
+  it("shows the modeling job's specialist pages on the rail and in the palette", () => {
     const railHrefs = buildRailGroups().flatMap((group) => group.items.map((item) => item.href));
     const paletteHrefs = buildPaletteCommands().map((command) => command.href);
 
     expect(railHrefs).toContain("/models");
-    expect(railHrefs).not.toContain("/scenarios");
-    expect(railHrefs).not.toContain("/county-runs");
+    expect(railHrefs).toContain("/scenarios");
+    expect(railHrefs).toContain("/county-runs");
     expect(paletteHrefs).toContain("/scenarios");
     expect(paletteHrefs).toContain("/county-runs");
   });

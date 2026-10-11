@@ -644,7 +644,7 @@ export function RtpFinancialLedgerEditor({
             onSubmit={(event) => handleUpdate(event, line)}
             className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4"
           >
-            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Edit ledger line</p>
+            <p className="text-xs font-semibold text-muted-foreground">Edit ledger line</p>
             {renderScopedError(saveKey)}
             {renderDraftFields(`rtp-ledger-edit-${line.id}`, { allowBandChange: bands.length > 1 })}
             <div className="flex items-center gap-2">
@@ -862,7 +862,7 @@ export function RtpFinancialLedgerEditor({
 
               <div className="grid gap-4 lg:grid-cols-2">
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-emerald-700 dark:text-emerald-300">
+                  <p className="text-xs font-semibold text-emerald-700 dark:text-emerald-300">
                     Revenue
                   </p>
                   {revenueLines.length === 0 ? (
@@ -873,7 +873,7 @@ export function RtpFinancialLedgerEditor({
                 </div>
 
                 <div className="space-y-2">
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Costs</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Costs</p>
                   {costLines.length === 0 ? (
                     <p className="text-sm text-muted-foreground">
                       No operating, maintenance, or other costs recorded for this period.
@@ -889,7 +889,7 @@ export function RtpFinancialLedgerEditor({
                   onSubmit={(event) => handleCreate(event, band.id)}
                   className="space-y-3 rounded-[0.5rem] border border-border/60 bg-muted/20 p-4"
                 >
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-xs font-semibold text-muted-foreground">
                     Add a line to {band.label}
                   </p>
                   {renderScopedError(addKey)}

@@ -202,7 +202,7 @@ export default async function DataHubPage() {
               Open Projects
             </Link>
             <Link href="/dashboard" className="module-inline-item transition hover:text-primary">
-              Back to Overview
+              Back to the dashboard
             </Link>
           </div>
         </article>
@@ -623,7 +623,7 @@ export default async function DataHubPage() {
                 <div className="flex flex-wrap items-center gap-2">
                   <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
                   {item.kicker ? (
-                    <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">{item.kicker}</p>
+                    <p className="text-xs text-muted-foreground">{item.kicker}</p>
                   ) : null}
                 </div>
                 {item.detail ? <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p> : null}

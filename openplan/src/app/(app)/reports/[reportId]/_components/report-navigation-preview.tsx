@@ -31,7 +31,7 @@ export function ReportNavigationPreview({
             <Link2 className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               Navigation
             </p>
             <h2 className="text-xl font-semibold tracking-tight">
@@ -100,7 +100,7 @@ export function ReportNavigationPreview({
         <article className="module-section-surface">
           <div className="flex items-center justify-between gap-3">
             <div>
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-label font-semibold text-muted-foreground">
                 Preview
               </p>
               <h2 className="text-xl font-semibold tracking-tight">

@@ -49,9 +49,9 @@ export type AppNavEntry = {
 
 const RAIL_GROUP_TITLES: Record<AppNavRailGroup, string> = {
   workspace: "Workspace",
-  plans: "Plans & Programming",
+  plans: "Plans & programming",
   funding: "Funding",
-  analysis: "Analysis & Modeling",
+  analysis: "Analysis & modeling",
   community: "Community",
   library: "Library",
 };
@@ -63,7 +63,8 @@ const RAIL_GROUP_TITLES: Record<AppNavRailGroup, string> = {
 export const APP_NAV_ENTRIES: AppNavEntry[] = [
   {
     href: "/dashboard",
-    label: "Overview",
+    // "Dashboard" since October 10, 2026: Nathaniel's own word for this page.
+    label: "Dashboard",
     railGroup: "workspace",
     icon: "overview",
     // "command center" kept so the old name for the dashboard's cross-domain
@@ -176,15 +177,6 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     railGroup: "analysis",
     icon: "scenarios",
     paletteKeywords: "baseline comparison",
-    railHidden: true,
-  },
-  {
-    href: "/explore",
-    label: "Corridor Analysis",
-    railGroup: "analysis",
-    icon: "analysis",
-    // "analysis studio" was this module's old name; kept searchable.
-    paletteKeywords: "corridor analysis studio explore",
   },
   {
     href: "/county-runs",
@@ -193,7 +185,14 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     icon: "county",
     paletteKeywords:
       "county validation county runs counts calibration onboarding screening",
-    railHidden: true,
+  },
+  {
+    href: "/explore",
+    label: "Corridor Analysis",
+    railGroup: "analysis",
+    icon: "analysis",
+    // "analysis studio" was this module's old name; kept searchable.
+    paletteKeywords: "corridor analysis studio explore",
   },
   {
     href: "/safety",

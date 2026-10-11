@@ -779,7 +779,7 @@ export function ExploreWorkbench({
 
         {!analysisResult && !mapUnavailableReason ? (
           <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
-            <p className="text-label font-bold uppercase tracking-[0.12em] text-cyan-300/70">
+            <p className="text-label font-bold text-cyan-300/70">
               Corridor Analysis
             </p>
             <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">

@@ -70,7 +70,7 @@ export function AnalysisSequenceStrip({
           const isCurrent = step.id === currentStepId;
           return (
             <li key={step.id} data-testid={`analysis-step-${step.id}`} data-state={step.state}>
-              <p className={`text-compact font-semibold uppercase tracking-[0.14em] ${STATE_TONE[step.state]}`}>
+              <p className={`text-compact font-semibold ${STATE_TONE[step.state]}`}>
                 <span data-testid={`analysis-step-state-${step.id}`}>{STATE_LABEL[step.state]}</span>
                 {isCurrent ? <span className="ml-2 text-muted-foreground">· you are here</span> : null}
               </p>

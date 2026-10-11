@@ -487,7 +487,7 @@ export default async function PublicRtpDocumentPage({
     return (
       <article className={PAGE_COLUMN}>
         <header className="border-b border-border pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             Regional Transportation Plan · Draft for public review
           </p>
           <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2.35rem]">
@@ -680,7 +680,7 @@ export default async function PublicRtpDocumentPage({
   return (
     <article className={PAGE_COLUMN}>
       <header className="border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-xs font-semibold text-muted-foreground">
           Regional Transportation Plan · Draft for public review
         </p>
         <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2.35rem]">{cycle.title}</h1>
@@ -787,7 +787,7 @@ export default async function PublicRtpDocumentPage({
                     Revenue, cost, and balance for each period of this plan
                   </caption>
                   <thead>
-                    <tr className="border-b border-border text-left text-xs uppercase tracking-wide text-muted-foreground">
+                    <tr className="border-b border-border text-left text-xs text-muted-foreground">
                       <th scope="col" className="py-2 pr-3 font-medium">Period</th>
                       <th scope="col" className="py-2 pr-3 font-medium">Revenue</th>
                       <th scope="col" className="py-2 pr-3 font-medium">Cost</th>
@@ -1021,7 +1021,7 @@ export default async function PublicRtpDocumentPage({
             <div className="mt-10 space-y-12">
               {chapters.map((chapter, index) => (
                 <section key={chapter.id} id={slugify(chapter.chapter_key || chapter.title)}>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-xs font-semibold text-muted-foreground">
                     Chapter {index + 1} · {titleizeRtpValue(chapter.section_type)}
                   </p>
                   <h3 className={`mt-3 ${SECTION_HEADING}`}>{chapter.title}</h3>

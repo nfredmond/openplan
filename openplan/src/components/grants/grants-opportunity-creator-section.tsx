@@ -77,7 +77,7 @@ export function GrantsOpportunityCreatorSection({
               : `${fundingOpportunityCreatorProject.name} still needs sourced opportunities. Start with the highest-fit grant record here so pursue, award, and reimbursement work can stay on the shared grants spine.`}
           </p>
           {fundingOpportunityCreatorMode === "gap" && focusedFundingGapProject ? (
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+            <p className="mt-1 text-xs font-medium text-sky-700/80 dark:text-sky-200/80">
               Remaining gap {formatCurrency(focusedFundingGapProject.summary.unfundedAfterLikelyAmount)}
               {focusedFundingGapProject.summary.likelyFundingAmount > 0
                 ? ` · Pursued ${formatCurrency(focusedFundingGapProject.summary.likelyFundingAmount)}`
@@ -87,7 +87,7 @@ export function GrantsOpportunityCreatorSection({
                 : ""}
             </p>
           ) : focusedFundingSourcingProject ? (
-            <p className="mt-1 text-xs font-medium uppercase tracking-[0.14em] text-sky-700/80 dark:text-sky-200/80">
+            <p className="mt-1 text-xs font-medium text-sky-700/80 dark:text-sky-200/80">
               Funding need {formatCurrency(focusedFundingSourcingProject.fundingNeedAmount)}
               {focusedFundingSourcingProject.localMatchNeedAmount > 0
                 ? ` · Local match ${formatCurrency(focusedFundingSourcingProject.localMatchNeedAmount)}`

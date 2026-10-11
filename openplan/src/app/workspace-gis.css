@@ -128,8 +128,6 @@ html.dark .op-gis-layer__swatch {
 .op-gis-versions h5 {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
   padding: 0;
   margin: 0 0 6px;
@@ -329,8 +327,6 @@ html.dark .op-gis-wizard__ack {
 .op-gis-preview__facts dt {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: var(--muted);
 }
 .op-gis-preview__facts dd {

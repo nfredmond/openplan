@@ -88,7 +88,7 @@ export function ExploreRunComparisonCard({
         </div>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Run comparison</CardTitle>
+            <CardTitle className="text-[1.02rem] font-semibold text-white">Run comparison</CardTitle>
             <CardDescription className="max-w-2xl text-sm leading-6 text-slate-300/76">
               Compare the current run against a pinned baseline without losing the map or result context.
             </CardDescription>

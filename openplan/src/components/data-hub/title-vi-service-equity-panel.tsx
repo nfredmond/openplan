@@ -81,7 +81,7 @@ function MeasureTable({
       <h4 className="mb-2 text-sm font-semibold">{title}</h4>
       <table className="w-full text-sm">
         <thead>
-          <tr className="text-left text-xs uppercase text-muted-foreground">
+          <tr className="text-left text-xs text-muted-foreground">
             <th className="py-1 pr-3">Measure</th>
             <th className="py-1 pr-3">{focusLabel}</th>
             <th className="py-1 pr-3">Rest of service area</th>
@@ -135,21 +135,21 @@ function Comparison({ comparison }: { comparison: ServiceEquityComparison }) {
 
       <dl className="grid grid-cols-2 gap-3 text-sm sm:grid-cols-4">
         <div>
-          <dt className="text-xs uppercase text-muted-foreground">Minority tracts</dt>
+          <dt className="text-xs text-muted-foreground">Minority tracts</dt>
           <dd className="tabular-nums">{comparison.minorityFocus.tracts}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase text-muted-foreground">Residents in them</dt>
+          <dt className="text-xs text-muted-foreground">Residents in them</dt>
           <dd className="tabular-nums">{comparison.minorityFocus.population.toLocaleString("en-US")}</dd>
         </div>
         <div>
-          <dt className="text-xs uppercase text-muted-foreground">With no stop at all</dt>
+          <dt className="text-xs text-muted-foreground">With no stop at all</dt>
           <dd className="tabular-nums">
             {comparison.minorityFocus.populationWithNoService.toLocaleString("en-US")}
           </dd>
         </div>
         <div>
-          <dt className="text-xs uppercase text-muted-foreground">Service-area minority share</dt>
+          <dt className="text-xs text-muted-foreground">Service-area minority share</dt>
           <dd className="tabular-nums">
             {comparison.serviceAreaMinoritySharePct === null
               ? "—"
@@ -172,7 +172,7 @@ function Comparison({ comparison }: { comparison: ServiceEquityComparison }) {
       />
 
       <div className="rounded-[0.5rem] border border-border/60 bg-muted/30 p-3">
-        <p className="mb-1 text-xs font-semibold uppercase text-muted-foreground">
+        <p className="mb-1 text-xs font-semibold text-muted-foreground">
           What these figures do and do not establish
         </p>
         <ul className="list-disc space-y-1 pl-5 text-xs text-muted-foreground">
@@ -535,7 +535,7 @@ export function TitleViServiceEquityPanel({
 
       {/* ---- The comparison ------------------------------------------------ */}
       <div className="mb-3 flex items-center gap-2">
-        <label className="text-xs uppercase text-muted-foreground" htmlFor="title-vi-service-day">
+        <label className="text-xs text-muted-foreground" htmlFor="title-vi-service-day">
           Service day
         </label>
         <select

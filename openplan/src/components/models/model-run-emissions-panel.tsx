@@ -91,13 +91,13 @@ export function ModelRunEmissionsPanel({ modelId, modelRunId }: Props) {
             <div className="space-y-3">
               <div className="flex flex-wrap gap-x-8 gap-y-2">
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Annual CO₂e</p>
+                  <p className="text-xs text-muted-foreground">Annual CO₂e</p>
                   <p className="text-lg font-semibold text-foreground">
                     {formatMetricTons(screen.co2eMetricTonsYear)}
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Per capita</p>
+                  <p className="text-xs text-muted-foreground">Per capita</p>
                   <p className="text-lg font-semibold text-foreground">
                     {screen.co2eKgPerCapitaDay === null
                       ? "—"
@@ -105,7 +105,7 @@ export function ModelRunEmissionsPanel({ modelId, modelRunId }: Props) {
                   </p>
                 </div>
                 <div>
-                  <p className="text-xs uppercase tracking-wide text-muted-foreground">Rate</p>
+                  <p className="text-xs text-muted-foreground">Rate</p>
                   <p className="text-lg font-semibold text-foreground">
                     {screen.co2eGramsPerMile === null
                       ? "—"
