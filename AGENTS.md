@@ -162,6 +162,47 @@ Nathaniel authorizes hosted operation on October 10, 2026. The
 dated evidence and limits. Local checks still govern local operation; paid hosting
 is not a prerequisite for independently installed development releases.
 
+### Live hosted installation, October 11, 2026
+
+OpenPlan is live at **https://openplan-zeta.vercel.app**. The Nat Ford website's
+`/openplan` and `/openplan/` paths redirect there, preserving query parameters.
+That website has a separate repository and deployment; do not replace its homepage
+or DNS to change OpenPlan. Public signup requires confirmation email.
+
+- **Vercel:** the `openplan` project in the `natford` scope serves the web app.
+  GitHub `nfredmond/openplan` main feeds production, gated by CI. Check the actual
+  Git source, production alias, `/api/health` and bounded runtime logs before
+  declaring a deployment ready. A successful build can still be staged.
+- **Supabase:** OpenPlan uses project `lolckycpdjsgeejsmuzl` for database, Auth and
+  private Storage. It belongs to the Pro organization and uses Micro compute.
+  The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
+  separate. The dated catch-up records 405 migrations. New schema changes need a
+  controlled, additive rollout; Vercel and Railway Git deploys do not apply them.
+- **Railway:** project `9d7fbdc3-c370-41b5-8471-34dc128e718e` runs application queues,
+  separate AequilibraE/ActivitySim processing, and OCR. Main deployment triggers
+  respect CI and service watch paths. An unchanged service can retain an older
+  source commit; prove runtime-path equivalence instead of assuming drift.
+- **Resend:** verified `natfordplanning.com` sends Auth confirmation/recovery and
+  approved engagement email. Use the scoped sending credential already configured
+  in the authorized services. Never print keys. Gmail's tested delivery lands in
+  Spam despite passing SPF, DKIM and DMARC; do not promise inbox placement.
+- **AI and cost:** only Nathaniel's synthetic hosted demo workspace has the
+  encrypted Anthropic key and $5 monthly provider cap. Other workspaces supply
+  their own keys. The additional operating authorization is $50/month beyond
+  existing Vercel and Supabase subscriptions. Promotional credits do not change
+  that budget or authorize shared paid AI. Managed GTFS admission remains disabled.
+
+Read the [demo AI and schema catch-up](docs/ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md),
+[hosted recovery](openplan/docs/ops/HOSTED_RECOVERY.md),
+[self-hosting](openplan/docs/SELF_HOSTING.md) and
+[runbook](openplan/docs/ops/RUNBOOK.md) before operating this installation.
+Consult `$HOME/.local/state/openplan/COORDINATION.md` before any merge, and honor its
+current hold or explicit exception. Verify live platform state rather than treating
+these dated settings or a prior agent's report as current acceptance evidence.
+The hosted relaunch does not establish complete v1 or scientific validation.
+The final multi-service backup has not itself been restored atomically; preserve
+the documented recovery limits and protected local custody.
+
 Keep one dependable main. Commit and push verified checkpoints, inspect GitHub
 CI separately, and preserve unrelated work. A push is not a passing release.
 Literal semver applies; user-visible capability generally bumps minor before v1.
