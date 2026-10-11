@@ -145,6 +145,11 @@ local-CLI command merely because a different topology used it successfully.
 
 ## Worker and scheduler incidents
 
+For the opt-in retained transit import candidate, follow
+[its private-file and worker recovery procedure](GTFS_MANAGED_INGESTION.md).
+Retain its exact request, archive and attempt identities when outcomes remain
+unconfirmed. Its installation and migrations remain development candidates.
+
 First name the service: county-onramp, general AequilibraE, ActivitySim, OCR or
 aerial processing. `modeling:up` starts the county service; `modeling:local`
 starts paired general pollers. One does not provision the other. The
