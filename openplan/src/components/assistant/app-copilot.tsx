@@ -647,7 +647,7 @@ function ChatProposalCard({
       {entry.state === "pending" ? (
         <>
           <p className="mt-2 text-xs leading-relaxed text-slate-300/78">
-            Nothing has changed yet — this is a proposal awaiting your explicit approval.
+            Nothing has changed yet. This is a proposal awaiting your explicit approval.
           </p>
           <div className="mt-3 flex items-center gap-2">
             <Button
