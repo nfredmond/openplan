@@ -44,7 +44,8 @@ import {
   resolveOperatorText,
 } from "@/lib/engagement/portal-i18n/operator-text";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
-import { buildParticipantPopupContent } from "@/components/engagement/public-map-stage";
+import { PublicMapFeedPanel } from "@/components/engagement/public-map-feed";
+import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
 import {
   PUBLIC_BASEMAP_DEFAULT_ENV,
   PUBLIC_BASEMAP_OFFER_ENV,
@@ -93,13 +94,7 @@ const CONTEXT_LAYERS: ParticipantContextLayerSet = {
 afterEach(() => {
   cleanup();
   // `cleanup()` unmounts the containers TESTING-LIBRARY created and nothing
-  // else. One test below builds a map popup — real DOM, built the way the map
-  // builds it — and appends it straight to `document.body` so it can click the
-  // support button. That node outlives `cleanup()`, and the next test that
-  // looks for the same resident comment finds two of them.
-  //
-  // File order kept that test last, so nothing came after it. Shuffled, it did
-  // not, and "Found multiple elements" is a leak, not a duplicate render.
+  // else, and a node appended straight to `document.body` would outlive it.
   document.body.replaceChildren();
   vi.unstubAllEnvs();
   vi.resetModules();
@@ -283,55 +278,63 @@ describe("what is behind the door is still there", () => {
   });
 });
 
-describe("the vote a resident can only reach from the map", () => {
+describe("the vote a resident can reach from the map", () => {
   /**
-   * A UNIT TEST OF THE POPUP BUILDER, and nothing more — stated because it used
-   * to claim more. It calls the builder directly with a handler of its own, so
-   * it CANNOT see a stage that stopped passing `onSupport`: deleting that prop
-   * left this test green. That wiring is now proved in
-   * `public-engagement-map-stage-paints.test.tsx`, which reads the popup off a
-   * marker the real paint path built.
+   * The support button moved from a Mapbox popup into the comment panel beside
+   * the map on 2026-10-10. This is a unit test of that panel; that a tapped pin
+   * opens it is proved in `public-engagement-map-stage-paints.test.tsx`.
    */
-  it("puts the catalog's own words on the button, and calls the handler it was given", async () => {
-    const onSupport = vi.fn(async () => 4);
-    const content = buildParticipantPopupContent(
-      {
-        id: "item-1",
-        latitude: 39.2,
-        longitude: -121.05,
-        title: "Crossing is dangerous",
-        body: "Cars turn without looking.",
-        votesCount: 3,
-      },
-      {
-        onSupport,
-        hasVoted: () => false,
-        // From the real catalog, not a literal: these two strings were English
-        // literals inside the old display map, so a Spanish portal's only map
-        // vote button said "Support".
-        supportLabel: EN_MESSAGES.messages["portal.support"],
-        supportedLabel: EN_MESSAGES.messages["portal.supported"],
-      }
-    );
+  const ITEM = {
+    id: "item-1",
+    latitude: 39.2,
+    longitude: -121.05,
+    title: "Crossing is dangerous",
+    body: "Cars turn without looking. <b>not markup</b>",
+    votesCount: 3,
+  };
 
-    document.body.appendChild(content);
-    const button = content.querySelector("button") as HTMLButtonElement;
-    expect(button.textContent).toContain("Support");
+  function renderPanel(overrides: Partial<Parameters<typeof PublicMapFeedPanel>[0]> = {}) {
+    const onSupport = vi.fn();
+    render(
+      <PublicMapFeedPanel
+        open
+        onClose={vi.fn()}
+        items={[ITEM]}
+        totalCount={1}
+        readFailed={false}
+        categories={[]}
+        topicsInUse={[]}
+        hiddenCategoryIds={[]}
+        onToggleCategory={vi.fn()}
+        query=""
+        onQueryChange={vi.fn()}
+        selectedItemId="item-1"
+        onSelect={vi.fn()}
+        onSupport={onSupport}
+        hasVoted={() => false}
+        previewMode={false}
+        translator={createPortalTranslator(EN_MESSAGES)}
+        {...overrides}
+      />
+    );
+    return { onSupport };
+  }
+
+  it("puts the catalog's own words on the button, and calls the handler it was given", () => {
+    const { onSupport } = renderPanel();
+    const button = screen.getByRole("button", { name: new RegExp(EN_MESSAGES.messages["portal.support"]) });
     expect(button.textContent).toContain("3");
 
-    button.click();
+    fireEvent.click(button);
     expect(onSupport).toHaveBeenCalledWith("item-1");
 
     // The resident's own words are set as TEXT, never interpolated into HTML.
-    expect(content.textContent).toContain("Cars turn without looking.");
+    expect(screen.getByTestId("portal-feed-detail").textContent).toContain("<b>not markup</b>");
   });
 
-  it("shows no support control when no handler was wired through", () => {
-    const content = buildParticipantPopupContent(
-      { id: "item-1", latitude: 1, longitude: 1, title: null, body: "words", votesCount: 3 },
-      { hasVoted: () => false, supportLabel: "Support", supportedLabel: "Supported" }
-    );
-    expect(content.querySelector("button")).toBeNull();
+  it("offers no support control in the operator preview", () => {
+    renderPanel({ previewMode: true });
+    expect(screen.queryByRole("button", { name: new RegExp(EN_MESSAGES.messages["portal.support"]) })).toBeNull();
   });
 });
 

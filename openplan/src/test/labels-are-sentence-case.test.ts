@@ -19,6 +19,14 @@ import { describe, expect, it } from "vitest";
 const STYLESHEETS = ["src/app/globals.css", "src/app/cartographic.css", "src/app/workspace-gis.css"];
 
 const SENTENCE_CASE_FILES = [
+  // The engagement participant surfaces, brought into line by the engagement map lane.
+  "src/components/engagement/portal-submission-form.tsx",
+  "src/components/engagement/public-close-loop.tsx",
+  "src/components/engagement/public-engagement-portal.tsx",
+  "src/components/engagement/public-map-feed.tsx",
+  "src/components/engagement/public-map-place-search.tsx",
+  "src/components/engagement/public-map-shell.tsx",
+  "src/components/engagement/public-map-stage.tsx",
   "src/app/(app)/aerial/missions/[missionId]/edit/page.tsx",
   "src/app/(app)/county-runs/[countyRunId]/_components/county-run-behavioral-kpis.tsx",
   "src/app/(app)/county-runs/page.tsx",

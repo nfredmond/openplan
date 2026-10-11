@@ -1,4 +1,4 @@
-import { ArrowLeft, Clock3, MessageSquareText, ShieldCheck } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { PublicEngagementPortal } from "@/components/engagement/public-engagement-portal";
 import {
   PortalLanguageNotice,
@@ -8,35 +8,11 @@ import { PortalOperatorText } from "@/components/engagement/portal-operator-text
 import { PortalAccessibilityNotice } from "@/components/engagement/portal-accessibility-notice";
 import type { PublicPortalBundle } from "@/lib/engagement/public-portal-data";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
-import { formatPortalDateTime, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
-import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
-import type { EngagementType } from "@/lib/engagement/catalog";
-
-type EngagementModeKey = Extract<PortalMessageKey, `engagementType.${string}`>;
-
-/**
- * SPELLED OUT rather than built with a template literal and a cast, because the
- * cast was load-bearing and could not see a gap. `engagementType.${value} as
- * EngagementModeKey` compiles for any member of `ENGAGEMENT_TYPES`, including a
- * fourth one added later whose catalog key nobody wrote — and `t()` on a key the
- * bundle does not carry returns undefined, which arrives on a public page as the
- * literal word "undefined" inside "Mode: …". A `Record` over `EngagementType`
- * makes both halves of that a build error instead.
- */
-const ENGAGEMENT_MODE_KEYS: Record<EngagementType, EngagementModeKey> = {
-  map_feedback: "engagementType.map_feedback",
-  comment_collection: "engagementType.comment_collection",
-  meeting_intake: "engagementType.meeting_intake",
-};
-
-function engagementModeKey(value: string): EngagementModeKey | null {
-  return (ENGAGEMENT_MODE_KEYS as Record<string, EngagementModeKey | undefined>)[value] ?? null;
-}
 
 /**
  * EVERYTHING THE MAP IS NOT — one real link away from it.
  *
- * The hero, the three facts, the moderation posture, the four tabs (the classic
+ * The title block, the four tabs (the classic
  * submission form, the survey, the community feed with its per-comment
  * translation and support votes, the close-the-loop record), the topic
  * descriptions, the email subscription and the accessibility contact. This is
@@ -76,8 +52,6 @@ export function PortalContextPage({
   const { campaign, project, acceptingSubmissions, campaignText, locale, messages, portalProps } =
     bundle;
   const translator = createPortalTranslator(messages);
-  const modeKey = engagementModeKey(campaign.engagement_type);
-  const modeLabel = modeKey ? translator.t(modeKey) : campaign.engagement_type.replaceAll("_", " ");
 
   return (
     // `dir` is the whole reason the right-to-left languages are usable here
@@ -112,112 +86,43 @@ export function PortalContextPage({
         <PortalLanguageNotice locale={locale} messages={messages} />
       </div>
 
-      <div className="public-hero-grid">
-        <article className="public-hero">
-          <p className="public-kicker">
-            <MessageSquareText className="h-3.5 w-3.5" />
-            {translator.t("page.kicker")}
-          </p>
-
-          <div className="public-meta-strip">
-            {project ? (
-              <span>{translator.t("page.linkedProject", { project: project.name })}</span>
-            ) : (
-              <span>{translator.t("page.standalone")}</span>
-            )}
-            <span>{translator.t("page.shareLane")}</span>
-            <span>{translator.t("page.mode", { mode: modeLabel })}</span>
-          </div>
-
-          <div className="public-headline-block">
-            <PortalOperatorText as="h1" className="public-title" value={campaignText.title} translator={translator} />
-            {campaignText.publicDescription ? (
-              <PortalOperatorText
-                className="public-lead max-w-4xl"
-                value={campaignText.publicDescription}
-                translator={translator}
-              />
-            ) : campaignText.summary ? (
-              <PortalOperatorText
-                className="public-lead max-w-4xl"
-                value={campaignText.summary}
-                translator={translator}
-              />
-            ) : null}
-          </div>
-
-          {project ? (
-            <div className="public-context-strip">
-              <p className="public-section-label">{translator.t("page.supports")}</p>
-              <p className="public-context-title">{project.name}</p>
-              {project.summary ? <p className="public-context-copy">{project.summary}</p> : null}
-            </div>
-          ) : null}
-
-          <div className="public-fact-grid public-fact-grid--three">
-            <div className="public-fact">
-              <p className="public-fact-label">{translator.t("page.submissionStatus")}</p>
-              <p className="public-fact-value">
-                {acceptingSubmissions
-                  ? translator.t("page.submissionsOpen")
-                  : translator.t("page.submissionsClosed")}
-              </p>
-              <p className="public-fact-detail">{translator.t("page.submissionStatusDetail")}</p>
-            </div>
-            <div className="public-fact">
-              <p className="public-fact-label">{translator.t("page.publishedFeedback")}</p>
-              {/*
-                A COUNT IS A CLAIM, and this is the one this portal can least
-                afford to get wrong: "0 published feedback" tells a resident
-                nobody spoke. When the comment read failed, `approvedItems` is
-                empty for a reason that has nothing to do with what residents
-                submitted, so no number is printed at all. An em dash rather than
-                a translated phrase: it reads as "not available" in every locale
-                this portal serves, and a new English-only key would flip the
-                bundle's fallback flag and put a "not fully translated" notice on
-                every non-English portal.
-              */}
-              <p className="public-fact-value">
-                {portalProps.readFailures?.comments
-                  ? "—"
-                  : formatPortalNumber(portalProps.approvedItems.length, locale.bcp47)}
-              </p>
-              <p className="public-fact-detail">{translator.t("page.publishedFeedbackDetail")}</p>
-            </div>
-            <div className="public-fact">
-              <p className="public-fact-label">{translator.t("page.engagementMode")}</p>
-              <p className="public-fact-value">{modeLabel}</p>
-              <p className="public-fact-detail">{translator.t("page.engagementModeDetail")}</p>
-            </div>
-          </div>
-        </article>
-
-        <article className="public-rail">
-          <div className="flex items-center gap-3">
-            <span className="public-rail-icon">
-              <ShieldCheck className="h-5 w-5 text-emerald-200" />
-            </span>
-            <div>
-              <p className="public-rail-kicker">{translator.t("page.posture")}</p>
-              <h2 className="public-rail-title">{translator.t("page.postureTitle")}</h2>
-            </div>
-          </div>
-          <p className="public-rail-copy">{translator.t("page.postureCopy")}</p>
-          <div className="public-rail-list">
-            <div className="public-rail-item">{translator.t("page.postureItemReview")}</div>
-            <div className="public-rail-item">{translator.t("page.postureItemApproved")}</div>
-            <div className="public-rail-item">{translator.t("page.postureItemLocation")}</div>
-          </div>
-          <div className="public-rail-meta">
-            <Clock3 className="h-4 w-4" />
-            <span>
-              {translator.t("page.lastUpdated", {
-                timestamp: formatPortalDateTime(campaign.updated_at, locale.bcp47),
-              })}
-            </span>
-          </div>
-        </article>
-      </div>
+      {/*
+        A TITLE BLOCK, NOT A DASHBOARD. This used to be a hero with a kicker, a
+        meta strip, a project summary, three fact tiles and a posture card with
+        three bullets, all before the first comment. A resident needs the
+        project's name, what it is about, whether it is open, and the promise
+        that the team reads comments before they appear.
+      */}
+      <header className="mt-6 max-w-3xl space-y-2" data-testid="portal-context-header">
+        {project ? <p className="text-sm font-medium text-muted-foreground">{project.name}</p> : null}
+        <PortalOperatorText
+          as="h1"
+          className="text-2xl font-semibold leading-tight text-foreground sm:text-3xl"
+          value={campaignText.title}
+          translator={translator}
+        />
+        {campaignText.publicDescription ?? campaignText.summary ? (
+          <PortalOperatorText
+            className="text-base leading-relaxed text-muted-foreground"
+            value={(campaignText.publicDescription ?? campaignText.summary)!}
+            translator={translator}
+          />
+        ) : null}
+        {/* The door to this page says "About this project", so the project is described here. */}
+        {project?.summary ? <p className="text-sm leading-relaxed text-muted-foreground">{project.summary}</p> : null}
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 pt-1 text-sm text-muted-foreground">
+          <span
+            className={
+              acceptingSubmissions
+                ? "rounded-full bg-[color:var(--pine)]/15 px-2.5 py-0.5 text-xs font-semibold text-foreground"
+                : "rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-muted-foreground"
+            }
+          >
+            {acceptingSubmissions ? translator.t("page.submissionsOpen") : translator.t("page.submissionsClosed")}
+          </span>
+          <span>{translator.t("page.submissionStatusDetail")}</span>
+        </p>
+      </header>
 
       <PublicEngagementPortal {...portalProps} previewMode={previewMode} />
 

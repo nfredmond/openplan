@@ -186,6 +186,11 @@ beforeEach(() => {
 
 afterEach(() => {
   cleanup();
+  // Opening a comment writes `?item=` to the address bar; jsdom keeps it
+  // between tests, and the next render would open that comment from it.
+  window.history.replaceState(null, "", "/");
+  // A tap that marks a place saves a draft, and the next render restores it.
+  window.localStorage.clear();
   vi.unstubAllEnvs();
   vi.resetModules();
   resetFakeMaps();
@@ -245,32 +250,71 @@ describe("the operator's layers, and the switch that takes them off", () => {
 });
 
 describe("what the community already said, drawn on the map", () => {
-  it("drops a pin for every approved comment that has a place", async () => {
+  it("puts a point for every approved comment that has a place into a clustered source", async () => {
     const { map } = await renderWithLoadedMap({ items: [PIN_ITEM] });
 
-    const markers = map.liveMarkers();
-    expect(markers).toHaveLength(1);
-    expect(markers[0].lngLat).toEqual([-121.05, 39.2]);
+    const data = map.sourceData("engagement-points") as {
+      features: { geometry: { coordinates: unknown }; properties: { itemId: string } }[];
+    };
+    expect(data.features.map((feature) => feature.properties.itemId)).toEqual(["item-1"]);
+    expect(data.features[0].geometry.coordinates).toEqual([-121.05, 39.2]);
+    // Grouped into a count when pins pile up, so a busy corner stays tappable.
+    expect(map.sourceOptions("engagement-points")).toMatchObject({ cluster: true });
+    expect(map.liveMarkers()).toHaveLength(0);
   });
 
-  it("carries the resident's own words and the support button in the pin's popup", async () => {
+  it("opens a tapped pin's comment, with its support button, and leaves the resident's own mark alone", async () => {
     /*
-      THE ONLY VOTE CONTROL ON THIS SURFACE. There is no comment list beside the
-      map, so this popup is where a resident supports somebody else's comment. A
-      shell that mounted the stage without `onSupport` would drop that capability
-      with no visible symptom — the popup would simply have no button. The old
-      test called the popup builder directly with a handler it supplied itself,
-      so deleting `onSupport` from the stage changed nothing about it.
+      THE DEFECT THIS NAMES, observed in a browser on 2026-10-10: every tap went
+      to the drawing tool, so tapping a neighbour's pin to read it also moved
+      the resident's own mark onto it. A tap on a pin now opens the comment and
+      draws nothing.
     */
     const { map } = await renderWithLoadedMap({ items: [PIN_ITEM] });
+    map.renderedFeatures = [
+      {
+        layer: { id: "engagement-points" },
+        properties: { itemId: "item-1" },
+        geometry: { type: "Point", coordinates: [-121.05, 39.2] },
+      },
+    ];
 
-    const popup = map.markerPopups()[0];
-    expect(popup).not.toBeNull();
-    expect(popup?.textContent).toContain("Cars turn without looking.");
-    const button = popup?.querySelector("button");
-    expect(button).not.toBeNull();
-    expect(button?.textContent).toContain(EN_MESSAGES.messages["portal.support"]);
-    expect(button?.textContent).toContain("3");
+    act(() => map.tap());
+
+    const detail = screen.getByTestId("portal-feed-detail");
+    expect(detail.textContent).toContain("Cars turn without looking.");
+    const support = screen.getByRole("button", { name: /support/i });
+    expect(support.textContent).toContain("3");
+    const draft = map.sourceData("engagement-draw") as { features: unknown[] };
+    expect(draft.features).toHaveLength(0);
+    expect(screen.queryByTestId("portal-location-status")).not.toBeInTheDocument();
+  });
+
+  it("still marks the resident's place when the tap lands on empty map", async () => {
+    const { map } = await renderWithLoadedMap({ items: [PIN_ITEM] });
+    map.renderedFeatures = [];
+
+    act(() => map.tap());
+
+    expect(screen.queryByTestId("portal-feed-detail")).not.toBeInTheDocument();
+    expect(screen.getByTestId("portal-location-status")).toBeInTheDocument();
+  });
+
+  it("zooms into a group of pins instead of opening anything", async () => {
+    const { map } = await renderWithLoadedMap({ items: [PIN_ITEM] });
+    map.renderedFeatures = [
+      {
+        layer: { id: "engagement-clusters" },
+        properties: { cluster_id: 7, point_count: 5 },
+        geometry: { type: "Point", coordinates: [-121.05, 39.2] },
+      },
+    ];
+
+    act(() => map.tap());
+
+    expect(map.easeToCalls).toEqual([{ center: [-121.05, 39.2], zoom: 14 }]);
+    expect(screen.queryByTestId("portal-feed-detail")).not.toBeInTheDocument();
+    expect(screen.queryByTestId("portal-location-status")).not.toBeInTheDocument();
   });
 
   it("draws a submitted shape as its own source, with the shape a resident sent", async () => {
@@ -284,8 +328,8 @@ describe("what the community already said, drawn on the map", () => {
     };
     expect(data.features).toHaveLength(1);
     expect(data.features[0].geometry).toEqual(SHAPE_ITEM.geometry);
-    // A shape carries no marker: the pin layer is for point comments only.
-    expect(map.liveMarkers()).toHaveLength(0);
+    // A shape is not a point: the clustered pin source is for point comments only.
+    expect((map.sourceData("engagement-points") as { features: unknown[] }).features).toHaveLength(0);
   });
 });
 
@@ -351,7 +395,7 @@ describe("the background a resident chooses", () => {
     expect(map.layerIds()).not.toContain(contextLayerPaintIds("layer-1").line);
     act(() => map.loadStyle());
     expect(map.layerIds()).toContain(contextLayerPaintIds("layer-1").line);
-    expect(map.liveMarkers()).toHaveLength(1);
+    expect((map.sourceData("engagement-points") as { features: unknown[] }).features).toHaveLength(1);
   });
 });
 

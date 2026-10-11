@@ -99,7 +99,7 @@ describe("the guided rail refuses to send an empty comment", () => {
   it("sends a resident who jumps straight to the send step back to the box", () => {
     renderRail();
 
-    fireEvent.click(screen.getByRole("button", { name: /5\s*Send it/ }));
+    fireEvent.click(screen.getByRole("button", { name: /5\.\s*Send it/ }));
 
     expect(screen.getByTestId("portal-step-what")).toBeInTheDocument();
     expect(screen.queryByTestId("portal-step-send")).not.toBeInTheDocument();

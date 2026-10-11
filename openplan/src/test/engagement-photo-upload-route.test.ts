@@ -1,5 +1,6 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeAll, beforeEach } from "vitest";
 import { NextRequest } from "next/server";
+import sharp from "sharp";
 
 const createServiceRoleClientMock = vi.fn();
 
@@ -18,6 +19,8 @@ const fromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected table: ${table}`);
 });
 
+vi.mock("server-only", () => ({}));
+
 vi.mock("@/lib/supabase/server", () => ({
   createClient: vi.fn(),
   createServiceRoleClient: (...args: unknown[]) => createServiceRoleClientMock(...args),
@@ -32,11 +35,31 @@ import {
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
 const SHARE_TOKEN = "test-share-token-12345";
 
-const JPEG_BYTES = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
-const PNG_BYTES = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00, 0x00, 0x00, 0x0d]);
-const WEBP_BYTES = new Uint8Array([
-  0x52, 0x49, 0x46, 0x46, 0x24, 0x00, 0x00, 0x00, 0x57, 0x45, 0x42, 0x50, 0x56, 0x50, 0x38, 0x20,
-]);
+// Magic bytes with no image behind them: they pass sniffing but not decoding.
+const JPEG_HEADER_ONLY = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46]);
+
+// Real phone-style photos carrying EXIF GPS and device tags. The ASCII GPS
+// tag is a byte-level marker for "location reached storage".
+const GPS_MARKER = "OPENPLAN-GPS-MARKER";
+const DEVICE_MARKER = "OpenPlanTestPhone";
+let JPEG_BYTES: Uint8Array;
+let PNG_BYTES: Uint8Array;
+let WEBP_BYTES: Uint8Array;
+
+async function phonePhoto(format: "jpeg" | "png" | "webp"): Promise<Uint8Array> {
+  const buffer = await sharp({ create: { width: 32, height: 24, channels: 3, background: "#7a5c3e" } })
+    .withExif({
+      IFD0: { Make: DEVICE_MARKER, Model: "Test Model 7" },
+      IFD3: { GPSLatitudeRef: "N", GPSLatitude: "38/1 47/1 0/1", GPSLongitudeRef: "W", GPSLongitude: "121/1 14/1 0/1", GPSMapDatum: GPS_MARKER },
+    })
+    [format]()
+    .toBuffer();
+  return new Uint8Array(buffer);
+}
+
+function contains(bytes: Uint8Array, marker: string): boolean {
+  return Buffer.from(bytes).includes(marker);
+}
 
 function photoRequest(body: Uint8Array, contentType: string, headers?: Record<string, string>) {
   return new NextRequest(`http://localhost/api/engage/${SHARE_TOKEN}/photo-upload`, {
@@ -58,6 +81,10 @@ function routeContext() {
 }
 
 describe("POST /api/engage/[shareToken]/photo-upload", () => {
+  beforeAll(async () => {
+    [JPEG_BYTES, PNG_BYTES, WEBP_BYTES] = await Promise.all([phonePhoto("jpeg"), phonePhoto("png"), phonePhoto("webp")]);
+  });
+
   beforeEach(() => {
     vi.clearAllMocks();
     resetEngagementPhotoUploadRateLimiter();
@@ -199,4 +226,35 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     expect((await POST(photoRequest(JPEG_BYTES,"image/jpeg"),routeContext())).status).toBe(201);
   });
 
+  for (const [contentType, format] of [["image/jpeg", "jpeg"], ["image/png", "png"], ["image/webp", "webp"]] as const) {
+    it(`stores re-encoded ${format} bytes without the participant's GPS or device metadata`, async () => {
+      const original = { "image/jpeg": JPEG_BYTES, "image/png": PNG_BYTES, "image/webp": WEBP_BYTES }[contentType];
+      // Negative control: the upload really carries location and device tags.
+      expect(contains(original, GPS_MARKER)).toBe(true);
+      expect(contains(original, DEVICE_MARKER)).toBe(true);
+      expect((await sharp(original).metadata()).exif).toBeDefined();
+
+      const response = await POST(photoRequest(original, contentType), routeContext());
+      expect(response.status).toBe(201);
+
+      expect(storageUploadMock).toHaveBeenCalledTimes(1);
+      const [, storedBytes, options] = storageUploadMock.mock.calls[0] as [string, Uint8Array, { contentType: string }];
+      expect(options.contentType).toBe(contentType);
+      expect(contains(storedBytes, GPS_MARKER)).toBe(false);
+      expect(contains(storedBytes, DEVICE_MARKER)).toBe(false);
+      const stored = await sharp(storedBytes).metadata();
+      expect(stored.format).toBe(format);
+      expect(stored.exif).toBeUndefined();
+      expect(stored.xmp).toBeUndefined();
+      expect([stored.width, stored.height]).toEqual([32, 24]);
+    });
+  }
+
+  it("refuses bytes that pass the magic-byte check but do not decode, and stores nothing", async () => {
+    const response = await POST(photoRequest(JPEG_HEADER_ONLY, "image/jpeg"), routeContext());
+
+    expect(response.status).toBe(415);
+    expect((await response.json()).error).toMatch(/could not be read/);
+    expect(storageUploadMock).not.toHaveBeenCalled();
+  });
 });

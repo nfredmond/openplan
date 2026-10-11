@@ -37,19 +37,21 @@ describe("a failed request is not the browser's wording", () => {
     "net::ERR_CONNECTION_REFUSED",
   ];
 
-  it("recognises every engine's way of saying it never reached the server", () => {
+  it("recognises every engine's transport-failure wording", () => {
     for (const wording of browserWordings) {
       expect(isNetworkFailure(networkError(wording)), wording).toBe(true);
     }
   });
 
-  it("says nothing was started, so a planner knows retrying is safe", () => {
-    const message = describeRequestFailure(networkError("Failed to fetch"), "run the analysis");
-    expect(message).not.toMatch(/failed to fetch/i);
-    expect(message).toMatch(/run the analysis/);
-    // The two facts a person actually needs.
-    expect(message).toMatch(/nothing was (started|saved)/i);
-    expect(message).toMatch(/try again/i);
+  it("keeps the write outcome unknown and checks saved records before retrying", () => {
+    for (const wording of browserWordings) {
+      const message = describeRequestFailure(networkError(wording), "run the analysis");
+      expect(message).not.toMatch(/failed to fetch/i);
+      expect(message).toMatch(/run the analysis/);
+      expect(message).toMatch(/may have completed and saved changes/i);
+      expect(message).toMatch(/check the saved records before trying again/i);
+      expect(message).not.toMatch(/nothing was (started|saved)|safe to try again/i);
+    }
   });
 
   it("passes a real answer from the server through unchanged", () => {

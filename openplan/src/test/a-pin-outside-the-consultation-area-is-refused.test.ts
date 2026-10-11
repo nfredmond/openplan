@@ -68,9 +68,12 @@ const campaignFrom = () => ({
 
 const itemsFrom = () => ({
   select: () => ({
+    // campaign, source type, then the fingerprint each safety check filters on.
     eq: () => ({
       eq: () => ({
-        gte: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
+        eq: () => ({
+          gte: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
+        }),
       }),
     }),
   }),

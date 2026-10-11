@@ -8,10 +8,12 @@ import { buildPublicSubmissionClientFingerprint } from "@/lib/engagement/public-
 import {
   buildEngagementPhotoPath,
   ENGAGEMENT_PHOTO_BUCKET,
+  ENGAGEMENT_PHOTO_MAX_BYTES,
   isEngagementPhotoContentType,
   registerEngagementPhotoUpload,
   sniffEngagementPhotoContentType,
 } from "@/lib/engagement/photo";
+import { stripPhotoMetadata } from "@/lib/engagement/photo-metadata";
 
 const paramsSchema = z.object({
   shareToken: z.string().min(8).max(64),
@@ -27,10 +29,12 @@ type RouteContext = {
  * The client POSTs the raw image bytes with an image/* content-type header.
  * The route validates the declared type AND the magic bytes, size-caps the
  * body, verifies the campaign is live and accepting submissions, then writes
+ * a re-encoded copy with location, device and other embedded metadata removed
  * to the PRIVATE engagement-photos bucket at <campaignId>/<uuid>.<ext> via
- * the service role. Only the resulting storage path is returned — the submit
- * route later re-validates that path (campaign prefix + object existence +
- * recency) before persisting it on the item. The photo is never publicly
+ * the service role; the participant's original bytes are never stored. Only
+ * the resulting storage path is returned — the submit route later
+ * re-validates that path (campaign prefix + object existence + recency)
+ * before persisting it on the item. The photo is never publicly
  * reachable; display goes through server-minted signed URLs on approved
  * items only.
  */
@@ -118,13 +122,33 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "This campaign is outside its participation dates." }, { status: 403 });
     }
 
+    // Decoding runs after the rate limit and campaign checks so a closed or
+    // unknown campaign never costs an image decode. A file that passed the
+    // magic-byte check but does not decode is refused, never stored raw.
+    const stripped = await stripPhotoMetadata(bodyRead.bytes, sniffedContentType);
+    if (!stripped.ok) {
+      return NextResponse.json(
+        { error: "This photo could not be read. Please attach a JPEG, PNG, or WebP image." },
+        { status: 415 }
+      );
+    }
+
+    // Re-encoding can make a well-compressed original larger; the bucket's
+    // file_size_limit would refuse it with an unexplained storage error.
+    if (stripped.bytes.byteLength > ENGAGEMENT_PHOTO_MAX_BYTES) {
+      return NextResponse.json(
+        { error: "This photo is too large to store. Please attach a smaller image." },
+        { status: 413 }
+      );
+    }
+
     // Server-generated path — the client never influences it beyond the
     // campaign resolved from the share token.
-    const photoPath = buildEngagementPhotoPath(campaign.id, randomUUID(), declaredContentType);
+    const photoPath = buildEngagementPhotoPath(campaign.id, randomUUID(), stripped.contentType);
 
     const { error: uploadError } = await supabase.storage
       .from(ENGAGEMENT_PHOTO_BUCKET)
-      .upload(photoPath, bodyRead.bytes, { contentType: declaredContentType, upsert: false });
+      .upload(photoPath, stripped.bytes, { contentType: stripped.contentType, upsert: false });
 
     if (uploadError) {
       audit.error("engagement_photo_upload_failed", {
@@ -137,7 +161,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     audit.info("engagement_photo_uploaded", {
       campaignId: campaign.id,
       byteLength: bodyRead.byteLength,
-      contentType: declaredContentType,
+      storedByteLength: stripped.bytes.byteLength,
+      contentType: stripped.contentType,
     });
 
     return NextResponse.json({ success: true, photoPath }, { status: 201 });

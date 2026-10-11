@@ -2,9 +2,13 @@ import { createHash } from "node:crypto";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
+  buildPublicSubmissionBodyFingerprint,
+  buildPublicSubmissionClientFingerprint,
   buildPublicSubmissionSupportMetadata,
   evaluatePublicSubmissionSafety,
-  PUBLIC_SUBMISSION_RECENT_LOOKBACK_MINUTES,
+  PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES,
+  PUBLIC_SUBMISSION_MAX_PER_WINDOW,
+  PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES,
   type RecentPublicSubmissionRecord,
 } from "@/lib/engagement/public-submit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
@@ -338,18 +342,48 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
-    const lookbackStart = new Date(
-      Date.now() - PUBLIC_SUBMISSION_RECENT_LOOKBACK_MINUTES * 60 * 1000
-    ).toISOString();
-
-    const { data: recentItemsData, error: recentItemsError } = await supabase
-      .from("engagement_items")
-      .select("id, title, body, created_at, metadata_json")
-      .eq("campaign_id", campaign.id)
-      .eq("source_type", "public")
-      .gte("created_at", lookbackStart)
-      .order("created_at", { ascending: false })
-      .limit(25);
+    /*
+      THE TWO SAFETY CHECKS ASK FOR EXACTLY WHAT THEY TEST. This used to read
+      the campaign's 25 most recent public items and filter them here, so on a
+      busy campaign a connection's own earlier posts fell outside the sample and
+      the rate limit stopped applying. Each check now filters on the fingerprint
+      it compares, stored on every public item since submission metadata began.
+    */
+    const sinceMinutes = (minutes: number) => new Date(Date.now() - minutes * 60 * 1000).toISOString();
+    const recentByFingerprint = (
+      key: "source_fingerprint" | "body_fingerprint",
+      value: string,
+      windowMinutes: number,
+      limit: number
+    ) =>
+      supabase
+        .from("engagement_items")
+        .select("id, title, body, created_at, metadata_json")
+        .eq("campaign_id", campaign.id)
+        .eq("source_type", "public")
+        .eq(`metadata_json->>${key}`, value)
+        .gte("created_at", sinceMinutes(windowMinutes))
+        .order("created_at", { ascending: false })
+        .limit(limit);
+    const [fromClient, sameText] = await Promise.all([
+      recentByFingerprint(
+        "source_fingerprint",
+        buildPublicSubmissionClientFingerprint(request),
+        PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES,
+        PUBLIC_SUBMISSION_MAX_PER_WINDOW
+      ),
+      recentByFingerprint(
+        "body_fingerprint",
+        buildPublicSubmissionBodyFingerprint({ title: parsed.data.title, body: parsed.data.body }),
+        PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES,
+        1
+      ),
+    ]);
+    const recentItemsError = fromClient.error ?? sameText.error;
+    const recentById = new Map(
+      [...(fromClient.data ?? []), ...(sameText.data ?? [])].map((item) => [item.id, item])
+    );
+    const recentItemsData = [...recentById.values()];
 
     if (recentItemsError) {
       audit.error("engagement_recent_items_lookup_failed", {
