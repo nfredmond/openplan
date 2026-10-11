@@ -176,17 +176,18 @@ describe("project provider controls", () => {
 const claudeConnectionId = "77777777-7777-4777-8777-777777777777";
 const claudeConnection = { ...connection, id: claudeConnectionId, provider: "claude", device_label: "Synthetic Claude computer", expected_auth_mode: "claude_subscription" };
 
-it("switching native providers clears the old selection and offers only matching connections", async () => {
+it("switching native providers replaces the old selection with the new provider's default model and offers only matching connections", async () => {
   connectionRows = [connection, claudeConnection]; await openPanel(); await fillNative();
   expect(screen.getByRole("button", { name: "Send project request" })).toBeEnabled();
   fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
   expect(screen.getByLabelText("Project connection")).toHaveValue("");
-  expect(screen.getByLabelText("Model ID")).toHaveValue("");
+  expect(screen.getByLabelText("Model ID")).toHaveValue("claude-opus-5-5");
   expect(screen.queryByRole("option", { name: "Synthetic computer · connected" })).not.toBeInTheDocument();
   expect(screen.getByRole("option", { name: "Synthetic Claude computer · connected" })).toBeInTheDocument();
   expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled();
   fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
   expect(screen.getByLabelText("Project connection")).toHaveValue("");
+  expect(screen.getByLabelText("Model ID")).toHaveValue("gpt-6.1-sol");
   fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "claude" } });
   fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: claudeConnectionId } });
   fireEvent.change(screen.getByLabelText("Model ID"), { target: { value: "claude-sonnet-4-6" } });
@@ -297,13 +298,22 @@ it.each([{ provider: "codex" }, { expectedAuthMode: "apiKey" }])("refuses a chan
   expect(screen.queryByRole("button", { name: "Download connection file" })).not.toBeInTheDocument();
 });
 
-it("OpenCode provider changes clear prior charge acknowledgement, connection and model", async () => {
+it("starts a Codex project task on the orchestrator default model", async () => {
+  connectionRows = [connection]; await openPanel();
+  expect(screen.getByLabelText("Model ID")).toHaveValue("gpt-6.1-sol");
+  fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: connectionId } });
+  fireEvent.change(screen.getByLabelText("Project question"), { target: { value: "Draft a submittal" } });
+  fireEvent.keyDown(screen.getByLabelText("Project question"), { key: "Enter" });
+  await waitFor(() => expect(writes).toHaveLength(1));
+  expect(writes[0].body).toMatchObject({ provider: "codex", connectionId, model: "gpt-6.1-sol" });
+});
+it("OpenCode provider changes clear prior charge acknowledgement and connection and reset the model to the default", async () => {
   connectionRows = [connection, openCodeConnection]; await openPanel(); await fillOpenCode();
   fireEvent.click(screen.getByRole("checkbox", { name: /I authorize this request/ }));
   expect(screen.getByRole("button", { name: "Send project request" })).toBeEnabled();
   fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "codex" } });
   fireEvent.change(screen.getByLabelText("Provider"), { target: { value: "opencode" } });
-  expect(screen.getByLabelText("Project connection")).toHaveValue(""); expect(screen.getByLabelText("Model ID")).toHaveValue("");
+  expect(screen.getByLabelText("Project connection")).toHaveValue(""); expect(screen.getByLabelText("Model ID")).toHaveValue("gpt-6.1-sol");
   fireEvent.change(screen.getByLabelText("Project connection"), { target: { value: openCodeConnectionId } });
   expect(screen.getByRole("checkbox", { name: /I authorize this request/ })).not.toBeChecked();
   expect(screen.getByRole("button", { name: "Send project request" })).toBeDisabled(); expect(writes).toEqual([]);

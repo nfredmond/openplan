@@ -78,6 +78,7 @@ describe("nav registry — the single source for every nav and the auth proxy", 
       "/my-work·My Work",
       "/projects·Projects",
       "/reports·Reports",
+      "/maps·Maps",
       "/assistant-activity·Planner Agent Activity",
     ]);
     expect(items[1]).toEqual([

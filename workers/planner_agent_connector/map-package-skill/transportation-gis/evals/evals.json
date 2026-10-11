@@ -1,0 +1,18 @@
+{
+  "skill_name": "transportation-gis",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "This is a practice run with public data, not a client job. I'm drafting an Active Transportation Program application for [City name] ([County name], [ST]) for a Safe Routes to School project. Make the maps: a letter-size project location map, plus figures that drop into the narrative (6.5 inches wide) for bicycle and pedestrian crashes over the last five full years, disadvantaged community status, and schools and other destinations. The pages speak as [City name]. Mark everything draft.",
+      "expected_output": "A built package folder and ZIP with at least four figures (one letter, three report figures), crash data from a cited public source with the years stated, a disadvantaged-community layer under a named definition, QA passing, and a report that says the ArcGIS Pro build was not performed.",
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Practice run, public data only. Corridor study for [Street name] in [City, ST], for [City name]. I need an existing conditions figure at letter size, a strip map book along the corridor at 11x17 showing existing and proposed bikeways from the regional planning agency, transit stops and schools, and a 24x36 poster of the corridor for an open house. I'll be handing the GIS to a coworker who uses ArcGIS Pro and to a designer who uses Illustrator.",
+      "expected_output": "A built package with a letter figure, a strip map book PDF with several rotated sheets, an arch-d poster, Regional bikeway layers with existing and proposed distinguished, the ArcGIS Pro builder with agent prompt, the Illustrator kit, QA passing, and an honest report.",
+      "files": []
+    }
+  ],
+  "note": "Fill each [bracketed] value with a real place and agency before running an eval. The prompts are generic on purpose."
+}

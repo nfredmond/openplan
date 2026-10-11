@@ -1,0 +1,41 @@
+# Instructions for an AI agent working in this package
+
+This folder is a finished map package for **{{ p.title }}** ({{ p.client }}). The figures in `maps/` are the reference renders: a native build is right when it matches them. Whether the figures themselves have been reviewed and accepted is stated in `README.md` under "What was verified, and what was not". Your job is one of the tasks below. Read only the file for your task.
+
+| Task | Read |
+|---|---|
+| Build the editable ArcGIS Pro project and layouts (needs ArcGIS Pro 3.3 or later) | `arcgis/AGENT_PROMPT.md` |
+| Open, check or rebuild the QGIS project (needs QGIS 3.34 or later) | `qgis/AGENT_PROMPT.md` |
+| Prepare the figures for Adobe Illustrator | `illustrator/README.md` |
+| Change a map (layers, symbols, text, extent) and rebuild everything | "Changing a map" below |
+
+## How the package fits together
+
+- `spec/map_package.json` is the contract. It states, for every figure, the page size, the map frame, the extent and scale, each layer with its data source, filter, symbols and labels, and the exact position of every text and legend element. The QGIS builder and the ArcGIS Pro builder both read it and nothing else.
+- `data/*.gpkg` holds every layer in {{ crs.name }} (EPSG:{{ crs.epsg }}). Units are {{ crs.unit }}.
+- `maps/pdf` and `maps/png` are the reference renders. A native build is right when it matches them.
+- Sizes in the spec: page positions in inches from the top-left corner of the page; symbol and type sizes in points; extents in CRS units.
+
+## Rules
+
+- Work on a copy in a short local path. On Windows use `C:\GIS\{{ p.id }}`. Synced folders (OneDrive, Dropbox) lock files and long paths break exports.
+- Leave `data/`, `maps/` and `spec/` unchanged. If the spec is wrong, say so in your report; the package owner regenerates it.
+- Install the fonts in `fonts/inter` before building. A build without them still runs, and the report says the font was substituted.
+- Use only the software's own Python. Install nothing.
+- Report what happened, including what failed and what you could not check. A build that ran is not the same as a build that matches the reference figures.
+
+## Recording your result
+
+Review gates live with the source project. After a native build or check, send your report file back to the package owner, who records it with `tgis.py attest <project> <gate> --reviewer ... --note ... --evidence <your report>`. The gates are `data`, `cartography`, `qgis`, `arcgis`, `illustrator`, `google_earth`, `browser`; the current state is in `qa/review.json` and `README.md`. Say "passed" only for work you ran and looked at.
+
+## Changing a map
+
+The package is generated from `source/project.yaml` by the kit in `tools/transportation-gis` (`python3 tools/transportation-gis/scripts/tgis.py build source --offline` rebuilds it from the archived downloads with no network). To change a layer, symbol, title or extent, edit `project.yaml` in the source project and rebuild; every output, both GIS builders included, then agrees. For a one-off cartographic edit, change the QGIS or ArcGIS Pro project directly and export from there, and note that the package spec no longer describes that figure.
+
+## Figures in this package
+
+| id | Figure | Title | Page (in) | Scale | Data layers |
+|---|---|---|---|---|---|
+{% for m in maps %}| `{{ m.id }}` | {{ m.figure or "" }} | {{ m.title }} | {{ "%g"|format(m.page.w) }} x {{ "%g"|format(m.page.h) }} | 1:{{ "{:,.0f}".format(m.scale) }} | {{ m.thematic_titles|join(", ") }} |
+{% endfor %}{% for a in atlases %}| `{{ a.id }}` | Map book, {{ a.atlas.pages|length }} sheets | {{ a.title }} | {{ "%g"|format(a.page.w) }} x {{ "%g"|format(a.page.h) }} | 1:{{ "{:,.0f}".format(a.scale) }} | {{ a.thematic_titles|join(", ") }} |
+{% endfor %}

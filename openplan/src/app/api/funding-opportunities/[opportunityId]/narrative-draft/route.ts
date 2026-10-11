@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateText } from "ai";
+import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
@@ -25,14 +26,7 @@ import {
 import { KB_NARRATIVE_CAVEAT } from "@/lib/grants/kb-evidence";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
-const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
-
-// Per-model pricing for the cost estimate (USD per million tokens). Unknown
-// models (via OPENPLAN_GRANTS_AI_MODEL) simply report a null estimate.
-const MODEL_PRICING_USD_PER_MTOKEN: Record<string, { input: number; output: number }> = {
-  "claude-opus-4-8": { input: 5.0, output: 25.0 },
-  "claude-haiku-4-5": { input: 1.0, output: 5.0 },
-};
+const DEFAULT_NARRATIVE_MODEL_ID = defaultClaudeModelId("orchestrator");
 
 const paramsSchema = z.object({
   opportunityId: z.string().uuid(),
@@ -49,20 +43,6 @@ type RouteContext = {
 
 function nullIfUndefined(value: number | undefined): number | null {
   return typeof value === "number" ? value : null;
-}
-
-function estimateCostUsd(
-  modelId: string,
-  inputTokens: number | null,
-  outputTokens: number | null
-): number | null {
-  const pricing = MODEL_PRICING_USD_PER_MTOKEN[modelId];
-  if (!pricing) return null;
-  if (inputTokens === null && outputTokens === null) return null;
-  const raw =
-    ((inputTokens ?? 0) / 1_000_000) * pricing.input +
-    ((outputTokens ?? 0) / 1_000_000) * pricing.output;
-  return Math.round(raw * 1_000_000) / 1_000_000;
 }
 
 export async function POST(request: NextRequest, context: RouteContext) {
@@ -371,7 +351,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             inputTokens,
             outputTokens,
             totalTokens: nullIfUndefined(usage?.totalTokens),
-            estimatedCostUsd: estimateCostUsd(modelId, inputTokens, outputTokens),
+            estimatedCostUsd: estimateClaudeListPriceUsd(modelId, inputTokens, outputTokens),
           },
         },
         { status: 201 }

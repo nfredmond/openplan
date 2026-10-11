@@ -33,6 +33,7 @@ vi.mock("@/lib/programs/api", () => ({
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({
@@ -147,7 +148,7 @@ const storedDraft = {
   opportunity_id: OPPORTUNITY_ID,
   section_id: SECTION_ID,
   draft_markdown: "Drafted section prose.",
-  model: "claude-opus-4-8",
+  model: "claude-opus-5-5",
   grounding_json: {},
   grounded_sentence_count: 0,
   total_sentence_count: 1,
@@ -281,7 +282,7 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
       opportunity_id: OPPORTUNITY_ID,
       section_id: SECTION_ID,
       draft_markdown: "Drafted section prose.",
-      model: "claude-opus-4-8",
+      model: "claude-opus-5-5",
       revision_of: null,
       revision_instructions: null,
       created_by: USER_ID,

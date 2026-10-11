@@ -28,9 +28,10 @@ import {
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
 import { validateGroundedNarrative } from "@/lib/planner-pack/grounding";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 const SYNTHESIS_MODEL_ID =
-  process.env.OPENPLAN_ENGAGEMENT_SYNTHESIS_MODEL?.trim() || "claude-haiku-4-5-20251001";
+  process.env.OPENPLAN_ENGAGEMENT_SYNTHESIS_MODEL?.trim() || defaultClaudeModelId("quick");
 
 /** Cap the number of items sent to the model so a huge campaign can't blow the
  * context window or the token budget; the deterministic counts still cover all. */

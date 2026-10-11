@@ -1,0 +1,33 @@
+# ArcGIS Pro: build the editable project
+
+This folder builds a native ArcGIS Pro project from the package. Nothing here has been run in ArcGIS Pro yet; the package was produced on a computer without it.
+
+| File | Purpose |
+|---|---|
+| `Build_Maps.pyt` | Python toolbox with two tools: **Build project and layouts** and **Check package (preflight)** |
+| `build_arcgis_pro.py` | The builder. Needs ArcGIS Pro 3.3 or later, ArcPy and the standard library only |
+| `AGENT_PROMPT.md` | Step-by-step instructions, acceptance checks and report format for the person or AI agent doing the build |
+
+## Quick start
+
+1. Copy the whole package to `C:\GIS\{{ p.id }}`.
+2. Install the fonts in `fonts\inter`.
+3. In ArcGIS Pro, create a new project from the Catalog template, add `arcgis\Build_Maps.pyt` as a toolbox and run **Build project and layouts**.
+4. Open `arcgis\native\build_<date>\{{ p.id }}_Maps.aprx` and use **Save Project As**.
+
+## What the build creates
+
+- `{{ p.id }}_Maps.aprx` with one map and one layout per figure, at the page sizes and scales of the delivered figures. Inset maps are separate maps and map frames.
+- `{{ p.id }}_Data.gdb` with every layer the maps use, copied from `data\*.gpkg`.
+- Feature layers with CIM symbols. Classified layers use unique-value or class-breaks renderers. A line with a casing is two layers, casings under fills, so junctions merge.
+- Label classes with the delivered fonts, sizes, colours and halos.
+- Title block, legend, scale bar and north arrow as editable text and graphics at the delivered positions. Dynamic legend, scale bar and north arrow sit beside the page for later edits.
+{% if atlases %}- A spatial map series for each map book, driven by its sheet index layer.
+{% endif %}- `.lyrx`, `.mapx` and `.pagx` files, and `exports\` with PDF, PNG and AIX (Adobe Illustrator Exchange).
+- `native_build_report.json`, written on failure too.
+
+## How this was checked before delivery
+
+- Preflight (data, fields and filters against the spec): {{ preflight }}.
+- Dry run of the builder's logic against a stand-in for ArcPy: {{ dryrun }}.
+- Native build in ArcGIS Pro: **not performed**. The first real build is the test. Follow `AGENT_PROMPT.md` and send back the report.

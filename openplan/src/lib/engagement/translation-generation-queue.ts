@@ -6,6 +6,7 @@ import { prepareWorkspaceTranslationSelection } from "@/lib/integrations/workspa
 import { TranslationCredentialError } from "@/lib/integrations/translation-credentials";
 import { translationGenerationPacketCanonical } from "./translation-generation";
 import { translationGenerationRequestAckSchema, translationGenerationRequestSchema, type TranslationGenerationRequest } from "./translation-generation-request";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 type Service = ReturnType<typeof createServiceRoleClient>;
 const scopeSchema = z.object({ workspaceId: z.string().uuid(), campaignId: z.string().uuid(), actorId: z.string().uuid() }).strict();
@@ -63,7 +64,7 @@ export async function queueTranslationGeneration(service: Service, rawScope: Tra
     }
     try {
       selection = await prepareWorkspaceTranslationSelection({ workspaceId: scope.workspaceId, requestId: body.requestId,
-        credentialId: randomUUID(), modelId: process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || "claude-haiku-4-5-20251001",
+        credentialId: randomUUID(), modelId: process.env.OPENPLAN_ENGAGEMENT_TRANSLATION_MODEL?.trim() || defaultClaudeModelId("quick"),
         client: service, signal: AbortSignal.timeout(10000) });
     } catch (error) {
       if (error instanceof TranslationCredentialError) throw new TranslationQueueError("credential_unavailable", 503);

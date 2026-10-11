@@ -1,0 +1,97 @@
+# Agent instructions: build this map package in ArcGIS Pro
+
+You are on a Windows computer with ArcGIS Pro 3.3 or later. The package was made on a computer without ArcGIS Pro, so the native project does not exist yet. Build it, compare it with the reference figures, and report.
+
+A person who only wants the short version: `arcgis/README.md` has a four-step quick start. This file is the full procedure with the acceptance checks.
+
+**Goal:** an editable ArcGIS Pro project (`{{ p.id }}_Maps.aprx`) with one map and one layout per figure ({{ maps|length }} figures{% if atlases %}, {{ atlases|length }} map book{{ "" if atlases|length == 1 else "s" }}{% endif %}), its file geodatabase, layer files, and PDF, PNG and AIX exports, plus a written report.
+
+## 1. Set up
+
+1. Put the package at a short local path: `C:\GIS\{{ p.id }}` (the folder that holds `spec`, `data`, `maps`, `arcgis`). If you were given a ZIP, extract it there. Do not work in OneDrive, Dropbox or a network share.
+2. Install the fonts: open `C:\GIS\{{ p.id }}\fonts\inter`, select all `.otf` files, right-click, **Install**. If you cannot install fonts, continue; the build warns and the text falls back to another font.
+3. Use ArcGIS Pro's own Python. Do not install packages, clone the environment or ask for administrator rights. The builder imports only ArcPy and the standard library.
+4. Optional check that needs no ArcPy: `python C:\GIS\{{ p.id }}\arcgis\build_arcgis_pro.py --preflight` should print `"errors": []`.
+
+About the data: `docs/data_dictionary.md` lists every layer, its fields, and whether it was clipped or filtered for this project (a clipped layer is not the publisher's full dataset). `docs/data_sources.md` has the source URLs for refreshing a layer.
+
+## 2. Build
+
+Pick one route. Each run writes a new folder `arcgis\native\build_<date>_<time>\` and never changes the project that is open.
+
+**A. Toolbox (simplest).** Start ArcGIS Pro, create a new project from the **Catalog** template (any name, any scratch folder). In the Catalog pane: Toolboxes > Add Toolbox > `C:\GIS\{{ p.id }}\arcgis\Build_Maps.pyt`. Run **Build project and layouts** with the defaults.
+
+**B. Python window.** In ArcGIS Pro: View > Python window, then paste (one line):
+
+```python
+exec(open(r"C:\GIS\{{ p.id }}\arcgis\build_arcgis_pro.py").read()); print(build(r"C:\GIS\{{ p.id }}"))
+```
+
+**C. Command line, no ArcGIS Pro window.** Pro 3.7 or later:
+
+```bat
+"C:\Program Files\ArcGIS\Pro\bin\Python\Scripts\propy.bat" C:\GIS\{{ p.id }}\arcgis\build_arcgis_pro.py --root C:\GIS\{{ p.id }} --template NEW
+```
+
+On Pro 3.3 to 3.6 a stand-alone script cannot create a project, so save any blank project first (for example `C:\GIS\Blank\Blank.aprx`) and pass `--template C:\GIS\Blank\Blank.aprx`.
+
+Expect about one minute per figure. Leave ArcGIS Pro alone until it finishes.
+
+## 3. Done means
+
+Check each item. All must hold before you call the build finished.
+
+- [ ] The run folder has `native_build_report.json` with `"status": "BUILT; visual review pending"` and has **no** `BUILD_INCOMPLETE.txt`.
+- [ ] `{{ p.id }}_Maps.aprx` opens. It has {{ maps|length + atlases|length }} layouts and no layer with a red exclamation mark. On first open use **Save Project As** into your own folder.
+- [ ] `exports\` holds a PDF for each of the {{ maps|length + atlases|length }} layouts and a PNG and AIX for each of the {{ maps|length }} figures.
+- [ ] Each exported PDF matches its reference in `maps\pdf\` (open both side by side). Use the checklist in section 4 for every figure.
+- [ ] `"font_installed": true` in the report, or you state plainly that the font was substituted.
+- [ ] Every entry under `"warnings"` in the report is listed in your written report with what it affects.
+
+## 4. Compare each figure with its reference
+
+For each row, open `arcgis\native\build_...\exports\<id>.pdf` beside `maps\pdf\<id>.pdf`.
+
+| id | Title | Page (in) | Scale | Data layers to find in the legend |
+|---|---|---|---|---|
+{% for m in maps %}| `{{ m.id }}` | {{ m.title }} | {{ "%g"|format(m.page.w) }} x {{ "%g"|format(m.page.h) }} | 1:{{ "{:,.0f}".format(m.scale) }} | {{ m.thematic_titles|join(", ") or "none" }} |
+{% endfor %}{% for a in atlases %}| `{{ a.id }}` | {{ a.title }}, {{ a.atlas.pages|length }} sheets | {{ "%g"|format(a.page.w) }} x {{ "%g"|format(a.page.h) }} | 1:{{ "{:,.0f}".format(a.scale) }} | {{ a.thematic_titles|join(", ") or "none" }} |
+{% endfor %}
+Check, per figure:
+
+1. Page size and map frame position match. The map shows the same area at the same scale (measure the scale bar against a known street block if unsure).
+2. Every data layer draws with the reference colours, line widths, dashes and marker shapes. Lines with a casing (project corridor, bikeways, roads) show the casing, and road junctions are not broken by end caps.
+3. Legend entries, title, subtitle, figure label, notes, sources and projection text are present, in {{ font }}, and nothing is clipped or overlapping.
+4. Labels: street names follow the streets, place and school labels are present, halos are visible over busy areas. Label positions differ from the reference because each program places labels itself; that is expected. Missing label classes are not.
+5. The inset map shows the region with the study area marked{% if atlases %}, and on map book sheets the sheet index{% endif %}.
+6. Scale bar length matches the reference and the north arrow is present.
+
+## 5. If something fails
+
+- Read the Python traceback and `native_build_report.json` (`error`, `traceback`, `warnings`). The report is written even when the build fails.
+- You may edit `arcgis\build_arcgis_pro.py` to get past an ArcPy error. Keep each change small and note the lines you changed and why. Do not edit anything under `data\`, `maps\` or `spec\`.
+- The builder already retries file locks, falls back to one layer per class when a unique-value or class-breaks renderer cannot be built, and skips (with a warning) optional steps that fail: label placement options, dynamic surround elements on the pasteboard, map series options, AIX export, metadata.
+- Common causes: path too long or inside a synced folder (move to `C:\GIS`); project open in another ArcGIS Pro session (close it); font not installed (install and rerun); ArcGIS Pro older than 3.3 (update).
+- Run again after each fix. Delete failed run folders once you have saved their reports.
+
+## 6. Things that are expected to differ from the reference
+
+- Label positions, because ArcGIS Pro places labels with its own engine. Route shields appear as plain bold route numbers with a halo, without the rounded box.
+- The scale bar, north arrow and legend on the page are fixed graphics that match the delivered figure. Dynamic versions sit just right of the page edge for anyone who later changes the extent or layers.
+- Hatch spacing, dash phase and type metrics can differ slightly.
+{% if atlases %}- Map book sheets: the sheet index inset does not highlight the current sheet.
+- Strip map books (sheets that follow a corridor): each sheet should be rotated so the corridor runs left to right. The rotation sign that ArcGIS Pro expects has not been confirmed. If the sheets are rotated the wrong way, negate the `rotation` field of the sheet index layer (Calculate Field: `-!rotation!`), refresh the map series, export again, and say so in your report.
+{% endif %}
+## 7. Report back
+
+Write `ARCGIS_BUILD_REPORT.md` in the run folder with:
+
+1. Computer, Windows version, ArcGIS Pro version, licence level, and whether the fonts were installed.
+2. How you ran the build (route A, B or C) and how long it took.
+3. Every failure in order: the error text, what you changed, and the result.
+4. Every warning in the final `native_build_report.json` and what it affects.
+5. A table with one row per figure: layers, layout elements, and for each of the six checks in section 4 either "matches" or what differs.
+6. What you did not or could not check.
+7. Changes you recommend to the package or the builder.
+
+Attach the final `native_build_report.json` and, if you edited it, `build_arcgis_pro.py`. Send the report and those files back to the package owner so the fixes can be folded into the builder.

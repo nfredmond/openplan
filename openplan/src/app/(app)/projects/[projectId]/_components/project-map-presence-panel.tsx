@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Download, Map as MapIcon } from "lucide-react";
 import { ProjectMapPresence } from "@/components/projects/project-map-presence";
 import { Button } from "@/components/ui/button";
@@ -70,12 +71,17 @@ export function ProjectMapPresencePanel({
           {" "}Approved public engagement locations from every linked outreach effort are included automatically;
           private notes and pending comments are excluded. Inspect the downloaded layer summary for their counts.
         </p>
-        <Button asChild variant="outline" size="sm">
-          <a href={`/api/projects/${projectId}/export/geopackage`} download>
-            <Download aria-hidden="true" />
-            Download GeoPackage
-          </a>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <Button asChild variant="outline" size="sm">
+            <a href={`/api/projects/${projectId}/export/geopackage`} download>
+              <Download aria-hidden="true" />
+              Download GeoPackage
+            </a>
+          </Button>
+          <Button asChild variant="outline" size="sm">
+            <Link href={`/maps?projectId=${projectId}`}>Map packages</Link>
+          </Button>
+        </div>
       </div>
 
       <div className="mt-3 rounded-lg border border-border/70 bg-background px-4 py-3">

@@ -48,3 +48,18 @@ test("one-shot polling distinguishes an idle reply from an unavailable app", asy
     assert.equal(calls,2,"One-shot failure must not retry automatically");
   } finally {await new Promise(resolve=>server.close(resolve));}
 });
+
+test("maps refuses a packages folder inside the connection folder and arguments it does not know", async () => {
+  const root = await mkdtemp(join(tmpdir(), "openplan-connector-maps-"));
+  const config = join(root, "connection.json");
+  const claudeSetup = { ...setup, version: 2, provider: "claude", expectedAuthMode: "claude_subscription" };
+  await writeFile(config, JSON.stringify({ setup: claudeSetup, binaryPath: "/usr/bin/false", providerHome: root }), { mode: 0o600 });
+  // The agent may not read the folder holding the token, so its packages cannot live there.
+  await assert.rejects(run(["maps", "--config", config, "--once", "--runs", join(root, "packages")]), error => {
+    assert.match(error.stderr, /map_runs_folder_invalid/); assert.ok(!error.stderr.includes(setup.token)); return true;
+  });
+  await assert.rejects(run(["maps", "--config", config, "--model", "claude-opus-5-5"]), error => {
+    assert.match(error.stderr, /connector_arguments_invalid/); return true;
+  });
+  const help = await run(["--help"]); assert.match(help.stdout, /maps-check/); assert.match(help.stdout, /Claude Fable 5\.1/);
+});

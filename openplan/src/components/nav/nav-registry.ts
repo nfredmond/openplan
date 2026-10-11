@@ -106,6 +106,14 @@ export const APP_NAV_ENTRIES: AppNavEntry[] = [
     paletteKeywords: "packets exports provenance",
   },
   {
+    // Beside Reports: both are deliverables a planner hands to someone else.
+    href: "/maps",
+    label: "Maps",
+    railGroup: "workspace",
+    icon: "maps",
+    paletteKeywords: "map package figures map book gis qgis arcgis kmz exhibits fable",
+  },
+  {
     href: "/assistant-activity",
     label: "Planner Agent Activity",
     railGroup: "workspace",
