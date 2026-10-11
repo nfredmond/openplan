@@ -170,7 +170,10 @@ async function main() {
     ]);
     await page.waitForLoadState('networkidle');
     await page.getByRole('heading', { name: /Freshness against RTP source/i }).waitFor({ timeout: 20000 });
-    await page.getByText(/Packet posture/i).first().waitFor({ timeout: 20000 });
+    // The "Packet posture" label above this heading went in #188. The badge
+    // carries a date only when the section read the packet generated above;
+    // the bare "Packet generated" metric label further down does not match.
+    await page.getByText(/^Packet generated .+/).first().waitFor({ timeout: 20000 });
     notes.push('The registry current-packet link landed on the packet release-review anchor in report detail.');
     await screenshot('local-rtp-release-review-02-report-detail');
 
