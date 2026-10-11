@@ -109,6 +109,67 @@ inventories, Storage, real-worker quiescence and a different physical host still
 require their own verification. The default-local archive commands below do not
 capture the worker roots automatically.
 
+## Capture a complete selected worker root
+
+The candidate Linux root operator packages one explicitly selected private worker
+root, including its ordinary files, empty directories, modes and SQLite databases.
+List every required root in the installation inventory. Quiesce all relevant
+writers before capture and keep them quiescent until the complete coordinated
+point finishes. The declaration below does not stop workers or acquire a
+whole-root lock. Use a new destination outside the source, with an existing
+private parent owned by the operator. From `openplan/`:
+
+```bash
+python3 scripts/ops/worker_root_snapshot.py \
+  --source /private/installation/worker-root \
+  --destination /private/recovery-point/selected-worker-root \
+  --writers-quiesced --timeout 120
+python3 scripts/ops/worker_root_snapshot.py \
+  --destination /private/recovery-point/selected-worker-root --verify
+```
+
+Require both commands to exit 0. Capture refuses aliases, foreign ownership,
+group or other access, special files and destination reuse. It reads every
+ordinary byte and retains its SHA-256 hash. SQLite main files are recognized
+by their header and copied through the native backup API, including committed
+WAL records. The copied database must pass integrity checking and use DELETE
+journal mode. Named model command journals must retain their command-table
+shape. A filename ending in `-wal` or `-shm` must belong to a recognized SQLite
+main; an orphan sidecar is refused. This conservative naming rule also applies
+to ordinary files with those suffixes.
+
+SQLite normalization may change physical page metadata. Compare all required
+logical records independently after recovery; do not require the normalized
+main's hash to equal the source main's hash. Ordinary files, directory paths and
+modes must remain exact. Read-only SQLite can create transient SHM or a new empty
+WAL beside a closed WAL-mode source. The stability check excludes only recognized
+SHM and newly created empty WAL bytes. Original or populated WAL bytes remain
+required. This does not fence a writer or detect every change followed by an
+exact restoration between inventory reads.
+
+The private package contains `root/` and `snapshot.json`. The manifest records
+source and retained inventories, SQLite normalization mappings and the limited
+consistency scope. It can contain private paths and state metadata. Preserve the
+whole package in the same protected coordinated point as the database, Storage,
+installation identity and required configuration. Verification checks package
+contents against its manifest, not authenticity against an external authority.
+Bind its manifest hash through the protected point. The timeout checks inventory,
+copy and SQLite backup progress; it cannot interrupt every blocking kernel call.
+
+A refused destination remains incomplete and cannot be reused. Retain it for
+diagnosis and use a fresh destination after resolving the cause. A manifest left
+after a filesystem failure does not override a nonzero capture exit. Restore the
+verified `root/` into a fresh working directory, preserving relative paths and
+modes. Keep the retained package unchanged when command recovery later updates
+SQLite receipts. Verify the recovered database and original requests before
+reconciling delivery; the package does not authorize another computation.
+
+The [dated root checks](../../../docs/reviews/2026-10-11-worker-root-snapshot/STATUS.md)
+record the candidate build and limits. This command does not discover every root,
+encrypt the package, align database/Storage captures, recover another physical
+host, resume models or establish scientific acceptance. Native SQLite extension
+requirements and complete agency installations remain unassessed.
+
 ## Capture the default local stack
 
 From the nested `openplan/` app directory, confirm the selected project and its

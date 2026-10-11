@@ -1,0 +1,73 @@
+{
+  "sourceSha256": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "priorNativeSourceSha256": "4fa7389e2df9e8d759c8228212b129e13a679c2abdc510a2607d7419eeb728e8",
+  "onlyVerifyFunctionChanged": true,
+  "commands": [
+    {
+      "root": "gtfs-capacity",
+      "exitCode": 0,
+      "summary": {
+        "directories": 780,
+        "files": 787,
+        "format": "openplan-worker-root-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "374838dc29f8c7b805a3b819779449a10ce4aa5f90ebb9171c3b71cf37e1ca2c",
+        "sqliteCopies": 0,
+        "verified": true
+      }
+    },
+    {
+      "root": "gtfs-configured",
+      "exitCode": 0,
+      "summary": {
+        "directories": 620,
+        "files": 699,
+        "format": "openplan-worker-root-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "6df5924c5f70e723a53396c634809e4e19e246581a674556f82c62787754585d",
+        "sqliteCopies": 0,
+        "verified": true
+      }
+    },
+    {
+      "root": "gtfs-replacement",
+      "exitCode": 0,
+      "summary": {
+        "directories": 23,
+        "files": 29,
+        "format": "openplan-worker-root-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "1312c16f395c7277fa2be4e35ab52e5d09cf5ac13df8b24afd0ca01519703557",
+        "sqliteCopies": 0,
+        "verified": true
+      }
+    },
+    {
+      "root": "managed-stage-worker-private",
+      "exitCode": 0,
+      "summary": {
+        "directories": 13,
+        "files": 5,
+        "format": "openplan-worker-root-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "57164264b8800bd893cc66d24989e6dade85466316c19cb0ac35f24d8c1c9ecc",
+        "sqliteCopies": 2,
+        "verified": true
+      }
+    },
+    {
+      "root": "model-worker-private",
+      "exitCode": 0,
+      "summary": {
+        "directories": 7,
+        "files": 5,
+        "format": "openplan-worker-root-snapshot-v1",
+        "installationConsistency": "unassessed",
+        "manifestSha256": "03c1323b463827947821205dd306fa1e7bc2472bb1b1114d6d0a336b8ceefe63",
+        "sqliteCopies": 2,
+        "verified": true
+      }
+    }
+  ],
+  "moduleAstExcludingVerifierEqual": true
+}
