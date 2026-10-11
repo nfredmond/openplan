@@ -546,7 +546,7 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
 
                           return (
                             <div key={candidate.id} className="space-y-1">
-                              <p className="text-label font-medium uppercase tracking-[0.14em] text-muted-foreground">
+                              <p className="text-label font-medium text-muted-foreground">
                                 {TARGET_KIND_HEADINGS[candidate.target_kind] ?? candidate.target_kind}
                               </p>
                               <ExtractionCandidateCard

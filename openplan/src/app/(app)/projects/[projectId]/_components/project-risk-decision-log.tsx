@@ -269,7 +269,7 @@ export function ProjectRiskAndDecisionLog({
                         {meeting.meeting_at ? <p className="module-record-stamp">{fmtDateTime(meeting.meeting_at)}</p> : null}
                       </div>
                       {meeting.attendees_summary ? (
-                        <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">Attendees: {meeting.attendees_summary}</p>
+                        <p className="text-xs text-muted-foreground">Attendees: {meeting.attendees_summary}</p>
                       ) : null}
                       <p className="module-record-summary">{meeting.notes || "No notes yet."}</p>
                     </div>

@@ -349,7 +349,7 @@ export default async function SafetyPage({
             projectRow ? (
               <Link
                 href={`/projects/${projectRow.id}`}
-                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary/35 hover:text-primary"
               >
                 Open project record
               </Link>

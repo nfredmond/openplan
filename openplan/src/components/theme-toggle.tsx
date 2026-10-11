@@ -5,7 +5,7 @@ import { useEffect, useState } from "react";
 import { useTheme } from "@/components/theme-provider";
 
 export function ThemeToggle() {
-  const { theme, setTheme } = useTheme();
+  const { resolvedTheme: theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -21,7 +21,7 @@ export function ThemeToggle() {
   return (
     <button
       type="button"
-      onClick={() => setTheme((current) => (current === "dark" ? "light" : "dark"))}
+      onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
       className="flex h-6 w-6 items-center justify-center text-muted-foreground transition-colors hover:text-foreground"
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
     >

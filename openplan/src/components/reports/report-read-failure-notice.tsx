@@ -45,7 +45,7 @@ export function ReportUnreadableShell({ message }: { message?: string | null }) 
   return (
     <section className="space-y-6">
       <header className="space-y-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Report</p>
+        <p className="text-xs font-semibold text-muted-foreground">Report</p>
         <h1 className="text-3xl font-semibold tracking-tight">This report could not be opened</h1>
       </header>
       <StateBlock

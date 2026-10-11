@@ -77,7 +77,7 @@ export function ProjectPostureUnified({
           <div className={rtpRowClass}>
             <div className="flex flex-wrap items-center justify-between gap-3">
               <div className="flex items-center gap-2.5">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Funding</p>
+                <p className="text-label font-semibold text-muted-foreground">Funding</p>
                 <StatusBadge tone={toneForFundingStackStatus(rtpPosture.status)}>{rtpPosture.label}</StatusBadge>
                 <StatusBadge tone={toneForReimbursementStatus(rtpPosture.reimbursementStatus)}>
                   {rtpPosture.reimbursementLabel}
@@ -99,7 +99,7 @@ export function ProjectPostureUnified({
           </div>
         ) : (
           <div className="rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em]">Funding</p>
+            <p className="text-label font-semibold">Funding</p>
             <p className="mt-1">Nothing recorded yet. This fills in once you add a funding award, update an invoice, close out a task, or generate a report.</p>
           </div>
         )}
@@ -111,7 +111,7 @@ export function ProjectPostureUnified({
                 <span className="flex h-7 w-7 items-center justify-center rounded-[0.4rem] bg-sky-500/10 text-sky-700 dark:text-sky-300">
                   <Plane className="h-3.5 w-3.5" />
                 </span>
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Aerial evidence</p>
+                <p className="text-label font-semibold text-muted-foreground">Aerial evidence</p>
                 <StatusBadge tone={aerialVerificationReadinessTone(aerialPosture.verificationReadiness)}>
                   {aerialPosture.verificationReadiness === "none"
                     ? "No missions"
@@ -133,7 +133,7 @@ export function ProjectPostureUnified({
           </div>
         ) : (
           <div className="rounded-[0.75rem] border border-dashed border-border/60 bg-background/60 px-5 py-4 text-sm text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em]">Aerial evidence</p>
+            <p className="text-label font-semibold">Aerial evidence</p>
             <p className="mt-1">Nothing recorded yet. This fills in once you log an aerial mission or add an evidence package.</p>
           </div>
         )}

@@ -318,7 +318,7 @@ export function InvoiceRecordComposer({
                 className="border border-border/60 bg-background/70 px-4 py-4"
                 aria-live="polite"
               >
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   Net request preview
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
@@ -339,7 +339,7 @@ export function InvoiceRecordComposer({
                     </dd>
                   </div>
                   <div className="space-y-1 pt-1">
-                    <dt className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                    <dt className="text-label font-semibold text-muted-foreground">
                       Net request
                     </dt>
                     <dd
@@ -403,7 +403,7 @@ export function InvoiceRecordComposer({
 
                   {reimbursementProfile.documentationChecklist?.length ? (
                     <div className="rounded-[0.5rem] border border-border/60 bg-background/60 px-3 py-3">
-                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="text-label font-semibold text-muted-foreground">
                         Before submitting a reimbursement packet
                       </p>
                       <ul className="mt-2 space-y-1.5 text-xs leading-relaxed text-muted-foreground">
@@ -550,7 +550,7 @@ export function InvoiceRecordComposer({
             <FileSpreadsheet className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice entry</p>
+            <p className="text-label font-semibold text-muted-foreground">Invoice entry</p>
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Read-only for member role</h2>
           </div>
         </div>
@@ -568,7 +568,7 @@ export function InvoiceRecordComposer({
           <FileSpreadsheet className="h-5 w-5" />
         </span>
         <div>
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice entry</p>
+          <p className="text-label font-semibold text-muted-foreground">Invoice entry</p>
           <h2 className="text-lg font-semibold tracking-tight text-foreground">{titleLabel}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{description}</p>
         </div>

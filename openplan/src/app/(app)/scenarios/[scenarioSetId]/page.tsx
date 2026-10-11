@@ -988,7 +988,7 @@ export default async function ScenarioSetDetailPage({
                     </div>
 
                     <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="text-xs font-semibold text-muted-foreground">
                         Caveat and source context
                       </p>
                       <h4 className="mt-2 text-sm font-semibold text-foreground">{card.sourceContext.pairingLabel}</h4>
@@ -1005,7 +1005,7 @@ export default async function ScenarioSetDetailPage({
                       {card.headlineMetrics.map((metric) => (
                         <div key={`${card.entryId}-${metric.key}`} className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
                           <div className="flex items-center justify-between gap-3">
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">{metric.label}</p>
+                            <p className="text-xs font-semibold text-muted-foreground">{metric.label}</p>
                             <StatusBadge tone={metric.tone}>{metric.deltaLabel}</StatusBadge>
                           </div>
                           <div className="mt-3 space-y-1">
@@ -1189,7 +1189,7 @@ export default async function ScenarioSetDetailPage({
                       <div className="module-note mt-4 border-sky-400/35 bg-sky-50/70 dark:border-sky-900 dark:bg-sky-950/20">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                            <p className="text-xs font-semibold text-muted-foreground">
                               Saved source context
                             </p>
                             <h4 className="mt-2 text-sm font-semibold text-foreground">
@@ -1210,7 +1210,7 @@ export default async function ScenarioSetDetailPage({
                       <div className="module-note mt-4 border-amber-400/40 bg-amber-50/80 dark:border-amber-900 dark:bg-amber-950/20">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <div>
-                            <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                            <p className="text-xs font-semibold text-muted-foreground">
                               Source context review
                             </p>
                             <h4 className="mt-2 text-sm font-semibold text-foreground">

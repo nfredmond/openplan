@@ -73,7 +73,7 @@ export default function HelpPage() {
             <p className="module-section-label">Getting started</p>
             <h2 className="module-section-title">The first things to do in a new workspace</h2>
             <p className="module-section-description">
-              Six steps, in order. The Overview page tracks the state of the most important ones.
+              Six steps, in order. The dashboard tracks the state of the most important ones.
             </p>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function HelpPage() {
 
         <div className="mt-4 grid gap-6">
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <h3 className="text-xs font-semibold text-muted-foreground">
               What you can conclude from it
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6 text-base leading-6 text-foreground/90">
@@ -116,7 +116,7 @@ export default function HelpPage() {
             </ul>
           </div>
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+            <h3 className="text-xs font-semibold text-muted-foreground">
               What it is not
             </h3>
             <ul className="mt-2 list-disc space-y-1.5 pl-6 text-base leading-6 text-foreground/90">
@@ -128,7 +128,7 @@ export default function HelpPage() {
         </div>
 
         <div className="mt-5 border-l-2 border-border pl-4">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <h3 className="text-xs font-semibold text-muted-foreground">
             How far off it can be
           </h3>
           <p className="mt-2 text-base leading-6 text-foreground/90">
@@ -205,7 +205,7 @@ export default function HelpPage() {
         <div className="mt-4 space-y-6">
           {groups.map((group) => (
             <div key={group.title}>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <h3 className="text-xs font-semibold text-muted-foreground">
                 {group.title}
               </h3>
               <ul className="mt-2 divide-y divide-border/60">
@@ -228,7 +228,7 @@ export default function HelpPage() {
           ))}
           {specialistPages.length > 0 ? (
             <div>
-              <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <h3 className="text-xs font-semibold text-muted-foreground">
                 Specialist modeling pages
               </h3>
               <p className="mt-1 text-base leading-6 text-muted-foreground">

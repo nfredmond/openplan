@@ -617,11 +617,11 @@ export function GuidedFlow<V extends GuidedFlowValues>({
           <div className="flex shrink-0 items-start gap-3 border-b border-border bg-background px-4 py-3.5 sm:px-5">
             <div className="min-w-0 flex-1">
               {mode === "sequence" && steps.length > 1 ? (
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   Step {stepIndex + 1} of {steps.length} · {flow.title}
                 </p>
               ) : (
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   {flow.title}
                 </p>
               )}

@@ -163,7 +163,7 @@ export function RtpFinancialElementSection({
           <div className="overflow-x-auto">
             <table className="w-full min-w-[34rem] text-sm">
               <thead>
-                <tr className="border-b border-border/60 text-left text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                <tr className="border-b border-border/60 text-left text-xs text-muted-foreground">
                   <th scope="col" className="py-2 pr-3 font-medium">Period</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Revenue</th>
                   <th scope="col" className="py-2 pr-3 text-right font-medium">Projects</th>

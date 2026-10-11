@@ -475,19 +475,19 @@ export default async function MeasureFundPage({ params }: PageProps) {
           <h2 className="text-base font-semibold">Claims against the fund</h2>
           <div className="mt-2 grid gap-3 text-sm sm:grid-cols-2 lg:grid-cols-4">
             <div>
-              <div className="text-label uppercase tracking-[0.14em] text-muted-foreground">Asked for</div>
+              <div className="text-label text-muted-foreground">Asked for</div>
               <div className="text-lg font-semibold tabular-nums">
                 {money(claimLedgerResult.ledger.claimedGrossTotal)}
               </div>
               <div className="text-xs text-muted-foreground">{claimLedgerResult.ledger.claimedCount} claim(s)</div>
             </div>
             <div>
-              <div className="text-label uppercase tracking-[0.14em] text-muted-foreground">Paid out</div>
+              <div className="text-label text-muted-foreground">Paid out</div>
               <div className="text-lg font-semibold tabular-nums">{money(claimLedgerResult.ledger.paidNetTotal)}</div>
               <div className="text-xs text-muted-foreground">{claimLedgerResult.ledger.paidCount} paid</div>
             </div>
             <div>
-              <div className="text-label uppercase tracking-[0.14em] text-muted-foreground">Waiting on us</div>
+              <div className="text-label text-muted-foreground">Waiting on us</div>
               <div className="text-lg font-semibold tabular-nums">
                 {money(claimLedgerResult.ledger.outstandingNetTotal)}
               </div>
@@ -496,7 +496,7 @@ export default async function MeasureFundPage({ params }: PageProps) {
               </div>
             </div>
             <div>
-              <div className="text-label uppercase tracking-[0.14em] text-muted-foreground">Left of what was allocated</div>
+              <div className="text-label text-muted-foreground">Left of what was allocated</div>
               <div className="text-lg font-semibold tabular-nums">
                 {claimLedgerResult.ledger.remainingAllocatedTotal === null
                   ? "Not determined"

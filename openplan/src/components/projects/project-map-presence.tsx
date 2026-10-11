@@ -71,7 +71,7 @@ const EMPTY_DRAFT: CorridorDraft = {
 };
 
 const FIELD_LABEL_CLASS =
-  "text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground";
+  "text-label font-semibold text-muted-foreground";
 
 const SELECT_CLASS =
   "h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-sm shadow-sm focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring";

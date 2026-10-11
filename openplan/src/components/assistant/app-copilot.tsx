@@ -495,7 +495,7 @@ function operationCardClasses(link: AssistantQuickLink) {
 function BoardStateCueCard({ cue }: { cue: AssistantBoardStateCue }) {
   return (
     <div className="rounded-[0.5rem] border border-sky-300/16 bg-sky-400/10 px-4 py-3 shadow-[0_14px_28px_rgba(56,189,248,0.08)]">
-      <p className="text-label font-semibold uppercase tracking-[0.12em] text-sky-100/76">{cue.label}</p>
+      <p className="text-label font-semibold text-sky-100/76">{cue.label}</p>
       <p className="mt-2 text-sm font-semibold text-white">{cue.title}</p>
       <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{cue.detail}</p>
       {cue.items?.length ? (
@@ -558,13 +558,13 @@ function ApprovalPayloadDisclosure({ action }: { action: AssistantQuickLinkExecu
   if (fields.length === 0) return null;
   return (
     <div className="mt-3 rounded-[0.5rem] border border-white/10 bg-white/[0.04]">
-      <p className="border-b border-white/8 px-3 py-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">
+      <p className="border-b border-white/8 px-3 py-2 text-label font-semibold text-slate-400">
         Exactly what you are approving
       </p>
       <dl className="max-h-56 space-y-2.5 overflow-y-auto px-3 py-2.5">
         {fields.map(([key, value]) => (
           <div key={key}>
-            <dt className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400/88">{key}</dt>
+            <dt className="text-label font-semibold text-slate-400/88">{key}</dt>
             <dd className="mt-0.5 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
           </div>
         ))}
@@ -608,11 +608,11 @@ function ChatProposalCard({
       aria-label={`Proposed action: ${kindLabel}`}
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-label font-semibold uppercase tracking-[0.12em] text-violet-100/78">
+        <p className="text-label font-semibold text-violet-100/78">
           Proposed action · {kindLabel}
         </p>
         <span
-          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold ${badge.className}`}
         >
           {badge.label}
         </span>
@@ -625,7 +625,7 @@ function ChatProposalCard({
               key={key}
               className="inline-flex max-w-full items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-200/85"
             >
-              <span className="uppercase tracking-[0.12em] text-slate-400/88">{key}</span>
+              <span className="text-slate-400/88">{key}</span>
               <span className="break-all normal-case">{value}</span>
             </span>
           ))}
@@ -637,7 +637,7 @@ function ChatProposalCard({
         <dl className="mt-2 space-y-2">
           {freeTextFields.map(([key, value]) => (
             <div key={key} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-3 py-2">
-              <dt className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400/88">{key}</dt>
+              <dt className="text-label font-semibold text-slate-400/88">{key}</dt>
               <dd className="mt-1 whitespace-pre-wrap break-words text-sm leading-relaxed text-slate-100">{value}</dd>
             </div>
           ))}
@@ -937,7 +937,7 @@ function QuickLinkGrid({
       <div className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-3">
         <div className="flex items-center justify-between gap-3">
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Operations summary</p>
+            <p className="text-label font-semibold text-slate-400">Operations summary</p>
             <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
               {summary.total} tracked operation{summary.total === 1 ? "" : "s"} are visible from this grounded assistant context.
             </p>
@@ -955,15 +955,15 @@ function QuickLinkGrid({
 
         <div className="mt-3 grid gap-2 sm:grid-cols-3">
           <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-slate-400">Review soon</p>
+            <p className="text-label font-semibold text-slate-400">Review soon</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.reviewSoon}</p>
           </div>
           <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-slate-400">Support context</p>
+            <p className="text-label font-semibold text-slate-400">Support context</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.supportContext}</p>
           </div>
           <div className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3 py-2.5">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-slate-400">Approval required</p>
+            <p className="text-label font-semibold text-slate-400">Approval required</p>
             <p className="mt-1 text-lg font-semibold text-white">{summary.approvalRequired}</p>
           </div>
         </div>
@@ -971,7 +971,7 @@ function QuickLinkGrid({
         <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Execution posture</p>
+              <p className="text-label font-semibold text-slate-400">Execution posture</p>
               <p className="mt-2 text-sm font-semibold text-white">
                 {executionSummary.futureAgentAction > 0
                   ? `${executionSummary.futureAgentAction} tracked agent action${executionSummary.futureAgentAction === 1 ? " is" : "s are"} available.`
@@ -985,7 +985,7 @@ function QuickLinkGrid({
             </div>
           </div>
 
-          <div className="mt-3 flex flex-wrap gap-2 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+          <div className="mt-3 flex flex-wrap gap-2 text-label font-semibold text-slate-400/82">
             <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
               Navigate only · {executionSummary.navigateOnly}
             </span>
@@ -1005,7 +1005,7 @@ function QuickLinkGrid({
           <button
             type="button"
             onClick={() => setViewMode((current) => (current === "triage" ? "full" : "triage"))}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
               viewMode === "triage"
                 ? "border-amber-300/35 bg-amber-400/14 text-white"
                 : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-amber-300/22 hover:bg-amber-400/10"
@@ -1029,7 +1029,7 @@ function QuickLinkGrid({
                 key={option.key}
                 type="button"
                 onClick={() => setFilter(option.key as OperationFilter)}
-                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+                className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
                   active
                     ? "border-emerald-300/35 bg-emerald-400/14 text-white"
                     : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-emerald-300/22 hover:bg-emerald-400/10"
@@ -1044,7 +1044,7 @@ function QuickLinkGrid({
           <button
             type="button"
             onClick={() => setShowSnoozed((current) => !current)}
-            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold tracking-[0.04em] transition ${
+            className={`inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold transition ${
               showSnoozed
                 ? "border-sky-300/35 bg-sky-400/14 text-white"
                 : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
@@ -1056,7 +1056,7 @@ function QuickLinkGrid({
           </button>
         </div>
 
-        <p className="mt-2 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+        <p className="mt-2 text-label font-semibold text-slate-400/82">
           {viewMode === "triage"
             ? hasActNowGroup
               ? "Showing only what needs doing now."
@@ -1064,7 +1064,7 @@ function QuickLinkGrid({
             : "Showing everything, including background context."}
         </p>
 
-        <div className="mt-2 flex flex-wrap gap-2 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/82">
+        <div className="mt-2 flex flex-wrap gap-2 text-label font-semibold text-slate-400/82">
           <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-slate-100">
             Pinned · {pinnedCount}
           </span>
@@ -1099,7 +1099,7 @@ function QuickLinkGrid({
         ) : null}
 
         <div className="mt-3 rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-3">
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Board cue</p>
+          <p className="text-label font-semibold text-slate-400">Board cue</p>
           <p className="mt-2 text-sm font-semibold text-white">{boardNarrative.title}</p>
           <p className="mt-1 text-sm leading-relaxed text-slate-300/82">{boardNarrative.detail}</p>
         </div>
@@ -1108,7 +1108,7 @@ function QuickLinkGrid({
         <div className="rounded-[0.5rem] border border-fuchsia-300/12 bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.02))] px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
-              <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Shaped operations</p>
+              <p className="text-label font-semibold text-slate-400">Shaped operations</p>
               <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
                 Local queue-shaping decisions stay visible here so pinned and snoozed items carry operator context, not just hidden state.
               </p>
@@ -1145,22 +1145,22 @@ function QuickLinkGrid({
                   <div className="flex items-start justify-between gap-3">
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-slate-50">{link.label}</p>
-                      <p className="mt-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                      <p className="mt-1 text-label font-semibold text-slate-400/88">
                         {formatAssistantOperationActionClass(link)} · {resolveAssistantOperationUrgency(link)}
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {isPinned ? (
-                          <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-fuchsia-100">
+                          <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
                             Pinned
                           </span>
                         ) : null}
                         {isSnoozed ? (
-                          <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-sky-100">
+                          <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
                             {snoozeLabel}
                           </span>
                         ) : null}
                         {returningSoon ? (
-                          <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-amber-100">
+                          <span className="inline-flex items-center rounded-full border border-amber-300/24 bg-amber-400/12 px-2 py-0.5 text-label font-semibold text-amber-100">
                             Returning soon{returnSoonLabel ? ` · ${returnSoonLabel}` : ""}
                           </span>
                         ) : null}
@@ -1170,7 +1170,7 @@ function QuickLinkGrid({
 
                     <Link
                       href={link.href}
-                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-label font-semibold uppercase tracking-[0.14em] text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white"
+                      className="inline-flex shrink-0 items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-label font-semibold text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white"
                     >
                       <ArrowUpRight className="h-3.5 w-3.5" />
                       Open
@@ -1186,7 +1186,7 @@ function QuickLinkGrid({
                           [operationKey]: !isPinned,
                         }))
                       }
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] transition ${
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                         isPinned
                           ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
                           : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
@@ -1198,7 +1198,7 @@ function QuickLinkGrid({
                     <button
                       type="button"
                       onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] transition ${
+                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                         isSnoozed
                           ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
                           : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
@@ -1212,14 +1212,14 @@ function QuickLinkGrid({
                         <button
                           type="button"
                           onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
-                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
                         >
                           Tomorrow
                         </button>
                         <button
                           type="button"
                           onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
-                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                          className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
                         >
                           Reopened
                         </button>
@@ -1228,7 +1228,7 @@ function QuickLinkGrid({
                   </div>
 
                   <div className="mt-3">
-                    <p className="mb-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/88">Operator note</p>
+                    <p className="mb-1 text-label font-semibold text-slate-400/88">Operator note</p>
                     <Textarea
                       value={note}
                       onChange={(event) => {
@@ -1273,19 +1273,19 @@ function QuickLinkGrid({
               <div className="min-w-0">
                 <div className="flex items-center gap-2">
                   {expanded ? <ChevronDown className="h-4 w-4 text-slate-300/82" /> : <ChevronRight className="h-4 w-4 text-slate-300/82" />}
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">{group.label}</p>
-                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-slate-100">
+                  <p className="text-label font-semibold text-slate-400">{group.label}</p>
+                  <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-100">
                     {group.items.length}
                   </span>
                   {group.snoozedCount > 0 ? (
-                    <span className="inline-flex items-center rounded-full border border-sky-300/16 bg-sky-400/10 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-sky-100">
+                    <span className="inline-flex items-center rounded-full border border-sky-300/16 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
                       Snoozed {group.snoozedCount}
                     </span>
                   ) : null}
                 </div>
                 <p className="mt-1 text-xs leading-relaxed text-slate-300/74">{group.description}</p>
                 {!expanded ? (
-                  <p className="mt-2 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                  <p className="mt-2 text-label font-semibold text-slate-400/88">
                     {group.items.length} visible of {group.totalItems} operation{group.totalItems === 1 ? "" : "s"}
                   </p>
                 ) : null}
@@ -1315,32 +1315,32 @@ function QuickLinkGrid({
                       <div className="flex min-w-0 flex-col gap-3">
                         <div className="min-w-0">
                           <p className="text-sm font-semibold text-slate-50">{link.label}</p>
-                          <p className="mt-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-400/88">
+                          <p className="mt-1 text-label font-semibold text-slate-400/88">
                             {formatAssistantOperationActionClass(link)} · {formatAssistantOperationExecutionMode(link)} · {urgency}
                           </p>
                           <div className="mt-2 flex flex-wrap gap-1.5">
                             <span
-                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] ${priorityBadge.className}`}
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold ${priorityBadge.className}`}
                             >
                               {priorityBadge.label}
                             </span>
                             <span
-                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] ${executionBadge.className}`}
+                              className={`inline-flex items-center rounded-full border px-2 py-0.5 text-label font-semibold ${executionBadge.className}`}
                             >
                               {executionBadge.label}
                             </span>
                             {isPinned ? (
-                              <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-fuchsia-100">
+                              <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
                                 Pinned
                               </span>
                             ) : null}
                             {isSnoozed ? (
-                              <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-sky-100">
+                              <span className="inline-flex items-center rounded-full border border-sky-300/20 bg-sky-400/10 px-2 py-0.5 text-label font-semibold text-sky-100">
                                 {snoozeLabel}
                               </span>
                             ) : null}
                             {link.statusLabel ? (
-                              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] text-slate-100">
+                              <span className="inline-flex items-center rounded-full border border-white/10 bg-white/[0.05] px-2 py-0.5 text-label font-semibold text-slate-100">
                                 {link.statusLabel}
                               </span>
                             ) : null}
@@ -1362,7 +1362,7 @@ function QuickLinkGrid({
                                   [operationKey]: !isPinned,
                                 }))
                               }
-                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] transition ${
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                                 isPinned
                                   ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
                                   : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
@@ -1374,7 +1374,7 @@ function QuickLinkGrid({
                             <button
                               type="button"
                               onClick={() => (isSnoozed ? clearOperationSnooze(operationKey) : setOperationSnoozeMode(operationKey, "session"))}
-                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] transition ${
+                              className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                                 isSnoozed
                                   ? "border-sky-300/28 bg-sky-400/12 text-sky-100"
                                   : "border-white/10 bg-white/[0.05] text-slate-200/82 hover:border-sky-300/22 hover:bg-sky-400/10"
@@ -1388,14 +1388,14 @@ function QuickLinkGrid({
                                 <button
                                   type="button"
                                   onClick={() => setOperationSnoozeMode(operationKey, "until_tomorrow")}
-                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
                                 >
                                   Tomorrow
                                 </button>
                                 <button
                                   type="button"
                                   onClick={() => setOperationSnoozeMode(operationKey, "until_reopened")}
-                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
+                                  className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2 py-1 text-label font-semibold text-slate-200/82 transition hover:border-sky-300/22 hover:bg-sky-400/10"
                                 >
                                   Reopen
                                 </button>
@@ -1403,13 +1403,13 @@ function QuickLinkGrid({
                             ) : null}
                           </div>
                           <span
-                            className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.14em] ${badge.className}`}
+                            className={`inline-flex shrink-0 items-center rounded-full border px-2 py-0.5 text-label font-semibold ${badge.className}`}
                           >
                             {badge.label}
                           </span>
                         </div>
                       </div>
-                      <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-label font-semibold uppercase tracking-[0.14em] text-emerald-200/82">
+                      <div className="mt-3 flex min-w-0 flex-col items-start gap-2 text-label font-semibold text-emerald-200/82">
                         <div className="flex flex-wrap items-center gap-2">
                           {link.executionMode === "future_agent_action" && (link.workflowId || link.executeAction) ? (
                             <button
@@ -2185,7 +2185,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       <Sparkles className="h-5 w-5" />
                     </span>
                     <div className="min-w-0">
-                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Planner Agent</p>
+                      <p className="text-label font-semibold text-slate-400">Planner Agent</p>
                       <h2 id={drawerTitleId} className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
                     </div>
                   </div>
@@ -2267,7 +2267,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     <button
                       key={action.id}
                       type="button"
-                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold tracking-[0.04em] text-slate-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/12 hover:text-white disabled:opacity-60"
+                      className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.05] px-3 py-1.5 text-xs font-semibold text-slate-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/12 hover:text-white disabled:opacity-60"
                       onClick={() => submitPrompt({ workflowId: action.id, question: action.prompt, promptLabel: actionLabel(action) })}
                       disabled={responding || loadingContext}
                       title={action.description}
@@ -2290,7 +2290,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
               {preview?.operatorCue ? (
                 <div className="mt-4 rounded-[0.5rem] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-emerald-100/72">{preview.operatorCue.label}</p>
+                  <p className="text-label font-semibold text-emerald-100/72">{preview.operatorCue.label}</p>
                   <p className="mt-2 text-sm font-semibold text-white">{preview.operatorCue.title}</p>
                   <p className="mt-1 text-sm leading-relaxed text-slate-200/82">{preview.operatorCue.detail}</p>
                 </div>
@@ -2305,7 +2305,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               {operationStatus ? (
                 <div className="mt-4 rounded-[0.5rem] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
                   <div className="flex flex-wrap items-center gap-2">
-                    <p className="text-label font-semibold uppercase tracking-[0.12em] text-violet-100/76">In-panel operation</p>
+                    <p className="text-label font-semibold text-violet-100/76">In-panel operation</p>
                     <StatusBadge
                       tone={operationStatus.status === "failed" ? "danger" : operationStatus.status === "completed" ? "success" : "info"}
                       className="border-white/10 bg-white/[0.05] text-slate-100"
@@ -2354,7 +2354,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 <div className="mt-4 rounded-[0.5rem] border border-white/8 bg-black/10 px-4 py-3">
                   <div className="flex items-center justify-between gap-3">
                     <div>
-                      <p className="text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Recent in-panel actions</p>
+                      <p className="text-label font-semibold text-slate-400">Recent in-panel actions</p>
                       <p className="mt-1 text-sm leading-relaxed text-slate-300/82">
                         The latest grounded Planner Agent operations stay visible here for quick traceability.
                       </p>
@@ -2366,7 +2366,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       <button
                         type="button"
                         onClick={() => setOperationHistory([])}
-                        className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-label font-semibold uppercase tracking-[0.14em] text-slate-200/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
+                        className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-white/[0.05] px-2.5 py-1 text-label font-semibold text-slate-200/82 transition hover:border-rose-300/22 hover:bg-rose-400/10 hover:text-white"
                       >
                         Clear all
                       </button>
@@ -2448,7 +2448,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       return (
                         <div key={message.id} className="flex justify-end">
                           <div className="max-w-[88%] rounded-[0.5rem] border border-emerald-300/20 bg-emerald-400/12 px-4 py-3 text-sm text-slate-50 shadow-[0_16px_34px_rgba(16,185,129,0.10)]">
-                            <div className="mb-2 flex items-center justify-end gap-2 text-label font-semibold uppercase tracking-[0.12em] text-emerald-100/78">
+                            <div className="mb-2 flex items-center justify-end gap-2 text-label font-semibold text-emerald-100/78">
                               You
                               <User className="h-3.5 w-3.5" />
                             </div>
@@ -2475,7 +2475,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                     if (message.type === "chat") {
                       return (
                         <div key={message.id} id={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                          <div className="mb-3 flex items-center gap-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-300/72">
+                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
                             Planner Agent
                             {message.status === "streaming" ? (
@@ -2487,7 +2487,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               {message.toolEvents.map((activity) => (
                                 <span
                                   key={activity.toolCallId}
-                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.12em] ${
+                                  className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-label font-semibold ${
                                     activity.status === "failed"
                                       ? "border-rose-300/22 bg-rose-400/10 text-rose-100"
                                       : "border-sky-300/18 bg-sky-400/8 text-sky-100"
@@ -2539,7 +2539,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                                 type="button"
                                 onClick={() => retryChatEntry(message)}
                                 disabled={responding}
-                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-300/28 bg-rose-400/14 px-2.5 py-1 text-label font-semibold uppercase tracking-[0.14em] text-rose-50 transition hover:border-rose-300/45 hover:bg-rose-400/22 hover:text-white disabled:opacity-60"
+                                className="inline-flex shrink-0 items-center gap-1 rounded-full border border-rose-300/28 bg-rose-400/14 px-2.5 py-1 text-label font-semibold text-rose-50 transition hover:border-rose-300/45 hover:bg-rose-400/22 hover:text-white disabled:opacity-60"
                               >
                                 Retry
                               </button>
@@ -2553,7 +2553,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       const introPreview = preview ?? message.preview;
                       return (
                         <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                          <div className="mb-3 flex items-center gap-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-300/72">
+                          <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
                             <Bot className="h-3.5 w-3.5 text-emerald-300" />
                             Planning context
                           </div>
@@ -2573,7 +2573,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                           {introPreview.quickLinks?.length ? (
                             <div className="mt-4">
-                              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Action surfaces</p>
+                              <p className="mb-2 text-label font-semibold text-slate-400">Action surfaces</p>
                               <QuickLinkGrid
                                 links={introPreview.quickLinks}
                                 onConsoleStateChange={setLiveConsoleState}
@@ -2588,7 +2588,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                     return (
                       <div key={message.id} className="rounded-[0.5rem] border border-white/10 bg-white/[0.04] px-4 py-4 shadow-[0_18px_34px_rgba(2,8,15,0.18)]">
-                        <div className="mb-3 flex items-center gap-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-300/72">
+                        <div className="mb-3 flex items-center gap-2 text-label font-semibold text-slate-300/72">
                           <Bot className="h-3.5 w-3.5 text-emerald-300" />
                           {message.response.label}
                         </div>
@@ -2599,7 +2599,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           {message.response.boardStateCue ? <BoardStateCueCard cue={message.response.boardStateCue} /> : null}
 
                           <section>
-                            <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Findings</p>
+                            <p className="mb-2 text-label font-semibold text-slate-400">Findings</p>
                             <ul className="space-y-2 text-sm text-slate-200/88">
                               {message.response.findings.map((finding) => (
                                 <li key={finding} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
@@ -2610,7 +2610,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </section>
 
                           <section>
-                            <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Next steps</p>
+                            <p className="mb-2 text-label font-semibold text-slate-400">Next steps</p>
                             <ul className="space-y-2 text-sm text-slate-200/88">
                               {message.response.nextSteps.map((step) => (
                                 <li key={step} className="rounded-[0.5rem] border border-emerald-300/16 bg-emerald-400/8 px-3.5 py-2.5">
@@ -2621,7 +2621,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </section>
 
                           <section>
-                            <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Evidence</p>
+                            <p className="mb-2 text-label font-semibold text-slate-400">Evidence</p>
                             <div className="flex flex-wrap gap-2">
                               {message.response.evidence.map((item) => (
                                 <StatusBadge key={item} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
@@ -2633,7 +2633,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
 
                           {message.response.quickLinks?.length ? (
                             <section>
-                              <p className="mb-2 text-label font-semibold uppercase tracking-[0.12em] text-slate-400">Take action</p>
+                              <p className="mb-2 text-label font-semibold text-slate-400">Take action</p>
                               <QuickLinkGrid
                                 links={message.response.quickLinks}
                                 onRunOperation={runOperation}
@@ -2662,7 +2662,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
               </div>
 
               <div className="border-t border-white/8 px-5 py-4 sm:px-6">
-                <label className="mb-2 block text-label font-semibold uppercase tracking-[0.12em] text-slate-400">
+                <label className="mb-2 block text-label font-semibold text-slate-400">
                   Ask Planner Agent
                 </label>
                 <Textarea
@@ -2726,7 +2726,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 aria-label="Approve Planner Agent action"
               >
                 <div className="w-full max-w-[480px] rounded-[0.75rem] border border-amber-300/26 bg-[linear-gradient(180deg,rgba(10,17,25,0.99),rgba(8,14,21,0.99))] px-5 py-4 shadow-[0_28px_60px_rgba(0,0,0,0.45)]">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-amber-100/78">Approval required</p>
+                  <p className="text-label font-semibold text-amber-100/78">Approval required</p>
                   <h3 className="mt-2 text-base font-semibold text-white">{pendingApproval.label}</h3>
                   <p className="mt-2 text-sm leading-relaxed text-slate-200/88">
                     {getActionMetadata(pendingApproval.action.kind).description}

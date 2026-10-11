@@ -104,7 +104,7 @@ function SignUpForm() {
   return (
     <section className={frameClassName()}>
       <header className="border-b border-border/60 px-6 py-5 sm:px-7">
-        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Create account</p>
+        <p className="text-label font-semibold text-muted-foreground">Create account</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create your OpenPlan account.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
           Free and open source. Sign up and your workspace is ready immediately — that is where

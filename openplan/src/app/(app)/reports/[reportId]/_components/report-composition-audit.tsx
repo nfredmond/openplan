@@ -31,7 +31,7 @@ export function ReportCompositionAudit({
             <Sparkles className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               Composition
             </p>
             <h2 className="text-xl font-semibold tracking-tight">
@@ -56,7 +56,7 @@ export function ReportCompositionAudit({
                 <h3 className="truncate text-sm font-semibold tracking-tight">
                   {section.title}
                 </h3>
-                <p className="text-label uppercase tracking-[0.1em] text-muted-foreground">
+                <p className="text-label text-muted-foreground">
                   {titleize(section.section_key)}
                 </p>
               </div>
@@ -78,7 +78,7 @@ export function ReportCompositionAudit({
             <Hash className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               Source data
             </p>
             <h2 className="text-xl font-semibold tracking-tight">Linked runs</h2>
@@ -106,7 +106,7 @@ export function ReportCompositionAudit({
                   <p className={`mt-1 text-compact leading-relaxed text-muted-foreground${summary.withheld ? "" : " line-clamp-2"}`}>
                     {summary.text}
                   </p>
-                  <p className="mt-2 text-label uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="mt-2 text-label text-muted-foreground">
                     Created {formatDateTime(run.created_at)}
                   </p>
                 </div>
@@ -159,7 +159,7 @@ export function ReportCompositionAudit({
             <Clock3 className="h-5 w-5" />
           </span>
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               History
             </p>
             <h2 className="text-xl font-semibold tracking-tight">
@@ -185,7 +185,7 @@ export function ReportCompositionAudit({
                   <h4 className="text-sm font-semibold tracking-tight">
                     {artifact.artifact_kind.toUpperCase()} artifact
                   </h4>
-                  <p className="text-label uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label text-muted-foreground">
                     Generated {formatDateTime(artifact.generated_at)}
                   </p>
                 </div>

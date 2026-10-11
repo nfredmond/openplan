@@ -499,7 +499,7 @@ export function DemandAgreementMap({ geojsonUrl }: { geojsonUrl: string }) {
     content = (
       <>
         <div className="absolute left-3 top-3 z-10 rounded-xl border border-white/10 bg-zinc-900/90 px-4 py-3 shadow-lg backdrop-blur">
-          <p className="text-xs font-semibold uppercase tracking-wider text-zinc-300">Demand-method sensitivity</p>
+          <p className="text-xs font-semibold text-zinc-300">Demand-method sensitivity</p>
           <p className="mt-1 text-xs text-zinc-400">Agreement is concurrence, not evidence that either method is correct.</p>
         </div>
         <ul

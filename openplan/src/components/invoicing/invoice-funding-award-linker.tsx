@@ -133,7 +133,7 @@ export function InvoiceFundingAwardLinker({
         </span>
         <div className="min-w-0 flex-1 space-y-2">
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Funding award link</p>
+            <p className="text-label font-semibold text-muted-foreground">Funding award link</p>
             <p className="mt-1 text-sm text-muted-foreground">
               Attach this invoice to the correct award without leaving the billing register.
             </p>

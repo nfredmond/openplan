@@ -25,7 +25,7 @@ export function ExploreGeospatialBriefing({
           <StatusBadge tone="info">Corridor context</StatusBadge>
         </div>
         <div className="space-y-2">
-          <CardTitle className="text-[1.02rem] font-semibold tracking-[-0.02em] text-white">Geospatial Intelligence Briefing</CardTitle>
+          <CardTitle className="text-[1.02rem] font-semibold text-white">Geospatial Intelligence Briefing</CardTitle>
           <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/76">
             Real corridor-context signals and source posture for planning, grant, and engagement workflows.
           </CardDescription>
@@ -36,7 +36,7 @@ export function ExploreGeospatialBriefing({
           {planningSignals.map((signal) => (
             <div key={signal.label} className="rounded-[0.5rem] border border-border/80 bg-background p-3.5 shadow-[0_8px_24px_rgba(15,23,42,0.04)]">
               <div className="flex flex-wrap items-center justify-between gap-2">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">{signal.label}</p>
+                <p className="text-label font-semibold text-muted-foreground">{signal.label}</p>
                 {signal.estimated ? (
                   <StatusBadge tone="warning" title={signal.estimatedNote}>
                     Estimated
@@ -54,7 +54,7 @@ export function ExploreGeospatialBriefing({
 
         <div className="grid gap-3 xl:grid-cols-2">
           <div className="rounded-[0.75rem] border border-border/80 bg-[linear-gradient(180deg,rgba(11,19,27,0.98),rgba(15,24,33,0.94))] p-5 text-slate-100 shadow-[0_20px_48px_rgba(0,0,0,0.16)]">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-cyan-200/80">Data fabric status</p>
+            <p className="text-label font-semibold text-cyan-200/80">Data fabric status</p>
             <div className="mt-4 space-y-3">
               {geospatialSourceCards.map((item) => (
                 // `data-tone` is not decoration: the tone on this card is the
@@ -80,7 +80,7 @@ export function ExploreGeospatialBriefing({
           </div>
 
           <div className="rounded-[0.75rem] border border-border/80 bg-background p-5 shadow-[0_12px_36px_rgba(15,23,42,0.06)]">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Citations & next geospatial lanes</p>
+            <p className="text-label font-semibold text-muted-foreground">Citations & next geospatial lanes</p>
             <div className="mt-4 space-y-3">
               <div className="rounded-[0.5rem] border border-border/80 bg-card p-3.5">
                 <p className="text-sm font-medium text-foreground">Census retrieval</p>

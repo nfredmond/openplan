@@ -240,7 +240,7 @@ export function StageGateDecisionRecorder({
 
   return (
     <form onSubmit={handleSubmit} className="mt-3 space-y-3 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+      <p className="text-xs font-semibold text-muted-foreground">
         Record a decision on gate {gate.sequence} · {gate.gateName}
       </p>
 

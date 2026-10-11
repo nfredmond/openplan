@@ -101,7 +101,7 @@ export function ChipMultiSelect({
               key={option.id}
               type="button"
               onClick={() => removeOption(option.id)}
-              className="inline-flex items-center gap-1.5 border-l-2 border-[color:var(--pine)]/45 bg-background px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground/78 transition hover:border-[color:var(--pine)] hover:text-foreground dark:border-[color:var(--pine)]/55"
+              className="inline-flex items-center gap-1.5 border-l-2 border-[color:var(--pine)]/45 bg-background px-3 py-1.5 text-xs font-semibold text-foreground/78 transition hover:border-[color:var(--pine)] hover:text-foreground dark:border-[color:var(--pine)]/55"
               aria-label={`Remove ${option.label}`}
             >
               <span className="max-w-[16rem] truncate">{option.label}</span>

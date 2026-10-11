@@ -373,7 +373,7 @@ export async function ReimbursementLane({
 
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_320px] xl:items-end">
         <div className="space-y-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Consulting invoices</p>
+          <p className="text-xs font-semibold text-muted-foreground">Consulting invoices</p>
           <h2 className="text-2xl font-semibold tracking-tight text-foreground">Invoices you are billing out</h2>
           <p className="text-sm text-muted-foreground">
             Every invoice, what retention is held back, whether the backup documents are attached, and which award each draw is billed against.
@@ -425,7 +425,7 @@ export async function ReimbursementLane({
               <FileSpreadsheet className="h-5 w-5" />
             </span>
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice register</p>
+              <p className="text-xs font-semibold text-muted-foreground">Invoice register</p>
               <h3 className="text-lg font-semibold tracking-tight text-foreground">Register summary</h3>
             </div>
           </div>
@@ -441,12 +441,12 @@ export async function ReimbursementLane({
           ) : (
             <div className="mt-4 grid gap-px border border-border/60 bg-border/80 sm:grid-cols-2 xl:grid-cols-3">
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Records</p>
+                <p className="text-xs font-semibold text-muted-foreground">Records</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{invoiceSummary.totalCount}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.draftCount} draft, {invoiceSummary.submittedCount} in review or payment flow.</p>
               </div>
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Net requested</p>
+                <p className="text-xs font-semibold text-muted-foreground">Net requested</p>
                 {/*
                   `claimedNetAmount`, never `totalNetAmount`. This caption said
                   "all non-rejected invoice records" above a figure that summed
@@ -462,22 +462,22 @@ export async function ReimbursementLane({
                 </p>
               </div>
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Outstanding</p>
+                <p className="text-xs font-semibold text-muted-foreground">Outstanding</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.outstandingNetAmount)}</p>
                 <p className="mt-1 text-sm text-muted-foreground">Submitted, internal-review, or approved-for-payment net amount.</p>
               </div>
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Paid</p>
+                <p className="text-xs font-semibold text-muted-foreground">Paid</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceSummary.paidNetAmount)}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{invoiceSummary.overdueCount} overdue invoice record(s) still need attention.</p>
               </div>
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Award-linked</p>
+                <p className="text-xs font-semibold text-muted-foreground">Award-linked</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceLinkageSummary.linkedNetAmount)}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{invoiceLinkageSummary.linkedCount} invoice record(s) are currently part of the funding-award reimbursement chain.</p>
               </div>
               <div className="bg-background/70 px-4 py-4">
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Unlinked to award</p>
+                <p className="text-xs font-semibold text-muted-foreground">Unlinked to award</p>
                 <p className="mt-2 text-2xl font-semibold tracking-tight text-foreground">{formatCurrency(invoiceLinkageSummary.unlinkedNetAmount)}</p>
                 <p className="mt-1 text-sm text-muted-foreground">{invoiceLinkageSummary.unlinkedCount} invoice record(s) still sit outside award-backed reimbursement reporting.</p>
               </div>
@@ -498,7 +498,7 @@ export async function ReimbursementLane({
             <div className="mt-4 border border-border/60 bg-background/70 px-4 py-4">
               <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/50 pb-3">
                 <div>
-                  <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Priority cleanup queue</p>
+                  <p className="text-xs font-semibold text-muted-foreground">Priority cleanup queue</p>
                   <p className="mt-1 text-sm text-muted-foreground">
                     Riskiest first: unlinked to an award, overdue, and largest in amount.
                   </p>
@@ -562,7 +562,7 @@ export async function ReimbursementLane({
 
       <article className={panelClass()}>
         <div className="space-y-1 border-b border-border/60 pb-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Invoice register</p>
+          <p className="text-xs font-semibold text-muted-foreground">Invoice register</p>
           <h3 className="text-lg font-semibold tracking-tight">Consulting invoice records</h3>
         </div>
 
@@ -777,7 +777,7 @@ export async function ReimbursementLane({
                       <StatusBadge tone={riskState.tone === "danger" ? "danger" : "warning"}>Needs relink</StatusBadge>
                     ) : null}
                     {riskState.title ? <StatusBadge tone={riskState.tone ?? "neutral"}>{riskState.title}</StatusBadge> : null}
-                    <p className="text-label uppercase tracking-[0.08em] text-muted-foreground">
+                    <p className="text-label text-muted-foreground">
                       {invoice.created_at ? new Date(invoice.created_at).toLocaleString("en-US") : "N/A"}
                     </p>
                   </div>

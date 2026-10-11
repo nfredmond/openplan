@@ -49,7 +49,7 @@ export function JurisdictionReadinessPanel({
       >
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div className="min-w-0">
-            <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+            <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
               <MapPinned className="h-4 w-4" />
               Local support
             </div>
@@ -90,7 +90,7 @@ export function JurisdictionReadinessPanel({
 
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Limits</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground">Limits</h3>
           <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
             {report.limitations.map((limitation) => (
               <li key={limitation}>{limitation}</li>
@@ -98,7 +98,7 @@ export function JurisdictionReadinessPanel({
           </ul>
         </div>
         <div>
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Exact evidence</h3>
+          <h3 className="text-xs font-semibold text-muted-foreground">Exact evidence</h3>
           {report.sources.length > 0 ? (
             <ul className="mt-2 space-y-2 text-xs text-muted-foreground">
               {report.sources.map((source) => (
@@ -118,7 +118,7 @@ export function JurisdictionReadinessPanel({
 
       {report.authorities.length > 0 ? (
         <div className="mt-4 border-t border-border/70 pt-4">
-          <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+          <h3 className="text-xs font-semibold text-muted-foreground">
             Applicable authorities and source pages
           </h3>
           <ul className="mt-2 space-y-1.5 text-sm">
@@ -186,7 +186,7 @@ export function JurisdictionReadinessPanel({
     <section className="rounded-xl border border-border/70 p-5" aria-label="Jurisdiction support">
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div className="min-w-0">
-          <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-[0.14em] text-muted-foreground">
+          <div className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
             <MapPinned className="h-4 w-4" />
             Local support
           </div>

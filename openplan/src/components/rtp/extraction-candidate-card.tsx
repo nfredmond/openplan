@@ -525,7 +525,7 @@ export function ExtractionCandidateCard({
                       </td>
                       <td className="py-1 tabular-nums">
                         {formatComparedValue(field.kind, field.documentValue)}
-                        {field.same ? null : <span className="ml-1 text-label uppercase tracking-wide">differs</span>}
+                        {field.same ? null : <span className="ml-1 text-label">differs</span>}
                       </td>
                     </tr>
                   ))}

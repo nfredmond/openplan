@@ -160,7 +160,7 @@ export function RtpPriorityScoreEditor({
           type="button"
           onClick={() => setOpen((value) => !value)}
           aria-expanded={open}
-          className="inline-flex items-center gap-1.5 text-left text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex items-center gap-1.5 text-left text-xs font-semibold text-muted-foreground hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
         >
           {open ? <ChevronDown className="h-3.5 w-3.5" /> : <ChevronRight className="h-3.5 w-3.5" />}
           Priority scoring — the &ldquo;why&rdquo;
@@ -189,7 +189,7 @@ export function RtpPriorityScoreEditor({
           <div className="rounded-md border border-border/60 bg-muted/20 p-2.5">
             <label
               htmlFor={`evidence-run-${linkId}`}
-              className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground"
+              className="text-label font-semibold text-muted-foreground"
             >
               Representative model run (VMT/GHG evidence)
             </label>

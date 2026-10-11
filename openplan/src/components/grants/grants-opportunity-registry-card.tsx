@@ -242,7 +242,7 @@ export function GrantsOpportunityRegistryCard({
                   <StatusBadge tone={cue.tone}>{formatEvidenceCueStatusLabel(cue.tone)}</StatusBadge>
                 </div>
                 <p className="mt-1 text-muted-foreground">{cue.detail}</p>
-                <p className="mt-2 text-compact font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                <p className="mt-2 text-compact font-semibold text-foreground/70">
                   Next: <span className="normal-case tracking-normal text-muted-foreground">{cue.nextAction}</span>
                 </p>
               </div>

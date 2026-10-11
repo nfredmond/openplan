@@ -308,7 +308,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
 
       <div className="workflow-next-actions">
         <div className="workflow-next-actions__header">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">
+          <p className="text-label font-semibold text-muted-foreground/70">
             Workflow next-action groups
           </p>
           <p className="mt-1 text-sm text-muted-foreground">
@@ -325,7 +325,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
               <div>
                 <div className="flex items-center gap-2">
                   <span className="text-sm font-semibold text-foreground">{group.title}</span>
-                  <span className="text-label font-medium uppercase tracking-[0.12em] text-muted-foreground/70">
+                  <span className="text-label font-medium text-muted-foreground/70">
                     {group.tone === "warning" ? "Next" : group.tone === "danger" ? "Blocked" : "Check"}
                   </span>
                 </div>
@@ -334,7 +334,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
                   {groupCountLabel(group)} · {group.cue}
                 </p>
                 <div className="workflow-next-action-readiness">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground/70">
+                  <p className="text-label font-semibold text-muted-foreground/70">
                     Readiness: <span className="normal-case tracking-normal text-foreground">{group.readiness.label}</span>
                   </p>
                   <p className="mt-1 text-xs leading-5 text-muted-foreground">{group.readiness.detail}</p>
@@ -355,7 +355,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
                     <div className="flex items-start justify-between gap-3">
                       <p className="text-sm font-semibold text-foreground">{action.title}</p>
                       {action.source === "queue" ? (
-                        <span className="shrink-0 text-label font-semibold uppercase tracking-[0.12em] text-primary">
+                        <span className="shrink-0 text-label font-semibold text-primary">
                           queued
                         </span>
                       ) : null}
@@ -377,7 +377,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
       </div>
 
       <div className="mt-5 space-y-1">
-        <p className="mb-2 text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Next actions</p>
+        <p className="mb-2 text-label font-semibold text-muted-foreground/70">Next actions</p>
         {summary.commandQueue.length > 0 ? (
           summary.commandQueue.map((item) => (
             <Link key={item.key} href={isGrantsCommand(item) ? resolveSharedGrantsQueueHref(item) : item.href} className="module-subpanel block transition-colors hover:border-primary/35">
@@ -410,7 +410,7 @@ Only the ones that need something from you: {reportRefreshRecommendedCount} to r
 
       {children ? (
         <div className="mt-5 space-y-1">
-          <p className="mb-2 text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground/70">Baseline</p>
+          <p className="mb-2 text-label font-semibold text-muted-foreground/70">Baseline</p>
           {children}
         </div>
       ) : null}

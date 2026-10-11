@@ -225,12 +225,12 @@ export function ModelDetailControls({
       <form className="mt-5 space-y-5" onSubmit={handleSubmit}>
         <div className="grid gap-3 sm:grid-cols-3">
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Anchors</p>
+            <p className="text-label font-semibold text-muted-foreground">Anchors</p>
             <p className="mt-2 text-lg font-semibold text-foreground">{anchorsCount}/2</p>
             <p className="mt-1 text-sm text-muted-foreground">Primary project and scenario context.</p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Explicit links</p>
+            <p className="text-label font-semibold text-muted-foreground">Explicit links</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Link2 className="h-4 w-4 text-muted-foreground" />
               {linkCount}
@@ -238,7 +238,7 @@ export function ModelDetailControls({
             <p className="mt-1 text-sm text-muted-foreground">Attached provenance, outputs, and related records.</p>
           </div>
           <div className="rounded-[0.5rem] border border-border/70 bg-background/75 p-3.5">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Timestamps</p>
+            <p className="text-label font-semibold text-muted-foreground">Timestamps</p>
             <p className="mt-2 flex items-center gap-2 text-lg font-semibold text-foreground">
               <Clock3 className="h-4 w-4 text-muted-foreground" />
               {timestampsCount}/2
