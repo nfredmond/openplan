@@ -61,8 +61,14 @@ const mapboxMocks = vi.hoisted(() => {
         const handler = (typeof second === "function" ? second : third) as (payload?: unknown) => void;
         (handlers[event] ??= []).push(handler);
       }),
+      // Fires once, as Mapbox's does; a `once` that stayed registered would
+      // re-run every stale paint on each later `style.load`.
       once: vi.fn((event: string, handler: (payload?: unknown) => void) => {
-        (handlers[event] ??= []).push(handler);
+        const wrapped = (payload?: unknown) => {
+          handlers[event] = (handlers[event] ?? []).filter((entry) => entry !== wrapped);
+          handler(payload);
+        };
+        (handlers[event] ??= []).push(wrapped);
       }),
       off: vi.fn(),
       resize: vi.fn(),
@@ -451,10 +457,13 @@ describe("drawing reports geometry after the stage commits its own state", () =>
 
 describe("retained contribution geometry", () => {
   it("uses a geometry-only point and does not turn an invalid route into its old center", async () => {
-    await renderStage({items:[
+    const { map: loaded } = await renderStage({items:[
       {id:"valid",title:null,body:"Geometry point",latitude:null,longitude:null,geometry:{type:"Point",coordinates:[1,2]}},
       {id:"invalid",title:null,body:"Collapsed route",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]}},
     ]});
+    if (!loaded) throw new Error("no map was constructed");
+    // Nothing is drawn until the style arrives, as on a real map.
+    styleLoads(loaded);
     // Pins are features in the clustered point source, not DOM markers.
     const map = mapboxMocks.instances.at(-1) as unknown as { getSource: (id: string) => { data?: { features: Array<{ geometry: { coordinates: unknown }; properties: { itemId: string } }> } } | null };
     const points = map.getSource("engagement-points")?.data?.features ?? [];

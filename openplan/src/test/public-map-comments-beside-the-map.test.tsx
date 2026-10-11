@@ -336,6 +336,67 @@ describe("on a phone the list and the input sheet take turns", () => {
   });
 });
 
+describe("found in review on 2026-10-10", () => {
+  it("repaints a filter while the map's tiles are still loading after a pan", async () => {
+    const { map } = await renderShell();
+    map.tilesStillLoading = true;
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    act(() => {
+      fireEvent.click(within(screen.getByRole("group", { name: "Topics" })).getByRole("button", { name: "Transit" }));
+    });
+    expect(pointIds(map)).toEqual(["item-crossing"]);
+  });
+
+  it("draws the resident's mark while tiles are still loading", async () => {
+    const { map } = await renderShell();
+    map.tilesStillLoading = true;
+    map.renderedFeatures = [];
+    act(() => map.tap());
+    const draft = map.sourceData("engagement-draw") as { features: unknown[] };
+    expect(draft.features.length).toBeGreaterThan(0);
+  });
+
+  it("clears search and topic filters when the list closes, and gives focus back to its button", async () => {
+    const { map } = await renderShell();
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    act(() => {
+      fireEvent.change(screen.getByRole("searchbox", { name: "Search comments" }), { target: { value: "shift" } });
+    });
+    expect(pointIds(map)).toEqual(["item-bus"]);
+
+    fireEvent.click(screen.getByRole("button", { name: "Close comments" }));
+    expect(pointIds(map)).toEqual(["item-crossing", "item-bus"]);
+    await act(() => new Promise((resolve) => requestAnimationFrame(() => resolve(null))));
+    expect(document.activeElement).toBe(screen.getByTestId("portal-feed-open"));
+
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    expect(screen.getByRole("searchbox", { name: "Search comments" })).toHaveValue("");
+  });
+
+  it("keeps focus on Next while stepping, and takes the controls under the list out of the tab order", async () => {
+    const { container } = await renderShell();
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    const covered = container.querySelector("[inert]");
+    expect(covered).not.toBeNull();
+    fireEvent.click(screen.getByText("Crossing is dangerous"));
+
+    const next = screen.getByRole("button", { name: "Next comment" });
+    next.focus();
+    fireEvent.click(next);
+    expect(screen.getByTestId("portal-feed-position")).toHaveTextContent("2 of 3");
+    expect(document.activeElement).toBe(next);
+  });
+
+  it("brings a chosen pin into view without leaving the camera padded", async () => {
+    const { map } = await renderShell();
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    fireEvent.click(screen.getByText("Later evening bus"));
+    const move = map.easeToCalls.at(-1) ?? {};
+    expect(move).toMatchObject({ center: [-121.07, 39.22] });
+    expect(move).not.toHaveProperty("padding");
+  });
+});
+
 describe("a comment has its own address", () => {
   it("puts the open comment in the address bar, and takes it out again", async () => {
     await renderShell();

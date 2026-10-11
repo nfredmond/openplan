@@ -1103,6 +1103,33 @@ describe("PublicEngagementPage", () => {
     expect(link).toHaveAttribute("href", "/engage/share-token-12345?item=item-a&lang=es");
   });
 
+  it("says the response section could not be read when its cited comments could not be checked", async () => {
+    const CAMPAIGN = "11111111-1111-4111-8111-111111111111";
+    itemsLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+    closeLoopRpcMock.mockResolvedValue({
+      data: {
+        campaignId: CAMPAIGN,
+        publishedOnly: true,
+        count: 1,
+        entries: [
+          {
+            id: "entry-1", campaign_id: CAMPAIGN, category_id: null, theme_title: "Crossings",
+            you_said: "Crossings are long.", we_did: "Added a refuge island.", status: "published",
+            ai_assisted: false, source_item_ids: ["item-a"], sort_order: 0,
+            published_at: "2026-09-12T00:00:00Z", created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await loadPublicPortalResult("share-token-12345");
+    const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+    // Withheld, because nothing can confirm item-a is public; and said so.
+    expect(bundle.portalProps.closeLoopEntries).toEqual([]);
+    expect(bundle.portalProps.readFailures.closeLoop).toBe(true);
+  });
+
   it("returns a complete feed beyond the former 200-item cap and hides orphan replies", async () => {
     const rows = Array.from({ length: 501 }, (_, index) => ({ id: `item-${index}`, body: `Contribution ${index}`, title: null, parent_item_id: null, category_id: null, created_at: "2026-09-06T12:00:00Z" }));
     itemsLimitMock.mockResolvedValue({ data: [...rows, { ...rows[0], id: "orphan", parent_item_id: "withheld-parent" }], error: null });

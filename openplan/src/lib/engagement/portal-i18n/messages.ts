@@ -432,6 +432,8 @@ export const EN_PORTAL_MESSAGES = {
   "portal.placeSearchNoResults": "No places found.",
   "portal.placeSearchFailed": "Search is not available right now.",
   "portal.placeSearchMoved": "Map moved to {place}. Press Enter to mark the middle of the map.",
+  "portal.placeSearchMovedReadOnly": "Map moved to {place}.",
+  "portal.placeSearchCount": "Places found: {count}.",
 
   // ------------------------------------------------- portal: email updates
   /*
@@ -773,6 +775,8 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.placeSearchNoResults": "No se encontraron lugares.",
   "portal.placeSearchFailed": "La búsqueda no está disponible en este momento.",
   "portal.placeSearchMoved": "El mapa se movió a {place}. Pulse Intro para marcar el centro del mapa.",
+  "portal.placeSearchMovedReadOnly": "El mapa se movió a {place}.",
+  "portal.placeSearchCount": "Lugares encontrados: {count}.",
 
   "portal.subscribeHeading": "Reciba novedades por correo electrónico",
   "portal.subscribeHint":

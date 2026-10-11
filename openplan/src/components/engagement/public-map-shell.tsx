@@ -285,9 +285,19 @@ export function PublicMapShell({
     window.history.replaceState(window.history.state, "", url);
   }, [openFeed]);
 
+  /*
+    CLOSING THE LIST CLEARS WHAT IT WAS FILTERING. A search or topic filter
+    left behind would keep narrowing the map with nothing on screen saying so.
+    Focus returns to the button that opened the list, rather than to the page.
+  */
   const closeFeed = useCallback(() => {
     setFeedOpen(false);
+    setFeedQuery("");
+    setHiddenCategoryIds([]);
     selectItem(null);
+    window.requestAnimationFrame(() => {
+      document.querySelector<HTMLElement>('[data-testid="portal-feed-open"]')?.focus();
+    });
   }, [selectItem]);
 
   const toggleCategory = useCallback((categoryId: string) => {
@@ -577,6 +587,7 @@ export function PublicMapShell({
           onSelectItem={selectItem}
           placeSearch={placeSearchAvailable}
           feed={{
+            open: feedOpen,
             button: (
               <PublicMapFeedButton
                 open={feedOpen}

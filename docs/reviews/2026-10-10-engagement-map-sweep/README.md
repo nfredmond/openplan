@@ -105,6 +105,30 @@ In the browser, three problems showed up that the sweep had not listed:
   cannot frame a loopback dev server; Chrome's Private Network Access rule, not
   OpenPlan, blocked those two attempts.)
 
+## Independent review
+
+A fresh reviewer read the branch and found eight defects, all fixed with a test
+that fails without the fix:
+
+1. After a pan, filters, votes and the resident's own sketch did not repaint
+   while tiles streamed in (`isStyleLoaded()` again, in the paint path).
+2. Choosing a found place searched again and reopened the list; Enter during
+   the next debounce could pick a stale result.
+3. Closing the comment list left search and topic filters narrowing the map
+   with nothing on screen saying so.
+4. On a closed campaign, place search announced "press Enter to mark".
+5. Camera padding persisted after selecting a comment, so a keyboard mark
+   landed off the crosshair. Checked in a browser: the mark now sits under it.
+6. When the comments read failed, published responses were withheld without
+   the section reporting a read failure.
+7. Closing the list dropped keyboard focus; previous/next moved focus away
+   from the button; controls under the open list stayed focusable.
+8. Place-search results, empty results and failures were not announced.
+
+The reviewer also confirmed photos store no original bytes, that participant
+text never becomes HTML, and that every new string exists in both catalogs.
+Photos uploaded before this branch keep their metadata; no backfill was done.
+
 ## How it was checked
 
 - Browser, dev server on port 3530 from this worktree (base `565cd983`),

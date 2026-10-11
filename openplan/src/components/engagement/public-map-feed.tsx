@@ -112,6 +112,8 @@ export function PublicMapFeedPanel({
   const headingRef = useRef<HTMLHeadingElement>(null);
   const detailRef = useRef<HTMLDivElement>(null);
   const lastListItemRef = useRef<string | null>(null);
+  /** Set by previous/next, so stepping keeps focus on the button pressed. */
+  const steppedRef = useRef(false);
 
   const selectedIndex = selectedItemId ? items.findIndex((item) => item.id === selectedItemId) : -1;
   const selected = selectedIndex >= 0 ? items[selectedIndex] : null;
@@ -121,6 +123,12 @@ export function PublicMapFeedPanel({
   useEffect(() => {
     if (!open || !selected) return;
     lastListItemRef.current = selected.id;
+    if (steppedRef.current) {
+      steppedRef.current = false;
+      // Unless the button just pressed became disabled at the end of the list.
+      const pressed = document.activeElement as HTMLButtonElement | null;
+      if (pressed && pressed !== document.body && !pressed.disabled) return;
+    }
     detailRef.current?.focus();
   }, [open, selected?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -203,7 +211,10 @@ export function PublicMapFeedPanel({
               type="button"
               aria-label={t("portal.feedPrevious")}
               disabled={selectedIndex <= 0}
-              onClick={() => onSelect(items[selectedIndex - 1].id)}
+              onClick={() => {
+                steppedRef.current = true;
+                onSelect(items[selectedIndex - 1].id);
+              }}
               className="inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ChevronLeft className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />
@@ -212,7 +223,10 @@ export function PublicMapFeedPanel({
               type="button"
               aria-label={t("portal.feedNext")}
               disabled={selectedIndex >= items.length - 1}
-              onClick={() => onSelect(items[selectedIndex + 1].id)}
+              onClick={() => {
+                steppedRef.current = true;
+                onSelect(items[selectedIndex + 1].id);
+              }}
               className="inline-flex h-11 w-11 items-center justify-center rounded-md hover:bg-muted disabled:opacity-40 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             >
               <ChevronRight className="h-5 w-5 rtl:rotate-180" aria-hidden="true" />

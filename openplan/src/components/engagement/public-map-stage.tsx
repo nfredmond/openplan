@@ -257,7 +257,7 @@ export function PublicMapStage({
    * panel over the map. The panel carries `data-map-overlay-panel` so the
    * camera can keep a selected place out from under it.
    */
-  feed?: { button: ReactNode; panel: ReactNode } | null;
+  feed?: { button: ReactNode; panel: ReactNode; open?: boolean } | null;
   /** Offer "Find a street or place". Decided server-side; see `place-search.ts`. */
   placeSearch?: boolean;
   contextLayers?: ParticipantContextLayerSet | null;
@@ -413,7 +413,13 @@ export function PublicMapStage({
         pixel.y >= padding.top && pixel.y <= height - padding.bottom;
       // A pin inside a group is not drawn on its own, so zoom past the grouping.
       if (!inView || map.getZoom() < 16) {
-        map.easeTo({ center: [lng, lat], zoom: Math.max(map.getZoom(), 16), padding });
+        // `offset`, not `padding`: Mapbox keeps camera padding after the move,
+        // which would shift `getCenter()` off the crosshair Enter marks at.
+        map.easeTo({
+          center: [lng, lat],
+          zoom: Math.max(map.getZoom(), 16),
+          offset: [(padding.left - padding.right) / 2, (padding.top - padding.bottom) / 2],
+        });
       }
       return;
     }
@@ -957,7 +963,10 @@ export function PublicMapStage({
       bringSelectedIntoView(map);
     };
 
-    if (!styleChanged && map.isStyleLoaded()) paint();
+    // `styleLoadedRef`, not `isStyleLoaded()`, which answers false while tiles
+    // stream in after a pan; the `once` fallback would then wait for a
+    // `style.load` that never comes, and a filter or vote would not repaint.
+    if (!styleChanged && styleLoadedRef.current) paint();
     else map.once("style.load", paint);
     // `basemap` is a dependency because a style swap wipes the registry above.
   }, [items, contextLayers, initialView, selectedStyleUrl, visibleLayerIds]);
@@ -1009,7 +1018,7 @@ export function PublicMapStage({
   // paths share.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || !styleLoadedRef.current) return;
     const source = map.getSource("engagement-draw") as mapboxgl.GeoJSONSource | undefined;
     source?.setData(buildPreviewFeatureCollection(draw));
   }, [draw]);
@@ -1032,7 +1041,7 @@ export function PublicMapStage({
     } else {
       map.easeTo({ center: result.center, zoom: Math.max(map.getZoom(), 17) });
     }
-    announce(t("portal.placeSearchMoved", { place: result.name }));
+    announce(t(drawEnabled ? "portal.placeSearchMoved" : "portal.placeSearchMovedReadOnly", { place: result.name }));
     if (drawEnabled) mapContainerRef.current?.focus();
   };
 
@@ -1217,7 +1226,12 @@ export function PublicMapStage({
       */}
 
       {mapUnavailable ? null : (
-        <div className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(16rem,calc(100%-6rem))] flex-col gap-2">
+        <div
+          className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(16rem,calc(100%-6rem))] flex-col gap-2"
+          // The open comment list covers this column; what it covers must not
+          // take keyboard focus (WCAG 2.4.11).
+          inert={feed?.open || undefined}
+        >
         {placeSearch ? (
           <div className="pointer-events-auto">
             <PublicMapPlaceSearch

@@ -185,6 +185,46 @@ describe("the search box on the map", () => {
     expect(draft.features).toHaveLength(0);
   });
 
+  it("does not search again, or reopen the list, for the name it just chose", async () => {
+    await renderShell();
+    const box = screen.getByRole("combobox", { name: "Find a street or place" });
+    fireEvent.change(box, { target: { value: "125 Mill" } });
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+    fireEvent.keyDown(box, { key: "Enter" });
+
+    await new Promise((resolve) => setTimeout(resolve, 450));
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(screen.queryAllByRole("option")).toHaveLength(0);
+  });
+
+  it("cannot choose a stale result with Enter while the next search is pending", async () => {
+    const map = await renderShell();
+    const box = screen.getByRole("combobox", { name: "Find a street or place" });
+    fireEvent.change(box, { target: { value: "125 Mill" } });
+    await waitFor(() => expect(screen.getAllByRole("option")).toHaveLength(2));
+    const movesBefore = map.easeToCalls.length;
+
+    fireEvent.change(box, { target: { value: "125 Mill Street, Reno" } });
+    fireEvent.keyDown(box, { key: "Enter" });
+    expect(map.easeToCalls.length).toBe(movesBefore);
+  });
+
+  it("announces what the search found, and does not promise marking on a closed map", async () => {
+    const map = await renderShell({ acceptingSubmissions: false });
+    const box = screen.getByRole("combobox", { name: "Find a street or place" });
+    fireEvent.change(box, { target: { value: "125 Mill" } });
+    await waitFor(() =>
+      expect(screen.getByTestId("portal-place-search-status")).toHaveTextContent(
+        EN_MESSAGES.messages["portal.placeSearchCount"].replace("{count}", "2")
+      )
+    );
+    fireEvent.keyDown(box, { key: "Enter" });
+    expect(map.easeToCalls.length).toBeGreaterThan(0);
+    const said = screen.getAllByRole("status").map((region) => region.textContent ?? "").join(" ");
+    expect(said).toContain("Map moved to 125 Mill Street.");
+    expect(said).not.toContain("Press Enter");
+  });
+
   it("frames a place with an extent instead of zooming to a point", async () => {
     const map = await renderShell();
     const box = screen.getByRole("combobox", { name: "Find a street or place" });
@@ -207,7 +247,7 @@ describe("the search box on the map", () => {
       target: { value: "Calle Mill" },
     });
     await waitFor(() =>
-      expect(screen.getByRole("listbox", { hidden: true })).toHaveTextContent(
+      expect(screen.getByTestId("portal-place-search-status")).toHaveTextContent(
         ES_MESSAGES.messages["portal.placeSearchFailed"]
       )
     );
