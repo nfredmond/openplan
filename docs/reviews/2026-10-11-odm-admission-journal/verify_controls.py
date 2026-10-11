@@ -149,7 +149,7 @@ def run(repo, out):
         source.write_bytes(payload)
         code, output = execute(label)
         if code != 0 or not re.search(r'Ran \d+ tests', output):
-            raise AssertionError(label + ': positive control failed')
+            raise AssertionError(label + ': positive control failed\n' + output)
         outcomes.append({'control':label,'outcome':'survived'})
     try:
         positive('baseline', original)
