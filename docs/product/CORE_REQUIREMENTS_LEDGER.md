@@ -415,3 +415,21 @@ recovery, all worker families, useful computation beyond 45 minutes, a different
 physical host, clean agency commissioning or scientific acceptance. M3 and the
 complete V1 floor remain incomplete. No capability grade changes. The hosted
 owner retains the main merge hold.
+
+## October 11 managed admission and progress point, bounded M3 evidence
+
+[The managed custody proof](../reviews/2026-10-11-managed-stage-point/STATUS.md)
+retains original uncertain claim/progress commands, execution admissions, native
+immutable start witnesses and the complete known attempt-owned root with the
+full database/transit point. Separate local-cluster recovery matches original
+request/response bytes, refuses callback reentry and preserves all 374 table
+images/six sequences, admissions, owner/input/output bytes and empty directories.
+The installed ownership CLI denies continuation; native rollback snapshots and
+in-memory broken predicate controls reject obsolete ownership inference.
+
+This advances existing admitted-stage command/writer custody only. Normal demand
+pollers remain disconnected. Installation-wide alignment, all worker families,
+useful 45-minute computation, physical-host recovery, clean agency commissioning
+and separate-engine scientific acceptance remain open. M3 and the complete V1
+floor stay incomplete; no capability grade changes. The relaunch owner retains
+hosted coordination and the main merge hold.

@@ -1,0 +1,90 @@
+{
+  "state": "passed-native-final-preservation",
+  "ownershipOracleCases": {
+    "sourceSha256": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
+    "cases": [
+      {
+        "case": "claim",
+        "nativeRollbackMutation": "cancelled-parent",
+        "baselineHarmlessRestoredRefuseOwnership": true,
+        "brokenPredicateFailsIntendedAssertion": "stagepoint-original-row-images",
+        "projectionFiltersAndFieldsEqual": true
+      },
+      {
+        "case": "claim",
+        "nativeRollbackMutation": "inactive-attempt",
+        "baselineHarmlessRestoredRefuseOwnership": true,
+        "brokenPredicateFailsIntendedAssertion": "stagepoint-original-row-images",
+        "projectionFiltersAndFieldsEqual": true
+      },
+      {
+        "case": "progress",
+        "nativeRollbackMutation": "cancelled-parent",
+        "baselineHarmlessRestoredRefuseOwnership": true,
+        "brokenPredicateFailsIntendedAssertion": "stagepoint-original-row-images",
+        "projectionFiltersAndFieldsEqual": true
+      },
+      {
+        "case": "progress",
+        "nativeRollbackMutation": "inactive-attempt",
+        "baselineHarmlessRestoredRefuseOwnership": true,
+        "brokenPredicateFailsIntendedAssertion": "stagepoint-original-row-images",
+        "projectionFiltersAndFieldsEqual": true
+      }
+    ],
+    "scope": "Existing reader consumes native SQL rollback-only snapshots. In-memory predicate mutations only. No live CLI revocation, replacement lease, concurrent writer or continuation authorization."
+  },
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "harmless policy role ordering",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native predicate",
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native policy role",
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native default privilege",
+      "result": "intended refusal",
+      "reason": "schema-default-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    }
+  ],
+  "catalogPreservedAfterRollback": true,
+  "all374TableImagesAndSixSequencesUnchanged": true,
+  "rolesPasswordsMembershipsPropertiesAndMountedKeyEqual": true,
+  "sourcePointAndEncryptedRepositoryUnchanged": true,
+  "targetEncryptedRepositoryEqual": true,
+  "originalTransitPointUnchanged": true,
+  "wallSeconds": 61.875,
+  "scope": "Same-host separate-volume synthetic recovery point. Transactional policy/default-ACL controls, no Auth or browser acceptance.",
+  "targetStopped": true
+}

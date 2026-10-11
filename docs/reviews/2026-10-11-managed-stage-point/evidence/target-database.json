@@ -1,0 +1,26 @@
+{
+  "state": "passed-native-database-phase",
+  "wallSeconds": 40.583,
+  "snapshotId": "679c4c31d435042f1712c8f8b43e1e05e2baf700aa39c027a9f86b911de5e3c6",
+  "capturedFiles": 1557,
+  "capturedBytes": 644784815,
+  "tables": 374,
+  "sequences": 6,
+  "roles": 31,
+  "memberships": 25,
+  "schema": {
+    "schemaCoreSha256": "6615c4910d9cc0d37ae550875dc26a666946818703f2d953b5155ff072b1c051",
+    "defaultStatementsSha256": "2fccdd2ccfa8a4e93e64005f7cc874828c3ac76a6b8ef577811a76778efcc874",
+    "policyCatalogSha256": "0d98e26b1bc223c6d6e76c4d01960e1e249fc135dfa78de618b8a413f8a41a92",
+    "defaultCatalogSha256": "d7fd3960bd3453547c5795ed192ffd6ac05f54515a156157298e6513b93165e9",
+    "policies": 769,
+    "defaultPrivilegeGroups": 27,
+    "defaultStatements": 80
+  },
+  "roleAttributesPasswordsAndGrantsEqual": true,
+  "independentlyMountedKeyBytesEqual": true,
+  "physicalStorageAndWorkerFilesByteEqual": true,
+  "originalCapturedPointUnchanged": true,
+  "historicalDecryption": "not established",
+  "scope": "Separate cluster on the same host and physical disk; database/roles/key phase only."
+}

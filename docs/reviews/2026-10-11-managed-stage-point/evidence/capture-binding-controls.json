@@ -1,0 +1,57 @@
+{
+  "sourceSha256": "482ab955a3096018b1eacd5a4e049ffa0fd48c25ab5feae9bd3905dc5f30a68f",
+  "baselineHarmlessRestored": true,
+  "cases": [
+    {
+      "field": "state",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "snapshotId",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "sourceHead",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "sourceDatabaseStopped",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "sourceRestStopped",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "nativeExecutionStartsRetained",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "callbacksBeforeCapture",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "helperSourceSha256",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "capturedFiles",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "field": "capturedBytes",
+      "refused": "cluster-captured-point",
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "scope": "Pure captured-result observations. No new native cluster, actual hashes, point preservation or database/file acceptance."
+}

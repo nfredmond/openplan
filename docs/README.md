@@ -41,6 +41,8 @@ evidence bindings; it cannot certify professional usefulness or scientific truth
 The old [shared manual](product/AGENT_OPERATING_RULES.md) is a compatibility
 pointer to AGENTS.md, not a second rulebook.
 
+The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

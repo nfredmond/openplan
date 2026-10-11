@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "038faaa6b57c3e571c581cbd582e3b858f4d1a31746340c7d4de28ccb62969ca",
+  "harmlessCommentSurvivesActualCopyTests": true,
+  "cases": [
+    {
+      "case": "owner-marker",
+      "omittedComparison": "equal_root",
+      "testFailsForIntendedReason": "Changed root survived: owner-marker"
+    },
+    {
+      "case": "missing-input",
+      "omittedComparison": "equal_root",
+      "testFailsForIntendedReason": "Changed root survived: missing-input"
+    },
+    {
+      "case": "missing-output",
+      "omittedComparison": "equal_root",
+      "testFailsForIntendedReason": "Changed root survived: missing-output"
+    },
+    {
+      "case": "missing-empty-directory",
+      "omittedComparison": "equal_root",
+      "testFailsForIntendedReason": "Changed root survived: missing-empty-directory"
+    },
+    {
+      "case": "private-mode",
+      "omittedComparison": "equal_root",
+      "testFailsForIntendedReason": "Changed root survived: private-mode"
+    },
+    {
+      "case": "claim-missing-admission",
+      "omittedComparison": "equal_journal",
+      "testFailsForIntendedReason": "Removed admission survived"
+    },
+    {
+      "case": "progress-missing-admission",
+      "omittedComparison": "equal_journal",
+      "testFailsForIntendedReason": "Removed admission survived"
+    }
+  ],
+  "scope": "Actual native copy tests with in-memory omitted comparisons. Source and production helpers unchanged. No concurrency, engine resume or remote-host acceptance."
+}

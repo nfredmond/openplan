@@ -1,0 +1,19 @@
+{
+  "cases": [
+    {
+      "root": "model-worker-private",
+      "sourceCompleteRootEqual": true,
+      "targetFilesDirectoriesModesEqualExceptTwoDocumentedManagedJournalReceipts": true,
+      "directories": 7,
+      "sourceFiles": 5
+    },
+    {
+      "root": "managed-stage-worker-private",
+      "sourceCompleteRootEqual": true,
+      "targetFilesDirectoriesModesEqualExceptTwoDocumentedManagedJournalReceipts": true,
+      "directories": 13,
+      "sourceFiles": 5
+    }
+  ],
+  "scope": "Actual original-model and managed-root files, empty directories and modes. No arbitrary root discovery, all-worker coverage, concurrency or hardware-loss acceptance."
+}

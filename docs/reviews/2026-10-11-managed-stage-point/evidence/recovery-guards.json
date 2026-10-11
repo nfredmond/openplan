@@ -1,0 +1,54 @@
+{
+  "sourceSha256": "5da8413a23e910e885ea74261d751dde85c73f16177ff0d167b982d1adefc2d2",
+  "cases": [
+    {
+      "guard": "stage-recovery-cli-receipt",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-wrong-installation",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-original-exchange",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-cached-no-http",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-admission-retained",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-no-reentry",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-ownership-read-only",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "guard": "stage-recovery-local-file-delta",
+      "baselineHarmlessRestored": true,
+      "brokenRefused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "scope": "In-memory observations only. No native receipt, CLI, callback, file, admission, ownership lease or service acceptance."
+}

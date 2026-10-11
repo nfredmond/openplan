@@ -1,0 +1,57 @@
+{
+  "units": {
+    "openplan-stagepoint-source-cut-20261011-03": {
+      "serviceStatus": {
+        "ActiveState": "inactive",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      },
+      "accountingMessages": [
+        "openplan-stagepoint-source-cut-20261011-03.service: Consumed 38.153s CPU time over 2min 15.915s wall clock time, 1G memory peak."
+      ],
+      "invocationIds": [
+        "c1c2c55d50e1432e9ab136f640a7dc48"
+      ]
+    },
+    "openplan-stagepoint-target-bootstrap-20261011-01": {
+      "serviceStatus": {
+        "ActiveState": "inactive",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      },
+      "accountingMessages": [
+        "openplan-stagepoint-target-bootstrap-20261011-01.service: Consumed 11.532s CPU time over 40.693s wall clock time, 908.9M memory peak."
+      ],
+      "invocationIds": [
+        "55dd470de0064823a8d7f1ef608d62fc"
+      ]
+    },
+    "openplan-stagepoint-target-recovery-20261011-01": {
+      "serviceStatus": {
+        "ActiveState": "inactive",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      },
+      "accountingMessages": [
+        "openplan-stagepoint-target-recovery-20261011-01.service: Consumed 15.259s CPU time over 1min 4.107s wall clock time, 49.9M memory peak."
+      ],
+      "invocationIds": [
+        "615201cd5ad944fcb1007633992b0a52"
+      ]
+    },
+    "openplan-stagepoint-final-preservation-20261011-01": {
+      "serviceStatus": {
+        "ActiveState": "inactive",
+        "Result": "success",
+        "ExecMainStatus": "0"
+      },
+      "accountingMessages": [
+        "openplan-stagepoint-final-preservation-20261011-01.service: Consumed 15.002s CPU time over 1min 2.239s wall clock time, 74.5M memory peak."
+      ],
+      "invocationIds": [
+        "69f561d4ce0e44cfac253059acaf85d2"
+      ]
+    }
+  },
+  "scope": "Actual unit exits and journal accounting. Completed MemoryPeak is unavailable; journal peaks are rounded. Source active MemoryPeak was observed at1073741824 bytes against the1GiB cap. No spare-capacity or OOM-counter acceptance."
+}

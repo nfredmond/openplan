@@ -1,0 +1,18 @@
+{
+  "archivedFiles": {
+    "prove_transport.py": "3e6026d8614b889f0fa2ed2e387eda19ccca02f1a0659976363ecb90ae83b45c",
+    "target_recovery.py": "1ce50e00a701419c341f552955200462d8adb06ea46451194ba55e5fc45243a7",
+    "ownership_controls.py": "a9b690db1a95d5afd70d4f5ffa71c1cf8fe11413766383d0d1de3561d5a2e3ef",
+    "seed_guards.py": "bf2f2a886bd8f360c6ab2c4acc926680764277dded58e7e94d116630b035aa38",
+    "source_capture.py": "c355181785a6a0576f2f07ad7f6e694fae8b0e85814d91d7c5f709107fff5aba",
+    "prove_seed_guards.py": "2e6669fd5459bab351c4660a9a8d8ae99152dce410bedf05e15bd351c8f17a4d",
+    "prove_recovery_guards.py": "0367143c5e9d788f03e373581e1d7c42b5b5e89032fc0f2437068c6d026e779c",
+    "recovery_guards.py": "5da8413a23e910e885ea74261d751dde85c73f16177ff0d167b982d1adefc2d2",
+    "prove_retained_root.py": "038faaa6b57c3e571c581cbd582e3b858f4d1a31746340c7d4de28ccb62969ca",
+    "final_preservation.py": "d6cf71570bbf63e946f8e3c66f1535769bd8c4f0d2e0a5d5bf3d7c356f1a77ab",
+    "source_seed.py": "d79ce6b925238f69274611d8bebd4421c20d26108a4e3984f322c305886fe104",
+    "prove_root_oracles.py": "89f979360be26dfcbf625c59adf37514e20375653f39d1a2c5091dbeb23f9028",
+    "transport.py": "8238247654cc0ac58fdf96451704b06357e448c16242490ec9b47fbbeeb14fe1"
+  },
+  "scope": "Exact executed fixture sources, bound to retained pre-execution private dependency manifests. Fixed private prerequisites, not standalone installation or restore commands."
+}
