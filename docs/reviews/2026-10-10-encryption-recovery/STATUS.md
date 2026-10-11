@@ -136,3 +136,12 @@ place of the full archive command. Private copies restore original bytes.
 These checks inspect explicit YAML paths and executable command shape. They do
 not emulate GitHub events or establish permissions, queue availability, native
 recovery or current CI success. The current candidate checks remain pending.
+
+## Completed local archive and current-helper native follow-up
+
+[Full archive and native evidence](FULL_ARCHIVE.md) records the completed local
+c668 archive, its exact source boundary, current-helper native mutation,
+fresh-process and real CLI checks, and the retained child-script failure.
+All completed owned test services are stopped; containers, volumes and proof
+remain retained. Current-head GitHub CI and complete installation recovery are
+still separate unfinished boundaries.
