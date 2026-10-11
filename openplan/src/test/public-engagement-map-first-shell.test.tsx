@@ -84,6 +84,7 @@ vi.mock("mapbox-gl", () => {
     default: {
       Map,
       NavigationControl: ctl,
+      GeolocateControl: ctl,
       AttributionControl: ctl,
       Popup: ctl,
       Marker: ctl,
@@ -92,6 +93,7 @@ vi.mock("mapbox-gl", () => {
     },
     Map,
     NavigationControl: ctl,
+    GeolocateControl: ctl,
     AttributionControl: ctl,
   };
 });
@@ -238,7 +240,7 @@ describe("the map-first participant surface, with a map key", () => {
     const onward = screen.getByTestId("portal-details-link");
     expect(onward.tagName).toBe("A");
     expect(onward).toHaveAttribute("href", "/engage/share-token-12345/about?lang=es");
-    expect(onward).toHaveTextContent("See the survey and what other people said");
+    expect(onward).toHaveTextContent("Take the survey");
 
     // The picker really did render links, or the exclusion below would be
     // excluding nothing — the exact hole this test had.
@@ -303,7 +305,7 @@ describe("the map-first participant surface, with NO map key", () => {
 
     // "Where" survives the missing map — as a question in words, because there
     // is no map to point at.
-    const where = screen.getByLabelText(/Where is this/i);
+    const where = screen.getByLabelText(/Street or landmark/i);
     fireEvent.change(where, { target: { value: "Corner of Main and 4th" } });
 
     fireEvent.click(screen.getByRole("button", { name: "Next" }));
