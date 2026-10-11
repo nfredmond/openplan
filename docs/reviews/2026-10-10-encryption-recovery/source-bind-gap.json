@@ -1,0 +1,9 @@
+{
+  "hostDiffersFromMounted": true,
+  "preparedBytesDifferFromSourceMount": true,
+  "targetKeyUnchanged": true,
+  "sourceRestored": true,
+  "originalExistingSourceKeyUnchanged": true,
+  "helperSha256": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+  "boundary": "Synthetic new CLI fixture only. A host file atomically replaced while Docker retains its old bind is not checked during preparation. No existing source, database rows or volumes change."
+}

@@ -15,7 +15,7 @@ def prove(destination):
     with tempfile.TemporaryDirectory(prefix='openplan-restore-mutations-') as directory:
         scratch = Path(directory)
         (scratch/'tests/fixtures').mkdir(parents=True)
-        for relative in ['full_restore.py', 'reconstruct_owp_restore.py',
+        for relative in ['full_restore.py', 'database_key_custody.py', 'reconstruct_owp_restore.py',
                          'disposable-restore-drill.sh', 'restore_ports.py',
                          'tests/test_full_restore.py', 'tests/test_reconstruct_owp_restore.py',
                          'tests/test_restore_drill_ownership.py', 'tests/fixtures/owp-recovery.json']:

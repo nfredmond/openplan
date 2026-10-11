@@ -196,6 +196,16 @@ curl --fail --silent --show-error \
   --data-binary "@$OBJECT_FILE" >/dev/null
 
 if $FULL_ARCHIVE; then
+  docker exec -i "$SOURCE_DB" psql -X -U supabase_admin -d postgres -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+SELECT vault.create_secret('OpenPlan synthetic encrypted recovery fixture', 'openplan_recovery_canary');
+DO $$ BEGIN
+  IF (SELECT count(*) FROM vault.decrypted_secrets
+      WHERE name = 'openplan_recovery_canary'
+        AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture') <> 1 THEN
+    RAISE EXCEPTION 'Source encrypted recovery canary differs';
+  END IF;
+END $$;
+SQL
   RESTORE_API_URL="$SOURCE_API" RESTORE_SERVICE_KEY="$SOURCE_SERVICE_KEY" RESTORE_OWNER_ID="$OWNER_ID" \
     npm exec --no -- tsx scripts/ops/seed-owp-restore.ts "$BACKUP_ROOT/owp-fixture.json"
   RESTORE_API_URL="$SOURCE_API" RESTORE_SERVICE_KEY="$SOURCE_SERVICE_KEY" \
@@ -240,6 +250,9 @@ test -n "$TARGET_DB" && test -n "$TARGET_API" && test -n "$TARGET_SERVICE_KEY"
 
 if $FULL_ARCHIVE; then
   python3 "$APP_ROOT/scripts/ops/full_restore.py" "$SOURCE_PROJECT" "$TARGET_PROJECT" "$BACKUP_ROOT/full"
+  ENCRYPTED_CANARY=$(docker exec "$TARGET_DB" psql -X -U supabase_admin -d postgres -v ON_ERROR_STOP=1 -At -c \
+    "SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'")
+  test "$ENCRYPTED_CANARY" = 1
   if [[ -n "${OPENPLAN_RESTORE_EVIDENCE_DIR:-}" ]]; then
     install -d -m 700 "$OPENPLAN_RESTORE_EVIDENCE_DIR"
     test ! -e "$OPENPLAN_RESTORE_EVIDENCE_DIR/full-restore-manifest.json"

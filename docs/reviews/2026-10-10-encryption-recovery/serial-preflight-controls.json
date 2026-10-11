@@ -1,0 +1,142 @@
+{
+  "runnerSha256": "6c993d3c9c4daffdc6621a56b9f58127c030117caf7005f8d547509c3f21f479",
+  "controls": [
+    {
+      "name": "baseline",
+      "scenario": "baseline",
+      "result": "survived",
+      "failure": null,
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "harmless comment",
+      "scenario": "baseline",
+      "result": "survived",
+      "failure": null,
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected archive result",
+      "scenario": "failed archive",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit archive result",
+      "scenario": "failed archive",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected resource result",
+      "scenario": "resource failure",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit resource result",
+      "scenario": "resource failure",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected archive source",
+      "scenario": "wrong prior source",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit archive source",
+      "scenario": "wrong prior source",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected current source",
+      "scenario": "wrong current source",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit current source",
+      "scenario": "wrong current source",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected clean checkout",
+      "scenario": "dirty checkout",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit clean checkout",
+      "scenario": "dirty checkout",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected helper hash",
+      "scenario": "wrong helper",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 0,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit helper hash",
+      "scenario": "wrong helper",
+      "result": "intended oracle failure",
+      "failure": "Invalid preflight reached mocked jobs",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "protected retained helper",
+      "scenario": "changed during job",
+      "result": "refused before further jobs",
+      "failure": null,
+      "mockedJobs": 1,
+      "actualJobs": 0
+    },
+    {
+      "name": "omit retained helper",
+      "scenario": "changed during job",
+      "result": "intended oracle failure",
+      "failure": "Changed helper reached another mocked job",
+      "mockedJobs": 2,
+      "actualJobs": 0
+    },
+    {
+      "name": "restored",
+      "scenario": "baseline",
+      "result": "survived",
+      "failure": null,
+      "mockedJobs": 2,
+      "actualJobs": 0
+    }
+  ],
+  "boundary": "Synthetic private filesystem and mocked systemctl, git and jobs. No actual native jobs, Docker writes or current full recovery acceptance."
+}

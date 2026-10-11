@@ -1,0 +1,50 @@
+{
+  "helperSha256": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+  "targetContainer": "supabase_db_openplan-restore-target-20261011560001",
+  "targetId": "b0dede4e74ae53c49fdad31089b529eeb66de176d044f8e27d7c4d481b5e45c3",
+  "imageId": "sha256:ca7871b587ca2c401ac0f325df6249c9aa0d25647ded34631158efc51176767f",
+  "targetProject": "openplan-restore-target-20261011560001",
+  "network": "none",
+  "memoryLimitBytes": 1073741824,
+  "swapDisabled": true,
+  "initialWrongKeySQLState": "22000",
+  "controls": [
+    {
+      "name": "interrupted restart",
+      "result": "pass",
+      "observed": "real isolated Python CLI and actual decrypted synthetic bytes pass",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "harmless",
+      "result": "pass",
+      "observed": "real isolated Python CLI and actual decrypted synthetic bytes pass",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "tampered payload",
+      "result": "intended native refusal",
+      "observed": "real CLI refuses changed payload or missing replacement; actual SQLSTATE22000 remains",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "omit replacement",
+      "result": "intended native refusal",
+      "observed": "real CLI refuses changed payload or missing replacement; actual SQLSTATE22000 remains",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "omit restart",
+      "result": "intended native refusal",
+      "observed": "real CLI refuses missing restart; actual target is stopped",
+      "sourceRootUnchanged": true
+    },
+    {
+      "name": "restored",
+      "result": "pass",
+      "observed": "real isolated Python CLI and actual decrypted synthetic bytes pass",
+      "sourceRootUnchanged": true
+    }
+  ],
+  "boundary": "Native recovery CLI and one new independent owned synthetic Vault cluster, including interrupted restart. No full installation, Auth/Storage/RLS, remote-host or physical power-loss acceptance."
+}

@@ -7,6 +7,7 @@ the target's bootstrap database and imports into a new empty database first.
 from __future__ import annotations
 
 import hashlib
+import importlib.util
 import json
 import os
 from pathlib import Path, PurePosixPath
@@ -14,6 +15,15 @@ import re
 import subprocess
 import tarfile
 import time
+
+# Existing recovery runners also load this file by absolute path. Resolve the
+# sibling from this checkout instead of the caller's working directory or PATH.
+_key_spec = importlib.util.spec_from_file_location('openplan_database_key_custody', Path(__file__).with_name('database_key_custody.py'))
+assert _key_spec is not None and _key_spec.loader is not None
+_keys = importlib.util.module_from_spec(_key_spec)
+_key_spec.loader.exec_module(_keys)
+prepare_database_key_restore = _keys.prepare_database_key_restore
+apply_database_key_restore = _keys.apply_database_key_restore
 
 SERVICES = ('db', 'auth', 'rest', 'storage')
 
@@ -43,7 +53,7 @@ def require_project(project: str, kind: str) -> dict:
         if info['Config']['Labels'].get('com.supabase.cli.project') != project:
             raise ValueError('Container project identity differs')
         result[service] = {'name': name, 'image': info['Config']['Image'],
-                           'imageId': info['Image']}
+                           'imageId': info['Image'], 'id': info['Id'], 'project': project}
     return result
 
 
@@ -72,6 +82,8 @@ def require_empty_target(db: str):
     if sql(db, "SELECT count(*) FROM pg_database WHERE datname IN "
                "('openplan_recovered','openplan_bootstrap_preserved')") != '0':
         raise ValueError('Recovery database names already exist; retain and inspect them')
+    if sql(db, "SELECT to_regclass('vault.secrets') IS NOT NULL") == 't' and sql(db, 'SELECT count(*) FROM vault.secrets') != '0':
+        raise ValueError('Refusing a target with existing encrypted secrets')
 
 
 def require_no_jobs(db: str):
@@ -230,6 +242,7 @@ def full_restore(source_project: str, target_project: str, destination: Path) ->
     if role_inventory(source_db) != role_inventory(target_db):
         raise ValueError('Cluster role definitions differ; restore matching role configuration first')
     destination.mkdir(mode=0o700, parents=True, exist_ok=False)
+    key_plan = prepare_database_key_restore(source['db'], target['db'], destination)
     source_writers = [source[s]['name'] for s in ('auth', 'rest', 'storage')]
     target_writers = [target[s]['name'] for s in ('auth', 'rest', 'storage')]
     # The drill owns the only API clients and creates no workers or outbound jobs.
@@ -242,6 +255,7 @@ def full_restore(source_project: str, target_project: str, destination: Path) ->
     storage_archive(source['storage'], destination/'storage.tgz')
     objects = storage_inventory(destination/'storage.tgz')
     compare_inventory(before, database_inventory(source_db))
+    prepare_database_key_restore(source['db'], target['db'], destination)
     captured_schema = before['schemaSha256']
     # PostgreSQL can flatten redundant AND parentheses when replaying a CHECK.
     # Compile the captured schema separately to define the expected restoration,
@@ -252,6 +266,7 @@ def full_restore(source_project: str, target_project: str, destination: Path) ->
              '-d', 'openplan_schema_control', '--schema-only', '--exit-on-error', '--single-transaction'], stdin=handle)
     before['schemaSha256'] = schema_hash(source_db, 'openplan_schema_control')
     run(['docker', 'stop', *target_writers], stdout=subprocess.DEVNULL)
+    key_custody = apply_database_key_restore(target['db'], key_plan, destination)
     run(['docker', 'exec', target_db, 'createdb', '-U', 'supabase_admin', '-T', 'template0', '--owner', before['databaseProperties']['owner'], 'openplan_recovered'])
     with (destination/'postgres.dump').open('rb') as handle:
         run(['docker', 'exec', '-i', target_db, 'pg_restore', '-U', 'supabase_admin',
@@ -278,6 +293,7 @@ def full_restore(source_project: str, target_project: str, destination: Path) ->
     result = {'source': source, 'target': target, 'database': before, 'storage': objects,
               'capturedSchemaSha256': captured_schema,
               'archiveSha256': archive_hashes,
+              'databaseKeyCustody': key_custody,
               'bootstrapPreserved': True, 'scope': 'Default local CLI database and Storage; no external workers, custom roles or scheduled SQL jobs'}
     (destination/'manifest.json').write_text(json.dumps(result, indent=2)+'\n')
     run(['docker', 'start', *source_writers, *target_writers], stdout=subprocess.DEVNULL)

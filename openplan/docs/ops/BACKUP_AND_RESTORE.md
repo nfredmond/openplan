@@ -11,7 +11,8 @@ The archive example below is specific to the default Supabase CLI local stack.
 It is not a tested universal procedure for hosted Supabase or an independently
 self-hosted production stack. The disposable drill has a full database and
 Storage mode for matching default-local images, alongside the older selected-row
-sample. Neither mode captures external worker files or protected configuration.
+sample. Full mode now retains the mounted local database encryption root key.
+Neither mode captures external worker files or the complete protected configuration.
 
 ## Inventory and consistency before capture
 
@@ -22,7 +23,9 @@ sources; do not assume every directory outside Supabase is disposable.
 
 Include protected copies of configuration, Auth settings and required encryption
 keys. In particular, preserve `OPENPLAN_INTEGRATION_KEY_SECRET` for encrypted
-workspace keys. A database dump does not include every cluster-level role or
+workspace keys. Preserve the mounted PostgreSQL Vault root key separately from
+the database dump. Identical encrypted rows can fail to decrypt in a fresh
+cluster with a different root key. A database dump does not include every cluster-level role or
 service configuration. Keep the information needed to recreate those alongside
 its matching software versions. Store backups privately outside the repository
 and chat, with a protected independent copy and an agency retention policy.
@@ -141,6 +144,46 @@ archive and Storage volume, and restores both into the isolated target. It creat
 no app workers and refuses scheduled SQL jobs. Never point this test at a working
 agency database. The script verifies project ownership and matching runtime images
 before capture and refuses existing target records or incompatible cluster roles.
+
+Full mode also captures the source database's mounted root key and the fresh
+target's previous key in private files beside the archives. It records the target
+container identity, image and file binding before stopping that target. Initial
+capture compares host and mounted bytes through the recorded source and target
+container IDs. An atomic host-file replacement can leave an older file bound in
+a running container; preparation refuses that mismatch. Existing-intent replay
+uses the retained keys without requiring the stopped target to answer a mount
+read. The actual decryption canary separately checks the restored backend. It
+atomically replaces the target key, syncs the file and directory, restarts the
+recorded target and verifies the mounted bytes. The source key stays unchanged.
+The target must have no existing Vault secrets. The helper refuses SSH and TCP Docker
+endpoints and unexpected mounts, identities, key bytes or recovery intents.
+
+The key archive is `database-root-private.key`. Its checked intent and the previous
+target key are private too. Protect all three as secrets. Do not copy them into
+public reports, source control or chat. A restart interruption leaves the checked
+intent and both keys for recovery. The bounded key helper can repeat that step
+using the exact recorded target and retained incoming bytes. This does not make
+the entire full restore command resumable: it still refuses an existing capture
+directory or recovery database. Preserve and inspect failed drill state rather
+than deleting it or rerunning against a populated target.
+
+For that key step only, from the application directory, use the retained private
+capture directory:
+
+```bash
+python3 scripts/ops/database_key_custody.py --recover-target-key /private/drill/backup/full
+```
+
+The command accepts the generated disposable target project recorded in the
+intent. It does not select a new container, import database rows, change Storage
+or restart app workers. It refuses a different container, image, file binding or
+key payload. Verify the remaining saved work separately before accepting recovery.
+
+The drill seeds a synthetic encrypted Vault record and verifies its actual
+decryption on the target. [Native key recovery evidence](../../../docs/reviews/2026-10-10-encryption-recovery/STATUS.md)
+records wrong-key failure, interrupted restart recovery and the limits of these
+checks. Local fixture recovery does not establish hosted recovery, whole-host
+cutover or physical power-loss acceptance.
 
 The recovered database is built from `template0` with the original database owner,
 grants and settings. The target bootstrap database is retained under a separate
