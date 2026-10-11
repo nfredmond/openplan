@@ -99,4 +99,17 @@ describe("useExploreMapInstance", () => {
     expect(map.remove).toHaveBeenCalledTimes(1);
     expect(map.resize).not.toHaveBeenCalled();
   });
+
+  // The basemap follows the colour mode the page opened in (October 11, 2026).
+  it("opens on the light basemap in light mode and the dark one in dark mode", async () => {
+    document.documentElement.classList.remove("dark");
+    const light = await renderExploreMapInstance();
+    expect(mapboxMocks.Map.mock.calls[0]?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/light-v11" });
+    light.unmount();
+
+    document.documentElement.classList.add("dark");
+    await renderExploreMapInstance();
+    expect(mapboxMocks.Map.mock.calls[1]?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/dark-v11" });
+    document.documentElement.classList.remove("dark");
+  });
 });

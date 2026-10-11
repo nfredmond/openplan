@@ -9,7 +9,7 @@
   `dark:` applies in dark mode AND inside a surface that is painted dark in both
   modes (see "ALWAYS-DARK SURFACES" at the `.dark` token block).
 */
-@custom-variant dark (&:is(.dark *, .surface-dark *, .module-operator-card *, .analysis-explore-shell *, .analysis-studio-surface *, .public-rail *));
+@custom-variant dark (&:is(.dark *, .surface-dark *, .module-operator-card *, .public-rail *));
 
 @theme inline {
   --color-background: var(--background);
@@ -221,7 +221,7 @@
   surface. In dark mode the rule adds nothing, and the active palette is left
   alone.
 */
-:root:not(.dark) :is(.surface-dark, .module-operator-card, .analysis-explore-shell, .analysis-studio-surface, .public-rail),
+:root:not(.dark) :is(.surface-dark, .module-operator-card, .public-rail),
 .dark {
   /* D2 Cartographic palette — dark / night parchment */
   --bg: #111618;
@@ -4210,10 +4210,10 @@
   an already-computed value from `<body>`, so re-declaring the tokens is not
   enough for a bare heading or a native select.
 */
-:root:not(.dark) :is(.surface-dark, .module-operator-card, .analysis-explore-shell, .analysis-studio-surface, .public-rail) {
+:root:not(.dark) :is(.surface-dark, .module-operator-card, .public-rail) {
   color-scheme: dark;
 }
-:root:not(.dark) :is(.surface-dark, .analysis-explore-shell) {
+:root:not(.dark) .surface-dark {
   color: var(--foreground);
 }
 
@@ -4934,3 +4934,510 @@
     color: var(--muted-foreground);
   }
 }
+
+/*
+  ═══ UI OVERHAUL, OCTOBER 11, 2026: CORRIDOR ANALYSIS FOLLOWS LIGHT MODE ═══
+
+  Corridor Analysis was always dark: its surfaces were listed in the rules
+  that force dark tokens inside a light page, and its own rules hard-code
+  dark gradients and near-white text. It now follows the colour mode like
+  every other page (KI-2026-10-11-001). The block below was generated from
+  those rules (each colour mapped to the matching theme token: near-white
+  text to foreground or muted, dark fills to the panel, cyan accents to
+  --accent-2, borders to --border) and applies only in light mode, so dark
+  mode is unchanged.
+*/
+:root:not(.dark) .analysis-sidepanel-row {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-sidepanel-row.is-interactive:hover {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-sidepanel-row.is-active {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-sidepanel-row.is-warning {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-sidepanel-row.is-muted {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-sidepanel-title {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-sidepanel-body {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-sidepanel-chip {
+  border-left: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-sidepanel-stat,
+:root:not(.dark) .analysis-sidepanel-field {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-sidepanel-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-sidepanel-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-identity-panel {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-run-identity-panel.is-current {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-run-identity-panel.is-baseline {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-run-identity-eyebrow,
+:root:not(.dark) .analysis-run-pair-bridge-label,
+:root:not(.dark) .analysis-run-pair-board-label,
+:root:not(.dark) .analysis-run-pair-surface-eyebrow,
+:root:not(.dark) .analysis-run-pair-field-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-identity-title,
+:root:not(.dark) .analysis-run-pair-surface-title {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-identity-meta,
+:root:not(.dark) .analysis-run-identity-record,
+:root:not(.dark) .analysis-run-pair-bridge-copy,
+:root:not(.dark) .analysis-run-pair-board-copy,
+:root:not(.dark) .analysis-run-pair-surface-body {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-run-identity-record {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-identity-chip {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-run-pair-bridge,
+:root:not(.dark) .analysis-run-pair-board {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-run-pair-bridge::before,
+:root:not(.dark) .analysis-run-pair-board::before {
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-run-pair-surface {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-run-pair-surface.is-current {
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-run-pair-surface.is-baseline {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-run-pair-field {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-run-pair-field-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-history-handoff {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-run-history-handoff-label,
+:root:not(.dark) .analysis-run-history-handoff-card-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-run-history-handoff-copy,
+:root:not(.dark) .analysis-run-history-handoff-card-copy {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-run-history-handoff-card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-run-history-handoff-card.is-current {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-run-history-handoff-card.is-baseline {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-run-history-handoff-card-title {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-story::before {
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-story-step::before {
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-comparison-narrative {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-comparison-narrative-label,
+:root:not(.dark) .analysis-comparison-section-label,
+:root:not(.dark) .analysis-comparison-evidence-group-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-narrative-title {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-narrative-copy,
+:root:not(.dark) .analysis-comparison-section-copy,
+:root:not(.dark) .analysis-comparison-evidence-group-copy,
+:root:not(.dark) .analysis-comparison-support-copy,
+:root:not(.dark) .analysis-comparison-headline-detail {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-comparison-narrative-section {
+  border-top: 1px solid var(--border);
+}
+
+:root:not(.dark) .analysis-comparison-narrative-section.is-context-evidence {
+  border-top-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-headline-card {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-comparison-headline-card.is-up {
+  border-color: color-mix(in srgb, var(--status-ok) 40%, transparent);
+  background: color-mix(in srgb, var(--status-ok) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-headline-card.is-down {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: color-mix(in srgb, var(--status-warn) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-headline-card.is-flat {
+  border-color: var(--border);
+}
+
+:root:not(.dark) .analysis-comparison-headline-label {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-comparison-headline-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-support-row,
+:root:not(.dark) .analysis-comparison-evidence-row,
+:root:not(.dark) .analysis-comparison-evidence-empty {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-comparison-support-label,
+:root:not(.dark) .analysis-comparison-evidence-row-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-support-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-group.is-secondary {
+  border-top: 1px dashed var(--border);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-values p {
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-values span {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-values strong {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-row.is-changed {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-row.is-aligned {
+  border-color: var(--border);
+}
+
+:root:not(.dark) .analysis-comparison-evidence-empty p {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-comparison-actions {
+  border-top: 1px solid var(--border);
+}
+
+:root:not(.dark) .analysis-sidepanel-select {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-studio-surface {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-studio-surface::before {
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-studio-label,
+:root:not(.dark) .analysis-context-summary-label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-studio-title {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-studio-description {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-studio-note {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-studio-inline-meta {
+  border-top: 1px solid var(--border);
+}
+
+:root:not(.dark) .analysis-studio-inline-meta-label {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-studio-inline-meta-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-studio-checklist {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-context-summary-row {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-context-summary-value {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-explore-shell {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-explore-mapstage {
+  border-right: 1px solid var(--border);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-map-intro {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-rail {
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-workspace-layer {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-workspace-layer:hover,
+:root:not(.dark) .analysis-workspace-layer:focus-within {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-workspace-layer input[type="checkbox"] {
+  color: var(--accent-2);
+}
+
+:root:not(.dark) .analysis-workspace-layer__swatch {
+  box-shadow: none;
+}
+
+:root:not(.dark) .analysis-workspace-layer__label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-workspace-layer__note {
+  color: var(--muted-foreground);
+}
+
+:root:not(.dark) .analysis-workspace-layers__notes {
+  border-top: 1px solid var(--border);
+}
+
+:root:not(.dark) .analysis-workspace-layers__notes-summary {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-studio-inline-link {
+  color: var(--accent-2);
+}
+
+:root:not(.dark) .analysis-explore-workspace-hover {
+  border: 1px solid color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-workspace-hover__layer {
+  color: var(--accent-2);
+}
+
+:root:not(.dark) .analysis-explore-workspace-hover__label {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-explore-workspace-hover__attrs dt {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-explore-workspace-hover__attrs dd {
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-explore-rail-header {
+  border-bottom: 1px solid var(--border);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-context-surface {
+  border-color: var(--border);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-context-surface::before {
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-context-surface .module-record-row,
+:root:not(.dark) .analysis-explore-context-surface .module-subpanel,
+:root:not(.dark) .analysis-explore-context-surface .module-empty-state {
+  border-color: var(--border);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-context-surface .module-record-row.is-selected {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-context-surface .module-record-row.is-comparison {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-context-surface .module-record-chip {
+  border-left-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: color-mix(in srgb, var(--foreground) 4%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-surface {
+  border: 1px solid var(--border);
+  background: var(--panel-solid);
+  color: var(--foreground);
+}
+
+:root:not(.dark) .analysis-explore-surface-current {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+  background: color-mix(in srgb, var(--accent-2) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-surface-current.is-paired {
+  border-color: color-mix(in srgb, var(--accent-2) 35%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-surface-comparison {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: color-mix(in srgb, var(--status-warn) 12%, transparent);
+}
+
+:root:not(.dark) .analysis-explore-surface-warning {
+  border-color: color-mix(in srgb, var(--status-warn) 40%, transparent);
+  background: var(--panel-solid);
+}
+
+:root:not(.dark) .analysis-explore-surface [data-slot="card-header"] {
+  border-bottom-color: var(--border);
+}
+
+:root:not(.dark) .analysis-explore-mapstage {
+  border-bottom: 1px solid var(--border);
+}
+

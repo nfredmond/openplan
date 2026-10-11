@@ -723,8 +723,8 @@ export function ExploreWorkbench({
             className="absolute inset-0 z-10 flex items-center justify-center p-6"
             data-testid="explore-map-unavailable"
           >
-            <div className="max-w-md rounded-[0.5rem] border border-dashed border-white/25 bg-slate-900/85 px-5 py-4 text-sm text-slate-300 shadow-lg backdrop-blur-sm">
-              <p className="font-medium text-white">No map key is configured on this deployment</p>
+            <div className="max-w-md rounded-[0.5rem] border border-dashed border-border bg-background/95 px-5 py-4 text-sm text-muted-foreground shadow-lg backdrop-blur-sm">
+              <p className="font-medium text-foreground">No map key is configured on this deployment</p>
               <p className="mt-1.5">
                 {mapUnavailableReason === "unusable_token"
                   ? "A Mapbox token is set but is not a public key. Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a token beginning with pk. — a secret sk. token is deliberately refused rather than sent to the browser."
@@ -776,14 +776,14 @@ export function ExploreWorkbench({
         ) : null}
 
         {!analysisResult && !mapUnavailableReason ? (
-          <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-white sm:left-5 sm:top-5">
-            <p className="text-label font-bold text-cyan-300/70">
+          <div className="analysis-explore-map-intro absolute left-4 top-4 z-10 max-w-[min(84%,360px)] text-foreground sm:left-5 sm:top-5">
+            <p className="text-label font-bold text-[color:var(--accent-2)]">
               Corridor Analysis
             </p>
-            <h2 className="mt-2 text-xl font-semibold tracking-tight text-white">
+            <h2 className="mt-2 text-xl font-semibold tracking-tight text-foreground">
               Start with your study area.
             </h2>
-            <p className="mt-1.5 text-compact leading-relaxed text-slate-300/80">
+            <p className="mt-1.5 text-compact leading-relaxed text-muted-foreground">
               Search for your county, city, or metro area — or draw it, or upload a boundary file. Then
               frame the planning question and run the analysis.
             </p>
@@ -797,16 +797,16 @@ export function ExploreWorkbench({
               heading under it said "Corridor Analysis" again, and this page had
               no h1 at all — so the first heading a screen reader met was a
               duplicate of the label above it. */}
-          <h1 className="text-lg font-semibold tracking-tight text-white">Corridor Analysis</h1>
+          <h1 className="text-lg font-semibold tracking-tight text-foreground">Corridor Analysis</h1>
           {/* Nathaniel, 2026-08-13: the analysis pages were confusing because
               nothing said this one is not a step of the modeling job. One line
               says it now; the October 10 overhaul cut the two paragraphs that
               said it before. */}
-          <p className="mt-2 text-sm leading-6 text-slate-300/78">
+          <p className="mt-2 text-sm leading-6 text-muted-foreground">
             Score a corridor against open data and save the run. Comparing build options is{" "}
             <Link
               href={`${openedForProject ? withPlanningContext("/models", openedForProject.id) : "/models"}#${openedForProject ? "project-comparison-starter" : "choose-project-comparison"}`}
-              className="underline underline-offset-2 hover:text-white"
+              className="underline underline-offset-2 hover:text-foreground"
             >
               Travel modeling
             </Link>
@@ -833,7 +833,7 @@ export function ExploreWorkbench({
                   <p className="analysis-studio-note">Connecting to workspace…</p>
                 ) : workspaceLoadState === "loaded" && workspaceName ? (
                   <p className="analysis-studio-note">
-                    Connected to <strong className="text-white">{workspaceName}</strong>
+                    Connected to <strong className="text-foreground">{workspaceName}</strong>
                   </p>
                 ) : (
                   <p className="analysis-studio-note">{workspaceHelperText}</p>
