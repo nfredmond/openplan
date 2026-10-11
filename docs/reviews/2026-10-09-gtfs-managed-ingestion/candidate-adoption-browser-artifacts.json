@@ -1,0 +1,56 @@
+{
+  "head": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "buildId": "8RvVDpNJGWrngjjyMcIfO",
+  "images": [
+    {
+      "path": "candidate-adoption-cta-desktop.png",
+      "bytes": 402506,
+      "sha256": "ef7828c29017af139250d915056ed80ee15fb3ba5870deadaaabb796c3d88ea4"
+    },
+    {
+      "path": "candidate-adoption-cta-390.png",
+      "bytes": 141249,
+      "sha256": "9b08021efcca913adbf39dae7dd2613d4e8c8a316ce48f030757535a56f68f0c"
+    },
+    {
+      "path": "candidate-adoption-feed-390.png",
+      "bytes": 159941,
+      "sha256": "4cebfe828a88eec089bd89e18d347d4d3bd115477fe0ccd5ad4e923d46932343"
+    },
+    {
+      "path": "candidate-adoption-feed-desktop.png",
+      "bytes": 415331,
+      "sha256": "5db87d60b5a2db4a4216d53153733d0e05b942ecfddadb97fdff7e8ce56de39e"
+    },
+    {
+      "path": "candidate-adoption-cancelled-desktop.png",
+      "bytes": 397707,
+      "sha256": "28bdf1bf35e480266b0b3b0dba9fb87d82ad52d701f3642db71d69172fbe4b07"
+    },
+    {
+      "path": "candidate-adoption-cancelled-390.png",
+      "bytes": 139458,
+      "sha256": "a213dd324f3552dabec720c67d31e756228b5897505383c17c930177f3d29998"
+    },
+    {
+      "path": "candidate-adoption-model-feed-desktop.png",
+      "bytes": 418613,
+      "sha256": "7094019dfa4013c5f398dbe72c05233654ab1da6265ac1ddacc22564820043eb"
+    },
+    {
+      "path": "candidate-adoption-study-desktop.png",
+      "bytes": 280912,
+      "sha256": "45a1bd46e4f35e76bf14a77c55a954b94d54c9a58b0214c9f15a612e60ba7c84"
+    },
+    {
+      "path": "candidate-adoption-model-feed-390.png",
+      "bytes": 177856,
+      "sha256": "6c87e35dcac00e6789dfa0937c16f18c13b76c237e556d76a6dd2c3358014db8"
+    },
+    {
+      "path": "candidate-adoption-study-390.png",
+      "bytes": 118616,
+      "sha256": "201eafcd91ca0708fb2c05e7ce8f10c1c8d484de660a80aff7d0cb9a188ccb85"
+    }
+  ]
+}

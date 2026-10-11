@@ -1,0 +1,10 @@
+{
+  "observedAt": "2026-10-11T09:48:16.047183+00:00",
+  "sourceHead": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "newMain": "091d3ecff4eb3d93817334d14cb2f5bd4556d52c",
+  "simulatedMergeTree": "5c0da22f059db151ebe85c1d7302e0f091defc23",
+  "sourceTree": "5c0da22f059db151ebe85c1d7302e0f091defc23",
+  "treeEqual": true,
+  "worktreeMutation": false,
+  "mainMergeByThisLane": false
+}

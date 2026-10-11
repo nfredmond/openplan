@@ -1,0 +1,63 @@
+{
+  "run": 38127929401,
+  "head": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "status": "completed",
+  "conclusion": "success",
+  "logSha256": "f21732bf763a626c95769a67be208cda4b509b954bfc6cc3e2614782063df7f7",
+  "jobs": [
+    {
+      "name": "worker (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:20:18Z",
+      "completedAt": "2026-10-11T09:21:52Z"
+    },
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:20:39Z",
+      "completedAt": "2026-10-11T09:49:36Z"
+    },
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:20:55Z",
+      "completedAt": "2026-10-11T09:38:30Z"
+    },
+    {
+      "name": "ops scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:21:40Z",
+      "completedAt": "2026-10-11T09:22:49Z"
+    },
+    {
+      "name": "modeling scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:21:54Z",
+      "completedAt": "2026-10-11T09:23:12Z"
+    }
+  ],
+  "testSummaries": [
+    "verify (qa gate)\tQA gate\t2026-10-11T09:46:10.4290188Z  Test Files  1578 passed | 97 skipped (1675)",
+    "verify (qa gate)\tQA gate\t2026-10-11T09:46:10.4405039Z       Tests  21778 passed | 1604 skipped (23382)",
+    "order independence (shuffled vitest)\tShuffled suite\t2026-10-11T09:38:27.8779043Z  Test Files  1578 passed | 97 skipped (1675)",
+    "order independence (shuffled vitest)\tShuffled suite\t2026-10-11T09:38:27.9002076Z       Tests  21778 passed | 1604 skipped (23382)"
+  ],
+  "parsedTestCounts": [
+    {
+      "job": "verify (qa gate)",
+      "passed": 21778,
+      "skipped": 1604
+    },
+    {
+      "job": "order independence (shuffled vitest)",
+      "passed": 21778,
+      "skipped": 1604
+    }
+  ],
+  "limit": "Full GitHub QA/shuffle at this source. Live RLS, restore and hosted acceptance are separate."
+}

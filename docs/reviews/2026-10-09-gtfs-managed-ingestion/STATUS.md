@@ -563,3 +563,22 @@ bytes restored. The failed broader suite remains recorded. Earlier d6 full
 GitHub CI and live RLS pass at their own source. Corrected-counter broader
 checks, identified browser review, later CI, archive, hosted schema-first
 disposition, main integration and release remain open.
+
+## Corrected-counter production read, October 11
+
+[The current frozen candidate](ADOPTION_PRODUCTION_READ.md) passes its selected
+149-file regression, with 2,916 tests passed, 45 skipped and none failed. Its
+actual-status build completes 140 pages in 175.853 seconds. T3 navigation and
+ten inspected desktop/390px captures show corrected CTA completion/adoption
+wording, current BART custody, terminal cancellation and saved Oakland geography.
+The actual coverage POST and fresh native reads agree on 238 published
+stop-service rows; no model run or adoption occurs. Three positive and 46 broken
+observation controls behave as intended. Native scope and repeated-read guards
+pass separate refusal and omitted-guard controls.
+
+Current GitHub full QA and executed shuffle pass 21,778 tests each, with 1,604
+skipped; all five CI jobs pass. Live RLS, archive CI and a separate local full
+archive drill remain running.
+Earlier failures and earlier-source passes keep their boundaries. Hosted
+schema-first disposition, main integration, release and the remaining M3/v1
+contract stay open. No hosted or demo changes occur.

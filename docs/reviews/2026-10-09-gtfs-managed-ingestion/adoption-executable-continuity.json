@@ -1,0 +1,8 @@
+{
+  "earlierSource": "f38141f2add9e3afaf7781287a635bcfab2a269d",
+  "currentSource": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "changedFilesInRuntimeSchemaWorkersScriptsAndPackage": [
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts"
+  ],
+  "boundary": "Runtime, schemas, workers, scripts and package bytes unchanged. Tests and prose change. Earlier controls retain their source; current regression/build/browser/CI remain separately required."
+}

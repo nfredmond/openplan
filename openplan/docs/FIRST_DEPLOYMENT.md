@@ -68,8 +68,9 @@ downloaded artifacts as well as the page.
 
 ## 4. Prove each enabled service
 
-- [ ] Confirm the current Mapbox map surfaces load and review their console/network
-      errors. Confirm actual required Census/source retrieval for your geography.
+- [ ] Confirm the configured maps load and review console/network errors. Public
+      engagement can use the configured MapLibre style; current staff map surfaces
+      still use Mapbox. Confirm required Census/source retrieval for your geography.
 - [ ] For each required worker, start a job through its user-facing entry point;
       observe authenticated dispatch, progress, result delivery, saved output
       and artifact access after reopening the application. County-onramp and
@@ -91,8 +92,11 @@ downloaded artifacts as well as the page.
 - [ ] Follow [BACKUP_AND_RESTORE](ops/BACKUP_AND_RESTORE.md). Inventory database,
       Storage bytes, required local artifacts, secrets/configuration and versions.
       Establish consistency across writers and record the recovery point.
-- [ ] Run the representative disposable restore drill when appropriate. Preserve
-      its exact scope; it does not restore the full database/Storage archives.
+- [ ] Run the disposable restore drill against its own isolated fixtures when
+      appropriate. Default mode checks representative reconstruction. The explicit
+      `--full-archive` mode also captures and restores its local database and
+      private Storage bytes. Preserve each mode's scope; neither restores an
+      agency's full installation, external worker files or production topology.
 - [ ] Restore the actual deployment backup into an isolated target. Check roles,
       authentication, tenant boundaries, object and local-artifact hashes, and
       reopened planner work. Record elapsed recovery time and unresolved gaps.

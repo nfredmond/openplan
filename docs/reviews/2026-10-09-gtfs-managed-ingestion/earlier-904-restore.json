@@ -1,0 +1,13 @@
+{
+  "runId": "38125128508",
+  "sourceHead": "904b74c15c24fe153f01b4d3ea8f5be16e307f6e",
+  "status": "completed",
+  "conclusion": "success",
+  "summary": [
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:37:34.7384070Z [restore-drill] full archive restored: 362 tables, 1 files",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T09:20:14.9383117Z  Test Files  104 passed (104)",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T09:20:14.9392252Z       Tests  1499 passed | 125 skipped (1624)"
+  ],
+  "logSha256": "3a249f60751d225781512eaa7f703a0ca821c9b7bf7c65cfba5beb5faf9b8247",
+  "boundary": "Earlier904 operations source before hosted main join; current607 and6a restoration remain separate."
+}

@@ -90,3 +90,12 @@ skips 1,603. [Separate live RLS](earlier-d6-rls.json) passes 104 files and
 1,499 tests with 125 skipped. Those earlier source results do not establish
 later-source CI acceptance. The corrected visible journey, later CI, full
 archive, schema-first hosted disposition and release remain unfinished.
+
+## Corrected production continuation
+
+[The later identified read](ADOPTION_PRODUCTION_READ.md) verifies the corrected
+registry at clean source `6a750ff265ad`. Its actual-status build, affected
+regression, ten inspected T3 captures and fresh native records pass within their
+stated boundaries. CTA stays completed and unadopted; current BART and cancelled
+TriMet stay unchanged. Current-source complete CI, full archive, hosted
+disposition, integration and release remain separate unfinished work.

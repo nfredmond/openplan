@@ -1,0 +1,35 @@
+{
+  "run": 38125205356,
+  "head": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "restore-drill",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T08:34:25Z",
+      "completedAt": "2026-10-11T09:26:25Z"
+    }
+  ],
+  "logSha256": "fe94153b01304b084dff87a77bd8c8969f4769d93df3f833df23d6aa0ce8da90",
+  "summaries": [
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:35:30.4594338Z [restore-drill] starting disposable source stack openplan-restore-source-2912",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:37:01.0040978Z [restore-drill] starting isolated restore target openplan-restore-target-2912",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:40:25.2189992Z [restore-drill] full archive restored: 374 tables, 1 files",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:40:25.4284378Z [restore-drill] restored account signed in",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:40:25.8031705Z [restore-drill] hashes and relationships restored; running live RLS against the target"
+  ],
+  "limit": "GitHub evidence at this exact source; no current GTFS or hosted acceptance.",
+  "testSummaries": [
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T09:25:45.2440095Z  Test Files  104 passed (104)",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T09:25:45.2453683Z       Tests  1499 passed | 125 skipped (1624)"
+  ],
+  "parsedTestCounts": [
+    {
+      "job": "restore-drill",
+      "passed": 1499,
+      "skipped": 125
+    }
+  ]
+}
