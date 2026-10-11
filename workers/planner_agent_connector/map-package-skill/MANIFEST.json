@@ -1,0 +1,332 @@
+{
+  "schemaVersion": 1,
+  "skill": "transportation-gis",
+  "treeHash": "ba4a3a0a4c0b75c3b075fec6708943f0a192061970467b367350617234e2d503",
+  "files": [
+    {
+      "path": "SKILL.md",
+      "bytes": 9725,
+      "sha256": "d1efb483bc81a0c6ec954b06c1600570bd4e281cd41c6ec4285d6d894014067d"
+    },
+    {
+      "path": "agents/openai.yaml",
+      "bytes": 206,
+      "sha256": "a8c76b48558ed3c107eac29c992a362ff086fd94d254d2e158c553056f3b8ae9"
+    },
+    {
+      "path": "assets/arcgis/Build_Maps.pyt",
+      "bytes": 4085,
+      "sha256": "0e7b38a0128c743f00578cd20ceae358ad29de986b2985784c467c97154c2662"
+    },
+    {
+      "path": "assets/arcgis/build_arcgis_pro.py",
+      "bytes": 44483,
+      "sha256": "1305fc2c13302363546f2f9c09971bd84e800baa76b9e71da43a2f1bfba4140a"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-Bold.ttf",
+      "bytes": 529520,
+      "sha256": "240b108b8772b223b673fb2438ff80b6c778cc23f1862c1278fe821c2bb39823"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-Italic.ttf",
+      "bytes": 534900,
+      "sha256": "74a8013e284e68c1f704b6af41badcc2c136e46612ceeb9b8035cf811ed7dd9f"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-Medium.ttf",
+      "bytes": 527576,
+      "sha256": "e54a7334a84845c10f7d2dff1349df76664b623aee879ab0df986ff372663480"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-MediumItalic.ttf",
+      "bytes": 539620,
+      "sha256": "8fa2a36f12c97052d79299582d8800cff63a9261dacf1a0cc9a07d9a2debd834"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-Regular.ttf",
+      "bytes": 523712,
+      "sha256": "babc94b22e63a2e0494d415c9f1f912a549467035e8e8ab676cf3af10c22cf05"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/Inter-SemiBold.ttf",
+      "bytes": 528280,
+      "sha256": "6560ef267f418971af10eab192380e012f247ead71579912f72145b0720497b4"
+    },
+    {
+      "path": "assets/fonts/inter-ttf/LICENSE_OFL.txt",
+      "bytes": 6264,
+      "sha256": "ecc57cb1a299f8de2e28eaece2cec48658b3204c606be0cc122195781caaaa35"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-Bold.otf",
+      "bytes": 631880,
+      "sha256": "9fc6261e817d0b1b2bf1953d8799bb1c837d11aeebbf83ae352e7b4d6de6425d"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-Italic.otf",
+      "bytes": 589784,
+      "sha256": "3bdf49f72ad2f2959a2619ceef700784504f6d17f502e2e2bc6edce5d43ca631"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-Medium.otf",
+      "bytes": 627988,
+      "sha256": "6c222ed2c3660524dd0c14fb745e00fee65c5361ab28f60fba6730bf4e648763"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-MediumItalic.otf",
+      "bytes": 605956,
+      "sha256": "e19606d43736c84eae63cd4934d9d877e36bc615a8e0bcfc98d87fb037b9826f"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-Regular.otf",
+      "bytes": 609600,
+      "sha256": "d4f2b9e148059a15f014cb0f0b8fea8cd11bfa447dd483bedf1b0adc0e2ba799"
+    },
+    {
+      "path": "assets/fonts/inter/Inter-SemiBold.otf",
+      "bytes": 629912,
+      "sha256": "0a4d30778fa2dc239368d90fd854b88b27e7ede737450da72686a90eca66f02c"
+    },
+    {
+      "path": "assets/fonts/inter/LICENSE_OFL.txt",
+      "bytes": 6264,
+      "sha256": "ecc57cb1a299f8de2e28eaece2cec48658b3204c606be0cc122195781caaaa35"
+    },
+    {
+      "path": "assets/illustrator/Open_Maps_In_Illustrator.jsx",
+      "bytes": 3831,
+      "sha256": "abbbdb44b901bf195216cb90b0675db25976d47f70b05f45be1941ae95185791"
+    },
+    {
+      "path": "assets/presets/styles.yaml",
+      "bytes": 12186,
+      "sha256": "183c50c6e1b78426aea15f2b7bacef40e285b95041f5652b5f1e086a02acc54a"
+    },
+    {
+      "path": "assets/qgis/Rebuild_Maps_Processing.py",
+      "bytes": 2608,
+      "sha256": "5ed16214ead1fbdaaf6299c44d18415d7d9ad18ac835cfd1b000fc735990ee81"
+    },
+    {
+      "path": "assets/templates/package/AGENTS.md.j2",
+      "bytes": 3773,
+      "sha256": "8164a1f466b3ba129eeb7b8c735b8dc61626087170b4e12c009374d333c058ec"
+    },
+    {
+      "path": "assets/templates/package/README.md.j2",
+      "bytes": 4726,
+      "sha256": "a50d31e6a91a46d64719f009d3eab153e07a7ded2e61ef98ddbc8b666023cdd5"
+    },
+    {
+      "path": "assets/templates/package/arcgis_AGENT_PROMPT.md.j2",
+      "bytes": 8179,
+      "sha256": "3b255e30864bb7675577f85b3f82a90f9025386ebd66f7c7dc97c6a306dea961"
+    },
+    {
+      "path": "assets/templates/package/arcgis_README.md.j2",
+      "bytes": 2219,
+      "sha256": "db8f08f683adffc67d61f5c3df39a4ef71df6348f26c7ef7482e2ab19dec1a1a"
+    },
+    {
+      "path": "assets/templates/package/illustrator_README.md.j2",
+      "bytes": 3044,
+      "sha256": "922ad5b365a3031529290b2084236e7f522b458f90a30c4ae68fa96cf1769a21"
+    },
+    {
+      "path": "assets/templates/package/qgis_AGENT_PROMPT.md.j2",
+      "bytes": 3507,
+      "sha256": "806212a4c494776beb58df064ce80082e4b1502ded0ea28e3e42783fc9edfa16"
+    },
+    {
+      "path": "assets/templates/package/qgis_README.md.j2",
+      "bytes": 1055,
+      "sha256": "56181fda662b7e71aae789fee58c4d379d67d406eaddee6d679f7b5e81b76fb8"
+    },
+    {
+      "path": "assets/templates/project.yaml",
+      "bytes": 2416,
+      "sha256": "c3fb6959c856f7a9aaaa23085e98c562291242f06d89373a7912e02d8ce52a3d"
+    },
+    {
+      "path": "assets/vendor/LEAFLET_LICENSE",
+      "bytes": 1395,
+      "sha256": "53e8dc25862014e4324741ca18fbe3611e11d42ef69f59f86ea8c5389647d4cb"
+    },
+    {
+      "path": "assets/vendor/images/layers-2x.png",
+      "bytes": 1259,
+      "sha256": "066daca850d8ffbef007af00b06eac0015728dee279c51f3cb6c716df7c42edf"
+    },
+    {
+      "path": "assets/vendor/images/layers.png",
+      "bytes": 696,
+      "sha256": "1dbbe9d028e292f36fcba8f8b3a28d5e8932754fc2215b9ac69e4cdecf5107c6"
+    },
+    {
+      "path": "assets/vendor/images/marker-icon-2x.png",
+      "bytes": 2464,
+      "sha256": "00179c4c1ee830d3a108412ae0d294f55776cfeb085c60129a39aa6fc4ae2528"
+    },
+    {
+      "path": "assets/vendor/images/marker-icon.png",
+      "bytes": 1466,
+      "sha256": "574c3a5cca85f4114085b6841596d62f00d7c892c7b03f28cbfa301deb1dc437"
+    },
+    {
+      "path": "assets/vendor/images/marker-shadow.png",
+      "bytes": 618,
+      "sha256": "264f5c640339f042dd729062cfc04c17f8ea0f29882b538e3848ed8f10edb4da"
+    },
+    {
+      "path": "assets/vendor/leaflet.css",
+      "bytes": 14806,
+      "sha256": "a7837102824184820dfa198d1ebcd109ff6d0ff9a2672a074b9a1b4d147d04c6"
+    },
+    {
+      "path": "assets/vendor/leaflet.js",
+      "bytes": 147552,
+      "sha256": "db49d009c841f5ca34a888c96511ae936fd9f5533e90d8b2c4d57596f4e5641a"
+    },
+    {
+      "path": "evals/evals.json",
+      "bytes": 1871,
+      "sha256": "0b116d01cb148468e333b41dd2fb8b68cca8fe9f9ada0abd1abe98ef5aee92cd"
+    },
+    {
+      "path": "references/arcgis-pro.md",
+      "bytes": 3320,
+      "sha256": "e4f5035b97aa6bbb24757e84ca4c7b1fa122a2d532b4917aa77c8ab87131cb2e"
+    },
+    {
+      "path": "references/arcpy-verified.md",
+      "bytes": 54618,
+      "sha256": "51f195fbd8e5e4170a0d17d951a96353f62a627c5437a2f4f5c01fe15e66fc9d"
+    },
+    {
+      "path": "references/cartography.md",
+      "bytes": 7951,
+      "sha256": "b100d425a26f5d52af215df4cdbd9c22581e20e1f9e9470134a22ce79d352aff"
+    },
+    {
+      "path": "references/data-sources.md",
+      "bytes": 52236,
+      "sha256": "1553fb732dc0f241b5e99efb5d6aaff43d6acbc1abd4f4a4d6876e9ad1dcbed3"
+    },
+    {
+      "path": "references/review.md",
+      "bytes": 6735,
+      "sha256": "f3723fbafefa8314829aa2a44de027d60629127b964740cecb16bac1cc2b95aa"
+    },
+    {
+      "path": "references/spec.md",
+      "bytes": 18968,
+      "sha256": "1a87fd7284138f60ea66385ab292af06321c3cc162592083754a9cf67f669aef"
+    },
+    {
+      "path": "scripts/tests/test_checks.py",
+      "bytes": 6505,
+      "sha256": "a38ce4dc0b94703939122b73f682f4f68f04520050318e95a7c4545dbc2b0ab3"
+    },
+    {
+      "path": "scripts/tgis.py",
+      "bytes": 14055,
+      "sha256": "96f442d265a2ce6e88dffeb3ea3c2d9e29094ba6ea3f7b346a27293a5614a80d"
+    },
+    {
+      "path": "scripts/tgis/__init__.py",
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "scripts/tgis/crs.py",
+      "bytes": 1804,
+      "sha256": "b95d17d009f9ba48cf196e7b3450298ba8744a53f562f11aa21de2218d6568a4"
+    },
+    {
+      "path": "scripts/tgis/data.py",
+      "bytes": 24145,
+      "sha256": "fcfdfd81bdb6d987849654230eeefed03733c46c845ee64e7e7fd5727466aa01"
+    },
+    {
+      "path": "scripts/tgis/docs.py",
+      "bytes": 11466,
+      "sha256": "a4bb85130acd5ab19d578c7426e421019f4a72f0c7a3acb55dc4fd07b6f61fee"
+    },
+    {
+      "path": "scripts/tgis/fetch.py",
+      "bytes": 19568,
+      "sha256": "c0a79f883e0f74923e9fea0873f5f39f7fdec8190e9d93ee39dbaf05cf73b7f8"
+    },
+    {
+      "path": "scripts/tgis/illustrator.py",
+      "bytes": 4268,
+      "sha256": "605eb8271e9c1662c46305d8cfb12841ed684fbadab629ee025efebe7fbe3b3f"
+    },
+    {
+      "path": "scripts/tgis/kml.py",
+      "bytes": 5527,
+      "sha256": "3a1cc17586f7361851550af5b38331c727f180ff7611baa77baa448a29b2ab6c"
+    },
+    {
+      "path": "scripts/tgis/layout.py",
+      "bytes": 19709,
+      "sha256": "605b7cbc79f0b32b4a1c5acdea7304ae407b83ef9db594af49e5e81ea96b221f"
+    },
+    {
+      "path": "scripts/tgis/mock_arcpy.py",
+      "bytes": 12335,
+      "sha256": "8b12247674f5a3c6e0ce7ea981985096e26f0ac71ca293102436fc89c35e936d"
+    },
+    {
+      "path": "scripts/tgis/package.py",
+      "bytes": 11035,
+      "sha256": "a85859232b5bfdde59553436c7fce7a67d694f0d23b125a59edb1a704c0a66c2"
+    },
+    {
+      "path": "scripts/tgis/qa.py",
+      "bytes": 19847,
+      "sha256": "7af516efed520cbce2ab9104a1c21ad6220607d54e65907570a6dbdf907e9ee8"
+    },
+    {
+      "path": "scripts/tgis/qgis_builder.py",
+      "bytes": 40108,
+      "sha256": "9d015f1d459cd23d8adde00be5921530f0bdb910cac04d6b0f7f88b8d0088080"
+    },
+    {
+      "path": "scripts/tgis/resolve.py",
+      "bytes": 35076,
+      "sha256": "a28d1e143b4cf0eee919aa97cf7c8f8a6bf247e6ccee6ea49987b0e93d542825"
+    },
+    {
+      "path": "scripts/tgis/review.py",
+      "bytes": 5183,
+      "sha256": "7ce7bf514a804d95216f48b6f01066816ef4c1eec6209129b53f2ca1fa51c096"
+    },
+    {
+      "path": "scripts/tgis/styles.py",
+      "bytes": 23311,
+      "sha256": "09c0cfcb4adc0e8673688a0b6d771a70454963c95e13487eed0fb9fd0e0e7816"
+    },
+    {
+      "path": "scripts/tgis/svgsym.py",
+      "bytes": 4778,
+      "sha256": "9f0083e2c5d7b3ff9d50752bba6d73f9868d2306ca9a3b0f58c7aefc8bc07f01"
+    },
+    {
+      "path": "scripts/tgis/tools.py",
+      "bytes": 6451,
+      "sha256": "9a4898193bb2f86729466b40b690f822830dc54d87e241decfd5c7d3d3ff85ed"
+    },
+    {
+      "path": "scripts/tgis/vec.py",
+      "bytes": 11203,
+      "sha256": "e5e3c1944ba7fbe89c5ed64052df7f982ce4358784bf7f0aa782b0dc44563e66"
+    },
+    {
+      "path": "scripts/tgis/web.py",
+      "bytes": 30208,
+      "sha256": "69e68dc40776a16994dcbdb348ff6513c17a525e0a80866e172d6e58ec4b1284"
+    }
+  ]
+}

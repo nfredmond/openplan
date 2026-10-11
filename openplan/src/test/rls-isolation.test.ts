@@ -211,6 +211,9 @@ const DEDICATED_LIVE_RLS_PROBES = new Set([
   "workspace_provider_api_revisions",
   "assistant_provider_connections",
   "assistant_provider_turns",
+  // project-map-packages-rls: every member reads, outsiders and anon do not, no direct writes, locked state functions.
+  "project_map_packages",
+  "project_map_package_files",
   "program_work_program_sources",
   "program_work_program_revisions",
   "kb_document_extractions",
@@ -1769,6 +1772,8 @@ describe("workspace RLS isolation inventory", () => {
       "workspace_provider_api_revisions",
       "assistant_provider_connections",
       "assistant_provider_turns",
+      "project_map_packages",
+      "project_map_package_files",
       "program_work_program_sources",
       "program_work_program_revisions",
   "kb_document_extractions",

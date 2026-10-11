@@ -197,3 +197,59 @@ OPENPLAN_OPENCODE_NATIVE_BINARY=/absolute/path/to/opencode \
 Native evidence uses synthetic credentials and local scripted Responses data.
 It does not establish real account access, provider billing or professional
 usefulness. See the [OpenCode verification](../../docs/reviews/2026-09-10-opencode-native-spike/VERIFICATION.md).
+
+## Map packages
+
+A map package is a set of client-ready figures, map books, a web map, a Google
+Earth file and QGIS and ArcGIS Pro projects for one OpenPlan project. Claude
+Fable 5.1 builds it on your computer with the `transportation-gis` skill in
+`map-package-skill/`. No other model may run the skill. A run can take several
+hours.
+
+What the computer needs: Linux, Node 24, Claude Code 2.1.263 or later signed in
+to a Claude subscription, `bubblewrap` and `socat` (Claude Code's shell
+sandbox), and QGIS 3.34 or later with its Python bindings (`sudo apt install
+qgis python3-qgis python3-gdal python3-pymupdf python3-yaml python3-jinja2
+python3-pil python3-pyproj python3-requests`).
+
+1. In OpenPlan, open **Maps**, choose **Make maps**, and connect this computer
+   to the project. Save the downloaded connection file.
+2. From this folder, configure the connection in a private folder of its own
+   (not your home folder):
+
+   ```sh
+   node connector.mjs configure --config ~/.openplan-maps/project/connection.json \
+     --setup ~/Downloads/openplan-connection.json --binary "$(command -v claude)" --profile ~/.claude
+   ```
+
+3. Check the computer without calling a model, then start receiving packages:
+
+   ```sh
+   node connector.mjs maps-check --config ~/.openplan-maps/project/connection.json
+   node connector.mjs maps --config ~/.openplan-maps/project/connection.json
+   ```
+
+Each package gets its own folder under `~/OpenPlan Map Packages/` (or `--runs`).
+The folder holds the brief, the study area, a copy of the skill, the agent's
+session log and the finished package. It stays after the upload.
+
+How a run is contained. Claude Code starts with your own sign-in and none of
+your Claude Code settings files. Every tool not approved in advance is refused.
+File writes are approved only inside the run folder, and file reads outside it
+are blocked. Every shell command runs in Claude Code's operating-system sandbox,
+which cannot read the Claude credential folder, the folder holding the OpenPlan
+connection file, or the usual credential locations (`~/.ssh`, `~/.aws` and
+others). Shell commands may reach public web hosts, because the skill downloads
+agency and Census data. Every model alias and the subagent model are pinned to
+Claude Fable 5.1, and the connector refuses the package if Claude Code reports
+any other model, or an API key instead of the subscription.
+
+When the agent stops, the connector finds the newest ZIP in `gis/build/`,
+hashes it and the figure previews, and uploads them through short-lived URLs
+from OpenPlan. OpenPlan reads every file back and checks its size and sha256
+before the package shows as ready. If the connector stops while the agent is
+working, the run is reported as stopped and never started again. If it stops
+after the package was built, the next `maps` run resumes only the upload.
+
+Not yet proven: these controls have been exercised with a stand-in for Claude
+Code, not a live run. See the [design note](../../docs/reviews/2026-10-10-map-packages/DESIGN.md).

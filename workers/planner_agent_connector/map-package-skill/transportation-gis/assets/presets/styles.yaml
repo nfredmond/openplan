@@ -1,0 +1,237 @@
+# Style presets for transportation planning maps.
+#
+# The first class listed draws on top and appears first in the legend.
+#
+# A layer in project.yaml uses one with `style: {preset: <name>}` and may override
+# `field`, `title`, any class, or add `override: {...}` to change every symbol
+# (for example `override: {dash: [4, 2.5]}` to draw a proposed network dashed).
+#
+# Sizes are points at final page size. Colours hold up in the common colour-vision
+# deficiencies, and every thematic distinction also differs by shape, dash or width
+# so the map still reads in grayscale. Red is reserved for crash severity.
+
+# ------------------------------------------------------------------ networks
+bikeway_class:
+  # Widths, dashes and lightness all differ, so the classes still separate in grayscale.
+  title: Bikeways
+  type: categorized
+  field: bike_class
+  classes:
+    - {values: ["I", "1", 1, "Class I", "Class 1", "CLASS I"], label: "Class I shared-use path", symbol: {color: "#0f6a3d", width: 2.6, casing: "#ffffff", casing_width: 3.6}}
+    - {values: ["II", "2", 2, "Class II", "Class 2", "CLASS II"], label: "Class II bike lane", symbol: {color: "#3d8fe0", width: 1.5, casing: "#ffffff", casing_width: 2.5}}
+    - {values: ["III", "3", 3, "Class III", "Class 3", "CLASS III"], label: "Class III bike route", symbol: {color: "#d9820f", width: 1.5, dash: [5, 2.5], casing: "#ffffff", casing_width: 2.5}}
+    - {values: ["IV", "4", 4, "Class IV", "Class 4", "CLASS IV"], label: "Class IV separated bikeway", symbol: {color: "#7b2d8e", width: 2.4, dash: [9, 1.6], casing: "#ffffff", casing_width: 3.4}}
+
+# Proposed network: same colours as the existing classes, each class with its own dash so they
+# separate from each other and from the existing network in grayscale.
+bikeway_class_proposed:
+  title: Proposed bikeways
+  type: categorized
+  field: bike_class
+  classes:
+    - {values: ["I", "1", 1, "Class I", "Class 1", "CLASS I"], label: "Class I shared-use path (proposed)", symbol: {color: "#0f6a3d", width: 2.4, dash: [1.2, 2.6], casing: "#ffffff", casing_width: 3.4}}
+    - {values: ["II", "2", 2, "Class II", "Class 2", "CLASS II"], label: "Class II bike lane (proposed)", symbol: {color: "#3d8fe0", width: 1.5, dash: [5, 2.5], casing: "#ffffff", casing_width: 2.5}}
+    - {values: ["III", "3", 3, "Class III", "Class 3", "CLASS III"], label: "Class III bike route (proposed)", symbol: {color: "#d9820f", width: 1.2, dash: [1.5, 1.5], casing: "#ffffff", casing_width: 2.2}}
+    - {values: ["IV", "4", 4, "Class IV", "Class 4", "CLASS IV"], label: "Class IV separated bikeway (proposed)", symbol: {color: "#7b2d8e", width: 2.2, dash: [7, 2, 1.5, 2], casing: "#ffffff", casing_width: 3.2}}
+
+bikeway_lts:
+  title: Level of traffic stress
+  type: categorized
+  field: lts
+  classes:
+    - {values: [1, "1", "LTS 1"], label: "LTS 1, suitable for most riders", symbol: {color: "#2166ac", width: 1.6}}
+    - {values: [2, "2", "LTS 2"], label: "LTS 2, most adults", symbol: {color: "#67a9cf", width: 1.6}}
+    - {values: [3, "3", "LTS 3"], label: "LTS 3, confident riders", symbol: {color: "#ef8a62", width: 1.6, dash: [6, 2]}}
+    - {values: [4, "4", "LTS 4"], label: "LTS 4, high stress", symbol: {color: "#b2182b", width: 1.8, dash: [2, 1.5]}}
+
+functional_class:
+  title: Functional classification
+  type: categorized
+  field: road_class
+  classes:
+    - {values: ["freeway", "Interstate", "1", 1], label: "Freeway", symbol: {color: "#5b3a8c", width: 2.6}}
+    - {values: ["highway", "Other Freeway or Expressway", "2", 2], label: "Expressway or state highway", symbol: {color: "#8a5fb5", width: 2.2}}
+    - {values: ["major", "Other Principal Arterial", "3", 3], label: "Principal arterial", symbol: {color: "#c0392b", width: 1.9}}
+    - {values: ["arterial", "Minor Arterial", "4", 4], label: "Minor arterial", symbol: {color: "#e08a1e", width: 1.5}}
+    - {values: ["collector", "Major Collector", "Minor Collector", "5", "6", 5, 6], label: "Collector", symbol: {color: "#3d8f6b", width: 1.2}}
+    - {values: ["local", "Local", "7", 7], label: "Local street", symbol: {color: "#9aa3a8", width: 0.6}}
+
+transit_routes:
+  title: Transit routes
+  type: simple
+  label: Transit route
+  symbol: {color: "#0e6f8f", width: 1.8, casing: "#ffffff", casing_width: 2.8}
+
+transit_stops:
+  type: simple
+  label: Transit stop
+  symbol: {marker: circle, size: 4.6, fill: "#ffffff", stroke: "#0e6f8f", stroke_width: 1.3}
+
+rail:
+  type: simple
+  label: Railroad
+  symbol: {color: "#ffffff", width: 0.6, dash: [5, 5], casing: "#6f7a80", casing_width: 1.5}
+
+truck_routes:
+  type: simple
+  label: Truck route
+  symbol: {color: "#6b4f2a", width: 1.8, dash: [7, 2, 1.5, 2]}
+
+trails:
+  type: simple
+  label: Trail or path
+  symbol: {color: "#3f7a4f", width: 1.1, dash: [3, 1.8]}
+
+sidewalk_gap:
+  type: simple
+  label: Sidewalk gap
+  symbol: {color: "#b0562a", width: 1.6, dash: [1.5, 1.5]}
+
+# ------------------------------------------------------------- project lines
+project_corridor:
+  type: simple
+  label: Project corridor
+  symbol: {color: "#E8A51D", width: 3.4, casing: "#4a3a12", casing_width: 4.8}
+
+# A wide translucent band under the other lines. Use it for a study corridor when the map must also
+# show what is on the street (bike lanes, transit): list it LAST among the line layers so they draw over it.
+corridor_band:
+  type: simple
+  label: Study corridor
+  symbol: {color: "#c0478f", width: 9, opacity: 0.32}
+
+project_segment_related:
+  type: simple
+  label: Related segment
+  symbol: {color: "#2A4F7C", width: 2.6, casing: "#ffffff", casing_width: 3.6}
+
+project_status:
+  title: Improvements
+  type: categorized
+  field: status
+  classes:
+    - {values: ["existing", "Existing", "complete", "Completed"], label: "Existing", symbol: {color: "#44545c", width: 2.0, casing: "#ffffff", casing_width: 2.9}}
+    - {values: ["proposed", "Proposed", "recommended", "Recommended"], label: "Proposed", symbol: {color: "#E8A51D", width: 2.6, casing: "#4a3a12", casing_width: 3.8}}
+    - {values: ["planned", "Planned", "programmed", "Programmed", "funded", "Funded"], label: "Planned or funded", symbol: {color: "#2A4F7C", width: 2.2, dash: [5, 2.2], casing: "#ffffff", casing_width: 3.2}}
+
+project_points:
+  type: simple
+  label: Proposed improvement
+  symbol: {marker: diamond, size: 8.5, fill: "#E8A51D", stroke: "#4a3a12", stroke_width: 0.9}
+
+# --------------------------------------------------------------------- safety
+crash_severity:
+  title: Crash severity
+  type: categorized
+  field: severity
+  classes:
+    - {values: ["Fatal", "fatal", "K", 1, "1"], label: "Fatal", symbol: {marker: star, size: 10.5, fill: "#8b1a2b", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Serious injury", "Severe injury", "Suspected serious injury", "serious", "A", 2, "2"], label: "Serious injury", symbol: {marker: triangle, size: 8, fill: "#d0432d", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Other visible injury", "Minor injury", "Suspected minor injury", "minor", "B", 3, "3"], label: "Other visible injury", symbol: {marker: square, size: 5.6, fill: "#e0993a", stroke: "#ffffff", stroke_width: 0.55}}
+    - {values: ["Complaint of pain", "Possible injury", "possible", "C", 4, "4"], label: "Complaint of pain", symbol: {marker: circle, size: 4.8, fill: "#e8c46a", stroke: "#ffffff", stroke_width: 0.5}}
+    - {values: ["Property damage only", "PDO", "O", 0, "0"], label: "Property damage only", symbol: {marker: circle, size: 3.6, fill: "#8a979e", stroke: "#ffffff", stroke_width: 0.45}}
+
+crash_mode:
+  title: Crashes by mode
+  type: categorized
+  field: mode
+  classes:
+    - {values: ["Pedestrian", "pedestrian", "ped"], label: "Pedestrian involved", symbol: {marker: circle, size: 6, fill: "#8b1a2b", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Bicycle", "bicycle", "bike"], label: "Bicyclist involved", symbol: {marker: triangle, size: 7, fill: "#d0432d", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Vehicle", "vehicle", "auto"], label: "Vehicle only", symbol: {marker: square, size: 4.6, fill: "#8a979e", stroke: "#ffffff", stroke_width: 0.5}}
+
+# Mode by shape, severity by colour and size. Build the field with compute, for example
+#   compute: {mode_sev: "('Pedestrian' if coalesce(ped, 'N') == 'Y' else 'Bicyclist') + ', ' + ('fatal' if sev == 1 else 'serious injury' if sev == 2 else 'other injury')"}
+crash_mode_severity:
+  title: Crashes by mode and severity
+  type: categorized
+  field: mode_sev
+  classes:
+    - {values: ["Pedestrian, fatal"], label: "Pedestrian, fatal", symbol: {marker: circle, size: 9.5, fill: "#8b1a2b", stroke: "#ffffff", stroke_width: 0.7}}
+    - {values: ["Bicyclist, fatal"], label: "Bicyclist, fatal", symbol: {marker: triangle, size: 10.5, fill: "#8b1a2b", stroke: "#ffffff", stroke_width: 0.7}}
+    - {values: ["Pedestrian, serious injury"], label: "Pedestrian, serious injury", symbol: {marker: circle, size: 7, fill: "#d0432d", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Bicyclist, serious injury"], label: "Bicyclist, serious injury", symbol: {marker: triangle, size: 8, fill: "#d0432d", stroke: "#ffffff", stroke_width: 0.6}}
+    - {values: ["Pedestrian, other injury"], label: "Pedestrian, other injury", symbol: {marker: circle, size: 4.8, fill: "#e8b04a", stroke: "#6b5a2a", stroke_width: 0.5}}
+    - {values: ["Bicyclist, other injury"], label: "Bicyclist, other injury", symbol: {marker: triangle, size: 5.8, fill: "#e8b04a", stroke: "#6b5a2a", stroke_width: 0.5}}
+
+high_injury_network:
+  type: simple
+  label: High injury network
+  symbol: {color: "#b2182b", width: 2.6, casing: "#ffffff", casing_width: 3.6}
+
+# --------------------------------------------------------------- destinations
+schools:
+  type: simple
+  label: School
+  symbol: {marker: square, size: 6.4, fill: "#2A4F7C", stroke: "#ffffff", stroke_width: 0.8}
+
+destinations:
+  type: simple
+  label: Destination
+  symbol: {marker: circle, size: 5.6, fill: "#5b6f3a", stroke: "#ffffff", stroke_width: 0.8}
+
+parks:
+  type: simple
+  label: Park or open space
+  symbol: {fill: "#cfe0bd", stroke: "#8fae78", stroke_width: 0.4}
+
+signals:
+  type: simple
+  label: Traffic signal
+  symbol: {marker: circle, size: 3.6, fill: "#2b3a42", stroke: "#ffffff", stroke_width: 0.5}
+
+# ------------------------------------------------------------------ area data
+study_area:
+  type: simple
+  label: Study area
+  symbol: {fill: null, stroke: "#2b3a42", stroke_width: 1.3, stroke_dash: [7, 2.2, 1.5, 2.2]}
+
+buffer:
+  type: simple
+  label: Buffer
+  symbol: {fill: "#2f6b73", fill_opacity: 0.08, stroke: "#2f6b73", stroke_width: 0.9, stroke_dash: [7, 3]}
+
+disadvantaged_hatch:
+  type: simple
+  label: Disadvantaged community
+  symbol: {fill: null, stroke: "#5c4b7a", stroke_width: 0.8, hatch: {angle: 45, spacing: 4, color: "#5c4b7a", width: 0.5}}
+
+zones_outline:
+  type: simple
+  label: Zone boundary
+  symbol: {fill: null, stroke: "#6b7a82", stroke_width: 0.6}
+
+# Choropleths. `style: {preset: choropleth, field: pct_x, ramp: teal, classes: 4,
+# method: quantile | equal | manual, breaks: [..], format: "{:.0f}%"}`
+choropleth:
+  type: graduated
+  ramp: teal
+  classes: 4
+  method: quantile
+  symbol: {stroke: "#ffffff", stroke_width: 0.5, fill_opacity: 0.82}
+
+# Line volumes: AADT, ridership, counts. Width grows with the value.
+flow:
+  type: graduated
+  classes: 4
+  method: quantile
+  widths: [0.9, 1.8, 3.0, 4.6]
+  symbol: {color: "#7a4a9e"}
+
+# Graduated points: counts at intersections, boardings at stops.
+graduated_points:
+  type: graduated
+  classes: 4
+  method: quantile
+  sizes: [3.6, 6, 9, 13]
+  symbol: {marker: circle, fill: "#0e6f8f", fill_opacity: 0.78, stroke: "#ffffff", stroke_width: 0.6}
+
+# ---------------------------------------------------------------------- ramps
+ramps:
+  teal: ["#e9f1ee", "#b8d8cf", "#72b2a2", "#2b7f72", "#14524a"]
+  purple: ["#efedf5", "#cbc9e2", "#9e9ac8", "#756bb1", "#54278f"]
+  blue: ["#eff3ff", "#bdd7e7", "#6baed6", "#3182bd", "#08519c"]
+  orange: ["#feedde", "#fdbe85", "#fd8d3c", "#e6550d", "#a63603"]
+  green: ["#edf8e9", "#bae4b3", "#74c476", "#31a354", "#006d2c"]
+  gray: ["#f2f2f2", "#cccccc", "#969696", "#636363", "#252525"]
+  diverging: ["#2166ac", "#92c5de", "#f7f7f7", "#f4a582", "#b2182b"]
