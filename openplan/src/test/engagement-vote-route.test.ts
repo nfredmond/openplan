@@ -26,9 +26,15 @@ const itemSelectMock = vi.fn((columns: string) => {
   return { eq: itemLookupEqIdMock };
 });
 
+// Recent votes: campaign, window, then either this voter (`eq`) or the whole
+// connection (`or`). Both counts resolve through `recentVotesGteMock`, which
+// records which scope asked.
 const recentVotesGteMock = vi.fn();
-const recentVotesEqFingerprintMock = vi.fn(() => ({ gte: recentVotesGteMock }));
-const recentVotesEqCampaignMock = vi.fn(() => ({ eq: recentVotesEqFingerprintMock }));
+const recentVotesScopeMock = vi.fn(() => ({
+  eq: (column: string, value: string) => recentVotesGteMock("voter", column, value),
+  or: (expression: string) => recentVotesGteMock("connection", expression),
+}));
+const recentVotesEqCampaignMock = vi.fn(() => ({ gte: recentVotesScopeMock }));
 const voteSelectMock = vi.fn(() => ({ eq: recentVotesEqCampaignMock }));
 
 const voteInsertMock = vi.fn();
@@ -57,19 +63,24 @@ vi.mock("@/lib/supabase/server", () => ({
 }));
 
 import { DELETE, POST } from "@/app/api/engage/[shareToken]/items/[itemId]/vote/route";
-import { PUBLIC_VOTE_MAX_PER_WINDOW } from "@/lib/engagement/votes";
-import { buildPublicSubmissionClientFingerprint } from "@/lib/engagement/public-submit";
+import { PUBLIC_VOTE_MAX_PER_CONNECTION_WINDOW, PUBLIC_VOTE_MAX_PER_WINDOW } from "@/lib/engagement/votes";
+import {
+  buildPublicParticipantDeviceFingerprint,
+  buildPublicSubmissionClientFingerprint,
+} from "@/lib/engagement/public-submit";
+import { PARTICIPANT_DEVICE_HEADER } from "@/lib/engagement/participant-device";
 
 const CAMPAIGN_ID = "11111111-1111-4111-8111-111111111111";
 const ITEM_ID = "22222222-2222-4222-8222-222222222222";
 const SHARE_TOKEN = "test-share-token-12345";
 
-function voteRequest(method: "POST" | "DELETE" = "POST", body?: BodyInit) {
+function voteRequest(method: "POST" | "DELETE" = "POST", body?: BodyInit, device?: string) {
   return new NextRequest(`http://localhost/api/engage/${SHARE_TOKEN}/items/${ITEM_ID}/vote`, {
     method,
     headers: {
       "user-agent": "Vitest Vote",
       "x-forwarded-for": "203.0.113.10",
+      ...(device ? { [PARTICIPANT_DEVICE_HEADER]: device } : {}),
     },
     body,
   });
@@ -99,6 +110,57 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
     voteInsertMock.mockResolvedValue({ error: null });
     votesCountMaybeSingleMock.mockResolvedValue({ data: { votes_count: 5 }, error: null });
     voteDeleteSelectMock.mockResolvedValue({ data: [{ id: "vote-1" }], error: null });
+  });
+
+  describe("a meeting room on one Wi-Fi", () => {
+    const DEVICE_A = "11111111-2222-4333-8444-555555555555";
+    const DEVICE_B = "66666666-7777-4888-9999-aaaaaaaaaaaa";
+
+    it("lets each device on one connection support a comment once", async () => {
+      await POST(voteRequest("POST", undefined, DEVICE_A), routeContext());
+      await POST(voteRequest("POST", undefined, DEVICE_B), routeContext());
+
+      const connection = buildPublicSubmissionClientFingerprint(voteRequest());
+      const voters = voteInsertMock.mock.calls.map(([row]) => (row as { voter_fingerprint: string }).voter_fingerprint);
+      expect(voters).toEqual([
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_A))}`,
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_B))}`,
+      ]);
+      expect(new Set(voters).size).toBe(2);
+    });
+
+    it("counts the whole connection against the room limit, whichever device asks", async () => {
+      recentVotesGteMock.mockImplementation(async (scope: string) =>
+        scope === "connection" ? { count: PUBLIC_VOTE_MAX_PER_CONNECTION_WINDOW, error: null } : { count: 0, error: null }
+      );
+      const response = await POST(voteRequest("POST", undefined, DEVICE_A), routeContext());
+      expect(response.status).toBe(429);
+      expect(voteInsertMock).not.toHaveBeenCalled();
+
+      const connection = buildPublicSubmissionClientFingerprint(voteRequest());
+      expect(recentVotesGteMock).toHaveBeenCalledWith(
+        "connection",
+        `voter_fingerprint.eq.${connection},voter_fingerprint.like.${connection}:*`
+      );
+    });
+
+    it("refuses a vote when either count could not be read", async () => {
+      recentVotesGteMock.mockImplementation(async (scope: string) =>
+        scope === "connection" ? { count: null, error: { message: "timeout" } } : { count: 0, error: null }
+      );
+      const response = await POST(voteRequest("POST", undefined, DEVICE_A), routeContext());
+      expect(response.status).toBe(500);
+      expect(voteInsertMock).not.toHaveBeenCalled();
+    });
+
+    it("removes the support of the device that gave it", async () => {
+      await DELETE(voteRequest("DELETE", undefined, DEVICE_A), routeContext());
+      const connection = buildPublicSubmissionClientFingerprint(voteRequest());
+      expect(voteDeleteEqFingerprintMock).toHaveBeenCalledWith(
+        "voter_fingerprint",
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("DELETE", undefined, DEVICE_A))}`
+      );
+    });
   });
 
   it("records a vote on an approved item", async () => {
