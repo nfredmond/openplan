@@ -1,0 +1,32 @@
+{
+  "head": "c75fa343d6b0c9fed028bda042f73a7fc2a1a637",
+  "records": [
+    {
+      "workflow": "live RLS",
+      "runId": 38110964748,
+      "jobId": 114386262218,
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38110964748/job/114386262218",
+      "status": "completed",
+      "conclusion": "success",
+      "filesPassed": 103,
+      "testsPassed": 1492,
+      "testsSkipped": 125,
+      "testsFailed": 0,
+      "logSha256": "23adbaa47d8bf3faabbd838c403302f7c15d4b232e082b1c92ba4639b3a374db"
+    },
+    {
+      "workflow": "full archive restore",
+      "runId": 38110964760,
+      "jobId": 114386262431,
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38110964760/job/114386262431",
+      "status": "completed",
+      "conclusion": "success",
+      "filesPassed": 103,
+      "testsPassed": 1492,
+      "testsSkipped": 125,
+      "testsFailed": 0,
+      "logSha256": "c966d3fa930360185c3e80e07148f00f53bee40d80d2d5126ab13097e3f613eb"
+    }
+  ],
+  "boundary": "Earlier reviewed source only. The later UI join, build-command correction and latest candidate CI remain separate."
+}

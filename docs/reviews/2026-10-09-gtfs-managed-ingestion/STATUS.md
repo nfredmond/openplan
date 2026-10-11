@@ -498,3 +498,9 @@ Remote candidate `295e34edc61d` joins UI main `f4785429abba` after that build. L
 ## Build memory continuation, October 10
 
 [The build-command correction](BUILD_MEMORY.md) preserves operator `NODE_OPTIONS` instead of appending a larger heap. Five actual npm/child-process tests, strict selected-file lint, scoped TypeScript and baseline, harmless, restored and five broken controls pass. Two production builds at `fa2e0ba0edfe` reach their 4 GiB service cap; neither receives build or browser acceptance. Earlier c75 complete QA and shuffled CI pass with 21,622 tests each, before the later UI join and command correction. A measured new build/read, exact-head CI, schema-first integration and release remain open.
+
+## Joined production continuation, October 10
+
+[The joined build and T3 read](JOINED_PRODUCTION_READ.md) identify clean source `48648251cbda` and the exact production build. The full webpack/TypeScript/page build passes in 110.990 seconds with a 4 GiB heap and an 8 GiB service cap. A separate 2 GiB TypeScript heap failure remains failed evidence. Actual desktop/390px navigation reaches the saved project, current transit version and draft model. Fresh native reads confirm unchanged geometry, the same 238 schedule-service rows in its envelope, zero model runs and terminal cancellation without derived publication. Eight original captures, three positive and 24 broken observation controls, plus actual CLI scope refusals preserve their separate boundaries.
+
+Earlier c75 live RLS and full archive restore now both pass, each with 1,492 tests and 125 skipped. Those results precede this later source. Current exact-head CI, schema-first hosted coordination, main integration and release remain unfinished. No hosted migration, GTFS enablement or scientific claim changes here.

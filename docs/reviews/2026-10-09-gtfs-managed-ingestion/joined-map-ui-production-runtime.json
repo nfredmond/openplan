@@ -1,0 +1,37 @@
+{
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-11T04:57:19.932Z",
+    "deployment": {
+      "commit": "48648251cbda",
+      "version": "0.68.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "processes": [
+    {
+      "pid": 1984620,
+      "comm": "npm run start -",
+      "cwd": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan"
+    },
+    {
+      "pid": 1984652,
+      "comm": "sh",
+      "cwd": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan"
+    },
+    {
+      "pid": 1984653,
+      "comm": "next-server (v1",
+      "cwd": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan"
+    }
+  ],
+  "memoryCurrentBytes": 172748800,
+  "unit": "openplan-gtfs-map-ui-production-app-20261010-01",
+  "memoryMaxBytes": 1073741824,
+  "heapMiB": 768,
+  "boundary": "Identified production app only. Health does not test database."
+}
