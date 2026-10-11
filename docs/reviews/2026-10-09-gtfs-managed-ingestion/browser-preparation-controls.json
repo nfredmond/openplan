@@ -1,0 +1,168 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "assertion": null,
+      "simulatedCalls": 20,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "assertion": null,
+      "simulatedCalls": 20,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "wrong-container",
+      "result": "expected assertion failure",
+      "assertion": "container=source['container'];assert container=='supabase_db_openplan-restore-target-2026091050';assert re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}',source['database'])",
+      "simulatedCalls": 0,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "wrong-database",
+      "result": "expected assertion failure",
+      "assertion": "container=source['container'];assert container=='supabase_db_openplan-restore-target-2026091050';assert re.fullmatch(r'openplan_attempt_cli_[0-9a-f]{32}',source['database'])",
+      "simulatedCalls": 0,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "wrong-ledger",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(source['database'],'SELECT version FROM supabase_migrations.schema_migrations ORDER BY version;').splitlines()==versions",
+      "simulatedCalls": 1,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "busy-source",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(source['database'],'SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid();')=='0'",
+      "simulatedCalls": 2,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "oversized-source",
+      "result": "expected assertion failure",
+      "assertion": "assert int(sql(source['database'],'SELECT pg_database_size(current_database());'))<1024**3",
+      "simulatedCalls": 3,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "different-auth-schema",
+      "result": "expected assertion failure",
+      "assertion": "schema=auth_schema('postgres');assert auth_schema(source['database'])==schema,'Auth schemas differ; do not transfer a version ledger'",
+      "simulatedCalls": 5,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "empty-auth-ledger",
+      "result": "expected assertion failure",
+      "assertion": "source_auth=sql('postgres','SELECT version FROM auth.schema_migrations ORDER BY version;').splitlines();assert source_auth and all(re.fullmatch(r'[0-9]+',v) for v in source_auth)",
+      "simulatedCalls": 6,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "malformed-auth-version",
+      "result": "expected assertion failure",
+      "assertion": "source_auth=sql('postgres','SELECT version FROM auth.schema_migrations ORDER BY version;').splitlines();assert source_auth and all(re.fullmatch(r'[0-9]+',v) for v in source_auth)",
+      "simulatedCalls": 6,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "unexpected-existing-auth-version",
+      "result": "expected assertion failure",
+      "assertion": "existing=sql(source['database'],'SELECT version FROM auth.schema_migrations ORDER BY version;').splitlines();assert set(existing)<=set(source_auth)",
+      "simulatedCalls": 7,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "different-clone-schema",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_schema(database)==schema",
+      "simulatedCalls": 11,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "incomplete-clone-auth-ledger",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(database,'SELECT version FROM auth.schema_migrations ORDER BY version;').splitlines()==source_auth",
+      "simulatedCalls": 14,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "changed-source-auth-schema",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_schema(database)==schema and auth_schema('postgres')==schema and auth_schema(source['database'])==schema",
+      "simulatedCalls": 16,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "changed-template-auth-schema",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_schema(database)==schema and auth_schema('postgres')==schema and auth_schema(source['database'])==schema",
+      "simulatedCalls": 17,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "changed-clone-auth-records",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(database,auth_rows)==source_auth_rows and sql(source['database'],auth_rows)==source_auth_rows",
+      "simulatedCalls": 18,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "changed-template-auth-records",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(database,auth_rows)==source_auth_rows and sql(source['database'],auth_rows)==source_auth_rows",
+      "simulatedCalls": 19,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "changed-source-gtfs",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(source['database'],\"SELECT md5(coalesce(string_agg(to_jsonb(t)::text,'|' ORDER BY id),'')) FROM public.gtfs_feed_versions t;\")==source_public",
+      "simulatedCalls": 20,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "wrong-auth-role",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_uri.username=='supabase_auth_admin' and auth_uri.password",
+      "simulatedCalls": 8,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "missing-auth-password",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_uri.username=='supabase_auth_admin' and auth_uri.password",
+      "simulatedCalls": 8,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "wrong-auth-host",
+      "result": "expected assertion failure",
+      "assertion": "assert auth_uri.hostname==container and auth_uri.path=='/postgres'",
+      "simulatedCalls": 8,
+      "cloneStatementReached": false
+    },
+    {
+      "variant": "auth-writer-denied",
+      "result": "expected assertion failure",
+      "assertion": "assert sql(database,\"SELECT has_table_privilege(current_user,'auth.schema_migrations','INSERT');\",auth=True)=='t'",
+      "simulatedCalls": 12,
+      "cloneStatementReached": true
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "assertion": null,
+      "simulatedCalls": 20,
+      "cloneStatementReached": true
+    }
+  ],
+  "sourceSha256": "1d26a020c3e0556c963f16eeba9786cfcfce11df4306e41a37162fe34b7595f5",
+  "runnerSha256": "ebf9ae9b0568f98dafaf032212b1bfcd25538250931a3c8250a603c1f9830c98",
+  "boundary": "Controlled CLI/schema/row metadata and fake subprocess transport. No fake target is contacted. Native clone, schema/record equality, Auth login and application journeys require separate real evidence."
+}

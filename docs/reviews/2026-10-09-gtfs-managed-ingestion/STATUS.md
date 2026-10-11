@@ -415,3 +415,15 @@ This branch is still a candidate. No T3 navigation or visual acceptance, app
 cookie roles, installed worker service operation, full restore, largest-feed
 capacity, CI, merge or release acceptance is established. Browser preparation
 helpers remain separate unverified work. All four migrations remain unreleased.
+
+## October 10: candidate browser database preparation
+
+The [browser preparer](BROWSER_PREPARATION.md) clones the populated official CLI candidate and verifies the 403 migration ledger, Auth schema and unchanged source records. Three positive controls and 20 deliberately broken simulated variants passed their stated expectations. The first native attempt stopped on Auth ledger insert permissions. The corrected attempt uses the configured Auth owner and retains an exact version ledger without changing users or identities.
+
+This preparation does not establish a fresh installation or full restore. The populated predecessor has no Storage buckets and an empty Storage migration ledger. Browser proof infrastructure therefore provisions its private bucket separately. An identified-build browser journey exposed a stale Title VI no-feed result after managed adoption. The response is a bounded refresh fix, not an acceptance claim. The desktop sign-in, real ZIP submission, worker completion, parser-count review and mobile adoption are preliminary evidence at `3aa44ff80155`; the corrected build still needs its own journey.
+
+## October 10: refresh service evidence after adoption
+
+The [refresh checkpoint](EQUITY_REFRESH.md) fixes the reproduced Title VI no-feed message after managed adoption. A fresh server-read identity also covers changes beyond the bounded current-version list. The controller retains its lifetime across equivalent server refreshes, and policy edits survive a service-evidence reread. Fourteen targeted broken variants fail their intended checks; baseline, harmless and restored runs pass. The broader planner controls complete 51 runs, including 48 broken variants. Strict lint and scoped TypeScript pass. The final serial GTFS/transit regression passes 1,647 tests across 71 files, with 17 live cases skipped and no failures.
+
+The application remains stopped until this source is committed and identified. The earlier native journey is precursor evidence, not acceptance of this corrected build. All candidate migrations remain unreleased. Full browser journeys, live application roles, complete database/Storage/private-worker/configuration restore, capacity, GitHub CI, integration and release verification remain open.

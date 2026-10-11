@@ -1,0 +1,36 @@
+{
+  "checks": [
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 4.816
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 15.795
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 94.237
+    }
+  ],
+  "testFiles": 71,
+  "regression": {
+    "numTotalTestSuites": 242,
+    "numTotalTests": 1664,
+    "numPassedTests": 1647,
+    "numPendingTests": 17,
+    "numFailedTests": 0
+  },
+  "changedSourceSha256": {
+    "openplan/src/app/(app)/data-hub/page.tsx": "6c4eeaf8b650774eef62b38daee318cbafd52e1779e83d765397c8bb3b75aef2",
+    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "9b9c51a28de77862547671ab1ec5f691d2d1268e925ce23433d1140ca53424b2",
+    "openplan/src/components/data-hub/title-vi-service-equity-panel.tsx": "dee8d0728697c2b3d25d6026f94abe5a9d9c95ec49413eb28ec8cb88ffa0927d",
+    "openplan/src/test/gtfs-managed-panel-mount.test.ts": "55bc77ed50aac3ed2c6d9f5066f165686edf7e450f58b729c8b068930a0b2b92",
+    "openplan/src/test/gtfs-managed-panel.test.tsx": "913eb3f3829effa33de12ce5b89015e23bd81634744aac01bd9b2050a72c2900"
+  },
+  "newEquityTestSha256": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68",
+  "boundary": "Changed-file lint with zero warnings, scoped TypeScript and serial GTFS/transit/role/body-bound tests. No new live database, browser, full restore, largest-feed capacity, full CI or practitioner acceptance."
+}

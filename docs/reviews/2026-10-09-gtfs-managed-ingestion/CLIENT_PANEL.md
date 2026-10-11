@@ -1,5 +1,7 @@
 # Retained planner import progress
 
+Current source verification is extended by [the service-evidence refresh checkpoint](EQUITY_REFRESH.md). The original interface evidence below remains its dated checkpoint.
+
 October 10 candidate interface. All four existing import doors use retained
 requests when this installation enables managed ingestion. The operational
 switch remains opt-in. Candidate migrations 28 through 31 are not released.

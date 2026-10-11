@@ -218,6 +218,7 @@
       "result": "expected assertion failure",
       "failedAssertions": [
         "planner managed transit panel uses retained URL identity and shows queued progress without success or adoption",
+        "planner managed transit panel refreshes dependent server reads and preserves custody on an equivalent server render",
         "planner managed transit panel cancels an unconfirmed request with an explicit reason and preserves its identity",
         "planner managed transit panel does not send untracked imports when enabled configuration is unavailable"
       ]
@@ -374,17 +375,17 @@
     "openplan/src/lib/gtfs/managed-client-controller.ts": "a6b65f0113b210c52e23b2f16553348eafd31a7f4a8f7bbc41248873be05a90f",
     "openplan/src/lib/gtfs/managed-client-transport.ts": "52c4c215af2bc324ac9fbcb1c1187dc281d6beec4153545ca409cb462e33d45e",
     "openplan/src/lib/gtfs/managed-ui-config.ts": "94cb9052b2df463535b54f8a2703ee192db4ab0b1771dfbd9a7adf22992fbb95",
-    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "b534a097b3f2f7e4a6307214ebe1a5f442b8605ad79c382bcfc645a5943ba1ec",
+    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "9b9c51a28de77862547671ab1ec5f691d2d1268e925ce23433d1140ca53424b2",
     "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "f1b62f37e25241b72a47a53fe4febf24437ba95d3dd3e5b9a7a3dbd49d6e671c",
-    "openplan/src/app/(app)/data-hub/page.tsx": "1244512fd201f1688142371ab0bda5a2165f29d6180d6f5131167990753fa02c",
+    "openplan/src/app/(app)/data-hub/page.tsx": "6c4eeaf8b650774eef62b38daee318cbafd52e1779e83d765397c8bb3b75aef2",
     "openplan/src/app/api/gtfs/versions/[versionId]/status/route.ts": "57fb7ff238673773f6a321d2ba510c8828c108bfc65090a6f064789ca79b9f77"
   },
   "testSha256": {
     "openplan/src/test/gtfs-managed-client-controller.test.ts": "b1efebf2c4d8956254636c8f238df3879bc83d6b575e50a3376dfde91e2d2540",
-    "openplan/src/test/gtfs-managed-panel.test.tsx": "28ec5a37bde251ce8b7a715ef91fee649c58c95d3148b8425d2e4b14667b0321",
+    "openplan/src/test/gtfs-managed-panel.test.tsx": "913eb3f3829effa33de12ce5b89015e23bd81634744aac01bd9b2050a72c2900",
     "openplan/src/test/gtfs-managed-ui-config.test.ts": "1c8c6fae812e2e75c40210025fcb9de17bd76f978be95e2b21c075a63a3a5c12",
     "openplan/src/test/gtfs-managed-version-status-route.test.ts": "2a7813414a0c03eae7d3ff28b960972eb372c1eff608d41dcc6366d065b5494c",
-    "openplan/src/test/gtfs-managed-panel-mount.test.ts": "9fc30aa4168a92946110479fa0b67f1ce96780144caecf301729fc9bd98924a3"
+    "openplan/src/test/gtfs-managed-panel-mount.test.ts": "55bc77ed50aac3ed2c6d9f5066f165686edf7e450f58b729c8b068930a0b2b92"
   },
   "boundary": "Controlled component DOM, browser storage, mock HTTP and source mount inventory. Does not prove T3 navigation, screenshots, live application sessions, worker installation, complete restore, capacity, CI or practitioner acceptance."
 }

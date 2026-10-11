@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
 import { readGtfsClientRequests, retainGtfsClientRequest } from "@/lib/gtfs/managed-client";
 import { readGtfsClientDecisions } from "@/lib/gtfs/managed-client-decision";
+const { routerRefresh, router } = vi.hoisted(() => { const routerRefresh = vi.fn(); return { routerRefresh, router: { refresh: routerRefresh } }; });
+vi.mock("next/navigation", () => ({ useRouter: () => router }));
 const id = (n: number) => `e8000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const scope = { installationId: id(1), workspaceId: id(2), actorId: id(3) };
 const basis = { feedId: id(5), versionId: id(6), routeCount: 14, stopCount: 287, previousVersionId: null as string | null, previousRouteCount: null as number | null, previousStopCount: null as number | null };
@@ -21,6 +23,7 @@ function status(requestId: string) {
 function json(body: unknown, code = 200) { return new Response(JSON.stringify(body), { status: code }); }
 function registryVersion() { return countMode === "normal" ? version : { ...version, route_count: countMode === "zero" ? 0 : null, stop_count: countMode === "zero" ? 0 : null, trip_count: countMode === "zero" ? 0 : null, route_service_level_rows: countMode === "zero" ? 0 : null, stop_service_level_rows: countMode === "zero" ? 0 : null }; }
 beforeEach(() => {
+ routerRefresh.mockClear();
  window.localStorage.clear(); posts = []; state = "queued"; current = false; material = false; unknown = false; cancelReceipt = null; decisionUnavailable = false; countMode = "normal";
  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (path, rawInit) => {
   const url = String(path), init = rawInit ?? {};
@@ -58,6 +61,14 @@ async function urlImport() {
 describe("planner managed transit panel", () => {
  it("uses retained URL identity and shows queued progress without success or adoption", async () => {
   await panel(); await urlImport(); const saved = readGtfsClientRequests(window.localStorage, scope); expect(saved).toHaveLength(1); expect(new Headers(posts[0].init.headers).get("x-openplan-gtfs-request-id")).toBe(saved[0].requestId); expect(screen.queryByTestId("gtfs-ingest-outcome")).toBeNull(); expect(screen.queryByText("In use")).toBeNull(); expect(screen.queryByText("Ready for review")).toBeNull();
+ });
+ it("refreshes dependent server reads and preserves custody on an equivalent server render", async () => {
+  const view = await panel(); await urlImport(); await waitFor(() => expect(routerRefresh).toHaveBeenCalled());
+  const before = readGtfsClientRequests(window.localStorage, scope), refreshed = routerRefresh.mock.calls.length;
+  await act(async () => { view.rerender(<GtfsIngestPanel workspaceId={scope.workspaceId} managed={{ enabled: true, scope: { ...scope } }} today="2026-10-10" maxUploadBytes={10000} />); });
+  expect(readGtfsClientRequests(window.localStorage, scope)).toEqual(before); expect(posts).toHaveLength(1);
+  await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+  expect(routerRefresh.mock.calls.length).toBe(refreshed);
  });
  it("uses retained ZIP, catalog and refresh imports from the existing doors", async () => {
   await panel(); fireEvent.click(screen.getByRole("tab", { name: /Upload/ })); fireEvent.change(screen.getByLabelText("GTFS archive"), { target: { files: [new File(["bytes"], "fixture.zip")] } }); fireEvent.click(screen.getByRole("button", { name: "Upload and read this archive" })); await waitFor(() => expect(posts).toHaveLength(1)); await screen.findByText("Waiting for a worker");

@@ -1,5 +1,6 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { GtfsClientController, type GtfsClientJob, type GtfsClientSnapshot } from "@/lib/gtfs/managed-client-controller";
 import type { GtfsClientIntent, GtfsClientScope } from "@/lib/gtfs/managed-client";
@@ -121,16 +122,18 @@ function Job({ job, controller, readOnly, busy, maxUploadBytes, open, report }: 
 export const ManagedGtfsImports = forwardRef<ManagedGtfsImportsHandle, { scope: GtfsClientScope; readOnly: boolean; maxUploadBytes: number; versions: ManagedGtfsVersion[]; registryChanged: () => void }>(function ManagedGtfsImports({ scope, readOnly, maxUploadBytes, versions, registryChanged }, ref) {
  const [snapshot, setSnapshot] = useState(empty), [controller, setController] = useState<GtfsClientController | null>(null), [error, setError] = useState<string | null>(null);
  const [selection, setSelection] = useState<ManagedGtfsVersion | null>(null);
+ const router = useRouter();
+ const { installationId, workspaceId, actorId } = scope;
  const registryRef = useRef(registryChanged);
- useEffect(() => { registryRef.current = registryChanged; }, [registryChanged]);
+ useEffect(() => { registryRef.current = () => { registryChanged(); router.refresh(); }; }, [registryChanged, router]);
  useEffect(() => {
   let owned: GtfsClientController | undefined;
   try {
-   owned = new GtfsClientController({ scope, readOnly, store: window.localStorage, fetcher: window.fetch.bind(window), changed: setSnapshot, registryChanged: () => registryRef.current() });
+   owned = new GtfsClientController({ scope: { installationId, workspaceId, actorId }, readOnly, store: window.localStorage, fetcher: window.fetch.bind(window), changed: setSnapshot, registryChanged: () => registryRef.current() });
    setController(owned); owned.start();
   } catch (failure) { setError(message(failure)); }
   return () => owned?.dispose();
- }, [scope, readOnly]);
+ }, [installationId, workspaceId, actorId, readOnly]);
  function report(failure: unknown) { setError(message(failure)); }
  function open(feedId: string, versionId: string) { setSelection(versions.find(item => item.feedId === feedId && item.versionId === versionId) ?? { feedId, versionId, label: "Transit version" }); }
  useImperativeHandle(ref, () => ({
