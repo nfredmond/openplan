@@ -1,0 +1,53 @@
+{
+  "sourceHead": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "sourceParents": [
+    "b246ae1b5fb652c2a3abf7ba04e3610e156d733f",
+    "e24a8e27f2857fd717f9d2cbdcecb527e1807cab"
+  ],
+  "helperSha256": "48b93757069dd5d43cee9ef3c331db763b58debf9bb9c70d44518201d2951797",
+  "operation": "disposable-restore-drill.sh --full-archive",
+  "exitCode": 0,
+  "wallSeconds": 2916.327,
+  "tables": 374,
+  "sequences": 6,
+  "storageObjects": 1,
+  "keyCustody": {
+    "captured": true,
+    "targetRestarted": true,
+    "mountedBytesVerified": true,
+    "previousTargetKeyRetained": true
+  },
+  "encryptedCanaryVerified": true,
+  "restoredSignInVerified": true,
+  "owpReconstructionMatch": true,
+  "rls": {
+    "filesPassed": 104,
+    "testsPassed": 1499,
+    "testsSkipped": 125,
+    "failed": 0,
+    "durationSeconds": 2695.56
+  },
+  "resources": {
+    "runnerMaxBytes": 1073741824,
+    "swapMaxBytes": 0,
+    "cpuQuotaPercent": 100,
+    "serviceCount": 12,
+    "eachServiceMaxBytes": 1073741824,
+    "eachServiceSwapDisabled": true,
+    "eachServiceCpu": 1,
+    "largestObservedRunnerPeakBytes": 934973440,
+    "journalRoundedRunnerPeak": "891.6M"
+  },
+  "cleanup": {
+    "ownedContainersStopped": 12,
+    "containersVolumesProofRetained": true
+  },
+  "privateRunnerSha256": "0b89f1b45bdfac751e8c6cf2de728489d5038af55a1b7a4ed16f0ae2b119225c",
+  "privateLogSha256": "fe274f429b4051da5d6e190129ae3aed4035c3e0849cf69997d95f64f9e1cebb",
+  "limits": [
+    "Frozen joined source with main e435e58b, before later keyless-map main e37878ea.",
+    "Fresh source/target stacks share one local operator-controlled Docker host; no physical-host or hosted Supabase acceptance.",
+    "Synthetic encrypted record, existing restore fixtures and engineering access-control tests do not establish agency commissioning or complete external-worker recovery.",
+    "No protected key bytes, fingerprints, credentials, private paths or raw dumps are published."
+  ]
+}

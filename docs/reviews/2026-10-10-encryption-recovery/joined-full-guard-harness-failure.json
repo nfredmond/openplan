@@ -1,0 +1,7 @@
+{
+  "harnessSha256": "8eb380f2623f2379a91f5990d192b524314b0f81e436bd93bcd0f6a9001c3689",
+  "failure": "Project-label mutation also changed the required name suffix, so a second guard refused it after removing the membership guard.",
+  "nativeDriverChanged": false,
+  "nativeRunAlreadyStarted": true,
+  "acceptanceFromFailedHarness": false
+}

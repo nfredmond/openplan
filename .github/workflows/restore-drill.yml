@@ -8,11 +8,14 @@ on:
     paths:
       - "openplan/scripts/ops/disposable-restore-drill.sh"
       - "openplan/scripts/ops/*restore*.py"
+      - "openplan/scripts/ops/database_key_custody.py"
       - "openplan/scripts/ops/seed-owp-restore.ts"
       - "openplan/scripts/ops/tests/test_*restore*.py"
       - "openplan/scripts/ops/tests/fixtures/*recovery*.json"
       - "openplan/scripts/ops/tests/fixtures/restore-mutations.json"
       - "openplan/scripts/ops/tests/prove_restore_mutations.py"
+      - "openplan/scripts/ops/tests/test_database_key_custody.py"
+      - "openplan/scripts/ops/tests/prove_key_custody_mutations.py"
       - "openplan/src/test/local-supabase-env.ts"
       - "openplan/supabase/migrations/**"
       - ".github/workflows/restore-drill.yml"
@@ -42,6 +45,7 @@ jobs:
         run: |
           mkdir -p "$RUNNER_TEMP/openplan-restore-evidence"
           python3 -B scripts/ops/tests/prove_restore_mutations.py "$RUNNER_TEMP/openplan-restore-evidence/mutations.json"
+          python3 -B scripts/ops/tests/prove_key_custody_mutations.py "$RUNNER_TEMP/openplan-restore-evidence/key-custody-mutations.json"
       - run: npm run ops:restore-drill -- --full-archive
         env:
           OPENPLAN_RESTORE_EVIDENCE_DIR: ${{ runner.temp }}/openplan-restore-evidence

@@ -1,0 +1,36 @@
+{
+  "shellSha256": "96f00d24c0087dcff8c64ec457a04ff46db5bb120a2476962c7a9fd5f36b4abc",
+  "sourceDatabase": "openplan_crypto_source_20727a8b94ab40bd8822a02702986592",
+  "targetDatabase": "postgres",
+  "targetId": "de06f69da2845b2ce0a3cb9a9e819296b5cbb977aad4f261613b507d10896ac7",
+  "dumpBytes": 4793,
+  "dumpSha256": "0bd91a767debd9bf5b94ff206fcf7ea33e440d0d9f7b53c23ba6882f88d4a1e9",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "harmless",
+      "result": "pass",
+      "exitCode": 0
+    },
+    {
+      "name": "missing fixture",
+      "result": "actual canary refusal",
+      "exitCode": 1
+    },
+    {
+      "name": "wrong decrypted bytes",
+      "result": "actual canary refusal",
+      "exitCode": 1
+    },
+    {
+      "name": "restored",
+      "result": "pass",
+      "exitCode": 0
+    }
+  ],
+  "boundary": "Actual synthetic SQL, dump replay and target canary block in the existing owned new cluster. This does not execute the full two-stack Auth/Storage/OWP/RLS drill."
+}
