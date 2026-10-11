@@ -88,7 +88,7 @@ def run(repo, out):
         return result.returncode, output
     def positive(label, payload):
         source.write_bytes(payload);code, output = execute(label)
-        if code or 'Ran '+str(len(census))+' tests' not in output: raise AssertionError(label+': baseline failed')
+        if code or 'Ran '+str(len(census))+' tests' not in output: raise AssertionError(label+': baseline failed\n'+output)
         outcomes.append({'control': label, 'outcome': 'survived'})
     try:
         positive('baseline', original)
