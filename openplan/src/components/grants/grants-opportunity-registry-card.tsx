@@ -164,14 +164,31 @@ export function GrantsOpportunityRegistryCard({
           card-nesting audit measured 16 boxes past the three-frame limit on this
           page. A row with a label carries the same three notes.
         */}
-        <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm md:grid-cols-[10rem_minmax(0,1fr)]">
-          <dt className="font-semibold text-foreground">Fit notes</dt>
-          <dd className="text-muted-foreground">{opportunity.fit_notes || "No fit notes recorded yet."}</dd>
-          <dt className="font-semibold text-foreground">Readiness notes</dt>
-          <dd className="text-muted-foreground">{opportunity.readiness_notes || "No readiness notes recorded yet."}</dd>
-          <dt className="font-semibold text-foreground">Decision rationale</dt>
-          <dd className="text-muted-foreground">{opportunity.decision_rationale || "No decision rationale recorded yet."}</dd>
-        </dl>
+        {/* Only the notes someone wrote. Three "No … recorded yet" rows on
+            every card said nothing a planner could act on; the decision form
+            below is where the notes are written. */}
+        {opportunity.fit_notes || opportunity.readiness_notes || opportunity.decision_rationale ? (
+          <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm md:grid-cols-[10rem_minmax(0,1fr)]">
+            {opportunity.fit_notes ? (
+              <>
+                <dt className="font-semibold text-foreground">Fit notes</dt>
+                <dd className="text-muted-foreground">{opportunity.fit_notes}</dd>
+              </>
+            ) : null}
+            {opportunity.readiness_notes ? (
+              <>
+                <dt className="font-semibold text-foreground">Readiness notes</dt>
+                <dd className="text-muted-foreground">{opportunity.readiness_notes}</dd>
+              </>
+            ) : null}
+            {opportunity.decision_rationale ? (
+              <>
+                <dt className="font-semibold text-foreground">Decision rationale</dt>
+                <dd className="text-muted-foreground">{opportunity.decision_rationale}</dd>
+              </>
+            ) : null}
+          </dl>
+        ) : null}
 
         {projectGrantModelingEvidence ? (
           <div className="mt-4 border-t border-border/60 pt-4 text-sm">
@@ -222,18 +239,20 @@ export function GrantsOpportunityRegistryCard({
           </div>
         ) : null}
 
-        <div className="mt-4 border-t border-border/60 pt-4 text-sm">
-          <div className="flex flex-wrap items-start justify-between gap-3">
-            <div>
-              <p className="font-semibold text-foreground">What to check before applying</p>
-              <p className="mt-1 text-muted-foreground">{evidenceReadinessSummary}</p>
-            </div>
+        {/* The checks fold behind their own summary, which keeps the count
+            and "Final review required" in view (October 10, 2026). */}
+        <details className="mt-4 border-t border-border/60 pt-4 text-sm" open={isFocused || undefined}>
+          <summary className="flex cursor-pointer flex-wrap items-start justify-between gap-3">
+            <span>
+              <span className="block font-semibold text-foreground">What to check before applying</span>
+              <span className="mt-1 block text-muted-foreground">{evidenceReadinessSummary}</span>
+            </span>
             <StatusBadge
               tone={evidenceReadinessCues.some((cue) => cue.tone === "warning" || cue.tone === "danger") ? "warning" : "success"}
             >
               Final review required
             </StatusBadge>
-          </div>
+          </summary>
           <div className="mt-3 grid gap-x-6 md:grid-cols-2">
             {evidenceReadinessCues.map((cue) => (
               <div key={cue.key} className="border-t border-border/40 py-2">
@@ -248,7 +267,7 @@ export function GrantsOpportunityRegistryCard({
               </div>
             ))}
           </div>
-        </div>
+        </details>
 
         {activeFocusedOpportunityId === opportunity.id ? (
           <FundingOpportunityNarrativeDraftPanel
@@ -303,7 +322,9 @@ export function GrantsOpportunityRegistryCard({
           </div>
         ) : null}
 
-        <div className="mt-4">
+        <details className="mt-4" open={isFocused || undefined}>
+          <summary className="cursor-pointer text-sm font-semibold text-foreground">Record a decision and notes</summary>
+          <div className="mt-3">
           <FundingOpportunityDecisionControls
             opportunityId={opportunity.id}
             initialDecisionState={opportunity.decision_state}
@@ -313,7 +334,8 @@ export function GrantsOpportunityRegistryCard({
             initialDecisionRationale={opportunity.decision_rationale}
             modelingSupport={decisionModelingSupport}
           />
-        </div>
+          </div>
+        </details>
       </div>
     </div>
   );

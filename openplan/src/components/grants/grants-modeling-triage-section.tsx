@@ -34,7 +34,6 @@ export function GrantsModelingTriageSection({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Modeling triage</p>
           <h2 className="module-section-title">See where grant modeling support looks strongest, thin, or stale</h2>
           <p className="module-section-description">
             Saved scenario comparison context stays visible here before you open a funding opportunity or change a grant decision. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.

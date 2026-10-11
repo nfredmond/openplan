@@ -1222,7 +1222,7 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
     expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
     expect(screen.getByText(/RTP links, project reports, scenario sets/i)).toBeInTheDocument();
-    expect(screen.getByText(/Shared project spine/i)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Linked outputs across this project/ })).toBeInTheDocument();
     expect(screen.getByText(/Regeneration needed/i)).toBeInTheDocument();
     expect(screen.getByText(/Scenario basis visible/i)).toBeInTheDocument();
     expect(screen.getByText(/1 scenario set · 1 active · 1 baseline · 1 ready alternative/i)).toBeInTheDocument();

@@ -74,12 +74,11 @@ export function GrantsProgramCatalogSection({
             <BookMarked className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Discovery</p>
             <h2 className="module-section-title">Program catalog for small and rural agencies</h2>
             <p className="module-section-description">
               Curated funding programs worth watching, each labeled with the jurisdiction it is
-              registered for. Track one to create a shared opportunity record; cycle timing is
-              guidance only — always verify the current call with the administering agency.
+              registered for. Track one to create a shared opportunity record. Cycle timing is
+              guidance only; always verify the current call with the administering agency.
             </p>
           </div>
         </div>
@@ -135,9 +134,12 @@ export function GrantsProgramCatalogSection({
                   </StatusBadge>
                 </div>
                 <p className="text-sm text-muted-foreground">{program.summary}</p>
-                {/* One column of label and value rows. Two columns inside this half-width
-                    card left each value about 50px wide, one word per line. */}
-                <dl className="grid gap-y-1 text-compact text-muted-foreground">
+                {/* Who can apply, the match, the cycle and the official page, one
+                    click away (October 10, 2026): printed for every program, they
+                    made this catalog about 6,000 words long. */}
+                <details className="rtp-cycle-more">
+                  <summary>Applicants, match and cycle</summary>
+                <dl className="mt-2 grid gap-y-1 text-compact text-muted-foreground">
                   <div className="grid grid-cols-[5.5rem_minmax(0,1fr)] gap-2">
                     <dt className="shrink-0 font-semibold text-foreground/70">Agency</dt>
                     <dd>{program.administeringAgency}</dd>
@@ -174,6 +176,7 @@ export function GrantsProgramCatalogSection({
                   Official program page
                   <ExternalLink className="h-3.5 w-3.5" />
                 </a>
+                </details>
               </div>
 
               <div className="shrink-0 pt-0.5">

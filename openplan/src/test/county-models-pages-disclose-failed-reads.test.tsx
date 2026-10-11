@@ -376,3 +376,30 @@ describe("/county-runs/[countyRunId] when the run's own row cannot be read", () 
     expect(screen.getByTestId("ceqa-vmt-screen")).toBeInTheDocument();
   });
 });
+
+/*
+  THE PUBLISHED STUDIES KEEP THEIR CLAIM TIER IN VIEW (October 10, 2026).
+  They moved below the planner's work into closed disclosures. A closed
+  disclosure must still say what the study supports: each summary carries the
+  scientific outcome and "No model accuracy conclusion follows", and a study
+  that could not be read is not folded at all.
+*/
+describe("/models published studies", () => {
+  it("states each study's outcome and the absent accuracy claim without opening anything", async () => {
+    render(await ModelsPage({ searchParams: Promise.resolve({}) }));
+
+    const section = screen.getByRole("region", { name: "Published model studies" });
+    const disclosures = Array.from(section.querySelectorAll(":scope > details"));
+    const openCards = Array.from(section.children).filter((child) => child.tagName === "DIV");
+    expect(disclosures.length + openCards.length).toBe(4);
+
+    for (const disclosure of disclosures) {
+      const summary = disclosure.querySelector("summary");
+      expect(summary?.textContent).toContain("No model accuracy conclusion follows.");
+      expect(summary?.querySelector("[data-tone]")?.textContent?.trim().length).toBeGreaterThan(0);
+    }
+    for (const card of openCards) {
+      expect(card.textContent).toContain("No model accuracy conclusion follows.");
+    }
+  });
+});

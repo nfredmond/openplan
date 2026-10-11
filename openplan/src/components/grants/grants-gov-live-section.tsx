@@ -155,7 +155,6 @@ export function GrantsGovLiveSection({ trackedTitles }: { trackedTitles: string[
             <RadioTower className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Discovery — live</p>
             <h2 className="module-section-title">Live federal opportunities (grants.gov)</h2>
             <p className="module-section-description">
               Posted and forecasted transportation-category notices straight from the grants.gov

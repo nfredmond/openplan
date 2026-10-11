@@ -51,7 +51,6 @@ export function ProjectMapPresencePanel({
             <MapIcon className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Cartographic backdrop</p>
             <h2 className="module-section-title">Where this project is</h2>
             <p className="module-section-description">
               Put the project on the map and add its corridors — draw them here, or upload the map
