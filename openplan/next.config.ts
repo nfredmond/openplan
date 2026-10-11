@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const LOCAL_DEV_CONNECT_SRC =
   process.env.NODE_ENV === "production"
@@ -83,8 +84,26 @@ const EMBED_SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Published evidence lives beside the application package. Trace from the
+  // repository root and retain only the four frozen studies on their readers.
+  outputFileTracingRoot: path.join(__dirname, ".."),
   outputFileTracingIncludes: {
-    "/api/models/validation-structural-diagnosis/[...parts]": [
+    "/models": [
+      "../data/modeling/distributed-work-loading-study-2026-08-31/**/*",
+      "../data/modeling/comparable-observation-study-2026-08-28/**/*",
+      "../data/modeling/structural-demand-diagnosis-study-2026-08-28/**/*",
+      "../data/modeling/model-validation-structural-diagnosis-2026-08-28/**/*",
+    ],
+    "/api/models/distributed-work-loading/*": [
+      "../data/modeling/distributed-work-loading-study-2026-08-31/**/*",
+    ],
+    "/api/models/comparable-observation-study/*": [
+      "../data/modeling/comparable-observation-study-2026-08-28/**/*",
+    ],
+    "/api/models/structural-demand-diagnosis/*": [
+      "../data/modeling/structural-demand-diagnosis-study-2026-08-28/**/*",
+    ],
+    "/api/models/validation-structural-diagnosis/*": [
       "../data/modeling/model-validation-structural-diagnosis-2026-08-28/**/*",
     ],
   },

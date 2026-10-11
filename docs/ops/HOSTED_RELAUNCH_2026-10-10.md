@@ -12,17 +12,23 @@ OpenPlan remains free software without subscription or entitlement gates.
 ## Configuration and evidence
 
 - Vercel project `natford/openplan` builds the nested `openplan/` package with
-  Node 24 and webpack. Git auto-deployment stays disabled. Stage, inspect and
-  promote an explicit commit. Retain the prior deployment for rollback.
+  Node 24 and webpack. The hosted project now requires seven GitHub checks
+  before production domain assignment. This branch enables automatic deployment
+  from `main` only; verify a merged commit before declaring automation accepted.
+  Retain the prior deployment for rollback.
 - Supabase project `lolckycpdjsgeejsmuzl` has all 399 migrations through
   `20261016000027`. No historical user or client data is imported.
   All ten artifact buckets are private.
+  The organization `ubtudgixoqdghuvtfpem` has an active Pro subscription.
+  Both OpenPlan and `nat-ford-website` belong to this organization and inherit
+  that plan. Billing and project membership are verified on October 10.
 - Public email signup retains confirmation. Resend custom SMTP sends from
   `OpenPlan <openplan@natfordplanning.com>`. A synthetic signup confirmation
   arrives. Confirmation callback and password reset completion remain pending.
 - Shared paid AI credentials are unset. Corridor analysis produces an explicit
   deterministic fallback without an AI credential. Workspace provider choice
-  remains available. Long-running cloud workers are not yet commissioned.
+  remains available. Railway pollers are running; model and OCR execution
+  acceptance remains pending.
 - Synthetic owner sign-in, project creation, saved corridor results, Mapbox
   drawing, desktop and 390px project views, and a two-sheet project workbook
   export work on staged build `f6765e3e0b0e60beca1c79b9073e045b2cc964b5`.
@@ -73,11 +79,82 @@ message fails it. Browser evidence and server logs cover different boundaries.
 Full whole-product acceptance remains incomplete.
 
 A verified-TLS custom-format managed database backup exists in private operator
-custody. `pg_restore --list` reads its auth, project and storage inventory. A full
-restore is not yet demonstrated for this installation. The latest provider
-physical backup predates schema application. Storage objects and worker journals
-need their own inventory as they are created. Never commit credentials or dumps.
+custody. An isolated Railway PostgreSQL target restores the captured archive,
+including ownership, ACLs and platform event triggers. Verification finds 399
+migrations, 308 public tables, 307 tables with RLS, three Auth users, ten Storage
+buckets and four object records. Both synthetic users' password hashes match.
+Authenticated owner, second-workspace and anonymous SQL probes see one, zero
+and zero rows respectively for the retained synthetic project.
 
-Additional fixed service spend is $0 at this checkpoint. Resend uses its free
-plan with pay-as-you-go disabled. Worker hosting remains a pending operating
-cost. Do not declare a worker deployed merely by changing an environment flag.
+The four Storage files, totaling 216,267 bytes, and ten application-worker
+journal files match after copying through the isolated target. The target is
+stopped after verification. These are captured-data and file-transfer checks,
+not a replacement Auth/Storage service cutover, full journal replay or a proved
+consistent installation snapshot. Writers remain active during this capture.
+The latest observed Supabase physical backup predates schema application.
+Never commit credentials, dumps or raw journals. Follow the
+[hosted recovery record](../../openplan/docs/ops/HOSTED_RECOVERY.md).
+
+Railway Pro adds $20 monthly and includes $20 compute usage. Resend uses its free
+plan with pay-as-you-go disabled. Actual compute charges depend on use. Do not
+declare a worker deployed merely by changing an environment flag.
+
+## Worker packaging checkpoint
+
+Railway has private application-queue and model-host services. The model host
+co-locates AequilibraE and ActivitySim on one persistent volume, with separate
+Python environments. Their existing artifact handoffs require shared local
+bytes. Two services with separate filesystems cannot substitute for this.
+Application queues have a separate persistent journal volume and Chromium for
+report rendering. A synthetic campaign review completes through the live queue
+on staged build `faa20d5`, retaining PDF, XLSX and ZIP artifacts. Downloads match
+their recorded digests; the PDF's three pages render. The owner can download;
+a second workspace receives 404 and an anonymous caller receives 401.
+Live model execution and recovery acceptance remain pending at this checkpoint.
+See the [model host guide](../../workers/hosted-models/DEPLOY.md)
+and [application queue guide](../../workers/hosted-node/DEPLOY.md).
+
+The workspace alerts at $25 compute usage and stops at $40. Railway's Pro plan
+includes $20 usage credit; the usage ceiling preserves room within Nathaniel's
+$50 additional monthly budget. An interrupted job still needs reconciliation.
+Provider limits do not guarantee throughput for large regional workloads.
+
+Both supervisors pass actual child-process exit and shutdown tests. A harmless
+log punctuation change passes. Changing an unexpected child exit to return
+success fails the corresponding test; the original source passes after restore.
+These tests do not establish database recovery, model validity or rendered PDF
+fidelity. The existing CI jobs now run them without adding another heavy job.
+
+## Published evidence packaging
+
+Staged model cards report unavailable evidence when Vercel omits repository-root
+study files. Next tracing now starts at the repository root and includes each
+of the four frozen studies on `/models` and its corresponding artifact route.
+The studies and their hash checks are unchanged. Five focused files pass 28
+tests and configuration lint passes. Hosted card and download verification
+passes on hosted build `219456715`: all four cards load and their study-result
+downloads return HTTP 200 with SHA-256 matching the committed source files.
+
+## First model execution and recovery checks
+
+The new shared database initially has no Census tracts. The existing authenticated
+ingestion endpoint loads all 26 Nevada County tracts from TIGERweb and ACS, with
+zero unmatched rows. It does not insert demo rectangles or invented attributes.
+
+Synthetic run `34f49fc9-c081-49a1-990c-9462f73e8245` exposes a wire-format mismatch:
+the app writes `{status, table}`, while the worker expects table fields beside
+`status`. The reader now accepts both retained formats and refuses malformed
+nested tables. All 24 focused checks pass. Removing the nested reader fails the
+new app-format check; falling back from a malformed nested table fails its
+refusal check; a harmless comment change passes. Reading the actual retained
+app payload recovers 26 demographic rows and 26 equity rows with the source's
+2023 vintage. Live rerun acceptance remains pending.
+
+The model service has a stable deployment identity,
+`openplan-hosted-lolckycpdjsgeejsmuzl`, for command journal destinations. Preserve
+it when recovering this same installation. Changing a service variable does
+not itself prove that unresolved stages recover correctly. Current Git-sourced
+workers report their actual commit through runtime heartbeat records.
+
+The Nat Ford website agent owns its checkout and `/openplan` redirect. This
+agent does not change that project's routes or deployments concurrently.

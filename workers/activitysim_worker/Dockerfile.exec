@@ -21,7 +21,9 @@ RUN apt-get update && apt-get install -y --no-install-recommends \
 WORKDIR /app
 
 COPY workers/activitysim_worker/requirements-exec.txt /tmp/activitysim-exec-requirements.txt
-RUN pip install --no-cache-dir -r /tmp/activitysim-exec-requirements.txt
+COPY workers/activitysim_worker/requirements.txt /tmp/activitysim-worker-requirements.txt
+# The poller imports dotenv; its runtime dependencies must accompany ActivitySim.
+RUN pip install --no-cache-dir -r /tmp/activitysim-exec-requirements.txt -r /tmp/activitysim-worker-requirements.txt
 
 COPY . /app
 
