@@ -167,7 +167,6 @@ export function ProjectRtpLinker({
             <RouteIcon className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">RTP portfolio linkage</p>
             <h2 className="module-section-title">Attach this project to one or more RTP cycles</h2>
             <p className="module-section-description">
               Attaching a project to a cycle is how it shows up in the regional plan — as constrained, illustrative, or still a candidate.

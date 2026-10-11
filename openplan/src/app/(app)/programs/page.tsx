@@ -5,6 +5,7 @@ import { navLabel } from "@/components/nav/nav-registry";
 import { FundingOpportunityCreator } from "@/components/programs/funding-opportunity-creator";
 import { ProgramCreator } from "@/components/programs/program-creator";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
+import { FigureRow } from "@/components/ui/figure-row";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState, StateBlock } from "@/components/ui/state-block";
@@ -617,52 +618,36 @@ export default async function ProgramsPage({
           </div>
         }
       >
-        <div className="module-summary-grid cols-3">
-          <div className="module-summary-card">
-            <p className="module-summary-label">Programs</p>
-            <p className="module-summary-value">{programsUnreadable ? "—" : typedPrograms.length}</p>
-            <p className="module-summary-detail">
-              {programsUnreadable
-                ? "The list of programming cycles could not be read, so this number is unknown — it is not zero."
-                : "Programming cycles and packages in this workspace."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Active programs</p>
-            <p className="module-summary-value">{programsUnreadable ? "—" : activeCount}</p>
-            <p className="module-summary-detail">
-              {programsUnreadable
-                ? "Unavailable while the list of programming cycles cannot be read."
-                : `${rtipStipCount} tied to RTIP or STIP cycles.`}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Ready to submit</p>
-            <p className="module-summary-value">{programsUnreadable || rowBasisUnreadable ? "—" : readyCount}</p>
-            <p className="module-summary-detail">
-              {programsUnreadable || rowBasisUnreadable
-                ? "This is worked out from linked projects and reports this page could not read, so it is unknown — it is not zero."
-                : "Programs with the key information in place, ready to review or submit."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Reports needing work</p>
-            <p className="module-summary-value">
-              {programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount}
-            </p>
-            <p className="module-summary-detail">
-              {programsUnreadable || rowBasisUnreadable
-                ? "This is worked out from reports this page could not read, so it is unknown — it is not zero."
-                : "Programs whose reports still need to be generated or refreshed."}
-            </p>
-          </div>
-        </div>
+        <FigureRow
+          label="Programming figures"
+          figures={[
+            {
+              label: "Programs",
+              value: programsUnreadable ? "—" : typedPrograms.length,
+              note: programsUnreadable ? "Could not be read, so unknown, not zero." : null,
+            },
+            {
+              label: "Active",
+              value: programsUnreadable ? "—" : activeCount,
+              note: programsUnreadable ? "Unavailable while programs cannot be read." : `${rtipStipCount} tied to RTIP or STIP`,
+            },
+            {
+              label: "Ready to submit",
+              value: programsUnreadable || rowBasisUnreadable ? "—" : readyCount,
+              note: programsUnreadable || rowBasisUnreadable ? "Linked records could not be read, so unknown, not zero." : null,
+            },
+            {
+              label: "Reports needing work",
+              value: programsUnreadable || rowBasisUnreadable ? "—" : packetAttentionProgramCount,
+              note: programsUnreadable || rowBasisUnreadable ? "Reports could not be read, so unknown, not zero." : null,
+            },
+          ]}
+        />
       </PageHeader>
 
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your cycles</p>
             <h2 className="module-section-title">Your programming cycles</h2>
             <p className="module-section-description">
               Filter by status, funding type, or linked project, then open a cycle.
@@ -836,7 +821,6 @@ export default async function ProgramsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Funding calls</p>
               <h2 className="module-section-title">Active and upcoming opportunities</h2>
               <p className="module-section-description">
                 Track open calls, their timing, who owns them, and the programs and projects they belong to.
@@ -848,50 +832,38 @@ export default async function ProgramsPage({
             </span>
           </div>
 
-          <div className="module-summary-grid cols-4 mt-5">
-            <div className="module-summary-card">
-              <p className="module-summary-label">Open now</p>
-              <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : openOpportunityCount}</p>
-              <p className="module-summary-detail">
-                {fundingOpportunitiesUnreadable
-                  ? "Unavailable while the list of funding opportunities cannot be read."
-                  : "Calls that are open now and need work."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Upcoming</p>
-              <p className="module-summary-value">{fundingOpportunitiesUnreadable ? "\u2014" : upcomingOpportunityCount}</p>
-              <p className="module-summary-detail">
-                {fundingOpportunitiesUnreadable
-                  ? "Unavailable while the list of funding opportunities cannot be read."
-                  : "Calls you expect, or known windows that have not opened yet."}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Program-linked</p>
-              <p className="module-summary-value">
-                {fundingOpportunitiesUnreadable ? "\u2014" : fundingOpportunities.filter((item) => item.program_id).length}
-              </p>
-              <p className="module-summary-detail">Opportunities already tied to a funding cycle.</p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Likely dollars</p>
-              <p className="module-summary-value text-base leading-tight">{formatCurrency(likelyOpportunityAmount)}</p>
-              <p className="module-summary-detail">
-                Expected dollars attached to the calls you have decided to pursue. {ROUNDED_MONEY_NOTE}
-              </p>
-            </div>
-            <div className="module-summary-card">
-              <p className="module-summary-label">Opportunities missing a report</p>
-              <p className="module-summary-value">
-                {fundingOpportunitiesUnreadable || rowBasisUnreadable ? "—" : opportunityPacketRiskCount}
-              </p>
-              <p className="module-summary-detail">
-                {fundingOpportunitiesUnreadable || rowBasisUnreadable
-                  ? "This is worked out from opportunities and reports this page could not read, so it is unknown — it is not zero."
-                  : "Opportunities whose program has no report yet, or an out-of-date one."}
-              </p>
-            </div>
+          <div className="mt-5">
+            <FigureRow
+              label="Funding call figures"
+              figures={[
+                {
+                  label: "Open now",
+                  value: fundingOpportunitiesUnreadable ? "—" : openOpportunityCount,
+                  note: fundingOpportunitiesUnreadable ? "Unavailable while funding calls cannot be read." : null,
+                },
+                {
+                  label: "Upcoming",
+                  value: fundingOpportunitiesUnreadable ? "—" : upcomingOpportunityCount,
+                  note: fundingOpportunitiesUnreadable ? "Unavailable while funding calls cannot be read." : null,
+                },
+                {
+                  // A failed read used to print $0 here, which reads as a finding.
+                  label: "Likely dollars",
+                  value: fundingOpportunitiesUnreadable ? "—" : formatCurrency(likelyOpportunityAmount),
+                  note: fundingOpportunitiesUnreadable
+                    ? "Unavailable while funding calls cannot be read."
+                    : `For calls you are pursuing. ${ROUNDED_MONEY_NOTE}`,
+                },
+                {
+                  label: "Missing a report",
+                  value: fundingOpportunitiesUnreadable || rowBasisUnreadable ? "—" : opportunityPacketRiskCount,
+                  note:
+                    fundingOpportunitiesUnreadable || rowBasisUnreadable
+                      ? "Could not be read, so unknown, not zero."
+                      : null,
+                },
+              ]}
+            />
           </div>
 
           {fundingOpportunitiesUnreadable ? (

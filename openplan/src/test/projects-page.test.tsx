@@ -418,17 +418,13 @@ describe("ProjectsPage", () => {
   it("surfaces report packet health on project cards", async () => {
     await renderPage();
 
-    const reportAttentionChip = screen.getAllByText("Report attention")[0]?.closest("div");
-    const evidenceBackedChip = screen.getAllByText("Evidence-backed")[0]?.closest("div");
-    const governanceHoldChip = screen.getAllByText("Governance hold")[0]?.closest("div");
-
-    expect(reportAttentionChip).not.toBeNull();
-    expect(evidenceBackedChip).not.toBeNull();
-    expect(governanceHoldChip).not.toBeNull();
-
-    expect(within(reportAttentionChip as HTMLElement).getByText("1")).toBeInTheDocument();
-    expect(within(evidenceBackedChip as HTMLElement).getByText("2")).toBeInTheDocument();
-    expect(within(governanceHoldChip as HTMLElement).getByText("1")).toBeInTheDocument();
+    const reportAttention = screen
+      .getAllByText("Report attention")
+      .find((node) => node.className.includes("figure-row-label"))
+      ?.closest(".figure-row-item") as HTMLElement;
+    expect(reportAttention).toBeTruthy();
+    expect(within(reportAttention).getByText("1")).toBeInTheDocument();
+    expect(within(reportAttention).getByText("1 on governance hold")).toBeInTheDocument();
 
     expect(screen.getAllByText(/What this project needs next/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Downtown Safety Packet/i).length).toBeGreaterThan(0);
@@ -542,21 +538,16 @@ describe("ProjectsPage", () => {
      * has to be located by the label element the summary grid actually uses
      * rather than by the first text match.
      */
+    // The header figures are one FigureRow since October 10, 2026.
     function summaryTile(label: string): HTMLElement {
       const labelNode = screen
         .getAllByText(label)
-        .find((node) => node.className.includes("module-summary-label"));
-      if (!labelNode) throw new Error(`no summary tile labelled ${label}`);
-      return labelNode.closest("div") as HTMLElement;
+        .find((node) => node.className.includes("figure-row-label"));
+      if (!labelNode) throw new Error(`no figure labelled ${label}`);
+      return labelNode.closest(".figure-row-item") as HTMLElement;
     }
 
-    function recordChip(label: string): HTMLElement {
-      const labelNode = screen
-        .getAllByText(label)
-        .find((node) => node.closest("div")?.className.includes("module-record-chip"));
-      if (!labelNode) throw new Error(`no record chip labelled ${label}`);
-      return labelNode.closest("div") as HTMLElement;
-    }
+    const recordChip = summaryTile;
 
     it("shows the portfolio tiles as unknown, not as zero, when the projects read FAILED", async () => {
       projectsOrderMock.mockResolvedValueOnce({
@@ -566,7 +557,7 @@ describe("ProjectsPage", () => {
 
       await renderPage();
 
-      for (const label of ["Projects", "Active", "Plan types"]) {
+      for (const label of ["Projects", "Active"]) {
         const tile = summaryTile(label);
         expect(within(tile).getByText("—")).toBeInTheDocument();
         expect(within(tile).queryByText("0")).toBeNull();
@@ -593,7 +584,7 @@ describe("ProjectsPage", () => {
 
       await renderPage();
 
-      for (const label of ["Report attention", "Evidence-backed", "Comparison-backed", "Governance hold"]) {
+      for (const label of ["Report attention"]) {
         const chip = recordChip(label);
         expect(within(chip).getByText("—")).toBeInTheDocument();
         expect(within(chip).queryByText("0")).toBeNull();

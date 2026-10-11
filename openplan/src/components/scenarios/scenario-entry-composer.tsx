@@ -96,7 +96,6 @@ export function ScenarioEntryComposer({ scenarioSetId, hasBaseline, runs }: Scen
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Entries</p>
           <h2 className="module-section-title">Register baseline and alternatives</h2>
           <p className="module-section-description">
             Add the entry, attach the best available run, and keep assumptions structured so readiness is clear from the start.

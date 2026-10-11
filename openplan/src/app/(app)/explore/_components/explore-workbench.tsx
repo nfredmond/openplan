@@ -4,8 +4,6 @@ import "mapbox-gl/dist/mapbox-gl.css";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
-import { WorkspaceCommandBoard } from "@/components/operations/workspace-command-board";
-import { WorkspaceRuntimeCue } from "@/components/operations/workspace-runtime-cue";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { withPresentedHeadlineScores } from "@/lib/analysis/score-presentation";
@@ -800,29 +798,26 @@ export function ExploreWorkbench({
               no h1 at all — so the first heading a screen reader met was a
               duplicate of the label above it. */}
           <h1 className="text-lg font-semibold tracking-tight text-white">Corridor Analysis</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-300/78">Use the map on the left and the controls here to set the study area, compare conditions, and review outputs.</p>
-          {/* WHERE THIS PAGE SITS, said on the page itself.
-              Nathaniel, 2026-08-13: "the analysis section with modelling and
-              corridor analysis and whatnot is super confusing." Four of the five
-              entries in this nav group are one procedure with an order; this one
-              is not in it, and it writes a different history table from the
-              modeling runs. Nothing on screen said so, so a planner looking for
-              step one of the modeling work could reasonably start here. */}
+          {/* Nathaniel, 2026-08-13: the analysis pages were confusing because
+              nothing said this one is not a step of the modeling job. One line
+              says it now; the October 10 overhaul cut the two paragraphs that
+              said it before. */}
           <p className="mt-2 text-sm leading-6 text-slate-300/78">
-            This is a separate tool from Models, Scenarios and Model Validation. Those three are one
-            job in a set order; this page is a map for looking at one corridor, and it keeps its own
-            history.{" "}
+            Score a corridor against open data and save the run. Comparing build options is{" "}
             <Link
               href={`${openedForProject ? withPlanningContext("/models", openedForProject.id) : "/models"}#${openedForProject ? "project-comparison-starter" : "choose-project-comparison"}`}
               className="underline underline-offset-2 hover:text-white"
             >
-              Start the project build comparison
+              Travel modeling
             </Link>
             .
           </p>
         </div>
         <div className="space-y-5 px-5 py-4">
           <div className="space-y-3.5">
+            {/* Only when there is something to do: a loaded workspace with no
+                setup left said "Workspace loaded" above every control. */}
+            {workspaceLoadState === "loaded" && bootstrapChecklist.length === 0 ? null : (
             <section className="analysis-studio-surface">
               <div className="analysis-studio-header">
                 <div className="analysis-studio-heading">
@@ -901,6 +896,7 @@ export function ExploreWorkbench({
                 ) : null}
               </div>
             </section>
+            )}
 
             <div className="module-section-surface analysis-explore-context-surface">
               <div className="module-section-header">
@@ -947,72 +943,20 @@ export function ExploreWorkbench({
 
               {analysisContext?.project ? (
                 <div className="mt-5 space-y-4">
-                  <article className="module-record-row is-selected">
-                    <div className="module-record-head">
-                      <div className="module-record-main">
-                        <div className="module-record-kicker">
-                          <StatusBadge tone={resolveStatusTone(analysisContext.project.status)}>
-                            {titleize(analysisContext.project.status)}
-                          </StatusBadge>
-                          <StatusBadge tone="info">{titleize(analysisContext.project.planType)}</StatusBadge>
-                          <StatusBadge tone="neutral">{titleize(analysisContext.project.deliveryPhase)}</StatusBadge>
-                        </div>
-                        <p className="module-record-title">{analysisContext.project.name}</p>
-                        <p className="module-record-summary">
-                          {analysisContext.project.summary || "Project record exists, but it still needs a richer summary."}
-                        </p>
-                      </div>
-                    </div>
-                  </article>
-
-                  <div className="module-record-detail-grid cols-3">
-                    <div className="module-subpanel">
-                      <p className="module-section-label">Project records</p>
-                      <p className="module-summary-value">
-                        {analysisContext.counts.deliverables + analysisContext.counts.risks + analysisContext.counts.issues + analysisContext.counts.decisions + analysisContext.counts.meetings}
-                      </p>
-                      <p className="module-summary-detail">Deliverables, risks, issues, decisions, meetings</p>
-                    </div>
-                    <div className="module-subpanel">
-                      <p className="module-section-label">Linked datasets</p>
-                      <p className="module-summary-value">{analysisContext.counts.linkedDatasets}</p>
-                      <p className="module-summary-detail">
-                        {analysisContext.migrationPending
-                          ? "Data Hub schema still pending in this database"
-                          : `${analysisContext.counts.overlayReadyDatasets} overlay-ready for map work`}
-                      </p>
-                    </div>
-                    <div className="module-subpanel">
-                      <p className="module-section-label">Recent runs</p>
-                      <p className="module-summary-value">{analysisContext.counts.recentRuns}</p>
-                      <p className="module-summary-detail">Latest analysis history for this workspace</p>
-                    </div>
-                  </div>
-
-                  <WorkspaceRuntimeCue
-                    summary={analysisContext.operationsSummary}
-                    className="mt-4 border-white/10 bg-white/[0.05] text-white/82"
-                  />
-
-                  <WorkspaceCommandBoard
-                    summary={analysisContext.operationsSummary}
-                    label="Across your workspace"
-                    title="What needs attention next"
-                    description="The most pressing work anywhere in this workspace, kept in view so it does not get lost while you are in here."
-                  />
-
                   {analysisContext.migrationPending ? (
                     <div className="module-alert text-xs">
                       Data Hub is wired into Corridor Analysis, but the current database still needs the latest migration before linked datasets can fully appear here.
                     </div>
                   ) : linkedDatasetQueueState.items.length > 0 ? (
-                    <div className="space-y-3">
-                      <div>
-                        <p className="module-section-label">Map-linked dataset queue</p>
-                        <p className="module-summary-detail mt-1">
-                          Select a dataset to compare coverage vs thematic states without leaving the analysis panel.
-                        </p>
-                      </div>
+                    // Closed by default: the list ran several screens and pushed
+                    // the study area and the Run button out of view.
+                    <details className="space-y-3">
+                      <summary className="cursor-pointer text-sm font-semibold">
+                        Linked datasets ({linkedDatasetQueueState.items.length})
+                      </summary>
+                      <p className="module-summary-detail mt-1">
+                        Show a dataset&apos;s coverage on the map.
+                      </p>
                       <div className="module-record-list">
                         {linkedDatasetQueueState.items.map((item) => {
                           const { dataset } = item;
@@ -1064,7 +1008,7 @@ export function ExploreWorkbench({
                           );
                         })}
                       </div>
-                    </div>
+                    </details>
                   ) : (
                     <div className="module-empty-state text-xs">
                       No project-linked datasets yet. Register sources in Data Hub to start building real overlay lanes instead of hidden analysis assumptions.
