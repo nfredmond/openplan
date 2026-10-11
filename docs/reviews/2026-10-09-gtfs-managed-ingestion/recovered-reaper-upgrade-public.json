@@ -1,0 +1,48 @@
+{
+  "sourceCommit": "2809189070582fd02939eef55a72e8c630d991c1",
+  "candidateMigration28Sha256": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb",
+  "functionBeforeSha256": "cdfe3db8d0037670de93ab38feb2be33656b8677ab90b6356b03721f49d69627",
+  "functionAfterSha256": "9ebcc915ecb2d7e30ba92b3f677c242c3ae194521b4012637e4ae00091e8e2b2",
+  "unchangedRows": {
+    "public.gtfs_feeds": {
+      "rows": 9,
+      "md5": "f1de97b4e32354d6b785a5396df0492b"
+    },
+    "public.gtfs_feed_versions": {
+      "rows": 17,
+      "md5": "b7c01aa76a7ccfd9784f91942dbefdef"
+    },
+    "public.gtfs_route_service_levels": {
+      "rows": 1780,
+      "md5": "d4ae4fcdca55d470f229856cdfb2a7aa"
+    },
+    "public.gtfs_stop_service_levels": {
+      "rows": 45013,
+      "md5": "0de0194df811f0daadc19d63bbee1017"
+    },
+    "public.gtfs_tract_service": {
+      "rows": 0,
+      "md5": "d41d8cd98f00b204e9800998ecf8427e"
+    },
+    "openplan_gtfs.submissions": {
+      "rows": 12,
+      "md5": "58071ef1e7345a0d8ea5e6d96969beda"
+    },
+    "openplan_gtfs.executions": {
+      "rows": 12,
+      "md5": "3ec36909b1615c36f1a051b45620993b"
+    },
+    "openplan_gtfs.claims": {
+      "rows": 12,
+      "md5": "957b437c684cd3c034bf00dd550e7948"
+    }
+  },
+  "permissions": {
+    "anonExecute": false,
+    "serviceExecute": true,
+    "servicePrivateRead": false,
+    "authenticatedExecute": false
+  },
+  "limits": "Bounded function replacement in the selected isolated reconstructed installation, with prior definition retained. Other database and Storage contents are not re-restored. No demo, cloud database, scientific artifact, source ZIP or worker journal is changed.",
+  "fingerprintMethod": "Count and MD5 over sorted canonical JSON rows for each of the eight named GTFS tables. Function definitions and migration source use SHA-256 separately."
+}

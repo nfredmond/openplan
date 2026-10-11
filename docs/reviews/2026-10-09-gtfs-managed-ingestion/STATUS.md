@@ -483,3 +483,9 @@ The previous production captures remain evidence for their identified source. Th
 [The PR follow-on](REVIEW_RECOVERY.md) excludes enrolled versions from the legacy age-based reaper through service-only definer access, observes cancellation before replaying obsolete terminal commands, and respects configured parser budgets beyond 30 minutes while refusing timer overflow. Native SQL/role controls, actual PostgREST cancellation recovery, exact journal preservation and unit/installed-CLI mutation controls pass within their separate boundaries. Strict selected-file lint and scoped TypeScript pass. The reviewed M28 hash supersedes the previous candidate inventory.
 
 The previous `f6394f05` complete archive restore passes, including 1,492 RLS tests with 125 skipped. Its source precedes these corrections. Final main integration, joined production build/read, current CI and release remain open. All four migrations stay unreleased candidates and no hosted infrastructure changes are made.
+
+## Reviewed main integration, October 10
+
+[The current join](REVIEWED_MAIN_JOIN.md) includes engagement main and the hosted relaunch checkpoint while preserving both lanes' changelog entries. Its 90-file regression passes 2,005 tests, with 17 live cases skipped and none failed. Direction, selected-file lint, scoped TypeScript and both planner/equity control suites pass. The 1 GiB service peaks at a rounded 730.7M. The reconstructed preview receives the reviewed reaper function without changing its eight GTFS table fingerprints.
+
+All prior `f6394f05` GitHub workflows now pass, including complete live RLS and full archive restore, each with 1,492 passing tests and 125 skipped. Those results precede the review corrections and latest main join. A fresh joined production build/read, current CI, integration into main and release remain unfinished. No hosted schema or worker is changed.

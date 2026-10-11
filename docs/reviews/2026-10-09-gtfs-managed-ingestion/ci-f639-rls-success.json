@@ -1,0 +1,15 @@
+{
+  "conclusion": "success",
+  "headSha": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "status": "completed",
+  "updatedAt": "2026-10-11T04:13:38Z",
+  "url": "https://github.com/nfredmond/openplan/actions/runs/38107225481",
+  "liveRLSSuite": {
+    "filesPassed": 103,
+    "testsPassed": 1492,
+    "testsSkipped": 125,
+    "testsFailed": 0
+  },
+  "logSha256": "ab815190da674bc6765ae9c6cfb46fa8e00aaf9364b8449d646c4e7c4ed5b3a2",
+  "limits": "Complete live database workflow at f639 before review corrections and current main join. No hosted, scientific or practitioner acceptance."
+}
