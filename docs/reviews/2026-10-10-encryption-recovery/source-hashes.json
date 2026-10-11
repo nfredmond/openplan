@@ -1,0 +1,10 @@
+{
+  "openplan/scripts/ops/database_key_custody.py": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+  "openplan/scripts/ops/full_restore.py": "01272f9f8b92e1064f7a8851058ff2ec86a02b4f11fd5778486aa83888158754",
+  "openplan/scripts/ops/disposable-restore-drill.sh": "96f00d24c0087dcff8c64ec457a04ff46db5bb120a2476962c7a9fd5f36b4abc",
+  "openplan/scripts/ops/tests/test_database_key_custody.py": "4c4709205d6529fa53e1d6d855c40319051a23ab6de2da31a2e69d04025e9d31",
+  "openplan/scripts/ops/tests/test_full_restore.py": "e23a76d82a1bcad2a53686726ae362ce7384ba741cb93e8cda0da282c45439c3",
+  "openplan/scripts/ops/tests/test_restore_encrypted_canary.py": "027b60d5dea6ea0683dcef11e79116e00c4e6a7f2cd1bb399f573d826197abda",
+  "openplan/scripts/ops/tests/prove_key_custody_mutations.py": "90ee4788fd87696351b6304dfa0931e47658d0da16579c8337ffd956643c9d25",
+  "openplan/scripts/ops/tests/prove_restore_mutations.py": "c029b47b07c1107bf44177725b83e398eecdbb09e9fadf142af7195c0a5d831c"
+}

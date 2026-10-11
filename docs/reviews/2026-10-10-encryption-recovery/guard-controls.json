@@ -1,0 +1,469 @@
+{
+  "sourceSha256": {
+    "database_key_custody.py": "b155f7215f20129072c9d760dd315c7faf4107a67b97d82932f27c9d15cb24a8",
+    "full_restore.py": "01272f9f8b92e1064f7a8851058ff2ec86a02b4f11fd5778486aa83888158754",
+    "disposable-restore-drill.sh": "96f00d24c0087dcff8c64ec457a04ff46db5bb120a2476962c7a9fd5f36b4abc"
+  },
+  "controls": [
+    {
+      "name": "harmless helper comment",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests",
+      "result": "survived"
+    },
+    {
+      "name": "context precedence",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_local_endpoint_and_context_precedence (test_database_key_custody.DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence)"
+      ]
+    },
+    {
+      "name": "remote endpoint",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_local_endpoint_and_context_precedence (test_database_key_custody.DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence)"
+      ]
+    },
+    {
+      "name": "container ID",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity) (field='Id')"
+      ]
+    },
+    {
+      "name": "container image",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity) (field='Image')"
+      ]
+    },
+    {
+      "name": "container label",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity)"
+      ]
+    },
+    {
+      "name": "container name",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity)"
+      ]
+    },
+    {
+      "name": "readonly mount",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)"
+      ]
+    },
+    {
+      "name": "bind mount type",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)"
+      ]
+    },
+    {
+      "name": "canonical bind",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)"
+      ]
+    },
+    {
+      "name": "key byte format",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)"
+      ]
+    },
+    {
+      "name": "private archive",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)"
+      ]
+    },
+    {
+      "name": "archive immutability",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)"
+      ]
+    },
+    {
+      "name": "key regular identity",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)"
+      ]
+    },
+    {
+      "name": "private custody directory",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_capture_private_intent_and_independent_target (test_database_key_custody.DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target)"
+      ]
+    },
+    {
+      "name": "independent target",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_capture_private_intent_and_independent_target (test_database_key_custody.DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target)"
+      ]
+    },
+    {
+      "name": "intent privacy",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "intent regular identity",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "capture intent equality",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "apply intent equality",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "incoming payload hash",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "previous payload hash",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)"
+      ]
+    },
+    {
+      "name": "capture binding",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)"
+      ]
+    },
+    {
+      "name": "apply binding",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)"
+      ]
+    },
+    {
+      "name": "binding recovery metadata",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)"
+      ]
+    },
+    {
+      "name": "unrelated target bytes",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_unrelated_current_bytes_are_retained",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_unrelated_current_bytes_are_retained (test_database_key_custody.DatabaseKeyCustodyTests.test_unrelated_current_bytes_are_retained)"
+      ]
+    },
+    {
+      "name": "binding after stop",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_binding_or_bytes_while_stopping (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping)"
+      ]
+    },
+    {
+      "name": "bytes after stop",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_binding_or_bytes_while_stopping (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping)"
+      ]
+    },
+    {
+      "name": "binding before replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_identity_during_staging_refuse_replacement",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_identity_during_staging_refuse_replacement (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_identity_during_staging_refuse_replacement)"
+      ]
+    },
+    {
+      "name": "bytes before replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_bytes_during_staging_refuse_replacement",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_changed_bytes_during_staging_refuse_replacement (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_bytes_during_staging_refuse_replacement)"
+      ]
+    },
+    {
+      "name": "atomic replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "file sync",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "directory sync",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "preserved mode",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "stop scope",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "restart dispatch",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)"
+      ]
+    },
+    {
+      "name": "write verification",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_failed_write_or_mount_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success)"
+      ]
+    },
+    {
+      "name": "mount verification",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_failed_write_or_mount_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success)"
+      ]
+    },
+    {
+      "name": "readiness refusal",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_unready_target_cannot_claim_success",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_unready_target_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_unready_target_cannot_claim_success)"
+      ]
+    },
+    {
+      "name": "recovery private directory",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_key_recovery_requires_an_owned_private_target (test_database_key_custody.DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target)"
+      ]
+    },
+    {
+      "name": "recovery target scope",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_key_recovery_requires_an_owned_private_target (test_database_key_custody.DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target)"
+      ]
+    },
+    {
+      "name": "CLI action refusal",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_cli_refuses_unknown_action_before_transport",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_cli_refuses_unknown_action_before_transport (test_database_key_custody.DatabaseKeyCustodyTests.test_cli_refuses_unknown_action_before_transport)"
+      ]
+    },
+    {
+      "name": "harmless restore comment",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests",
+      "result": "survived"
+    },
+    {
+      "name": "encrypted target refusal",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_existing_encrypted_secrets_are_refused",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_existing_encrypted_secrets_are_refused (test_full_restore.FullRestoreTests.test_existing_encrypted_secrets_are_refused)"
+      ]
+    },
+    {
+      "name": "snapshot key recheck",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_restore_actually_compares_target_before_starting_services",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_restore_actually_compares_target_before_starting_services (test_full_restore.FullRestoreTests.test_restore_actually_compares_target_before_starting_services)"
+      ]
+    },
+    {
+      "name": "restore key dispatch",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_restore_actually_compares_target_before_starting_services",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_restore_actually_compares_target_before_starting_services (test_full_restore.FullRestoreTests.test_restore_actually_compares_target_before_starting_services)"
+      ]
+    },
+    {
+      "name": "absolute sibling loader",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_absolute_loader_uses_its_own_sibling_in_isolated_python",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_absolute_loader_uses_its_own_sibling_in_isolated_python (test_full_restore.FullRestoreTests.test_absolute_loader_uses_its_own_sibling_in_isolated_python)"
+      ]
+    },
+    {
+      "name": "harmless canary comment",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "survived"
+    },
+    {
+      "name": "canary refusal",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='0', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='2', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='', status=0)"
+      ]
+    },
+    {
+      "name": "canary projection",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "intended assertion failure",
+      "assertionFailures": [
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='1', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='0', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='2', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='', status=0)",
+        "FAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='1', status=7)"
+      ]
+    },
+    {
+      "name": "restored test_database_key_custody.py",
+      "result": "survived"
+    },
+    {
+      "name": "restored test_full_restore.py",
+      "result": "survived"
+    },
+    {
+      "name": "restored test_restore_encrypted_canary.py",
+      "result": "survived"
+    }
+  ],
+  "limits": "Synthetic files and mocked Docker. No native backend or physical power-loss acceptance."
+}
