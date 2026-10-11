@@ -50,7 +50,7 @@ def make_plan(receipt, engine, task_uuid, name, options, filenames):
     manifest = receipt['manifest']
     if manifest['binding']['originalRequest']['imagery']['type'] != 'photo_manifest':
         raise ValueError('ZIP derived-image custody is not implemented')
-    if not isinstance(task_uuid, str) or str(uuid.UUID(task_uuid)) != task_uuid:
+    if not isinstance(task_uuid, str) or not re.fullmatch('[0-9a-f]{8}-[0-9a-f]{4}-[1-7][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', task_uuid) or str(uuid.UUID(task_uuid)) != task_uuid:
         raise ValueError('Original engine task UUID must be canonical')
     if not nonempty(name) or len(name) > 512:
         raise ValueError('Original engine task name is invalid')

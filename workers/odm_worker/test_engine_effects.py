@@ -116,7 +116,9 @@ class Checks(unittest.TestCase):
 
     def test_task_name_options_and_filename_guards(self):
         receipt = retained_source.prepare(**self.source_arguments)
-        for changes in ({'task_uuid': self.task.upper()}, {'name': ''}, {'name': 'x'*513},
+        for changes in ({'task_uuid': self.task.upper()}, {'task_uuid': '00000000-0000-0000-0000-000000000000'},
+                        {'task_uuid': '12345678-1234-4234-1234-123456789abc'},
+                        {'task_uuid': '12345678-1234-8234-8234-123456789abc'}, {'name': ''}, {'name': 'x'*513},
                         {'options': [{'name': 'a', 'value': None}]}, {'options': [{'name': 'a', 'value': 1}, {'name': 'a', 'value': 2}]},
                         {'options': [{'name': 'a', 'value': float('nan')}]}, {'filenames': ['../a.jpg', 'slot-b.jpg']},
                         {'filenames': ['a.dng', 'b.jpg']}, {'filenames': ['a.jpg', 'a.jpg']}, {'filenames': [[], 'b.jpg']}):

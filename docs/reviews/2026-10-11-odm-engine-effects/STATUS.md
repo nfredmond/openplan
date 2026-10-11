@@ -8,6 +8,13 @@ returns false, including after an unresolved reply or interrupted acknowledgment
 No deployed worker, public contract, engine default, schema or scientific result
 changes. M3/M5b.2 remain open.
 
+The UUID check also matches the pinned API's version 1 through 7 and variant 8
+through b restrictions. Nil UUIDs and other combinations refuse before an intent.
+[Exact cached installed-source comparison](evidence/task-uuid-source-binding.json)
+matches the prior retained digest. The new test subcases and targeted guard
+mutation pass; no native invalid-UUID API trial runs. The corrected source gets
+a new complete control/restore execution before publication.
+
 [The design](DESIGN.md) follows the actual [NodeODM draft retry counterexample](../2026-10-11-odm-draft-reconciliation/STATUS.md).
 The library reuses the private admission and retained-source mechanisms. It
 rechecks actual retained bytes before each operation, rather than accepting a
@@ -80,7 +87,7 @@ stay unchanged. [The native result](evidence/native.json) keeps
 
 [Owned service receipts](evidence/local-accounting.json) record 256 MiB limits,
 no extra swap, one CPU and 64 tasks. All accepted services stop; none reports a
-nonzero exit. The final actual-CI service peaks at 42,233,856 bytes. This small
+nonzero exit. The final actual-CI service peaks at 42,000,384 bytes. This small
 fixture establishes no large-imagery or long-job capacity.
 
 [Earlier trials](evidence/earlier-trials.json) remain retained. A nonunique mutation

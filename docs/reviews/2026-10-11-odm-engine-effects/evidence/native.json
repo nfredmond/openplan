@@ -4,6 +4,6 @@
   "nativeChildExit": 19,
   "observations": 19,
   "outcome": "disconnected_effect_root_replay_passed",
-  "seconds": 0.761,
+  "seconds": 0.767,
   "workerRecoveryAccepted": false
 }

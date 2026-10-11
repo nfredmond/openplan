@@ -63,5 +63,31 @@
     "MemorySwapMax": "0",
     "TasksMax": "64",
     "stoppedByThisLane": true
+  },
+  {
+    "check": "ci-actual-02",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "7021a359907a4da399bf692ec835a2f2",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "42000384",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
+  },
+  {
+    "check": "suites-02",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "c29909c1f7e44424bc3f567b71005806",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "54448128",
+    "CPUQuotaPerSecUSec": "1s",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "TasksMax": "64",
+    "stoppedByThisLane": true
   }
 ]
