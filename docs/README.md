@@ -1,7 +1,7 @@
 # OpenPlan documentation
 
 [Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
-The [October 10 hosted relaunch record](ops/HOSTED_RELAUNCH_2026-10-10.md) tracks the current managed installation.
+The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
 
 
 Use this index to distinguish current instructions and priorities from historical

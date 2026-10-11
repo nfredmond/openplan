@@ -1,5 +1,10 @@
 # Hosted recovery record, October 10, 2026
 
+The [October 11 public cutover record](../../../docs/ops/HOSTED_LIVE_2026-10-11.md)
+records the newer managed database and complete Storage capture. The final
+archive's readable index is not a new restore rehearsal. The captured-data
+restore evidence below retains its original schema and service boundary.
+
 This record applies to Supabase project `lolckycpdjsgeejsmuzl` and the OpenPlan
 Railway workers. The local-stack procedure in
 [BACKUP_AND_RESTORE](BACKUP_AND_RESTORE.md) remains separate. The rehearsal below

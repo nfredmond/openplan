@@ -25,6 +25,8 @@ import {
 import { createClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
+import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
+import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
@@ -77,13 +79,14 @@ export default async function WorkspacePage() {
         jurisdictionReadinessRegistrySha256(),
       );
   const deploymentHealth = canManage
-    ? evaluateDeploymentHealth({
+    ? await withWorkspaceIntegrationContext(workspaceId, async () => evaluateDeploymentHealth({
         ...readDeploymentEnvFacts(),
+        anthropicApiKeyPresent: hasAnthropicAccess(),
         modelingWorker: await loadModelingWorkerFacts(
           supabase as unknown as Parameters<typeof loadModelingWorkerFacts>[0],
           workspaceId,
         ),
-      })
+      }))
     : null;
   const modelingWorkerHealth = canManage
     ? await loadModelingWorkerHealth(resolveModelingWorkerDeclaration())
