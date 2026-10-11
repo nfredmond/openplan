@@ -33,7 +33,7 @@ function progressLabel(progress: Progress | null, error: string | null) {
 /** Explain a malformed archive without exposing ZIP-library debugging guidance.
  * Keep other recorded failures distinct and leave their diagnostic records intact.
  */
-function failureMessage(status: Pick<NonNullable<Progress["status"]>, "failureCode" | "failureDetail"> | null | undefined) {
+export function failureMessage(status: Pick<NonNullable<Progress["status"]>, "failureCode" | "failureDetail"> | null | undefined) {
  if (status?.failureCode === "not_a_zip") return "This file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.";
  return status?.failureDetail ?? (status?.failureCode ? `Processing failed. Diagnostic code: ${status.failureCode}. No additional failure detail was recorded.` : null);
 }

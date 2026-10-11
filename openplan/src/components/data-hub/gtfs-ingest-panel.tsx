@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { summarizeCorridorText } from "@/lib/models/study-area";
 import { describeGtfsServiceWindow } from "@/lib/transit/feed-registry-card";
-import { ManagedGtfsImports, type ManagedGtfsImportsHandle } from "./managed-gtfs-imports";
+import { failureMessage, ManagedGtfsImports, type ManagedGtfsImportsHandle } from "./managed-gtfs-imports";
 import type { GtfsManagedClientMode } from "@/lib/gtfs/managed-ui-config";
 import type { GtfsClientIntent } from "@/lib/gtfs/managed-client";
 
@@ -828,8 +828,8 @@ export function GtfsIngestPanel({
 
                 {failure && (
                   <p className="mt-1 text-sm text-amber-700 dark:text-amber-300">
-                    The most recent ingest attempt failed ({failure.failure_code ?? "no code"}).{" "}
-                    {failure.failure_detail ?? ""}
+                    The most recent ingest did not complete ({failure.failure_code ?? "no code"}).{" "}
+                    {failureMessage({ failureCode: failure.failure_code, failureDetail: failure.failure_detail })}
                   </p>
                 )}
 
@@ -896,10 +896,10 @@ export function GtfsIngestPanel({
                             <span className="font-medium">
                               {(historyVersion.created_at ?? "").slice(0, 10) || "undated"}
                             </span>{" "}
-                            , {(historyVersion.status ?? "").trim() || "no recorded status"}
+                            , recorded status: {(historyVersion.status ?? "").trim() || "no recorded status"}
                             {historyVersion.id === feed.current_version_id ? " (in use)" : ""}
                             {historyVersion.status === "failed"
-                              ? `, ${historyVersion.failure_code ?? "no code"}. ${historyVersion.failure_detail ?? ""}`
+                              ? `, ${historyVersion.failure_code ?? "no code"}. ${failureMessage({ failureCode: historyVersion.failure_code, failureDetail: historyVersion.failure_detail }) ?? ""}`
                               : `, ${historyVersion.route_service_level_rows ?? "not recorded"} route and ` +
                                 `${historyVersion.stop_service_level_rows ?? "not recorded"} stop service-level rows.`}
                             {managed.enabled && "scope" in managed && isOwn && <button type="button" className="ml-2 rounded-md border border-border px-2 py-1 text-xs" onClick={() => managedRef.current?.openVersion(feed.id, historyVersion.id)}>Open managed progress</button>}

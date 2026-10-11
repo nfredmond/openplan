@@ -1,0 +1,86 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "raw-job-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel explains a malformed ZIP in retained progress and version review without library guidance"
+      ]
+    },
+    {
+      "variant": "raw-selected-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel explains a malformed ZIP in retained progress and version review without library guidance"
+      ]
+    },
+    {
+      "variant": "discard-other-failures",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable reads one feed's whole ingest history from the detail route, failures included",
+        "GtfsIngestPanel \u2014 the lane is reachable keeps a non-ZIP failure distinct in the feed registry and history",
+        "GtfsIngestPanel \u2014 the lane is reachable does not classify an abandoned attempt as a processing failure",
+        "planner managed transit panel keeps other recorded failures distinct from malformed ZIP recovery"
+      ]
+    },
+    {
+      "variant": "every-failure-is-zip",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable reads one feed's whole ingest history from the detail route, failures included",
+        "GtfsIngestPanel \u2014 the lane is reachable keeps a non-ZIP failure distinct in the feed registry and history",
+        "GtfsIngestPanel \u2014 the lane is reachable does not classify an abandoned attempt as a processing failure",
+        "planner managed transit panel keeps other recorded failures distinct from malformed ZIP recovery"
+      ]
+    },
+    {
+      "variant": "raw-registry-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable explains a malformed ZIP in the feed registry and history without library instructions"
+      ]
+    },
+    {
+      "variant": "raw-history-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable explains a malformed ZIP in the feed registry and history without library instructions"
+      ]
+    },
+    {
+      "variant": "classify-abandoned-as-failure",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable does not classify an abandoned attempt as a processing failure"
+      ]
+    },
+    {
+      "variant": "hide-recorded-history-status",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable does not classify an abandoned attempt as a processing failure"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "7e9d38843278f31325cf48d52a005b3ae8a9af95ff1b85edd599ac348fe795fc",
+  "testSha256": "7c97ab830d5e6f6386e400e1299d6c125634d7d0beba431ef4c7924a3883aeaa",
+  "registrySourceSha256": "6e70d4ebecbe50bfac808aba9e776bdee486dd4394f68f497d4a8e8b8f600f36",
+  "registryTestSha256": "b867f9303f3177098cdcfb9947181d33f33ab54bb527e2a95fd9daac59857a5e",
+  "boundary": "Mocked progress, selected-version, feed registry and history UI. Three positive and eight targeted broken controls. No native diagnostics mutation, browser, physical file chooser, complete restore, capacity or CI acceptance."
+}
