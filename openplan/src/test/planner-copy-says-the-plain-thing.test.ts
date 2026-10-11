@@ -206,7 +206,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   durable: 2,
   entity: 0,
   geometry: 11,
-  "governance hold": 3,
+  "governance hold": 2,
   ingest: 8,
   input: 39,
   intake: 11,
