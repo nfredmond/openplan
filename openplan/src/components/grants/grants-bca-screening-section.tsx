@@ -24,7 +24,6 @@ export function GrantsBcaScreeningSection({ projects, canSave }: GrantsBcaScreen
             <Calculator className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Decision support</p>
             <h2 className="module-section-title">Benefit-cost analysis and screening</h2>
             <p className="module-section-description">
               Screens a project&apos;s pursue/skip posture before anyone commits to a full

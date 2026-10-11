@@ -256,7 +256,6 @@ export function PlanDetailControls({ plan, projects }: PlanDetailControlsProps) 
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Controls</p>
           <h2 className="module-section-title">Plan record workflow</h2>
           <p className="module-section-description">
             Update the formal record and what it is linked to, in place. This stays metadata-first and intentionally

@@ -56,40 +56,46 @@ export function AnalysisSequenceStrip({
   return (
     <section className="mb-6" data-testid="analysis-sequence">
       <h2 className="text-[1.35rem] font-semibold leading-tight tracking-tight text-foreground">
-        Travel modeling is one guided job, in this order
+        Travel modeling, in order
       </h2>
-      <p className="mt-2 max-w-[36rem] text-reading leading-[1.65] text-muted-foreground">
-        Use one project, one network, a baseline and build scenario, then run AequilibraE and
-        ActivitySim separately. Validate each result and save the comparison without averaging
-        disagreement away. Corridor Analysis is not part of this sequence; it remains a separate
-        map screening tool.
+      <p className="mt-2 max-w-[40rem] text-sm leading-6 text-muted-foreground">
+        Each method runs on its own and the results are compared, never averaged. Corridor Analysis
+        is not part of this sequence.
       </p>
 
-      <ol className="mt-5 max-w-[36rem] space-y-5 border-l border-border/60 pl-5">
+      {/* One line per step (October 10, 2026). Every step used to carry its
+          full description; only the step to do next does now, since that is
+          the one a planner acts on. Status and what a step waits for stay on
+          every line. */}
+      <ol className="mt-4 max-w-[44rem] space-y-3 border-l border-border/60 pl-5">
         {steps.map((step, index) => {
           const isCurrent = step.id === currentStepId;
           return (
             <li key={step.id} data-testid={`analysis-step-${step.id}`} data-state={step.state}>
-              <p className={`text-compact font-semibold ${STATE_TONE[step.state]}`}>
+              <p className={`text-label font-semibold ${STATE_TONE[step.state]}`}>
                 <span data-testid={`analysis-step-state-${step.id}`}>{STATE_LABEL[step.state]}</span>
                 {isCurrent ? <span className="ml-2 text-muted-foreground">· you are here</span> : null}
               </p>
-              <h3 className="mt-1 text-reading font-semibold leading-snug text-foreground">
+              <h3 className="mt-0.5 text-sm font-semibold leading-snug text-foreground">
                 {index + 1}. {step.title}
               </h3>
-              <p className="mt-1 text-reading leading-[1.65] text-muted-foreground">{step.what}</p>
-              <p className="mt-1 text-reading leading-[1.65] text-foreground/80">
+              {/* The claim step's description IS the screening-grade caveat, a
+                  protected claim, so it shows whatever the step's state. */}
+              {step.state === "next" || step.id === "claim" ? (
+                <p className="mt-1 text-sm leading-6 text-muted-foreground">{step.what}</p>
+              ) : null}
+              <p className="mt-0.5 text-sm leading-6 text-foreground/80">
                 {step.standing}
                 {step.waitingOn ? ` Waiting for “${step.waitingOn}” first.` : ""}
               </p>
               {step.id === "claim" ? (
-                <p className="mt-1 text-reading leading-[1.65]">
+                <p className="mt-0.5 text-sm leading-6">
                   <Link href={SCREENING_GRADE_HELP_HREF} className="underline underline-offset-2 hover:text-foreground">
                     What that lets you say, and what it does not
                   </Link>
                 </p>
               ) : step.href && step.state === "next" ? (
-                <p className="mt-1 text-reading leading-[1.65]">
+                <p className="mt-0.5 text-sm leading-6">
                   <Link
                     href={projectId ? withPlanningContext(step.href, projectId) : step.href}
                     className="underline underline-offset-2 hover:text-foreground"

@@ -127,7 +127,6 @@ export function CountyRunObservedCounts({ countyRunId }: { countyRunId: string }
     <article className="module-section-surface" id="observed-counts">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Validation</p>
           <h2 className="module-section-title">Observed counts</h2>
           <p className="module-section-description">
             The counts this run is checked against. Fill in what your agency or the state

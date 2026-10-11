@@ -138,7 +138,6 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
     <article id="network-packages" className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Network basis</p>
           <h2 className="module-section-title">Network packages</h2>
           <p className="module-section-description">
             Versioned network bundles ingested for this workspace — the zones, corridors, and connectors a model run can be

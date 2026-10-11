@@ -153,7 +153,6 @@ export function RtpProgrammeLists({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Project lists</p>
           <h2 className="module-section-title">What this plan commits to, and when</h2>
           <p className="module-section-description">
             Grouped by the period that pays for them, then by whether they are in the fiscally

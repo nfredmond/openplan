@@ -2,8 +2,11 @@
 
 Nathaniel's September 7, 2026 direction supersedes the earlier requirement that
 every interim release pass the complete twelve-journey campaign. OpenPlan has
-zero users today. Development should produce usable increments and prepare for
-feedback from planners. Hosted deployment is deferred; Vercel is inactive.
+zero users as of that direction. Development should produce usable increments
+and prepare for feedback from planners. The September hosted deferral is
+superseded by Nathaniel's October 10 instruction to relaunch on Vercel and
+Supabase, allow public signups, and use up to $50 per month in additional
+services. See the [hosted operating record](../ops/HOSTED_RELAUNCH_2026-10-10.md).
 
 ## What blocks a development release
 
@@ -70,16 +73,16 @@ This release rule does not change permissions or approval records within agency
 workflows. Software release approval and an agency's authorization to spend,
 adopt a plan or submit a reimbursement claim are separate actions.
 
-## Local operation now, hosting later
+## Local operation and the authorized hosted installation
 
-Local build, database, services and demo checks are the relevant deployment
-checks. Vercel status is not a required release check. Automatic Git deployments
-are disabled in `openplan/vercel.json` and the Vercel project is disconnected
-from this repository; production-health polling is manual and
-requires an explicit target. Pilot preflight skips unconfigured hosted targets.
-Re-enabling hosted deployment requires Nathaniel's direction and concrete spend
-authorization before any paid provisioning. Optional hosting configuration is
-retained for future use, without presenting inactive hosting as a broken app.
+Local checks continue to govern independent installation. Hosted changes also
+require checks against the identified Vercel build and managed database,
+including runtime logs and affected authenticated workflows. Automatic Git
+deployments remain disabled in `openplan/vercel.json`; publish a verified commit
+explicitly. The canonical hosted address is `https://openplan-zeta.vercel.app`.
+Production-health polling requires an explicit target. Hosting acceptance does
+not establish complete v1, scientific accuracy, practitioner acceptance or
+agency adoption. Keep those evidence boundaries visible.
 
 ## Continuous development direction
 

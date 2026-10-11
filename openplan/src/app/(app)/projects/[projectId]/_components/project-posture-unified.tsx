@@ -61,7 +61,6 @@ export function ProjectPostureUnified({
             <Compass className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Where this project stands</p>
             <h2 className="module-section-title">Funding and aerial evidence, as last recorded</h2>
             <p className="module-section-description">
               These two lines are saved on the project itself, not recalculated when you open the page. So what you read here

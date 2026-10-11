@@ -70,7 +70,6 @@ export function RtpChapterControls({ rtpCycleId, chapter }: Props) {
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Chapter controls</p>
           <h2 className="module-section-title">Edit chapter workflow</h2>
           <p className="module-section-description">
             Move this section from shell to working draft with explicit status, summary, and editorial guidance.

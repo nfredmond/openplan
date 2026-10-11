@@ -1,6 +1,7 @@
 # OpenPlan documentation
 
-[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and deferred hosted operation.
+[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
+The [October 10 hosted relaunch record](ops/HOSTED_RELAUNCH_2026-10-10.md) tracks the current managed installation.
 
 
 Use this index to distinguish current instructions and priorities from historical

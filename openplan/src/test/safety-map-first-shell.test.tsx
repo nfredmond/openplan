@@ -382,3 +382,41 @@ describe("every caveat survived the move", () => {
     );
   });
 });
+
+/*
+  THE PANEL'S GROUPS (October 10, 2026 overhaul). Setup, layers and imports
+  stopped sharing one scroll. The rule that matters: every caveat is in the
+  group the page opens on, so a closed tab can never hide one.
+*/
+describe("the panel's groups", () => {
+  it("opens on Crashes, with the study area, the filters and the standing caveat in view", () => {
+    renderWorkspace();
+
+    expect(screen.getByRole("tab", { name: "Crashes" })).toHaveAttribute("aria-selected", "true");
+    const crashes = screen.getByRole("tabpanel", { name: "Crashes" });
+    expect(crashes).not.toHaveAttribute("hidden");
+    expect(crashes).toContainElement(screen.getByRole("region", { name: "Study area" }));
+    expect(crashes).toHaveTextContent(SAFETY_CRASH_DATA_CAVEAT);
+  });
+
+  it("keeps the layer switches mounted while their tab is closed, and shows them on request", () => {
+    renderWorkspace();
+
+    const layers = document.getElementById("safety-panel-layers");
+    expect(layers).not.toBeNull();
+    expect(layers).toHaveAttribute("hidden");
+    expect(layers?.childElementCount).toBeGreaterThan(0);
+
+    fireEvent.click(screen.getByRole("tab", { name: "Layers" }));
+    expect(layers).not.toHaveAttribute("hidden");
+    expect(document.getElementById("safety-panel-crashes")).toHaveAttribute("hidden");
+  });
+
+  it("returns to Crashes when a collision is clicked on the map", () => {
+    renderWorkspace();
+
+    fireEvent.click(screen.getByRole("tab", { name: "Layers" }));
+    fireEvent.click(screen.getByRole("button", { name: "click-a-collision" }));
+    expect(screen.getByRole("tab", { name: "Crashes" })).toHaveAttribute("aria-selected", "true");
+  });
+});
