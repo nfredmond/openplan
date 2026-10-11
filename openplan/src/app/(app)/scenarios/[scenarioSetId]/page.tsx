@@ -1130,9 +1130,9 @@ export default async function ScenarioSetDetailPage({
                 No saved comparison snapshots yet. The next useful step is to persist one ready alternative so reports and operator surfaces can reuse the same comparison artifact.
               </div>
             ) : (
-              <div className="mt-5 module-record-list">
+              <div className="mt-5 module-record-list grid-cols-[minmax(0,1fr)]">
                 {recentComparisonSnapshots.slice(0, 5).map((snapshot) => (
-                  <div key={snapshot.id} className="module-record-row">
+                  <div key={snapshot.id} className="module-record-row grid-cols-[minmax(0,1fr)]">
                     <div className="module-record-head">
                       <div className="module-record-main">
                         <div className="module-record-kicker">

@@ -165,7 +165,9 @@ A subsequent 390px review finds clipped content on the saved scenario comparison
 page even though the document reports no horizontal overflow. The tab panel uses
 `display: contents`, so its table can expand the implicit grid column past the
 phone width. The final handoff adds the existing `minmax(0, 1fr)` column utility
-to this page. Its identified-build browser recheck belongs in the final acceptance
+to this page and its saved-result list and rows. The first rendered correction
+fixes the outer page but still exposes nested table clipping, so both levels are
+constrained. Its identified-build browser recheck belongs in the final acceptance
 artifact; document width alone does not prove readable content.
 
 The synthetic public campaign is closed and its share token is revoked after
