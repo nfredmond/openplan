@@ -192,7 +192,7 @@ function OperatorText({
       </Tag>
       {badge ? (
         <span
-          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-label font-semibold uppercase tracking-wide text-muted-foreground"
+          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-label font-semibold text-muted-foreground"
           lang={disclosure?.lang ?? translator.locale}
           dir={disclosure?.dir ?? translator.direction}
         >

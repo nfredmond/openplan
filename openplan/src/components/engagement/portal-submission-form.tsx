@@ -1158,7 +1158,7 @@ export function PortalSubmissionForm({
         {step === "send" ? (
           <div className="space-y-3">
             <div className="rounded-xl border border-border/70 bg-muted/20 p-3">
-              <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+              <p className="text-xs font-semibold text-muted-foreground">
                 {t("portal.reviewHeading")}
               </p>
               <p className="mt-2 whitespace-pre-wrap text-sm text-foreground" data-testid="portal-review-body">

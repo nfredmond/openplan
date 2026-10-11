@@ -291,7 +291,7 @@ export function PublicMapFeedPanel({
             */}
             {selected.teamResponses && selected.teamResponses.length > 0 ? (
               <section className="mt-5 space-y-3 border-t border-border/60 pt-4" data-testid="portal-feed-team-response">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h4 className="text-xs font-semibold text-muted-foreground">
                   {t("portal.feedTeamResponse")}
                 </h4>
                 {selected.teamResponses.map((response) => (
@@ -313,7 +313,7 @@ export function PublicMapFeedPanel({
 
             {selected.replies && selected.replies.length > 0 ? (
               <section className="mt-5 border-t border-border/60 pt-4" data-testid="portal-feed-replies">
-                <h4 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                <h4 className="text-xs font-semibold text-muted-foreground">
                   {t("portal.feedReplies", { count: formatPortalNumber(selected.replies.length, bcp47) })}
                 </h4>
                 <ul className="mt-2 space-y-3">

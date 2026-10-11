@@ -117,7 +117,7 @@ export function OperatorLine({
       </p>
       {badge ? (
         <p
-          className="mt-1 text-label font-semibold uppercase tracking-wide text-muted-foreground"
+          className="mt-1 text-label font-semibold text-muted-foreground"
           lang={disclosure?.lang ?? translator.locale}
           dir={disclosure?.dir ?? translator.direction}
         >
@@ -235,7 +235,7 @@ export function PublicCloseLoop({
             <div className="mt-2 grid gap-3 sm:grid-cols-2">
               <div>
                 <p
-                  className="text-label font-semibold uppercase tracking-wide text-muted-foreground"
+                  className="text-label font-semibold text-muted-foreground"
                   lang={youSaid.lang}
                   dir={youSaid.dir}
                 >
@@ -255,7 +255,7 @@ export function PublicCloseLoop({
               </div>
               <div>
                 <p
-                  className="text-label font-semibold uppercase tracking-wide text-muted-foreground"
+                  className="text-label font-semibold text-muted-foreground"
                   lang={weDid.lang}
                   dir={weDid.dir}
                 >
@@ -280,7 +280,7 @@ export function PublicCloseLoop({
             {sourceLink && entry.sourceItemIds && entry.sourceItemIds.length > 0 ? (
               <div className="mt-3" data-testid="close-loop-sources">
                 <p
-                  className="text-label font-semibold uppercase tracking-wide text-muted-foreground"
+                  className="text-label font-semibold text-muted-foreground"
                   lang={answers.lang}
                   dir={answers.dir}
                 >
