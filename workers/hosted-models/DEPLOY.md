@@ -23,6 +23,10 @@ installation's journal; a new installation needs a different identity.
 Set `OPENPLAN_COMMIT_SHA` from the running source's actual commit so heartbeat
 records identify the worker build. Railway Git deployments supply
 `RAILWAY_GIT_COMMIT_SHA`; the configured start command exports it at runtime.
+The AequilibraE environment pins Pandas 2.3.3. Pandas 3 changes chained-assignment
+semantics used by AequilibraE 1.7 graph compression. The image build checks
+synthetic dead-end removal and a known two-link route before accepting the
+environment. This checks compatibility, not scientific validation.
 The service opens no inbound port. The supervisor fails if either poller exits,
 including exit zero, and stops its sibling before returning. Operator signals
 stop both pollers normally. Existing stage ownership and reconciliation rules

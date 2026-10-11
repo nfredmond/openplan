@@ -318,3 +318,22 @@ capture checks, not a new restore rehearsal or a consistent multi-service
 snapshot. Application writers remain active. Recent model logs retain an
 upstream Pandas chained-assignment warning from completed assignment jobs;
 execution success does not resolve that scientific implementation limitation.
+
+## Graph dependency compatibility correction
+
+Native inspection finds AequilibraE 1.7.0, NumPy 2.0.2 and Pandas 3.0.6 in its
+environment. A synthetic graph probe reproduces Pandas' chained-assignment
+failure during AequilibraE graph compression. Pandas documents that
+[Copy-on-Write prevents these assignments](https://pandas.pydata.org/docs/user_guide/copy_on_write.html).
+An isolated Pandas 2.3.3 installation on the same host passes dead-end removal,
+the expected two-link route and its distance of two synthetic units. The worker
+now pins that tested Pandas version and its Docker build runs the graph probe.
+ActivitySim's separate numerical environment is unchanged.
+
+The exact build probe passes on the compatible installation and with a harmless
+comment. Changing an input link weight fails the distance guard. Running the
+same probe under Pandas 3 fails on the reproduced chained assignment. Pandas 2
+still reports an upstream warning about future Copy-on-Write behavior. These
+checks establish this dependency operation, not regional model validity.
+Fresh worker deployment and hosted runs remain required. Older artifacts and
+their prototype claim tiers remain retained without rewriting their evidence.
