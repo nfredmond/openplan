@@ -20,6 +20,10 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Public comment, survey and subscription forms clip their hidden anti-spam fields
+in place. Right-to-left pages no longer gain a horizontal scrollbar from those
+fields; their anti-spam handling and keyboard exclusion remain in place.
+
 Apply `20261016000032_model_kpi_receipt_float_precision.sql` before deploying
 hosted model workers. It preserves full floating-point precision in the two KPI
 receipt functions, so exact immutable receipt checks accept the recorded values.

@@ -337,3 +337,12 @@ still reports an upstream warning about future Copy-on-Write behavior. These
 checks establish this dependency operation, not regional model validity.
 Fresh worker deployment and hosted runs remain required. Older artifacts and
 their prototype claim tiers remain retained without rewriting their evidence.
+
+## Right-to-left anti-spam field correction
+
+Arabic browser QA on staged e850501 reproduces a document width of 11,307 pixels
+in a 1,323-pixel viewport. The hidden website field uses a negative logical
+offset, which positions it beyond the right edge. Comment, survey and
+subscription forms now use clipped `sr-only` containment. The field,
+`aria-hidden`, negative tab order and disabled autofill remain. Repeat measured
+browser overflow on the rebuilt deployment before declaring this defect fixed.
