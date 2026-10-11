@@ -1,0 +1,106 @@
+{
+  "driverSha256": "dcdf84c74e21e183dfcf0af6f7d03057a61579e06ae549a92980e8eac245dddd",
+  "controls": [
+    {
+      "line": 20,
+      "control": "targeted invalid observation",
+      "failure": "Preview is missing a different migration set",
+      "assertion": "assert [f.name for f in missing]==['20261017000001_project_map_packages.sql'],'Preview is missing a different migration set'"
+    },
+    {
+      "line": 20,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 20,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    },
+    {
+      "line": 21,
+      "control": "targeted invalid observation",
+      "failure": "Unexpected preview migration inventory",
+      "assertion": "assert len(versions)==403 and len(files)==404,'Unexpected preview migration inventory'"
+    },
+    {
+      "line": 21,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 21,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    },
+    {
+      "line": 33,
+      "control": "targeted invalid observation",
+      "failure": "Preview CLI failed; inspect private log",
+      "assertion": "assert result.returncode==0,'Preview CLI failed; inspect private log'"
+    },
+    {
+      "line": 33,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 33,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    },
+    {
+      "line": 34,
+      "control": "targeted invalid observation",
+      "failure": "Preview existing records changed",
+      "assertion": "assert after==before,'Preview existing records changed'"
+    },
+    {
+      "line": 34,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 34,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    },
+    {
+      "line": 35,
+      "control": "targeted invalid observation",
+      "failure": "Preview migration inventory differs",
+      "assertion": "assert sql('SELECT version FROM supabase_migrations.schema_migrations ORDER BY version;').splitlines()==[f.name.split('_')[0] for f in files],'Preview migration inventory differs'"
+    },
+    {
+      "line": 35,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 35,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    },
+    {
+      "line": 36,
+      "control": "targeted invalid observation",
+      "failure": "",
+      "assertion": "assert sql(\"SELECT to_regclass('public.project_map_packages') IS NOT NULL AND to_regclass('public.project_map_package_files') IS NOT NULL;\")=='t'"
+    },
+    {
+      "line": 36,
+      "control": "removed guard",
+      "failure": "Omitted preview guard accepted invalid observation"
+    },
+    {
+      "line": 36,
+      "control": "baseline, harmless and restored",
+      "result": "survived"
+    }
+  ],
+  "earlierHarnessFailures": [
+    "Synthetic sql stub returned list instead of actual psql string.",
+    "Harness required nonempty assertion text from an existing unnamed schema assertion."
+  ],
+  "limits": "Extracted executable guard statements with synthetic inventory, CLI and SQL observations. Actual migration and unchanged row fingerprints are separate native proof; no hosted or browser acceptance."
+}

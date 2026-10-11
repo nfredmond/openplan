@@ -512,3 +512,7 @@ Earlier c75 live RLS and full archive restore now both pass, each with 1,492 tes
 ## Current-main migration order, October 11
 
 [The populated upgrade](CURRENT_MAIN_UPGRADE.md) proves exact current main e435e58b to joined candidate ba1b497f after the newer map-package schema. Default CLI refuses older missing GTFS files without writes; explicit --include-all applies only the four reviewed files, preserves project/map-package/GTFS rows and repeats unchanged. Positive SQL and refusal controls survive; six native row mutations and five omitted refusal guards fail at the intended boundaries. The operator procedure now names this upgrade order. All GTFS migrations remain unreleased and unapplied by this lane to hosted services. Current CI, the joined T3 read, hosted schema-first verification, integration and release remain unfinished.
+
+## Joined transit and encryption production read, October 11
+
+[The identified joined candidate](JOINED_CANDIDATE_VERIFICATION.md) passes the full production build, exact additive preview schema update and T3 retained-feed/project/model read at desktop and 390px. Fresh native geometry, current-feed and cancellation records match; three positive and 26 changed-observation controls behave as intended. The earlier 4 GiB V8 heap failure, observer error and tool interruptions stay explicit. Complete joined archive recovery is now a separate running bounded service, not a passing result. Current CI, hosted schema-first coordination, integration and release remain open.

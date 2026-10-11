@@ -1,0 +1,15 @@
+{
+  "head": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "beforeMigrationCount": 403,
+  "afterMigrationCount": 404,
+  "applied": [
+    {
+      "name": "20261017000001_project_map_packages.sql",
+      "sha256": "76e0273485e15802d24637e6f9acdac48a3d77ee04c74395b60e487f6cacb9d7"
+    }
+  ],
+  "existingRowsUnchanged": true,
+  "repeatPassed": true,
+  "limits": "Owned same-cluster preview database only. No hosted schema, other database, browser or release acceptance.",
+  "fingerprintedTables": 22
+}

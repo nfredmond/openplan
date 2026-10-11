@@ -1,0 +1,11 @@
+{
+  "head": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "result": "Node V8 heap exhausted during TypeScript",
+  "compiled": true,
+  "buildPassed": false,
+  "heapMiB": 4096,
+  "serviceMemoryMaxGiB": 8,
+  "peakBytes": 6443364352,
+  "elapsedSeconds": 223.53,
+  "cpuSeconds": 209.454
+}
