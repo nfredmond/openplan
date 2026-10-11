@@ -224,7 +224,10 @@
 html.dark .op-cart-rail__btn:hover {
   background: rgba(255, 255, 255, 0.05);
 }
-.op-cart-rail__btn.is-active {
+.op-cart-rail__btn.is-active,
+html.dark .op-cart-rail__btn.is-active:hover {
+  /* The dark hover rule above is more specific; without the second selector
+     the current page lost its highlight while the pointer rested on it. */
   background: var(--accent);
   color: var(--accent-foreground);
 }
