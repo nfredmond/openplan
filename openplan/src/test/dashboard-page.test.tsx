@@ -156,15 +156,6 @@ vi.mock("@/lib/dashboard/workspace-dates", () => ({
   loadWorkspaceDates: (...args: unknown[]) => loadWorkspaceDatesMock(...args),
 }));
 
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: ({ children }: { children?: ReactNode }) => (
-    <div>
-      <div data-testid="workspace-command-board" />
-      {children}
-    </div>
-  ),
-}));
-
 vi.mock("@/components/runs/RunHistory", () => ({
   RunHistory: () => <div data-testid="run-history" />,
 }));
@@ -509,7 +500,6 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("Baseline")).not.toBeInTheDocument();
     expect(screen.queryByText("Quick actions")).not.toBeInTheDocument();
     expect(screen.queryByText("Workflow spine")).not.toBeInTheDocument();
-    expect(screen.queryByTestId("workspace-command-board")).not.toBeInTheDocument();
     expect(screen.queryByText("What is worth your attention today")).not.toBeInTheDocument();
   });
 

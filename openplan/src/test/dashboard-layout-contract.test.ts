@@ -44,7 +44,6 @@ describe("dashboard layout contracts", () => {
   const globals = read("src/app/globals.css");
   const header = read("src/components/cartographic/cartographic-header.tsx");
   const dashboard = read("src/app/(app)/dashboard/page.tsx");
-  const commandBoard = read("src/components/operations/workspace-command-board.tsx");
 
   it("keeps the wide header in workspace, spacer, search, appearance order", () => {
     expect(ruleBody(cartographic, ".op-cart-hdr")).toMatch(
@@ -87,19 +86,4 @@ describe("dashboard layout contracts", () => {
     expect(lead).toMatch(/align-items:\s*start/);
   });
 
-  it("renders workflow groups as unframed compact rows with a short wide metadata column", () => {
-    expect(commandBoard).toContain('className="workflow-next-action-group"');
-    expect(commandBoard).toContain('className="workflow-next-action-link"');
-    const group = ruleBody(globals, ".workflow-next-action-group");
-    expect(group).toMatch(/display:\s*grid/);
-    expect(group).toMatch(/border-bottom:/);
-    expect(group).not.toMatch(/border-radius:/);
-    const wide = balancedBlocks(globals, "@media (min-width: 1280px)").find((block) =>
-      block.includes(".workflow-next-action-group")
-    );
-    expect(wide, "missing the wide workflow group rule").toBeDefined();
-    expect(ruleBody(wide ?? "", ".workflow-next-action-group")).toMatch(
-      /grid-template-columns:\s*minmax\(0,\s*9\.5rem\)\s+minmax\(0,\s*1fr\)/
-    );
-  });
 });

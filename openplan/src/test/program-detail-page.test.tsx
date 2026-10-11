@@ -226,10 +226,6 @@ vi.mock("@/components/operations/workspace-runtime-cue", () => ({
   WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
 }));
 
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
-}));
-
 import ProgramDetailPage from "@/app/(app)/programs/[programId]/page";
 
 /**
