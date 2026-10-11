@@ -40,6 +40,25 @@
 
 import { PORTAL_DEFAULT_LOCALE, type PortalLocale, type ResolvedPortalLocale } from "./locales";
 import type { PortalMessageBundle } from "./translator";
+import { AM_PORTAL_MESSAGES } from "./catalogs/am";
+import { AR_PORTAL_MESSAGES } from "./catalogs/ar";
+import { BN_PORTAL_MESSAGES } from "./catalogs/bn";
+import { FA_PORTAL_MESSAGES } from "./catalogs/fa";
+import { FR_PORTAL_MESSAGES } from "./catalogs/fr";
+import { HMN_PORTAL_MESSAGES } from "./catalogs/hmn";
+import { HT_PORTAL_MESSAGES } from "./catalogs/ht";
+import { HY_PORTAL_MESSAGES } from "./catalogs/hy";
+import { KM_PORTAL_MESSAGES } from "./catalogs/km";
+import { KO_PORTAL_MESSAGES } from "./catalogs/ko";
+import { PA_PORTAL_MESSAGES } from "./catalogs/pa";
+import { PL_PORTAL_MESSAGES } from "./catalogs/pl";
+import { PT_PORTAL_MESSAGES } from "./catalogs/pt";
+import { RU_PORTAL_MESSAGES } from "./catalogs/ru";
+import { SO_PORTAL_MESSAGES } from "./catalogs/so";
+import { TL_PORTAL_MESSAGES } from "./catalogs/tl";
+import { UR_PORTAL_MESSAGES } from "./catalogs/ur";
+import { VI_PORTAL_MESSAGES } from "./catalogs/vi";
+import { ZH_PORTAL_MESSAGES } from "./catalogs/zh";
 
 /**
  * `{name}` inside a value is a placeholder substituted at render time and typed
@@ -70,6 +89,9 @@ export const EN_PORTAL_MESSAGES = {
   "language.unsupportedNotice":
     "This page was opened with a language ({requested}) that is not available here, so it is showing {language}.",
   "language.shareHint": "The language is part of this page's web address, so a link you share opens in it too.",
+  // Shown on a page whose OpenPlan wording comes from a machine-translated
+  // catalog. Words the agency wrote carry their own provenance labels.
+  "language.machineNotice": "The buttons and instructions on this page were translated by machine.",
 
   // ----------------------------------------------------------- accessibility
   // Deliberately says nothing about what this page CONFORMS to. OpenPlan has
@@ -567,6 +589,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
     "Esta página se abrió con un idioma ({requested}) que no está disponible aquí, por lo que se muestra en {language}.",
   "language.shareHint":
     "El idioma forma parte de la dirección web de esta página, así que un enlace que comparta se abrirá en ese idioma.",
+  "language.machineNotice": "Los botones y las instrucciones de esta página se tradujeron por máquina.",
 
   "accessibility.heading": "Si no puede usar esta página",
   "accessibility.intro":
@@ -883,7 +906,43 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
  */
 export const PORTAL_MESSAGE_CATALOGS: Partial<Record<PortalLocale, PortalMessageCatalog>> = {
   es: ES_PORTAL_MESSAGES,
+  am: AM_PORTAL_MESSAGES,
+  ar: AR_PORTAL_MESSAGES,
+  bn: BN_PORTAL_MESSAGES,
+  fa: FA_PORTAL_MESSAGES,
+  fr: FR_PORTAL_MESSAGES,
+  hmn: HMN_PORTAL_MESSAGES,
+  ht: HT_PORTAL_MESSAGES,
+  hy: HY_PORTAL_MESSAGES,
+  km: KM_PORTAL_MESSAGES,
+  ko: KO_PORTAL_MESSAGES,
+  pa: PA_PORTAL_MESSAGES,
+  pl: PL_PORTAL_MESSAGES,
+  pt: PT_PORTAL_MESSAGES,
+  ru: RU_PORTAL_MESSAGES,
+  so: SO_PORTAL_MESSAGES,
+  tl: TL_PORTAL_MESSAGES,
+  ur: UR_PORTAL_MESSAGES,
+  vi: VI_PORTAL_MESSAGES,
+  zh: ZH_PORTAL_MESSAGES,
 };
+
+/**
+ * Catalogs written by a machine and not yet reviewed by a person (2026-10-11),
+ * one file each under `./catalogs/`. A page in one of these languages says so
+ * in `language.machineNotice`. Diné Bizaad has no catalog on purpose: OpenPlan
+ * does not machine-translate it. Spanish shipped before catalogs were labelled
+ * by how they were made, its provenance was not recorded, and it carries no
+ * notice, as before. Exclude a catalog here only when a fluent reviewer has
+ * checked its file.
+ */
+const CATALOGS_WITHOUT_MACHINE_NOTICE: ReadonlySet<PortalMessageCatalog> = new Set([ES_PORTAL_MESSAGES]);
+
+export const PORTAL_MACHINE_TRANSLATED_LOCALES: ReadonlySet<PortalLocale> = new Set(
+  (Object.entries(PORTAL_MESSAGE_CATALOGS) as Array<[PortalLocale, PortalMessageCatalog]>)
+    .filter(([, catalog]) => !CATALOGS_WITHOUT_MACHINE_NOTICE.has(catalog))
+    .map(([code]) => code)
+);
 
 const ALL_KEYS = Object.keys(EN_PORTAL_MESSAGES) as PortalMessageKey[];
 
@@ -919,6 +978,9 @@ export function buildPortalMessageBundle(locale: ResolvedPortalLocale): PortalMe
     nativeName: locale.nativeName,
     messages,
     fallbackKeys,
+    // Only when the catalog actually supplied text: an empty one is English
+    // throughout, and the partial-translation notice already says so.
+    machineTranslated: PORTAL_MACHINE_TRANSLATED_LOCALES.has(locale.locale) && fallbackKeys.length < ALL_KEYS.length,
   };
 }
 

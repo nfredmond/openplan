@@ -1,4 +1,4 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   PORTAL_DEFAULT_LOCALE,
   PORTAL_LOCALES,
@@ -20,6 +20,14 @@ import {
   portalTextDisclosureView,
 } from "@/lib/engagement/portal-i18n/provenance";
 import { TRANSLATION_LANGUAGES } from "@/lib/engagement/translation-languages";
+
+/*
+  fa stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/fa", () => ({ FA_PORTAL_MESSAGES: {} }));
 
 /**
  * One decision — which language a participant reads — asserted at the level a
