@@ -281,9 +281,14 @@ describe("the browser is allowed to fetch the style", () => {
   });
 
   it("and opens nothing new for a style served by the deployment itself", async () => {
+    // Compared with no style at all, so whatever else the environment holds
+    // (another test's Supabase URL, say) is on both sides.
+    vi.stubEnv(OPEN_MAP_STYLE_ENV, "");
+    const without = await csp();
+    vi.resetModules();
     vi.stubEnv(OPEN_MAP_STYLE_ENV, "/maps/style.json");
-    const policy = await csp();
-    expect(directive(policy, "connect-src")).not.toContain("example");
-    expect(policy).not.toContain("/maps/style.json");
+    const local = await csp();
+    expect(local).toBe(without);
+    expect(directive(local, "connect-src")).not.toContain("tiles.example.org");
   });
 });
