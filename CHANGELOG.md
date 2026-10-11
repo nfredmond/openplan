@@ -184,6 +184,12 @@ Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
+RTP document extraction now returns project costs. The prompt told the model
+that a figure's exact digits must appear in its quote, so it left out costs a
+plan prints as "$24 million" rather than risk losing the project row. The
+prompt now states the rule the checker applies: "$24 million", "$24M" and
+"24,000,000" are the same figure.
+
 ## 0.68.0 (2026-10-09)
 
 This development version includes land-use and engagement workflows, model
