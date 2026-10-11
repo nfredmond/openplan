@@ -260,3 +260,40 @@ The latest joined application build and full CI remain pending.
 Native Railway API reads confirm baseline backup records on all three active
 volumes and daily/weekly schedules retaining six and 27 days respectively.
 Snapshot restoration remains outside the verified rehearsal boundary.
+
+## Joined hosted browser checks
+
+Joined build `f2b59e19a3d9f3c734f4161010423d4b02f310c7` is Ready at its staged
+production address. The latest documentation commit also passes its Vercel
+preview build. The canonical public alias still serves the May source. Its
+remaining full GitHub checks must pass before promotion. The focused worker
+security check passes; queued checks are not passes.
+
+All 22 primary authenticated navigation pages return HTTP 200 for the synthetic
+owner. This is server-response evidence, not complete workflow acceptance.
+Vercel returns no error-level rows for the staged production build during the
+20-minute inspection interval ending around 04:55 UTC on October 11.
+
+Synthetic campaign `c9872261-35fa-499b-830c-de0c9ae13d07` is a separate public
+portal fixture. Its visible description states that it is a hosting test and
+requests no personal information or real project comments. The original private
+campaign stays private. The public page responds without an authentication
+cookie and opens on its sourced Grass Valley extent. Desktop submission
+`ca64f624-17c1-46bc-b381-05c40f77bc6a` reaches moderation as pending. Approval
+records the synthetic review reason before public display. A second 390-pixel
+submission receives its receipt. Chrome renders the map and mobile comment
+sheet; participant console review records no errors for these journeys.
+
+A direct reload of the moderation registry reproduces React hydration error
+418 because it formats retained timestamps in the environment's default time
+zone. The registry now uses an explicit labeled UTC formatter. Its focused
+checks pass across UTC, Los Angeles and Honolulu. A harmless comment passes;
+removing the time-zone option fails the stated assertion. A fresh hosted browser
+check remains required for this correction.
+
+Both synthetic build scenarios complete through the real workers. Guided
+comparison correctly refuses to combine them with the earlier AequilibraE
+baseline: its previous worker build recorded a different solver-visible network
+state. The three newer outputs share the current recorded state. A fresh
+baseline is queued on the current worker; the older outputs remain retained.
+No comparison or validation claim is promoted by these execution checks.
