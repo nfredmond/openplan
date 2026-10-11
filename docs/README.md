@@ -51,6 +51,8 @@ The [October 11 retained recovery-packet candidate](reviews/2026-10-11-recovery-
 
 The [October 11 explicit worker inventory candidate](reviews/2026-10-11-installation-worker-inventory/STATUS.md) requires declarations for each known worker family and retains exact private configuration before producing a selected-root inventory. Its source audit distinguishes model, imagery, OCR, email, synthesis and native connector state. Historical-fixture integration is verified; installation coverage and commissioning remain unassessed.
 
+The [October 11 native OCR text-layer recovery proof](reviews/2026-10-11-ocr-worker-recovery/STATUS.md) recovers exact original callback bytes from a stopped private-root package without another download or extraction. A blank page, original admission replay and changed-request refusal survive. Scanned OCR quality, a live OpenPlan consumer and the remaining M3 floor stay open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
