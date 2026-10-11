@@ -106,6 +106,11 @@ const EMBED_SECURITY_HEADERS = [
 ];
 
 const nextConfig: NextConfig = {
+  // Reduce webpack's peak build memory on the standard 8 GB hosted builder.
+  // Keep the normal type check and the existing webpack build path.
+  experimental: {
+    webpackMemoryOptimizations: true,
+  },
   // Published evidence lives beside the application package. Trace from the
   // repository root and retain only the four frozen studies on their readers.
   outputFileTracingRoot: path.join(__dirname, ".."),

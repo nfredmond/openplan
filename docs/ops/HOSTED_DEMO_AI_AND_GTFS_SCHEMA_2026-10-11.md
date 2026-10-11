@@ -60,6 +60,20 @@ does not commission private file persistence, a polling worker, or feed
 capacity. Follow the [candidate runbook](../../openplan/docs/ops/GTFS_MANAGED_INGESTION.md)
 before enabling admission.
 
+## Build memory
+
+Later automatic Git builds expose two retained failures: one exceeds Vercel's
+45-minute limit, and one receives SIGKILL after exhausting the standard
+4-core, 8 GB build container. A later build of `fa9daf8` succeeds on that same
+machine and completes the build in about two minutes. That success does not
+establish cold-cache reliability.
+
+The follow-up enables Next.js's documented `webpackMemoryOptimizations`
+setting. It preserves webpack, TypeScript checks and the existing build
+machine. It purchases no enhanced build service. A cold hosted build and
+the subsequent checked Git delivery remain required acceptance work;
+the setting alone does not prove lower measured memory or future uptime.
+
 ## Backup boundary
 
 The post-demo and post-schema database archive contains 7,179,228 bytes and
