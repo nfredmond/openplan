@@ -49,12 +49,13 @@ until phase C. Eight targeted breaks each failed for the stated reason.
 ## Connector
 
 `workers/planner_agent_connector/test/map-package.test.mjs` and
-`connector-cli.test.mjs` (15 map package cases), with a stand-in for Claude
+`connector-cli.test.mjs` (16 map package cases), with a stand-in for Claude
 Code: the skill copy matches its manifest; credentials and the connection
 folder are denied to every tool; no API key reaches Claude Code; every model
 alias is pinned; another model, an API-key session, the step limit and a
 cancelled package all stop without uploading; a run cut off mid-way is never
-started again; only an upload resumes. Eleven targeted breaks each failed.
+started again; only an upload resumes; previews shrink to 1,600 pixels. Twelve
+targeted breaks each failed.
 
 ## The app, in a browser
 
