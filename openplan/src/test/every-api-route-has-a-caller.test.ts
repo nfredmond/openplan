@@ -70,6 +70,7 @@ const EXTERNAL_CALLERS: Record<string, string> = {
   "api/engagement/campaigns/[campaignId]/synthesis": "410 retirement response for earlier generator tabs and scripts. Retained sources and reviews replace its unsafe writes; engagement-synthesis-retired-route.test.ts proves refusal without body consumption or effects.",
   "api/engagement/campaigns/[campaignId]/translations": "410 retirement response for old editor tabs and external scripts that still send unversioned writes. Current UI uses generation and commands endpoints; engagement-translation-retired-route.test.ts proves refusal without body consumption or effects.",
   "api/assistant/providers/native": "workers/planner_agent_connector/connector-client.mjs calls this scoped-bearer endpoint for claims, status and retained result delivery; connector-worker.test.mjs exercises its actual HTTP redirect boundary and delivery recovery.",
+  "api/map-packages/connector": "workers/planner_agent_connector/map-package-client.mjs calls this scoped-bearer endpoint to claim, heartbeat, upload and complete map packages; map-package.test.mjs drives the connector's side of it.",
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
     "Uptime monitoring and container orchestration probe this; it exists to be called from outside.",

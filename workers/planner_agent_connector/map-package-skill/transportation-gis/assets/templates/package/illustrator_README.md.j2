@@ -1,0 +1,46 @@
+# Adobe Illustrator
+
+The figures are delivered as layered SVG (`../maps/svg`) and vector PDF (`../maps/pdf`). Both open in Illustrator with live type. This kit has not been run in Illustrator on the computer that made the package; check the first file you open.
+
+## Open the figures with named layers
+
+1. Install the fonts in `../fonts/inter`.
+2. In Illustrator: File > Scripts > Other Script..., choose `Open_Maps_In_Illustrator.jsx`.
+3. The script opens each SVG, makes one Illustrator layer per map layer (roads, bikeways, labels and so on) and saves `.ai` files in `illustrator/ai`.
+
+`layer_names.json` holds the readable layer names the script applies.
+
+If the script fails, open the PDF in `../maps/pdf` directly (File > Open). Type stays live and everything is editable, but the artwork arrives in one layer without the layer names.
+{% if atlases %}
+Map book sheets are in `../atlas/svg`, one SVG per sheet; the script opens those too.
+{% endif %}
+## What the layers are
+
+Layer names start with `Map:` (the main map), `Inset:` (the locator or sheet index) or name a page part (title block, legend, scale bar). A layer ending in `(Labels)` holds only that map layer's type, so labels can be hidden, restyled or reset without touching the linework. Each label's halo is an outlined copy directly behind it in the same layer.
+
+## Print set-up
+
+- Artboards are the final page size{% for m in maps %}{% if m.page.w > 17 or m.page.h > 17 %}; `{{ m.id }}` is a {{ "%g"|format(m.page.w) }} by {{ "%g"|format(m.page.h) }} inch poster{% endif %}{% endfor %}. Nothing bleeds, so no bleed is set.
+- Colours are RGB. For offset printing convert to the printer's CMYK profile and proof the pale base map tints, which shift the most.
+- The base map is OpenStreetMap data. Its credit in the source line is a licence condition and must stay on the page.
+
+## Swatches
+
+Window > Swatch Libraries > Other Library..., choose `{{ p.id }}_swatches.ase`. It holds the {{ n_swatches }} colours used by the map symbols and text, named by layer and class. `{{ p.id }}_swatches.txt` lists the same colours as hex values.
+
+## What to expect
+
+- Type is live and set in {{ font }}. Labels that follow curved streets are one text object per letter, which is how map label engines export curved text.
+- Label halos are outlined copies behind the type.
+- Stroke widths and type sizes are the print sizes stated in `../docs/design_sheet.md`.
+- If you have ArcGIS Pro, its build also writes `.aix` files (`../arcgis/native/.../exports`), which the ArcGIS Maps for Adobe Creative Cloud extension opens with layers intact.
+
+## Send back
+
+The edited `.ai` files and a PDF of each, plus a note of any colour or symbol you changed, so the GIS project can be brought into line.
+
+## Editing rules that keep the figure honest
+
+- Move labels and adjust type freely. Do not move, reshape or delete mapped features: they are data.
+- If you change a colour, change the legend swatch to match.
+- Keep the source line and the "draft" status text unless the package owner says otherwise.
