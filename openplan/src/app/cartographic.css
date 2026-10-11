@@ -163,7 +163,7 @@
   flex-direction: column;
 }
 .op-cart-rail__group-title {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   margin: 8px 18px 4px;
@@ -224,7 +224,10 @@
 html.dark .op-cart-rail__btn:hover {
   background: rgba(255, 255, 255, 0.05);
 }
-.op-cart-rail__btn.is-active {
+.op-cart-rail__btn.is-active,
+html.dark .op-cart-rail__btn.is-active:hover {
+  /* The dark hover rule above is more specific; without the second selector
+     the current page lost its highlight while the pointer rested on it. */
   background: var(--accent);
   color: var(--accent-foreground);
 }
@@ -244,7 +247,7 @@ html.dark .op-cart-rail__btn:hover {
   border-radius: 8px;
   background: var(--accent);
   color: var(--accent-foreground);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   font-weight: 700;
   padding: 0 4px;
@@ -352,7 +355,7 @@ html.dark .op-cart-rail__btn:hover {
   overflow: visible;
 }
 .op-cart-ws-meta {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.02em;
@@ -449,7 +452,7 @@ html.dark .op-cart-rail__btn:hover {
   flex-shrink: 0;
 }
 .op-cart-surface__kicker {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
 }
@@ -537,7 +540,7 @@ html.dark .op-cart-rail__btn:hover {
 .op-cart-layers__hd {
   padding: 12px 14px 8px;
   border-bottom: 1px solid var(--line);
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
 }
@@ -570,7 +573,7 @@ html.dark .op-cart-layer-item:hover {
 }
 .op-cart-layer-item__chip {
   margin-left: auto;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
 }
@@ -658,7 +661,7 @@ html.dark .op-cart-layer-item__swatch {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   cursor: pointer;
@@ -715,7 +718,7 @@ html.dark .op-cart-layer-item__swatch {
   grid-column: 1 / -1;
   display: flex;
   justify-content: space-between;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.04em;
@@ -767,7 +770,7 @@ html.dark .op-cart-layer-item__swatch {
   min-width: 0;
 }
 .op-cart-inspector__kicker {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
 }
@@ -924,13 +927,13 @@ html.dark .op-cart-zoom button:hover {
   max-width: 220px;
 }
 .op-cart-account__role {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   letter-spacing: 0.02em;
 }
 .op-cart-account__signout {
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   font-weight: 600;
   color: var(--muted);
@@ -977,7 +980,7 @@ html.dark .op-cart-zoom button:hover {
 .op-cart-alert__cta {
   display: inline-block;
   margin-top: 8px;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   font-weight: 700;
   color: var(--warn);
@@ -1537,7 +1540,7 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
    one click. */
 .op-cart-layers__notes-summary {
   cursor: pointer;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
   padding: 8px 14px;
@@ -1825,7 +1828,7 @@ body[data-map-reading="true"] .op-cart-surface {
    context for the stop, not a footnote to it. */
 .op-map-popup__kicker {
   order: -1;
-  font-family: var(--font-mono);
+  font-family: var(--font-body);
   font-size: var(--fs-label);
   color: var(--muted);
 }

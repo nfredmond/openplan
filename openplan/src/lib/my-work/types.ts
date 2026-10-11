@@ -187,6 +187,12 @@ export type MyWorkResult = {
   items: MyWorkItem[];
   reads: ReadFailureLog;
   perSource: Partial<Record<MyWorkSourceId, MyWorkSourceOutcome>>;
+  /**
+   * Rows each source returned before de-duplication. A source that returned
+   * `limitPerSource` rows may hold more than were read; a caller that lists
+   * them must say so.
+   */
+  rowsRead: Partial<Record<MyWorkSourceId, number>>;
   limitPerSource: number;
   /**
    * FALSE when the unassigned scope could not include work left behind by
