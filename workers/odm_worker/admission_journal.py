@@ -115,7 +115,11 @@ class Journal:
         for suffix in ('-wal', '-shm'):
             companion = self.root / (FILENAME + suffix)
             if companion.exists() or companion.is_symlink():
-                private(companion, False)
+                try:
+                    private(companion, False)
+                except FileNotFoundError:
+                    # SQLite removes transient companions when another connection closes.
+                    pass
         target = database.as_uri()+'?mode=rw' if self.require_existing else database
         connection = sqlite3.connect(target, uri=self.require_existing, timeout=self.timeout, isolation_level=None)
         try:

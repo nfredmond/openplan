@@ -496,6 +496,54 @@ class Checks(unittest.TestCase):
                 if child.poll() is None:
                     child.kill();child.wait(timeout=5)
 
+    def test_sqlite_companions_disappearing_before_lstat_are_allowed(self):
+        original_private = admission_journal.private
+        for suffix in ('-wal', '-shm'):
+            with self.subTest(suffix=suffix):
+                root = self.base/('vanishing'+suffix)
+                journal = Journal(root)
+                first, _ = journal.admit(request(), factory, max_queued=1)
+                companion = root/(FILENAME+suffix)
+                companion.write_bytes(b'');companion.chmod(0o600)
+                saved = self.base/('saved'+suffix)
+                observed = []
+                def disappearing(path, directory):
+                    if path == companion:
+                        observed.append(path)
+                        path.rename(saved)
+                    return original_private(path, directory)
+                try:
+                    with patch('admission_journal.private', side_effect=disappearing):
+                        self.assertEqual(journal.get(request()['requestId']), first,
+                                         'transient disappearance must retain the original admission')
+                    self.assertEqual(observed, [companion], 'probe must reach the existing companion')
+                finally:
+                    if saved.exists():
+                        if companion.exists():
+                            companion.rename(self.base/('new-transient'+suffix))
+                        saved.rename(companion)
+
+    def test_unavailable_companions_refuse_before_sqlite(self):
+        self.admit()
+        original_private = admission_journal.private
+        for suffix in ('-wal', '-shm'):
+            companion = self.root/(FILENAME+suffix)
+            companion.write_bytes(b'');companion.chmod(0o600)
+            try:
+                for error in (PermissionError('companion permission unavailable'),
+                              OSError('companion IO unavailable')):
+                    with self.subTest(suffix=suffix, error=type(error).__name__):
+                        def unavailable(path, directory):
+                            if path == companion:
+                                raise error
+                            return original_private(path, directory)
+                        with patch('admission_journal.private', side_effect=unavailable), \
+                             patch('admission_journal.sqlite3.connect', side_effect=AssertionError('Unavailable companion reached SQLite')):
+                            with self.assertRaisesRegex(type(error), 'companion .* unavailable'):
+                                self.journal.get(request()['requestId'])
+            finally:
+                companion.unlink()
+
     def test_busy_writer_wait_is_bounded(self):
         self.admit()
         with closing(sqlite3.connect(self.root/FILENAME)) as blocker:
