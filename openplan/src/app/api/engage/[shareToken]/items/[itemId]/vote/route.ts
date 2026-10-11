@@ -4,8 +4,12 @@ import { BODY_LIMITS, readTextWithLimit } from "@/lib/http/body-limit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { buildPublicSubmissionClientFingerprint } from "@/lib/engagement/public-submit";
 import {
+  buildPublicParticipantDeviceFingerprint,
+  buildPublicSubmissionClientFingerprint,
+} from "@/lib/engagement/public-submit";
+import {
+  PUBLIC_VOTE_MAX_PER_CONNECTION_WINDOW,
   PUBLIC_VOTE_MAX_PER_WINDOW,
   PUBLIC_VOTE_RATE_WINDOW_MINUTES,
 } from "@/lib/engagement/votes";
@@ -29,6 +33,11 @@ type VoteTarget =
  * Anonymous community "support" votes (upvote only — public downvoting
  * invites brigading and suppression, so un-support is the only reversal).
  *
+ * Voter: `<connection>:<device>` when the browser sent a device token, else
+ * the connection alone (as every vote was before 2026-10-11). So a meeting
+ * room on one Wi-Fi can support a comment once per device, not once per room,
+ * and the connection prefix still lets the route count the whole room.
+ *
  * Idempotency: one row per (item_id, voter_fingerprint) enforced by the
  * UNIQUE constraint in migration 20260717000084. A repeat POST hits the
  * 23505 unique violation and returns 200 with alreadyVoted, so the client's
@@ -38,6 +47,13 @@ type VoteTarget =
  * service-role route is the only path in, gated on share-token knowledge,
  * campaign active status, and item approval.
  */
+/** This voter's fingerprint, and the connection it belongs to. */
+function voterFingerprints(request: NextRequest): { voter: string; connection: string } {
+  const connection = buildPublicSubmissionClientFingerprint(request);
+  const device = buildPublicParticipantDeviceFingerprint(request);
+  return { voter: device ? `${connection}:${device}` : connection, connection };
+}
+
 async function resolveVoteTarget(
   supabase: SupabaseServiceClient,
   audit: ReturnType<typeof createApiAuditLogger>,
@@ -170,16 +186,21 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return target.response;
     }
 
-    const fingerprint = buildPublicSubmissionClientFingerprint(request);
-
-    // Rate limit: recent votes from this fingerprint within the campaign.
+    const { voter, connection } = voterFingerprints(request);
     const windowStart = new Date(Date.now() - PUBLIC_VOTE_RATE_WINDOW_MINUTES * 60 * 1000).toISOString();
-    const { count: recentVoteCount, error: recentVotesError } = await supabase
-      .from("engagement_item_votes")
-      .select("id", { count: "exact", head: true })
-      .eq("campaign_id", target.campaignId)
-      .eq("voter_fingerprint", fingerprint)
-      .gte("created_at", windowStart);
+    const recentVotes = (scope: "voter" | "connection") => {
+      const query = supabase
+        .from("engagement_item_votes")
+        .select("id", { count: "exact", head: true })
+        .eq("campaign_id", target.campaignId)
+        .gte("created_at", windowStart);
+      // The whole connection: votes without a device token, and every device on it.
+      return scope === "voter"
+        ? query.eq("voter_fingerprint", voter)
+        : query.or(`voter_fingerprint.eq.${connection},voter_fingerprint.like.${connection}:*`);
+    };
+    const [fromVoter, fromConnection] = await Promise.all([recentVotes("voter"), recentVotes("connection")]);
+    const recentVotesError = fromVoter.error ?? fromConnection.error;
 
     if (recentVotesError) {
       audit.error("engagement_vote_rate_lookup_failed", {
@@ -190,7 +211,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       return NextResponse.json({ error: "Failed to verify recent voting activity" }, { status: 500 });
     }
 
-    if ((recentVoteCount ?? 0) >= PUBLIC_VOTE_MAX_PER_WINDOW) {
+    if (
+      (fromVoter.count ?? 0) >= PUBLIC_VOTE_MAX_PER_WINDOW ||
+      (fromConnection.count ?? 0) >= PUBLIC_VOTE_MAX_PER_CONNECTION_WINDOW
+    ) {
       return NextResponse.json(
         { error: "Too many recent votes from this connection. Please wait a few minutes and try again." },
         { status: 429 }
@@ -200,7 +224,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const { error: insertError } = await supabase.from("engagement_item_votes").insert({
       item_id: target.itemId,
       campaign_id: target.campaignId,
-      voter_fingerprint: fingerprint,
+      voter_fingerprint: voter,
     });
 
     if (insertError) {
@@ -260,7 +284,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       return target.response;
     }
 
-    const fingerprint = buildPublicSubmissionClientFingerprint(request);
+    const { voter } = voterFingerprints(request);
 
     // No rate limit on removal: each delete requires a matching prior vote
     // from the same fingerprint, so the insert-side limit already bounds it.
@@ -268,7 +292,7 @@ export async function DELETE(request: NextRequest, context: RouteContext) {
       .from("engagement_item_votes")
       .delete()
       .eq("item_id", target.itemId)
-      .eq("voter_fingerprint", fingerprint)
+      .eq("voter_fingerprint", voter)
       .select("id");
 
     if (deleteError) {
