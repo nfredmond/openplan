@@ -34,7 +34,6 @@ export function GrantsFundingNeedEditorSection({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Funding need anchor</p>
             <h2 className="module-section-title">{`Anchor funding need for ${fundingNeedEditorProject.project.name}`}</h2>
             <p className="module-section-description">
               Record the target funding need and local match so grant sourcing, gap review, and award coverage can run against honest project math.

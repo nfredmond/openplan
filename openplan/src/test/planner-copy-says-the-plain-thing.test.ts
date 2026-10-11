@@ -192,10 +192,10 @@ function collectCopy(): string[] {
  * 0 is the assertion that it stays gone.
  */
 const BASELINE: Readonly<Record<string, number>> = {
-  artifact: 42,
+  artifact: 41,
   attribute: 4,
   basemap: 4,
-  basis: 23,
+  basis: 22,
   bootstrap: 0,
   cadence: 3,
   campaign: 61,
@@ -217,29 +217,29 @@ const BASELINE: Readonly<Record<string, number>> = {
   "moderation queue": 1,
   operator: 39,
   // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
-  packet: 121,
+  packet: 117,
   payload: 2,
   populate: 1,
-  posture: 48,
+  posture: 46,
   preset: 12,
-  provenance: 11,
-  readiness: 33,
+  provenance: 10,
+  readiness: 31,
   // Safety must distinguish crash records from people killed or injured.
-  record: 239,
-  registry: 17,
+  record: 233,
+  registry: 12,
   resolve: 3,
   scaffold: 3,
   schema: 5,
   signal: 7,
-  spine: 9,
+  spine: 6,
   "study area": 20,
   submission: 10,
-  surface: 12,
-  trace: 11,
+  surface: 11,
+  trace: 10,
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 144,
+  workspace: 141,
 };
 
 describe("planner copy says the plain thing", () => {

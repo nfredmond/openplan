@@ -74,7 +74,6 @@ export function GrantsProgramCatalogSection({
             <BookMarked className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Discovery</p>
             <h2 className="module-section-title">Program catalog for small and rural agencies</h2>
             <p className="module-section-description">
               Curated funding programs worth watching, each labeled with the jurisdiction it is

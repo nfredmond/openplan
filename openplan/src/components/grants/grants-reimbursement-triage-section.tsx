@@ -78,7 +78,6 @@ export function GrantsReimbursementTriageSection({
     <article id="grants-reimbursement-triage" className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Reimbursement triage</p>
           <h2 className="module-section-title">Workspace reimbursement follow-through queue</h2>
           <p className="module-section-description">
             Keep award-linked invoices moving. This queue surfaces overdue reimbursements, in-flight payments, and draft packets that still need follow-up.

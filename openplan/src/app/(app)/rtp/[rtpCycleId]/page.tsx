@@ -701,7 +701,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Export</p>
               <h2 className="module-section-title">RTP cycle output snapshot</h2>
               <p className="module-section-description">
                 Export the current cycle, chapter, portfolio, and engagement posture without waiting for deeper report-model integration.
@@ -811,7 +810,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Portfolio posture</p>
               <h2 className="module-section-title">Cycle-linked projects</h2>
               <p className="module-section-description">
                 The RTP chapter workflow and project portfolio now sit under the same cycle record, with real funding posture pulled from project funding profiles and awards.
@@ -1096,7 +1094,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Public review control</p>
               <h2 className="module-section-title">Comment-response foundation</h2>
               <p className="module-section-description">
                 Keep the RTP packet, planwide review target, and moderated public input tied to the same cycle before board closeout.
@@ -1242,7 +1239,6 @@ export default async function RtpCycleDetailPage({ params, searchParams }: Route
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Cycle-wide engagement</p>
               <h2 className="module-section-title">Whole-plan campaign targets</h2>
               <p className="module-section-description">
                 Use whole-cycle campaigns for planwide public review, then point deeper campaigns at specific chapters as needed.

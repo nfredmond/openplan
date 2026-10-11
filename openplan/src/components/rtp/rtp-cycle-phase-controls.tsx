@@ -100,7 +100,6 @@ export function RtpCyclePhaseControls({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Phase transition</p>
           <h2 className="module-section-title">Move this cycle to its next phase</h2>
           <p className="module-section-description">
             Move the RTP cycle into its next phase, and optionally update its linked report documents to the settings recommended for that phase.

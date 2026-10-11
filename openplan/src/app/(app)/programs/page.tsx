@@ -662,7 +662,6 @@ export default async function ProgramsPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your cycles</p>
             <h2 className="module-section-title">Your programming cycles</h2>
             <p className="module-section-description">
               Filter by status, funding type, or linked project, then open a cycle.
@@ -836,7 +835,6 @@ export default async function ProgramsPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Funding calls</p>
               <h2 className="module-section-title">Active and upcoming opportunities</h2>
               <p className="module-section-description">
                 Track open calls, their timing, who owns them, and the programs and projects they belong to.

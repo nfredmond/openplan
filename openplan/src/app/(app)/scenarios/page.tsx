@@ -320,7 +320,6 @@ export default async function ScenariosPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your scenario sets</p>
             <h2 className="module-section-title">
               {/* The heading may not claim workspace scope over a project-scoped list. */}
               {projectFilterId ? "Scenario sets for this project" : "Scenario sets in this workspace"}

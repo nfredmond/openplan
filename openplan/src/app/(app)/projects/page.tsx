@@ -693,7 +693,6 @@ export default async function ProjectsPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Portfolio</p>
             <h2 className="module-section-title">Your projects</h2>
           </div>
           <span className="module-record-chip">

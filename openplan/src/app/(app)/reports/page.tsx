@@ -821,7 +821,6 @@ export default async function ReportsPage({
               <FileStack className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Catalog</p>
               <h2 className="module-section-title">Report records</h2>
               <p className="module-section-description">Filter by how current the packet is, and by what evidence sits behind it.</p>
             </div>
@@ -1159,7 +1158,6 @@ export default async function ReportsPage({
             <FolderKanban className="h-5 w-5" />
           </span>
           <div>
-            <p className="module-section-label">Capabilities</p>
             <h2 className="module-section-title">What&apos;s available in report packets</h2>
           </div>
         </div>

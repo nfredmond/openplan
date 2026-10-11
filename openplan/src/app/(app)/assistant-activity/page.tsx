@@ -179,7 +179,6 @@ export default async function AssistantActivityPage() {
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Audit trail</p>
             <h2 className="module-section-title">Recorded executions in this workspace</h2>
             <p className="module-section-description">
               {summary.total} action{summary.total === 1 ? "" : "s"} · {summary.approvalGated} approval-gated ·{" "}

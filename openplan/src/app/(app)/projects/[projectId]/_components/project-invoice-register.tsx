@@ -55,7 +55,6 @@ export function ProjectInvoiceRegister({
             <FileSpreadsheet className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Invoices</p>
             <h2 className="module-section-title">Project-linked billing register</h2>
           </div>
         </div>

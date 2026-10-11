@@ -240,7 +240,6 @@ export function ProjectFundingPanel({
             <CalendarClock className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Funding strategy</p>
             <h2 className="module-section-title">Candidate funding opportunities</h2>
             <p className="module-section-description">
               This project can now carry real pursue, monitor, or skip decisions against funding opportunities, with fit and readiness notes kept on the record.

@@ -86,7 +86,6 @@ export function ProjectEvidenceAndActivity({
                 <Database className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Data dependencies</p>
                 <h2 className="module-section-title">Linked datasets</h2>
               </div>
             </div>
@@ -135,7 +134,6 @@ export function ProjectEvidenceAndActivity({
                 <Clock3 className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Recent analysis activity</p>
                 <h2 className="module-section-title">Latest runs in this project workspace</h2>
               </div>
             </div>
@@ -182,7 +180,6 @@ export function ProjectEvidenceAndActivity({
               <Radar className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Aerial evidence</p>
               <h2 className="module-section-title">Field collection and evidence packages</h2>
               <p className="module-section-description">
                 Aerial missions and evidence packages linked to this project. Evidence package readiness flows into the project evidence chain.

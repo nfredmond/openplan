@@ -595,7 +595,6 @@ export default async function DataHubPage() {
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Foundation sources</p>
               <h2 className="module-section-title">The sources everything else is built on</h2>
               <p className="module-section-description">
                 What counts as a source you can cite, as opposed to something OpenPlan worked out from it.
@@ -686,7 +685,6 @@ export default async function DataHubPage() {
               <Layers className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Your map layers</p>
               <h2 className="module-section-title">The GIS files your agency already has</h2>
             </div>
           </div>
@@ -713,7 +711,6 @@ export default async function DataHubPage() {
                 <Link2 className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Connector registry</p>
                 <h2 className="module-section-title">Governed source endpoints</h2>
               </div>
             </div>
@@ -774,7 +771,6 @@ export default async function DataHubPage() {
         <article className="module-section-surface xl:col-span-2">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Dataset registry</p>
               <h2 className="module-section-title">Datasets, with where they came from</h2>
               <p className="module-section-description">
                 The full list. Denser than the cards above because this is where the detail lives.
@@ -977,7 +973,6 @@ export default async function DataHubPage() {
                 <RefreshCw className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Refresh log</p>
                 <h2 className="module-section-title">Refreshes you recorded</h2>
                 <p className="module-section-description">
                   These are refreshes someone on your team did, or plans to do. OpenPlan does not run them for you —

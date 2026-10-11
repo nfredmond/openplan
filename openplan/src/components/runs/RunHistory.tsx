@@ -224,7 +224,6 @@ export function RunHistory({
     >
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Run history</p>
           <h2 className="module-section-title">Analysis run history</h2>
           <p className="module-section-description">
             {hasActiveComparison

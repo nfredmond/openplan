@@ -673,7 +673,6 @@ export function RtpPerformanceMeasureEditor({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Performance element</p>
           <h2 className="module-section-title">Performance measures</h2>
           <p className="module-section-description">
             What this plan is trying to change, stated as numbers: where the region stands now, where it intends to

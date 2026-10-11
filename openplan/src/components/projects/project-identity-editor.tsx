@@ -342,7 +342,6 @@ export function ProjectIdentityEditor({
             <Pencil className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Project record</p>
             <h2 className="module-section-title">Name, status, and phase</h2>
             <p className="module-section-description">
               The project&apos;s own details. Everything else on this page hangs off this record.

@@ -298,7 +298,6 @@ export function RtpEngagementCampaignCreator({ rtpCycleId, chapterOptions }: Pro
     <article id="rtp-engagement-campaigns" className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Engagement target</p>
           <h2 className="module-section-title">Ask the public about this plan</h2>
           <p className="module-section-description">
             A campaign started here files its comments against this plan — the whole thing, or one

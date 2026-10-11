@@ -302,7 +302,6 @@ export function ProjectPostureHeader({
               <Target className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Portfolio</p>
               <h2 className="module-section-title">This project in the regional plan</h2>
               <p className="module-section-description">
                 Attach the project to an RTP cycle and say what role it plays and why. That is what turns a list of projects into a defensible priority order.
@@ -367,7 +366,6 @@ export function ProjectPostureHeader({
               <FileStack className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Reporting</p>
               <h2 className="module-section-title">Are this project’s reports up to date?</h2>
               <p className="module-section-description">
                 Whether the team already has a report they can hand over, needs to generate a fresh

@@ -308,7 +308,6 @@ export default async function PlansPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your plans</p>
             <h2 className="module-section-title">Planning documents</h2>
             <p className="module-section-description">
               Filter by project, type, or status to isolate the plans that are ready for attention.

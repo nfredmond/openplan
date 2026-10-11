@@ -126,7 +126,6 @@ export function ProjectDeliveryBoard({
               <Target className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Project controls</p>
               <h2 className="module-section-title">Milestone, submittal, and invoice readiness</h2>
               <p className="module-section-description">
                 Milestones, submittals, and invoices, tracked the way a local-assistance project needs them. The workflow works today; OpenPlan does not yet fill in a funder&apos;s exact exhibit and form numbers for you.
@@ -437,7 +436,6 @@ export function ProjectDeliveryBoard({
                 <Target className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Milestones</p>
                 <h2 className="module-section-title">Phase checkpoints</h2>
               </div>
             </div>
@@ -514,7 +512,6 @@ export function ProjectDeliveryBoard({
                 <FileClock className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Submittals</p>
                 <h2 className="module-section-title">Packets in review flow</h2>
               </div>
             </div>
@@ -591,7 +588,6 @@ export function ProjectDeliveryBoard({
               <ClipboardCheck className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Deliverables</p>
               <h2 className="module-section-title">Outputs to ship</h2>
             </div>
           </div>

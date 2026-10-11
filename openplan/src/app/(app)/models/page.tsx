@@ -581,7 +581,6 @@ export default async function ModelsPage({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your models</p>
             <h2 className="module-section-title">Travel models</h2>
             <p className="module-section-description">
               Filter by status, project, or model family to find the ones that need attention.

@@ -127,7 +127,6 @@ export function RtpRegistryPacketQueueCommandBoard({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Packet queue command board</p>
           <h2 className="module-section-title">Clear the RTP packet queue</h2>
           <p className="module-section-description">
             Run the recommended packet-queue sequence from the registry: create missing records, reset stale customized layouts, then generate every queued packet artifact.

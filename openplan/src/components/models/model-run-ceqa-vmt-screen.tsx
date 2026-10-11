@@ -243,7 +243,6 @@ export function ModelRunCeqaVmtScreen({
               <Scale className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">CEQA VMT screen</p>
               <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             </div>
           </div>
@@ -267,7 +266,6 @@ export function ModelRunCeqaVmtScreen({
             <Scale className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">CEQA VMT screen</p>
             <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             <p className="module-section-description">
               Screens this run&apos;s stored VMT KPIs — derived from assignment link volumes

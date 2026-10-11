@@ -140,7 +140,6 @@ export function GrantsAwardsReimbursementSection({
     <article id="grants-awards-reimbursement" className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Committed awards</p>
           <h2 className="module-section-title">Workspace awards and reimbursement status</h2>
           <p className="module-section-description">
             The same funding records shown on each project, brought together in one workspace view so you can see where award dollars are still uninvoiced, in flight, or fully reimbursed.

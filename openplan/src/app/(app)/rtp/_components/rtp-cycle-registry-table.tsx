@@ -101,7 +101,6 @@ export function RtpCycleRegistryTable({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Registry</p>
             <h2 className="module-section-title">Tracked RTP cycles</h2>
             <p className="module-section-description">
               Keep the update cadence, public-review posture, and linked packet recommendation posture visible from the same registry.

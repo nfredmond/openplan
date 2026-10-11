@@ -79,7 +79,6 @@ export function ReportNarrativeDraftPanel({
     <article id="report-narrative-draft-panel" className="module-section-surface" data-testid="report-narrative-draft-panel">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">AI narrative assist</p>
           <h2 className="module-section-title">Section narrative drafts</h2>
           <p className="module-section-description">
             Draft the summary section as grounded prose, review every flagged sentence, then accept

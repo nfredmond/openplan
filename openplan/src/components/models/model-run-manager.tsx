@@ -715,7 +715,6 @@ export function ModelRunManager({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Runs</p>
           <h2 className="module-section-title">Launch and track this model&apos;s runs</h2>
           <p className="module-section-description">
             Each launch keeps an exact copy of its inputs, so a run can always be traced back to what went into it. Attach the results to the right scenario entry when they arrive.
