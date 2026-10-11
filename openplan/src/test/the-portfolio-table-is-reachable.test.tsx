@@ -184,7 +184,7 @@ describe("a planner reaches the portfolio table on /projects", () => {
   it("shows “—” WITH ITS REASON where the budget basis is incomplete", async () => {
     await renderPage();
     // P2 has one deliverable carrying no budget and no project budget.
-    expect(screen.getByText(/nothing to measure spending against/i)).toBeTruthy();
+    expect(screen.getByText(/nothing to measure against/i)).toBeTruthy();
   });
 
   it("says a lane could not be read instead of rendering zeros over it", async () => {
