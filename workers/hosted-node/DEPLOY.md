@@ -23,6 +23,10 @@ container. The renderer consumes server-authored report HTML. Treat this as a
 container trust boundary, preserve authentication and report input escaping,
 and do not use it as a general public browsing service.
 
+The image includes Poppler's `pdftoppm`. Work-program exports use it to render
+explicitly cited original PDF pages. Verify a page render in the deployed image;
+Chromium availability alone does not establish this dependency.
+
 The October 10 installation uses one CPU and at most 2 GB RAM in Railway
 us-west2, one replica, automatic restart on failure and no public port. These
 limits are operating settings, not a throughput guarantee. Verify actual queue

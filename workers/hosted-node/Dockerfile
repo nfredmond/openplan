@@ -3,7 +3,7 @@ FROM node:24-bookworm-slim
 # Chromium runs inside this dedicated container as the node user. The wrapper
 # disables its separate sandbox because managed containers cannot create it.
 # This container receives only server-authored report HTML, not public browsing.
-RUN apt-get update && apt-get install -y --no-install-recommends chromium fonts-liberation \
+RUN apt-get update && apt-get install -y --no-install-recommends chromium fonts-liberation poppler-utils \
     && rm -rf /var/lib/apt/lists/* \
     && printf '#!/bin/sh\nexec /usr/bin/chromium --no-sandbox "$@"\n' > /usr/local/bin/openplan-chromium \
     && chmod 755 /usr/local/bin/openplan-chromium
