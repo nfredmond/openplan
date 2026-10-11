@@ -8,6 +8,7 @@ import { selectedWorkers, superviseWorkers } from "./supervise.mjs";
 test("selection rejects unknown or duplicate queues", () => {
   assert.deepEqual(selectedWorkers("provider-api,document-exports"), ["provider-api", "document-exports"]);
   assert.throws(() => selectedWorkers("provider-api,typo"));
+  assert.throws(() => selectedWorkers("synthesis-generation"), "the bounded authorization CLI is not a polling service");
   assert.throws(() => selectedWorkers("provider-api,provider-api"));
 });
 

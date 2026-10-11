@@ -4,7 +4,7 @@ import { pathToFileURL } from "node:url";
 
 export const workerNames = Object.freeze([
   "document-exports", "engagement-email", "provider-api", "translation-generation",
-  "synthesis-preparation", "synthesis-generation", "synthesis-execution", "contract-calculations",
+  "synthesis-preparation", "synthesis-execution", "contract-calculations",
 ]);
 
 export function selectedWorkers(value) {

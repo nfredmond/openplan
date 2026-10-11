@@ -1,7 +1,7 @@
 # Hosted application queues
 
 Build from the repository root with `docker build -f workers/hosted-node/Dockerfile .`.
-The image runs eight existing Node queue workers under one supervisor. If any
+The image runs seven existing Node queue workers under one supervisor. If any
 queue process exits unexpectedly, including exit zero, the supervisor stops its
 siblings and fails the service so the host can restart it. An operator signal
 stops the service normally. Restart does not authorize replaying an uncertain write.
@@ -14,7 +14,7 @@ engagement email, provider API, translation, and synthesis journals must survive
 a deployment. A database backup does not include these filesystem journals.
 
 `OPENPLAN_NODE_WORKERS` can select distinct supported queues by comma-separated
-name. Omit it to run all eight. Unknown or duplicate names refuse startup. AI
+name. Omit it to run all seven. Unknown or duplicate names refuse startup. AI
 queues still require a provider configured by the workspace; hosting the queue
 does not supply an AI account or authorize its charges.
 
