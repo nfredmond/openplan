@@ -192,7 +192,12 @@ alert is $25 and its hard usage limit is $40. The Railway Agent hard limit is $1
 Resend uses its free plan with pay-as-you-go disabled. No new shared paid AI key
 is configured. Workspace-owned provider keys or independently installed
 providers remain the user's choice; optional paid AI usage belongs to that
-provider account. The existing Mapbox token remains in use; its separate account
+provider account. The prepared Anthropic demo API workspace has a $5 monthly
+cap and uses existing prepaid credits with auto reload off. Its encrypted
+workspace-key configuration and actual AI request checks belong in the final
+acceptance record. Workspace setup health resolves its own readable Anthropic
+key, matching the dashboard and request routes, rather than requiring a shared
+deployment key. The existing Mapbox token remains in use; its separate account
 billing and license review is not proved by this relaunch. These controls do
 not guarantee capacity for an arbitrary number of regional model jobs.
 
