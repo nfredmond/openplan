@@ -295,5 +295,26 @@ Both synthetic build scenarios complete through the real workers. Guided
 comparison correctly refuses to combine them with the earlier AequilibraE
 baseline: its previous worker build recorded a different solver-visible network
 state. The three newer outputs share the current recorded state. A fresh
-baseline is queued on the current worker; the older outputs remain retained.
-No comparison or validation claim is promoted by these execution checks.
+baseline completes on the current worker. Exact comparison
+`a939cf65-f8f0-4ec4-b8f5-8e3c948a2289` saves all four outputs with matching
+network, assignment-profile and settings hashes. Each output remains prototype
+only; the synthetic minus-five-percent build parameter is a transmission check,
+not a project-effect prediction. The older outputs remain retained. No scientific
+validation claim is promoted by these execution checks.
+
+Staged production build `84f3674` also reaches Ready. Its registry timestamp
+renders UTC correctly, but a direct browser reload still reports hydration error
+418 in the initial notification list. The inbox now uses the same UTC formatter.
+Its initial server-rendered markup is compared across UTC, Los Angeles and
+Honolulu. This covers rendered notification markup, not the entire page.
+The three focused suites pass 26 checks and focused lint passes. A harmless
+comment passes; substituting default-zone notification rendering fails the
+targeted markup assertion. A fresh deployed reload remains required.
+
+The latest verified-TLS managed capture is a 6,717,114-byte custom database
+archive whose index reads successfully. A fresh private Storage capture retains
+146 objects totaling 36,154,548 bytes with individual SHA-256 digests. These are
+capture checks, not a new restore rehearsal or a consistent multi-service
+snapshot. Application writers remain active. Recent model logs retain an
+upstream Pandas chained-assignment warning from completed assignment jobs;
+execution success does not resolve that scientific implementation limitation.
