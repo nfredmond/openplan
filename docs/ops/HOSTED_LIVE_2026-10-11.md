@@ -1,5 +1,9 @@
 # Hosted public cutover, October 11, 2026
 
+The [later demo AI and schema catch-up](HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md)
+supersedes this checkpoint's unconfigured-demo-AI and unapplied-GTFS statements.
+This record retains its initial deployment and test identities.
+
 OpenPlan is live at [openplan-zeta.vercel.app](https://openplan-zeta.vercel.app).
 The public address serves checked `main` commit
 `8e721db11acf07755fbd6a4b6230d68ff912081b`, version 0.68.0, at this acceptance
