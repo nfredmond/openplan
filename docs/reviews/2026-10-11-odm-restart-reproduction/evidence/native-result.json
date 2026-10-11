@@ -1,0 +1,30 @@
+{
+  "observedDefect": "queued_admission_identity_lost_on_restart",
+  "recoveryAccepted": false,
+  "controls": 23,
+  "sourceBodyBytesSent": 0,
+  "nodeodmRequests": 0,
+  "newJobReference": true,
+  "originalRootAndPackageUnchanged": true,
+  "durationSeconds": 0.467,
+  "claimLimits": [
+    "admission_counterexample_only",
+    "no_imagery_or_engine_processing",
+    "no_scientific_accuracy",
+    "no_artifact_recovery",
+    "no_live_openplan_callback_rls",
+    "no_browser_public_acceptance"
+  ],
+  "service": {
+    "InvocationID": "00fcc8187d3444128968f84996edec48",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "33357824",
+    "CPUUsageNSec": "283273000",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "ExecMainStartTimestamp": "Sun 2026-10-11 12:31:57 PDT",
+    "ExecMainExitTimestamp": "Sun 2026-10-11 12:31:57 PDT"
+  },
+  "baseCommit": "82a3b5a3f4774ca11fa4da9abc26b206dbd802b9"
+}

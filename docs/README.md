@@ -55,6 +55,8 @@ The [October 11 native OCR text-layer recovery proof](reviews/2026-10-11-ocr-wor
 
 The [October 11 OCR inventory/root-set integration proof](reviews/2026-10-11-ocr-inventory-root-set/STATUS.md) binds a selected synthetic configuration and root through both existing operators, then continues the original result in a fresh runtime. The consumer reads a persisted ledger, and 53 controls pass. One fixture is configured; the other 14 families and installation coverage remain unassessed.
 
+The [October 11 aerial admission counterexample](reviews/2026-10-11-odm-restart-reproduction/STATUS.md) reproduces a queued ODM request receiving a new job/admission identity after complete stopped-root restoration. No imagery or engine work runs. The defect remains open; a verifying file package does not establish recovery of memory-only accepted work.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
