@@ -1,0 +1,54 @@
+{
+  "head": "c75fa343d6b0c9fed028bda042f73a7fc2a1a637",
+  "buildId": "palf6jxoWtH9FdWik_Q6r",
+  "images": [
+    {
+      "path": "reviewed-cancelled-desktop.png",
+      "bytes": 343531,
+      "sha256": "28b723494af7f565b2a2ff9b485aa4518f3e23d347e4595a71104d242f509105",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bj82c-75ce6090.png"
+    },
+    {
+      "path": "reviewed-cancelled-390.png",
+      "bytes": 141101,
+      "sha256": "6c83c7b5791c4ba18a1428292f688eed8b321eaf5a850957673f373c9eaafef7",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bj6yv-52ade0c7.png"
+    },
+    {
+      "path": "reviewed-feed-desktop.png",
+      "bytes": 357853,
+      "sha256": "d55a1120b5638a39f30a7a9206cc3cd430cf82fc7841abef1e4712deb00c2a29",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bm92l-087290fa.png"
+    },
+    {
+      "path": "reviewed-feed-390.png",
+      "bytes": 178601,
+      "sha256": "3c98f85744caa6837b0514a2fbf5259ff0dc6e4899dff27d7da268b68bd4b6aa",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bma5k-3f347ca9.png"
+    },
+    {
+      "path": "reviewed-study-desktop.png",
+      "bytes": 250874,
+      "sha256": "3eeeed29b72ad8070e491ac2ef24a9ef70b9613b72382f07abc37a64c4a5da6a",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bmi5l-57781a27.png"
+    },
+    {
+      "path": "reviewed-study-390.png",
+      "bytes": 118987,
+      "sha256": "6b69d6c2c0324495953b5c01e212c3b36b26df23b0a152d18b6885fa2db43bd8",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3bmhrp-ea872b04.png"
+    }
+  ]
+}

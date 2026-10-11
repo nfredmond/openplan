@@ -1,0 +1,34 @@
+{
+  "head": "c75fa343d6b0c9fed028bda042f73a7fc2a1a637",
+  "buildId": "palf6jxoWtH9FdWik_Q6r",
+  "health": {
+    "status": "ok",
+    "service": "openplan",
+    "checkedAt": "2026-10-11T04:33:27.117Z",
+    "deployment": {
+      "commit": "c75fa343d6b0",
+      "version": "0.68.0"
+    },
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    }
+  },
+  "cwdConfirmed": true,
+  "appUnit": "openplan-gtfs-reviewed-production-app-20261010-01",
+  "appMemoryPeakBytes": 400588800,
+  "buildUnit": "openplan-gtfs-reviewed-production-build-20261010-01",
+  "buildExitCode": 0,
+  "buildWallSeconds": 172.367,
+  "buildCpuSeconds": 171.738,
+  "buildMemoryPeakRounded": "4.9G",
+  "buildMemoryLimitBytes": 8589934592,
+  "buildSwapMaxBytes": 0,
+  "webpack": true,
+  "pageWorkerCount": 1,
+  "limits": [
+    "Health reports app only; database is not checked by this endpoint.",
+    "Build occurred before the later desktop crash. No causal attribution for the host OOM is established.",
+    "The later main UI join is not this build."
+  ]
+}

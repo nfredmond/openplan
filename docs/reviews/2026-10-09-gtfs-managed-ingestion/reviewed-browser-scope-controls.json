@@ -1,0 +1,40 @@
+{
+  "records": [
+    {
+      "case": "actual-cli-baseline",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "case": "actual-cli-harmless-note",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null
+    },
+    {
+      "case": "wrong-database-refused-before-query",
+      "passed": true,
+      "exitCode": 1,
+      "expectedFailure": "isolated-database-scope"
+    },
+    {
+      "case": "missing-proof-directory",
+      "passed": true,
+      "exitCode": 1,
+      "expectedFailure": "FileNotFoundError"
+    },
+    {
+      "case": "actual-cli-restored",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null
+    }
+  ],
+  "protectedConfigurationUnchanged": true,
+  "limits": [
+    "Copies retain private credentials with mode 0600. None are printed or committed.",
+    "Wrong target fails before SQL dispatch. No unowned database is read or modified.",
+    "Positive commands rerun the recorded-build observer against fresh native rows, not a new browser journey."
+  ]
+}
