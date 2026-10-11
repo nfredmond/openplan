@@ -559,6 +559,9 @@ describe("PublicSurveyForm", () => {
     render(<PublicSurveyForm shareToken="token12345678" questions={await englishQuestions()} messages={EN_BUNDLE} />);
     const honeypot = screen.getByLabelText("Website") as HTMLInputElement;
     expect(honeypot.tabIndex).toBe(-1);
+    expect(honeypot.getAttribute("autocomplete")).toBe("off");
+    expect(honeypot.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(honeypot.parentElement).toHaveClass("sr-only");
   });
 
   // ── The language of the question ───────────────────────────────────────────

@@ -118,7 +118,9 @@ export function modelStatusTone(
 export function formatModelDateTime(value: string | null | undefined): string {
   if (!value) return "Unknown";
   const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : `${parsed.toLocaleString("en-US", { timeZone: "UTC" })} UTC`;
 }
 
 export function buildModelLinkageCounts({

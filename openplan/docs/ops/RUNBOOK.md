@@ -428,6 +428,11 @@ External worker files, protected configuration, custom cluster roles, hosted
 layouts and production cutover remain outside the executable full-archive drill.
 It does not make the whole installation recoverable by itself.
 
+The [October 10 hosted recovery record](HOSTED_RECOVERY.md) documents the managed
+Supabase and Railway rehearsal, its platform role/event-trigger replay, retained
+file checks and remaining Auth/Storage cutover boundaries. Use that record for
+the hosted topology; do not run local container commands against hosted services.
+
 A restore that replaces durable state needs the deployment owner's explicit
 approval. Restore into an isolated target first, verify tenant boundaries,
 authentication, hashes and reopened planner work, and record actual elapsed time

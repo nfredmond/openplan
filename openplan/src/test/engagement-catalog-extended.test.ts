@@ -4,9 +4,29 @@ import {
   normalizeEngagementSlug,
   makeEngagementCategorySlug,
   engagementStatusTone,
+  formatEngagementDateTime,
 } from "@/lib/engagement/catalog";
 
 describe("engagement catalog utilities (extended)", () => {
+  it("keeps retained moderation timestamps identical across hydration time zones", () => {
+    const original = process.env.TZ;
+    try {
+      for (const zone of ["UTC", "America/Los_Angeles", "Pacific/Honolulu"]) {
+        process.env.TZ = zone;
+        expect(formatEngagementDateTime("2026-10-11T04:56:21.000Z"))
+          .toBe("10/11/2026, 4:56:21 AM UTC");
+      }
+    } finally {
+      if (original === undefined) delete process.env.TZ;
+      else process.env.TZ = original;
+    }
+  });
+
+  it("leaves missing and unparseable moderation timestamps explicit", () => {
+    expect(formatEngagementDateTime(null)).toBe("Unknown");
+    expect(formatEngagementDateTime("unavailable")).toBe("unavailable");
+  });
+
   it("titleizes compound engagement values", () => {
     expect(titleizeEngagementValue("map_feedback")).toBe("Map Feedback");
     expect(titleizeEngagementValue("comment_collection")).toBe("Comment Collection");

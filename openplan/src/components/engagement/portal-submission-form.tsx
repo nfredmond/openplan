@@ -1241,11 +1241,11 @@ export function PortalSubmissionForm({
 
       {/*
         Honeypot. Deliberately NOT translated and deliberately not in the
-        catalog: it is aria-hidden and off-screen, no participant or screen
-        reader ever meets it, and a bot is the only reader. `-start-` rather than
-        `-left-` so it hides off the correct edge in a right-to-left page.
+        catalog: it is aria-hidden and out of the tab order. Clipping it
+        in place keeps it hidden without expanding right-to-left pages. Bots
+        still encounter the field in the form markup.
       */}
-      <div className="absolute -start-[9999px] opacity-0" aria-hidden="true">
+      <div className="sr-only" aria-hidden="true">
         <label htmlFor="portal-website">Website</label>
         <input
           id="portal-website"

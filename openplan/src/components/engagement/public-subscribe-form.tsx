@@ -170,20 +170,19 @@ export function PublicSubscribeForm({
       )}
       {/*
         Honeypot. Deliberately NOT translated and deliberately not in the
-        catalog: it is `aria-hidden`, off-screen and out of the tab order, so no
+        catalog: it is `aria-hidden`, clipped and out of the tab order, so no
         participant and no screen reader ever meets it, and a translated
         honeypot would be a tell.
 
-        `-start-` rather than `-left-`, matching the other three honeypots in
-        this module: on a right-to-left page `-left-[9999px]` puts the field in
-        the middle of the layout rather than off the edge of it.
+        Clipping in place avoids the horizontal overflow that large negative
+        offsets produce on right-to-left pages. Bots still see the field.
 
         `tabIndex={-1}` keeps a keyboard user out of it and `autoComplete="off"`
         keeps a browser's address autofill out of it — either one would classify
         a real person as a bot, and the submit route discards a flagged
         submission without telling anybody.
       */}
-      <div className="absolute -start-[9999px] opacity-0" aria-hidden="true">
+      <div className="sr-only" aria-hidden="true">
         <label htmlFor="subscribe-website">Website</label>
         <input
           id="subscribe-website"

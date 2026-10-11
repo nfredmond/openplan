@@ -6,6 +6,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadModelAccess } from "@/lib/models/api";
 import {
   parseStorageRef,
+  hostedModelMirrorRef,
   readContainedLocalArtifact,
   resolveContainedLocalPath,
   resolveRunWorkDir,
@@ -94,7 +95,7 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
 
   const { data: artifact, error: artifactError } = await auth.supabase
     .from("model_run_artifacts")
-    .select("id, run_id, artifact_type, file_url")
+    .select("id, run_id, stage_id, artifact_type, file_url, content_hash")
     .eq("id", parsedParams.data.artifactId)
     .eq("run_id", parsedParams.data.modelRunId)
     .maybeSingle();
@@ -110,7 +111,10 @@ export async function GET(req: NextRequest, context: RouteContext): Promise<Next
     return NextResponse.json({ error: "Artifact not found" }, { status: 404 });
   }
 
-  const fileUrl = artifact.file_url as string;
+  const mirrorRef = !workerLocalRoot() && process.env.OPENPLAN_HOSTED_ARTIFACT_MIRROR === "1"
+    ? hostedModelMirrorRef(artifact)
+    : null;
+  const fileUrl = mirrorRef ?? artifact.file_url as string;
 
   // file_url is member-writable data (artifact rows can be registered by any
   // workspace member, and the skims API accepts caller-supplied file_url), so

@@ -577,11 +577,14 @@ describe("the portal in the participant's language", () => {
     expect(wrapper?.getAttribute("dir")).toBe("rtl");
     expect(wrapper?.getAttribute("lang")).toBe("ar");
 
-    // A declared `dir` with physical spacing underneath is broken with extra
-    // steps, so the reply-thread indent and the honeypot's off-screen offset are
-    // both logical.
-    expect(container.innerHTML).not.toMatch(/class="[^"]*\s-left-\[9999px\]/);
-    expect(container.querySelector(".-start-\\[9999px\\]")).not.toBeNull();
+    // The bot field remains inaccessible without a distant offset that expands
+    // right-to-left scroll width. Browser QA measures the rendered overflow.
+    const honeypot = container.querySelector<HTMLInputElement>("#portal-website");
+    expect(honeypot).not.toBeNull();
+    expect(honeypot?.tabIndex).toBe(-1);
+    expect(honeypot?.getAttribute("autocomplete")).toBe("off");
+    expect(honeypot?.closest('[aria-hidden="true"]')).not.toBeNull();
+    expect(honeypot?.parentElement).toHaveClass("sr-only");
   });
 
   it("reads a date and a count the way the participant's language does", () => {

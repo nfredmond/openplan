@@ -1,9 +1,11 @@
 """Bound output adapters use real journals; transport and bytes are synthetic."""
 import copy
+import hashlib
 from unittest.mock import Mock, patch
 import unittest
 
 import model_attempt_writer as managed
+import model_hosted_artifacts
 import model_attempt_invocation as invocation
 import model_command_client as client
 import model_command_journal as journal
@@ -55,6 +57,22 @@ class OutputTests(unittest.TestCase):
         for call in self.post.call_args_list:
             self.assertEqual(call.kwargs['json']['p_attempt_id'], IDS[3])
         self.assertEqual(self.artifact()['metadata_json'], {'claim_tier': 'prototype'})
+
+    def test_hosted_managed_mirror_keeps_attempt_scope_and_stops_on_unconfirmed_bytes(self):
+        directory = self.writer.workspace(self.directory / 'files' / 'runs', IDS[1])
+        source = directory / 'synthetic.csv'
+        data = b'synthetic bytes'
+        source.write_bytes(data)
+        payload = {**self.artifact(), 'file_url': 'local://' + str(source),
+                   'file_size_bytes': len(data), 'content_hash': hashlib.sha256(data).hexdigest()}
+        with patch.dict(managed.os.environ, {'OPENPLAN_HOSTED_ARTIFACT_MIRROR': '1'}), \
+                patch.object(model_hosted_artifacts, 'configured_upload', side_effect=RuntimeError('stored bytes missing')) as upload:
+            with self.assertRaisesRegex(RuntimeError, 'stored bytes missing'):
+                self.writer.record_artifact(payload)
+            upload.assert_called_once()
+        self.post.assert_not_called()
+        self.assertTrue(self.writer.stopped)
+        self.assertEqual(source.read_bytes(), data)
 
     def test_changed_named_artifact_bytes_do_not_create_another_request(self):
         original = self.artifact()
