@@ -64,6 +64,8 @@ class Checks(unittest.TestCase):
 
     def test_original_plan_and_commands(self):
         effects = self.open();plan = json.loads((self.root/'plan.json').read_bytes())
+        self.assertEqual(plan['format'], 'openplan.odm-engine-plan.v1', 'photo plan format must remain original')
+        self.assertEqual(set(plan), {'format', 'binding', 'sourceManifestSha256', 'engine', 'taskUuid', 'name', 'options', 'uploads'}, 'photo plan fields must remain original')
         self.assertEqual(plan['binding']['originalRequest'], self.request, 'original request must remain in plan')
         self.assertEqual(plan['engine'], self.engine, 'complete engine identity must remain in plan')
         self.assertEqual(plan['sourceManifestSha256'], hashlib.sha256((self.source/'manifest.json').read_bytes()).hexdigest())
@@ -129,7 +131,7 @@ class Checks(unittest.TestCase):
         receipt = retained_source.prepare(**self.source_arguments)
         receipt['manifest']['binding']['originalRequest']['imagery']['type'] = 'zip_url'
         args = {key: self.args[key] for key in ('engine', 'task_uuid', 'name', 'options', 'filenames')}
-        with self.assertRaisesRegex(ValueError, 'ZIP derived-image'): module.make_plan(receipt, **args)
+        with self.assertRaisesRegex(ValueError, '^ZIP source requires original derived-image custody$'): module.make_plan(receipt, **args)
 
     def test_original_source_bytes_rechecked_before_issue(self):
         effects = self.open();(self.source/'objects/source-00000.bin').write_bytes(b'changed bytes')

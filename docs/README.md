@@ -69,6 +69,8 @@ The [October 11 captured aerial draft inspector](reviews/2026-10-11-odm-draft-cu
 
 The [October 11 original ZIP-derived source candidate](reviews/2026-10-11-odm-zip-derived-custody/STATUS.md) retains ordered member bytes and distinct image-slot filenames under the original archive/admission/context. Actual interrupted-copy recovery resumes from the captured retained ZIP without the original download. Engine-journal and runtime integration remain open.
 
+The [October 11 ZIP engine-journal integration candidate](reviews/2026-10-11-odm-zip-engine-integration/STATUS.md) binds actual derived image bytes and original archive lineage before command intents. Stopped-root replay preserves uncertain commands; actual cached engine drafts compare exact original slots. Runtime dispatch and complete worker recovery remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

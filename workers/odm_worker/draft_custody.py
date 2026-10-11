@@ -11,7 +11,8 @@ import re
 import time
 
 from admission_journal import private
-from engine_effects import FORMAT, commands, make_plan, same
+from engine_effects import FORMAT, ZIP_FORMAT, commands, make_plan, same
+import derived_zip
 from retained_source import absolute, check_time, digest, finite_limit, json_bytes, reader
 
 METADATA_LIMIT = 1024 * 1024
@@ -19,18 +20,31 @@ METADATA_LIMIT = 1024 * 1024
 
 def original_plan(plan):
     fields = {'format', 'binding', 'sourceManifestSha256', 'engine', 'taskUuid', 'name', 'options', 'uploads'}
-    if not isinstance(plan, dict) or set(plan) != fields or plan['format'] != FORMAT or not isinstance(plan['sourceManifestSha256'], str) or not re.fullmatch('[0-9a-f]{64}', plan['sourceManifestSha256']):
+    zipped = isinstance(plan, dict) and plan.get('format') == ZIP_FORMAT
+    if zipped: fields.add('sourceCustody')
+    if not isinstance(plan, dict) or set(plan) != fields or plan['format'] not in (FORMAT, ZIP_FORMAT) or not isinstance(plan['sourceManifestSha256'], str) or not re.fullmatch('[0-9a-f]{64}', plan['sourceManifestSha256']):
         raise ValueError('Original engine plan shape or source identity differs')
     uploads = plan['uploads']
     if not isinstance(uploads, list) or not uploads:
         raise ValueError('Original engine upload mapping is required')
     for index, row in enumerate(uploads):
-        if not isinstance(row, dict) or set(row) != {'slot', 'objectRelativePath', 'bytes', 'sha256', 'filename'} or type(row['slot']) is not int or row['slot'] != index or row['objectRelativePath'] != f'objects/source-{index:05d}.bin' or type(row['bytes']) is not int or row['bytes'] < 0 or not isinstance(row['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', row['sha256']):
+        row_fields = {'slot', 'objectRelativePath', 'bytes', 'sha256', 'filename'} | ({'archiveMember'} if zipped else set())
+        prefix = 'image' if zipped else 'source'
+        if not isinstance(row, dict) or set(row) != row_fields or type(row['slot']) is not int or row['slot'] != index or row['objectRelativePath'] != f'objects/{prefix}-{index:05d}.bin' or type(row['bytes']) is not int or row['bytes'] < 0 or not isinstance(row['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', row['sha256']):
             raise ValueError('Original engine upload record differs')
     try:
         receipt = {'manifest': {'binding': plan['binding'], 'sources': [
-            {key: value for key, value in row.items() if key != 'filename'} for row in uploads]},
+            {key: value for key, value in row.items() if zipped or key != 'filename'} for row in uploads]},
             'manifestSha256': plan['sourceManifestSha256']}
+        if zipped:
+            custody = plan['sourceCustody']
+            if not isinstance(custody, dict) or set(custody) != {'retainedManifestSha256', 'derivedPlanSha256', 'archive'}:
+                raise ValueError('Original ZIP source custody shape differs')
+            if plan['binding']['originalRequest']['imagery']['type'] != 'zip_url':
+                raise ValueError('Original ZIP plan requires ZIP imagery')
+            receipt['manifest'].update(format=derived_zip.MANIFEST,
+                sourceManifestSha256=custody['retainedManifestSha256'],
+                planSha256=custody['derivedPlanSha256'], archive=custody['archive'])
         reconstructed = make_plan(receipt, plan['engine'], plan['taskUuid'], plan['name'],
                                   plan['options'], [row['filename'] for row in uploads])
     except (KeyError, TypeError) as error:

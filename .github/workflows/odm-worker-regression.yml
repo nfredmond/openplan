@@ -58,3 +58,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py \
             --out "$RUNNER_TEMP/odm-zip-derived-native"
+      - name: ZIP engine lineage harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-zip-engine-controls"
+      - name: Original ZIP engine stopped-root replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-zip-engine-native"

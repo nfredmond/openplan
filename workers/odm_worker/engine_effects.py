@@ -2,7 +2,7 @@
 
 No HTTP request runs here. A first-issue flag is not authority, sequencing or
 verified engine custody. Uncertain effects need actual backend reconciliation.
-Cooperative writers, private local files and retained photo slots are required.
+Cooperative writers, private local files and retained image slots are required.
 """
 import base64
 import hashlib
@@ -11,12 +11,15 @@ import math
 import re
 import time
 import uuid
+from pathlib import PurePosixPath
 from urllib.parse import urlsplit
 
 from admission_journal import encoded, private, synchronize
 from retained_source import absolute, json_bytes, prepare, publish, read_json, writer
+import derived_zip
 
 FORMAT = 'openplan.odm-engine-plan.v1'
+ZIP_FORMAT = 'openplan.odm-engine-zip-plan.v1'
 INTENT = 'openplan.odm-engine-intent.v1'
 REPLY = 'openplan.odm-engine-reply.v1'
 RESPONSE_LIMIT = 1024 * 1024
@@ -34,6 +37,28 @@ def nonempty(value):
     return isinstance(value, str) and bool(value.strip())
 
 
+def zip_custody(manifest):
+    """Validate ordered derived-slot descriptors without attesting their bytes."""
+    archive = manifest.get('archive')
+    hashes = (manifest.get('sourceManifestSha256'), manifest.get('planSha256'))
+    if manifest.get('format') != derived_zip.MANIFEST or any(not isinstance(value, str) or not re.fullmatch('[0-9a-f]{64}', value) for value in hashes) or not isinstance(archive, dict) or set(archive) != {'bytes', 'sha256'} or type(archive['bytes']) is not int or archive['bytes'] < 0 or not isinstance(archive['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', archive['sha256']):
+        raise ValueError('ZIP derived-image lineage is required')
+    rows = manifest.get('sources')
+    if not isinstance(rows, list) or not rows:
+        raise ValueError('ZIP derived-image slots are required')
+    names = []
+    for index, row in enumerate(rows):
+        if not isinstance(row, dict) or set(row) != {'slot', 'objectRelativePath', 'filename', 'archiveMember', 'bytes', 'sha256'} or type(row['slot']) is not int or row['slot'] != index or row['objectRelativePath'] != f'objects/image-{index:05d}.bin' or type(row['bytes']) is not int or row['bytes'] < 0 or not isinstance(row['sha256'], str) or not re.fullmatch('[0-9a-f]{64}', row['sha256']):
+            raise ValueError('ZIP derived-image slot mapping differs')
+        member = row['archiveMember']
+        if not isinstance(member, str) or not member or len(member) > 1024 or '\\' in member or any(ord(char) < 32 or ord(char) == 127 for char in member) or PurePosixPath(member).is_absolute() or str(PurePosixPath(member)) != member or any(part in ('.', '..') for part in member.split('/')) or PurePosixPath(member).suffix.lower() not in derived_zip.IMAGE_EXTENSIONS or row['filename'] != f'image-{index:05d}'+PurePosixPath(member).suffix.lower():
+            raise ValueError('ZIP derived-image member or filename differs')
+        names.append(member)
+    if names != sorted(set(names)):
+        raise ValueError('ZIP derived-image member order differs')
+    return {'retainedManifestSha256': hashes[0], 'derivedPlanSha256': hashes[1], 'archive': archive}
+
+
 def engine_identity(value):
     fields = {'instanceId', 'endpoint', 'api', 'version', 'imageId', 'configurationSha256', 'credentialReference'}
     if not isinstance(value, dict) or set(value) != fields or not all(nonempty(value[key]) for key in fields):
@@ -48,8 +73,12 @@ def engine_identity(value):
 
 def make_plan(receipt, engine, task_uuid, name, options, filenames):
     manifest = receipt['manifest']
-    if manifest['binding']['originalRequest']['imagery']['type'] != 'photo_manifest':
-        raise ValueError('ZIP derived-image custody is not implemented')
+    source_type = manifest['binding']['originalRequest']['imagery']['type']
+    if source_type not in ('photo_manifest', 'zip_url') or source_type == 'zip_url' and manifest.get('format') != derived_zip.MANIFEST:
+        raise ValueError('ZIP source requires original derived-image custody')
+    custody = zip_custody(manifest) if source_type == 'zip_url' else None
+    if custody is not None and filenames != [row['filename'] for row in manifest['sources']]:
+        raise ValueError('ZIP original derived filenames must be preserved')
     if not isinstance(task_uuid, str) or not re.fullmatch('[0-9a-f]{8}-[0-9a-f]{4}-[1-7][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}', task_uuid) or str(uuid.UUID(task_uuid)) != task_uuid:
         raise ValueError('Original engine task UUID must be canonical')
     if not nonempty(name) or len(name) > 512:
@@ -59,9 +88,12 @@ def make_plan(receipt, engine, task_uuid, name, options, filenames):
     if not isinstance(filenames, list) or len(filenames) != len(manifest['sources']) or any(not isinstance(item, str) or not re.fullmatch('[A-Za-z0-9][A-Za-z0-9._-]{0,179}\\.(jpg|jpeg|png|tif|tiff)', item) for item in filenames) or len(set(filenames)) != len(filenames):
         raise ValueError('Exact ordered upload filenames are required')
     uploads = [{**row, 'filename': filename} for row, filename in zip(manifest['sources'], filenames)]
-    return json.loads(encoded({'format': FORMAT, 'binding': manifest['binding'],
+    plan = {'format': ZIP_FORMAT if custody is not None else FORMAT, 'binding': manifest['binding'],
         'sourceManifestSha256': receipt['manifestSha256'], 'engine': engine_identity(engine),
-        'taskUuid': task_uuid, 'name': name, 'options': options, 'uploads': uploads}, canonical=True))
+        'taskUuid': task_uuid, 'name': name, 'options': options, 'uploads': uploads}
+    if custody is not None:
+        plan['sourceCustody'] = custody
+    return json.loads(encoded(plan, canonical=True))
 
 
 def commands(plan):
@@ -97,7 +129,7 @@ def parsed_reply(plan, operation, status, body):
 
 class Effects:
     """Recheck original source bytes before each private journal operation."""
-    def __init__(self, root, *, source_arguments, engine, task_uuid, name, options, filenames, timeout=2):
+    def __init__(self, root, *, source_arguments, engine, task_uuid, name, options, filenames, timeout=2, derived_arguments=None):
         if type(timeout) not in (int, float) or not math.isfinite(timeout) or timeout <= 0:
             raise ValueError('Engine journal timeout must be positive and finite')
         self.root = absolute(root)
@@ -105,10 +137,20 @@ class Effects:
         if self.root == source_pack or self.root in source_pack.parents or source_pack in self.root.parents:
             raise ValueError('Engine journal and retained source roots must not overlap')
         self.timeout = timeout
+        self.derived_arguments = None
+        if derived_arguments is not None:
+            required = {'destination', 'max_expanded_bytes'}
+            if not isinstance(derived_arguments, dict) or not required <= set(derived_arguments) or set(derived_arguments) - required - {'max_entries', 'max_directory_bytes'}:
+                raise ValueError('Exact ZIP derivation arguments are required')
+            self.derived_arguments = dict(derived_arguments)
+            derived_pack = absolute(self.derived_arguments['destination'])
+            self.derived_arguments['destination'] = derived_pack
+            if self.root == derived_pack or self.root in derived_pack.parents or derived_pack in self.root.parents:
+                raise ValueError('Engine journal and derived image roots must not overlap')
         self.source_arguments = dict(source_arguments)
         self.source_arguments['context'] = json.loads(encoded(source_arguments['context'], canonical=True))
         self.source_arguments['sources'] = list(source_arguments['sources'])
-        receipt = prepare(**self.source_arguments)
+        receipt = self._source_receipt()
         self.plan = make_plan(receipt, engine, task_uuid, name, options, filenames)
         self.plan_bytes = json_bytes(self.plan)
         self.plan_hash = checksum(self.plan_bytes)
@@ -128,10 +170,16 @@ class Effects:
             publish(self.root, 'plan.json', self.plan_bytes)
             self._check()
 
+    def _source_receipt(self):
+        """Revalidate actual raw and derived bytes before journal publication."""
+        if self.derived_arguments is not None:
+            return derived_zip.prepare(self.source_arguments, **self.derived_arguments, timeout=self.timeout)
+        return prepare(**self.source_arguments)
+
     def _check(self):
         if not same(read_json(self.root, 'plan.json'), self.plan):
             raise ValueError('Saved engine plan differs from original identity')
-        receipt = prepare(**self.source_arguments)
+        receipt = self._source_receipt()
         if receipt['manifestSha256'] != self.plan['sourceManifestSha256']:
             raise ValueError('Actual retained engine source identity differs')
         names = {'plan.json', 'writer.lock'}
