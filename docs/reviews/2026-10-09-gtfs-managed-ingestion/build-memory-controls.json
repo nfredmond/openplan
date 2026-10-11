@@ -1,0 +1,72 @@
+{
+  "records": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "failedTests": []
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "failedTests": []
+    },
+    {
+      "name": "lost-default",
+      "exitCode": 1,
+      "expectedFailure": "retains the default heap",
+      "failedTests": [
+        "the build command respects operator memory settings retains the default heap for absent options: undefined",
+        "the build command respects operator memory settings retains the default heap for absent options: "
+      ]
+    },
+    {
+      "name": "override-operator",
+      "exitCode": 1,
+      "expectedFailure": "passes the operator heap",
+      "failedTests": [
+        "the build command respects operator memory settings retains the default heap for absent options: undefined",
+        "the build command respects operator memory settings retains the default heap for absent options: ",
+        "the build command respects operator memory settings passes the operator heap to the real child without appending a larger heap",
+        "the build command respects operator memory settings preserves the operator's complete options and the webpack invocation"
+      ]
+    },
+    {
+      "name": "drop-operator-options",
+      "exitCode": 1,
+      "expectedFailure": "preserves the operator's complete options",
+      "failedTests": [
+        "the build command respects operator memory settings retains the default heap for absent options: undefined",
+        "the build command respects operator memory settings retains the default heap for absent options: ",
+        "the build command respects operator memory settings passes the operator heap to the real child without appending a larger heap",
+        "the build command respects operator memory settings preserves the operator's complete options and the webpack invocation"
+      ]
+    },
+    {
+      "name": "drop-webpack",
+      "exitCode": 1,
+      "expectedFailure": "preserves the operator's complete options",
+      "failedTests": [
+        "the build command respects operator memory settings preserves the operator's complete options and the webpack invocation"
+      ]
+    },
+    {
+      "name": "hide-compiler-failure",
+      "exitCode": 1,
+      "expectedFailure": "returns a failed compiler's exit status",
+      "failedTests": [
+        "the build command respects operator memory settings returns a failed compiler's exit status"
+      ]
+    },
+    {
+      "name": "restored",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "failedTests": []
+    }
+  ],
+  "restoredPackageSha256": "78ff4cd645ac879f2f096b74545e81b319a508d12fbe510c3b6bd6d8bbf9518c",
+  "testSha256": "834622cebb634ece547517282e5ce9a291b86572e21d19901e01da56af94b2c6",
+  "boundary": "Actual npm shell invocation and real child V8 heap. Next is replaced by a small executable. No webpack capacity, total process memory, browser, CI or release acceptance."
+}
