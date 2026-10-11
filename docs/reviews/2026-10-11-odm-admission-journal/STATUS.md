@@ -115,3 +115,12 @@ complete. Relaunch coordination remains with its owner.
 Private proof remains under
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-admission-journal-20261011/`.
 Original admissions, full roots, raw rows/logs and earlier trials stay private.
+
+
+## Later concurrent companion-file correction
+
+The [dated race report](../2026-10-11-odm-sqlite-companion-race/STATUS.md) records a
+reproduced transient SQLite companion disappearance and its narrow correction.
+The current suite has 54 tests and 59 controls. Earlier 52-test/57-control source
+bindings and native records above remain historical checkpoints. Missing original
+database and unsafe or unavailable companion checks still refuse access.

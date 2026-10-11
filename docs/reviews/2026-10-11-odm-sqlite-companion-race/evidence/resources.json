@@ -1,0 +1,35 @@
+[
+  {
+    "SubState": "exited",
+    "InvocationID": "88b63777eb074660bc6823a81ddd1e32",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "85528576",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "unit": "openplan-odm-journal-ci-concurrency-20261011-01.service",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "11db5b565a164722858c990dd05ed4f6",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "56020992",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "unit": "openplan-odm-journal-ci-fixed-20261011-01.service",
+    "invocationIdAtStart": "8931fe541a074a8092529ebe454cbded",
+    "exitFromRetainedSummary": 0,
+    "mainPidObservedAfterCompletion": 0,
+    "unitUnloadedBeforeFinalPropertyCapture": true,
+    "configuredMemoryMaxBytes": 268435456,
+    "configuredMemorySwapMaxBytes": 0,
+    "configuredCpuQuota": "100%",
+    "peakObservedWhileActiveBytes": 69025792,
+    "finalPeakJournalDisplay": "65.8M",
+    "exactFinalPeakBytes": "unavailable"
+  }
+]

@@ -26,8 +26,23 @@ Targeted source variants remove the disappearance allowance or broaden it to all
 I/O errors. Both fail at the intended diagnostic. The historical journal control
 runner now retains positive-run stderr and covers these tests.
 
-Verification results and resource records follow after the corrected run. Main
-merges remain held. No public contract, worker default, deployment, database
+All 54 tests and 59 controls pass on installed Python 3.11.15 and 3.14. Two
+new targeted variants fail for the intended reasons. All 200 serial native
+concurrency pairs pass after the correction, in 49.032 seconds. The initial
+[failed repeats](evidence/failed-concurrency-repeats.json) remain beside the
+[corrected repeats](evidence/fixed-concurrency-repeats.json),
+[control results](evidence/python311-controls.json) and
+[exact source bindings](evidence/verification.json). The corrected owned service
+runs under 256 MiB, one CPU and no extra swap. Its final journal reports 65.8 MiB
+peak; the unit unloads before final property capture, so exact final bytes remain
+unavailable. A guarded publication helper refuses that unloaded state; the source
+checkpoint precedes this evidence publication. [Resources](evidence/resources.json)
+preserve failed and passing outcomes. All three owned services have zero active
+PID and stop. Small fixtures do not establish maximum-job capacity, power-loss
+recovery or live application authority.
+
+Stopped-root recovery and the committed GitHub head require separate verification.
+Main merges remain held. No public contract, worker default, deployment, database
 migration or hosted-system changes are part of this correction.
 
 Implementation and controlled checks belong to GPT-6.1 Sol at high reasoning.
