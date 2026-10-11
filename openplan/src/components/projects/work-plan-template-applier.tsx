@@ -252,7 +252,6 @@ export function WorkPlanTemplateApplier({
     <article className="module-section-surface" id="work-plan-templates">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Work plans</p>
           <h2 className="module-section-title">Start a project from a work-plan template</h2>
         </div>
         <span className="module-record-chip">

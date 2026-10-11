@@ -146,7 +146,6 @@ export function ProgramDetailControls({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Controls</p>
           <h2 className="module-section-title">Programming record workflow</h2>
           <p className="module-section-description">
             Keep the cycle metadata and record linkages current. This is explicitly about package readiness, not packet

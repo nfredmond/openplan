@@ -432,7 +432,7 @@ export async function ReimbursementLane({
 
           {invoiceRegisterPending ? (
             <div className="mt-4 border-l-2 border-amber-300/80 bg-amber-50/80 px-4 py-3 text-sm text-amber-950 dark:border-amber-700/60 dark:bg-amber-950/25 dark:text-amber-100">
-              Invoice register tables are pending in the current database. Apply the Lane C migration before expecting workspace invoice records to render here.
+              Invoices need a database update on this installation. Ask whoever runs OpenPlan here to apply it.
             </div>
           ) : invoiceRegisterUnreadable ? (
             <div className="mt-4 border-l-2 border-rose-300/80 bg-rose-50/80 px-4 py-3 text-sm text-rose-950 dark:border-rose-700/60 dark:bg-rose-950/25 dark:text-rose-100">
@@ -687,7 +687,7 @@ export async function ReimbursementLane({
         ) : null}
 
         {invoiceRegisterPending ? (
-          <p className="mt-4 text-sm text-muted-foreground">Apply the Lane C migration to enable invoice register visibility for this workspace.</p>
+          <p className="mt-4 text-sm text-muted-foreground">Invoices appear after a database update on this installation.</p>
         ) : invoiceRegisterUnreadable ? (
           // NOT "no invoice records recorded yet". The register read failed, so
           // this workspace's reimbursement claims are UNKNOWN here — which is a

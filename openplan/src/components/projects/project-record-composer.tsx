@@ -1031,7 +1031,6 @@ export function ProjectRecordComposer({
   return (
     <article className="module-section-surface">
       <div className="module-section-heading">
-        <p className="module-section-label">Create records</p>
         <h2 className="module-section-title">Add {listRecordTypes(offered)}</h2>
         <p className="module-section-description">
           Keeping these up to date is what turns the project page from a filing cabinet into
