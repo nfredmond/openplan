@@ -1,0 +1,601 @@
+{
+  "head": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "buildId": "W4maaz9jts1wco0KXcWbA",
+  "health": {
+    "checkedAt": "2026-10-11T10:44:45.701Z",
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    },
+    "deployment": {
+      "commit": "bf1f6ffa710b",
+      "version": "0.68.0"
+    },
+    "service": "openplan",
+    "status": "ok"
+  },
+  "projectId": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+  "modelId": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "navigation": [
+    "/dashboard",
+    "/data-hub (native sidebar)",
+    "/projects (native sidebar)",
+    "/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc (native project card)",
+    "/models (native sidebar)",
+    "/models/492638e4-9937-4e61-a31c-d69f7e36f49b (native model card)"
+  ],
+  "priorConsole": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-11T04:32:09.140Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-11T04:32:09.141Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://127.74.9.10:3568/data-hub. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:457)",
+      "timestamp": "2026-10-11T07:27:27.135Z",
+      "source": "console"
+    }
+  ],
+  "initialAbortedPrefetches": [
+    {
+      "url": "http://127.74.9.10:3568/assistant-activity?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.379Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/land-use-plans?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.409Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/grants?_rsc=xfj_A0ZTCp0jD3VE",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.411Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/plans?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.428Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/invoicing?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.443Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/explore?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.484Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/safety?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.485Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/engagement?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.486Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/knowledge-base?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.553Z"
+    },
+    {
+      "url": "http://127.74.9.10:3568/aerial?_rsc=IOe_mmh6jQxP6_Ru",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T10:39:40.553Z"
+    }
+  ],
+  "observer": {
+    "consoleErrors": [],
+    "coverage": [
+      {
+        "bodyKeys": [
+          "workspaceId",
+          "feedId",
+          "corridorGeojson"
+        ],
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "result": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      },
+      {
+        "bodyKeys": [
+          "workspaceId",
+          "feedId",
+          "corridorGeojson"
+        ],
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "method": "POST",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "result": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      }
+    ],
+    "errors": [],
+    "instrumentationErrors": [],
+    "requests": [
+      {
+        "at": "2026-10-11T10:40:13.936Z",
+        "path": "/data-hub",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.088Z",
+        "path": "/dashboard",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.137Z",
+        "path": "/api/workspace-gis/layers",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.155Z",
+        "path": "/api/gtfs/feeds",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.179Z",
+        "path": "/api/title-vi/service-equity",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.179Z",
+        "path": "/api/title-vi/policy",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:40:14.225Z",
+        "path": "/api/assistant/context",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:42:29.978Z",
+        "path": "/api/gtfs/versions/b87fe3ef-00df-4e53-9a19-5e1e3e291470/status",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:42:30.074Z",
+        "path": "/api/gtfs/versions/b87fe3ef-00df-4e53-9a19-5e1e3e291470/review",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:42:50.967Z",
+        "path": "/api/gtfs/versions/8a86a802-a3cc-4b09-979d-6187bad01285/status",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:42:51.054Z",
+        "path": "/api/gtfs/versions/8a86a802-a3cc-4b09-979d-6187bad01285/review",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:04.417Z",
+        "path": "/api/gtfs/versions/1ca4fa87-713d-4a0e-8015-9edd428f1640/status",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:10.737Z",
+        "path": "/api/gtfs/versions/b87fe3ef-00df-4e53-9a19-5e1e3e291470/status",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:10.820Z",
+        "path": "/api/gtfs/versions/b87fe3ef-00df-4e53-9a19-5e1e3e291470/review",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:18.677Z",
+        "path": "/projects",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:18.881Z",
+        "path": "/api/assistant/context",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:22.483Z",
+        "path": "/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:22.528Z",
+        "path": "/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:45.473Z",
+        "path": "/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:45.579Z",
+        "path": "/api/assistant/context",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:49.299Z",
+        "path": "/models",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:50.626Z",
+        "path": "/api/assistant/context",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:56.176Z",
+        "path": "/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:56.177Z",
+        "path": "/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:56.224Z",
+        "path": "/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:43:56.382Z",
+        "path": "/api/assistant/context",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:11.621Z",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:31.233Z",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:40.041Z",
+        "path": "/workspace",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:40.042Z",
+        "path": "/help",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:40.088Z",
+        "path": "/workspace",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:40.090Z",
+        "path": "/help",
+        "status": 200
+      },
+      {
+        "at": "2026-10-11T10:44:45.703Z",
+        "path": "/api/health",
+        "status": 200
+      }
+    ],
+    "startedAt": "2026-10-11T10:40:05.586Z"
+  },
+  "endedAt": "2026-10-11T10:44:45.663Z",
+  "theme": "__variable_85b7ec __variable_be0dd0 __variable_2f383f light",
+  "cta": {
+    "desktop": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nCTA schedule, capacity proof\n\nVersion b87fe3ef-00df-4e53-9a19-5e1e3e291470\n\nReady for review\n\nCompleted schedule: 132 routes and 11138 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "registryText": "CTA schedule, capacity proof\n\nNot adopted\nurl\n\nNo version of this feed is in use. Review and adopt a completed version before using its service results.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed",
+      "selectedVersion": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+      "width": 1280
+    },
+    "mobile": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nCTA schedule, capacity proof\n\nVersion b87fe3ef-00df-4e53-9a19-5e1e3e291470\n\nReady for review\n\nCompleted schedule: 132 routes and 11138 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "registryText": "CTA schedule, capacity proof\n\nNot adopted\nurl\n\nNo version of this feed is in use. Review and adopt a completed version before using its service results.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed",
+      "selectedVersion": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+      "width": 390
+    }
+  },
+  "feedReview": {
+    "desktop": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nwww.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "width": 1280
+    },
+    "mobile": {
+      "children": [
+        {
+          "tag": "H3",
+          "text": "Import progress and completed-version review"
+        },
+        {
+          "tag": "P",
+          "text": "Imports continue in the installed worker after this page closes. Processing completion does not put "
+        },
+        {
+          "tag": "P",
+          "text": "This browser retains request and command identities for this installation, selected planning team an"
+        },
+        {
+          "tag": "UL",
+          "text": ""
+        },
+        {
+          "tag": "P",
+          "text": "This browser has no retained transit requests for this account. Saved versions below remain separate"
+        },
+        {
+          "tag": "LABEL",
+          "text": "Open a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: "
+        },
+        {
+          "tag": "SECTION",
+          "text": "www.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes an"
+        }
+      ],
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nwww.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "width": 390
+    }
+  },
+  "cancelled": {
+    "desktop": {
+      "cardText": "developer.trimet.org\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640\n\nCancelled\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "panelCount": 1,
+      "selectedVersion": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "width": 1280
+    },
+    "mobile": {
+      "cardText": "developer.trimet.org\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640\n\nCancelled\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "panelCount": 1,
+      "selectedVersion": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "width": 390
+    }
+  },
+  "desktop": {
+    "coverage": {
+      "bodyKeys": [
+        "workspaceId",
+        "feedId",
+        "corridorGeojson"
+      ],
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "method": "POST",
+      "path": "/api/gtfs/feeds/study-area-coverage",
+      "result": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      }
+    },
+    "documentWidth": 1280,
+    "errors": [],
+    "feedOptions": [
+      "",
+      "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+      "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+      "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+    ],
+    "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "width": 1280,
+    "zeroRunsVisible": true
+  },
+  "mobile": {
+    "coverage": {
+      "bodyKeys": [
+        "workspaceId",
+        "feedId",
+        "corridorGeojson"
+      ],
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "method": "POST",
+      "path": "/api/gtfs/feeds/study-area-coverage",
+      "result": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      }
+    },
+    "documentWidth": 390,
+    "errors": [],
+    "feedOptions": [
+      "",
+      "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+      "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+      "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+    ],
+    "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "width": 390,
+    "zeroRunsVisible": true
+  },
+  "modelFeed": {
+    "desktop": {
+      "coverage": {
+        "bodyKeys": [
+          "workspaceId",
+          "feedId",
+          "corridorGeojson"
+        ],
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "method": "POST",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "result": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      },
+      "documentWidth": 1280,
+      "errors": [],
+      "feedOptions": [
+        "",
+        "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+        "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+      ],
+      "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+      "savedOaklandSourceVisible": true,
+      "scientificCaveatVisible": true,
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "width": 1280,
+      "zeroRunsVisible": true
+    },
+    "mobile": {
+      "coverage": {
+        "bodyKeys": [
+          "workspaceId",
+          "feedId",
+          "corridorGeojson"
+        ],
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "method": "POST",
+        "path": "/api/gtfs/feeds/study-area-coverage",
+        "result": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      },
+      "documentWidth": 390,
+      "errors": [],
+      "feedOptions": [
+        "",
+        "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+        "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+      ],
+      "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+      "savedOaklandSourceVisible": true,
+      "scientificCaveatVisible": true,
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "width": 390,
+      "zeroRunsVisible": true
+    }
+  },
+  "limits": [
+    "Synthetic isolated installation read, no adoption or model execution.",
+    "238 counts scheduled stop service rows in a bounding envelope, not distinct stops, exact polygon coverage or observed operations.",
+    "T3 390 CSS pixels uses desktop user agent, not a physical phone.",
+    "Observer request-method capture added before a second actual POST; the original first observation remains unchanged.",
+    "One initial desktop feed capture did not contain the feed control. A repeated native scroll and inspected replacement establishes that image.",
+    "A tool-side JavaScript expression syntax error occurred before the corrected async health read; it is not an application console error."
+  ]
+}

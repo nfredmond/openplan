@@ -605,3 +605,17 @@ database/Storage consistency, SQLite, cross-host, worker replay or agency accept
 The [schema-first source handoff](schema-first-release-handoff.json) identifies
 exact M28 through M31 hashes. Hosted application, admission, main integration and
 release remain pending the installation owner's coordinated disposition.
+
+## Light-mode combined source, October 11
+
+[The frozen bf1 join](LIGHT_MODE_JOIN.md) passes 157 selected files, 2,970 tests,
+45 skipped, direction and guard lint. The actual production build completes
+140 pages in 175.092 seconds. Ten inspected T3 desktop/390 captures and fresh
+native comparison pass CTA completion versus adoption, current BART, terminal
+cancellation and saved Oakland geometry. Actual coverage agrees on 238 schedule
+rows. Three positive and 46 broken observations, plus separate native-scope
+controls, pass with unchanged database records. The externally joined a6 head
+has the same tree; browser observations retain bf1 identity. Current-head full
+CI, hosted schema-first disposition, integration, release and the full M3/v1
+contract remain open. Nathaniel confirms the relaunch agent retains coordination
+and its main-merge hold. No hosted or demo changes occur.

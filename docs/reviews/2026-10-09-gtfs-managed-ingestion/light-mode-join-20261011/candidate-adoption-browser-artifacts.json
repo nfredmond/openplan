@@ -1,0 +1,66 @@
+{
+  "head": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "buildId": "W4maaz9jts1wco0KXcWbA",
+  "images": [
+    {
+      "path": "candidate-adoption-cta-desktop.png",
+      "bytes": 369690,
+      "sha256": "d2bcfdb77259cf10df979acaac4f7ca4df9fd4a5df2388dad087d60fb63bdbc8",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-cta-390.png",
+      "bytes": 142965,
+      "sha256": "2f9a7b05d83ca8be0ce3cb8c415972c6fd5ae73ea5b8704f884d1e686565c16d",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-feed-desktop.png",
+      "bytes": 392786,
+      "sha256": "57a22c22751930be1494149dda100e141a2fffeda5fa4168393a9ff99549ba74",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-feed-390.png",
+      "bytes": 145792,
+      "sha256": "feebef776b761273c43ef3d3555f7e742d295cb69a82be05c1f2093763325bc5",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-cancelled-desktop.png",
+      "bytes": 355942,
+      "sha256": "9ade28bdbcbc07376b71de3a38e58b385d0f625dce0ca58624fdd77b46baca78",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-cancelled-390.png",
+      "bytes": 135604,
+      "sha256": "646e527c5422854b3c6c2f1d2c62747aaf350a56ccd822db7e99b66c7595c161",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-model-feed-desktop.png",
+      "bytes": 375662,
+      "sha256": "b9437eb4c766ac2d49c7357411a3b07ebb7fedc14d3401e1718392a2cd0952b0",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-model-feed-390.png",
+      "bytes": 178981,
+      "sha256": "fea1b7f2ce561f6a0730ed0dcf4201ad2a52b5d68898c8317f2a6f2ed0d985d8",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-study-desktop.png",
+      "bytes": 276293,
+      "sha256": "cabaff842830200c22246c7fb663ffdb71b5feb322179e28203a3ac1bccb722e",
+      "inspected": true
+    },
+    {
+      "path": "candidate-adoption-study-390.png",
+      "bytes": 122472,
+      "sha256": "f8bc270cd86c95a0c2d8d84d77800857ac0c1e2ac652898a1bfa065dcdb44331",
+      "inspected": true
+    }
+  ]
+}

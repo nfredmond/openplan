@@ -1,0 +1,17 @@
+{
+  "exitCode": 0,
+  "wallSeconds": 175.092,
+  "source": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "buildId": "W4maaz9jts1wco0KXcWbA",
+  "pages": 140,
+  "sampledMemoryPeakBytes": 6789115904,
+  "journalRoundedPeak": "6.3G",
+  "memoryMaxBytes": 10737418240,
+  "memoryHighBytes": 8589934592,
+  "nodeHeapMiB": 6144,
+  "swapDisabled": true,
+  "cpuLimit": 1,
+  "workerCount": 1,
+  "cache": "6a build cache only; independently copied locked dependencies; no completed output copied",
+  "privateLogSha256": "f6f1a3a27c1aade8cf4cf448f498205dba216c39c7577c084bc133db63039392"
+}

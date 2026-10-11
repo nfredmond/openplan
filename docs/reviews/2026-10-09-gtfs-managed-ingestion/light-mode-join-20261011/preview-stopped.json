@@ -1,0 +1,13 @@
+{
+  "unit": "openplan-gtfs-light-mode-preview-20261011-01.service",
+  "lastRecordedPid": 2752159,
+  "observed": [
+    "ActiveState=inactive",
+    "MainPID=0",
+    "Result=success"
+  ],
+  "at": "2026-10-11T10:46:25.908317+00:00",
+  "journalStoppedAt": "2026-10-11T10:46:01Z",
+  "journalPeak": "341.9M",
+  "boundary": "Recorded preview is inactive after browser read. A follow-on PID ownership guard refused because that process was gone. This follow-on did not stop any other process; stopping actor is not established."
+}
