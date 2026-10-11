@@ -1,0 +1,137 @@
+{
+  "runs": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "no-server-refresh",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel refreshes dependent server reads and preserves custody on an equivalent server render"
+      ]
+    },
+    {
+      "variant": "unstable-server-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel refreshes dependent server reads and preserves custody on an equivalent server render"
+      ]
+    },
+    {
+      "variant": "detached-deferred-read",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads does not start a deferred equity read after the panel closes"
+      ]
+    },
+    {
+      "variant": "no-adopted-feed-dependency",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads rereads a fresh server read with unchanged adopted IDs without erasing a policy edit"
+      ]
+    },
+    {
+      "variant": "retain-old-comparison",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads rereads a fresh server read with unchanged adopted IDs without erasing a policy edit"
+      ]
+    },
+    {
+      "variant": "cached-equity-read",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads rereads a fresh server read with unchanged adopted IDs without erasing a policy edit"
+      ]
+    },
+    {
+      "variant": "old-success-overwrite",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads discards old-success after a newer workspace read"
+      ]
+    },
+    {
+      "variant": "old-http-error-overwrite",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads discards old-http-error after a newer workspace read"
+      ]
+    },
+    {
+      "variant": "old-network-error-overwrite",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS dependent equity reads discards old-network-error after a newer workspace read"
+      ]
+    },
+    {
+      "variant": "unchanged-bounded-list",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read"
+      ]
+    },
+    {
+      "variant": "missing-version-projection",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read"
+      ]
+    },
+    {
+      "variant": "feed-id-for-version",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read"
+      ]
+    },
+    {
+      "variant": "missing-equity-revision",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read"
+      ]
+    },
+    {
+      "variant": "missing-equity-account-key",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read",
+        "managed transit Data Hub mount keeps sibling transit and equity identity distinct during server refresh"
+      ]
+    },
+    {
+      "variant": "colliding-sibling-keys",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount projects adopted version identity and refreshes the dependent equity read",
+        "managed transit Data Hub mount keeps sibling transit and equity identity distinct during server refresh"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "768ddfaec3b67a9ed796c9794435644a3ec9b81053cd5d61ac3a67ea32644899",
+    "openplan/src/components/data-hub/title-vi-service-equity-panel.tsx": "3b86526a37f583fec23446a4a84754cf2ce4fc9af0c2f9002603556c2438ecc6",
+    "openplan/src/app/(app)/data-hub/page.tsx": "e96245f2d281cab21bfd38927432a8da0ad3ff0a7888a3b6351af029d38e348d"
+  },
+  "testSha256": {
+    "src/test/gtfs-managed-panel.test.tsx": "e01fd942f6f9c5248112caaa2f591b409c7fa2bf7bfee5a14b99aea5c33d85cc",
+    "src/test/gtfs-equity-refresh.test.tsx": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68",
+    "src/test/gtfs-managed-panel-mount.test.ts": "37aa1188daa76e708175dcb9a32528649983176361717b2ed8cdd7053a2508f9"
+  },
+  "boundary": "Mocked component reads and source mount guards. Baseline, harmless and restored controls; targeted missing refresh, unstable owner, dependency, stale result and late response defects. No live cookie, browser, scientific or practitioner acceptance."
+}
