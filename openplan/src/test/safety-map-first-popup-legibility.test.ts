@@ -216,7 +216,6 @@ describe("a map popup stays readable in every palette", () => {
  */
 const KNOWN_UNTHEMED_POPUPS = [
   "src/components/engagement/location-display-map.tsx",
-  "src/components/engagement/public-map-stage.tsx",
   "src/components/engagement/participation-heatmap-map.tsx",
   "src/components/models/traffic-volume-map.tsx",
   "src/components/rtp/rtp-cycle-project-map.tsx",

@@ -45,7 +45,7 @@ const mapboxMocks = vi.hoisted(() => {
 
   const Map = vi.fn(function MockMap(options: { style?: string }) {
     const styleLayers: StyleLayer[] = [];
-    const sources: Record<string, { setData: (data: unknown) => void }> = {};
+    const sources: Record<string, { setData: (data: unknown) => void; data?: unknown }> = {};
     /** Every handler the component registered, so a test can fire one. */
     const handlers: Record<string, Array<(payload?: unknown) => void>> = {};
 
@@ -61,8 +61,14 @@ const mapboxMocks = vi.hoisted(() => {
         const handler = (typeof second === "function" ? second : third) as (payload?: unknown) => void;
         (handlers[event] ??= []).push(handler);
       }),
+      // Fires once, as Mapbox's does; a `once` that stayed registered would
+      // re-run every stale paint on each later `style.load`.
       once: vi.fn((event: string, handler: (payload?: unknown) => void) => {
-        (handlers[event] ??= []).push(handler);
+        const wrapped = (payload?: unknown) => {
+          handlers[event] = (handlers[event] ?? []).filter((entry) => entry !== wrapped);
+          handler(payload);
+        };
+        (handlers[event] ??= []).push(wrapped);
       }),
       off: vi.fn(),
       resize: vi.fn(),
@@ -76,9 +82,10 @@ const mapboxMocks = vi.hoisted(() => {
       fitBounds: vi.fn(),
       isStyleLoaded: vi.fn(() => true),
       getSource: vi.fn((id: string) => sources[id] ?? null),
-      addSource: vi.fn((id: string) => {
-        sources[id] = { setData: vi.fn() };
+      addSource: vi.fn((id: string, spec?: { data?: unknown }) => {
+        sources[id] = { setData: vi.fn(), data: spec?.data };
       }),
+      queryRenderedFeatures: vi.fn(() => []),
       removeSource: vi.fn((id: string) => {
         delete sources[id];
       }),
@@ -117,6 +124,7 @@ vi.mock("mapbox-gl", () => ({
   default: {
     Map: mapboxMocks.Map,
     NavigationControl: mapboxMocks.ctl,
+    GeolocateControl: mapboxMocks.ctl,
     AttributionControl: mapboxMocks.ctl,
     Popup: mapboxMocks.ctl,
     Marker: mapboxMocks.ctl,
@@ -125,6 +133,7 @@ vi.mock("mapbox-gl", () => ({
   },
   Map: mapboxMocks.Map,
   NavigationControl: mapboxMocks.ctl,
+  GeolocateControl: mapboxMocks.ctl,
   AttributionControl: mapboxMocks.ctl,
 }));
 
@@ -438,7 +447,7 @@ describe("drawing reports geometry after the stage commits its own state", () =>
       | undefined;
     if (!map) throw new Error("no map was constructed");
 
-    fireMapEvent(map, "click", { lngLat: { lng: -121.05, lat: 39.2 } });
+    fireMapEvent(map, "click", { point: { x: 0, y: 0 }, lngLat: { lng: -121.05, lat: 39.2 } });
 
     expect(consoleError.mock.calls.flat().join(" ")).not.toContain("Cannot update a component");
     consoleError.mockRestore();
@@ -448,12 +457,19 @@ describe("drawing reports geometry after the stage commits its own state", () =>
 
 describe("retained contribution geometry", () => {
   it("uses a geometry-only point and does not turn an invalid route into its old center", async () => {
-    await renderStage({items:[
+    const { map: loaded } = await renderStage({items:[
       {id:"valid",title:null,body:"Geometry point",latitude:null,longitude:null,geometry:{type:"Point",coordinates:[1,2]}},
       {id:"invalid",title:null,body:"Collapsed route",latitude:2,longitude:1,geometry:{type:"LineString",coordinates:[[1,2],[1,2]]}},
     ]});
-    const located=mapboxMocks.ctl.mock.results.filter(result=>result.type==='return' && result.value.setLngLat?.mock.calls.length);
-    expect(located).toHaveLength(1);
-    expect(located[0].value.setLngLat).toHaveBeenCalledWith([1,2]);
+    if (!loaded) throw new Error("no map was constructed");
+    // Nothing is drawn until the style arrives, as on a real map.
+    styleLoads(loaded);
+    // Pins are features in the clustered point source, not DOM markers.
+    const map = mapboxMocks.instances.at(-1) as unknown as { getSource: (id: string) => { data?: { features: Array<{ geometry: { coordinates: unknown }; properties: { itemId: string } }> } } | null };
+    const points = map.getSource("engagement-points")?.data?.features ?? [];
+    expect(points.map((feature) => feature.properties.itemId)).toEqual(["valid"]);
+    expect(points[0].geometry.coordinates).toEqual([1, 2]);
+    const shapes = (map.getSource("engagement-shapes") as { data?: { features: unknown[] } } | null)?.data?.features ?? [];
+    expect(shapes).toHaveLength(0);
   });
 });

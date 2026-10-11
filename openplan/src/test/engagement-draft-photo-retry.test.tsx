@@ -18,7 +18,7 @@ describe('photograph choices after an interrupted submission',()=>{
   }));
   setup();await waitFor(()=>expect(localStorage.length).toBeGreaterThan(0));next();fireEvent.change(document.querySelector('#portal-body')!,{target:{value:'A demonstration photo report'}});next();
   fireEvent.change(document.querySelector('#portal-photo')!,{target:{files:[new File(['first'],'first.png',{type:'image/png'})]}});next();next();fireEvent.click(screen.getByRole('button',{name:'Send what I wrote'}));await waitFor(()=>expect(bodies).toHaveLength(1));
-  fireEvent.click(screen.getByRole('button',{name:/3Add a photo/}));
+  fireEvent.click(screen.getByRole('button',{name:/3\.\s*Add a photo/}));
   if(action==='remove')fireEvent.click(screen.getByRole('button',{name:/Remove photo/i}));else fireEvent.change(document.querySelector('#portal-photo')!,{target:{files:[new File(['second'],'second.png',{type:'image/png'})]}});
   next();next();fireEvent.click(screen.getByRole('button',{name:'Send what I wrote'}));await waitFor(()=>expect(bodies).toHaveLength(2));
   expect(bodies[1].requestId).toBe(bodies[0].requestId);expect(bodies[1].photoPath).toBe(action==='remove'?undefined:'campaign/photo-2.png');expect(uploads).toEqual(action==='remove'?['first.png']:['first.png','second.png']);

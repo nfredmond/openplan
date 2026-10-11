@@ -568,7 +568,7 @@ describe("PublicSurveyForm", () => {
     expect(screen.getByText("Su nombre, o el nombre que quiera usar")).toBeTruthy();
     expect(
       screen.getAllByText(
-        "Alguien del equipo del proyecto lee lo que usted envía antes de mostrarlo en esta página o usarlo en un informe."
+        "El equipo del proyecto lee cada comentario antes de que aparezca aquí."
       )
         .length
     ).toBeGreaterThan(0);

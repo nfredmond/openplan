@@ -265,7 +265,7 @@ async function main() {
       ),
       publicPage.getByRole('button', { name: /send what I wrote/i }).click(),
     ]);
-    await publicPage.getByText(/Thank you\. We have what you sent\./i).waitFor({ timeout: 20000 });
+    await publicPage.getByText(/Thank you\. We have your comment\./i).waitFor({ timeout: 20000 });
     notes.push('Submitted public feedback through the share portal and received the public success state.');
     await screenshot(publicPage, 'local-engagement-report-handoff-01-public-submit');
 
@@ -330,12 +330,14 @@ async function main() {
       the comment feed, survey and close-the-loop record live one link away on
       `/engage/<token>/about`. The smoke still clicked a "Community feedback"
       tab on the map page, which has not existed since the portal was rebuilt.
+      Since 2026-10-10 the map page also lists comments, and the about-page tab
+      is named "Comments".
     */
     await publicPage.goto(`${baseUrl}/engage/${shareToken}/about`, { waitUntil: 'networkidle' });
-    await publicPage.getByRole('button', { name: /Community feedback/i }).click();
+    await publicPage.getByRole('button', { name: /^Comments/ }).click();
     await publicPage.getByText(itemTitle, { exact: false }).waitFor({ timeout: 20000 });
     await publicPage.getByText(itemBody, { exact: false }).waitFor({ timeout: 20000 });
-    notes.push('Verified approved feedback is visible on the public Community feedback tab.');
+    notes.push('Verified approved feedback is visible on the public Comments tab.');
     await screenshot(publicPage, 'local-engagement-report-handoff-03-public-feedback-published');
 
     /*
