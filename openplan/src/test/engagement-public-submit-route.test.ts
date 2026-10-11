@@ -35,7 +35,12 @@ const itemRecentLimitMock = vi.fn();
 const itemRecentOrderMock = vi.fn(() => ({ limit: itemRecentLimitMock }));
 const itemRecentGteMock = vi.fn(() => ({ order: itemRecentOrderMock }));
 // Each safety check filters on the fingerprint it compares (see the route).
-const itemRecentEqFingerprintMock = vi.fn((_column: string, _value: string) => ({ gte: itemRecentGteMock }));
+// Any number of fingerprint filters may follow (the duplicate check adds the
+// sender's device or connection to the text), so the chain accepts more `eq`s.
+type RecentChain = { gte: typeof itemRecentGteMock; eq: (column: string, value: string) => RecentChain };
+const itemRecentEqFingerprintMock = vi.fn(
+  (_column: string, _value: string): RecentChain => ({ gte: itemRecentGteMock, eq: itemRecentEqFingerprintMock })
+);
 const itemRecentEqSourceMock = vi.fn(() => ({ eq: itemRecentEqFingerprintMock }));
 const itemRecentEqCampaignMock = vi.fn(() => ({ eq: itemRecentEqSourceMock }));
 
@@ -88,9 +93,12 @@ vi.mock("@/lib/supabase/server", () => ({
 
 import { POST } from "@/app/api/engage/[shareToken]/submit/route";
 import {
+  buildPublicParticipantDeviceFingerprint,
   buildPublicSubmissionBodyFingerprint,
   buildPublicSubmissionClientFingerprint,
+  PUBLIC_SUBMISSION_MAX_PER_WINDOW,
 } from "@/lib/engagement/public-submit";
+import { PARTICIPANT_DEVICE_HEADER } from "@/lib/engagement/participant-device";
 
 function jsonRequest(shareToken: string, payload: unknown, headers?: Record<string, string>) {
   return new NextRequest(`http://localhost/api/engage/${shareToken}/submit`, {
@@ -286,30 +294,15 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     const request = jsonRequest("test-share-token-12345", { body: "Another note" });
     const sourceFingerprint = buildPublicSubmissionClientFingerprint(request);
 
+    // A full window from this connection: the limit is per connection.
     itemRecentLimitMock.mockResolvedValueOnce({
-      data: [
-        {
-          id: "recent-1",
-          title: null,
-          body: "One",
-          created_at: new Date().toISOString(),
-          metadata_json: { source_fingerprint: sourceFingerprint },
-        },
-        {
-          id: "recent-2",
-          title: null,
-          body: "Two",
-          created_at: new Date().toISOString(),
-          metadata_json: { source_fingerprint: sourceFingerprint },
-        },
-        {
-          id: "recent-3",
-          title: null,
-          body: "Three",
-          created_at: new Date().toISOString(),
-          metadata_json: { source_fingerprint: sourceFingerprint },
-        },
-      ],
+      data: Array.from({ length: PUBLIC_SUBMISSION_MAX_PER_WINDOW }, (_, index) => ({
+        id: `recent-${index}`,
+        title: null,
+        body: `Note ${index}`,
+        created_at: new Date().toISOString(),
+        metadata_json: { source_fingerprint: sourceFingerprint },
+      })),
       error: null,
     });
 
@@ -332,18 +325,19 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     await POST(request, { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
 
     const filters = itemRecentEqFingerprintMock.mock.calls.map(([column, value]) => [column, value]);
-    expect(filters).toEqual(
-      expect.arrayContaining([
-        ["metadata_json->>source_fingerprint", buildPublicSubmissionClientFingerprint(request)],
-        [
-          "metadata_json->>body_fingerprint",
-          buildPublicSubmissionBodyFingerprint({ title: "Main", body: "The crossing is long." }),
-        ],
-      ])
-    );
-    expect(filters).toHaveLength(2);
+    const connection = buildPublicSubmissionClientFingerprint(request);
+    // Rate: this connection. Duplicate: the same text from the same sender,
+    // which is the connection when the browser sent no device token.
+    expect(filters).toEqual([
+      ["metadata_json->>source_fingerprint", connection],
+      ["metadata_json->>body_fingerprint", buildPublicSubmissionBodyFingerprint({ title: "Main", body: "The crossing is long." })],
+      ["metadata_json->>source_fingerprint", connection],
+    ]);
     // Enough rows to decide, not a fixed sample of everyone's.
-    expect(itemRecentLimitMock.mock.calls.map(([limit]) => limit).sort()).toEqual([1, 3]);
+    expect(itemRecentLimitMock.mock.calls.map(([limit]) => limit).sort((x, y) => x - y)).toEqual([
+      1,
+      PUBLIC_SUBMISSION_MAX_PER_WINDOW,
+    ]);
   });
 
   it("refuses rather than guesses when either safety read fails", async () => {
@@ -391,7 +385,7 @@ describe("POST /api/engage/[shareToken]/submit", () => {
           title: "Main Street",
           body: "The crosswalk near Main Street needs improvement.",
           created_at: new Date().toISOString(),
-          metadata_json: { body_fingerprint: bodyFingerprint },
+          metadata_json: { body_fingerprint: bodyFingerprint, source_fingerprint: buildPublicSubmissionClientFingerprint(request) },
         },
       ],
       error: null,
@@ -403,6 +397,82 @@ describe("POST /api/engage/[shareToken]/submit", () => {
 
     expect(response.status).toBe(409);
     expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  describe("a meeting room on one Wi-Fi", () => {
+    const DEVICE_A = "11111111-2222-4333-8444-555555555555";
+    const DEVICE_B = "66666666-7777-4888-9999-aaaaaaaaaaaa";
+    const text = { title: "Main Street", body: "Please fix the crosswalk." };
+
+    it("accepts the same sentence from a neighbour on another device", async () => {
+      const mine = jsonRequest("test-share-token-12345", text, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_B });
+      // Earlier, same room, same words, another device.
+      itemRecentLimitMock.mockResolvedValueOnce({
+        data: [
+          {
+            id: "neighbour",
+            title: text.title,
+            body: text.body,
+            created_at: new Date().toISOString(),
+            metadata_json: {
+              body_fingerprint: buildPublicSubmissionBodyFingerprint(text),
+              source_fingerprint: buildPublicSubmissionClientFingerprint(mine),
+              device_fingerprint: buildPublicParticipantDeviceFingerprint(
+                jsonRequest("test-share-token-12345", text, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A })
+              ),
+            },
+          },
+        ],
+        error: null,
+      });
+
+      const response = await POST(mine, { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
+      expect(response.status).toBe(201);
+    });
+
+    it("still refuses the same sentence twice from the same device", async () => {
+      const mine = jsonRequest("test-share-token-12345", text, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A });
+      itemRecentLimitMock.mockResolvedValueOnce({
+        data: [
+          {
+            id: "mine-earlier",
+            title: text.title,
+            body: text.body,
+            created_at: new Date().toISOString(),
+            metadata_json: {
+              body_fingerprint: buildPublicSubmissionBodyFingerprint(text),
+              source_fingerprint: buildPublicSubmissionClientFingerprint(mine),
+              device_fingerprint: buildPublicParticipantDeviceFingerprint(mine),
+            },
+          },
+        ],
+        error: null,
+      });
+
+      const response = await POST(mine, { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
+      expect(response.status).toBe(409);
+      // And the duplicate query asked about this device, not the whole room.
+      expect(itemRecentEqFingerprintMock).toHaveBeenCalledWith(
+        "metadata_json->>device_fingerprint",
+        buildPublicParticipantDeviceFingerprint(mine)
+      );
+    });
+
+    it("stores the device token only as a hash, and ignores a malformed one", async () => {
+      const response = await POST(
+        jsonRequest("test-share-token-12345", { body: "A note" }, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A }),
+        { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+      );
+      expect(response.status).toBe(201);
+      const inserted = JSON.stringify(itemInsertMock.mock.calls[0]);
+      expect(inserted).not.toContain(DEVICE_A);
+      expect(inserted).toContain("device_fingerprint");
+      expect(
+        buildPublicParticipantDeviceFingerprint(
+          jsonRequest("test-share-token-12345", { body: "x" }, { [PARTICIPANT_DEVICE_HEADER]: "not-a-token" })
+        )
+      ).toBeNull();
+    });
   });
 
   it("auto-flags link-heavy submissions for moderation", async () => {
