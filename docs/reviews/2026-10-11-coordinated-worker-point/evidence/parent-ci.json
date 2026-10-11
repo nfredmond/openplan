@@ -1,0 +1,23 @@
+[
+  {
+    "label": "CI",
+    "conclusion": "success",
+    "headSha": "09231fd3621b0e17d0f8a95269bae4ed0a8d4676",
+    "status": "completed",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/38147710984"
+  },
+  {
+    "label": "live RLS",
+    "conclusion": "success",
+    "headSha": "09231fd3621b0e17d0f8a95269bae4ed0a8d4676",
+    "status": "completed",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/38147710982"
+  },
+  {
+    "label": "worker",
+    "conclusion": "success",
+    "headSha": "09231fd3621b0e17d0f8a95269bae4ed0a8d4676",
+    "status": "completed",
+    "url": "https://github.com/nfredmond/openplan/actions/runs/38147711011"
+  }
+]

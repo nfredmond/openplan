@@ -1,0 +1,151 @@
+{
+  "sourceSha256": "2e4360e56a4dc81e7df51924066f4d5e6c971ecc9bb56a409d30dc7f91848d7c",
+  "cases": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_wrong_identity",
+      "reason": "model-recovery-wrong-identity",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_wrong_identity",
+      "reason": "model-recovery-wrong-identity",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_cli",
+      "reason": "model-recovery-cli-receipt",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_cli",
+      "reason": "model-recovery-cli-receipt",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_exchange",
+      "reason": "model-recovery-native-exchange",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_exchange",
+      "reason": "model-recovery-native-exchange",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_exchange",
+      "reason": "model-recovery-original-bytes",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_exchange",
+      "reason": "model-recovery-original-bytes",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "model-recovery-native-pair-missing",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "null output and cached response to isolate type guard"
+    },
+    {
+      "function": "verify_server",
+      "reason": "model-recovery-native-pair-missing",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "null output and cached response to isolate type guard"
+    },
+    {
+      "function": "verify_server",
+      "reason": "model-recovery-native-pair-differs",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "model-recovery-native-pair-differs",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_server",
+      "reason": "model-recovery-native-pair-differs",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_no_compute",
+      "reason": "model-recovery-computation-replayed",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_no_compute",
+      "reason": "model-recovery-computation-replayed",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_no_compute",
+      "reason": "model-recovery-computation-replayed",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_changed_files",
+      "reason": "model-recovery-unrelated-files",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_changed_files",
+      "reason": "model-recovery-unrelated-files",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    },
+    {
+      "function": "verify_origin",
+      "reason": "model-recovery-original-origin",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true,
+      "omittedProbe": "same broken observation"
+    }
+  ],
+  "limits": "Pure response/native-pair/file metadata predicates, not an actual server, SQLite restore, callback or CLI run."
+}

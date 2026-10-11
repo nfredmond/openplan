@@ -1,0 +1,56 @@
+{
+  "state": "passed-native-final-preservation",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "harmless policy role ordering",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native predicate",
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native policy role",
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "changed native default privilege",
+      "result": "intended refusal",
+      "reason": "schema-default-catalog",
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back",
+      "nativeExitCode": 0
+    }
+  ],
+  "catalogPreservedAfterRollback": true,
+  "all374TableImagesAndSixSequencesUnchanged": true,
+  "rolesPasswordsMembershipsPropertiesAndMountedKeyEqual": true,
+  "sourcePointAndEncryptedRepositoryUnchanged": true,
+  "targetEncryptedRepositoryEqual": true,
+  "originalTransitPointUnchanged": true,
+  "wallSeconds": 61.629,
+  "scope": "Same-host separate-volume synthetic recovery point. Transactional policy/default-ACL controls, no Auth or browser acceptance.",
+  "targetStopped": true
+}

@@ -1,0 +1,12 @@
+[
+  {
+    "table": "model_run_kpis",
+    "rollbackOnly": true,
+    "intendedRefusal": "model-recovery-native-pair-missing"
+  },
+  {
+    "table": "model_legacy_kpi_receipts",
+    "rollbackOnly": true,
+    "intendedRefusal": "model-recovery-native-pair-missing"
+  }
+]
