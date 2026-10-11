@@ -54,8 +54,15 @@ explicit; production key code stays unchanged by that correction.
   the atomic replacement and before restart. The target is actually stopped.
   A fresh Python process uses the retained intent and bytes, restarts the exact
   target and decrypts the synthetic record. The old target key and source key
-  remain unchanged. This exercises the helper; native execution of the separate
-  recovery CLI entry point remains unverified.
+  remain unchanged. This report exercises the helper. The separate native CLI
+  report below exercises the operator entry point.
+- [Native recovery CLI](native-cli.json): a second fresh, owned 1 GiB cluster
+  uses the actual `--recover-target-key` entry point in an isolated Python
+  process. It recovers the stopped target after atomic replacement and decrypts
+  the saved synthetic record. Harmless and restored runs pass. Tampered payload,
+  omitted replacement and omitted restart cause native refusals. The source root
+  key stays unchanged. This is a bounded key-step proof, without Auth, Storage,
+  OWP, RLS or installation cutover acceptance.
 - [Native canary](native-canary.json): the actual shell's source SQL seeds an
   encrypted record in the synthetic source database. Its 4,793-byte dump replays
   into the new target cluster's verified empty bootstrap database. The actual
@@ -66,9 +73,9 @@ explicit; production key code stays unchanged by that correction.
   shell, tests and control runners. No database root key or key fingerprint is
   included in these public records.
 
-The native target is an independently initialized owned container with a 1 GiB
-limit, swap disabled and no network. Its existing synthetic database, new canary
-snapshot, volume and earlier reports remain retained. No demo, hosted database,
+Both native targets are independently initialized owned containers with a 1 GiB
+limit each, swap disabled and no network. Their synthetic databases, new canary
+snapshot, volumes and earlier reports remain retained. No demo, hosted database,
 existing source roles or existing source root key changes. Proof files remain
 under the private `gtfs-managed-ingestion-proof-20261009/encryption-cluster-01/`
 directory.
