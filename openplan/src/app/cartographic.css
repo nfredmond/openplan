@@ -2485,3 +2485,14 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
     opacity: 0;
   }
 }
+
+/* Aerial on a phone: the page starts below the map's control band. The
+   older rule keys on `:has(.op-cart-mapdock)`, which did not re-apply after
+   a client-side navigation into Aerial (seen at 390px arriving from the More
+   sheet: the page began under the controls). The attribute the page sets on
+   <body> does. */
+@media (max-width: 720px) {
+  body[data-surface-beside-map="true"] .op-cart-shell.op-cart-shell .op-cart-surface {
+    top: 244px;
+  }
+}
