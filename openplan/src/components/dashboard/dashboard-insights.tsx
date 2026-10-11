@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AlertTriangle, CheckCircle2 } from "lucide-react";
 
 import { DashboardChartPicker } from "@/components/dashboard/dashboard-chart-picker";
 import {
@@ -35,39 +34,22 @@ import type { InsightSeries } from "@/lib/dashboard/insights";
  * whose query FAILED says that instead, in different words with a different
  * icon — see `ChartBlockedNote`.
  *
- * Outcomes are never carried by colour alone: the stat tiles use an icon and a
- * word, which is the only legal use of the status palette here, and every plot
- * is single-series. The reasoning behind that is in `chart-primitives.tsx`.
+ * Outcomes are never carried by colour alone: every plot is single-series. The reasoning behind that is in `chart-primitives.tsx`.
  *
  * WHAT NO TEST OF THIS FILE CAN PROVE. jsdom applies no stylesheet and has no
  * box model, so it cannot establish that any of this is legible, correctly
  * coloured, or the right shape at any width. Those were measured in a browser.
  */
 
-type StatTile = {
-  label: string;
-  value: string;
-  detail: string;
-  /** Status tiles carry an icon and a word; colour never carries the meaning alone. */
-  tone?: "neutral" | "good" | "attention";
-};
-
 export type DashboardInsightsProps = {
   /** Identifies whose choice this is. The selection is per person, per workspace. */
   userId: string;
   workspaceId: string;
-  tiles: StatTile[];
   /** One entry per catalog id. Every figure is built on the server from real rows. */
   series: Record<DashboardChartId, InsightSeries>;
 };
 
-function toneIcon(tone: StatTile["tone"]) {
-  if (tone === "good") return <CheckCircle2 className="h-3.5 w-3.5 text-[color:var(--ok)]" />;
-  if (tone === "attention") return <AlertTriangle className="h-3.5 w-3.5 text-[color:var(--warn)]" />;
-  return null;
-}
-
-export function DashboardInsights({ userId, workspaceId, tiles, series }: DashboardInsightsProps) {
+export function DashboardInsights({ userId, workspaceId, series }: DashboardInsightsProps) {
   const storageKey = dashboardChartStorageKey(userId, workspaceId);
   const [selected, setSelected] = useState<DashboardChartId[]>([...DEFAULT_DASHBOARD_CHART_IDS]);
 
@@ -94,30 +76,17 @@ export function DashboardInsights({ userId, workspaceId, tiles, series }: Dashbo
   const shown = DASHBOARD_CHARTS.filter((chart) => selected.includes(chart.id));
 
   return (
-    <div className="space-y-4" data-testid="dashboard-insights">
-      <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-        {tiles.map((tile) => (
-          <div key={tile.label} className="rounded-2xl border border-border/70 bg-card/70 p-4">
-            <p className="flex items-center gap-1.5 text-label font-semibold text-muted-foreground">
-              {toneIcon(tile.tone)}
-              {tile.label}
-            </p>
-            <p className="mt-2 font-display text-3xl font-semibold tabular-nums text-foreground">
-              {tile.value}
-            </p>
-            <p className="mt-1 text-xs leading-5 text-muted-foreground">{tile.detail}</p>
-          </div>
-        ))}
-      </div>
-
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs leading-5 text-muted-foreground">
-          {shown.length === 0
-            ? "No figures are switched on. Choose the ones you want."
-            : "Figures for this workspace. Nothing here is a forecast."}
-        </p>
+    <section className="dashboard-panel" aria-labelledby="dashboard-charts" data-testid="dashboard-insights">
+      <header className="dashboard-panel-header">
+        <h2 id="dashboard-charts" className="dashboard-panel-title">
+          Charts
+        </h2>
         <DashboardChartPicker selected={selected} onChange={choose} />
-      </div>
+      </header>
+
+      {shown.length === 0 ? (
+        <p className="dashboard-empty">No charts are switched on. Choose the ones you want.</p>
+      ) : null}
 
       {shown.length === 0 ? null : (
         <div className="grid gap-4 xl:grid-cols-2">
@@ -146,6 +115,6 @@ export function DashboardInsights({ userId, workspaceId, tiles, series }: Dashbo
           })}
         </div>
       )}
-    </div>
+    </section>
   );
 }

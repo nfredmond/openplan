@@ -738,23 +738,6 @@
     isolation: isolate;
   }
 
-  .dashboard-overview-stack {
-    display: grid;
-    gap: 1.5rem;
-  }
-
-  .dashboard-command-grid {
-    display: grid;
-    align-items: start;
-    gap: 1.5rem;
-  }
-
-  @media (min-width: 1280px) {
-    .dashboard-command-grid {
-      grid-template-columns: minmax(0, 1.04fr) minmax(0, 0.96fr);
-    }
-  }
-
   .module-page-backdrop {
     pointer-events: none;
     position: absolute;
@@ -4397,5 +4380,400 @@
   .module-metric-value,
   [data-figure] {
     font-variant-numeric: tabular-nums;
+  }
+}
+
+/*
+  ═══ UI OVERHAUL, OCTOBER 10, 2026: DASHBOARD ═══
+  docs/reviews/2026-10-10-ui-overhaul/PLAN.md, section 3. A worklist: Needs
+  you and Coming up first, then projects, three figures and the charts the
+  planner chose. Sections are separated by space and hairlines, not boxes.
+*/
+@layer components {
+  .dashboard {
+    display: grid;
+    gap: 2.25rem;
+  }
+
+  .dashboard-head {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-end;
+    justify-content: space-between;
+    gap: 1rem 1.5rem;
+  }
+
+  .dashboard-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-title);
+    font-weight: 650;
+    line-height: 1.1;
+    color: var(--foreground);
+  }
+
+  .dashboard-place {
+    margin-top: 0.35rem;
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-scope {
+    display: inline-flex;
+    gap: 0.25rem;
+    border: 1px solid var(--border);
+    border-radius: 0.6rem;
+    padding: 0.2rem;
+  }
+
+  .dashboard-scope-option {
+    border-radius: 0.45rem;
+    padding: 0.4rem 0.75rem;
+    font-size: var(--fs-compact);
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-scope-option:hover {
+    color: var(--foreground);
+  }
+
+  .dashboard-scope-option[data-current="true"] {
+    background: var(--secondary);
+    color: var(--foreground);
+  }
+
+  .dashboard-lead {
+    display: grid;
+    gap: 2.25rem;
+  }
+
+  @media (min-width: 1024px) {
+    .dashboard-lead {
+      grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
+      align-items: start;
+    }
+  }
+
+  .dashboard-panel {
+    display: grid;
+    gap: 0.85rem;
+    align-content: start;
+  }
+
+  .dashboard-panel-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 1rem;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.6rem;
+  }
+
+  .dashboard-panel-title {
+    font-family: var(--font-display);
+    font-size: var(--fs-section);
+    font-weight: 650;
+    color: var(--foreground);
+  }
+
+  .dashboard-panel-aside {
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-link:hover,
+  .dashboard-more-link:hover {
+    color: var(--foreground);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .dashboard-more-link {
+    justify-self: start;
+    font-size: var(--fs-compact);
+    font-weight: 600;
+    color: var(--primary);
+  }
+
+  .dashboard-empty,
+  .dashboard-note {
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-read-failed {
+    border-left: 3px solid var(--status-warn);
+    padding: 0.25rem 0 0.25rem 0.75rem;
+    font-size: var(--fs-compact);
+    color: var(--foreground);
+  }
+
+  /* Needs you */
+  .dashboard-needs {
+    display: grid;
+  }
+
+  .dashboard-needs-item {
+    display: grid;
+    gap: 0.15rem;
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    padding: 0.7rem 0;
+  }
+
+  .dashboard-needs-title {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  .dashboard-needs-title:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .dashboard-needs-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    min-width: 0;
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  /* Coming up: the date rail */
+  .dashboard-rail {
+    position: relative;
+    display: grid;
+    margin-left: 1.25rem;
+    border-left: 2px solid var(--border);
+  }
+
+  .dashboard-rail-month {
+    margin: 0.85rem 0 0.15rem -1.25rem;
+    padding-left: 0;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-rail-today {
+    position: relative;
+    margin-left: -0.45rem;
+    padding: 0.1rem 0 0.35rem 1.4rem;
+    font-size: var(--fs-label);
+    font-weight: 700;
+    color: var(--primary);
+  }
+
+  .dashboard-rail-today::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.32rem;
+    width: 0.8rem;
+    height: 0.8rem;
+    border-radius: 999px;
+    background: var(--primary);
+    box-shadow: 0 0 0 3px var(--background);
+  }
+
+  .dashboard-rail-item {
+    display: grid;
+    grid-template-columns: 2.25rem minmax(0, 1fr);
+    gap: 0.6rem;
+    align-items: baseline;
+    padding: 0.5rem 0 0.5rem 0.75rem;
+  }
+
+  .dashboard-rail-day {
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    font-weight: 600;
+    line-height: 1;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+  }
+
+  .dashboard-rail-day-month {
+    display: block;
+    font-family: var(--font-body);
+    font-size: var(--fs-label);
+    font-weight: 600;
+    line-height: 1.2;
+  }
+
+  .dashboard-setup {
+    flex: 1 1 20rem;
+  }
+
+  .dashboard-rail-item[data-overdue="true"] .dashboard-rail-day,
+  .dashboard-rail-overdue {
+    color: var(--status-urgent);
+  }
+
+  .dashboard-rail-overdue {
+    font-weight: 600;
+  }
+
+  .dashboard-rail-title {
+    display: block;
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  .dashboard-rail-title:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  .dashboard-rail-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.35rem 0.75rem;
+    min-width: 0;
+    margin-top: 0.15rem;
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-rail-late {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .dashboard-rail-late .dashboard-rail {
+    border-left-color: color-mix(in srgb, var(--status-urgent) 55%, transparent);
+  }
+
+  .dashboard-rail-late-count {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: var(--fs-compact);
+    font-weight: 700;
+    color: var(--status-urgent);
+  }
+
+  /* Projects */
+  .dashboard-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--fs-compact);
+  }
+
+  .dashboard-table th {
+    padding: 0 0.75rem 0.5rem 0;
+    text-align: left;
+    font-size: var(--fs-label);
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-table td {
+    border-top: 1px solid color-mix(in srgb, var(--border) 60%, transparent);
+    padding: 0.65rem 0.75rem 0.65rem 0;
+    vertical-align: top;
+  }
+
+  .dashboard-table-date {
+    width: 9.5rem;
+  }
+
+  .dashboard-table-link {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  .dashboard-table-link:hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+
+  /* Figures */
+  .dashboard-figures {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(12rem, 1fr));
+    border-top: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dashboard-figure {
+    display: grid;
+    gap: 0.2rem;
+    padding: 1.1rem 1.25rem 1.1rem 0;
+  }
+
+  .dashboard-figure + .dashboard-figure {
+    border-left: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    padding-left: 1.25rem;
+  }
+
+  .dashboard-figure:hover .dashboard-figure-value {
+    color: var(--primary);
+  }
+
+  .dashboard-figure-label {
+    font-size: var(--fs-compact);
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-figure-value {
+    font-family: var(--font-display);
+    font-size: var(--fs-display);
+    font-weight: 600;
+    line-height: 1.05;
+    font-variant-numeric: tabular-nums;
+    color: var(--foreground);
+  }
+
+  .dashboard-figure-qualifier {
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  @media (max-width: 720px) {
+    .dashboard-figures {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .dashboard-figure + .dashboard-figure {
+      border-left: 0;
+      padding-left: 0;
+    }
+
+    .dashboard-figure-value {
+      font-size: var(--fs-title);
+    }
+  }
+
+  /* Setup, collapsed once the required steps are done */
+  .dashboard-setup > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 0.5rem 1rem;
+    cursor: pointer;
+    list-style: none;
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+
+  .dashboard-setup > summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .dashboard-setup > summary strong {
+    color: var(--foreground);
+  }
+
+  .dashboard-foot {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1rem;
   }
 }

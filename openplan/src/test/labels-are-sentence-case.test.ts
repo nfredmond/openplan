@@ -139,7 +139,6 @@ const SENTENCE_CASE_FILES = [
   "src/components/onboarding/first-run-checklist.tsx",
   "src/components/onboarding/onboarding-wizard.tsx",
   "src/components/operations/pilot-workflow-handoff.tsx",
-  "src/components/operations/recent-action-activity.tsx",
   "src/components/operations/workspace-command-board.tsx",
   "src/components/programs/funding-opportunity-decision-controls.tsx",
   "src/components/projects/planning-context-strip.tsx",
