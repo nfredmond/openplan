@@ -16,8 +16,10 @@ OpenPlan remains free software without subscription or entitlement gates.
   before production domain assignment. This branch enables automatic deployment
   from `main` only; verify a merged commit before declaring automation accepted.
   Retain the prior deployment for rollback.
-- Supabase project `lolckycpdjsgeejsmuzl` has all 400 migrations through
-  `20261016000028`. No historical user or client data is imported.
+- Supabase project `lolckycpdjsgeejsmuzl` has 400 migrations: historical files
+  through `20261016000027` and the relaunch precision fix `20261016000032`.
+  Transit candidate migrations 28 through 31 remain unapplied and disabled.
+  No historical user or client data is imported.
   All ten artifact buckets are private.
   The organization `ubtudgixoqdghuvtfpem` has an active Pro subscription.
   Both OpenPlan and `nat-ford-website` belong to this organization and inherit
@@ -158,7 +160,7 @@ AequilibraE stages on worker `83ff1ba0b`. Its scientific outcome remains
 
 Managed PostgreSQL defaults `extra_float_digits` to zero. Ordinary computed
 fractional KPI values fail the existing exact receipt check under that setting.
-Migration `20261016000028` sets full precision on the two KPI receipt functions
+Migration `20261016000032` sets full precision on the two KPI receipt functions
 without changing their request, ownership or numeric guards. A rollback-only
 native proof reproduces the rejection with precision zero and passes with full
 precision plus a harmless comment. An oversized nonrepresentable integer still
@@ -190,8 +192,13 @@ malformed identities and cross-run local paths are refused.
 The focused download route passes 20 tests; the selected worker suites pass.
 Harmless prose changes pass. Removing the source digest check, stored byte
 comparison, managed mirror call or download run boundary fails its corresponding
-targeted check. These checks do not establish live download acceptance, which
-remains pending for the next hosted build.
+targeted check. A live owner download on staged build `fdb22b6` returns 1,050,843
+bytes with the exact retained SHA-256. Another workspace receives 404 and an
+anonymous caller receives 401. Chrome blocks the direct Storage download during
+automated file-save review; native browser file-save acceptance remains unproved.
+The map renders 2,052 links at desktop and verified 390px widths without console
+errors. The narrow map header overlaps its zoom controls; the following bounded
+width correction requires a new rendered check.
 
 The model service has a stable deployment identity,
 `openplan-hosted-lolckycpdjsgeejsmuzl`, for command journal destinations. Preserve
@@ -201,3 +208,22 @@ workers report their actual commit through runtime heartbeat records.
 
 The Nat Ford website agent owns its checkout and `/openplan` redirect. This
 agent does not change that project's routes or deployments concurrently.
+
+## ActivitySim container execution follow-up
+
+A fresh job `349ed28d-68ba-4b70-867c-14e1d1b55d71` passes the three assignment
+stages and builds its real Census population. Its engine fails before simulation:
+PyArrow 26.0.0 cannot import with the retained NumPy 1.25.2 stack. An isolated
+PyArrow 23.0.1 installation in the same container makes ActivitySim CLI startup
+pass. The execution requirements now pin that compatible version, and both
+execution images check CLI startup during their builds. This preserves the
+existing numerical package pins. The Arrow project documents NumPy 1.21.2 or
+higher for [Arrow 23](https://arrow.apache.org/docs/23.0/python/install.html).
+The shared image also includes the committed accepted-component assets and
+verifies their digests during build. Job completion still requires a fresh run.
+
+The precision migration initially used version 28, which collided with the
+separate transit candidate. Its unchanged SQL is renamed to version 32. The
+linked CLI repairs only this migration identity; verification finds version 32
+applied and candidate version 28 absent. The database function settings remain
+unchanged. The coordination record reserves transit versions 28 through 31.

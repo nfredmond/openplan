@@ -10,6 +10,7 @@ COPY workers/activitysim_worker/requirements-exec.txt /tmp/activitysim-exec.txt
 COPY workers/activitysim_worker/requirements.txt /tmp/activitysim-worker.txt
 RUN python -m venv /opt/aequilibrae && /opt/aequilibrae/bin/pip install --no-cache-dir -r /tmp/aequilibrae.txt
 RUN python -m venv /opt/activitysim && /opt/activitysim/bin/pip install --no-cache-dir -r /tmp/activitysim-exec.txt -r /tmp/activitysim-worker.txt
+RUN /opt/activitysim/bin/activitysim --help >/dev/null
 COPY workers/aequilibrae_worker ./workers/aequilibrae_worker
 COPY workers/activitysim_worker ./workers/activitysim_worker
 COPY scripts/modeling ./scripts/modeling
