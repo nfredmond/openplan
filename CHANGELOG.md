@@ -53,6 +53,12 @@ undone, so back up Storage first.
 mark onto that pin. A tap on a pin or a line now opens the comment and marks
 nothing. A tap on empty map still marks.
 
+**Fixed.** On a busy consultation the public comment rate limit (three per
+connection per ten minutes) could stop applying, because it checked only the
+campaign's 25 newest comments. The database now returns exactly this
+connection's recent comments and any recent comment with the same text. The
+rules themselves are unchanged.
+
 **Privacy.** Uploaded engagement photos are re-encoded before storage, which
 removes EXIF location, device and timestamp metadata. The original bytes are
 not stored. A file that cannot be decoded is refused with a 415. `sharp` is now
