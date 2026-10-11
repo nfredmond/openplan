@@ -1,0 +1,22 @@
+{
+  "checkedAt": "2026-10-11T05:52:33.678513+00:00",
+  "command": "python3 -B -m unittest discover -s openplan/scripts/ops/tests -p test_*.py",
+  "cwd": "restore-encryption-custody-20261010",
+  "tests": 113,
+  "failures": 0,
+  "errors": 0,
+  "durationSeconds": 12.602,
+  "privateLogSha256": "08a3fcce87edf0e996e53879b2cf3879611a5672e9156b0d56d29cf43fc2991f",
+  "retainedEarlierFailures": [
+    {
+      "file": "encryption-python-tests-private.log",
+      "failure": "Mode-change fixture assumed the process umask left target at 0644"
+    },
+    {
+      "file": "encryption-python-tests-final-02-private.log",
+      "failure": "Replacement fixture also needed explicit preservation of original mode"
+    }
+  ],
+  "fix": "Synthetic mount and replacement mode are explicit; production key code is unchanged",
+  "limits": "Operations unit tests. Does not execute full native two-stack recovery."
+}

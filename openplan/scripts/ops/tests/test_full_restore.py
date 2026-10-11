@@ -4,6 +4,7 @@ import io
 import json
 from pathlib import Path
 import sys
+import subprocess
 import tarfile
 import tempfile
 import unittest
@@ -16,7 +17,7 @@ import full_restore as recovery
 class FullRestoreTests(unittest.TestCase):
     def test_project_identity(self):
         project = 'openplan-restore-source-123'
-        info = [{'Config': {'Labels': {'com.supabase.cli.project': project}, 'Image': 'matching'}, 'Image': 'sha256:one'}]
+        info = [{'Config': {'Labels': {'com.supabase.cli.project': project}, 'Image': 'matching'}, 'Image': 'sha256:one', 'Id': 'owned-id'}]
         with patch.object(recovery, 'output', return_value=json.dumps(info)):
             self.assertEqual(len(recovery.require_project(project, 'source')), 4)
             with self.assertRaisesRegex(ValueError, 'Only an owned'):
@@ -45,6 +46,30 @@ class FullRestoreTests(unittest.TestCase):
                 with self.assertRaisesRegex(ValueError, 'existing records|already exist'):
                     recovery.require_empty_target('owned')
 
+    def test_existing_encrypted_secrets_are_refused(self):
+        for present, count in [('f', None), ('t', '0'), ('t', '1')]:
+            def query(db, sql):
+                self.assertEqual(db, 'owned')
+                if sql == "SELECT to_regclass('vault.secrets') IS NOT NULL":
+                    return present
+                if sql == 'SELECT count(*) FROM vault.secrets':
+                    return count
+                return '0'
+            with patch.object(recovery, 'sql', side_effect=query) as calls:
+                if count == '1':
+                    with self.assertRaisesRegex(ValueError, 'existing encrypted secrets'):
+                        recovery.require_empty_target('owned')
+                else:
+                    recovery.require_empty_target('owned')
+                calls.assert_any_call('owned', "SELECT to_regclass('vault.secrets') IS NOT NULL")
+
+    def test_absolute_loader_uses_its_own_sibling_in_isolated_python(self):
+        module = Path(recovery.__file__).resolve()
+        code = "import importlib.util; from pathlib import Path; s=importlib.util.spec_from_file_location('probe', " + repr(str(module)) + "); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); assert Path(m._keys.__file__).resolve()==Path(" + repr(str(module.with_name('database_key_custody.py'))) + ")"
+        with tempfile.TemporaryDirectory() as cwd:
+            result = subprocess.run([sys.executable, '-I', '-B', '-c', code], cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+        self.assertEqual(result.returncode, 0, result.stderr)
+
     def test_scheduled_jobs_need_separate_quiescence(self):
         with patch.object(recovery, 'sql', return_value='f'):
             recovery.require_no_jobs('owned')
@@ -58,7 +83,7 @@ class FullRestoreTests(unittest.TestCase):
         source = {s: {'name': s, 'imageId': 'same'} for s in recovery.SERVICES}
         with tempfile.TemporaryDirectory() as root:
             destination = Path(root)/'not-created'
-            with patch.object(recovery, 'require_project', return_value=source), patch.object(recovery, 'require_empty_target'), patch.object(recovery, 'require_no_jobs'), patch.object(recovery, 'role_inventory', side_effect=['source-role', 'different-role']), patch.object(recovery, 'run', side_effect=AssertionError('Capture started before matching roles')):
+            with patch.object(recovery, 'require_project', return_value=source), patch.object(recovery, 'require_empty_target'), patch.object(recovery, 'require_no_jobs'), patch.object(recovery, 'role_inventory', side_effect=['source-role', 'different-role']), patch.object(recovery, 'run', side_effect=AssertionError('Capture started before matching roles')), patch.object(recovery, 'prepare_database_key_restore', side_effect=AssertionError('Key capture started before matching roles')):
                 with self.assertRaisesRegex(ValueError, 'Cluster role definitions differ'):
                     recovery.full_restore('source', 'target', destination)
             self.assertFalse(destination.exists())
@@ -119,7 +144,7 @@ class FullRestoreTests(unittest.TestCase):
                         member = tarfile.TarInfo('private.txt')
                         member.size = len(content)
                         tar.addfile(member, io.BytesIO(content))
-                with patch.object(recovery, 'require_project', side_effect=[source, target]), patch.object(recovery, 'require_empty_target'), patch.object(recovery, 'require_no_jobs'), patch.object(recovery, 'role_inventory', return_value='same'), patch.object(recovery, 'run', side_effect=command) as calls, patch.object(recovery, 'sql'), patch.object(recovery, 'database_inventory', side_effect=[copy.deepcopy(baseline), bad if fault == 'source' else copy.deepcopy(baseline), bad if fault == 'target' else copy.deepcopy(baseline)]), patch.object(recovery, 'schema_hash', return_value='schema'), patch.object(recovery, 'storage_archive', side_effect=storage), patch.object(recovery, 'wait_for_services') as ready, patch.object(recovery, 'restore_database_properties') as properties:
+                with patch.object(recovery, 'require_project', side_effect=[source, target]), patch.object(recovery, 'require_empty_target'), patch.object(recovery, 'require_no_jobs'), patch.object(recovery, 'role_inventory', return_value='same'), patch.object(recovery, 'run', side_effect=command) as calls, patch.object(recovery, 'sql'), patch.object(recovery, 'database_inventory', side_effect=[copy.deepcopy(baseline), bad if fault == 'source' else copy.deepcopy(baseline), bad if fault == 'target' else copy.deepcopy(baseline)]), patch.object(recovery, 'schema_hash', return_value='schema'), patch.object(recovery, 'storage_archive', side_effect=storage), patch.object(recovery, 'wait_for_services') as ready, patch.object(recovery, 'restore_database_properties') as properties, patch.object(recovery, 'prepare_database_key_restore', return_value={'synthetic': 'plan'}) as keys, patch.object(recovery, 'apply_database_key_restore', return_value={'targetRestarted': True}) as transfer:
                     if fault:
                         message = 'Restored Storage bytes differ' if fault == 'storage' else 'Restored database differs: public.work'
                         with self.assertRaisesRegex(ValueError, message):
@@ -128,6 +153,9 @@ class FullRestoreTests(unittest.TestCase):
                     else:
                         result = recovery.full_restore('source', 'target', Path(root)/'archive')
                         self.assertEqual(result['database'], baseline)
+                        self.assertEqual(result['databaseKeyCustody'], {'targetRestarted': True})
+                        self.assertEqual(keys.call_count, 2)
+                        transfer.assert_called_once_with(target['db'], {'synthetic': 'plan'}, Path(root)/'archive')
                         ready.assert_called_once_with(['source-auth', 'source-storage', 'target-auth', 'target-storage'])
                         properties.assert_called_once_with('source-db', 'target-db', Path(root)/'archive')
                         created = [call.args[0] for call in calls.call_args_list if 'createdb' in call.args[0] and call.args[0][-1] == 'openplan_recovered']

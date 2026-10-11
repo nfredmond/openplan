@@ -1,0 +1,88 @@
+{
+  "driverSha256": "0b89f1b45bdfac751e8c6cf2de728489d5038af55a1b7a4ed16f0ae2b119225c",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived"
+    },
+    {
+      "name": "harmless",
+      "result": "survived"
+    },
+    {
+      "name": "protected head",
+      "result": "refused",
+      "reason": "Foreign joined source"
+    },
+    {
+      "name": "omit head",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected dirty",
+      "result": "refused",
+      "reason": "Joined source has working edits"
+    },
+    {
+      "name": "omit dirty",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected helper",
+      "result": "refused",
+      "reason": "Different encryption helper"
+    },
+    {
+      "name": "omit helper",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected id",
+      "result": "refused",
+      "reason": "Resource limit is outside the owned fresh restore projects"
+    },
+    {
+      "name": "omit id",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected project",
+      "result": "refused",
+      "reason": "Resource limit is outside the owned fresh restore projects"
+    },
+    {
+      "name": "omit project",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected prefix",
+      "result": "refused",
+      "reason": "Resource limit is outside the owned fresh restore projects"
+    },
+    {
+      "name": "omit prefix",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "protected suffix",
+      "result": "refused",
+      "reason": "Resource limit is outside the owned fresh restore projects"
+    },
+    {
+      "name": "omit suffix",
+      "result": "intended oracle failure",
+      "failure": "Broken owned full-drill guard accepted foreign input"
+    },
+    {
+      "name": "restored",
+      "result": "survived"
+    }
+  ],
+  "limits": "Pure source and container-scope preflight. No Docker writes, child jobs, migration or restoration acceptance."
+}

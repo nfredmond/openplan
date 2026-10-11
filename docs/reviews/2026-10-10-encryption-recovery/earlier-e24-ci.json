@@ -1,0 +1,91 @@
+{
+  "sourceHead": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+  "records": {
+    "38120424265-complete-ci.json": {
+      "head": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+      "conclusion": "success",
+      "jobs": [
+        [
+          "modeling scripts (python unit tests)",
+          "success"
+        ],
+        [
+          "verify (qa gate)",
+          "success"
+        ],
+        [
+          "ops scripts (python unit tests)",
+          "success"
+        ],
+        [
+          "order independence (shuffled vitest)",
+          "success"
+        ],
+        [
+          "worker (python unit tests)",
+          "success"
+        ]
+      ],
+      "records": [
+        {
+          "run": 38120424265,
+          "head": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+          "job": 114413830230,
+          "name": "verify (qa gate)",
+          "conclusion": "success",
+          "summaries": [
+            "2026-10-11T08:07:48.3638547Z  Test Files  1544 passed | 97 skipped (1641)",
+            "2026-10-11T08:07:48.3793883Z       Tests  20804 passed | 1603 skipped (22407)",
+            "2026-10-11T08:07:48.3812052Z    Duration  1038.97s (transform 46.95s, setup 76.45s, import 294.15s, tests 1637.72s, environment 848.70s)"
+          ],
+          "logSha256": "5c0d6a4e524b67ca751744d2d33acf13ef4825a60a81342363ed49a61bc3ec88"
+        },
+        {
+          "run": 38120424265,
+          "head": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+          "job": 114413830259,
+          "name": "order independence (shuffled vitest)",
+          "conclusion": "success",
+          "summaries": [],
+          "logSha256": "f9581ad1b920a35f96fe4c302a07ac37a164c0fee88327545dca2609fec88a9e"
+        }
+      ],
+      "shuffleExecutionSteps": [
+        {
+          "name": "Shuffled suite",
+          "conclusion": "success",
+          "startedAt": "2026-10-11T07:49:34Z",
+          "completedAt": "2026-10-11T08:07:25Z"
+        }
+      ],
+      "shuffleCountsAvailable": false
+    },
+    "38120424271-summary.json": {
+      "run": 38120424271,
+      "head": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+      "conclusion": "success",
+      "observedSummaries": [
+        "2026-10-11T07:50:13.9298578Z  Test Files  104 passed (104)",
+        "2026-10-11T07:50:13.9303907Z       Tests  1499 passed | 125 skipped (1624)",
+        "2026-10-11T07:50:13.9305687Z    Duration  1661.09s (transform 2.00s, setup 2.12s, import 5.70s, tests 1621.69s, environment 23.61s)"
+      ],
+      "logSha256": "e8ec7278dc61c1750c3bf96089f9dbb94f282d85f6abb9334759ba7a8cc00e3d"
+    },
+    "38120424262-summary.json": {
+      "run": 38120424262,
+      "headSha": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+      "status": "completed",
+      "conclusion": "success",
+      "logSha256": "41a5643c37c6ac3e616edb9068343ec88c058a582d33bc86e374e1b1e04b25e7",
+      "lines": [
+        "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T07:35:41.0655633Z [restore-drill] full archive restored: 362 tables, 1 files",
+        "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T07:35:41.2733481Z [restore-drill] restored account signed in",
+        "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:17:40.3308907Z  Test Files  104 passed (104)",
+        "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:17:40.3322006Z       Tests  1499 passed | 125 skipped (1624)",
+        "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T08:17:40.3326113Z    Duration  2517.55s (transform 2.99s, setup 4.61s, import 9.55s, tests 2443.11s, environment 46.77s)"
+      ],
+      "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38120424262/job/114413830173"
+    }
+  },
+  "boundary": "All current-at-e24 workflows pass. Remote PR later joins keyless-map main at 3abcd7686; these are earlier-head results."
+}
