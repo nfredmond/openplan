@@ -103,3 +103,15 @@ separate-hardware recovery, independent commissioning, browser/practitioner or
 scientific acceptance, or public readiness. GitHub CI is a separate check. M3 and
 the full v1 contract remain open. The relaunch owner retains hosted coordination
 and the main merge hold; this lane changes no deployment, worker protocol or schema.
+
+## CI documentation correction, October 11
+
+GitHub QA and shuffled checks at `3c38b728` fail one mechanical path check:
+the operator note presents the generated inventory receipt as a repository path.
+The note now identifies `inventory.json` within the private inventory destination.
+The command, guard and runtime are unchanged. Six focused checks pass from the
+nested application directory. A harmless comment survives; a nonexistent
+repository path fails the same path assertion; restored documentation passes.
+[Four controls](evidence/doc-receipt-controls.json) retain those outcomes. Full
+GitHub checks must finish on the new head before CI acceptance. This correction
+does not establish worker, installation, hosted or browser acceptance.
