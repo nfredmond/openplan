@@ -1,0 +1,10 @@
+[
+  "baseline equal",
+  "harmless table ordering equal",
+  "missing table refused",
+  "changed table bytes refused",
+  "changed sequence refused",
+  "changed schema refused",
+  "changed database properties refused",
+  "missing Storage file differs"
+]

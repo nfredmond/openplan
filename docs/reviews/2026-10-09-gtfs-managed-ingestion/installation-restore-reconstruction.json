@@ -1,0 +1,44 @@
+{
+  "status": "all-table database and private-file reconstruction verified; services not rebound",
+  "source": "openplan_attempt_cli_9cb007ca9ecc4e81af6f6b5b55603391",
+  "target": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "schemaControl": "openplan_schema_control_9d8c4766214c4f3684bc314c24500bc3",
+  "sourceSchemaSha256": "42183b29b880148ba19720f5c222be985b69d755747ca768fa57d95251be54a5",
+  "replayedSchemaSha256": "42183b29b880148ba19720f5c222be985b69d755747ca768fa57d95251be54a5",
+  "tables": 373,
+  "sequences": 6,
+  "fileCounts": {
+    "storage-objects": 10,
+    "worker-private": 654,
+    "replacement-worker-private": 29,
+    "configuration-private": 10
+  },
+  "archiveSha256": {
+    "database.dump": "8f524e7c98745b603a57415e82a6147e5defa253a6d21dfc30301b61c090fc65",
+    "storage-objects.tgz": "be9f2825504d649b497e256915d0fd738df8aa7c2b25489965c36b2f5306be86",
+    "worker-private.tgz": "b9a8ffa51ca2e87539be9efc078e8f55f99feeae39abf8e0fe529cb9c454b61a",
+    "configuration-private.tgz": "3321f64897cb86e2b3cce72246d3d487fb62ba2514c209d411484bb102d50577",
+    "cluster-roles-private.sql": "71d89e6e42c595439dbfe501ea5f61772dca19aa03840e33c8b7ad8b1f8f9ecb",
+    "replacement-worker-private.tgz": "19cfd553b8a2dfb3b82926141793939ce6a89d5ea0d6f19143eb4733d26ee6f7"
+  },
+  "clusterRolesSha256": "0166305b81934f9e8eb31676ae3c4642c88e6adf7ace280d6a2c541a7f7fd4c3",
+  "head": "2caefd6a9a41f2a8b5ab4769607798ccb99abfa2",
+  "finishedAt": 1791685597.3100195,
+  "limits": [
+    "Configuration capture narrows copied file permissions to 0600 without changing original bytes or source permissions.",
+    "Same physical cluster and existing roles; no whole-host or custom-role transfer claim.",
+    "Source and schema-control databases, failed captures and archives are retained.",
+    "Fresh services, password sign-in, immutable archive reads and worker continuation still require separate verification."
+  ],
+  "checkService": {
+    "unit": "openplan-gtfs-browser-full-restore-20261010-02",
+    "exitCode": 0,
+    "seconds": 182.949,
+    "memoryPeakMiB": 408.2
+  },
+  "proofScriptSha256": {
+    "full_browser_restore_02.py": "d17181e8f0ce9506a94e9e018772f6ad6ae53d5798260f9270d9c3a7c964da86",
+    "rebind_browser_restore_02.py": "186470d3c1714ce1a24a0f45fda77cc4dc10ad6321697099e6fa2cc1022ebed1",
+    "restore_service_scope.py": "d6dda99ef5779bec5de27c3f6c7b42d5cb2b0d88cf47f267e46a9e5dd7b49a4b"
+  }
+}

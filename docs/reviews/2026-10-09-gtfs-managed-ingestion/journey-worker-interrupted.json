@@ -1,0 +1,11 @@
+{
+  "unit": "openplan-gtfs-browser-worker-interrupt-20261010-01",
+  "mainPid": 3778611,
+  "parserPid": 3786214,
+  "secondsUntilParser": 32.079,
+  "signal": "SIGTERM",
+  "scope": "main only",
+  "versionId": "743a0929-b626-4bcc-8381-bbd897b60911",
+  "parserGone": true,
+  "unitState": "ActiveState=inactive\nExecMainStatus=0"
+}

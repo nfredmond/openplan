@@ -1,0 +1,68 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass"
+    },
+    {
+      "variant": "harmless unrelated label",
+      "result": "pass"
+    },
+    {
+      "variant": "target name",
+      "result": "intended refusal",
+      "reason": "Target database differs"
+    },
+    {
+      "variant": "logical origin",
+      "result": "intended refusal",
+      "reason": "Logical API origin differs"
+    },
+    {
+      "variant": "source database",
+      "result": "intended refusal",
+      "reason": "Source database differs"
+    },
+    {
+      "variant": "saved identity",
+      "result": "intended refusal",
+      "reason": "Retained service identity differs"
+    },
+    {
+      "variant": "live identity",
+      "result": "intended refusal",
+      "reason": "Current service identity differs"
+    },
+    {
+      "variant": "running source",
+      "result": "intended refusal",
+      "reason": "Source service still runs"
+    },
+    {
+      "variant": "ownership label",
+      "result": "intended refusal",
+      "reason": "Service ownership differs"
+    },
+    {
+      "variant": "image identity",
+      "result": "intended refusal",
+      "reason": "Installed image differs"
+    },
+    {
+      "variant": "network",
+      "result": "intended refusal",
+      "reason": "Service network differs"
+    },
+    {
+      "variant": "database connection",
+      "result": "intended refusal",
+      "reason": "Retained database connection differs"
+    },
+    {
+      "variant": "restored",
+      "result": "pass"
+    }
+  ],
+  "sourceSha256": "d6dda99ef5779bec5de27c3f6c7b42d5cb2b0d88cf47f267e46a9e5dd7b49a4b",
+  "boundary": "Native stopped source identities supply baseline inputs; ten simulated targeted refusals. No service creation, target database mutation, archive or application acceptance."
+}

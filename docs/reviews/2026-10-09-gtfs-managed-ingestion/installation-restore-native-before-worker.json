@@ -1,0 +1,101 @@
+{
+  "targetDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "passwordSignIns": [
+    {
+      "fixtureRole": "owner",
+      "status": 200,
+      "userId": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426"
+    },
+    {
+      "fixtureRole": "viewer",
+      "status": 200,
+      "userId": "711aa232-ce82-46de-a1d6-e413eaaa30c8"
+    },
+    {
+      "fixtureRole": "outsider",
+      "status": 200,
+      "userId": "4a26f66d-2f4d-4a74-bb8d-aa5bd50624ce"
+    }
+  ],
+  "archives": [
+    {
+      "versionId": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "59b1a823-d8f0-403c-b46b-6a6aa725594e",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "6ebc8157-987c-471f-9d2a-a26e733eb886",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "743a0929-b626-4bcc-8381-bbd897b60911",
+      "bytes": 43392539,
+      "sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5",
+      "matches": true
+    },
+    {
+      "versionId": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "acf6f2dd-6f05-49e9-8e14-9f39b4b2c10c",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "b7a097b0-55d0-43ee-90e9-8f252a1bfd5e",
+      "bytes": 58,
+      "sha256": "fdf633f9819373e49277c21af57d14d0168113b221b059493520ddad20ae47f4",
+      "matches": true
+    },
+    {
+      "versionId": "efd51598-a404-4501-97b2-eeca83622c18",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+      "matches": true
+    },
+    {
+      "versionId": "f3bc2095-3618-413c-bcc9-f3799ec7a4e1",
+      "bytes": 1047999,
+      "sha256": "41717d0d66e81f760b96220c9e23a31d9d5a0a4720ccbdd947160018b1362ca5",
+      "matches": true
+    }
+  ],
+  "anonymousArchiveStatus": 400,
+  "queued": {
+    "request_id": "498d6cbe-2d57-4219-82ea-716a327ca974",
+    "version_id": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+    "state": "queued",
+    "attempt": 0,
+    "archive_identity": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/6a80fa3b-c265-4e16-a408-6a9178397e2a/21d86ed0-2479-4ade-8ce5-40eae7d0b481.zip",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+    }
+  },
+  "recoveredPrivateSourceMatches": true,
+  "sourceQueuedUnchanged": true,
+  "limits": [
+    "Native password grants and Storage reads, not browser cookie or full RLS-suite acceptance.",
+    "Existing cluster roles and unchanged logical origin.",
+    "Queued processing and planner journey still pending."
+  ]
+}

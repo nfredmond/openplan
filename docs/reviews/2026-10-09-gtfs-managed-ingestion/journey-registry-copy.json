@@ -1,0 +1,25 @@
+{
+  "head": "2caefd6a9a41f2a8b5ab4769607798ccb99abfa2",
+  "desktop": {
+    "noRawLibrary": true,
+    "text": "2026-10-11 , recorded status: failed, abandoned. Synthetic cancellation check before any worker claims this import.Open managed progress\n2026-10-11 , recorded status: ready (in use), 95 route and 717 stop service-level rows.Open managed progress\n2026-10-11 , recorded status: ready, 95 route and 717 stop service-level rows.Open managed progress",
+    "viewport": {
+      "height": 800,
+      "width": 1280
+    }
+  },
+  "mobile": {
+    "noRawLibrary": true,
+    "scrollWidth": 390,
+    "text": "2026-10-11 , recorded status: failed, not_a_zip. This file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.Open managed progress",
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "limits": [
+    "History reads and captures only; no native database change.",
+    "No full historical console acceptance.",
+    "Development server, desktop user agent and resized mobile viewport."
+  ]
+}

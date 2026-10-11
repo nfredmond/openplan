@@ -1,0 +1,93 @@
+{
+  "records": [
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "baseline",
+      "result": "pass",
+      "expectedReason": null
+    },
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "harmless",
+      "result": "pass",
+      "expectedReason": null
+    },
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "wrong-password-identity",
+      "result": "intended assertion failure",
+      "expectedReason": "Restored password identity differs"
+    },
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "wrong-archive-path",
+      "result": "intended assertion failure",
+      "expectedReason": "Restored archive download refused"
+    },
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "wrong-archive-hash",
+      "result": "intended assertion failure",
+      "expectedReason": "Restored archive bytes differ"
+    },
+    {
+      "check": "verify_recovered_post_native.py",
+      "variant": "restored",
+      "result": "pass",
+      "expectedReason": null
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "baseline",
+      "result": "pass",
+      "expectedReason": null
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "harmless",
+      "result": "pass",
+      "expectedReason": null
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "wrong-target-database",
+      "result": "intended assertion failure",
+      "expectedReason": "Restored queued input did not complete once"
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "assume-adoption",
+      "result": "intended assertion failure",
+      "expectedReason": "Worker incorrectly adopted the restored input"
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "wrong-parser-count",
+      "result": "intended assertion failure",
+      "expectedReason": "Restored parser counts differ"
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "wrong-history-version-scope",
+      "result": "intended assertion failure",
+      "expectedReason": "Pre-existing history changed: gtfs_feed_versions"
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "wrong-history-claim-scope",
+      "result": "intended assertion failure",
+      "expectedReason": "Pre-existing history changed: openplan_gtfs.claims"
+    },
+    {
+      "check": "verify_restored_completion.py",
+      "variant": "restored",
+      "result": "pass",
+      "expectedReason": null
+    }
+  ],
+  "sourceSha256": {
+    "verify_recovered_post_native.py": "c47c009f4f33f43182792ce1465603515912aa3c1825762cbf60c3f77a1ea9b8",
+    "verify_restored_completion.py": "4189cf3c418139a2156e97e69e47198c420bc47be00b0d4b132926828cd0cd88"
+  },
+  "boundary": "Actual local Auth, Storage downloads and native SQL reads with protected fixture credentials. Six positive and eight deliberately broken observer behaviors. No archive or historical row mutation, browser cookie, full live RLS or whole-host restore acceptance."
+}
