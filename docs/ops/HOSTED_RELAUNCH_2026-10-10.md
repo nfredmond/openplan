@@ -12,8 +12,10 @@ OpenPlan remains free software without subscription or entitlement gates.
 ## Configuration and evidence
 
 - Vercel project `natford/openplan` builds the nested `openplan/` package with
-  Node 24 and webpack. Git auto-deployment stays disabled. Stage, inspect and
-  promote an explicit commit. Retain the prior deployment for rollback.
+  Node 24 and webpack. The hosted project now requires seven GitHub checks
+  before production domain assignment. This branch enables automatic deployment
+  from `main` only; verify a merged commit before declaring automation accepted.
+  Retain the prior deployment for rollback.
 - Supabase project `lolckycpdjsgeejsmuzl` has all 399 migrations through
   `20261016000027`. No historical user or client data is imported.
   All ten artifact buckets are private.
@@ -81,3 +83,25 @@ need their own inventory as they are created. Never commit credentials or dumps.
 Additional fixed service spend is $0 at this checkpoint. Resend uses its free
 plan with pay-as-you-go disabled. Worker hosting remains a pending operating
 cost. Do not declare a worker deployed merely by changing an environment flag.
+
+## Worker packaging checkpoint
+
+Railway has private application-queue and model-host services. The model host
+co-locates AequilibraE and ActivitySim on one persistent volume, with separate
+Python environments. Their existing artifact handoffs require shared local
+bytes. Two services with separate filesystems cannot substitute for this.
+Application queues have a separate persistent journal volume and Chromium for
+report rendering. Live job execution and recovery acceptance remain pending at
+this checkpoint. See the [model host guide](../../workers/hosted-models/DEPLOY.md)
+and [application queue guide](../../workers/hosted-node/DEPLOY.md).
+
+The workspace alerts at $25 compute usage and stops at $40. Railway's Pro plan
+includes $20 usage credit; the usage ceiling preserves room within Nathaniel's
+$50 additional monthly budget. An interrupted job still needs reconciliation.
+Provider limits do not guarantee throughput for large regional workloads.
+
+Both supervisors pass actual child-process exit and shutdown tests. A harmless
+log punctuation change passes. Changing an unexpected child exit to return
+success fails the corresponding test; the original source passes after restore.
+These tests do not establish database recovery, model validity or rendered PDF
+fidelity. The existing CI jobs now run them without adding another heavy job.

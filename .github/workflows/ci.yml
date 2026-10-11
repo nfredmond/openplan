@@ -30,6 +30,9 @@ jobs:
       - name: Install
         run: npm ci
 
+      - name: Hosted queue supervisor
+        run: node --test ../workers/hosted-node/supervise.test.mjs
+
       - name: First-week browser instrument
         working-directory: ./qa-harness
         run: |
@@ -215,6 +218,9 @@ jobs:
       # level imports it — verified in a clean venv with exactly this list.
       - name: Install test deps
         run: pip install "numpy<2.1" pandas shapely requests python-dotenv
+
+      - name: Hosted model supervisor
+        run: python ../hosted-models/test_supervise.py
 
       - name: Syntax check
         run: python -m py_compile *.py

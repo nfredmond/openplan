@@ -29,6 +29,13 @@ tracks the managed installation and unfinished acceptance work. Optional operato
 SQL blocks client Data API writes to the managed PostGIS reference catalog while
 preserving catalog reads and the application's existing RLS.
 
+Hosted container definitions run the existing application queues with persistent
+journals, and both model pollers with a shared artifact volume and separate
+Python environments. Process supervisors fail when a queue disappears. The
+Vercel configuration enables deployments from `main`; the managed project
+requires GitHub checks before assigning production domains. Database migrations
+remain a separate, controlled operation.
+
 ## 0.68.0 (2026-10-09)
 
 This development version includes land-use and engagement workflows, model
