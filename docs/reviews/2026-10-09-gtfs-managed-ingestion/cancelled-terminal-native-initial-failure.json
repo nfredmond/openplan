@@ -1,0 +1,8 @@
+{
+  "case": "initial-fixture-source-collision",
+  "acceptance": false,
+  "sqlState": "23505",
+  "reason": "Separate native cases reuse one normalized URL in the same workspace while admitting new feeds. The database correctly refuses the duplicate source. Each independent case now uses a unique synthetic URL.",
+  "failedLogSha256": "d1d6d5071df4b32a47ee2495194367c26c0112db25e2c914570e18e8962ea4b9",
+  "sourceRestoredInFinally": true
+}

@@ -1,0 +1,19 @@
+{
+  "conclusion": "success",
+  "headSha": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "status": "completed",
+  "updatedAt": "2026-10-11T03:56:25Z",
+  "url": "https://github.com/nfredmond/openplan/actions/runs/38107225443",
+  "fixtureArchive": {
+    "tables": 372,
+    "files": 1
+  },
+  "restoredRLSSuite": {
+    "filesPassed": 103,
+    "testsPassed": 1492,
+    "testsSkipped": 125,
+    "testsFailed": 0
+  },
+  "logSha256": "ed99fe4fb633b807cb68ea6cdb439fae8d1a53bdf18a278200491b6e4946566a",
+  "limits": "GitHub full-archive restore fixture at f639, before review corrections and latest main join. Separate from the retained local full installation reconstruction and cross-host operational acceptance."
+}

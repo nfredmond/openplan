@@ -1,5 +1,5 @@
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
-import { gtfsQueueOptions, runGtfsQueueService } from "../../src/lib/gtfs/managed-worker-queue";
+import { gtfsQueueOptions, gtfsQueueParserOptions, runGtfsQueueService } from "../../src/lib/gtfs/managed-worker-queue";
 import { runGtfsSubmissionRecoveryPass } from "../../src/lib/gtfs/managed-submission-recovery";
 import { authorizeManagedGtfsSubmission, resolveManagedGtfsSubmission } from "../../src/lib/gtfs/managed-source";
 
@@ -29,8 +29,7 @@ async function main() {
           return { pendingCount: 0, unavailable: true };
         }
       },
-      parser: { maxOutputBytes: 128 * 1024 * 1024, maxOldSpaceMb: 768, renewEveryMs: 30_000,
-        renewTimeoutMs: 10_000, maxRuntimeMs: 30 * 60_000, terminationGraceMs: 1000 },
+      parser: gtfsQueueParserOptions(process.env),
       report: pass => console.log(`Transit pass: ${pass.outcomes.filter(item => ["finished", "recovered_terminal", "observed_terminal"].includes(item.state)).length} terminal observations; ${pass.pendingCount} retained jobs unconfirmed or awaiting another pass. This is not full queue completion or adoption.`),
       reportError: () => console.error("Transit pass could not finish. Retain private worker files and retry against the same installation. Import outcomes remain unconfirmed."),
     });

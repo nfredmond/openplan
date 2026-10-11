@@ -11,6 +11,7 @@ import { runGtfsOwnedAttempt, type GtfsOwnedWork } from "./managed-worker-attemp
 import { processGtfsSourceArchive, type GtfsIntakeOptions } from "./managed-worker-intake";
 import type { GtfsArtifactOptions } from "./managed-worker-artifact";
 import type { GtfsDurableMutation } from "./managed-worker-dispatch";
+import { GTFS_PARSE_BUDGET_MS, resolveGtfsLimit, type GtfsLimitEnv } from "./limits";
 
 const id = z.string().uuid().transform(value => value.toLowerCase());
 const rootSchema = z.object({ schemaVersion: z.literal(1), installationId: id, target: z.string(), cursor: id.nullable(),
@@ -172,6 +173,16 @@ export function gtfsQueueOptions(argv: string[], env: Partial<NodeJS.ProcessEnv>
   return { help: false as const, once: argv[0] === "--once", target: normalized,
     installationId: id.parse(env.OPENPLAN_GTFS_INSTALLATION_ID), parserBuild: z.string().regex(/^[a-f0-9]{40,64}$/).parse(env.OPENPLAN_GTFS_PARSER_BUILD),
     directory: join(directory, createHash("sha256").update(normalized).digest("hex")) };
+}
+
+/** Preserve the default supervisor window and allow an operator's longer
+ * cooperative parse budget, with time for child startup and output delivery.
+ */
+export function gtfsQueueParserOptions(env: GtfsLimitEnv = process.env): GtfsArtifactOptions["parser"] {
+  const budget = z.number().int().positive().parse(resolveGtfsLimit(GTFS_PARSE_BUDGET_MS, env));
+  const maxRuntimeMs = z.number().int().max(2_147_483_647).parse(Math.max(30 * 60_000, budget + 30_000));
+  return { maxOutputBytes: 128 * 1024 * 1024, maxOldSpaceMb: 768, renewEveryMs: 30_000,
+    renewTimeoutMs: 10_000, maxRuntimeMs, terminationGraceMs: 1000 };
 }
 
 /** Poll serial passes and stop source, parser and transport work on shutdown.

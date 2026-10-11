@@ -164,6 +164,28 @@ describe("owned GTFS attempt execution",()=>{
   expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt","fail_gtfs_ingest"]);
   expect((await f.command("terminal")).resolved).toBe(true);expect(f.work).toHaveBeenCalledTimes(1);
  });
+ it.each(["fail","complete"] as const)("observes cancellation before replaying an unresolved %s terminal command",async operation=>{
+  const f=await fixture();let cancelled=false;
+  if(operation==="complete")f.work.mockResolvedValue({operation:"complete",input:{
+   archive:{path:`${workspaceId}/${feedId}/${versionId}.zip`,sha256:"a".repeat(64),bytes:100},
+   plan:{sha256:"b".repeat(64),bytes:100,routeRows:1,stopRows:1,routeBatches:1,stopBatches:1},
+   manifest:[{kind:"route",ordinal:0,rows:1,hash:"c".repeat(64)},{kind:"stop",ordinal:0,rows:1,hash:"d".repeat(64)}],
+   metadata:{agency_count:1,route_count:1,stop_count:1,trip_count:1,stop_time_row_count:1,calendar_service_count:1,frequency_trip_count:0,scheduled_trip_count:1,parse_warnings:[]},
+   tract:{command:id(8),version:versionId,computed:true,rows:0,computedAt:date,errorCode:null,errorDetail:null}
+  }});
+  f.respond.mockImplementation(async(rpc,args)=>{
+   if(rpc===`${operation}_gtfs_ingest`){cancelled=true;throw new Error("Cancellation wins before terminal delivery");}
+   if(cancelled&&rpc==="claim_gtfs_ingest")return {claim:f.claim(String(args.p_token)),active:false};
+   if(cancelled&&rpc==="read_gtfs_ingest_attempt")return {...f.snapshot(String(args.p_token)),state:"cancelled",stage:"failed",active:false};
+   return f.native(rpc,args);
+  });
+  await expect(f.run()).rejects.toThrow("acknowledgement unavailable");
+  const saved=await f.command("terminal"),offset=f.calls().length;
+  expect(saved.resolved).toBe(false);
+  await expect(f.run()).resolves.toMatchObject({state:"observed_terminal",snapshot:{state:"cancelled"}});
+  expect(f.calls().slice(offset)).toEqual(["claim_gtfs_ingest","read_gtfs_ingest_attempt"]);
+  expect(await f.command("terminal")).toEqual(saved);expect(f.work).toHaveBeenCalledTimes(1);
+ });
  it("keeps an acknowledged receipt separate from the newly observed snapshot",async()=>{
   const f=await fixture();await f.run();const offset=f.calls().length;
   await expect(f.run()).resolves.toMatchObject({state:"recovered_terminal",operation:"fail",snapshotBeforeDelivery:{state:"running"},result:{retained:true}});

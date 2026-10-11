@@ -1,0 +1,66 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedTest": null,
+      "expectedFailure": null,
+      "passed": true,
+      "seconds": 4.611
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedTest": null,
+      "expectedFailure": null,
+      "passed": true,
+      "seconds": 4.755
+    },
+    {
+      "case": "cancelled-terminal-replay",
+      "exitCode": 1,
+      "expectedTest": "observes cancellation before replaying",
+      "expectedFailure": "promise rejected",
+      "passed": true,
+      "seconds": 4.712
+    },
+    {
+      "case": "fixed-supervisor-budget",
+      "exitCode": 1,
+      "expectedTest": "extends the supervisor for a configured",
+      "expectedFailure": "2730000",
+      "passed": true,
+      "seconds": 4.611
+    },
+    {
+      "case": "cli-overrides-budget",
+      "exitCode": 1,
+      "expectedTest": "the actual installed CLI passes",
+      "expectedFailure": "2730000",
+      "passed": true,
+      "seconds": 4.611
+    },
+    {
+      "case": "timer-overflow-allowed",
+      "exitCode": 1,
+      "expectedTest": "refuses an unrepresentable parser timer 2147483647",
+      "expectedFailure": "expected [Function] to throw an error",
+      "passed": true,
+      "seconds": 4.51
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedTest": null,
+      "expectedFailure": null,
+      "passed": true,
+      "seconds": 4.558
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-attempt.ts": "9e75c3f0d0848017f34e3d187a519770dd3796ce8f27afd2515d9f2f02a5ffef",
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "2104b350433329ec29e7dacfa743c4d146da6cc4beba947c2ab2c53dacdc5cac",
+    "openplan/scripts/workers/gtfs-ingestion.ts": "8c363bc44d4e06d8f66d4bff978842baba10cdfc30f0490b3a09d39d01ea9261"
+  },
+  "limits": "Mocked database transport and actual CLI configuration invocation. Native SQL, real parser runtime, hosted commissioning and scientific accuracy remain separate."
+}

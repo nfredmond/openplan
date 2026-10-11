@@ -44,6 +44,9 @@ export async function runGtfsOwnedAttempt(options: GtfsJournalOptions & {
         throw error;
       }
     };
+    // Cancellation supersedes an undelivered terminal command. Keep its exact
+    // journal bytes as history without replaying a command the database refuses.
+    if (snapshot.state === "cancelled") return { state: "observed_terminal" as const, snapshot };
     const retained = await journal.inspect("terminal");
     if (retained) {
       const terminal = restoreGtfsTerminalMutation(retained.payload, { ...context, ...scope }, retained.commandId);

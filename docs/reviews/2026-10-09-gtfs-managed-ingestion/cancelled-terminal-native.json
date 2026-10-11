@@ -1,0 +1,158 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": true,
+      "worker": {
+        "operation": "fail",
+        "versionId": "2c6bd3df-c8a9-4f91-a9c1-85e1fdfe8cce",
+        "workCalls": 1,
+        "terminalRequests": 1,
+        "recoveredPasses": 2,
+        "originalCommandRetainedExactly": true,
+        "cancellation": {
+          "state": "cancelled",
+          "closure": {
+            "recorded": true,
+            "feedStatusChanged": true
+          },
+          "command": "eb710271-a4df-470b-bb78-87ff92c98b38",
+          "version": "2c6bd3df-c8a9-4f91-a9c1-85e1fdfe8cce",
+          "closedAt": "2026-10-11T04:06:28.410587+00:00",
+          "cleanupPending": false
+        },
+        "calls": [
+          "admit_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "fail_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ]
+      },
+      "native": {
+        "state": "cancelled",
+        "stops": 0,
+        "token": null,
+        "claims": 1,
+        "routes": 0,
+        "attempt": 1,
+        "current": false,
+        "failureCode": "abandoned",
+        "versionStatus": "failed"
+      }
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": true,
+      "worker": {
+        "operation": "complete",
+        "versionId": "a83dddc6-0418-4a44-895f-97c246b2bf91",
+        "workCalls": 1,
+        "terminalRequests": 1,
+        "recoveredPasses": 2,
+        "originalCommandRetainedExactly": true,
+        "cancellation": {
+          "state": "cancelled",
+          "closure": {
+            "recorded": true,
+            "feedStatusChanged": true
+          },
+          "command": "d7a502d9-c14b-4f02-9e5b-3eaa3a30ca8b",
+          "version": "a83dddc6-0418-4a44-895f-97c246b2bf91",
+          "closedAt": "2026-10-11T04:06:28.973357+00:00",
+          "cleanupPending": false
+        },
+        "calls": [
+          "admit_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ]
+      },
+      "native": {
+        "state": "cancelled",
+        "stops": 0,
+        "token": null,
+        "claims": 1,
+        "routes": 0,
+        "attempt": 1,
+        "current": false,
+        "failureCode": "abandoned",
+        "versionStatus": "failed"
+      }
+    },
+    {
+      "case": "cancelled-command-replayed",
+      "exitCode": 1,
+      "passed": true,
+      "expectedFailure": "GTFS worker acknowledgement unavailable on replay against cancelled SQL execution"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "passed": true,
+      "worker": {
+        "operation": "complete",
+        "versionId": "e47ff5df-3b69-49c3-9a42-bbc63d26aed4",
+        "workCalls": 1,
+        "terminalRequests": 1,
+        "recoveredPasses": 2,
+        "originalCommandRetainedExactly": true,
+        "cancellation": {
+          "state": "cancelled",
+          "closure": {
+            "recorded": true,
+            "feedStatusChanged": true
+          },
+          "command": "d98793ff-5aac-4707-a0df-0c7a5104e48b",
+          "version": "e47ff5df-3b69-49c3-9a42-bbc63d26aed4",
+          "closedAt": "2026-10-11T04:06:30.099439+00:00",
+          "cleanupPending": false
+        },
+        "calls": [
+          "admit_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ]
+      },
+      "native": {
+        "state": "cancelled",
+        "stops": 0,
+        "token": null,
+        "claims": 1,
+        "routes": 0,
+        "attempt": 1,
+        "current": false,
+        "failureCode": "abandoned",
+        "versionStatus": "failed"
+      }
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-attempt.ts": "9e75c3f0d0848017f34e3d187a519770dd3796ce8f27afd2515d9f2f02a5ffef",
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "2104b350433329ec29e7dacfa743c4d146da6cc4beba947c2ab2c53dacdc5cac",
+    "openplan/scripts/workers/gtfs-ingestion.ts": "8c363bc44d4e06d8f66d4bff978842baba10cdfc30f0490b3a09d39d01ea9261",
+    "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb"
+  },
+  "limits": "Actual isolated PostgREST/SQL claims and cancellation, private journals and fresh Node processes. The terminal transport is deliberately interrupted before SQL terminal delivery. Complete commands contain synthetic unpublished evidence. This is not parser publication, hosted commissioning, power-loss durability, browser or scientific acceptance."
+}

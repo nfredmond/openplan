@@ -27,6 +27,8 @@ npm run worker:gtfs-ingestion
 
 The command loads `.env.local` when present. A service must receive its protected configuration explicitly and start in the actual nested package directory. One-shot mode performs a bounded pass, rather than draining the queue. Continuous mode polls serially. Configure supervision, restart behavior and log retention for the chosen installation; an interactive command alone does not establish a dependable service.
 
+`OPENPLAN_GTFS_PARSE_BUDGET_MS` controls the parser's cooperative budget. The worker supervisor retains its 30-minute default window and extends it to a larger configured budget plus 30 seconds for startup and output delivery. It refuses fractional millisecond values and deadlines outside Node's timer range. Raising this setting does not establish feed capacity; measure the installation's memory and processing time separately.
+
 Exit 0 means the bounded pass finishes or a continuous worker stops cleanly. Exit 2 means retained work is still unconfirmed or awaiting a later pass. Exit 1 means an error or an interrupted one-shot invocation. Logs distinguish submission handoff, terminal observations and unconfirmed work. A terminal observation may describe a failure or cancellation. It does not mean every import succeeded.
 
 ## Planner and recovery behavior
@@ -36,6 +38,8 @@ The planner retains a request identity before submission. Check progress or reco
 Cancellation is a separate human command. A cancelled request cannot later admit a version. Cancellation after admission closes unfinished processing and schedules archive reconciliation. Already completed or failed processing cannot be relabelled cancelled. Retain the recurring `/api/cron/reap-gtfs-ingests` schedule: an upload can arrive after cancellation, so a single cleanup pass or Storage RLS alone does not close that boundary.
 
 SIGINT/SIGTERM stops the worker's active transport/parser work and retains journals. Restart with the same target, installation identity, private files and pinned parser. A fresh worker respects an active lease and may replace its claim only after expiry. Do not edit lease times, journals, archive hashes or database statuses to resume work. Do not overwrite an archive object with different bytes.
+
+When cancellation wins before a retained terminal command is acknowledged, recovery observes the cancellation and preserves that command as history. It does not repeatedly replay the superseded completion or failure. The legacy age-based sweep excludes enrolled managed versions; their execution state and lease govern recovery.
 
 Before an upgrade, capture database, Storage, the complete private root, configuration and the pinned source/dependency identity together while the affected writers are stopped. Finish or explicitly resolve unfinished attempts with their pinned parser before changing parser identity. Preserve old files and receipts. A different logical origin or installation identity is a different custody boundary; copying a path or changing its journal metadata is not a supported recovery procedure.
 

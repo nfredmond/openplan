@@ -5,7 +5,7 @@ import { join, relative } from "node:path";
 import { createClient } from "@supabase/supabase-js";
 import { execFileSync } from "node:child_process";
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { runGtfsQueuePass, runGtfsQueueService, gtfsQueueOptions, type GtfsQueueOptions } from "@/lib/gtfs/managed-worker-queue";
+import { runGtfsQueuePass, runGtfsQueueService, gtfsQueueOptions, gtfsQueueParserOptions, type GtfsQueueOptions } from "@/lib/gtfs/managed-worker-queue";
 import type { GtfsAttemptSnapshot } from "@/lib/gtfs/managed-worker-service";
 import type { GtfsOwnedWork } from "@/lib/gtfs/managed-worker-attempt";
 
@@ -73,6 +73,25 @@ async function fixture() {
 }
 
 describe("managed GTFS queue", () => {
+  it("settles a cancelled attempt without replaying its unresolved terminal command", async () => {
+    const f = await fixture();
+    const normal = f.respond.getMockImplementation()!;
+    f.respond.mockImplementation(async (rpc, args) => {
+      if (rpc === "fail_gtfs_ingest") {
+        const snapshot = f.versions.get(String(args.p_version))!;
+        snapshot.state = "cancelled"; snapshot.stage = "failed"; snapshot.active = false;
+        throw new Error("Cancellation commits before terminal acknowledgement");
+      }
+      return normal(rpc, args);
+    });
+    expect((await f.run()).outcomes[0].state).toBe("unconfirmed");
+    expect((await f.job()).settled).toBe(false);
+    const offset = f.events.length;
+    expect(await f.run()).toMatchObject({ outcomes: [{ state: "observed_terminal" }], pendingCount: 0 });
+    expect((await f.job()).settled).toBe(true); expect(f.work).toHaveBeenCalledTimes(1);
+    expect(f.events.slice(offset).some(event => event.name === "fail_gtfs_ingest")).toBe(false);
+    expect(f.versions.get(id(1))!.attempts).toBe(1);
+  });
   it("retains job and attempt identities before claims, processes serially and never adopts", async () => {
     const f = await fixture(); f.candidates.add(id(10));
     f.work.mockImplementation(async (owned, paths) => {
@@ -268,6 +287,14 @@ describe("GTFS worker configuration", () => {
       { cwd: process.cwd(), encoding: "utf8", env: { ...process.env, NEXT_PUBLIC_SUPABASE_URL: "", SUPABASE_SERVICE_ROLE_KEY: "",
         OPENPLAN_GTFS_INSTALLATION_ID: "", OPENPLAN_GTFS_PARSER_BUILD: "" }, timeout: 10000 });
     expect(result).toContain("one bounded pass"); expect(result).toContain("Completion does not adopt");
+  });
+  it("extends the supervisor for a configured 45-minute cooperative parse budget", () => {
+    expect(gtfsQueueParserOptions({}).maxRuntimeMs).toBe(30 * 60_000);
+    expect(gtfsQueueParserOptions({ OPENPLAN_GTFS_PARSE_BUDGET_MS: String(45 * 60_000) }).maxRuntimeMs).toBe(45 * 60_000 + 30_000);
+    expect(gtfsQueueParserOptions({ OPENPLAN_GTFS_PARSE_BUDGET_MS: "invalid" }).maxRuntimeMs).toBe(30 * 60_000);
+  });
+  it.each(["2147483647", "9007199254740991", "1.5"])("refuses an unrepresentable parser timer %s", value => {
+    expect(() => gtfsQueueParserOptions({ OPENPLAN_GTFS_PARSE_BUDGET_MS: value })).toThrow();
   });
   it.each(["arguments", "relative", "credentials", "installation", "build"])("refuses invalid %s configuration", kind => {
     const config = { ...env }; const argv = kind === "arguments" ? ["--unknown"] : [];

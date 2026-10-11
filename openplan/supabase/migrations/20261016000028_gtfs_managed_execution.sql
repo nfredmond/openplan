@@ -1081,7 +1081,7 @@ END;
 $$;
 
 CREATE OR REPLACE FUNCTION public.reap_gtfs_feed_version(p_version_id uuid, p_cutoff timestamptz)
-RETURNS boolean LANGUAGE plpgsql SECURITY INVOKER SET search_path = pg_catalog, public AS $$
+RETURNS boolean LANGUAGE plpgsql SECURITY DEFINER SET search_path = '' AS $$
 DECLARE v public.gtfs_feed_versions%ROWTYPE; target_feed uuid;
 BEGIN
   SELECT feed_id INTO target_feed FROM public.gtfs_feed_versions WHERE id=p_version_id;
@@ -1094,6 +1094,11 @@ BEGIN
     RETURN false;
   END IF;
   IF EXISTS(SELECT 1 FROM public.gtfs_feeds WHERE id=v.feed_id AND current_version_id=v.id) THEN
+    RETURN false;
+  END IF;
+  -- Managed execution owns its lease and closure. The legacy age-based sweep
+  -- must not interrupt an enrolled version or bypass its write context.
+  IF EXISTS(SELECT 1 FROM openplan_gtfs.executions WHERE version_id=v.id) THEN
     RETURN false;
   END IF;
   IF v.storage_path IS NOT NULL THEN
@@ -1111,6 +1116,8 @@ BEGIN
   UPDATE public.gtfs_feeds SET status='failed' WHERE id=v.feed_id AND current_version_id IS NULL;
   RETURN true;
 END $$;
+REVOKE ALL ON FUNCTION public.reap_gtfs_feed_version(uuid,timestamptz) FROM PUBLIC,anon,authenticated;
+GRANT EXECUTE ON FUNCTION public.reap_gtfs_feed_version(uuid,timestamptz) TO service_role;
 
 CREATE OR REPLACE FUNCTION public.close_failed_gtfs_version(p_version_id uuid,p_code text,p_detail text,p_storage_path text DEFAULT NULL)
 RETURNS jsonb LANGUAGE plpgsql SECURITY INVOKER SET search_path=pg_catalog,public AS $$
