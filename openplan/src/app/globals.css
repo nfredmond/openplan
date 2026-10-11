@@ -4777,3 +4777,32 @@
     padding-top: 1rem;
   }
 }
+
+/* ═══ UI OVERHAUL, OCTOBER 10, 2026: SAFETY PANEL TABS ═══ */
+@layer components {
+  .safety-panel-tabs {
+    display: flex;
+    flex-shrink: 0;
+    gap: 0.25rem;
+    border-bottom: 1px solid var(--border);
+    padding: 0 0.75rem;
+  }
+
+  .safety-panel-tab {
+    margin-bottom: -1px;
+    border-bottom: 2px solid transparent;
+    padding: 0.65rem 0.75rem;
+    font-size: var(--fs-compact);
+    font-weight: 600;
+    color: var(--muted-foreground);
+  }
+
+  .safety-panel-tab:hover {
+    color: var(--foreground);
+  }
+
+  .safety-panel-tab[aria-selected="true"] {
+    border-bottom-color: var(--primary);
+    color: var(--foreground);
+  }
+}

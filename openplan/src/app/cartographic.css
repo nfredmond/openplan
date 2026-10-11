@@ -2325,3 +2325,157 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   padding-top: 14px;
   border-top: 1px solid var(--line);
 }
+
+/*
+  ═══ UI OVERHAUL, OCTOBER 10, 2026: ONE FRAME FOR MAP PAGES ═══
+
+  docs/reviews/2026-10-10-ui-overhaul/PLAN.md, section 5. Safety, the Aerial
+  index and Corridor Analysis used three different frames: Safety floated the
+  workspace card, header pills and account card over its map (the account card
+  covered the severity key), Aerial floated its page over the shell map, and
+  Corridor Analysis rested the rail open at 240px. All three now share the
+  plain shell's solid header and attached rail, with the rail collapsed to its
+  60px icon strip at rest and opening over the map on hover or focus. Nothing
+  floats over a map except its own legend, zoom, basemap picker and credits.
+
+  Appended, and scoped by the three body attributes the pages already set, so
+  the older rules above and the guards that read them in source order are
+  untouched. The doubled `.op-cart-shell` classes outrank the plain shell's
+  own selectors without editing them.
+*/
+@media (min-width: 721px) {
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell {
+    --op-cart-rail-inset: 0px;
+  }
+
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-rail {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) {
+    box-shadow: 8px 0 24px rgba(0, 0, 0, 0.18);
+  }
+
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-hdr,
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) ~ .op-cart-hdr {
+    top: 0;
+    left: var(--op-cart-rail-width);
+    right: var(--cp-reserved, 0px);
+    height: 64px;
+    padding: 0 196px 0 24px;
+    align-items: center;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+  }
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-hdr .op-cart-pill {
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-ws-meta {
+    display: none;
+  }
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"]) .op-cart-shell.op-cart-shell .op-cart-copilot-launch {
+    top: 10px;
+    bottom: auto;
+    right: calc(16px + var(--cp-reserved, 0px));
+  }
+
+  /* The account card floated in the map's bottom-left corner. With the rail
+     collapsed there is no foot for it, so sign-out uses the header control
+     built for narrow screens, as on every other page below 1200px. */
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-account {
+    display: none;
+  }
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-mobile-account {
+    display: block;
+  }
+
+  /* Safety: the map starts under the header and still runs to the window's
+     left edge beneath the rail, so `safety-map-runs-to-the-edge` holds. */
+  body[data-map-fills-surface="true"] .op-cart-shell.op-cart-shell .op-cart-surface,
+  body[data-map-fills-surface="true"] .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) ~ .op-cart-surface {
+    top: 64px;
+  }
+}
+
+/* Aerial and Corridor Analysis rest the rail at its icon strip at every
+   width, as Safety already did, and open it over the map on hover. */
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail {
+  width: var(--op-cart-rail-width);
+}
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) {
+  width: 240px;
+}
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__group-title,
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__tip {
+  opacity: 0;
+}
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__group-title,
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__tip {
+  opacity: 1;
+}
+body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__badge {
+  top: 5px;
+  left: 28px;
+  right: auto;
+}
+
+@media (min-width: 1024px) {
+  /* Aerial: the page is a solid sidebar from the header to the window foot,
+     attached to the rail, and the shell map fills the rest. */
+  body[data-surface-beside-map="true"] .op-cart-shell.op-cart-shell .op-cart-surface,
+  body[data-surface-beside-map="true"] .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) ~ .op-cart-surface {
+    top: 64px;
+    left: var(--op-cart-rail-width);
+    bottom: 0;
+    right: auto;
+    width: var(--op-cart-beside-width);
+    border: 0;
+    border-right: 1px solid var(--line);
+    border-radius: 0;
+    background: var(--panel-solid);
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
+  }
+  body[data-surface-beside-map="true"] .op-cart-shell.op-cart-shell .op-cart-inspector {
+    left: calc(var(--op-cart-rail-width) + var(--op-cart-beside-width) + 16px);
+  }
+  body[data-surface-beside-map="true"] .op-cart-shell.op-cart-shell .op-cart-mapdock {
+    top: 80px;
+  }
+}
+
+@media (min-width: 1200px) {
+  /* Corridor Analysis under the plain shell: the header and page start at
+     the collapsed rail instead of the open one. */
+  body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell.op-cart-shell.op-cart-shell .op-cart-hdr,
+  body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell.op-cart-shell.op-cart-shell .op-cart-surface,
+  body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell.op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) ~ .op-cart-hdr,
+  body[data-page-flush="true"]:not([data-map-fills-surface="true"]) .op-cart-shell.op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) ~ .op-cart-surface {
+    left: var(--op-cart-rail-width);
+  }
+}
+
+/* A rail link keeps focus after a click, and `:focus-within` then held the
+   rail open over the map until the planner clicked somewhere else (seen in
+   the October 10 journey on all three map pages). It now opens for keyboard
+   focus (`:focus-visible`) and for the pointer, not for a mouse click's
+   leftover focus. */
+body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) {
+  width: var(--op-cart-rail-width);
+  box-shadow: none;
+}
+body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) :is(.op-cart-rail__group-title, .op-cart-rail__tip) {
+  opacity: 0;
+}

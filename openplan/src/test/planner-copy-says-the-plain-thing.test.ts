@@ -225,21 +225,21 @@ const BASELINE: Readonly<Record<string, number>> = {
   provenance: 11,
   readiness: 33,
   // Safety must distinguish crash records from people killed or injured.
-  record: 249,
+  record: 248,
   registry: 17,
   resolve: 3,
   scaffold: 3,
   schema: 5,
   signal: 8,
   spine: 9,
-  "study area": 21,
+  "study area": 20,
   submission: 10,
   surface: 13,
   trace: 19,
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 148,
+  workspace: 147,
 };
 
 describe("planner copy says the plain thing", () => {

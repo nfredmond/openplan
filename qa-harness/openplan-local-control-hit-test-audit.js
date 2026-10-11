@@ -294,7 +294,7 @@ async function auditRoute(page, route, viewport) {
     scanned = Math.max(scanned, samples.length);
 
     samples.forEach((sample, index) => {
-      if (sample.disabled || sample.ariaHidden) return;
+      if (sample.disabled || sample.ariaHidden || sample.rendered === false) return;
       if (sample.visibleFraction <= 0) return;
       // A sliver at a panel's edge is judged where it is shown whole instead.
       // See `tooThinToJudge`.
