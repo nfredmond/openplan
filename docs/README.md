@@ -49,6 +49,8 @@ The [October 11 selected worker-root set candidate](reviews/2026-10-11-worker-ro
 
 The [October 11 retained recovery-packet candidate](reviews/2026-10-11-recovery-point-manifest/STATUS.md) binds declared database/Storage artifacts, roles, key, configuration and a verified worker-root set. The 3,092-file encrypted transport restores exact packet bytes/modes, preserving original backend mode metadata and failed trials. This is an offline retained-artifact check; installation-wide consistency and independent commissioning remain open.
 
+The [October 11 explicit worker inventory candidate](reviews/2026-10-11-installation-worker-inventory/STATUS.md) requires declarations for each known worker family and retains exact private configuration before producing a selected-root inventory. Its source audit distinguishes model, imagery, OCR, email, synthesis and native connector state. Historical-fixture integration is verified; installation coverage and commissioning remain unassessed.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

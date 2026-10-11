@@ -38,6 +38,60 @@ Record the chosen method and interval. Resume writers only after capture and
 inventory completion. A backup taken while those writers continue is not yet a
 proved consistent recovery point.
 
+## Explicit worker assessments and protected configuration
+
+The candidate inventory command requires an explicit assessment for each of the
+15 currently catalogued worker families. The [source audit](../../../docs/reviews/2026-10-11-installation-worker-inventory/WORKER_FOOTPRINTS.md)
+identifies different roots, shared state and external dependencies. It does not
+discover the running installation. Start with the
+[unassessed profile template](../../../docs/reviews/2026-10-11-installation-worker-inventory/profile-template.json)
+in a private operator-owned directory. Keep the edited profile and every selected
+configuration file private, with no symlinks or hard-link aliases.
+
+Replace the inventory's `installationId` label and add actual absolute paths to
+its `roots` and `configuration` lists. Each item has a unique safe `id` and a
+`path`. For every worker, record configuration state as `configured`,
+`not_deployed` or `unassessed`, with explanatory notes. This is a configuration
+assessment, not a claim that the worker is healthy. Missing environment variables
+do not establish absence. Configured workers require `configurationIds` and
+declare custody as `local_roots`, `database_and_storage`, `external` or
+`unassessed`. Local custody also requires `rootIds`. Every selected file/root
+must have an assessment reference. Shared roots have one ID; historical roots
+may remain referenced by a stopped or unassessed family.
+
+The label does not replace the original runtime installation identity. Preserve
+the actual worker and deployment identities in exact protected configuration.
+Record external services, native account reauthorization and unresolved custody
+in the notes. Environment files remain opaque bytes; this command never executes
+their contents. From `openplan/`, after declaring configuration-writer quiescence:
+
+```bash
+python3 scripts/ops/installation_worker_inventory.py \
+  --profile /private/operator/worker-profile.json \
+  --destination /private/recovery/worker-inventory \
+  --writers-quiesced --timeout 120
+python3 scripts/ops/installation_worker_inventory.py \
+  --verify /private/recovery/worker-inventory
+```
+
+Require exit 0 and verification before using `worker-inventory/inventory.json`
+with the worker-root set command below. The package retains the exact profile,
+known entrypoint/launcher catalogue, selected configuration bytes and one final
+receipt. It rechecks sources and never overwrites a destination. Retain failed
+destinations for diagnosis and retry in a new directory. Keep the entire verified
+inventory package with the recovery point's protected configuration. The root-set
+command retains its exact selection bytes but does not separately copy these
+configuration files.
+
+The inventory binds current package and source bytes and refuses unreviewed
+Python worker entrypoints, npm worker keys or retargeted npm launch commands.
+It does not bind every imported library or discover arbitrary installed helpers.
+An empty selection with 15 unassessed entries is not evidence of zero workers.
+Operator declarations and installation coverage remain unassessed. The command
+does not capture worker roots, a database or Storage, align a live cut, encrypt a
+backup, or demonstrate operational restart. [Dated checks](../../../docs/reviews/2026-10-11-installation-worker-inventory/STATUS.md)
+record the candidate's narrower evidence.
+
 ## Model worker recovery records
 
 Include the complete durable worker root in the recovery inventory. This

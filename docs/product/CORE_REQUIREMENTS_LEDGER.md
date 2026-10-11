@@ -485,3 +485,7 @@ native database restoration, worker continuation, independent physical-host reco
 or commissioning. Browser, useful 45-minute all-worker computation and separate-engine
 scientific acceptance remain open. M3 and the V1 floor stay incomplete; no capability
 grade changes. The relaunch owner retains hosted coordination and the main hold.
+
+## October 11 explicit worker installation inventory, bounded M3 candidate
+
+[The private inventory command](../reviews/2026-10-11-installation-worker-inventory/STATUS.md) requires operator declarations for 15 current worker families, records shared/historical roots and preserves exact configuration/source-catalogue bytes before selected-root publication. It addresses the known family omission gap without claiming automatic installed-service discovery. All 298 ops tests and 63 controls pass; four historical configuration files and five retained roots join the existing root-set command, preserving all four journal images and the original full point. Installation coverage remains unassessed. Full authoritative-record recovery still requires live-cut alignment, every worker family, useful long computation, separate-hardware recovery and independent commissioning under M3. No other v1 outcome is narrowed or accepted by this check.
