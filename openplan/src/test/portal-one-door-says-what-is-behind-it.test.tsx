@@ -72,6 +72,7 @@ vi.mock("mapbox-gl", () => {
     default: {
       Map,
       NavigationControl: ctl,
+      GeolocateControl: ctl,
       AttributionControl: ctl,
       Popup: ctl,
       Marker: ctl,
@@ -80,6 +81,7 @@ vi.mock("mapbox-gl", () => {
     },
     Map,
     NavigationControl: ctl,
+    GeolocateControl: ctl,
     AttributionControl: ctl,
   };
 });
@@ -129,20 +131,22 @@ describe("the one door names what is actually behind it", () => {
   });
 
   /**
-   * FOUR CAMPAIGNS, FOUR SENTENCES. The label is derived, not written, because
-   * the two failures are symmetrical: a door that promises a survey to a
-   * campaign with none costs a resident a wasted tap, and a door that says
-   * "About this project" to a campaign that HAS one costs the survey.
+   * WHAT IS ONLY BEHIND THE DOOR. Comments moved onto the map on 2026-10-10, so
+   * the door no longer promises them; it names the survey when there is one,
+   * the team's published response when there is one, and otherwise the
+   * project. A door that promises a survey to a campaign with none costs a
+   * resident a wasted tap; one that hides a survey costs the survey.
    *
    * The expected strings come from the REAL catalog rather than being typed
    * here — a fixture that declared its own copy could assert a sentence the
    * product does not carry.
    */
   const cases: Array<[string, ShellProps["detailsContents"], string]> = [
-    ["a survey and comments", { survey: true, comments: true, closeLoop: false }, "portal.openDetailsSurveyAndComments"],
+    ["a survey and comments", { survey: true, comments: true, closeLoop: false }, "portal.openDetailsSurvey"],
     ["only a survey", { survey: true, comments: false, closeLoop: false }, "portal.openDetailsSurvey"],
-    ["only comments", { survey: false, comments: true, closeLoop: false }, "portal.openDetailsComments"],
+    ["only comments", { survey: false, comments: true, closeLoop: false }, "portal.openDetails"],
     ["neither", { survey: false, comments: false, closeLoop: false }, "portal.openDetails"],
+    ["a published response and no survey", { survey: false, comments: true, closeLoop: true }, "portal.openDetailsHint"],
   ];
 
   for (const [name, detailsContents, key] of cases) {
@@ -156,18 +160,23 @@ describe("the one door names what is actually behind it", () => {
     });
   }
 
-  it("promises the record of what the team did only when there is one", async () => {
+  it("names the team's response only when there is one, and never above a survey", async () => {
     const PublicMapShell = await importShell();
-    const { rerender } = render(
-      <PublicMapShell {...shellProps({ detailsContents: { survey: true, comments: true, closeLoop: false } })} />
-    );
     const hint = EN_MESSAGES.messages["portal.openDetailsHint"];
+    const { rerender } = render(
+      <PublicMapShell {...shellProps({ detailsContents: { survey: false, comments: true, closeLoop: false } })} />
+    );
     expect(screen.getByTestId("portal-details-link")).not.toHaveTextContent(hint);
+
+    rerender(
+      <PublicMapShell {...shellProps({ detailsContents: { survey: false, comments: true, closeLoop: true } })} />
+    );
+    expect(screen.getByTestId("portal-details-link")).toHaveTextContent(hint);
 
     rerender(
       <PublicMapShell {...shellProps({ detailsContents: { survey: true, comments: true, closeLoop: true } })} />
     );
-    expect(screen.getByTestId("portal-details-link")).toHaveTextContent(hint);
+    expect(screen.getByTestId("portal-details-link")).toHaveTextContent(EN_MESSAGES.messages["portal.openDetailsSurvey"]);
   });
 });
 

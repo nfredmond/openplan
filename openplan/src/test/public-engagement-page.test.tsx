@@ -358,7 +358,7 @@ describe("PublicEngagementPage", () => {
    * loader and asserts what a RESIDENT reads under the map — that it opens on
    * the linked project's study area, and which area that is.
    */
-  it("tells a resident which area frames the map, on the page they actually open", async () => {
+  it("does not narrate where the map opens when a real place framed it", async () => {
     const page = await PublicEngagementPage({
       params: Promise.resolve({ shareToken: "share-token-12345" }),
     });
@@ -366,23 +366,12 @@ describe("PublicEngagementPage", () => {
     render(page);
 
     /*
-      THE SENTENCE IS THE CATALOG'S. Until 2026-08-14 this route printed
-      `mapFraming.summary` — English prose composed server-side, in an
-      administrator's vocabulary ("the linked project's study area"), to every
-      reader of every language — because it rendered the second implementation of
-      the submission form. Both implementations converged on one, and that one
-      builds this sentence from catalog keys through
-      `portalMapFramingSentence`.
-
-      The agency's own name for the area is never translated; the frame around it
-      always is.
+      The map shows the place, so the sentence about why it opened there was
+      cut on 2026-10-10. It is still said when nothing framed the map; that
+      case is covered in `portal-sheet-and-framing.test.tsx`.
     */
-    expect(screen.getByText(/Franklin County, Ohio/)).toBeInTheDocument();
-    expect(
-      screen.getByText(new RegExp(EN_MESSAGES["portal.mapFramingSourceProject"]))
-    ).toBeInTheDocument();
-    // The continental instruction belongs only to a campaign nothing framed.
-    expect(screen.queryByText(EN_MESSAGES["portal.mapZoomHint"])).toBeNull();
+    expect(screen.queryByText(new RegExp(EN_MESSAGES["portal.mapFramingSourceProject"]))).toBeNull();
+    expect(screen.queryByText(EN_MESSAGES["portal.mapFramingNoArea"])).toBeNull();
   });
 
   /**
@@ -456,18 +445,12 @@ describe("PublicEngagementPage", () => {
 
     render(page);
 
-    expect(screen.getByText("Linked project: Downtown Mobility Plan")).toBeInTheDocument();
-    expect(screen.getByText("This input supports")).toBeInTheDocument();
-    expect(screen.getAllByText("Downtown Mobility Plan").length).toBeGreaterThanOrEqual(2);
-    expect(screen.getByText("Submission status")).toBeInTheDocument();
-    expect(screen.getByText("Submissions open")).toBeInTheDocument();
-    expect(screen.getByText("Published feedback")).toBeInTheDocument();
-    expect(screen.getByText("Engagement mode")).toBeInTheDocument();
-    // Was `map feedback` — the raw enum with its underscore removed, which is
-    // English shown to every reader in every language. It is now a catalog key,
-    // so the mode is a phrase a resident can read in their own language.
-    expect(screen.getAllByText("Map-based community input").length).toBeGreaterThanOrEqual(1);
-    expect(screen.getByText("Mode: Map-based community input")).toBeInTheDocument();
+    // The project's name, the open/closed state and the review promise. The
+    // kicker, posture card and fact tiles that used to surround them are gone.
+    expect(screen.getByTestId("portal-context-header")).toHaveTextContent("Downtown Mobility Plan");
+    expect(screen.getByText("Open for comments")).toBeInTheDocument();
+    expect(screen.getByText(EN_MESSAGES["page.submissionStatusDetail"])).toBeInTheDocument();
+    expect(screen.queryByText("Portal posture")).toBeNull();
     expect(
       screen.getAllByText(/A planning effort focused on safety, access, and street operations in the downtown core\./i).length
     ).toBeGreaterThanOrEqual(1);
@@ -522,8 +505,7 @@ describe("PublicEngagementPage", () => {
     const { container } = await renderPage({ lang: "es" });
 
     // The chrome, from the catalog — not a machine call at request time.
-    expect(screen.getByText("Participación comunitaria")).toBeInTheDocument();
-    expect(screen.getByText("Estado de los comentarios")).toBeInTheDocument();
+    expect(screen.getByText("Comentarios abiertos")).toBeInTheDocument();
     expect(portalSection(container)?.getAttribute("lang")).toBe("es");
   });
 
@@ -659,7 +641,7 @@ describe("PublicEngagementPage", () => {
 
     await renderPage();
 
-    expect(screen.getByText("Participación comunitaria")).toBeInTheDocument();
+    expect(screen.getByText("Comentarios abiertos")).toBeInTheDocument();
   });
 
   it("lets an explicit choice beat the browser's language", async () => {
@@ -667,7 +649,7 @@ describe("PublicEngagementPage", () => {
 
     await renderPage({ lang: "en" });
 
-    expect(screen.getByText("Community engagement")).toBeInTheDocument();
+    expect(screen.getByText("Open for comments")).toBeInTheDocument();
   });
 
   it("falls back rather than 404s when a link names a language this portal does not carry, and says so", async () => {
@@ -814,15 +796,6 @@ describe("PublicEngagementPage", () => {
     expect(screen.getAllByText(/Español/).length).toBeGreaterThanOrEqual(1);
   });
 
-  it("formats the last-updated timestamp in the participant's locale", async () => {
-    // A Spanish page with an en-US date is half-done, and for most of this
-    // language list a numeric US date names a different day.
-    await renderPage({ lang: "es" });
-
-    const spanish = screen.getByText(/Última actualización/).textContent ?? "";
-    expect(spanish).not.toContain("3/28/2026");
-  });
-
   /**
    * A READ THAT FAILED IS NOT AN EMPTY CAMPAIGN.
    *
@@ -838,13 +811,13 @@ describe("PublicEngagementPage", () => {
    * making a named read answer with an error is the only way to reach it.
    */
   /**
-   * The comment list lives behind the "Community feedback" tab, so reaching its
+   * The comment list lives behind the "Comments" tab, so reaching its
    * empty state means opening that tab — the same two clicks a resident makes.
    * Asserting without opening it would pass against a page that renders nothing
    * at all.
    */
   function openFeedbackTab() {
-    fireEvent.click(screen.getByText(/Community feedback/i).closest("button")!);
+    fireEvent.click(screen.getByRole("button", { name: /^Comments/ }));
   }
 
   it("does not tell residents nobody commented when the comment read failed", async () => {
@@ -927,12 +900,11 @@ describe("PublicEngagementPage", () => {
 
     render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
 
-    // "0" beside "Published feedback" tells a resident nobody spoke. An em dash
-    // is the honest reading of a count we could not take.
-    const label = screen.getByText("Published feedback");
-    const tile = label.closest("div") as HTMLElement;
-    expect(within(tile).getByText("—")).toBeInTheDocument();
-    expect(within(tile).queryByText("0")).toBeNull();
+    // "(0)" on the Comments tab tells a resident nobody spoke. A count we could
+    // not take is not printed.
+    const tab = screen.getByRole("button", { name: /^Comments/ });
+    expect(within(tab).queryByText("(0)")).toBeNull();
+    expect(tab.textContent).not.toMatch(/\d/);
   });
 
   it("says the ordinary empty-state when the reads succeeded and there is simply nothing yet", async () => {
@@ -1093,6 +1065,71 @@ describe("PublicEngagementPage", () => {
       expect(bundle.portalProps.readFailures.project).toBe(false);
     });
   });
+  it("links a published response to the comments it answers, on the map, in the reader's language", async () => {
+    const CAMPAIGN = "11111111-1111-4111-8111-111111111111";
+    itemsLimitMock.mockResolvedValue({
+      data: [
+        { id: "item-a", body: "The crossing at Main is too long.", title: "Long crossing", parent_item_id: null, category_id: null, created_at: "2026-09-06T12:00:00Z" },
+      ],
+      error: null,
+    });
+    closeLoopRpcMock.mockResolvedValue({
+      data: {
+        campaignId: CAMPAIGN,
+        publishedOnly: true,
+        count: 1,
+        entries: [
+          {
+            id: "entry-1", campaign_id: CAMPAIGN, category_id: null, theme_title: "Crossings",
+            you_said: "Crossings are long.", we_did: "Added a refuge island to the design.",
+            status: "published", ai_assisted: false, source_item_ids: ["item-a"], sort_order: 0,
+            published_at: "2026-09-12T00:00:00Z", created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await loadPublicPortalResult("share-token-12345");
+    const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+    expect(bundle.portalProps.closeLoopEntries[0].sourceItemIds).toEqual(["item-a"]);
+
+    render(await PublicEngagementPage({
+      params: Promise.resolve({ shareToken: "share-token-12345" }),
+      searchParams: Promise.resolve({ lang: "es" }),
+    }));
+    fireEvent.click(screen.getByText(/Usted dijo \/ Nosotros hicimos/i).closest("button")!);
+    const link = within(screen.getByTestId("close-loop-sources")).getByRole("link", { name: "Long crossing" });
+    expect(link).toHaveAttribute("href", "/engage/share-token-12345?item=item-a&lang=es");
+  });
+
+  it("says the response section could not be read when its cited comments could not be checked", async () => {
+    const CAMPAIGN = "11111111-1111-4111-8111-111111111111";
+    itemsLimitMock.mockResolvedValue({ data: null, error: { message: "permission denied" } });
+    closeLoopRpcMock.mockResolvedValue({
+      data: {
+        campaignId: CAMPAIGN,
+        publishedOnly: true,
+        count: 1,
+        entries: [
+          {
+            id: "entry-1", campaign_id: CAMPAIGN, category_id: null, theme_title: "Crossings",
+            you_said: "Crossings are long.", we_did: "Added a refuge island.", status: "published",
+            ai_assisted: false, source_item_ids: ["item-a"], sort_order: 0,
+            published_at: "2026-09-12T00:00:00Z", created_at: "2026-09-12T00:00:00Z", updated_at: "2026-09-12T00:00:00Z",
+          },
+        ],
+      },
+      error: null,
+    });
+
+    const result = await loadPublicPortalResult("share-token-12345");
+    const bundle = (result as { status: "ok"; bundle: PublicPortalBundle }).bundle;
+    // Withheld, because nothing can confirm item-a is public; and said so.
+    expect(bundle.portalProps.closeLoopEntries).toEqual([]);
+    expect(bundle.portalProps.readFailures.closeLoop).toBe(true);
+  });
+
   it("returns a complete feed beyond the former 200-item cap and hides orphan replies", async () => {
     const rows = Array.from({ length: 501 }, (_, index) => ({ id: `item-${index}`, body: `Contribution ${index}`, title: null, parent_item_id: null, category_id: null, created_at: "2026-09-06T12:00:00Z" }));
     itemsLimitMock.mockResolvedValue({ data: [...rows, { ...rows[0], id: "orphan", parent_item_id: "withheld-parent" }], error: null });

@@ -34,7 +34,9 @@ const categorySelectMock = vi.fn(() => ({ eq: categoryEqIdMock }));
 const itemRecentLimitMock = vi.fn();
 const itemRecentOrderMock = vi.fn(() => ({ limit: itemRecentLimitMock }));
 const itemRecentGteMock = vi.fn(() => ({ order: itemRecentOrderMock }));
-const itemRecentEqSourceMock = vi.fn(() => ({ gte: itemRecentGteMock }));
+// Each safety check filters on the fingerprint it compares (see the route).
+const itemRecentEqFingerprintMock = vi.fn((_column: string, _value: string) => ({ gte: itemRecentGteMock }));
+const itemRecentEqSourceMock = vi.fn(() => ({ eq: itemRecentEqFingerprintMock }));
 const itemRecentEqCampaignMock = vi.fn(() => ({ eq: itemRecentEqSourceMock }));
 
 // E6 — the reply parent-validation query selects "id, parent_item_id" and chains
@@ -316,6 +318,43 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     });
 
     expect(response.status).toBe(429);
+    expect(itemInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("asks for this connection's recent posts and for the same text, not a sample of the campaign", async () => {
+    /*
+      THE DEFECT THIS NAMES. The route read the campaign's 25 newest public
+      items and filtered them in memory, so on a busy campaign one connection's
+      earlier posts fell outside the sample and the limit stopped applying. The
+      database now does the filtering; this pins what each query asks for.
+    */
+    const request = jsonRequest("test-share-token-12345", { title: "Main", body: "The crossing is long." });
+    await POST(request, { params: Promise.resolve({ shareToken: "test-share-token-12345" }) });
+
+    const filters = itemRecentEqFingerprintMock.mock.calls.map(([column, value]) => [column, value]);
+    expect(filters).toEqual(
+      expect.arrayContaining([
+        ["metadata_json->>source_fingerprint", buildPublicSubmissionClientFingerprint(request)],
+        [
+          "metadata_json->>body_fingerprint",
+          buildPublicSubmissionBodyFingerprint({ title: "Main", body: "The crossing is long." }),
+        ],
+      ])
+    );
+    expect(filters).toHaveLength(2);
+    // Enough rows to decide, not a fixed sample of everyone's.
+    expect(itemRecentLimitMock.mock.calls.map(([limit]) => limit).sort()).toEqual([1, 3]);
+  });
+
+  it("refuses rather than guesses when either safety read fails", async () => {
+    // The duplicate-text read failing must not let a post through as new.
+    itemRecentLimitMock.mockImplementation(async (limit: number) =>
+      limit === 1 ? { data: null, error: { message: "timeout" } } : { data: [], error: null }
+    );
+    const response = await POST(jsonRequest("test-share-token-12345", { body: "A new note" }), {
+      params: Promise.resolve({ shareToken: "test-share-token-12345" }),
+    });
+    expect(response.status).toBe(500);
     expect(itemInsertMock).not.toHaveBeenCalled();
   });
 
