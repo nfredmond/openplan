@@ -1,0 +1,13 @@
+{
+  "Result": "success",
+  "ExecMainStartTimestampMonotonic": "152386843077",
+  "ExecMainExitTimestampMonotonic": "152399291464",
+  "ExecMainStatus": "0",
+  "MemoryPeak": "71237632",
+  "testsPassed": 141,
+  "testSeconds": 12.292,
+  "logSha256": "99d7161dee5dc849acd6b80111c319304d9eebcd751b731d5e1fb0ad9f355e8e",
+  "memoryLimitBytes": 1073741824,
+  "swapLimitBytes": 0,
+  "cpuQuotaPercent": 100
+}

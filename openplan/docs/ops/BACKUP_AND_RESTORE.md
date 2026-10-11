@@ -53,6 +53,40 @@ the database, worker journals and files before coordinating those copies. A
 SQLite-consistent copy by itself does not establish a consistent installation
 backup. Verify both the journal records and inventoried file bytes after restore.
 
+For each model command journal, the candidate Linux snapshot command implements
+the SQLite backup-API copy. First quiesce every relevant writer as part of the
+installation's coordinated cut. Use an existing private destination parent,
+owned by the current operator with no group or other access. The journal and
+its directory must also be private and owned by that operator. From `openplan/`:
+
+```bash
+python3 scripts/ops/worker_journal_snapshot.py \
+  --source /private/worker/stage-journals/STAGE/model-commands.sqlite3 \
+  --destination /private/recovery-point/STAGE-journal \
+  --writers-quiesced --timeout 30
+```
+
+The flag records the operator's declaration; it does not stop or fence writers.
+The command reads through SQLite in read-only mode, includes committed WAL
+pages, checks copied database integrity and the command-table shape, and records
+the copied file's size and SHA-256 hash. It syncs the database, publishes a
+private metadata receipt atomically, and syncs the destination and parent.
+Its deadline applies to backup progress and lock retry, not every disk operation.
+It never overwrites a destination. A failed destination remains private; retry
+with a new directory and retain the failure for diagnosis. Require exit 0 before
+using the snapshot, and compare its actual size/hash with `snapshot.json`.
+A metadata file alone does not establish successful completion after a
+filesystem failure.
+
+Include this complete snapshot and the original input/output files in the
+private recovery inventory. Restore the snapshotted journal as
+`model-commands.sqlite3` in the corresponding stage directory. Preserve the
+original installation identity. Independently compare current database rows
+and server receipts before recovering uncertain deliveries. Never clear an
+interrupted computation start to permit replay. The [dated checks](../../../docs/reviews/2026-10-11-worker-journal-snapshot/STATUS.md)
+cover one populated local journal, not the complete installation backup,
+automatic quiescence, full stage continuation or scientific acceptance.
+
 Preserve `OPENPLAN_DEPLOYMENT_ID` and the original logical base URL when restoring
 that same installation from a coordinated backup. A different or newly
 initialized installation needs a distinct identity; do not edit an old journal

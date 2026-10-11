@@ -1,0 +1,19 @@
+test_refuses_source_alias_before_destination_creation (test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_source_alias_before_destination_creation) ... FAIL
+
+======================================================================
+FAIL: test_refuses_source_alias_before_destination_creation (test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_source_alias_before_destination_creation)
+----------------------------------------------------------------------
+ValueError: Snapshot destination must be outside the source journal directory
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan/scripts/ops/tests/test_worker_journal_snapshot.py", line 131, in test_refuses_source_alias_before_destination_creation
+    with self.assertRaisesRegex(ValueError, 'symlink'):
+         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: "symlink" does not match "Snapshot destination must be outside the source journal directory"
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

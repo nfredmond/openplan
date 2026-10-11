@@ -1,0 +1,19 @@
+{
+  "files": {
+    "verify_snapshot_controls.py": "4cc981c3e6cb457ab952b2e05218dd5650bdfa83d898cdd02bc3328e503558f1",
+    "STATUS.md": "ab7eda98db67785057252d2a49936565497026dd8eeedc1a1f9b928865741c58",
+    "evidence/failed-controls-01.json": "66e770d904657543483cf88206ebc85b7cc853b63d4827f50e3bdc78174b8249",
+    "evidence/ops-regression.json": "83c8675148687fcc1f4e03d7f73fade28b939bd028ae2646fc72ba102482b3fa",
+    "evidence/failed-controls-01.log": "10c5dad49e4293f08813d8ad7cb93b5dd704ea20e0d3cd7a546e80f5e140cb78",
+    "evidence/failed-controls-02.log": "b8b9e036aebf0cc24d06fcaedeb8e3816e5c7daabac508a605b25835e3bf3f0c",
+    "evidence/private-log-sha256.json": "0c9fd47ed9f2693d06b8d12ba4e656c037e4aab6b46741a9f904083bb579badd",
+    "evidence/failed-controls-04.json": "c76b6db28bcfb08fe0b7e77d031da04aec1f14ba9a79ceb5b2f2f496f449b3e1",
+    "evidence/controls.json": "a2f90013abd9548219910f107c5a942554491d7648b061423f615f5e437c4175",
+    "evidence/failed-controls-04.log": "ea08351f1a6350c738684503cd7193d7f539d7205391b85837487aecb33fe1e4",
+    "evidence/service-result.json": "802309019622502ba5ab41d43ae0fc241a4006afe6a09a0efe0aba0d7bd3bf16",
+    "evidence/pre-execution-source-sha256.json": "93666de2421457e4bd92a2220afd61e1dd0fc036c7b5ec7abdfbd4d24117fbe6",
+    "evidence/failed-controls-02.json": "5c6ed35f5f50be39ac792f5d94614090428ecc7c0949731af14f87bbd043e66c"
+  },
+  "privateLogsRetained": true,
+  "scope": "Safe native fixture summaries and failure logs only. No database images, real journal contents, credentials or configuration."
+}
