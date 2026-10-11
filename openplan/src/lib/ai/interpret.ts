@@ -1,4 +1,5 @@
 import { generateText } from "ai";
+import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { splitSentences, validateGroundedNarrative } from "@/lib/planner-pack/grounding";
 import {
@@ -7,9 +8,7 @@ import {
   type NarrativeFact,
 } from "@/lib/grants/narrative-grounding";
 
-const HAIKU_MODEL_ID = "claude-haiku-4-5-20251001";
-const HAIKU_INPUT_USD_PER_MTOKEN = 1.0;
-const HAIKU_OUTPUT_USD_PER_MTOKEN = 5.0;
+const INTERPRET_MODEL_ID = defaultClaudeModelId("quick");
 
 export type InterpretationSource = "ai" | "summary-fallback";
 export type InterpretationFallbackReason =
@@ -41,19 +40,6 @@ export interface InterpretationResult {
 
 function nullIfUndefined(value: number | undefined): number | null {
   return typeof value === "number" ? value : null;
-}
-
-function estimateHaikuCostUsd(
-  inputTokens: number | null,
-  outputTokens: number | null
-): number | null {
-  if (inputTokens === null && outputTokens === null) return null;
-  const input = inputTokens ?? 0;
-  const output = outputTokens ?? 0;
-  const raw =
-    (input / 1_000_000) * HAIKU_INPUT_USD_PER_MTOKEN +
-    (output / 1_000_000) * HAIKU_OUTPUT_USD_PER_MTOKEN;
-  return Math.round(raw * 1_000_000) / 1_000_000;
 }
 
 function fallback(
@@ -134,7 +120,7 @@ export async function generateGrantInterpretation(
 
   try {
     const { text, usage } = await generateText({
-      model: anthropicModel(HAIKU_MODEL_ID),
+      model: anthropicModel(INTERPRET_MODEL_ID),
       temperature: 0.2,
       maxOutputTokens: 600,
       system:
@@ -190,11 +176,11 @@ export async function generateGrantInterpretation(
     return {
       text: groundedText,
       source: "ai",
-      model: HAIKU_MODEL_ID,
+      model: INTERPRET_MODEL_ID,
       inputTokens,
       outputTokens,
       totalTokens,
-      estimatedCostUsd: estimateHaikuCostUsd(inputTokens, outputTokens),
+      estimatedCostUsd: estimateClaudeListPriceUsd(INTERPRET_MODEL_ID, inputTokens, outputTokens),
       fallbackReason: null,
       droppedSentenceCount: droppedSentenceIssues.length,
       droppedSentenceIssues,

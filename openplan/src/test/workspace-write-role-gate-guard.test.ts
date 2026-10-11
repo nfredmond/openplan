@@ -156,6 +156,7 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "assistant/providers/connections/route.ts": "personal scoped connection state only; current project membership checked in SQL; no business effect",
   "assistant/providers/turns/route.ts": "personal retained answers and draft proposals only; current project membership checked in SQL; effects require the existing separately authorized action route",
   "assistant/providers/native/route.ts": "project-scoped bearer capability with current membership checks; retains private answers, never executes business actions",
+  "map-packages/connector/route.ts": "project-scoped connector bearer, no session; every SQL function re-checks that the requester still holds owner, admin or member, and the only writes are the package's own state and files",
 
   // Public participation. These are the resident-facing surfaces of a published
   // engagement campaign, reached by share token with no session at all — the

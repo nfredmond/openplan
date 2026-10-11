@@ -489,12 +489,16 @@ const EXPECTED = {
   // Owned isolated catalog: 758 policies, 226 policy tables, 280 application RLS tables.
   // 20261016000024 adds SELECT on existing instrument custody: +1 permissive
   // policy and +1 table with policies. Native catalog: 759 / 508 / 227.
-  policies: 759,
-  permissive: 508,
+  // 20261017000001 adds two map package tables, each with one member SELECT
+  // policy and no write policy (writes go through its functions). Disposable
+  // catalog openplan-map-packages-stack: 761 policies, 510 permissive, 251
+  // restrictive, 229 tables with policies.
+  policies: 761,
+  permissive: 510,
   restrictive: 251,
   permissiveWrites: 278,
   expanded: 286,
-  tablesWithPolicies: 227,
+  tablesWithPolicies: 229,
   // 20261014000013 adds three generation custody tables with RLS and no client policies.
   // Installed isolated catalog confirms all three; no application view or policy is added.
   // Migration 20 adds the private public-translation mapping table, RLS and no policies.
@@ -552,10 +556,13 @@ const EXPECTED = {
   // Installed clone confirms 305 application RLS tables and 14 application views.
   // Migration 23 adds private recovery receipts. Installed clone: 306 RLS tables and 14 views.
   // Migration 25 adds the private GTFS object-cleanup queue. Combined catalog requires live verification.
-  relations: 321,
-  tables: 307,
+  // 20261017000001 adds project_map_packages and project_map_package_files,
+  // both with RLS. Disposable catalog: 309 RLS application tables (310 with
+  // PostGIS's spatial_ref_sys) and 14 application views (16 with PostGIS's two).
+  relations: 323,
+  tables: 309,
   views: 14,
-  rlsEnabledTables: 307,
+  rlsEnabledTables: 309,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */
