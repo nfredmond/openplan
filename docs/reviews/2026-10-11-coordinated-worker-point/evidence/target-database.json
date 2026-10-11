@@ -1,0 +1,36 @@
+{
+  "state": "passed-native-database-phase",
+  "executionSourceSha256": {
+    "run_database.py": "755d12b5ccb2ecd301936515f2b5bb4d0e41adb79a48f2620a99ab9dacc86e35",
+    "prove_resume_guards.py": "26bd00a6fc28d157e85a974e33c00988610d3c1566c6f9b8b5015355f1c8075a",
+    "guards.py": "588d1f4371a27dfc1f53ae624292f33ad016c3d5d8bf400eb29d93b8a998ac21",
+    "prove_bootstrap.py": "6d106aa02995ba016daa8c0808414dfe77900abfb848cc6098380b321ccf0138",
+    "resume_guards.py": "a9c44484d14f7316a8530074c0f975ca044cd177c0802c256aba102924614bbd",
+    "schema_semantics.py": "514a98203443ffaaa99c8e0e7516b3a80b11e171e5e8d7daae7e97293a8651f7",
+    "prove_schema_semantics.py": "caafae5bef61c050df45eeda57cd1093e696a4aec8bddb6c99b73733e39da25e",
+    "prove_guards.py": "86e9798569816b97ed9bdac77d19d175dce86342b519f9f33902f37700848f81"
+  },
+  "schema": {
+    "schemaCoreSha256": "6615c4910d9cc0d37ae550875dc26a666946818703f2d953b5155ff072b1c051",
+    "defaultStatementsSha256": "2fccdd2ccfa8a4e93e64005f7cc874828c3ac76a6b8ef577811a76778efcc874",
+    "policyCatalogSha256": "0d98e26b1bc223c6d6e76c4d01960e1e249fc135dfa78de618b8a413f8a41a92",
+    "defaultCatalogSha256": "d7fd3960bd3453547c5795ed192ffd6ac05f54515a156157298e6513b93165e9",
+    "policies": 769,
+    "defaultPrivilegeGroups": 27,
+    "defaultStatements": 80
+  },
+  "wallSeconds": 40.041,
+  "snapshotId": "df82b7e6eb10c801c901c5ce943364dd6b752f54e8c99b04f5f8e6de6bc44360",
+  "capturedFiles": 1549,
+  "capturedBytes": 644725324,
+  "tables": 374,
+  "sequences": 6,
+  "roles": 31,
+  "memberships": 25,
+  "roleAttributesPasswordsAndGrantsEqual": true,
+  "independentlyMountedKeyBytesEqual": true,
+  "historicalVaultRows": 0,
+  "historicalDecryption": "not established",
+  "physicalStorageAndWorkerFilesByteEqual": true,
+  "originalCapturedPointUnchanged": true
+}

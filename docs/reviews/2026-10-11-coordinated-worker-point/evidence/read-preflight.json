@@ -1,0 +1,15 @@
+{
+  "state": "passed-read-only-preflight",
+  "nativeResourcesLaunched": false,
+  "sourceHead": "9446f76af65106897eb8a693c5aff9817de5de7f",
+  "retainedFiles": 1541,
+  "retainedBytes": 644693866,
+  "executionSourceSha256": {
+    "preflight_scope.py": "592123f3133da00ba1c5f5081482bc281dcdc9cd998d2a75e0462760460d3006",
+    "read_preflight.py": "a89b74a04e1f33b995c1eaecd242c97380493c318829ffb0123fa07e735f753e",
+    "verify_preflight_controls.py": "4224e92db848ad64c1bbae941bd1f9225c16873289c8b78e749f620a41cb8138"
+  },
+  "fileHelperSha256": "c38b7d04653a9f407b78787318c94d1d985a02ca789d80067d536753d5384050",
+  "wallSeconds": 0.752,
+  "limits": "Read-only metadata and exact retained file census. Planned caps are not native container receipts. No database restore, full model-root capture, journal reconciliation or hosted acceptance occurs."
+}

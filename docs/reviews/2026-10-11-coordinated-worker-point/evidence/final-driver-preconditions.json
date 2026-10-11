@@ -1,0 +1,24 @@
+{
+  "sourceSha256": "e97187046b3142a57dae03779aa8b82fee630fef77a251fb0e38c0c5311b1bbe",
+  "cases": [
+    {
+      "case": "Owned target must begin stopped",
+      "baselineAndHarmlessPassed": true,
+      "runningRefused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "case": "Owned target did not stop",
+      "baselineAndHarmlessPassed": true,
+      "runningRefused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "case": "Owned target readiness timeout",
+      "baselineAndHarmlessPassed": true,
+      "exhaustedReadinessRefused": true,
+      "omittedGuardFailsIntendedOracle": true
+    }
+  ],
+  "scope": "Extracted exact archived AST nodes with fake service observations. No native identity, readiness timing, process stopping, database or filesystem acceptance."
+}

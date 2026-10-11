@@ -1,0 +1,22 @@
+{
+  "source": [
+    {
+      "method": "POST",
+      "path": "/rest/v1/rpc/record_legacy_model_kpi",
+      "requestSha256": "9b107e712cc9fa9dd2ca288084b3e98d91d59b76d380289b9e9f92a1058d7d09",
+      "status": 200,
+      "responseSha256": "107dfbe876b3972a025d617c1d289e801062eb4b21ef19623eb6e0444447ca63",
+      "dropped": true
+    }
+  ],
+  "target": [
+    {
+      "method": "POST",
+      "path": "/rest/v1/rpc/record_legacy_model_kpi",
+      "requestSha256": "9b107e712cc9fa9dd2ca288084b3e98d91d59b76d380289b9e9f92a1058d7d09",
+      "status": 200,
+      "responseSha256": "107dfbe876b3972a025d617c1d289e801062eb4b21ef19623eb6e0444447ca63",
+      "dropped": false
+    }
+  ]
+}

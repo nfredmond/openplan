@@ -1,0 +1,34 @@
+{
+  "state": "passed-native-source-point",
+  "executionSourceSha256": {
+    "preflight.py": "9968be29a1f8799f770170fa2ee58985138977ffa93a1efeb9744a998929fa25",
+    "prove_transport.py": "b27a5d83bd6e26da1842b90011b2585aff381549535ca6b9136d57d46f53fc7d",
+    "prove_cut_guards.py": "0721b4a3f32bdc8b0a5536506be241eb72f6f6ac9724b724c0dc864ce66d1044",
+    "cut_guards.py": "f1a7887dfe9743e8a4d7a600be6e6d3b1f0ab146c96eb970dc62d979548de92b",
+    "run_cut.py": "1f0ebdae5b4c7d7bfffd297585dffc7d0310d5636c07970e72f2f0f1961fa372",
+    "transport.py": "b61c39ae3457672870b77c4085d18669c19e15c082918afb3746be574b1abed6"
+  },
+  "helperSourceSha256": {
+    "docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py": "5785a629453489501b2dca6c1bd33d8c40e3cca3ba2cbed743e4619cc439286d",
+    "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+    "workers/aequilibrae_worker/model_command_client.py": "ea121468e361b0e4e7751842497928ea3bc41cf836b10f0e4177de9b0b612c37",
+    "workers/aequilibrae_worker/model_command_journal.py": "24949541db14eccf76eb82e551b0feb285c1479deb916860cab26254c640cad5",
+    "workers/aequilibrae_worker/model_legacy_kpi_command.py": "9a7e4bf7cf4398592c715d98917ab3f9e69a3279707cd0ec0dce83661157bcaf",
+    "workers/aequilibrae_worker/model_command_recovery.py": "4200d2f3b1f25e2de16724996e04211c789c6c825b0e5fcfe3da8634c919b78c",
+    "workers/aequilibrae_worker/model_stage_computation.py": "fc091f40d8db12298fed0a9a7a80838042fca6694ecf581cab77fdd66122c369"
+  },
+  "sourceWritersStopped": true,
+  "sourceRestStopped": true,
+  "snapshotId": "df82b7e6eb10c801c901c5ce943364dd6b752f54e8c99b04f5f8e6de6bc44360",
+  "wallSeconds": 133.275,
+  "capturedFiles": 1549,
+  "capturedBytes": 644725324,
+  "modelRootFiles": 5,
+  "modelRootDirectories": 7,
+  "populatedJournals": 2,
+  "originalPointUnchanged": true,
+  "sourceNativeImageUnchangedAfterCapture": true,
+  "encryptedFullReadCheck": true,
+  "limits": "Known synthetic root and native legacy KPI source only. Actual installed CLI loses a committed native HTTP200 reply. Full database dump/roles/key/ten retained Storage objects and three GTFS roots join two normalized model journals. Source owned API stops first, no other writers remain, original bytes/records match. Separate-cluster target command reconciliation, active-worker fencing, other worker families, useful computation, physical-host, browser and scientific acceptance remain unproved.",
+  "sourceDatabaseStopped": true
+}

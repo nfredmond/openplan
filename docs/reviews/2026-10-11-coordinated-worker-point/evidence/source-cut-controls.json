@@ -1,0 +1,120 @@
+{
+  "sourceSha256": "f1a7887dfe9743e8a4d7a600be6e6d3b1f0ab146c96eb970dc62d979548de92b",
+  "cases": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_lost",
+      "reason": "model-cut-original-uncertainty",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_lost",
+      "reason": "model-cut-original-uncertainty",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_lost",
+      "reason": "model-cut-native-committed-drop",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_lost",
+      "reason": "model-cut-native-committed-drop",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_resolved",
+      "reason": "model-cut-resolved-receipt",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_resolved",
+      "reason": "model-cut-resolved-receipt",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_seed_delta",
+      "reason": "model-cut-native-structure",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_seed_delta",
+      "reason": "model-cut-native-structure",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_seed_delta",
+      "reason": "model-cut-native-changed-tables",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_seed_delta",
+      "reason": "model-cut-native-row-counts",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_pending",
+      "reason": "model-cut-original-pending-record",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_pending",
+      "reason": "model-cut-original-pending-record",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_trigger_graph",
+      "reason": "model-cut-specific-model-touch",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_trigger_graph",
+      "reason": "model-cut-specific-model-touch",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_trigger_graph",
+      "reason": "model-cut-old-enrollment-unchanged",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_trigger_graph",
+      "reason": "model-cut-specific-new-enrollment",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    },
+    {
+      "function": "verify_trigger_graph",
+      "reason": "model-cut-specific-new-enrollment",
+      "refused": true,
+      "omittedGuardFailsIntendedOracle": true
+    }
+  ],
+  "limits": "Pure exact-response and native-table metadata predicates. Not actual commit, restore, roles, key, file or hostile-race acceptance."
+}

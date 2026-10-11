@@ -1,0 +1,92 @@
+{
+  "state": "passed-native-root-controls",
+  "cases": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-serialization",
+      "passed": true
+    },
+    {
+      "case": "missing-input",
+      "passed": true
+    },
+    {
+      "case": "missing-output",
+      "passed": true
+    },
+    {
+      "case": "missing-empty-directory",
+      "passed": true
+    },
+    {
+      "case": "changed-file-mode",
+      "passed": true
+    },
+    {
+      "case": "changed-directory-mode",
+      "passed": true
+    },
+    {
+      "case": "missing-command-receipt",
+      "passed": true
+    },
+    {
+      "case": "missing-interrupted-start",
+      "passed": true
+    },
+    {
+      "case": "changed-installation",
+      "passed": true
+    },
+    {
+      "case": "main-file-copy-loses-wal",
+      "passed": true
+    },
+    {
+      "case": "corrupt-native-index",
+      "passed": true
+    },
+    {
+      "case": "omit-root-comparison",
+      "intendedAssertion": "Missing root refusal: model-point-worker-root-differs"
+    },
+    {
+      "case": "omit-record-comparison",
+      "intendedAssertion": "Missing root refusal: model-point-journal-records-differ"
+    },
+    {
+      "case": "omit-integrity",
+      "intendedAssertion": "Missing root refusal: model-point-journal-integrity"
+    },
+    {
+      "case": "omit-directory-census",
+      "intendedAssertion": "model-point-worker-root-differs"
+    },
+    {
+      "case": "omit-schema-json-shape",
+      "intendedAssertion": "model-point-journal-records-differ"
+    },
+    {
+      "case": "omit-row-json-shape",
+      "intendedAssertion": "model-point-journal-records-differ"
+    },
+    {
+      "case": "restored",
+      "passed": true
+    }
+  ],
+  "files": 6,
+  "directories": 7,
+  "populatedJournals": 2,
+  "journalSnapshotMapping": {
+    "commands/model-commands.sqlite3": "commands",
+    "stages/model-commands.sqlite3": "stages"
+  },
+  "localFixtureReceipt": "synthetic, no server checked",
+  "sourceSha256": "5785a629453489501b2dca6c1bd33d8c40e3cca3ba2cbed743e4619cc439286d",
+  "driverSha256": "62354f3b7784374ad410a2bfb09377669fd7c2085287123c62094d6ed2f8e33b",
+  "limits": "Known local root only, including empty directories and private modes. SQLite page bytes are normalized by the actual snapshot CLI; logical rows match. No concurrent writers, hostile path race, server custody, coordinated database point, engine or physical-host acceptance."
+}

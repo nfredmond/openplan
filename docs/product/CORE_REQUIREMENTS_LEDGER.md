@@ -397,3 +397,21 @@ Operator-declared quiescence is not a live writer fence. Full worker-root and
 installation-wide recovery, server reconciliation, all worker families,
 hardware-loss recovery, clean commissioning and scientific acceptance remain
 open. M3 and the complete V1 floor remain incomplete; no capability grade changes.
+
+## October 11 coordinated known-root point, bounded M3 evidence
+
+[The coordinated native proof](../reviews/2026-10-11-coordinated-worker-point/STATUS.md)
+joins two populated model journals, the complete known synthetic root and the
+full database, role, key, configuration and retained transit point. Separate
+local-cluster recovery preserves original request/response bytes, independently
+checks the committed server output and receipt, and invokes no computation
+callback. All 374 table images and six sequences remain equal. Missing native
+records and changed policies/default privileges fail rollback-only controls.
+Captured bytes, modes, empty directories and original points remain equal.
+
+This advances independent-operation and data custody for this known fixture.
+It does not establish installation-wide alignment, current managed-stage
+recovery, all worker families, useful computation beyond 45 minutes, a different
+physical host, clean agency commissioning or scientific acceptance. M3 and the
+complete V1 floor remain incomplete. No capability grade changes. The hosted
+owner retains the main merge hold.

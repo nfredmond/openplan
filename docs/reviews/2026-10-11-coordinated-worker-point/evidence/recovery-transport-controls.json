@@ -1,0 +1,96 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_database",
+      "reason": "coordinated-backend-database-name",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "coordinated-rest-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "coordinated-rest-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "coordinated-rest-network",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_source",
+      "reason": "coordinated-rest-network",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_request",
+      "reason": "coordinated-request-path",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_request",
+      "reason": "coordinated-request-path",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_request",
+      "reason": "coordinated-request-size",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_request",
+      "reason": "coordinated-request-size",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_request",
+      "reason": "coordinated-request-authorization",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_network",
+      "reason": "coordinated-created-network",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_body",
+      "reason": "coordinated-request-body",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_response",
+      "reason": "coordinated-response-size",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "c5b4c56d77600076c606f18a423ea899d5864ec5940d0eb81037a78a76e272e1",
+  "limits": "Copied input and in-memory guard mutations. No native Docker, database, bridge or network mutation."
+}
