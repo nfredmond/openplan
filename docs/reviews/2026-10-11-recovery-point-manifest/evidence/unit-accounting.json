@@ -1,0 +1,64 @@
+{
+  "limitBytes": 536870912,
+  "swapLimitBytes": 0,
+  "cpuQuotaPercent": 100,
+  "units": [
+    {
+      "unit": "openplan-recovery-packet-controls-20261011-01.service",
+      "invocationId": "3a8a92a9f8f04a54a1c2781e3cca9c1d",
+      "exitCode": 1,
+      "wallSeconds": 5.343,
+      "cpuSeconds": 4.864,
+      "roundedMemoryPeak": "41.1M",
+      "scope": "Retained failed deadline oracle-selection trial"
+    },
+    {
+      "unit": "openplan-recovery-packet-controls-20261011-03.service",
+      "invocationId": "9364b0645cc54af590aa1686d59b49ac",
+      "exitCode": 0,
+      "wallSeconds": 5.646,
+      "cpuSeconds": 5.404,
+      "roundedMemoryPeak": "38.6M",
+      "cases": 41,
+      "survivors": 4,
+      "brokenCases": 37
+    },
+    {
+      "unit": "openplan-recovery-packet-ops-regression-20261011-01.service",
+      "invocationId": "9fe137111a7047538d83e5245c527c6d",
+      "exitCode": 0,
+      "tests": 242,
+      "testSeconds": 14.433,
+      "wallSeconds": 14.644,
+      "cpuSeconds": 10.986,
+      "roundedMemoryPeak": "74.4M"
+    },
+    {
+      "unit": "openplan-recovery-packet-native-20261011-01.service",
+      "invocationId": "80cdaf75f5b64a9ba8d5aa3037d245c5",
+      "exitCode": 1,
+      "wallSeconds": 2.204,
+      "cpuSeconds": 1.372,
+      "roundedMemoryPeak": "512M",
+      "scope": "Source directory privacy refusal before copying"
+    },
+    {
+      "unit": "openplan-recovery-packet-native-20261011-02.service",
+      "invocationId": "d03e3e613df549ac992bd2a7cec2eaa1",
+      "exitCode": 1,
+      "wallSeconds": 39.234,
+      "cpuSeconds": 30.619,
+      "roundedMemoryPeak": "512M",
+      "scope": "Retained failed wrong-password exit-code oracle"
+    },
+    {
+      "unit": "openplan-recovery-packet-native-20261011-03.service",
+      "invocationId": "5bda3adaadec47cc926084ae1910534f",
+      "exitCode": 0,
+      "wallSeconds": 51.465,
+      "cpuSeconds": 37.344,
+      "roundedMemoryPeak": "512M",
+      "capacityAcceptance": false
+    }
+  ]
+}

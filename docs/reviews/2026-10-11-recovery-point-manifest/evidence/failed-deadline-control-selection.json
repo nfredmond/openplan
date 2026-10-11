@@ -1,0 +1,5 @@
+{
+  "state": "failed-control-selection",
+  "case": "unbounded-deadline",
+  "reason": "The omitted outer validator still meets the nested worker-set finite-deadline guard during seal. Verify then fails on a missing receipt; zero/negative values raise native timeout. The expected acceptance assertion was not reached. Preserve this failure and use a variant that ignores the supplied deadline while retaining a finite nested budget. Production source restored in finally."
+}

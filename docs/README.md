@@ -47,6 +47,8 @@ The [October 11 complete selected worker-root snapshot candidate](reviews/2026-1
 
 The [October 11 selected worker-root set candidate](reviews/2026-10-11-worker-root-set/STATUS.md) retains exact selection bytes, binds components to the initial source inventory and publishes one final set manifest. Five known roots and a relocated copy verify. It does not discover omitted installation roots or establish a new database/Storage cut. The failed T3 host retry remains explicit.
 
+The [October 11 retained recovery-packet candidate](reviews/2026-10-11-recovery-point-manifest/STATUS.md) binds declared database/Storage artifacts, roles, key, configuration and a verified worker-root set. The 3,092-file encrypted transport restores exact packet bytes/modes, preserving original backend mode metadata and failed trials. This is an offline retained-artifact check; installation-wide consistency and independent commissioning remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

@@ -468,3 +468,20 @@ Independent commissioning, all-worker coverage, useful 45-minute computation,
 physical-host recovery and separate-engine scientific acceptance remain open.
 M3 and the V1 floor stay incomplete; no capability grade changes. The relaunch
 agent retains hosted coordination and the main merge hold.
+
+## October 11 retained recovery-packet manifest, bounded M3 candidate
+
+[The packet command and encrypted transport](../reviews/2026-10-11-recovery-point-manifest/STATUS.md)
+bind already retained database/Storage artifacts, roles, database root key,
+configuration and a verified worker-root set. A fresh encrypted packet restores
+all 3,092 files with exact paths/private modes/bytes and all eight copied journal
+schemas/records. Original backend mode metadata remains private in the packet;
+the original point and worker set stay unchanged. All 242 ops tests and 41 controls
+pass, with failed native and oracle trials preserved.
+
+This advances retained-data integrity and portability. It does not establish a new
+consistent live cut, complete configuration/roles, installation-wide discovery,
+native database restoration, worker continuation, independent physical-host recovery
+or commissioning. Browser, useful 45-minute all-worker computation and separate-engine
+scientific acceptance remain open. M3 and the V1 floor stay incomplete; no capability
+grade changes. The relaunch owner retains hosted coordination and the main hold.

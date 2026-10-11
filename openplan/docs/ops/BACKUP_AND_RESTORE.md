@@ -227,6 +227,75 @@ encrypt the package, align database/Storage captures, recover another physical
 host, resume models or establish scientific acceptance. Native SQLite extension
 requirements and complete agency installations remain unassessed.
 
+## Seal already retained local recovery artifacts
+
+The candidate offline packet command binds retained database and Storage bytes,
+cluster roles, database root key, protected configuration and a verified worker-root
+set. It does not create those artifacts or establish a new consistent cut. Complete
+the topology-specific capture under declared quiescence first. Use a private,
+operator-owned packet directory and include the actual software/installation
+identity, Auth settings, integration encryption secret, database properties,
+required roles and all other configuration identified by the installation inventory.
+Do not copy secrets into source control, public reports or chat.
+
+Every packet file and directory must deny group and other access. Backend files
+can carry broader original permissions. Preserve their original file/directory
+metadata privately, harden a fresh packet copy and keep the original unchanged.
+Restoring backend permissions and ownership remains topology-specific; private
+packet permissions do not define the running service's required permissions.
+
+Save exact private `point-inventory.json` inside the packet. This example names
+required categories; replace paths with the retained artifacts for your topology:
+
+```json
+{
+  "format": "openplan-recovery-packet-inventory-v1",
+  "artifacts": {
+    "databaseArchive": {"kind": "file", "path": "postgres.dump"},
+    "storage": {"kind": "file", "path": "storage.tgz"},
+    "clusterRoles": {"kind": "file", "path": "configuration/roles.sql"},
+    "databaseRootKey": {"kind": "file", "path": "configuration/root.key"},
+    "configuration": {"kind": "directory", "path": "configuration"},
+    "workerRootSet": {"kind": "directory", "path": "worker-root-set"}
+  }
+}
+```
+
+Storage can instead name a retained object-byte directory with `kind: "directory"`.
+Artifact paths are relative to the packet, without absolute paths, aliases, parent
+traversal, duplicate paths or normalized-path ambiguity. Roles and key files may
+sit inside the configuration directory. All required file artifacts must be
+nonempty. Opaque metadata in the declaration remains byte bound; it does not
+establish that the named roles, settings or artifacts are complete or usable.
+
+From `openplan/`, using the already captured packet:
+
+```bash
+python3 scripts/ops/recovery_point_manifest.py \
+  --point /private/recovery-point --seal --writers-quiesced --timeout 120
+python3 scripts/ops/recovery_point_manifest.py \
+  --point /private/recovery-point --verify --timeout 120
+```
+
+Require both commands to exit 0. Sealing validates the worker-root set, syncs all
+retained files and directories, rechecks the complete packet and publishes
+`recovery-point.json` last. A completed or interrupted publication cannot be
+overwritten. Preserve an incomplete packet for diagnosis and create a fresh one
+on retry. The timeout checks progress; it cannot interrupt every blocking kernel
+operation. Declared quiescence is not a live writer fence.
+
+Keep the manifest hash with the protected backup authority. Encrypt and retain
+the complete packet through the installation's chosen backup process. Verify the
+protected copy, restore to a fresh directory and rerun packet verification before
+using its artifacts. It needs no original worker paths or running services. Keep
+the packet unchanged while recovery uses fresh working copies. A self-consistent
+manifest does not authenticate its origin. Matching hashes do not establish native
+database restoration, Storage access, complete installation coverage or permission
+to resume computation. The command leaves installation consistency unassessed.
+
+The [dated packet evidence](../../../docs/reviews/2026-10-11-recovery-point-manifest/STATUS.md)
+records controls, retained-artifact transport and remaining acceptance boundaries.
+
 ## Capture the default local stack
 
 From the nested `openplan/` app directory, confirm the selected project and its
@@ -259,8 +328,11 @@ test -s "$OPENPLAN_BACKUP_DIR/storage.tgz"
 
 These two archives exclude separately mounted local worker files and protected
 configuration. Capture every other item in the inventory under the same
-consistency interval, with access controls and hashes. No universal worker-volume
-archive script exists here; record the exact selected paths and their owners.
+consistency interval, with access controls and hashes. The selected worker-root
+set command above covers explicitly named private filesystem roots, not every
+worker volume automatically. Include that verified set and all protected
+configuration before sealing the packet. Record the actual selected paths and
+their owners; installation-wide discovery remains unimplemented.
 
 Check archive structure using the source container's PostgreSQL tooling and local
 tar, then verify hashes:
