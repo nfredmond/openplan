@@ -116,10 +116,6 @@ vi.mock("@/components/data-hub/data-hub-record-composer", () => ({
   DataHubRecordComposer: () => <div data-testid="data-hub-record-composer" />,
 }));
 
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
-}));
-
 vi.mock("@/components/operations/workspace-runtime-cue", () => ({
   WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
 }));
