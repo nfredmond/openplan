@@ -38,3 +38,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-source-custody/native_recovery.py \
             --out "$RUNNER_TEMP/odm-source-custody-native"
+      - name: Engine effect harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-engine-effects/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-engine-effects-controls"
+      - name: Disconnected engine effect root capture and replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-engine-effects/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-engine-effects-native"

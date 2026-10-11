@@ -1,0 +1,17 @@
+{
+  "filesPassed": 3,
+  "testsPassed": 14,
+  "cwd": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan",
+  "vitestWorkers": 1,
+  "service": "openplan-odm-engine-effects-doc-checks-20261011-01.service",
+  "ActiveState": "active",
+  "SubState": "exited",
+  "InvocationID": "a7663b0358f4420faeef870e43be72e6",
+  "ExecMainStatus": "0",
+  "MemoryPeak": "286982144",
+  "CPUQuotaPerSecUSec": "1s",
+  "MemoryMax": "1073741824",
+  "MemorySwapMax": "0",
+  "TasksMax": "128",
+  "stoppedByThisLane": true
+}

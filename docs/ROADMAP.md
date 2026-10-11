@@ -292,6 +292,8 @@ capacity acceptance. Continue M3 from those remaining boundaries.
 
 **October 11 native aerial draft retry counterexample.** [The exact cached NodeODM API](reviews/2026-10-11-odm-draft-reconciliation/STATUS.md) creates duplicate files for a repeated upload and overwrites draft metadata under a repeated caller UUID. Stopped-root restoration retains those bytes while task listing and lookup show no registered task. All 63 observation controls and six installed-wrapper controls pass; no commit or reconstruction runs. Task absence cannot authorize retry. Exact engine identity/settings, durable init/upload/commit intents and actual custody reconciliation precede runtime integration. M3/M5b.2 remain open; preserve the main merge hold.
 
+**October 11 disconnected aerial engine journal.** [Original commands and exact replies](reviews/2026-10-11-odm-engine-effects/STATUS.md) remain bound to retained bytes, admission/context, engine identity/settings and one UUID. All 25 tests, 42 source controls, 11 aerial scripts and stopped-root copy replay pass; 60 observation controls preserve unresolved effects without reissue. No HTTP or engine runs, acknowledgments do not establish custody, and ZIP-derived images remain unsupported in this candidate. Actual backend reconciliation and full worker recovery stay open. No M3/M5b.2 or v1 acceptance changes; preserve the main merge hold.
+
 ### M3a. Dependable desktop control and demo recovery
 
 - **Outcome:** Nathaniel starts from the existing desktop icon and understands which site is running, whether the demonstration target is accepted and ready, what work is underway and how to recover without shell commands. CORE-OPS-CONTROL-01 covers this early operational requirement.

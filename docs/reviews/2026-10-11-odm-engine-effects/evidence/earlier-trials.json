@@ -1,0 +1,26 @@
+[
+  {
+    "trial": "unit-01",
+    "outcome": "24 earlier tests pass before final response/receipt expansion; not final test count"
+  },
+  {
+    "trial": "controls-01",
+    "outcome": "nonunique custody mutation anchor; source restored in finally"
+  },
+  {
+    "trial": "controls-02",
+    "outcome": "response mutation fails at later state assertion; oracle diagnostic corrected by testing parser directly; source restored in finally"
+  },
+  {
+    "trial": "controls-03",
+    "outcome": "all 25 tests/42 controls pass; superseded for accepted evidence by actual CI step"
+  },
+  {
+    "trial": "native-01",
+    "outcome": "verification CLI missing required --destination; fails exit2, original proof retained"
+  },
+  {
+    "trial": "native-02",
+    "outcome": "18 observations/57 controls pass; final actual CI step adds runtime logical journal equality and exact companion exclusions"
+  }
+]

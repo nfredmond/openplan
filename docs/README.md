@@ -63,6 +63,8 @@ The [October 11 disconnected aerial source candidate](reviews/2026-10-11-odm-sou
 
 The [October 11 native aerial draft counterexample](reviews/2026-10-11-odm-draft-reconciliation/STATUS.md) shows repeated uploads creating duplicate files and repeated initialization overwriting metadata. Original draft bytes survive restored API startup even though no registered task is found. No commit or reconstruction runs; safe engine-effect reconciliation remains open.
 
+The [October 11 disconnected aerial engine journal](reviews/2026-10-11-odm-engine-effects/STATUS.md) freezes original source/engine/settings/task identity, preserves exact commands and replies, and refuses a second first-issue flag. Stopped-root copy replay preserves unresolved effects. Actual engine custody, ZIP-derived imagery and runtime recovery remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
