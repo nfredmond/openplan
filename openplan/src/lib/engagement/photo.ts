@@ -6,8 +6,9 @@
  *   policies (migration 20260717000084) — only the service-role key can
  *   touch it.
  * - Uploads go through POST /api/engage/[shareToken]/photo-upload, which
- *   validates content type AND magic bytes, size-caps the body, and writes
- *   to <campaignId>/<uuid>.<ext> via the service role. The client only ever
+ *   validates content type AND magic bytes, size-caps the body, re-encodes
+ *   the image without EXIF/XMP/IPTC/ICC metadata (photo-metadata.ts), and
+ *   writes to <campaignId>/<uuid>.<ext> via the service role. The client only ever
  *   learns the resulting storage path, never a URL.
  * - The submit route re-validates that a client-provided path matches the
  *   campaign prefix pattern and that the object actually exists and was
@@ -111,8 +112,8 @@ export function splitEngagementPhotoPath(path: string): { folder: string; fileNa
   return { folder: match[1], fileName: `${match[2]}.${match[3]}` };
 }
 
-// Per-instance upload rate limiter keyed by the same IP+UA fingerprint as
-// public submissions. Serverless caveat: this map is per-lambda-instance, so
+// Per-instance upload rate limiter keyed by the same client-IP fingerprint
+// as public submissions (buildPublicSubmissionClientFingerprint). Serverless caveat: this map is per-lambda-instance, so
 // it is a soft brake, not the hard guard — the hard guards are the 5 MB body
 // cap, the DB-backed submission rate limit, and the bucket's file_size_limit.
 const uploadTimestampsByFingerprint = new Map<string, number[]>();

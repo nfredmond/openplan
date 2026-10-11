@@ -57,10 +57,6 @@ export const EN_PORTAL_MESSAGES = {
   "recovery.continueEdited": "Keep this edited draft as a new contribution",
   "recovery.saveReceipt": "Save receipt",
   "recovery.receipt": "Receipt",
-  "recovery.received": "Received",
-  "recovery.dateUnavailable": "Date unavailable",
-  "recovery.receiptMeaning": "This receipt confirms storage. Awaiting review, published and answered are separate states.",
-  "recovery.local": "Text and drawings are saved on this computer for recovery when browser storage is available. Photos may need to be reattached.",
   "recovery.storageUnavailable": "Browser storage is unavailable. You can still send this response, but this computer cannot retain a recovery copy.",
   "recovery.surveyLocal": "Answers and receipts are saved on this computer when browser storage is available. Use Save for later to retain a server draft. On a shared computer, start a new response after saving your receipt.",
 
@@ -103,32 +99,11 @@ export const EN_PORTAL_MESSAGES = {
     "This page could not load its translations, so this text is shown as the project team wrote it. Whether a {language} version exists is not known.",
 
   // -------------------------------------------------------------------- page
-  "page.kicker": "Community engagement",
-  "page.linkedProject": "Linked project: {project}",
-  "page.standalone": "Standalone public engagement page",
-  "page.shareLane": "Share-ready public lane",
-  "page.mode": "Mode: {mode}",
-  "page.supports": "This input supports",
-  "page.submissionStatus": "Submission status",
-  "page.submissionsOpen": "Submissions open",
-  "page.submissionsClosed": "Submissions closed",
+  "page.submissionsOpen": "Open for comments",
+  "page.submissionsClosed": "Closed for comments",
   "page.submissionStatusDetail":
-    "The project team reviews submissions before they are used in public-facing materials.",
-  "page.publishedFeedback": "Published feedback",
+    "The project team reviews comments before they are shown here or used in reports.",
   "page.publishedFeedbackDetail": "Approved community items currently visible on this campaign page.",
-  "page.engagementMode": "Engagement mode",
-  "page.engagementModeDetail": "Structured public input collected in a planning-grade workflow.",
-  "page.posture": "Portal posture",
-  "page.postureTitle": "Public input with review and traceability",
-  "page.postureCopy":
-    "This page gives the public a focused place to submit and review campaign feedback while preserving planning context, moderation, and category structure inside OpenPlan.",
-  "page.postureItemReview":
-    "Submissions are reviewed before they are reflected in public-facing summaries or technical materials.",
-  "page.postureItemApproved":
-    "Published feedback represents approved items from the campaign, not an unfiltered public message board.",
-  "page.postureItemLocation":
-    "Location-based comments can be tied to a specific place when that improves the planning record.",
-  "page.lastUpdated": "Last updated {timestamp}",
   "page.defaultDescription":
     "Share your input on this project. Comments are reviewed before they appear publicly.",
 
@@ -139,30 +114,22 @@ export const EN_PORTAL_MESSAGES = {
   "closed.body":
     "Comments are no longer being accepted. If you have a question, contact the city, county or agency that sent you this link.",
 
-  // --------------------------------------------------------- engagement type
-  "engagementType.map_feedback": "Map-based community input",
-  "engagementType.comment_collection": "Community feedback",
-  "engagementType.meeting_intake": "Meeting intake",
-
   // ------------------------------------------------------------------ portal
-  "portal.tab.submit": "Share your input",
-  "portal.tab.feedback": "Community feedback",
+  "portal.tab.submit": "Add a comment",
+  "portal.tab.feedback": "Comments",
   "portal.tab.survey": "Survey",
   "portal.tab.closeLoop": "You said / We did",
-  "portal.about": "About this engagement",
-  "portal.aboutProcess": "How the project team organizes input",
   "portal.topics": "Feedback topics",
   "portal.selectTopic": "Select a topic",
   "portal.yourInput": "What you want to tell us (we need this part)",
   "portal.yourInputHint": "Tell us what you noticed, where you are seeing it, and why it matters.",
-  "portal.onlyRequiredField": "This is the only part of this form we need.",
   "portal.titleLabel": "A short title for what you wrote",
   "portal.optionalFields": "Only if you want to",
   "portal.aboutYou": "About you (only if you want to)",
   "portal.nameLabel": "Your name, or any name you want to use",
-  "portal.nameHint": "If you add a name, it appears publicly next to your comment once the team approves it. You can leave it blank.",
+  "portal.nameHint": "Shown publicly with your comment. You can leave it blank.",
   "portal.followUp": "Hearing back (only if you want to)",
-  "portal.followUpHint": "The team may not be able to write back to you personally.",
+  "portal.followUpHint": "The team may not reply to you personally.",
   "portal.photoHint": "Attach one JPEG, PNG, or WebP photo up to {limit}.",
   "portal.photoTooLarge": "Photo is too large. The limit is {limit}.",
   "portal.photoWrongType": "Please choose a JPEG, PNG, or WebP image.",
@@ -172,11 +139,11 @@ export const EN_PORTAL_MESSAGES = {
   "portal.submit": "Send what I wrote",
   "portal.submitting": "Sending…",
   "portal.submitFailed": "We could not send what you wrote. Nothing has been lost — please try again.",
-  "portal.received": "Thank you. We have what you sent.",
+  "portal.received": "Thank you. We have your comment.",
   "portal.receivedDetail": "What you wrote has gone to the project team.",
   "portal.whatHappensNext": "What happens next",
   "portal.reviewNotice":
-    "Someone on the project team reads what you send before it is shown on this page or used in a report.",
+    "The project team reads every comment before it appears here.",
   "portal.submissionsClosedNotice": "This project is not taking comments right now",
   "portal.sortNewest": "Newest",
   "portal.sortMostSupported": "Most supported",
@@ -209,7 +176,7 @@ export const EN_PORTAL_MESSAGES = {
     "This comment could not be translated right now. The original is shown.",
   "portal.demographics": "About you (only if you want to)",
   "portal.demographicsHint":
-    "These answers help the project team check whether it is hearing from the whole community. They are never shown publicly.",
+    "Never shown publicly. It helps the team see who it is hearing from.",
   /*
     THE FIVE DEMOGRAPHIC QUESTION LABELS. They were typed as English literals in
     two components — the classic form's `PENDING_PORTAL_TEXT` and, a second time,
@@ -266,10 +233,9 @@ export const EN_PORTAL_MESSAGES = {
   "portal.next": "Next",
   "portal.back": "Back",
   "portal.stepWhereTitle": "Show us where",
-  "portal.stepWhereHelp": "Tap the map where you mean. You can skip this if it is not about one place.",
-  "portal.stepWhereHelpNoMap": "Type the street, corner, or landmark you mean. You can skip this.",
+  "portal.stepWhereHelp": "Tap the map, or skip this step.",
+  "portal.stepWhereHelpNoMap": "Name the street or place, or skip this step.",
   "portal.stepWhatTitle": "Say what you think",
-  "portal.stepWhatHelp": "In your own words. Anything you write here is read by the project team.",
   /*
     THE ONE THING WE NEED, said as a request rather than as a verdict on the
     resident. It is shown when somebody tries to move past this step, or to send,
@@ -279,15 +245,11 @@ export const EN_PORTAL_MESSAGES = {
   */
   "portal.commentNeeded": "Please write something first. It is the one thing we need.",
   "portal.stepExtrasTitle": "Add a photo or a topic",
-  "portal.stepExtrasHelp": "Only if you want to. Nothing here is needed.",
   "portal.stepYouTitle": "About you",
-  "portal.stepYouHelp": "All of this is optional. You can send your input without any of it.",
   "portal.stepSendTitle": "Send it",
-  "portal.stepSendHelp": "Check it over, then send.",
-  "portal.locationSet": "You marked a place on the map.",
-  "portal.locationNone": "No place marked yet.",
-  "portal.clearLocation": "Remove the place I marked",
-  "portal.whereInWords": "Where is this? A street, corner, or landmark.",
+  "portal.locationSet": "Place marked",
+  "portal.clearLocation": "Remove",
+  "portal.whereInWords": "Street or landmark",
   // The label the typed place is stored under. It goes INTO the comment text —
   // there is no column for it — so it must be a word the reader of the comment
   // understands, in the language the resident wrote in.
@@ -305,11 +267,9 @@ export const EN_PORTAL_MESSAGES = {
     campaign really has, because a door promising a survey that does not exist
     costs the same trust as the door that promised nothing.
   */
-  "portal.openDetailsSurveyAndComments": "See the survey and what other people said",
-  "portal.openDetailsSurvey": "See the survey for this project",
-  "portal.openDetailsComments": "See what other people said",
-  "portal.openDetails": "See more about this project",
-  "portal.openDetailsHint": "And what the team has done about it so far",
+  "portal.openDetailsSurvey": "Take the survey",
+  "portal.openDetails": "About this project",
+  "portal.openDetailsHint": "What the team did",
   "portal.backToMap": "Back to the map",
   "portal.addYourInput": "Tell us what you think",
   "portal.hideForm": "Hide",
@@ -445,7 +405,35 @@ export const EN_PORTAL_MESSAGES = {
   "portal.drawUndoLast": "Undo the last point",
   "portal.drawStartOver": "Start over",
   "portal.drawStartedOver": "Starting over. What you drew has been removed.",
-  "portal.mapZoomHint": "Zoom in to your own street before you mark a spot.",
+
+  // ------------------------------------------- portal: comments beside the map
+  "portal.feedOpen": "Comments",
+  "portal.feedClose": "Close comments",
+  "portal.feedSearch": "Search comments",
+  "portal.feedShowing": "{shown} of {total}",
+  "portal.feedEmpty": "No comments yet.",
+  "portal.feedNoMatches": "No comments match.",
+  "portal.feedBack": "All comments",
+  "portal.feedPrevious": "Previous comment",
+  "portal.feedNext": "Next comment",
+  "portal.feedPosition": "{position} of {total}",
+  "portal.feedNoPlace": "Not on the map",
+  "portal.feedReplies": "Replies ({count})",
+  "portal.feedTeamResponse": "Team response",
+  "portal.feedTopics": "Topics",
+  "portal.feedNoTopic": "No topic",
+  "portal.mapZoomIn": "Zoom in",
+  "portal.mapZoomOut": "Zoom out",
+  "portal.mapResetNorth": "Reset to north",
+  "portal.mapFindMe": "Find my location",
+  "portal.mapFindMeUnavailable": "Your location is not available",
+  "portal.map3d": "3D buildings",
+  "portal.placeSearch": "Find a street or place",
+  "portal.placeSearchNoResults": "No places found.",
+  "portal.placeSearchFailed": "Search is not available right now.",
+  "portal.placeSearchMoved": "Map moved to {place}. Press Enter to mark the middle of the map.",
+  "portal.placeSearchMovedReadOnly": "Map moved to {place}.",
+  "portal.placeSearchCount": "Places found: {count}.",
 
   // ------------------------------------------------- portal: email updates
   /*
@@ -527,10 +515,10 @@ export const EN_PORTAL_MESSAGES = {
 
   // -------------------------------------------------------------- close loop
   "closeLoop.title": "You said / We did",
-  "closeLoop.intro": "What the project team heard from the community, and how they responded.",
   "closeLoop.youSaid": "You said",
   "closeLoop.weDid": "We did",
   "closeLoop.empty": "The project team has not published any updates for this campaign yet.",
+  "closeLoop.answers": "Answers these comments",
 } as const;
 
 /** The exact type of the English source, used to type placeholders. */
@@ -566,10 +554,6 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "recovery.continueEdited": "Conservar este borrador como una contribución nueva",
   "recovery.saveReceipt": "Guardar comprobante",
   "recovery.receipt": "Comprobante",
-  "recovery.received": "Recibido",
-  "recovery.dateUnavailable": "Fecha no disponible",
-  "recovery.receiptMeaning": "Este comprobante confirma que se guardó su respuesta. Pendiente de revisión, publicado y respondido son estados distintos.",
-  "recovery.local": "El texto y los dibujos se guardan en esta computadora cuando el almacenamiento del navegador está disponible. Puede ser necesario adjuntar las fotos otra vez.",
   "recovery.storageUnavailable": "El almacenamiento del navegador no está disponible. Puede enviar su respuesta, pero esta computadora no puede guardar una copia de recuperación.",
   "recovery.surveyLocal": "Las respuestas y los comprobantes se guardan en esta computadora cuando el almacenamiento del navegador está disponible. Use Guardar para después para conservar un borrador en el servidor. En una computadora compartida, comience una respuesta nueva después de guardar el comprobante.",
 
@@ -604,34 +588,12 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "provenance.unreadable.detail":
     "Esta página no pudo cargar sus traducciones, así que este texto se muestra tal como lo escribió el equipo del proyecto. No se sabe si existe una versión en {language}.",
 
-  "page.kicker": "Participación comunitaria",
-  "page.linkedProject": "Proyecto vinculado: {project}",
-  "page.standalone": "Página de participación pública independiente",
-  "page.shareLane": "Espacio público listo para compartir",
-  "page.mode": "Modalidad: {mode}",
-  "page.supports": "Esta participación apoya a",
-  "page.submissionStatus": "Estado de los comentarios",
   "page.submissionsOpen": "Comentarios abiertos",
   "page.submissionsClosed": "Comentarios cerrados",
   "page.submissionStatusDetail":
-    "El equipo del proyecto revisa los comentarios antes de usarlos en materiales públicos.",
-  "page.publishedFeedback": "Comentarios publicados",
+    "El equipo del proyecto revisa los comentarios antes de mostrarlos aquí o usarlos en informes.",
   "page.publishedFeedbackDetail":
     "Aportes de la comunidad aprobados y visibles actualmente en esta página.",
-  "page.engagementMode": "Tipo de participación",
-  "page.engagementModeDetail":
-    "Aportes públicos estructurados, recopilados con un flujo de trabajo de calidad profesional.",
-  "page.posture": "Enfoque del portal",
-  "page.postureTitle": "Participación pública con revisión y trazabilidad",
-  "page.postureCopy":
-    "Esta página ofrece al público un lugar concreto para enviar y revisar comentarios de la campaña, conservando el contexto de planificación, la moderación y la estructura de temas dentro de OpenPlan.",
-  "page.postureItemReview":
-    "Los comentarios se revisan antes de reflejarse en resúmenes públicos o materiales técnicos.",
-  "page.postureItemApproved":
-    "Los comentarios publicados corresponden a aportes aprobados de la campaña, no a un foro público sin filtrar.",
-  "page.postureItemLocation":
-    "Los comentarios ubicados en el mapa pueden vincularse a un lugar concreto cuando eso mejora el registro de planificación.",
-  "page.lastUpdated": "Última actualización: {timestamp}",
   "page.defaultDescription":
     "Comparta su opinión sobre este proyecto. Los comentarios se revisan antes de publicarse.",
 
@@ -639,28 +601,22 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "closed.body":
     "Ya no se aceptan comentarios. Si tiene alguna pregunta, comuníquese con la ciudad, el condado o la agencia que le envió este enlace.",
 
-  "engagementType.map_feedback": "Aportes de la comunidad sobre el mapa",
-  "engagementType.comment_collection": "Comentarios de la comunidad",
-  "engagementType.meeting_intake": "Registro de reuniones",
 
-  "portal.tab.submit": "Comparta su opinión",
-  "portal.tab.feedback": "Comentarios de la comunidad",
+  "portal.tab.submit": "Agregar un comentario",
+  "portal.tab.feedback": "Comentarios",
   "portal.tab.survey": "Encuesta",
   "portal.tab.closeLoop": "Usted dijo / Nosotros hicimos",
-  "portal.about": "Sobre esta participación",
-  "portal.aboutProcess": "Cómo organiza el equipo del proyecto los aportes",
   "portal.topics": "Temas de comentarios",
   "portal.selectTopic": "Seleccione un tema",
   "portal.yourInput": "Lo que nos quiere contar (esta parte sí hace falta)",
   "portal.yourInputHint": "Cuéntenos qué observó, dónde lo observa y por qué es importante.",
-  "portal.onlyRequiredField": "Es la única parte de este formulario que hace falta.",
   "portal.titleLabel": "Un título corto para lo que escribió",
   "portal.optionalFields": "Solo si usted quiere",
   "portal.aboutYou": "Sobre usted (solo si usted quiere)",
   "portal.nameLabel": "Su nombre, o el nombre que quiera usar",
-  "portal.nameHint": "Si añade un nombre, aparecerá públicamente junto a su comentario cuando el equipo lo apruebe. Puede dejarlo en blanco.",
+  "portal.nameHint": "Se muestra públicamente con su comentario. Puede dejarlo en blanco.",
   "portal.followUp": "Recibir respuesta (solo si usted quiere)",
-  "portal.followUpHint": "Puede que el equipo no le pueda responder a usted en persona.",
+  "portal.followUpHint": "Es posible que el equipo no le responda personalmente.",
   "portal.photoHint": "Adjunte una foto JPEG, PNG o WebP de hasta {limit}.",
   "portal.photoTooLarge": "La foto es demasiado grande. El límite es {limit}.",
   "portal.photoWrongType": "Elija una imagen JPEG, PNG o WebP.",
@@ -672,11 +628,11 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.submitting": "Enviando…",
   "portal.submitFailed":
     "No pudimos enviar lo que escribió. No se ha perdido nada: inténtelo otra vez, por favor.",
-  "portal.received": "Gracias. Ya tenemos lo que nos envió.",
+  "portal.received": "Gracias. Recibimos su comentario.",
   "portal.receivedDetail": "Lo que escribió ha llegado al equipo del proyecto.",
   "portal.whatHappensNext": "Qué ocurre después",
   "portal.reviewNotice":
-    "Alguien del equipo del proyecto lee lo que usted envía antes de mostrarlo en esta página o usarlo en un informe.",
+    "El equipo del proyecto lee cada comentario antes de que aparezca aquí.",
   "portal.submissionsClosedNotice": "Este proyecto no está recibiendo comentarios en este momento",
   "portal.sortNewest": "Más recientes",
   "portal.sortMostSupported": "Con más apoyos",
@@ -706,7 +662,7 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
     "No se pudo traducir este comentario en este momento. Se muestra el original.",
   "portal.demographics": "Sobre usted (solo si usted quiere)",
   "portal.demographicsHint":
-    "Estas respuestas ayudan al equipo del proyecto a comprobar si está escuchando a toda la comunidad. Nunca se muestran públicamente.",
+    "Nunca se muestra públicamente. Ayuda al equipo a saber de quién recibe comentarios.",
   "portal.demographicsAge": "Su rango de edad",
   "portal.demographicsZip": "Su código postal",
   "portal.demographicsPrimaryLanguage": "Su idioma principal",
@@ -793,7 +749,34 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.drawUndoLast": "Deshacer el último punto",
   "portal.drawStartOver": "Empezar de nuevo",
   "portal.drawStartedOver": "Empezando de nuevo. Se quitó lo que había dibujado.",
-  "portal.mapZoomHint": "Acérquese a su propia calle antes de marcar un punto.",
+
+  "portal.feedOpen": "Comentarios",
+  "portal.feedClose": "Cerrar comentarios",
+  "portal.feedSearch": "Buscar comentarios",
+  "portal.feedShowing": "{shown} de {total}",
+  "portal.feedEmpty": "Todavía no hay comentarios.",
+  "portal.feedNoMatches": "Ningún comentario coincide.",
+  "portal.feedBack": "Todos los comentarios",
+  "portal.feedPrevious": "Comentario anterior",
+  "portal.feedNext": "Comentario siguiente",
+  "portal.feedPosition": "{position} de {total}",
+  "portal.feedNoPlace": "No está en el mapa",
+  "portal.feedReplies": "Respuestas ({count})",
+  "portal.feedTeamResponse": "Respuesta del equipo",
+  "portal.feedTopics": "Temas",
+  "portal.feedNoTopic": "Sin tema",
+  "portal.mapZoomIn": "Acercar",
+  "portal.mapZoomOut": "Alejar",
+  "portal.mapResetNorth": "Volver al norte",
+  "portal.mapFindMe": "Buscar mi ubicación",
+  "portal.mapFindMeUnavailable": "Su ubicación no está disponible",
+  "portal.map3d": "Edificios en 3D",
+  "portal.placeSearch": "Buscar una calle o un lugar",
+  "portal.placeSearchNoResults": "No se encontraron lugares.",
+  "portal.placeSearchFailed": "La búsqueda no está disponible en este momento.",
+  "portal.placeSearchMoved": "El mapa se movió a {place}. Pulse Intro para marcar el centro del mapa.",
+  "portal.placeSearchMovedReadOnly": "El mapa se movió a {place}.",
+  "portal.placeSearchCount": "Lugares encontrados: {count}.",
 
   "portal.subscribeHeading": "Reciba novedades por correo electrónico",
   "portal.subscribeHint":
@@ -820,31 +803,24 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "portal.back": "Atrás",
   "portal.stepWhereTitle": "Muéstrenos dónde",
   "portal.stepWhereHelp":
-    "Toque el mapa en el lugar del que habla. Puede omitir esto si no se trata de un lugar concreto.",
+    "Toque el mapa, o salte este paso.",
   "portal.stepWhereHelpNoMap":
-    "Escriba la calle, la esquina o el punto de referencia del que habla. Puede omitir esto.",
+    "Escriba la calle o el lugar, o salte este paso.",
   "portal.stepWhatTitle": "Diga qué opina",
-  "portal.stepWhatHelp": "Con sus propias palabras. El equipo del proyecto lee todo lo que escriba aquí.",
   "portal.commentNeeded": "Escriba algo primero, por favor. Es lo único que hace falta.",
   "portal.stepExtrasTitle": "Añada una foto o un tema",
-  "portal.stepExtrasHelp": "Solo si quiere. Nada de esto hace falta.",
   "portal.stepYouTitle": "Sobre usted",
-  "portal.stepYouHelp": "Todo esto es opcional. Puede enviar su comentario sin nada de esto.",
   "portal.stepSendTitle": "Envíelo",
-  "portal.stepSendHelp": "Revíselo y envíelo.",
-  "portal.locationSet": "Marcó un lugar en el mapa.",
-  "portal.locationNone": "Todavía no ha marcado ningún lugar.",
-  "portal.clearLocation": "Quitar el lugar que marqué",
-  "portal.whereInWords": "¿Dónde es esto? Una calle, una esquina o un punto de referencia.",
+  "portal.locationSet": "Lugar marcado",
+  "portal.clearLocation": "Quitar",
+  "portal.whereInWords": "Calle o punto de referencia",
   "portal.whereRecorded": "Dónde: {place}",
   "portal.reviewHeading": "Lo que va a enviar",
   "portal.reviewNoLocation": "Ningún lugar marcado",
 
-  "portal.openDetailsSurveyAndComments": "Vea la encuesta y lo que dijo otra gente",
-  "portal.openDetailsSurvey": "Vea la encuesta de este proyecto",
-  "portal.openDetailsComments": "Vea lo que dijo otra gente",
-  "portal.openDetails": "Vea más sobre este proyecto",
-  "portal.openDetailsHint": "Y lo que el equipo ha hecho al respecto hasta ahora",
+  "portal.openDetailsSurvey": "Responder la encuesta",
+  "portal.openDetails": "Sobre este proyecto",
+  "portal.openDetailsHint": "Lo que hizo el equipo",
   "portal.backToMap": "Volver al mapa",
   "portal.addYourInput": "Cuéntenos qué opina",
   "portal.hideForm": "Ocultar",
@@ -893,10 +869,10 @@ const ES_PORTAL_MESSAGES: PortalMessageCatalog = {
   "survey.conditionalNote": "Algunas preguntas solo aparecen si corresponden a sus respuestas anteriores.",
 
   "closeLoop.title": "Usted dijo / Nosotros hicimos",
-  "closeLoop.intro": "Lo que el equipo del proyecto escuchó de la comunidad, y cómo respondió.",
   "closeLoop.youSaid": "Usted dijo",
   "closeLoop.weDid": "Nosotros hicimos",
   "closeLoop.empty": "El equipo del proyecto todavía no ha publicado novedades para esta campaña.",
+  "closeLoop.answers": "Responde a estos comentarios",
 };
 
 /**

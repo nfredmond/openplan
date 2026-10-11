@@ -1187,6 +1187,7 @@ async function buildPublicPortalBundle(
       youSaid: entry.you_said,
       weDid: entry.we_did,
       categoryLabel: category?.label ?? null,
+      sourceItemIds: entry.source_item_ids,
       themeTitleText: resolveOperatorText(
         translationIndex,
         { entity: "close_loop_entry", id: entry.id, field: "theme_title" },
@@ -1267,7 +1268,14 @@ async function buildPublicPortalBundle(
     readFailures: {
       comments: approvedItemsReadFailed,
       categories: categoriesReadFailed,
-      closeLoop: closeLoopReadFailed,
+      /*
+        A response is published only when every comment it cites is public, and
+        that cannot be checked when the comments read failed. Those responses
+        are withheld, so the section says it could not be fully read rather
+        than claiming the agency published nothing.
+      */
+      closeLoop:
+        closeLoopReadFailed || (approvedItemsReadFailed && closeLoopRows.length < closeLoopResult.rows.length),
       project: projectReadFailed,
     },
     engagementType: campaign.engagement_type,

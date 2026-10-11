@@ -647,7 +647,9 @@ export function GeometryPickerMap({
         <ParticipantMapLegend contextLayers={contextLayers} />
       </div>
 
-      <p id={instructionsId} className="text-xs text-muted-foreground">
+      {/* Always read to a screen reader; shown on screen only while the map has
+          keyboard focus, which is when a sighted keyboard user needs it. */}
+      <p id={instructionsId} className={isFocused ? "text-xs text-muted-foreground" : "sr-only"}>
         {words.pointerHelp} {words.keyboardHelp}
       </p>
 
