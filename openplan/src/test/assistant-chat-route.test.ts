@@ -289,6 +289,30 @@ describe("/api/assistant/chat", () => {
     expect(callArgs.maxOutputTokens).toBeGreaterThan(0);
   });
 
+  it("tells the model today's date, read from the clock when the question arrives", async () => {
+    // A live test on 2026-10-11 called a call that closed 2026-09-30 "still
+    // open for about three more weeks": the prompt carried no date at all.
+    // Two different clocks must give two different dates, so a hardcoded or
+    // build-time date cannot pass.
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      for (const [now, expected] of [
+        ["2026-10-11T23:30:00Z", "2026-10-11"],
+        ["2027-03-02T00:10:00Z", "2027-03-02"],
+      ] as const) {
+        vi.setSystemTime(new Date(now));
+        streamTextMock.mockClear();
+        await postAssistantChat(
+          jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due soon?" })
+        );
+        const callArgs = streamTextMock.mock.calls[0][0] as { system: string };
+        expect(callArgs.system).toContain(`TODAY: ${expected} (UTC calendar date).`);
+      }
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("drains the tool ledger into assistant_chat_tool_called audit events at each step boundary", async () => {
     await postAssistantChat(
       jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "Where should I focus this week?" })

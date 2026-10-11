@@ -531,11 +531,20 @@ export function renderKnowledgeBaseExcerptLines(excerpts: KnowledgeBaseExcerpt[]
   });
 }
 
+/**
+ * The line that tells the model what day it is. Without it the model dates
+ * itself from training and called a funding call that closed eleven days
+ * earlier "still open for about three more weeks" (live test, 2026-10-11).
+ */
+export function assistantTodayLine(today: string): string {
+  return `TODAY: ${today} (UTC calendar date). Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming.`;
+}
+
 export function buildAssistantChatSystemPrompt(
   context: AssistantContext,
-  options?: { maxContextChars?: number; knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[] }
+  options: { today: string; maxContextChars?: number; knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[] }
 ): string {
-  const maxContextChars = options?.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
+  const maxContextChars = options.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
   const lines = buildAssistantChatContextLines(context);
 
   const kept: string[] = [];
@@ -558,12 +567,13 @@ export function buildAssistantChatSystemPrompt(
 
   const sections = [
     ASSISTANT_CHAT_INSTRUCTIONS,
+    assistantTodayLine(options.today),
     "",
     "WORKSPACE CONTEXT (RLS-scoped, current surface):",
     ...kept.map((line) => `- ${line}`),
   ];
 
-  const kbLines = renderKnowledgeBaseExcerptLines(options?.knowledgeBaseExcerpts ?? []);
+  const kbLines = renderKnowledgeBaseExcerptLines(options.knowledgeBaseExcerpts ?? []);
   if (kbLines.length > 0) {
     sections.push(
       "",
