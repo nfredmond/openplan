@@ -12,6 +12,15 @@ import {
   type PortalTranslationIndex,
 } from "@/lib/engagement/portal-i18n/operator-text";
 
+/*
+  ar, ko stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ar", () => ({ AR_PORTAL_MESSAGES: {} }));
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ko", () => ({ KO_PORTAL_MESSAGES: {} }));
+
 vi.mock("mapbox-gl", async () => {
   const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
   return createMapboxGlModuleFake();

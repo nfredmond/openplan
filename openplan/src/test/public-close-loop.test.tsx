@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { PublicCloseLoop, type PublicCloseLoopEntry } from "@/components/engagement/public-close-loop";
 import { resolvePortalLocale, type PortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
@@ -9,6 +9,14 @@ import {
   resolveOperatorText,
   type PortalTranslationIndex,
 } from "@/lib/engagement/portal-i18n/operator-text";
+
+/*
+  ar stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ar", () => ({ AR_PORTAL_MESSAGES: {} }));
 
 function translatorFor(tag: string) {
   return createPortalTranslator(
