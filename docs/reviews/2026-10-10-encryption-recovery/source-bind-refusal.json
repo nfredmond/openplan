@@ -1,0 +1,10 @@
+{
+  "hostDiffersFromMounted": true,
+  "staleSourceBindRefused": true,
+  "noKeyArchivePrepared": true,
+  "targetKeyUnchanged": true,
+  "sourceRestored": true,
+  "originalExistingSourceKeyUnchanged": true,
+  "helperSha256": "48b93757069dd5d43cee9ef3c331db763b58debf9bb9c70d44518201d2951797",
+  "boundary": "Synthetic new CLI fixture only. Patched preparation refuses when an atomic host-file replacement leaves different bytes in the source bind. The fixture host bytes are restored in finally. No existing source, database rows or volumes change."
+}

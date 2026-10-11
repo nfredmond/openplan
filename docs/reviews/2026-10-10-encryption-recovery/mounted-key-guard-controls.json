@@ -1,0 +1,410 @@
+{
+  "sourceSha256": {
+    "database_key_custody.py": "48b93757069dd5d43cee9ef3c331db763b58debf9bb9c70d44518201d2951797",
+    "full_restore.py": "01272f9f8b92e1064f7a8851058ff2ec86a02b4f11fd5778486aa83888158754",
+    "disposable-restore-drill.sh": "96f00d24c0087dcff8c64ec457a04ff46db5bb120a2476962c7a9fd5f36b4abc"
+  },
+  "controls": [
+    {
+      "name": "harmless helper comment",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests",
+      "result": "survived",
+      "output": "...................\n----------------------------------------------------------------------\nRan 19 tests in 0.063s\n\nOK\n"
+    },
+    {
+      "name": "context precedence",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_local_endpoint_and_context_precedence (test_database_key_custody.DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 81, in test_local_endpoint_and_context_precedence\n    keys.inspect_binding(self.target)\n    ~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 29, in inspect_binding\n    raise ValueError('Mounted-key transfer requires the local Unix Docker endpoint')\nValueError: Mounted-key transfer requires the local Unix Docker endpoint\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 83, in test_local_endpoint_and_context_precedence\n    self.fail('Selected local context was refused: '+str(error))\n    ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Selected local context was refused: Mounted-key transfer requires the local Unix Docker endpoint\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "remote endpoint",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_local_endpoint_and_context_precedence (test_database_key_custody.DatabaseKeyCustodyTests.test_local_endpoint_and_context_precedence)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 77, in test_local_endpoint_and_context_precedence\n    with self.assertRaisesRegex(ValueError, 'local Unix Docker endpoint'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "container ID",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity) (field='Id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 96, in test_container_identity\n    with self.assertRaisesRegex(ValueError, 'ownership differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "container image",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity) (field='Image')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 96, in test_container_identity\n    with self.assertRaisesRegex(ValueError, 'ownership differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "container label",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 101, in test_container_identity\n    with self.assertRaisesRegex(ValueError, 'ownership differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "container name",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_container_identity",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_container_identity (test_database_key_custody.DatabaseKeyCustodyTests.test_container_identity)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 107, in test_container_identity\n    with self.assertRaisesRegex(ValueError, 'ownership differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "readonly mount",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 115, in test_mount_and_canonical_file\n    with self.assertRaisesRegex(ValueError, 'one read-only file bind'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "bind mount type",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 115, in test_mount_and_canonical_file\n    with self.assertRaisesRegex(ValueError, 'one read-only file bind'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "canonical bind",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_mount_and_canonical_file",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_mount_and_canonical_file (test_database_key_custody.DatabaseKeyCustodyTests.test_mount_and_canonical_file)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 119, in test_mount_and_canonical_file\n    with self.assertRaisesRegex(ValueError, 'canonical regular file'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "key byte format",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 133, in test_private_key_bytes\n    with self.assertRaisesRegex(ValueError, message):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "private archive",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 136, in test_private_key_bytes\n    with self.assertRaisesRegex(ValueError, 'must be private'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "archive immutability",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 139, in test_private_key_bytes\n    with self.assertRaisesRegex(ValueError, 'original is retained'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "key regular identity",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_private_key_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_private_key_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_private_key_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 144, in test_private_key_bytes\n    with self.assertRaisesRegex(ValueError, 'file is invalid'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "private custody directory",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_capture_private_intent_and_independent_target (test_database_key_custody.DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 153, in test_capture_private_intent_and_independent_target\n    with self.assertRaisesRegex(ValueError, 'directory must be canonical and private'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "independent target",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_capture_private_intent_and_independent_target (test_database_key_custody.DatabaseKeyCustodyTests.test_capture_private_intent_and_independent_target)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 157, in test_capture_private_intent_and_independent_target\n    with self.assertRaisesRegex(ValueError, 'target must be independent'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "intent privacy",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 166, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'intent must be private'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "intent regular identity",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 170, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'intent must be private and regular'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "capture intent equality",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 173, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'intent differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "apply intent equality",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nValueError: Database key recovery payload differs\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 176, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'intent differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"intent differs\" does not match \"Database key recovery payload differs\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "incoming payload hash",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 180, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'payload differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "previous payload hash",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_intent_privacy_and_payload_changes (test_database_key_custody.DatabaseKeyCustodyTests.test_intent_privacy_and_payload_changes)\n----------------------------------------------------------------------\nValueError: Database key target has unrelated bytes\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 180, in test_intent_privacy_and_payload_changes\n    with self.assertRaisesRegex(ValueError, 'payload differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"payload differs\" does not match \"Database key target has unrelated bytes\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "source mounted bytes",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture",
+      "result": "intended assertion failure",
+      "output": "FF\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='source-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 328, in test_source_and_initial_target_mount_must_match_capture\n    self.assertIn(['docker','exec',self.source['id'],'cat',keys.KEY_MOUNT],self.calls)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['docker', 'exec', 'source-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key'] not found in [['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'target-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'target-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key']]\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "initial target mounted bytes",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture",
+      "result": "intended assertion failure",
+      "output": "FF\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='target-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 329, in test_source_and_initial_target_mount_must_match_capture\n    self.assertIn(['docker','exec',self.target['id'],'cat',keys.KEY_MOUNT],self.calls)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['docker', 'exec', 'target-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key'] not found in [['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'source-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'source-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key']]\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "mounted byte comparison",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture",
+      "result": "intended assertion failure",
+      "output": "FF\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='source-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='target-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=2)\n"
+    },
+    {
+      "name": "mounted immutable container ID",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture",
+      "result": "intended assertion failure",
+      "output": "FFF\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='source-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture) (service='target-id')\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 322, in test_source_and_initial_target_mount_must_match_capture\n    with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n======================================================================\nFAIL: test_source_and_initial_target_mount_must_match_capture (test_database_key_custody.DatabaseKeyCustodyTests.test_source_and_initial_target_mount_must_match_capture)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 328, in test_source_and_initial_target_mount_must_match_capture\n    self.assertIn(['docker','exec',self.source['id'],'cat',keys.KEY_MOUNT],self.calls)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ['docker', 'exec', 'source-id', 'cat', '/etc/postgresql-custom/pgsodium_root.key'] not found in [['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'supabase_db_openplan-restore-source-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'exec', 'supabase_db_openplan-restore-target-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'supabase_db_openplan-restore-source-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'exec', 'supabase_db_openplan-restore-target-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-source-123'], ['docker', 'context', 'inspect', '--format', '{{.Endpoints.docker.Host}}'], ['docker', 'inspect', 'supabase_db_openplan-restore-target-123'], ['docker', 'exec', 'supabase_db_openplan-restore-source-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key'], ['docker', 'exec', 'supabase_db_openplan-restore-target-123', 'cat', '/etc/postgresql-custom/pgsodium_root.key']]\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=3)\n"
+    },
+    {
+      "name": "stopped target replay",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_existing_key_intent_does_not_require_a_running_target",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_existing_key_intent_does_not_require_a_running_target (test_database_key_custody.DatabaseKeyCustodyTests.test_existing_key_intent_does_not_require_a_running_target)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 337, in test_existing_key_intent_does_not_require_a_running_target\n    self.assertEqual(self.prepare(),plan)\n                     ~~~~~~~~~~~~^^\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 67, in prepare\n    return keys.prepare_database_key_restore(self.source, self.target, self.destination)\n           ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 111, in prepare_database_key_restore\n    require_mounted_bytes(target, read_key(before_archive, private=True))\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 91, in require_mounted_bytes\n    mounted = subprocess.check_output(['docker', 'exec', service['id'], 'cat', KEY_MOUNT])\n  File \"/usr/lib/python3.14/unittest/mock.py\", line 1176, in __call__\n    return self._mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.14/unittest/mock.py\", line 1180, in _mock_call\n    return self._execute_mock_call(*args, **kwargs)\n           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.14/unittest/mock.py\", line 1247, in _execute_mock_call\n    result = effect(*args, **kwargs)\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 334, in output\n    if args == ['docker','exec',self.target['id'],'cat',keys.KEY_MOUNT]: self.fail('Interrupted target was read before restart')\n                                                                         ~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Interrupted target was read before restart\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "capture binding",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 191, in test_changed_binding_requires_exact_recovery_bytes\n    with self.assertRaisesRegex(ValueError, 'binding differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "apply binding",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 193, in test_changed_binding_requires_exact_recovery_bytes\n    with self.assertRaisesRegex(ValueError, 'target binding changed'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "binding recovery metadata",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_binding_requires_exact_recovery_bytes (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_requires_exact_recovery_bytes)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 198, in test_changed_binding_requires_exact_recovery_bytes\n    with self.assertRaisesRegex(ValueError, 'binding differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "unrelated target bytes",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_unrelated_current_bytes_are_retained",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_unrelated_current_bytes_are_retained (test_database_key_custody.DatabaseKeyCustodyTests.test_unrelated_current_bytes_are_retained)\n----------------------------------------------------------------------\nValueError: Database key bytes changed while stopping\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 204, in test_unrelated_current_bytes_are_retained\n    with self.assertRaisesRegex(ValueError, 'target has unrelated bytes'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"target has unrelated bytes\" does not match \"Database key bytes changed while stopping\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "binding after stop",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_binding_or_bytes_while_stopping (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping)\n----------------------------------------------------------------------\nValueError: Database key file identity changed\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 253, in test_changed_binding_or_bytes_while_stopping\n    with self.assertRaisesRegex(ValueError, 'changed while stopping'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"changed while stopping\" does not match \"Database key file identity changed\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "bytes after stop",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_binding_or_bytes_while_stopping (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_binding_or_bytes_while_stopping)\n----------------------------------------------------------------------\nValueError: Database key bytes changed before replacement\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 253, in test_changed_binding_or_bytes_while_stopping\n    with self.assertRaisesRegex(ValueError, 'changed while stopping'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"changed while stopping\" does not match \"Database key bytes changed before replacement\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "binding before replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_identity_during_staging_refuse_replacement",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_identity_during_staging_refuse_replacement (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_identity_during_staging_refuse_replacement)\n----------------------------------------------------------------------\nValueError: Database key write is unconfirmed\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 274, in test_changed_identity_during_staging_refuse_replacement\n    with self.assertRaisesRegex(ValueError, 'file identity changed'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"file identity changed\" does not match \"Database key write is unconfirmed\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "bytes before replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_changed_bytes_during_staging_refuse_replacement",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_changed_bytes_during_staging_refuse_replacement (test_database_key_custody.DatabaseKeyCustodyTests.test_changed_bytes_during_staging_refuse_replacement)\n----------------------------------------------------------------------\nValueError: Database key write is unconfirmed\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 263, in test_changed_bytes_during_staging_refuse_replacement\n    with self.assertRaisesRegex(ValueError, 'bytes changed before replacement'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"bytes changed before replacement\" does not match \"Database key write is unconfirmed\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "atomic replacement",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 220, in test_atomic_replacement_restart_and_actual_mount\n    self.assertNotEqual(old.st_ino, new.st_ino)\n    ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 1680926 == 1680926\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "file sync",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 226, in test_atomic_replacement_restart_and_actual_mount\n    self.assertEqual(fsync_types, [stat.S_IFREG, stat.S_IFDIR])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [16384] != [32768, 16384]\n\nFirst differing element 0:\n16384\n32768\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n16384\n\n- [16384]\n+ [32768, 16384]\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "directory sync",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 226, in test_atomic_replacement_restart_and_actual_mount\n    self.assertEqual(fsync_types, [stat.S_IFREG, stat.S_IFDIR])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [32768] != [32768, 16384]\n\nSecond list contains 1 additional elements.\nFirst extra element 1:\n16384\n\n- [32768]\n+ [32768, 16384]\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "preserved mode",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 221, in test_atomic_replacement_restart_and_actual_mount\n    self.assertEqual((old.st_uid,old.st_gid,old.st_mode), (new.st_uid,new.st_gid,new.st_mode))\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Tuples differ: (1000, 1000, 33188) != (1000, 1000, 33152)\n\nFirst differing element 2:\n33188\n33152\n\n- (1000, 1000, 33188)\n?                 ^^\n\n+ (1000, 1000, 33152)\n?                 ^^\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "stop scope",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 225, in test_atomic_replacement_restart_and_actual_mount\n    self.assertEqual(calls[:2], [['docker', 'stop', self.target['id']], ['docker', 'start', self.target['id']]])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [['docker', 'stop', 'wrong-target'], ['docker', 'start', 'target-id']] != [['docker', 'stop', 'target-id'], ['docker', 'start', 'target-id']]\n\nFirst differing element 0:\n['docker', 'stop', 'wrong-target']\n['docker', 'stop', 'target-id']\n\n- [['docker', 'stop', 'wrong-target'], ['docker', 'start', 'target-id']]\n?                      ------\n\n+ [['docker', 'stop', 'target-id'], ['docker', 'start', 'target-id']]\n?                            +++\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "restart dispatch",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_atomic_replacement_restart_and_actual_mount (test_database_key_custody.DatabaseKeyCustodyTests.test_atomic_replacement_restart_and_actual_mount)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 225, in test_atomic_replacement_restart_and_actual_mount\n    self.assertEqual(calls[:2], [['docker', 'stop', self.target['id']], ['docker', 'start', self.target['id']]])\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: Lists differ: [['do[36 chars]r', 'exec', 'target-id', 'pg_isready', '-h', '[41 chars]in']] != [['do[36 chars]r', 'start', 'target-id']]\n\nFirst differing element 1:\n['docker', 'exec', 'target-id', 'pg_isready', '-h', '[40 chars]min']\n['docker', 'start', 'target-id']\n\n+ [['docker', 'stop', 'target-id'], ['docker', 'start', 'target-id']]\n- [['docker', 'stop', 'target-id'],\n-  ['docker',\n-   'exec',\n-   'target-id',\n-   'pg_isready',\n-   '-h',\n-   '/var/run/postgresql',\n-   '-U',\n-   'supabase_admin']]\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "write verification",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_failed_write_or_mount_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success)\n----------------------------------------------------------------------\nValueError: Database mounted key differs after restart\n\nDuring handling of the above exception, another exception occurred:\n\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 281, in test_failed_write_or_mount_cannot_claim_success\n    with self.assertRaisesRegex(ValueError, 'write is unconfirmed'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"write is unconfirmed\" does not match \"Database mounted key differs after restart\"\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "mount verification",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_failed_write_or_mount_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_failed_write_or_mount_cannot_claim_success)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 288, in test_failed_write_or_mount_cannot_claim_success\n    with self.assertRaisesRegex(ValueError, 'mounted key differs'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "readiness refusal",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_unready_target_cannot_claim_success",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_unready_target_cannot_claim_success (test_database_key_custody.DatabaseKeyCustodyTests.test_unready_target_cannot_claim_success)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 294, in test_unready_target_cannot_claim_success\n    with self.assertRaisesRegex(RuntimeError, 'did not become ready'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: RuntimeError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.002s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "recovery private directory",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_key_recovery_requires_an_owned_private_target (test_database_key_custody.DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 303, in test_key_recovery_requires_an_owned_private_target\n    with patch.object(keys.subprocess, 'run', return_value=subprocess.CompletedProcess([],0)), self.assertRaisesRegex(ValueError, 'directory must be canonical and private'):\n                                                                                               ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "recovery target scope",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_key_recovery_requires_an_owned_private_target (test_database_key_custody.DatabaseKeyCustodyTests.test_key_recovery_requires_an_owned_private_target)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 309, in test_key_recovery_requires_an_owned_private_target\n    with self.assertRaisesRegex(ValueError, 'owned disposable restore target'):\n         ~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: ValueError not raised\n\n----------------------------------------------------------------------\nRan 1 test in 0.003s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "CLI action refusal",
+      "module": "database_key_custody.py",
+      "test": "DatabaseKeyCustodyTests.test_cli_refuses_unknown_action_before_transport",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_cli_refuses_unknown_action_before_transport (test_database_key_custody.DatabaseKeyCustodyTests.test_cli_refuses_unknown_action_before_transport)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_database_key_custody.py\", line 342, in test_cli_refuses_unknown_action_before_transport\n    self.assertIn('Usage: database_key_custody.py --recover-target-key',result.stderr)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 'Usage: database_key_custody.py --recover-target-key' not found in 'Traceback (most recent call last):\\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 216, in <module>\\n    print(json.dumps(recover_target_key(Path(sys.argv[2]))))\\n                     ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^\\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 205, in recover_target_key\\n    plan = read_intent(destination / \\'database-key-custody-private.json\\')\\n  File \"/tmp/openplan-key-controls-_kpk03al/database_key_custody.py\", line 83, in read_intent\\n    if (path.resolve() != path or not stat.S_ISREG(path.lstat().st_mode)\\n                                                   ~~~~~~~~~~^^\\n  File \"/usr/lib/python3.14/pathlib/__init__.py\", line 662, in lstat\\n    return os.lstat(self)\\n           ~~~~~~~~^^^^^^\\nFileNotFoundError: [Errno 2] No such file or directory: \\'/tmp/tmp72yd5swe/custody/database-key-custody-private.json\\'\\n'\n\n----------------------------------------------------------------------\nRan 1 test in 0.079s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "harmless restore comment",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests",
+      "result": "survived",
+      "output": "..................\n----------------------------------------------------------------------\nRan 18 tests in 0.077s\n\nOK\n"
+    },
+    {
+      "name": "encrypted target refusal",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_existing_encrypted_secrets_are_refused",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_existing_encrypted_secrets_are_refused (test_full_restore.FullRestoreTests.test_existing_encrypted_secrets_are_refused)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_full_restore.py\", line 64, in test_existing_encrypted_secrets_are_refused\n    calls.assert_any_call('owned', \"SELECT to_regclass('vault.secrets') IS NOT NULL\")\n    ~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/usr/lib/python3.14/unittest/mock.py\", line 1057, in assert_any_call\n    raise AssertionError(\n        '%s call not found' % expected_string\n    ) from cause\nAssertionError: sql('owned', \"SELECT to_regclass('vault.secrets') IS NOT NULL\") call not found\n\n----------------------------------------------------------------------\nRan 1 test in 0.001s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "snapshot key recheck",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_restore_actually_compares_target_before_starting_services",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_restore_actually_compares_target_before_starting_services (test_full_restore.FullRestoreTests.test_restore_actually_compares_target_before_starting_services)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_full_restore.py\", line 157, in test_restore_actually_compares_target_before_starting_services\n    self.assertEqual(keys.call_count, 2)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^\nAssertionError: 1 != 2\n\n----------------------------------------------------------------------\nRan 1 test in 0.005s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "restore key dispatch",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_restore_actually_compares_target_before_starting_services",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_restore_actually_compares_target_before_starting_services (test_full_restore.FullRestoreTests.test_restore_actually_compares_target_before_starting_services)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_full_restore.py\", line 156, in test_restore_actually_compares_target_before_starting_services\n    self.assertEqual(result['databaseKeyCustody'], {'targetRestarted': True})\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: {'targetRestarted': False} != {'targetRestarted': True}\n- {'targetRestarted': False}\n?                     ^^^^\n\n+ {'targetRestarted': True}\n?                     ^^^\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.005s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "absolute sibling loader",
+      "module": "full_restore.py",
+      "test": "FullRestoreTests.test_absolute_loader_uses_its_own_sibling_in_isolated_python",
+      "result": "intended assertion failure",
+      "output": "F\n======================================================================\nFAIL: test_absolute_loader_uses_its_own_sibling_in_isolated_python (test_full_restore.FullRestoreTests.test_absolute_loader_uses_its_own_sibling_in_isolated_python)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_full_restore.py\", line 71, in test_absolute_loader_uses_its_own_sibling_in_isolated_python\n    self.assertEqual(result.returncode, 0, result.stderr)\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: 1 != 0 : Traceback (most recent call last):\n  File \"<string>\", line 1, in <module>\n    import importlib.util; from pathlib import Path; s=importlib.util.spec_from_file_location('probe', '/tmp/openplan-key-controls-_kpk03al/full_restore.py'); m=importlib.util.module_from_spec(s); s.loader.exec_module(m); assert Path(m._keys.__file__).resolve()==Path('/tmp/openplan-key-controls-_kpk03al/database_key_custody.py')\n                                                                                                                                                                                                     ~~~~~~~~~~~~~~~~~~~~^^^\n  File \"<frozen importlib._bootstrap_external>\", line 759, in exec_module\n  File \"<frozen importlib._bootstrap>\", line 491, in _call_with_frames_removed\n  File \"/tmp/openplan-key-controls-_kpk03al/full_restore.py\", line 21, in <module>\n    import database_key_custody as _keys\nModuleNotFoundError: No module named 'database_key_custody'\n\n\n----------------------------------------------------------------------\nRan 1 test in 0.091s\n\nFAILED (failures=1)\n"
+    },
+    {
+      "name": "harmless canary comment",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "survived",
+      "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.136s\n\nOK\n"
+    },
+    {
+      "name": "canary refusal",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "intended assertion failure",
+      "output": "FFF\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='0', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 27, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertEqual(result.returncode==0,passing, 'Canary accepted a missing, duplicate or failed decryption')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: True != False : Canary accepted a missing, duplicate or failed decryption\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='2', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 27, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertEqual(result.returncode==0,passing, 'Canary accepted a missing, duplicate or failed decryption')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: True != False : Canary accepted a missing, duplicate or failed decryption\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 27, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertEqual(result.returncode==0,passing, 'Canary accepted a missing, duplicate or failed decryption')\n    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: True != False : Canary accepted a missing, duplicate or failed decryption\n\n----------------------------------------------------------------------\nRan 1 test in 0.127s\n\nFAILED (failures=3)\n"
+    },
+    {
+      "name": "canary projection",
+      "module": "disposable-restore-drill.sh",
+      "test": "EncryptedCanaryTests",
+      "result": "intended assertion failure",
+      "output": "FFFFF\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='1', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 31, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertIn(\"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\",args)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\" not found in ['exec', 'supabase_db_openplan-restore-target-555', 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-At', '-c', \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND name = 'OpenPlan synthetic encrypted recovery fixture'\"]\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='0', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 31, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertIn(\"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\",args)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\" not found in ['exec', 'supabase_db_openplan-restore-target-555', 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-At', '-c', \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND name = 'OpenPlan synthetic encrypted recovery fixture'\"]\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='2', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 31, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertIn(\"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\",args)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\" not found in ['exec', 'supabase_db_openplan-restore-target-555', 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-At', '-c', \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND name = 'OpenPlan synthetic encrypted recovery fixture'\"]\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='', status=0)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 31, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertIn(\"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\",args)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\" not found in ['exec', 'supabase_db_openplan-restore-target-555', 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-At', '-c', \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND name = 'OpenPlan synthetic encrypted recovery fixture'\"]\n\n======================================================================\nFAIL: test_actual_shell_block_checks_one_decrypted_record (test_restore_encrypted_canary.EncryptedCanaryTests.test_actual_shell_block_checks_one_decrypted_record) (answer='1', status=7)\n----------------------------------------------------------------------\nTraceback (most recent call last):\n  File \"/tmp/openplan-key-controls-_kpk03al/tests/test_restore_encrypted_canary.py\", line 31, in test_actual_shell_block_checks_one_decrypted_record\n    self.assertIn(\"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\",args)\n    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nAssertionError: \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND decrypted_secret = 'OpenPlan synthetic encrypted recovery fixture'\" not found in ['exec', 'supabase_db_openplan-restore-target-555', 'psql', '-X', '-U', 'supabase_admin', '-d', 'postgres', '-v', 'ON_ERROR_STOP=1', '-At', '-c', \"SELECT count(*) FROM vault.decrypted_secrets WHERE name = 'openplan_recovery_canary' AND name = 'OpenPlan synthetic encrypted recovery fixture'\"]\n\n----------------------------------------------------------------------\nRan 1 test in 0.122s\n\nFAILED (failures=5)\n"
+    },
+    {
+      "name": "restored test_database_key_custody.py",
+      "result": "survived",
+      "output": "...................\n----------------------------------------------------------------------\nRan 19 tests in 0.063s\n\nOK\n"
+    },
+    {
+      "name": "restored test_full_restore.py",
+      "result": "survived",
+      "output": "..................\n----------------------------------------------------------------------\nRan 18 tests in 0.074s\n\nOK\n"
+    },
+    {
+      "name": "restored test_restore_encrypted_canary.py",
+      "result": "survived",
+      "output": ".\n----------------------------------------------------------------------\nRan 1 test in 0.122s\n\nOK\n"
+    }
+  ],
+  "limits": "Synthetic files and mocked Docker. No native backend or physical power-loss acceptance."
+}

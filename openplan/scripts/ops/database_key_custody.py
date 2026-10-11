@@ -86,6 +86,13 @@ def read_intent(path: Path) -> dict:
     return json.loads(path.read_text())
 
 
+def require_mounted_bytes(service: dict, expected: bytes):
+    """A host path cannot stand in for bytes retained by an existing bind."""
+    mounted = subprocess.check_output(['docker', 'exec', service['id'], 'cat', KEY_MOUNT])
+    if mounted != expected:
+        raise ValueError('Database mounted key differs from captured host bytes')
+
+
 def prepare_database_key_restore(source: dict, target: dict, destination: Path) -> dict:
     """Capture both keys and a checked intent before changing the fresh target."""
     if destination.resolve() != destination or destination.stat().st_mode & 0o077:
@@ -95,6 +102,7 @@ def prepare_database_key_restore(source: dict, target: dict, destination: Path) 
     if source['id'] == target['id'] or (source_binding['device'], source_binding['inode']) == (target_binding['device'], target_binding['inode']):
         raise ValueError('Database key target must be independent')
     incoming = read_key(Path(source_binding['path']))
+    require_mounted_bytes(source, incoming)
     source_archive = destination / 'database-root-private.key'
     before_archive = destination / 'target-root-before-private.key'
     record_path = destination / 'database-key-custody-private.json'
@@ -106,6 +114,7 @@ def prepare_database_key_restore(source: dict, target: dict, destination: Path) 
             raise ValueError('Database key recovery binding differs')
     else:
         before = read_key(Path(target_binding['path']))
+        require_mounted_bytes(target, before)
         preserve_key(before_archive, before)
         record = None
     expected = {'sourceId': source['id'], 'targetId': target['id'], 'targetImageId': target['imageId'],

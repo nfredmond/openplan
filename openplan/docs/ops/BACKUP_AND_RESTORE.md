@@ -147,7 +147,12 @@ before capture and refuses existing target records or incompatible cluster roles
 
 Full mode also captures the source database's mounted root key and the fresh
 target's previous key in private files beside the archives. It records the target
-container identity, image and file binding before stopping that target. It
+container identity, image and file binding before stopping that target. Initial
+capture compares host and mounted bytes through the recorded source and target
+container IDs. An atomic host-file replacement can leave an older file bound in
+a running container; preparation refuses that mismatch. Existing-intent replay
+uses the retained keys without requiring the stopped target to answer a mount
+read. The actual decryption canary separately checks the restored backend. It
 atomically replaces the target key, syncs the file and directory, restarts the
 recorded target and verifies the mounted bytes. The source key stays unchanged.
 The target must have no existing Vault secrets. The helper refuses SSH and TCP Docker

@@ -58,8 +58,9 @@ class DatabaseKeyCustodyTests(unittest.TestCase):
             return 'unix:///var/run/docker.sock\n'
         if args[:2] == ['docker', 'inspect']:
             return json.dumps([self.infos[args[2]]])
-        if args == ['docker', 'exec', self.target['id'], 'cat', keys.KEY_MOUNT]:
-            return self.target_path.read_bytes()
+        if args[:2] == ['docker', 'exec'] and args[-2:] == ['cat', keys.KEY_MOUNT]:
+            if args[2] in (self.source['id'],self.source['name']): return self.source_path.read_bytes()
+            if args[2] in (self.target['id'],self.target['name']): return self.target_path.read_bytes()
         raise AssertionError('Unexpected Docker command: '+str(args))
 
     def prepare(self):
@@ -308,6 +309,32 @@ class DatabaseKeyCustodyTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'owned disposable restore target'):
                 keys.recover_target_key(self.destination)
             apply.assert_not_called()
+
+    def test_source_and_initial_target_mount_must_match_capture(self):
+        for service in [self.source,self.target]:
+            with self.subTest(service=service['id']):
+                actual_output = self.output
+                def output(args, **kwargs):
+                    if args == ['docker','exec',service['id'],'cat',keys.KEY_MOUNT]: return b'c'*64
+                    return actual_output(args,**kwargs)
+                try:
+                    with patch.object(keys.subprocess,'check_output',side_effect=output), patch.object(keys.subprocess,'run') as run:
+                        with self.assertRaisesRegex(ValueError,'mounted key differs from captured host bytes'):
+                            self.prepare()
+                        run.assert_not_called()
+                finally:
+                    for file in self.destination.iterdir(): file.unlink()
+        self.prepare()
+        self.assertIn(['docker','exec',self.source['id'],'cat',keys.KEY_MOUNT],self.calls)
+        self.assertIn(['docker','exec',self.target['id'],'cat',keys.KEY_MOUNT],self.calls)
+
+    def test_existing_key_intent_does_not_require_a_running_target(self):
+        plan = self.prepare();actual_output = self.output
+        def output(args, **kwargs):
+            if args == ['docker','exec',self.target['id'],'cat',keys.KEY_MOUNT]: self.fail('Interrupted target was read before restart')
+            return actual_output(args,**kwargs)
+        with patch.object(keys.subprocess,'check_output',side_effect=output):
+            self.assertEqual(self.prepare(),plan)
 
     def test_cli_refuses_unknown_action_before_transport(self):
         result = subprocess.run([sys.executable,'-I','-B',str(Path(keys.__file__).resolve()),'--unknown',str(self.destination)],capture_output=True,text=True)

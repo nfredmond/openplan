@@ -86,3 +86,36 @@ a remote or physical replacement host, all configuration and service secrets,
 external worker journals or production cutover. The previous full archive and
 worker restore records retain their original scope. Complete installation
 recovery remains open.
+
+## Mounted source bytes, October 11 follow-up
+
+The [native stale-bind fixture](source-bind-gap.json) exposes a capture gap.
+An atomic replacement changes the host file, while Docker retains the old
+bind. Earlier preparation saves the new host bytes without checking the bytes
+mounted in the source container. The synthetic fixture reproduces that mismatch.
+Its host file is restored in `finally`. The original source key stays unchanged.
+
+Preparation now compares host and mounted bytes through the recorded container
+ID before saving the source key. Initial target capture makes the same check.
+[Native refusal](source-bind-refusal.json) confirms the stale source bind refuses
+before a source archive is prepared. Existing-intent replay skips the initial
+target mount read so a stopped target can recover from its saved keys.
+
+[Operations tests](mounted-key-python-tests.json) pass all 115 tests.
+[Guard controls](mounted-key-guard-controls.json) include six harmless or restored
+passes and 52 deliberate assertion failures. New failures remove source capture,
+initial target capture, byte comparison or immutable-ID transport, or require a
+running target during replay. Private copies restore original bytes.
+All 45 [existing restore controls](mounted-key-existing-controls.json) also
+behave as declared.
+[Current source hashes](mounted-key-source-hashes.json) identify this correction.
+Earlier reports and source hashes above remain historical evidence.
+
+This guard reads the mounted file. It does not prove the backend loaded those
+bytes earlier, validate a concurrent root-key rotation or establish physical
+persistence after power loss. Actual decryption remains a separate canary check.
+The full archive attempt03 is still running against unchanged c6687b5a source.
+Its 360-table and one-object restoration, encrypted canary, sign-in and OWP
+reconstruction have passed; its live RLS result is still pending. It cannot
+establish acceptance of this newer patch. A new native/full candidate check and
+current CI remain required before integration.
