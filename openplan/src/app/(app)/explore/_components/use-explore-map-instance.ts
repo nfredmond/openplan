@@ -56,9 +56,15 @@ export function useExploreMapInstance() {
 
     mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
 
+    // The basemap follows the page's colour mode when the map is created
+    // (October 11, 2026). The pre-paint script has already set the class on
+    // <html>. Switching mode later keeps this basemap until the next load:
+    // a live setStyle would drop the analysis layers' data until the next
+    // result arrived.
+    const prefersLight = !document.documentElement.classList.contains("dark");
     const map = new mapboxgl.Map({
       container: mapContainerRef.current,
-      style: "mapbox://styles/mapbox/dark-v11",
+      style: prefersLight ? "mapbox://styles/mapbox/light-v11" : "mapbox://styles/mapbox/dark-v11",
       center: INITIAL_CENTER,
       zoom: INITIAL_ZOOM,
       pitch: 36,

@@ -326,10 +326,6 @@ vi.mock("@/components/operations/workspace-runtime-cue", () => ({
   WorkspaceRuntimeCue: () => <div data-testid="workspace-runtime-cue" />,
 }));
 
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: () => <div data-testid="workspace-command-board" />,
-}));
-
 // NOT mocked, deliberately: `@/components/plans/plan-detail-controls` is the
 // surface under test, and the page test that mocks it cannot prove a planner
 // reaches anything inside it.
