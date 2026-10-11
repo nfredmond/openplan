@@ -808,4 +808,34 @@ describe("GrantsPage", () => {
 
     expect(screen.queryByText(/This page could not read/i)).toBeNull();
   });
+  it("says the workspace's lead grant step once, not again inside its tab", async () => {
+    // The lead command is also a decision command. Before October 10, 2026 it
+    // printed in the header and again above the opportunity list.
+    const lead = {
+      key: "funding-windows-closing",
+      moduleKey: "grants",
+      moduleLabel: "Grants",
+      title: "Advance near-term funding windows",
+      detail: "One open funding opportunity closes within 14 days; this is the lead step.",
+      href: "/grants#funding-opportunity-opp-1",
+      tone: "warning",
+      priority: 1,
+      badges: [],
+    };
+    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValue({
+      counts: {
+        projectFundingDecisionProjects: 0,
+        projectFundingAwardRecordProjects: 0,
+        projectFundingReimbursementStartProjects: 0,
+        projectFundingReimbursementActiveProjects: 0,
+        projectFundingGapProjects: 0,
+        comparisonBackedReports: 0,
+      },
+      fullCommandQueue: [lead],
+    });
+
+    await renderPage();
+
+    expect(screen.getAllByText(/this is the lead step/)).toHaveLength(1);
+  });
 });

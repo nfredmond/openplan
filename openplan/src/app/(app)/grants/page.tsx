@@ -13,7 +13,6 @@ import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-hea
 import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
 import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
-import { GrantsWorkspaceQueueSection } from "@/components/grants/grants-workspace-queue-section";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
@@ -754,10 +753,14 @@ export default async function GrantsPage({
       href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId, invoiceById),
     }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
-  const leadReimbursementCommand = grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null;
-  const leadAwardCommand = grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null;
-  const leadDecisionCommand = grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null;
-  const leadSourcingCommand = grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null;
+  // A tab repeats the header's "Where to start" only when it names a
+  // different step; the same sentence twice on one screen was noise.
+  const unlessLead = <T extends { key: string }>(command: T | null) =>
+    command && command.key === leadGrantsCommand?.key ? null : command;
+  const leadReimbursementCommand = unlessLead(grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null);
+  const leadAwardCommand = unlessLead(grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null);
+  const leadDecisionCommand = unlessLead(grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null);
+  const leadSourcingCommand = unlessLead(grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null);
   const leadModelingCommand = grantsQueue.find((item) => isGrantsModelingCommand(item)) ?? null;
   const opportunityLinkedModelingProjects = projectOptions
     .map((project) => {
@@ -852,7 +855,6 @@ export default async function GrantsPage({
               ) : null
             }
           />
-          <GrantsWorkspaceQueueSection grantsQueue={grantsQueue} />
           <GrantsProgramCatalogSection
             trackedTitles={trackedOpportunityTitles}
             workspaceJurisdiction={workspaceJurisdiction}
