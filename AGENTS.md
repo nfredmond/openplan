@@ -157,8 +157,10 @@ Follow the [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.
 OpenPlan has zero users as of September 7, 2026. Ship useful, honestly limited
 increments. The full twelve-journey assessment does not block every pre-v1 release;
 retain its partial outcomes and require relevant evidence for each shipped claim.
-Vercel is inactive and hosted deployment deferred. Local checks govern local
-operation; do not troubleshoot or provision paid hosting as a release prerequisite.
+Nathaniel authorizes hosted operation on October 10, 2026. The
+[public cutover record](docs/ops/HOSTED_LIVE_2026-10-11.md) governs that installation's
+dated evidence and limits. Local checks still govern local operation; paid hosting
+is not a prerequisite for independently installed development releases.
 
 Keep one dependable main. Commit and push verified checkpoints, inspect GitHub
 CI separately, and preserve unrelated work. A push is not a passing release.
