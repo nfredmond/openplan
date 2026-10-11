@@ -1,0 +1,41 @@
+{
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "buildId": "tzACilpmH3AJLJJ3QduUw",
+  "desktop": {
+    "coverage": {
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "geometryType": "Polygon",
+      "method": "POST",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    },
+    "documentWidth": 1280,
+    "errors": [],
+    "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "width": 1280
+  },
+  "mobile": {
+    "width": 390,
+    "documentWidth": 390,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "savedOaklandSourceVisible": true,
+    "zeroRunsVisible": true,
+    "errors": []
+  },
+  "modelId": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "projectId": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+  "limits": [
+    "Engineering fixture with published schedule presence, not measured operations or scientific acceptance.",
+    "Future-only console collection on this model page. No model run launched.",
+    "390 CSS pixel layout with desktop user agent."
+  ]
+}

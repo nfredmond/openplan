@@ -1,0 +1,19 @@
+{
+  "unit": "openplan-gtfs-full-candidate-checks-20261010-01",
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "result": "oom-kill",
+  "constraint": "CONSTRAINT_MEMCG",
+  "memoryPeakBytes": 1073741824,
+  "memoryLimitBytes": 1073741824,
+  "seconds": 237.537,
+  "passedChecks": [
+    "lint",
+    "deadcode"
+  ],
+  "unfinishedChecks": [
+    "full Vitest regression",
+    "provider connector",
+    "dependency audit"
+  ],
+  "boundary": "Service cgroup limit failure during full test collection, not a test assertion or host-wide OOM. App remains running. Original logs and partial records retained."
+}

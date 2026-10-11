@@ -1,0 +1,61 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "expected": "positive",
+      "exitCode": 0,
+      "failedTests": [],
+      "seconds": 5.878
+    },
+    {
+      "case": "harmless-comment",
+      "expected": "positive",
+      "exitCode": 0,
+      "failedTests": [],
+      "seconds": 5.882
+    },
+    {
+      "case": "private-blanket-crosses-public",
+      "expected": "broken",
+      "exitCode": 1,
+      "failedTests": [
+        "a policy without a grant is a locked door retired translation row policies never authorize direct client writes",
+        "a policy without a grant is a locked door grants every command its permissive policies promise a signed-in user",
+        "a policy without a grant is a locked door lets a planner read and mark read their own reminders, and nothing more",
+        "public grant inventory schema scope ignores private blanket statements and retains public schema lists",
+        "public grant inventory schema scope replays private revokes without removing a public table's grant"
+      ],
+      "seconds": 5.897
+    },
+    {
+      "case": "private-named-enters-public",
+      "expected": "broken",
+      "exitCode": 1,
+      "failedTests": [
+        "public grant inventory schema scope keeps public and unqualified named tables without absorbing private tables",
+        "public grant inventory schema scope replays private revokes without removing a public table's grant"
+      ],
+      "seconds": 5.951
+    },
+    {
+      "case": "public-blanket-is-lost",
+      "expected": "broken",
+      "exitCode": 1,
+      "failedTests": [
+        "public grant inventory schema scope ignores private blanket statements and retains public schema lists",
+        "public grant inventory schema scope replays private revokes without removing a public table's grant",
+        "client grants compose back to the audited posture reads the statement shapes the migration corpus actually contains"
+      ],
+      "seconds": 5.775
+    },
+    {
+      "case": "restored",
+      "exitCode": 0
+    }
+  ],
+  "restoredSourceSha256": "489292672ae19c54cff44eb1e287a063fdc4df2cc130530e9c8e91d031558192",
+  "limits": [
+    "Static audit of public table privileges only. Private table privileges, search_path changes, dynamically computed schema names and live row filtering require separate checks.",
+    "Targeted source mutations exercise the actual parser and regression tests. All source edits restored in finally."
+  ]
+}

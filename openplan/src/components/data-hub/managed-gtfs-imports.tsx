@@ -85,7 +85,7 @@ function VersionView({ version, controller, readOnly, deciding, report }: { vers
    {review.isCurrent ? <p>This version is currently in use.</p> : <button type="button" className={button} disabled={readOnly || deciding || view.loading || (review.materialShrinkage && !accept)} onClick={() => {
     void controller.decide({ operation: "adopt", commandId: crypto.randomUUID(), versionId: version.versionId, basis: review.basis, acceptMaterialShrinkage: accept }).then(() => { setView(previous => ({ ...previous, loading: true })); return reload(); }).catch(report);
    }}>Use this reviewed version</button>}
-   <p className="text-muted-foreground">A changed predecessor requires a new review. A recorded historical command does not prove which version is in use now.</p>
+   <p className="text-muted-foreground">A changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.</p>
   </div>}
   <button type="button" className={button} disabled={view.loading} onClick={() => { setView(previous => ({ ...previous, loading: true })); void reload(); }}>Read version again</button>
   {!readOnly && status && !terminal && <CancelRequest requestId={status.requestId} controller={controller} disabled={deciding} report={report} />}
@@ -110,8 +110,8 @@ function Job({ job, controller, readOnly, busy, maxUploadBytes, open, report }: 
   <div className="flex flex-wrap gap-2">
    <button type="button" className={button} disabled={busy} onClick={() => void controller.refresh(job.request.requestId)}>Check progress</button>
    {status && <button type="button" className={button} onClick={() => open(status.feedId, status.versionId)}>Open version</button>}
-   {!readOnly && !terminal && <button type="button" className={button} disabled={busy} onClick={() => void controller.recover(job.request.requestId).catch(report)}>Recover saved input</button>}
-   <button type="button" className={button} disabled={busy} onClick={() => { try { controller.dismissRequest(job.request.requestId); } catch (error) { report(error); } }}>Remove browser record</button>
+   {!readOnly && !terminal && <button type="button" className={button} disabled={busy} onClick={() => void controller.recover(job.request.requestId).catch(report)}>Recover saved request</button>}
+   <button type="button" className={button} disabled={busy} onClick={() => { try { controller.dismissRequest(job.request.requestId); } catch (error) { report(error); } }}>Remove from this browser</button>
   </div>
   {!readOnly && !status && !cancelled && <div className="space-y-2 text-sm">
    <p>Recover the server&apos;s saved input first. If it is unavailable, resupply the exact original input with this request UUID.</p>
@@ -119,7 +119,7 @@ function Job({ job, controller, readOnly, busy, maxUploadBytes, open, report }: 
    <button type="button" className={button} disabled={busy || (intent.source === "upload" && !file)} onClick={() => {
     if (file && file.size > maxUploadBytes) { report(new Error("The original ZIP exceeds this installation's upload limit. Nothing was sent.")); return; }
     void controller.resupply(job.request.requestId, file).catch(report);
-   }}>Resupply original input</button>
+   }}>Send original request again</button>
   </div>}
   {!readOnly && !terminal && <CancelRequest requestId={job.request.requestId} controller={controller} disabled={busy} report={report} />}
   {status?.state === "failed" && <p className="text-sm">This version remains failed. Start a new import to try processing again; its bytes and identity stay separate.</p>}
@@ -153,20 +153,20 @@ export const ManagedGtfsImports = forwardRef<ManagedGtfsImportsHandle, { scope: 
  return <section className="mt-5 space-y-3" aria-label="Managed transit imports" data-testid="gtfs-managed-imports">
   <h3 className="font-semibold">Import progress and completed-version review</h3>
   <p className="text-sm text-muted-foreground">Imports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.</p>
-  <p className="text-sm text-muted-foreground">This browser retains request and command identities for this installation, workspace and account. Removing a browser record does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.</p>
+  <p className="text-sm text-muted-foreground">This browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.</p>
   {(error || snapshot.error) && <p role="alert" className="module-note text-sm">{error ?? snapshot.error}</p>}
   {!controller && !error && <p className="text-sm">Reading retained import history</p>}
   {controller && <>
    <ul className="space-y-3">{snapshot.jobs.map(job => <Job key={job.request.requestId} job={job} controller={controller} readOnly={readOnly} busy={snapshot.busy.length > 0} maxUploadBytes={maxUploadBytes} open={open} report={report} />)}</ul>
-   {snapshot.jobs.length === 0 && !snapshot.error && <p className="text-sm text-muted-foreground">This browser has no retained transit requests for this account. Workspace versions below remain separately readable.</p>}
-   {versions.length > 0 && <label className="block space-y-2 text-sm font-semibold">Open a recent workspace version<select className="block w-full rounded-md border border-border bg-background p-2 font-normal" value={selection && versions.some(version => version.versionId === selection.versionId) ? selection.versionId : ""} onChange={event => setSelection(versions.find(version => version.versionId === event.target.value) ?? null)}><option value="">Select a version</option>{versions.map(version => <option key={version.versionId} value={version.versionId}>{version.label}: {version.versionId.slice(0, 8)}</option>)}</select></label>}
+   {snapshot.jobs.length === 0 && !snapshot.error && <p className="text-sm text-muted-foreground">This browser has no retained transit requests for this account. Saved versions below remain separately readable.</p>}
+   {versions.length > 0 && <label className="block space-y-2 text-sm font-semibold">Open a recent version<select className="block w-full rounded-md border border-border bg-background p-2 font-normal" value={selection && versions.some(version => version.versionId === selection.versionId) ? selection.versionId : ""} onChange={event => setSelection(versions.find(version => version.versionId === event.target.value) ?? null)}><option value="">Select a version</option>{versions.map(version => <option key={version.versionId} value={version.versionId}>{version.label}: {version.versionId.slice(0, 8)}</option>)}</select></label>}
    {selection && <VersionView key={`${selection.feedId}:${selection.versionId}`} version={selection} controller={controller} readOnly={readOnly} deciding={snapshot.busy.length > 0} report={report} />}
    {snapshot.decisions.length > 0 && <div className="space-y-2"><h4 className="font-semibold">Retained decisions</h4><ul className="space-y-2">{snapshot.decisions.map(item => <li key={item.decision.commandId} className="module-subpanel space-y-2 text-sm">
     <p>{item.decision.operation === "adopt" ? "Adoption" : "Cancellation"}. {item.state === "confirmed" ? "Exact command receipt confirmed in this session." : item.state === "unchecked" ? "Receipt has not been checked in this session." : "Command acknowledgement unconfirmed."}</p>
     <p className="text-xs text-muted-foreground">Command {item.decision.commandId}</p>
     <p>{item.decision.operation === "adopt" ? `Version ${item.decision.versionId}. Reviewed ${item.decision.basis.routeCount} routes and ${item.decision.basis.stopCount} stops.` : `Request ${item.decision.requestId}. Reason: ${item.decision.reason}`}</p>
     {item.error && <p role="alert">{item.error}</p>}
-    <div className="flex flex-wrap gap-2"><button type="button" className={button} disabled={readOnly || snapshot.busy.length > 0} onClick={() => void controller.decide(item.decision).catch(report)}>Replay exact command</button><button type="button" className={button} disabled={snapshot.busy.length > 0} onClick={() => { try { controller.dismissDecision(item.decision.commandId); } catch (failure) { report(failure); } }}>Remove browser decision record</button></div>
+    <div className="flex flex-wrap gap-2"><button type="button" className={button} disabled={readOnly || snapshot.busy.length > 0} onClick={() => void controller.decide(item.decision).catch(report)}>Replay exact command</button><button type="button" className={button} disabled={snapshot.busy.length > 0} onClick={() => { try { controller.dismissDecision(item.decision.commandId); } catch (failure) { report(failure); } }}>Remove decision from this browser</button></div>
    </li>)}</ul></div>}
   </>}
  </section>;

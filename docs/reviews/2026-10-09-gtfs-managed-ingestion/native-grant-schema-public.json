@@ -1,0 +1,12 @@
+{
+  "database": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "actualPrivileges": {
+    "workNotificationsRead": true,
+    "translationRead": true,
+    "privateExecutionsRead": false,
+    "privateExecutionsWrite": false
+  },
+  "limits": [
+    "Selected live PostgreSQL table privileges, separate from row policy outcomes and a static migration audit."
+  ]
+}
