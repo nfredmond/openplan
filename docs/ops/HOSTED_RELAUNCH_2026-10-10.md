@@ -19,6 +19,9 @@ OpenPlan remains free software without subscription or entitlement gates.
 - Supabase project `lolckycpdjsgeejsmuzl` has all 399 migrations through
   `20261016000027`. No historical user or client data is imported.
   All ten artifact buckets are private.
+  The organization `ubtudgixoqdghuvtfpem` has an active Pro subscription.
+  Both OpenPlan and `nat-ford-website` belong to this organization and inherit
+  that plan. Billing and project membership are verified on October 10.
 - Public email signup retains confirmation. Resend custom SMTP sends from
   `OpenPlan <openplan@natfordplanning.com>`. A synthetic signup confirmation
   arrives. Confirmation callback and password reset completion remain pending.
@@ -91,8 +94,12 @@ co-locates AequilibraE and ActivitySim on one persistent volume, with separate
 Python environments. Their existing artifact handoffs require shared local
 bytes. Two services with separate filesystems cannot substitute for this.
 Application queues have a separate persistent journal volume and Chromium for
-report rendering. Live job execution and recovery acceptance remain pending at
-this checkpoint. See the [model host guide](../../workers/hosted-models/DEPLOY.md)
+report rendering. A synthetic campaign review completes through the live queue
+on staged build `faa20d5`, retaining PDF, XLSX and ZIP artifacts. Downloads match
+their recorded digests; the PDF's three pages render. The owner can download;
+a second workspace receives 404 and an anonymous caller receives 401.
+Live model execution and recovery acceptance remain pending at this checkpoint.
+See the [model host guide](../../workers/hosted-models/DEPLOY.md)
 and [application queue guide](../../workers/hosted-node/DEPLOY.md).
 
 The workspace alerts at $25 compute usage and stops at $40. Railway's Pro plan
@@ -105,3 +112,15 @@ log punctuation change passes. Changing an unexpected child exit to return
 success fails the corresponding test; the original source passes after restore.
 These tests do not establish database recovery, model validity or rendered PDF
 fidelity. The existing CI jobs now run them without adding another heavy job.
+
+## Published evidence packaging
+
+Staged model cards report unavailable evidence when Vercel omits repository-root
+study files. Next tracing now starts at the repository root and includes each
+of the four frozen studies on `/models` and its corresponding artifact route.
+The studies and their hash checks are unchanged. Five focused files pass 28
+tests and configuration lint passes. Hosted card and download verification
+remains required after this packaging change deploys.
+
+The Nat Ford website agent owns its checkout and `/openplan` redirect. This
+agent does not change that project's routes or deployments concurrently.
