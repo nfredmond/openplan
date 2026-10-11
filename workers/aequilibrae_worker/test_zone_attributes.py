@@ -10,6 +10,7 @@ consumes it, and every path that yields no table yields a REASON with it.
 Run: python3 workers/aequilibrae_worker/test_zone_attributes.py
 """
 import os
+import copy
 import sys
 import types
 
@@ -144,6 +145,34 @@ def test_supplied_demographics_are_read_with_their_provenance():
     # Which key paid for the read is provenance the run must be able to state.
     assert note["key_origin"] == "workspace", note
     assert note["vintage"] == "2023", note
+
+
+def test_app_nested_table_result_preserves_demographics_and_equity():
+    # prepareZoneAttributeHandoff serializes the source result unchanged. Its
+    # supplied union member keeps the table under `table`, not beside status.
+    payload = copy.deepcopy(SUPPLIED_PAYLOAD)
+    for name, flat in payload["tables"].items():
+        payload["tables"][name] = {
+            "status": flat.pop("status"),
+            "table": flat,
+        }
+    for name in ("demographics", "equity"):
+        rows, note = dp.supplied_measure_table(payload, name)
+        assert rows is not None, f"app {name} table was rejected: {note}"
+        old_rows, old_note = dp.supplied_measure_table(SUPPLIED_PAYLOAD, name)
+        assert rows == old_rows, (name, rows)
+        assert note == old_note, (name, note)
+    assert rows["06057000100"]["lowIncomeUniverse"] == 900
+
+
+def test_malformed_nested_table_cannot_fall_back_to_flat_fields():
+    for malformed in (None, [], {}, {"measures": ["population"], "rows": []}):
+        payload = copy.deepcopy(SUPPLIED_PAYLOAD)
+        payload["tables"]["demographics"]["table"] = malformed
+        rows, note = dp.supplied_measure_table(payload, "demographics")
+        assert rows is None, "malformed nested table was silently replaced"
+        assert note["status"] == "malformed", note
+        assert note["reason"], note
 
 
 def test_manifest_names_the_source_that_actually_answered():

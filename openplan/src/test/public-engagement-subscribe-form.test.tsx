@@ -87,9 +87,7 @@ describe("the email updates form", () => {
    * field is out of the tab order, out of the accessibility tree, and out of
    * reach of address autofill.
    *
-   * `-start-` rather than `-left-`: `inset-inline-start` hides it off the
-   * correct edge in a right-to-left page, where a negative `left` extends the
-   * scrollable area instead.
+   * Clip the field in place; large offsets expand right-to-left page overflow.
    */
   it("keeps the spam honeypot out of a keyboard user's way", () => {
     const { container } = render(<PublicSubscribeForm shareToken="share-token-12345" />);
@@ -99,7 +97,7 @@ describe("the email updates form", () => {
     expect(honeypot.tabIndex).toBe(-1);
     expect(honeypot.getAttribute("autocomplete")).toBe("off");
     expect(honeypot.closest('[aria-hidden="true"]')).not.toBeNull();
-    expect(honeypot.closest("div")?.className).toContain("-start-[9999px]");
+    expect(honeypot.closest("div")).toHaveClass("sr-only");
 
     // And it is not what `getByLabelText` finds for the real field.
     expect(screen.getByLabelText(EN_PORTAL_MESSAGES["portal.subscribeEmailLabel"])).not.toBe(honeypot);

@@ -324,6 +324,13 @@ def sb_post_artifact(payload: dict) -> None:
             return writer.record_artifact(payload)
         except Exception as error:
             raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
+    if os.environ.get("OPENPLAN_HOSTED_ARTIFACT_MIRROR") == "1":
+        import model_hosted_artifacts
+        try:
+            model_hosted_artifacts.mirror_registered(Path(ACTIVITYSIM_WORK_DIR).parent, payload,
+                model_hosted_artifacts.configured_upload)
+        except Exception:
+            raise WorkerStateWriteUnconfirmed("Hosted artifact mirror unconfirmed; retain original files before recovery") from None
     _confirmed_record_insert("model_run_artifacts", payload)
 
 

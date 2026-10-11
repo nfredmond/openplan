@@ -77,9 +77,10 @@ adopt a plan or submit a reimbursement claim are separate actions.
 
 Local checks continue to govern independent installation. Hosted changes also
 require checks against the identified Vercel build and managed database,
-including runtime logs and affected authenticated workflows. Automatic Git
-deployments remain disabled in `openplan/vercel.json`; publish a verified commit
-explicitly. The canonical hosted address is `https://openplan-zeta.vercel.app`.
+including runtime logs and affected authenticated workflows. Automatic Git deployments are enabled for `main` in
+`openplan/vercel.json`. The hosted project requires the selected GitHub checks
+before assigning production domains. Apply additive database migrations before
+promoting a build that needs them; deployment does not migrate the database. The canonical hosted address is `https://openplan-zeta.vercel.app`.
 Production-health polling requires an explicit target. Hosting acceptance does
 not establish complete v1, scientific accuracy, practitioner acceptance or
 agency adoption. Keep those evidence boundaries visible.

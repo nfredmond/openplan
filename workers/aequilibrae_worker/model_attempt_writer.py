@@ -3,6 +3,7 @@ from contextlib import closing, contextmanager
 from contextvars import ContextVar
 from pathlib import Path
 import json
+import os
 import sqlite3
 import threading
 import uuid
@@ -629,6 +630,13 @@ class AttemptWriter:
                 raise ValueError('Managed output crosses workspace scope')
             if stage_id is not None and stage_id != ctx.stage_id:
                 raise ValueError('Managed output crosses stage scope')
+            if (operation == 'write_model_attempt_artifact' and payload.get('file_url', '').startswith('local://')
+                    and os.environ.get('OPENPLAN_HOSTED_ARTIFACT_MIRROR') == '1'):
+                if self.files is None or self.files.root.name != 'runs':
+                    raise ValueError('Hosted mirror requires a retained run workspace')
+                import model_hosted_artifacts
+                model_hosted_artifacts.mirror_registered(self.files.root.parent,
+                    {**payload, 'stage_id': ctx.stage_id}, model_hosted_artifacts.configured_upload)
             payload.pop('run_id')
             payload.pop('stage_id', None)
             if operation == 'write_model_attempt_artifact':

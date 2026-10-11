@@ -229,7 +229,7 @@ export function TrafficVolumeMap({
   return (
     <div className="relative rounded-[0.5rem] border border-border/70 overflow-hidden bg-zinc-900">
       {/* Header */}
-      <div className="absolute top-3 left-3 z-10 rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-2.5 shadow-lg border border-white/10">
+      <div className="absolute top-3 left-3 z-10 max-w-[calc(100%_-_4rem)] rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-2.5 shadow-lg border border-white/10">
         <p className="text-label font-semibold text-zinc-400">
           Traffic assignment results
         </p>
@@ -251,7 +251,7 @@ export function TrafficVolumeMap({
       </div>
 
       {/* Legend: the same fixed classes the lines are drawn with. */}
-      <div className="absolute bottom-4 left-3 z-10 rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-3 shadow-lg border border-white/10">
+      <div className="absolute bottom-4 left-3 z-10 max-w-[calc(100%_-_1.5rem)] rounded-xl bg-zinc-900/90 backdrop-blur px-4 py-3 shadow-lg border border-white/10">
         <p className="mb-1.5 text-label font-semibold text-zinc-300">Daily volume, passenger-car equivalents</p>
         <ul className="space-y-1">
           {TRAFFIC_VOLUME_CLASSES.map((entry) => (
