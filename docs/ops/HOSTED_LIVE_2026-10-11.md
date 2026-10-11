@@ -167,7 +167,10 @@ page even though the document reports no horizontal overflow. The tab panel uses
 phone width. The final handoff adds the existing `minmax(0, 1fr)` column utility
 to this page and its saved-result list and rows. The first rendered correction
 fixes the outer page but still exposes nested table clipping, so both levels are
-constrained. Its identified-build browser recheck belongs in the final acceptance
+constrained. A joined light-theme review also finds that a long project name
+expands the Corridor Analysis project controls beyond their panel. The final
+handoff constrains the controls and selector so links wrap within the panel.
+Their identified-build browser rechecks belong in the final acceptance
 artifact; document width alone does not prove readable content.
 
 The synthetic public campaign is closed and its share token is revoked after
