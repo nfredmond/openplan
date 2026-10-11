@@ -22,19 +22,19 @@ describe("GettingStartedCard", () => {
     renderCard(true);
 
     expect(screen.getByTestId("checklist-content")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Hide this checklist/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Hide checklist/ })).toBeInTheDocument();
   });
 
   it("hides on dismiss, persists the choice, and leaves a permanent way back", () => {
     renderCard(true);
 
-    fireEvent.click(screen.getByRole("button", { name: /Hide this checklist/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Hide checklist/ }));
 
     expect(screen.queryByTestId("checklist-content")).not.toBeInTheDocument();
     expect(window.localStorage.getItem(KEY)).toBe("1");
 
     // The re-entry link is right there, and it works.
-    fireEvent.click(screen.getByRole("button", { name: /Getting started/ }));
+    fireEvent.click(screen.getByRole("button", { name: /Setup checklist/ }));
     expect(screen.getByTestId("checklist-content")).toBeInTheDocument();
     expect(window.localStorage.getItem(KEY)).toBeNull();
   });
@@ -44,7 +44,7 @@ describe("GettingStartedCard", () => {
     renderCard(true);
 
     expect(screen.queryByTestId("checklist-content")).not.toBeInTheDocument();
-    expect(screen.getByRole("button", { name: /Getting started/ })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Setup checklist/ })).toBeInTheDocument();
   });
 
   it("cannot be dismissed while the home geography is unset, even with a stored dismissal", () => {
@@ -55,7 +55,7 @@ describe("GettingStartedCard", () => {
     renderCard(false);
 
     expect(screen.getByTestId("checklist-content")).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: /Hide this checklist/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Hide checklist/ })).not.toBeInTheDocument();
   });
 
   it("scopes the stored dismissal to the user and workspace", () => {

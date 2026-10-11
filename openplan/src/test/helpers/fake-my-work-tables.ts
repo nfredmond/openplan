@@ -172,7 +172,9 @@ type Filter =
   | { kind: "neq"; column: string; value: unknown }
   | { kind: "notNull"; column: string }
   | { kind: "notIn"; column: string; values: string[] }
-  | { kind: "or"; clauses: string[] };
+  | { kind: "or"; clauses: string[] }
+  /** Date bounds compare as strings, as ISO dates and timestamps do in PostgREST. */
+  | { kind: "range"; column: string; op: "lt" | "gte" | "lte"; value: string };
 
 /** `col.is.null` / `col.not.in.(a,b)` — the only two shapes the loader builds. */
 function evaluateOrClause(clause: string, row: Row): boolean {
@@ -230,6 +232,18 @@ function runQuery(
       }
       if (filter.kind === "notIn") {
         if (filter.values.includes(String(row[filter.column]))) {
+          dropped = true;
+          break;
+        }
+        continue;
+      }
+      if (filter.kind === "range") {
+        const cell = row[filter.column];
+        const value = typeof cell === "string" ? cell : null;
+        const keep =
+          value !== null &&
+          (filter.op === "lt" ? value < filter.value : filter.op === "gte" ? value >= filter.value : value <= filter.value);
+        if (!keep) {
           dropped = true;
           break;
         }
@@ -326,6 +340,18 @@ export function createFakeSupabase(db: Db, failures: Record<string, string> = {}
             },
             or(filter: string) {
               filters.push({ kind: "or", clauses: splitTopLevel(filter) });
+              return builder;
+            },
+            lt(column: string, value: string) {
+              filters.push({ kind: "range", column, op: "lt", value });
+              return builder;
+            },
+            gte(column: string, value: string) {
+              filters.push({ kind: "range", column, op: "gte", value });
+              return builder;
+            },
+            lte(column: string, value: string) {
+              filters.push({ kind: "range", column, op: "lte", value });
               return builder;
             },
             order(column: string, options?: { ascending?: boolean }) {

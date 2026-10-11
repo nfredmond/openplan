@@ -3,11 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Check, SlidersHorizontal } from "lucide-react";
 
-import {
-  DASHBOARD_CHARTS,
-  DEFAULT_DASHBOARD_CHART_IDS,
-  type DashboardChartId,
-} from "@/lib/dashboard/chart-catalog";
+import { DASHBOARD_CHARTS, type DashboardChartId } from "@/lib/dashboard/chart-catalog";
 
 /**
  * "Choose your figures" — the control that decides which charts the dashboard
@@ -71,7 +67,7 @@ export function DashboardChartPicker({
         className="flex items-center gap-1.5 rounded-lg border border-border/70 bg-background/70 px-3 py-1.5 text-xs font-semibold text-muted-foreground transition-colors hover:text-foreground"
       >
         <SlidersHorizontal className="h-3.5 w-3.5" aria-hidden="true" />
-        Choose figures
+        Choose charts
         <span className="tabular-nums text-foreground">
           {selected.length}/{DASHBOARD_CHARTS.length}
         </span>
@@ -92,8 +88,7 @@ export function DashboardChartPicker({
           className="absolute right-0 z-50 mt-2 w-[17.5rem] rounded-2xl border border-border/70 bg-card p-3 shadow-lg sm:w-[22rem]"
         >
           <p className="px-1 pb-2 text-xs leading-5 text-muted-foreground">
-            Pick the figures you want on this dashboard. Your choice is remembered in this
-            browser — sign in somewhere else and you will pick again.
+            Your choice is kept in this browser.
           </p>
           <ul className="space-y-1">
             {DASHBOARD_CHARTS.map((chart) => {
@@ -141,7 +136,7 @@ export function DashboardChartPicker({
             </button>
             <button
               type="button"
-              onClick={() => onChange([...DEFAULT_DASHBOARD_CHART_IDS])}
+              onClick={() => onChange(DASHBOARD_CHARTS.map((chart) => chart.id))}
               className="rounded-lg px-2 py-1 text-label font-semibold text-muted-foreground hover:text-foreground"
             >
               Show all

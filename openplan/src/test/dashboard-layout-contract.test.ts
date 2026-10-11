@@ -72,11 +72,19 @@ describe("dashboard layout contracts", () => {
     expect(ruleBody(condensed, ".op-cart-hdr__spacer")).toMatch(/display:\s*none/);
   });
 
-  it("gives the overview one 1.5rem stack and top-aligns its two dashboard cards", () => {
-    expect(dashboard).toContain('className="dashboard-overview-stack"');
-    expect(dashboard).toContain('"dashboard-command-grid"');
-    expect(ruleBody(globals, ".dashboard-overview-stack")).toMatch(/gap:\s*1\.5rem/);
-    expect(ruleBody(globals, ".dashboard-command-grid")).toMatch(/align-items:\s*start/);
+  it("puts Needs you and Coming up side by side on wide screens, top-aligned", () => {
+    // October 10, 2026 (docs/reviews/2026-10-10-ui-overhaul/PLAN.md, section 3):
+    // the two lists that answer "what do I owe" lead the page together.
+    expect(dashboard).toContain('className="dashboard-lead"');
+    expect(dashboard.indexOf("<NeedsYouList")).toBeLessThan(dashboard.indexOf("<ComingUpRail"));
+    expect(dashboard.indexOf("<ComingUpRail")).toBeLessThan(dashboard.indexOf("<DashboardInsights"));
+    const wide = balancedBlocks(globals, "@media (min-width: 1024px)").find((block) =>
+      block.includes(".dashboard-lead")
+    );
+    expect(wide, "missing the wide dashboard-lead rule").toBeDefined();
+    const lead = ruleBody(wide ?? "", ".dashboard-lead");
+    expect(lead).toMatch(/grid-template-columns:/);
+    expect(lead).toMatch(/align-items:\s*start/);
   });
 
   it("renders workflow groups as unframed compact rows with a short wide metadata column", () => {

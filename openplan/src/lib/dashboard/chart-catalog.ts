@@ -12,7 +12,7 @@
  * one of them is drawn from rows this workspace really has — there is no
  * placeholder and no sample data anywhere in this module.
  *
- * THE DEFAULT IS ALL FIVE, NEVER A BLANK SLATE. A first-time reader should see
+ * THE DEFAULT IS FOUR, NEVER A BLANK SLATE. A first-time reader should see
  * what the dashboard can do before being asked to choose; a figure with nothing
  * behind it says so in one line rather than drawing an empty axis, so five
  * "nothing here yet" sentences is an honest and short first run. Trimming is
@@ -20,18 +20,28 @@
  */
 
 /**
- * ALSO THE DISPLAY ORDER. The three half-width figures come first so they pair
- * up cleanly in a two-column grid, and the two full-width lists follow.
+ * ALSO THE DISPLAY ORDER. Since October 10, 2026 the charts sit on the main
+ * dashboard under Needs you and Coming up, so the money and the calendar come
+ * first. "Open work" was retired that day: Needs you lists the same work by
+ * name, which a bar per module only summarised.
  */
 export const DASHBOARD_CHART_IDS = [
-  "runs-per-month",
-  "comments-received",
-  "composite-scores",
   "award-drawdown",
-  "open-work",
+  "comments-received",
+  "deadlines-by-month",
+  "runs-per-month",
+  "composite-scores",
 ] as const;
 
 export type DashboardChartId = (typeof DASHBOARD_CHART_IDS)[number];
+
+/**
+ * Retired ids and what replaced them, so a stored choice that names a retired
+ * chart still shows its successor instead of nothing.
+ */
+const RETIRED_DASHBOARD_CHART_IDS: Record<string, DashboardChartId> = {
+  "open-work": "deadlines-by-month",
+};
 
 /** How the figure is drawn. The form follows the data's job, not the author's mood. */
 export type DashboardChartForm = "area" | "bars" | "rows" | "meter";
@@ -56,22 +66,39 @@ export type DashboardChartDescriptor = {
 
 export const DASHBOARD_CHARTS: readonly DashboardChartDescriptor[] = [
   {
-    id: "runs-per-month",
-    title: "Analysis runs per month",
-    question: "How much analysis are we doing?",
-    caption: "Every corridor run recorded in this workspace, by the month it was launched.",
-    form: "area",
-    valueLabel: "Runs",
-    fullWidth: false,
+    id: "award-drawdown",
+    title: "Money drawn against each award",
+    question: "How much of each award have we claimed?",
+    caption: "Invoiced to the funder (submitted, approved or paid) against the amount awarded. Drafts are not counted.",
+    form: "meter",
+    valueLabel: "Drawn",
+    fullWidth: true,
   },
   {
     id: "comments-received",
     title: "Comments coming in",
-    question: "Is the public actually responding?",
-    caption:
-      "A running total of comments across this workspace's campaigns, week by week. Hover a point to see how many arrived that week — a flat stretch means a quiet week, not a missing one.",
+    question: "Is the public responding?",
+    caption: "Running total across this workspace's campaigns, by week.",
     form: "area",
     valueLabel: "Comments so far",
+    fullWidth: false,
+  },
+  {
+    id: "deadlines-by-month",
+    title: "Deadlines by month",
+    question: "When is the work due?",
+    caption: "Dated items in Coming up for the next three months.",
+    form: "bars",
+    valueLabel: "Due",
+    fullWidth: false,
+  },
+  {
+    id: "runs-per-month",
+    title: "Corridor runs per month",
+    question: "How much analysis are we doing?",
+    caption: "Corridor Analysis runs, by the month they started.",
+    form: "area",
+    valueLabel: "Runs",
     fullWidth: false,
   },
   {
@@ -84,29 +111,15 @@ export const DASHBOARD_CHARTS: readonly DashboardChartDescriptor[] = [
     valueLabel: "Composite",
     fullWidth: false,
   },
-  {
-    id: "award-drawdown",
-    title: "Money drawn against money awarded",
-    question: "How much of each award have we actually claimed?",
-    caption:
-      "For each award, the bar is what has been invoiced to the funder — submitted, approved for payment, or paid — inside what the award authorised. Money still sitting in a draft invoice is not counted.",
-    form: "meter",
-    valueLabel: "Drawn",
-    fullWidth: true,
-  },
-  {
-    id: "open-work",
-    title: "Where the open work sits",
-    question: "What is waiting on us, and in which part of the work?",
-    caption: "Open items by area of work, from the same numbers the board above reads.",
-    form: "rows",
-    valueLabel: "Open items",
-    fullWidth: true,
-  },
 ];
 
 /** Shown to someone who has never chosen. Never empty — see the module note. */
-export const DEFAULT_DASHBOARD_CHART_IDS: readonly DashboardChartId[] = DASHBOARD_CHART_IDS;
+export const DEFAULT_DASHBOARD_CHART_IDS: readonly DashboardChartId[] = [
+  "award-drawdown",
+  "comments-received",
+  "deadlines-by-month",
+  "runs-per-month",
+];
 
 /**
  * WHERE THE CHOICE IS KEPT: this browser's local storage, keyed by user and
@@ -141,16 +154,23 @@ const SEPARATOR = ",";
  * `null` (nothing stored) means "never chosen", which is the DEFAULT set — not
  * an empty dashboard. An empty STRING is different: it is a person who
  * deliberately turned everything off, and that choice is honoured.
- * Unrecognized ids are dropped rather than rejected, so a figure retired in a
+ * A retired id maps to its successor, and a value naming nothing current falls
+ * back to the default. Unrecognized ids are dropped rather than rejected, so a figure retired in a
  * later release does not strand somebody on a blank dashboard.
  */
 export function parseDashboardChartSelection(stored: string | null): DashboardChartId[] {
   if (stored === null) return [...DEFAULT_DASHBOARD_CHART_IDS];
+  // The empty string is the one way to say "show none", and it is honoured.
+  if (stored.trim() === "") return [];
   const known = new Set<string>(DASHBOARD_CHART_IDS);
   const chosen = stored
     .split(SEPARATOR)
     .map((part) => part.trim())
+    .map((part) => RETIRED_DASHBOARD_CHART_IDS[part] ?? part)
     .filter((part): part is DashboardChartId => known.has(part));
+  // A stored value that names nothing current is not a choice to show
+  // nothing; it is a choice this release cannot read. Show the default.
+  if (chosen.length === 0) return [...DEFAULT_DASHBOARD_CHART_IDS];
   // Catalog order, not the order they were clicked: the dashboard's layout is a
   // designed sequence, and letting click order rearrange it would put a
   // full-width list between the two side-by-side time series.

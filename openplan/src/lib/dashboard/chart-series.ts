@@ -273,3 +273,58 @@ export function awardDrawdown(
 
   return series(shown, caveats.join(" "));
 }
+
+/**
+ * The award figure: money authorised across priced awards, the share drawn,
+ * and the disclosure that has to travel with it. Same counting rules as
+ * `awardDrawdown`, over every award rather than the eight largest. Null when
+ * either read failed or there is no priced award to measure against.
+ */
+export function awardDrawdownTotals(
+  awards: ChartReadOutcome<FundingAwardRow>,
+  invoices: ChartReadOutcome<AwardInvoiceRow>
+): { authorised: number; drawn: number; percent: number; disclosure: string | null } | null {
+  if (blockedRead(awards, "funding awards") || blockedRead(invoices, "invoice records")) return null;
+
+  const drawnByAward = new Map<string, number>();
+  let unattributedCount = 0;
+  for (const invoice of invoices.rows) {
+    const status = typeof invoice.status === "string" ? invoice.status : "";
+    if (!(DRAWN_INVOICE_STATUSES as readonly string[]).includes(status)) continue;
+    const amount = toAmount(invoice.amount);
+    if (amount === null) continue;
+    const awardId = typeof invoice.funding_award_id === "string" ? invoice.funding_award_id : "";
+    if (!awardId) {
+      unattributedCount += 1;
+      continue;
+    }
+    drawnByAward.set(awardId, (drawnByAward.get(awardId) ?? 0) + amount);
+  }
+
+  let authorised = 0;
+  let drawn = 0;
+  let unpriced = 0;
+  for (const award of awards.rows) {
+    const amount = toAmount(award.awarded_amount);
+    if (amount === null || amount <= 0) {
+      unpriced += 1;
+      continue;
+    }
+    authorised += amount;
+    drawn += drawnByAward.get(typeof award.id === "string" ? award.id : "") ?? 0;
+  }
+  if (authorised <= 0) return null;
+
+  const notes: string[] = [];
+  if (unpriced > 0) notes.push(`${unpriced} award${unpriced === 1 ? "" : "s"} with no amount left out`);
+  if (unattributedCount > 0) {
+    notes.push(`${unattributedCount} invoice${unattributedCount === 1 ? "" : "s"} not linked to an award`);
+  }
+  return {
+    authorised,
+    drawn,
+    percent: Math.round((drawn / authorised) * 100),
+    disclosure: notes.length > 0 ? notes.join("; ") : null,
+  };
+}
+
