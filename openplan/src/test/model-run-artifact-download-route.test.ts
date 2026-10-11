@@ -16,6 +16,9 @@ const MODEL_ID = "11111111-1111-4111-8111-111111111111";
 const MODEL_RUN_ID = "22222222-2222-4222-8222-222222222222";
 const ARTIFACT_ID = "55555555-5555-4555-8555-555555555555";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+const STAGE_ID = "66666666-6666-4666-8666-666666666666";
+const HASH = "a".repeat(64);
+const artifactSelectMock = vi.fn();
 
 const mockAudit = {
   info: vi.fn(),
@@ -37,7 +40,7 @@ const fromMock = vi.fn((table: string) => {
   }
   if (table === "model_run_artifacts") {
     return {
-      select: vi.fn(() => ({
+      select: artifactSelectMock.mockImplementation(() => ({
         eq: vi.fn(() => ({
           eq: vi.fn(() => ({
             maybeSingle: artifactMaybeSingleMock,
@@ -237,6 +240,36 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     setArtifact(`local:///srv/worker/runs/${MODEL_RUN_ID}/link_volumes.csv`);
     const res = await downloadArtifact(request(), routeContext());
     expect(res.status).toBe(404);
+    expect(readFileMock).not.toHaveBeenCalled();
+  });
+
+  it("downloads the private byte mirror while retaining the worker's local handoff reference", async () => {
+    vi.stubEnv("OPENPLAN_HOSTED_ARTIFACT_MIRROR", "1");
+    const fileUrl = `local:///srv/worker/runs/${MODEL_RUN_ID}/run_output/link_volumes.csv`;
+    setArtifact(fileUrl);
+    const artifact = (await artifactMaybeSingleMock()).data;
+    artifactMaybeSingleMock.mockResolvedValue({ data: { ...artifact, stage_id: STAGE_ID, content_hash: HASH }, error: null });
+    createSignedUrlMock.mockResolvedValue({ data: { signedUrl: "https://storage.example/signed" }, error: null });
+    const res = await downloadArtifact(request(), routeContext());
+    expect(artifactSelectMock).toHaveBeenCalledWith("id, run_id, stage_id, artifact_type, file_url, content_hash");
+    expect(createSignedUrlMock).toHaveBeenCalledWith("run-artifacts",
+      `model-runs/${MODEL_RUN_ID}/stages/${STAGE_ID}/sha256-${HASH}/link_volumes.csv`, 15 * 60, { download: true });
+    expect(res.status).toBe(307);
+    expect(readFileMock).not.toHaveBeenCalled();
+    expect(artifact.file_url).toBe(fileUrl);
+  });
+
+  it.each([
+    `local:///srv/worker/runs/99999999-9999-4999-8999-999999999999/run_output/link_volumes.csv`,
+    `local:///srv/worker/runs/${MODEL_RUN_ID}/../private.csv`,
+    `local:///srv/worker/runs/${MODEL_RUN_ID}/run_output/%2e%2e.csv`,
+  ])("refuses mirror derivation for an uncontained local reference: %s", async (fileUrl) => {
+    vi.stubEnv("OPENPLAN_HOSTED_ARTIFACT_MIRROR", "1");
+    setArtifact(fileUrl);
+    artifactMaybeSingleMock.mockResolvedValue({ data: { ...(await artifactMaybeSingleMock()).data, stage_id: STAGE_ID, content_hash: HASH }, error: null });
+    const res = await downloadArtifact(request(), routeContext());
+    expect(res.status).toBe(404);
+    expect(createSignedUrlMock).not.toHaveBeenCalled();
     expect(readFileMock).not.toHaveBeenCalled();
   });
 

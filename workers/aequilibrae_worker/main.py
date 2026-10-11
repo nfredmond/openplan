@@ -676,6 +676,12 @@ def sb_record_retained_artifact(payload: dict, *, workspace_id: str, journal_dir
     """Retain an explicit or named artifact request and stop on unconfirmed delivery."""
     import model_attempt_writer
     writer = model_attempt_writer.current()
+    if writer is None and os.environ.get("OPENPLAN_HOSTED_ARTIFACT_MIRROR") == "1":
+        import model_hosted_artifacts
+        try:
+            model_hosted_artifacts.mirror_registered(RUN_WORK_ROOT, payload, upload_verified_immutable_bytes)
+        except Exception:
+            raise WorkerStateWriteUnconfirmed("Hosted artifact mirror unconfirmed; retain original files before recovery") from None
     if writer is not None:
         try:
             return writer.record_artifact(payload, workspace_id=workspace_id, logical_name=logical_name)

@@ -20,6 +20,15 @@ export type EngagementType = (typeof ENGAGEMENT_TYPES)[number];
 export type EngagementItemStatus = (typeof ENGAGEMENT_ITEM_STATUSES)[number];
 export type EngagementItemSourceType = (typeof ENGAGEMENT_ITEM_SOURCE_TYPES)[number];
 
+// Retained timestamps must render identically during server and browser hydration.
+export function formatEngagementDateTime(value: string | null | undefined): string {
+  if (!value) return "Unknown";
+  const parsed = new Date(value);
+  return Number.isNaN(parsed.getTime())
+    ? value
+    : `${parsed.toLocaleString("en-US", { timeZone: "UTC" })} UTC`;
+}
+
 export function titleizeEngagementValue(value: string | null | undefined): string {
   if (!value) return "Unknown";
 

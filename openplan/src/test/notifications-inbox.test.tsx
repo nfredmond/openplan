@@ -1,6 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { EngagementNotificationsInbox } from "@/components/engagement/notifications-inbox";
+import { renderToStaticMarkup } from "react-dom/server";
 import type { EngagementNotificationRow } from "@/lib/notifications/engagement";
 
 function notif(overrides: Partial<EngagementNotificationRow> = {}): EngagementNotificationRow {
@@ -34,6 +35,22 @@ function markCalls(spy: { mock: { calls: unknown[][] } }): [unknown, RequestInit
 
 describe("EngagementNotificationsInbox", () => {
   afterEach(() => vi.restoreAllMocks());
+
+  it("renders initial notification timestamps identically across server and browser zones", () => {
+    const original = process.env.TZ;
+    try {
+      const markups = ["UTC", "America/Los_Angeles", "Pacific/Honolulu"].map((zone) => {
+        process.env.TZ = zone;
+        return renderToStaticMarkup(<EngagementNotificationsInbox campaignId="c1" initialNotifications={[notif()]} />);
+      });
+      expect(markups[0]).toContain("7/22/2026, 12:00:00 AM UTC");
+      expect(markups[1]).toBe(markups[0]);
+      expect(markups[2]).toBe(markups[0]);
+    } finally {
+      if (original === undefined) delete process.env.TZ;
+      else process.env.TZ = original;
+    }
+  });
 
   it("shows an empty state when there is no activity", () => {
     render(<EngagementNotificationsInbox campaignId="c1" initialNotifications={[]} />);
