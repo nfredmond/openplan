@@ -73,6 +73,8 @@ The [October 11 ZIP engine-journal integration candidate](reviews/2026-10-11-odm
 
 The [October 11 opt-in durable aerial HTTP admission candidate](reviews/2026-10-11-odm-runtime-admission/STATUS.md) preserves exact original HTTP receipts and pending work through stopped-root restoration, while holding uncertain starts. Missing original journal/seal refuses startup. Source/actor/engine stages, outputs/callback custody and full worker recovery remain open.
 
+The [October 11 owned aerial runtime preparation candidate](reviews/2026-10-11-odm-runtime-preparation/STATUS.md) binds original actor/context and task to retained local inputs and engine plans inside the actual owned runtime. Native interrupted preparation and relocated-copy recovery pass. Trusted context/URL intake, live authority, transport/results and complete worker recovery remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

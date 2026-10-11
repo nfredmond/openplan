@@ -74,3 +74,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-runtime-admission/native_recovery.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-admission-native"
+      - name: Owned runtime preparation harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-preparation-controls"
+      - name: Interrupted owned runtime preparation and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-runtime-preparation-native"
