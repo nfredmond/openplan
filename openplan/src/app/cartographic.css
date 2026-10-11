@@ -2408,26 +2408,30 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   }
 }
 
-/* Aerial and Corridor Analysis rest the rail at its icon strip at every
-   width, as Safety already did, and open it over the map on hover. */
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail {
-  width: var(--op-cart-rail-width);
-}
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) {
-  width: 240px;
-}
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__group-title,
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__tip {
-  opacity: 0;
-}
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__group-title,
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__tip {
-  opacity: 1;
-}
-body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__badge {
-  top: 5px;
-  left: 28px;
-  right: auto;
+/* Aerial and Corridor Analysis rest the rail at its icon strip on desktop,
+   as Safety already did, and open it over the map on hover. Desktop only:
+   below 721px the rail is the phone's bottom bar, and an unscoped width
+   here squeezed that bar to 60px (seen at 390px on Corridor Analysis). */
+@media (min-width: 721px) {
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail {
+    width: var(--op-cart-rail-width);
+  }
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) {
+    width: 240px;
+  }
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__group-title,
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__tip {
+    opacity: 0;
+  }
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__group-title,
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:is(:hover, :focus-within) .op-cart-rail__tip {
+    opacity: 1;
+  }
+  body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail__badge {
+    top: 5px;
+    left: 28px;
+    right: auto;
+  }
 }
 
 @media (min-width: 1024px) {
@@ -2472,10 +2476,12 @@ body:is([data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-she
    the October 10 journey on all three map pages). It now opens for keyboard
    focus (`:focus-visible`) and for the pointer, not for a mouse click's
    leftover focus. */
-body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) {
-  width: var(--op-cart-rail-width);
-  box-shadow: none;
-}
-body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) :is(.op-cart-rail__group-title, .op-cart-rail__tip) {
-  opacity: 0;
+@media (min-width: 721px) {
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) {
+    width: var(--op-cart-rail-width);
+    box-shadow: none;
+  }
+  body:is([data-map-fills-surface="true"], [data-surface-beside-map="true"], [data-page-flush="true"]) .op-cart-shell.op-cart-shell .op-cart-rail:focus-within:not(:hover):not(:has(:focus-visible)) :is(.op-cart-rail__group-title, .op-cart-rail__tip) {
+    opacity: 0;
+  }
 }
