@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
+import { gtfsManagedClientMode } from "@/lib/gtfs/managed-ui-config";
 import { TitleViServiceEquityPanel } from "@/components/data-hub/title-vi-service-equity-panel";
 import { WorkspaceGisManager } from "@/components/workspace-gis/workspace-gis-manager";
 import {
@@ -635,6 +636,8 @@ export default async function DataHubPage() {
         a client component may not read it directly.
       */}
       <GtfsIngestPanel
+        key={`${workspaceId}:${user.id}`}
+        managed={gtfsManagedClientMode(workspaceId, user.id)}
         workspaceId={workspaceId}
         maxUploadBytes={BODY_LIMITS.gtfsFeedRaw}
         today={todayIso}

@@ -4,94 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { summarizeCorridorText } from "@/lib/models/study-area";
 import { describeGtfsServiceWindow } from "@/lib/transit/feed-registry-card";
+import { ManagedGtfsImports, type ManagedGtfsImportsHandle } from "./managed-gtfs-imports";
+import type { GtfsManagedClientMode } from "@/lib/gtfs/managed-ui-config";
+import type { GtfsClientIntent } from "@/lib/gtfs/managed-client";
 
-/**
- * THE THREE DOORS INTO A TRANSIT FEED, AND WHAT THE WORKSPACE ALREADY HAS.
+/** Read workspace feeds and per-feed history through their scoped APIs. Catalog
+ * search uses geometry from the shared study-area picker and keeps each result
+ * bound to the area it answers. Server limits arrive as props.
  *
- * Nine GTFS tables existed for months with no application code touching them,
- * and the Data Hub card that described them said so. This panel is the path
- * that makes the card's new sentence true: catalog search by geography, an
- * operator's feed address, or a `.zip` upload — all three landing in the same
- * ingest through `/api/gtfs/*`.
- *
- * ==================================== WHY IT NEVER PRINTS THE POST'S COUNTS
- *
- * An ingest can partially succeed. `runGtfsIngest` writes route rows and stop
- * rows in separate statements and reports what it wrote, so a response saying
- * "412 route rows" after a `partial_write` is a truthful account of a broken
- * state that READS as a success. Every number on this panel therefore comes
- * from a RE-READ of `/api/gtfs/feeds` issued after the write settles — on
- * failure as much as on success, because after a failure is exactly when a
- * planner needs to know what is actually stored. The POST's own body is used
- * only for the things a re-read cannot recover: which failure code came back,
- * and whether the new version was adopted. Same pattern as
- * `census-tract-coverage-control.tsx`, for the same reason.
- *
- * ====================== WHY AN UPLOADED FEED HAS ITS OWN UPLOAD CONTROL
- *
- * This panel used to tell a planner "Upload a newer archive to this feed to
- * refresh it" and then give them nowhere to do it. The only upload control was
- * the door at the bottom, which sends no `feedId` — so following the sentence
- * created a SECOND `gtfs_feeds` row for the same agency, left the expired
- * version adopted on the first, and skipped the collapse check entirely
- * (nothing to compare against on a brand-new feed). `/api/gtfs/feeds/upload`
- * has accepted `?feedId=` since it shipped and verifies the feed belongs to the
- * workspace; the capability was there and the path to it was not. Each
- * upload-sourced feed now carries its own archive picker, and both it and the
- * bottom door go through ONE function, so the size ceiling and the re-read
- * cannot be implemented twice and differently.
- *
- * ==================== WHY A SEARCH RESULT IS KEYED TO THE AREA IT ANSWERS
- *
- * The result was held in state and the study area was not part of it, so a
- * planner who searched area A and then picked area B kept reading A's answer as
- * B's — including "Nothing in the catalog publishes a service area covering
- * this area", which is the one branch that is a statement about the world and
- * was then simply false. Every search now records the bounding box it was run
- * for and is rendered only while that is still the area on screen. Keying it
- * rather than clearing it on change also settles the in-flight case for free: a
- * response for the old area arrives, fails to match, and is never drawn.
- *
- * ============================ WHY THE PER-FEED INGEST HISTORY IS A SECOND READ
- *
- * `/api/gtfs/feeds` caps its version read at 200 rows across the WHOLE
- * workspace, newest first, so a workspace with several busy feeds can push an
- * older feed's attempts out of that window entirely. `/api/gtfs/feeds/[feedId]`
- * answers with up to 50 versions of ONE feed regardless of what the others are
- * doing, which is the only way a planner can see a run of failures on a quiet
- * feed. It is fetched on demand rather than on mount because most planners
- * never need it.
- *
- * ============================ WHY THE FOUR CATALOG OUTCOMES LOOK DIFFERENT
- *
- * `findGtfsFeedsForArea` answers with four statuses and three of them carry no
- * `feeds` field, precisely so a surface cannot collapse them into an empty
- * list. Collapsing them here would rebuild the lie one layer up:
- *
- *   - `catalog_unavailable` is an UNKNOWN about OpenPlan's own network, and
- *     must never be drawn as "your area has no transit".
- *   - `covered_but_unusable` means feeds DO serve this area and every one was
- *     withheld — behind a key, withdrawn, or published with no address. The
- *     agencies are named and the next move differs per reason.
- *   - `no_covering_feed` is the only branch that is a statement about the world.
- *
- * ============================================= WHY THE PICKER IS NOT REBUILT
- *
- * `StudyAreaPicker` is the app's one geography front door (product
- * non-negotiable: do not invent a second one). Its bbox is derived from the
- * GeoJSON text with `summarizeCorridorText`, NOT from `onPlaceResolved` —
- * that callback fires only for a searched place and passes `null` for a
- * hand-drawn polygon, so a planner who draws their study area would otherwise
- * get a search button that never enables.
- *
- * ================================================== WHAT IS NOT IMPORTED HERE
- *
- * `@/lib/http/body-limit` pulls `next/server` into the browser bundle and
- * `@/lib/http/outbound-url` imports `node:dns`; `@/lib/gtfs/catalog` reaches the
- * second through `fetch.ts`. The upload ceiling therefore arrives as a PROP
- * (the pattern `network-package-upload-form.tsx` already uses) and the catalog
- * shapes below are declared against the WIRE rather than imported. They are
- * narrow on purpose — this file reads what it renders and nothing more.
+ * Managed imports retain request identity, poll committed progress and require
+ * completed-version review before adoption. Legacy synchronous imports retain
+ * their response handling and re-read the registry after each attempt. Neither
+ * path uses a submission response as the source of displayed row counts.
  */
 
 /* -------------------------------------------------------------------------- */
@@ -189,7 +113,7 @@ type IngestBody = {
    * the private `gtfs-uploads` bucket since 2026-08-06, because the travel model
    * is handed the exact bytes OpenPlan parsed rather than an address the worker
    * refetches. A catalog or URL ingest whose object write missed still produces
-   * correct and complete service levels — so the ingest is `ok`, and the API has
+   * correct and complete service levels, so the ingest is `ok`, and the API has
    * been returning this flag since it shipped with NOTHING rendering it.
    *
    * That silence is the defect: the run handoff refuses such a version by name,
@@ -211,7 +135,7 @@ type RegistryState =
       caveatsByFeedId: Record<string, string[]>;
     };
 
-/** What the last write said. Never carries a row count — see the header. */
+/** What the last write said. Never carries a row count, see the header. */
 type Outcome = {
   tone: "ok" | "warn" | "bad";
   headline: string;
@@ -237,7 +161,7 @@ type HistoryState =
 /**
  * The bounding box a search answers about, as one comparable string.
  *
- * A search result is only true of the area it was run for — see the header.
+ * A search result is only true of the area it was run for, see the header.
  * Null when the drawn geometry is not usable, which is also a mismatch, so a
  * result cannot survive the area becoming unreadable either.
  */
@@ -273,7 +197,7 @@ function describeWithheldReason(withheld: WithheldFeed): string {
     case "superseded":
       return (
         "The catalog has withdrawn this entry. It usually names a replacement, and OpenPlan follows that " +
-        "redirect automatically when the entry is ingested — so this agency may still be reachable."
+        "redirect automatically when the entry is ingested, so this agency may still be reachable."
       );
     case "requires_api_key":
       return (
@@ -314,11 +238,11 @@ function disclosureLines(disclosure: CatalogDisclosure): string[] {
   }
   if (disclosure.entriesWithNoPublishedServiceAreaAnywhere > 0) {
     // DELIBERATE WORDING. This counter is worldwide and whole-catalog. Calling
-    // it "near you" would invent a relationship the data does not have — the
+    // it "near you" would invent a relationship the data does not have, the
     // exact sentence the field was renamed to prevent.
     lines.push(
       `${disclosure.entriesWithNoPublishedServiceAreaAnywhere} feeds anywhere in the worldwide catalog publish no service ` +
-        "area at all, so they could not be matched against any area — including this one. That is a catalog-wide " +
+        "area at all, so they could not be matched against any area, including this one. That is a catalog-wide " +
         "count, not a count of feeds near this area."
     );
   }
@@ -334,6 +258,7 @@ export function GtfsIngestPanel({
   maxUploadBytes,
   today,
   readOnly = false,
+  managed = { enabled: false },
 }: {
   workspaceId: string;
   /** `BODY_LIMITS.gtfsFeedRaw`, threaded from the server. See the header. */
@@ -342,7 +267,9 @@ export function GtfsIngestPanel({
   today: string;
   /** Viewers may search the public catalog and may not write. */
   readOnly?: boolean;
+  managed?: GtfsManagedClientMode;
 }) {
+  const managedRef = useRef<ManagedGtfsImportsHandle>(null);
   const [registry, setRegistry] = useState<RegistryState>({ status: "loading" });
   const [door, setDoor] = useState<Door>("catalog");
   const [outcome, setOutcome] = useState<Outcome | null>(null);
@@ -376,7 +303,7 @@ export function GtfsIngestPanel({
    */
   const openHistoryRef = useRef<string | null>(null);
 
-  // The bbox comes from the GeoJSON, never from `onPlaceResolved` — see header.
+  // The bbox comes from the GeoJSON, never from `onPlaceResolved`, see header.
   const bbox = useMemo(() => {
     const summary = summarizeCorridorText(corridorText);
     return summary.valid && summary.bbox ? summary.bbox : null;
@@ -388,7 +315,7 @@ export function GtfsIngestPanel({
    * THE SEARCH STATE, BUT ONLY WHILE IT STILL ANSWERS THE AREA ON SCREEN.
    *
    * A result computed for another bounding box is not a weaker answer about
-   * this one, it is an answer to a different question — so it is not softened,
+   * this one, it is an answer to a different question, so it is not softened,
    * it is not shown. Deriving this rather than clearing state on change keeps
    * one source of truth and makes a late response for the previous area
    * harmless.
@@ -478,20 +405,16 @@ export function GtfsIngestPanel({
       return;
     }
 
-    // THE ARCHIVE WAS NOT KEPT. Reported as a WARNING on an otherwise successful
-    // ingest, because that is exactly what it is: the service levels on this page
-    // are correct and complete, and the only thing that is missing is the copy a
-    // model run needs. Saying nothing would let a planner discover it at launch,
-    // days later, as a refusal on a feed this panel had called a success.
+    // A completed legacy import can lack retained bytes. Disclose that custody
+    // gap before a planner tries to use its exact input in a model run.
     if (body.bytesStored === false) {
       setOutcome({
         tone: "warn",
-        headline: `${what} succeeded${body.displayName ? ` — ${body.displayName}` : ""}, and a copy of the feed was NOT kept.`,
+        headline: `${what} succeeded${body.displayName ? `, ${body.displayName}` : ""}, and a copy of the feed was NOT kept.`,
         lines: [
-          "This feed's service levels, routes and stops are complete and correct — everything on this page " +
-            "is usable.",
+          "This feed's service levels, routes and stops are complete according to the recorded import. The registry above shows stored counts.",
           "What is missing is the archive itself. A model run is handed the exact bytes OpenPlan parsed, " +
-            "verified against their checksum, rather than an address the modeling worker refetches — so a " +
+            "verified against their checksum, rather than an address the modeling worker refetches, so a " +
             "run that names this feed will refuse to model transit from it until the feed is brought in again.",
           body.bytesNotStoredReason
             ? `The archive could not be stored: ${body.bytesNotStoredReason}`
@@ -503,7 +426,7 @@ export function GtfsIngestPanel({
 
     setOutcome({
       tone: "ok",
-      headline: `${what} succeeded${body.displayName ? ` — ${body.displayName}` : ""}.`,
+      headline: `${what} succeeded${body.displayName ? `, ${body.displayName}` : ""}.`,
       lines: ["The feed list above is re-read from the database, so its figures are what is stored rather than what the ingest reported."],
     });
   }
@@ -586,11 +509,21 @@ export function GtfsIngestPanel({
    * ONE UPLOAD, TWO DOORS INTO IT.
    *
    * The bottom door creates a feed; the per-feed control adds a version to an
-   * existing one by sending `feedId`. Everything else — the ceiling checked
+   * existing one by sending `feedId`. Everything else, the ceiling checked
    * before a byte leaves the browser, the content type, the re-read afterwards
-   * — is identical, and a shared capability that lives inside one of its two
+   *, is identical, and a shared capability that lives inside one of its two
    * callers gets reimplemented wrongly by the other. It lives here instead.
    */
+  async function submitManaged(intent: GtfsClientIntent, busyKey: string, archive?: File) {
+    setBusy(busyKey); setOutcome(null);
+    try {
+      if (!managed.enabled || !("scope" in managed) || !managedRef.current) throw new Error("Managed transit import history is unavailable. Nothing was sent.");
+      await managedRef.current.submit(intent, archive);
+    } catch (error) {
+      setOutcome({ tone: "warn", headline: "Check retained import progress before retrying.", lines: [error instanceof Error ? error.message : "Transit acknowledgement is unavailable."] });
+    } finally { setBusy(null); }
+  }
+
   async function postArchive(input: {
     file: File;
     busyKey: string;
@@ -608,6 +541,10 @@ export function GtfsIngestPanel({
             `${(maxUploadBytes / (1024 * 1024)).toFixed(0)} MB. Nothing was uploaded.`,
         ],
       });
+      return;
+    }
+    if (managed.enabled) {
+      await submitManaged({ source: "upload", workspaceId, filename: input.file.name, ...(input.feedId ? { feedId: input.feedId } : {}), ...(input.label ? { label: input.label } : {}) }, input.busyKey, input.file);
       return;
     }
     setBusy(input.busyKey);
@@ -636,6 +573,7 @@ export function GtfsIngestPanel({
   }
 
   async function ingestFromCatalog(catalogId: string): Promise<void> {
+    if (managed.enabled) { await submitManaged({ source: "catalog", workspaceId, catalogId, ...(bbox ? { area: bbox } : {}) }, `catalog:${catalogId}`); return; }
     setBusy(`catalog:${catalogId}`);
     setOutcome(null);
     try {
@@ -666,6 +604,7 @@ export function GtfsIngestPanel({
   async function ingestFromUrl(): Promise<void> {
     const url = feedUrl.trim();
     if (!url) return;
+    if (managed.enabled) { await submitManaged({ source: "url", workspaceId, url, ...(feedLabel.trim() ? { label: feedLabel.trim() } : {}) }, "url"); return; }
     setBusy("url");
     setOutcome(null);
     try {
@@ -721,6 +660,7 @@ export function GtfsIngestPanel({
   }
 
   async function refreshFeed(feedId: string, adoptDespiteCollapse = false): Promise<void> {
+    if (managed.enabled) { await submitManaged({ source: "refresh", workspaceId, feedId }, `refresh:${feedId}`); return; }
     setBusy(`refresh:${feedId}`);
     setOutcome(null);
     try {
@@ -755,7 +695,7 @@ export function GtfsIngestPanel({
       await loadRegistry();
       setConfirmingDelete(null);
       // Its ingests went with it; an open history of them would be a list of
-      // rows that no longer exist. Only on success — a refused removal changed
+      // rows that no longer exist. Only on success, a refused removal changed
       // nothing, and closing the panel would suggest it had.
       if (response.ok && openHistoryRef.current === feedId) {
         setHistoryFeedId(null);
@@ -806,12 +746,19 @@ export function GtfsIngestPanel({
           <p className="module-section-label">Transit feeds (GTFS)</p>
           <h2 className="module-section-title">Bring an agency&apos;s published schedule into this workspace</h2>
           <p className="module-section-description">
-            OpenPlan reads a GTFS feed and keeps how often service runs — trip counts, headways and a derived peak
+            OpenPlan reads a GTFS feed and keeps how often service runs, trip counts, headways and a derived peak
             hour. It deliberately does not store individual departure times, so it can never tell a rider when the
             next vehicle leaves.
           </p>
         </div>
       </div>
+
+      {managed.enabled && ("scope" in managed ? <ManagedGtfsImports
+        key={`${managed.scope.installationId}:${managed.scope.workspaceId}:${managed.scope.actorId}:${readOnly}`}
+        ref={managedRef} scope={managed.scope} readOnly={readOnly} maxUploadBytes={maxUploadBytes}
+        registryChanged={() => { void loadRegistry(); if (openHistoryRef.current) void loadHistory(openHistoryRef.current); }}
+        versions={registry.status === "ready" ? registry.recentVersions.filter(version => version.workspace_id === workspaceId && registry.feeds.some(feed => feed.id === version.feed_id && feed.workspace_id === workspaceId)).map(version => ({ feedId: version.feed_id, versionId: version.id, label: registry.feeds.find(feed => feed.id === version.feed_id)?.agency_name || "Transit feed" })) : []}
+      /> : <p role="alert" className="module-note mt-5 text-sm">{managed.unavailable}</p>)}
 
       {/* ---------------------------------------------------------------- */}
       {/* What this workspace already has                                   */}
@@ -827,7 +774,7 @@ export function GtfsIngestPanel({
             <p className="font-semibold">The transit feed registry could not be read.</p>
             <p className="mt-1 text-muted-foreground">{registry.message}</p>
             <p className="mt-1 text-muted-foreground">
-              Nothing here states whether this workspace has a feed — a question the database did not answer is not
+              Nothing here states whether this workspace has a feed, a question the database did not answer is not
               an answer of none.
             </p>
           </div>
@@ -868,9 +815,9 @@ export function GtfsIngestPanel({
                   <>
                     <p className="mt-2 text-sm text-muted-foreground">{window?.text}</p>
                     <p className="mt-1 text-sm text-muted-foreground">
-                      {version.route_service_level_rows ?? 0} route and {version.stop_service_level_rows ?? 0} stop
-                      service-level rows derived from {version.route_count ?? 0} routes, {version.stop_count ?? 0}{" "}
-                      stops and {version.trip_count ?? 0} trips.
+                      {version.route_service_level_rows ?? "not recorded"} route and {version.stop_service_level_rows ?? "not recorded"} stop
+                      service-level rows derived from {version.route_count ?? "not recorded"} routes, {version.stop_count ?? "not recorded"}{" "}
+                      stops and {version.trip_count ?? "not recorded"} trips.
                     </p>
                   </>
                 ) : (
@@ -932,7 +879,7 @@ export function GtfsIngestPanel({
                         <p className="font-semibold">This feed&apos;s ingests could not be read.</p>
                         <p className="mt-1 text-muted-foreground">{history.message}</p>
                         <p className="mt-1 text-muted-foreground">
-                          Nothing here says how many times this feed has been ingested — a question the database did
+                          Nothing here says how many times this feed has been ingested, a question the database did
                           not answer is not an answer of none.
                         </p>
                       </div>
@@ -949,12 +896,13 @@ export function GtfsIngestPanel({
                             <span className="font-medium">
                               {(historyVersion.created_at ?? "").slice(0, 10) || "undated"}
                             </span>{" "}
-                            — {(historyVersion.status ?? "").trim() || "no recorded status"}
+                            , {(historyVersion.status ?? "").trim() || "no recorded status"}
                             {historyVersion.id === feed.current_version_id ? " (in use)" : ""}
                             {historyVersion.status === "failed"
-                              ? ` — ${historyVersion.failure_code ?? "no code"}. ${historyVersion.failure_detail ?? ""}`
-                              : ` — ${historyVersion.route_service_level_rows ?? 0} route and ` +
-                                `${historyVersion.stop_service_level_rows ?? 0} stop service-level rows.`}
+                              ? `, ${historyVersion.failure_code ?? "no code"}. ${historyVersion.failure_detail ?? ""}`
+                              : `, ${historyVersion.route_service_level_rows ?? "not recorded"} route and ` +
+                                `${historyVersion.stop_service_level_rows ?? "not recorded"} stop service-level rows.`}
+                            {managed.enabled && "scope" in managed && isOwn && <button type="button" className="ml-2 rounded-md border border-border px-2 py-1 text-xs" onClick={() => managedRef.current?.openVersion(feed.id, historyVersion.id)}>Open managed progress</button>}
                           </li>
                         ))}
                       </ul>
@@ -969,7 +917,7 @@ export function GtfsIngestPanel({
                         THE SENTENCE AND THE CONTROL, TOGETHER.
 
                         This read "Upload a newer archive to this feed to
-                        refresh it" and offered no way to do it — the only
+                        refresh it" and offered no way to do it, the only
                         upload control on the page creates a NEW feed. A planner
                         who followed it ended up with two rows for one agency.
                         This picker sends `feedId`, so the archive becomes
@@ -979,7 +927,7 @@ export function GtfsIngestPanel({
                       <div className="flex w-full flex-col gap-2">
                         <span className="text-xs text-muted-foreground">
                           An uploaded feed has no address to refetch, so a newer archive is how it is refreshed.
-                          Choose one here and it becomes a new version of this feed — uploading it through the door
+                          Choose one here and it becomes a new version of this feed, uploading it through the door
                           below would register a second feed for the same agency instead.
                         </span>
                         <input
@@ -1075,7 +1023,7 @@ export function GtfsIngestPanel({
               disabled={busy !== null}
               onClick={() => void refreshFeed(outcome.collapsedFeedId as string, true)}
             >
-              I have checked the agency&apos;s feed — adopt the smaller version anyway
+              I have checked the agency&apos;s feed, adopt the smaller version anyway
             </button>
           )}
         </div>
@@ -1126,7 +1074,7 @@ export function GtfsIngestPanel({
         <div className="mt-4 space-y-4">
           <p className="text-sm text-muted-foreground">
             Choose the area you are studying. OpenPlan searches a public transit feed catalog for operators whose
-            own published service area covers it — the catalog does not know which agency is yours, so it offers
+            own published service area covers it, the catalog does not know which agency is yours, so it offers
             candidates rather than picking one.
           </p>
 
@@ -1150,7 +1098,7 @@ export function GtfsIngestPanel({
           </button>
           {!bbox && (
             <p className="text-xs text-muted-foreground">
-              Pick or draw an area first — the search is by geography and there is nothing to search without one.
+              Pick or draw an area first, the search is by geography and there is nothing to search without one.
             </p>
           )}
 
@@ -1203,7 +1151,7 @@ export function GtfsIngestPanel({
             disabled={readOnly || busy !== null || feedUrl.trim().length === 0}
             onClick={() => void ingestFromUrl()}
           >
-            {busy === "url" ? "Fetching and reading the feed…" : "Fetch and read this feed"}
+            {busy === "url" ? (managed.enabled ? "Submitting the feed…" : "Fetching and reading the feed…") : "Fetch and read this feed"}
           </button>
         </div>
       )}
@@ -1237,7 +1185,7 @@ export function GtfsIngestPanel({
             disabled={readOnly || busy !== null || file === null}
             onClick={() => void ingestFromUpload()}
           >
-            {busy === "upload" ? "Reading the archive…" : "Upload and read this archive"}
+            {busy === "upload" ? (managed.enabled ? "Submitting the archive…" : "Reading the archive…") : "Upload and read this archive"}
           </button>
         </div>
       )}
@@ -1279,7 +1227,7 @@ function CatalogOutcome({
      * A WITHDRAWN ENTRY IS NOT AN UNINGESTABLE ONE, AND THIS BRANCH SAID IT WAS.
      *
      * The headline read "none of them can be ingested from the catalog" while
-     * `describeWithheldReason("superseded")` — two paragraphs below it — said
+     * `describeWithheldReason("superseded")`, two paragraphs below it, said
      * the catalog "usually names a replacement, and OpenPlan follows that
      * redirect automatically when the entry is ingested". Both were on screen
      * at once, the stronger one was the headline, and no control was rendered

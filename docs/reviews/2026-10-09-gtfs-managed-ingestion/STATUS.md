@@ -395,3 +395,23 @@ remain candidates. Full restore, installed CLI operation, capacity, application
 session roles, T3 desktop/390px journeys, GitHub CI, integration and release
 verification remain open. Historical missing-cancellation and missing-human-route
 paragraphs above describe earlier checkpoints.
+
+## October 10: retained planner import interface
+
+[Planner progress](CLIENT_PANEL.md) connects the existing URL, catalog, ZIP and
+refresh doors to retained requests in opt-in managed mode. Scoped committed
+progress remains separate from submission acknowledgement and adoption.
+Workspace versions open without original browser history; completed review
+uses parser counts, exact predecessors and explicit material acceptance. Lost
+replies retain exact requests and decisions for manual replay. Viewers read only.
+
+Missing current and historical counts now display as not recorded; actual zero
+counts remain zero. The 70-file regression passes 1,640 tests, skips 17 live
+cases and has no failures. Scoped TypeScript and lint pass. Baseline, harmless
+and restored controls pass; all 48 broken behaviors fail at intended assertions.
+Older disconnected-panel paragraphs describe preceding checkpoints.
+
+This branch is still a candidate. No T3 navigation or visual acceptance, app
+cookie roles, installed worker service operation, full restore, largest-feed
+capacity, CI, merge or release acceptance is established. Browser preparation
+helpers remain separate unverified work. All four migrations remain unreleased.
