@@ -433,3 +433,7 @@ The application remains stopped until this source is committed and identified. T
 ## Browser-discovered sibling collision, October 10
 
 At `3132cdddb9f8`, a duplicate React key made server refreshes accumulate 11 managed transit panels. Distinct panel namespaces now preserve workspace and actor scope without sibling collisions. The targeted control detects the collision; restored serial checks pass 1,648 tests with 17 live cases skipped, zero failures, strict lint and scoped TypeScript. [The correction report](SIBLING_IDENTITY.md) preserves the failed browser boundary and isolated REST memory adjustment. A new identified-build journey remains required.
+
+## Current main joined, October 10
+
+The candidate joins `06bdc7af6d40`, including the first merged UI-overhaul increment. Data Hub and Title VI label/style edits merge without replacing retained import bindings or sibling identity. [Integration checks](main-join-tests.json) pass 1836 tests across 76 files, with 17 live cases skipped and zero failures. Strict selected-file lint and scoped TypeScript pass. Both owned control suites rerun after the join, including baseline, harmless, restored and intended broken behaviors. The 1 GiB service peaks at 673.5 MiB. This does not establish browser or GitHub CI acceptance.

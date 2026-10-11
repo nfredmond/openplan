@@ -378,7 +378,7 @@
     "openplan/src/lib/gtfs/managed-ui-config.ts": "94cb9052b2df463535b54f8a2703ee192db4ab0b1771dfbd9a7adf22992fbb95",
     "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "9b9c51a28de77862547671ab1ec5f691d2d1268e925ce23433d1140ca53424b2",
     "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "f1b62f37e25241b72a47a53fe4febf24437ba95d3dd3e5b9a7a3dbd49d6e671c",
-    "openplan/src/app/(app)/data-hub/page.tsx": "25a28c77392ddfd6141bd14e61e3630d278892e8c5e32fb0247353b1eb830de5",
+    "openplan/src/app/(app)/data-hub/page.tsx": "e96245f2d281cab21bfd38927432a8da0ad3ff0a7888a3b6351af029d38e348d",
     "openplan/src/app/api/gtfs/versions/[versionId]/status/route.ts": "57fb7ff238673773f6a321d2ba510c8828c108bfc65090a6f064789ca79b9f77"
   },
   "testSha256": {
