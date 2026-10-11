@@ -161,6 +161,13 @@ tracked tree also covers saved map packages, translated participant forms,
 keyboard marking and moderated public comments. The keyless fallback is not
 exercised because this deployment retains its existing Mapbox token.
 
+A subsequent 390px review finds clipped content on the saved scenario comparison
+page even though the document reports no horizontal overflow. The tab panel uses
+`display: contents`, so its table can expand the implicit grid column past the
+phone width. The final handoff adds the existing `minmax(0, 1fr)` column utility
+to this page. Its identified-build browser recheck belongs in the final acceptance
+artifact; document width alone does not prove readable content.
+
 The synthetic public campaign is closed and its share token is revoked after
 checks. Its old public endpoint returns 404. All five feedback records remain,
 including four pending records; the test does not approve them or erase history.

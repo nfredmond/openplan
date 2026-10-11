@@ -642,7 +642,7 @@ export default async function ScenarioSetDetailPage({
   const activeTab = resolvePageTab(scenarioTabs, query.tab, "overview");
 
   return (
-    <section className="module-page space-y-6">
+    <section className="module-page grid-cols-[minmax(0,1fr)] space-y-6">
       <CartographicSurfaceWide />
       <PlanningContextStripForProject requestedProjectId={query.projectId} project={projectResult.data} error={projectResult.error} />
       <RecordHubHeader
