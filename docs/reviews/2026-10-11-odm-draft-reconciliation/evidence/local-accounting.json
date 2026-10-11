@@ -1,0 +1,12 @@
+{
+  "Id": "openplan-odm-draft-reconciliation-native-20261011-04.service",
+  "InvocationID": "ed0dfa4de3624043b6c4a4303d1cbaf8",
+  "Result": "success",
+  "ExecMainStatus": "0",
+  "MemoryPeak": "35373056",
+  "MemoryMax": "268435456",
+  "MemorySwapMax": "0",
+  "CPUUsageNSec": "657652000",
+  "CPUQuotaPerSecUSec": "1s",
+  "TasksMax": "128"
+}

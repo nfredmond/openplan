@@ -1,0 +1,53 @@
+[
+  {
+    "control": "owner-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "owner-harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "owner-guard-removed",
+    "outcome": "intended_failure",
+    "reason": "Another owner must be refused before any stop action"
+  },
+  {
+    "control": "owner-restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "overflow-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "overflow-harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "overflow-guard-removed",
+    "outcome": "intended_failure",
+    "reason": "Client must refuse overflow through its intended guard"
+  },
+  {
+    "control": "overflow-restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "deadline-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "deadline-harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "deadline-guard-removed",
+    "outcome": "intended_failure",
+    "reason": "Client must refuse deadline through its intended guard"
+  },
+  {
+    "control": "deadline-restored",
+    "outcome": "survived"
+  }
+]

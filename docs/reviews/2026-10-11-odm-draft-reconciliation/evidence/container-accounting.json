@@ -1,0 +1,32 @@
+[
+  {
+    "containerId": "86596748f5337bbfd8673153f84d447163a6506b07e343a78d3c34acb7338048",
+    "imageId": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "status": "exited",
+    "exit": 0,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912,
+    "memoryAndSwapTotalBytes": 536870912,
+    "nanoCpus": 1000000000,
+    "network": "none",
+    "readonlyImage": true,
+    "portBindings": {},
+    "user": "1000:1000",
+    "taskLimit": 64
+  },
+  {
+    "containerId": "67e2abbce3c8c5a8acb219dc455d4f58de13a84c9939df575498d0b6dbf0bf73",
+    "imageId": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+    "status": "exited",
+    "exit": 0,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912,
+    "memoryAndSwapTotalBytes": 536870912,
+    "nanoCpus": 1000000000,
+    "network": "none",
+    "readonlyImage": true,
+    "portBindings": {},
+    "user": "1000:1000",
+    "taskLimit": 64
+  }
+]

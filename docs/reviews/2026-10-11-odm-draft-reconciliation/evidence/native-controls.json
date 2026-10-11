@@ -1,0 +1,254 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-key-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "captureExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInitSameUuid-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInitSameUuid-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInitSameUuid-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "bothUploadResponsesSucceed-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "bothUploadResponsesSucceed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "bothUploadResponsesSucceed-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateUploadedBytes-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateUploadedBytes-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateUploadedBytes-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateFilenamesDiffer-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateFilenamesDiffer-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "duplicateFilenamesDiffer-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "repeatedInitSameUuid-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "repeatedInitSameUuid-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "repeatedInitSameUuid-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalDraftMetadataOverwritten-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalDraftMetadataOverwritten-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalDraftMetadataOverwritten-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskListEmpty-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskListEmpty-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskListEmpty-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskInfoAbsent-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskInfoAbsent-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTaskInfoAbsent-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskListEmpty-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskListEmpty-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskListEmpty-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskInfoAbsent-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskInfoAbsent-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredTaskInfoAbsent-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredDraftBytesRetained-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredDraftBytesRetained-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredDraftBytesRetained-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStoppedCleanly-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStoppedCleanly-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStoppedCleanly-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredStoppedCleanly-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredStoppedCleanly-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredStoppedCleanly-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedMatchesSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedMatchesSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedMatchesSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeInitiallyMatchesPackage-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeInitiallyMatchesPackage-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeInitiallyMatchesPackage-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  }
+]
