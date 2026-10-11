@@ -104,12 +104,12 @@ describe("useExploreMapInstance", () => {
   it("opens on the light basemap in light mode and the dark one in dark mode", async () => {
     document.documentElement.classList.remove("dark");
     const light = await renderExploreMapInstance();
-    expect(mapboxMocks.Map.mock.calls[0]?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/light-v11" });
+    expect((mapboxMocks.Map.mock.calls[0] as unknown[] | undefined)?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/light-v11" });
     light.unmount();
 
     document.documentElement.classList.add("dark");
     await renderExploreMapInstance();
-    expect(mapboxMocks.Map.mock.calls[1]?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/dark-v11" });
+    expect((mapboxMocks.Map.mock.calls[1] as unknown[] | undefined)?.[0]).toMatchObject({ style: "mapbox://styles/mapbox/dark-v11" });
     document.documentElement.classList.remove("dark");
   });
 });
