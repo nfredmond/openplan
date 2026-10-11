@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Public comment, survey and subscription forms clip their hidden anti-spam fields
+in place. Right-to-left pages no longer gain a horizontal scrollbar from those
+fields; their anti-spam handling and keyboard exclusion remain in place.
+
+Apply `20261016000032_model_kpi_receipt_float_precision.sql` before deploying
+hosted model workers. It preserves full floating-point precision in the two KPI
+receipt functions, so exact immutable receipt checks accept the recorded values.
+Hosted artifact downloads can use verified private Storage copies when
+`OPENPLAN_HOSTED_ARTIFACT_MIRROR=1` is set in both workers and the web app.
+Model timestamps now show UTC consistently across server and browser rendering.
+
 **A public map without a Mapbox key.** A deployment with no Mapbox key used to
 give residents a words-only form. Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` to a
 MapLibre style and the participant map draws with it: a local `.pmtiles`
@@ -86,6 +97,13 @@ The [October 10 hosted relaunch record](docs/ops/HOSTED_RELAUNCH_2026-10-10.md)
 tracks the managed installation and unfinished acceptance work. Optional operator
 SQL blocks client Data API writes to the managed PostGIS reference catalog while
 preserving catalog reads and the application's existing RLS.
+
+Hosted container definitions run the existing application queues with persistent
+journals, and both model pollers with a shared artifact volume and separate
+Python environments. Process supervisors fail when a queue disappears. The
+Vercel configuration enables deployments from `main`; the managed project
+requires GitHub checks before assigning production domains. Database migrations
+remain a separate, controlled operation.
 
 **Public engagement map.** Residents can now read comments beside the map. A
 Comments button opens a list with search, topic filters, previous and next, and a

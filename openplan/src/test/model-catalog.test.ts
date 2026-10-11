@@ -4,7 +4,29 @@ import {
   buildModelReadiness,
   buildModelWorkflowSummary,
   buildModelWorkspaceSummary,
+  formatModelDateTime,
 } from "@/lib/models/catalog";
+
+describe("model timestamps", () => {
+  it("renders the same labeled instant in server and browser time zones", () => {
+    const original = process.env.TZ;
+    try {
+      for (const zone of ["UTC", "America/Los_Angeles", "Pacific/Honolulu"]) {
+        process.env.TZ = zone;
+        expect(formatModelDateTime("2026-10-11T04:20:41.000Z"))
+          .toBe("10/11/2026, 4:20:41 AM UTC");
+      }
+    } finally {
+      if (original === undefined) delete process.env.TZ;
+      else process.env.TZ = original;
+    }
+  });
+
+  it("keeps missing and unparseable timestamps explicit", () => {
+    expect(formatModelDateTime(null)).toBe("Unknown");
+    expect(formatModelDateTime("unavailable")).toBe("unavailable");
+  });
+});
 
 describe("model readiness helpers", () => {
   it("marks a model record ready when config, provenance, and outputs are present", () => {

@@ -26,6 +26,25 @@ export function workerLocalRoot(): string | null {
   return process.env.OPENPLAN_WORKER_LOCAL_ROOT ?? null;
 }
 
+/** Derive the immutable mirror inside an already-authorized model run. */
+export function hostedModelMirrorRef(artifact: {
+  file_url: string;
+  run_id: string;
+  stage_id?: string | null;
+  content_hash?: string | null;
+}): string | null {
+  if (!artifact.file_url.startsWith("local://") ||
+      !/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/.test(artifact.stage_id ?? "") ||
+      !/^[0-9a-f]{64}$/.test(artifact.content_hash ?? "")) return null;
+  const source = artifact.file_url.slice("local://".length);
+  if (!source.startsWith("/") || /[\\%?#]/.test(source) ||
+      path.posix.normalize(source) !== source ||
+      !source.includes(`/runs/${artifact.run_id}/`)) return null;
+  const filename = path.posix.basename(source);
+  if (!/^[A-Za-z0-9][A-Za-z0-9_.-]*$/.test(filename)) return null;
+  return `storage://run-artifacts/model-runs/${artifact.run_id}/stages/${artifact.stage_id}/sha256-${artifact.content_hash}/${filename}`;
+}
+
 /** Parse a `storage://<bucket>/<object-path>` reference. */
 export function parseStorageRef(
   fileUrl: string

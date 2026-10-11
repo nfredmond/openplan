@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Bell, Check, Loader2, Mail } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { StatusBadge } from "@/components/ui/status-badge";
+import { formatEngagementDateTime } from "@/lib/engagement/catalog";
 import type {
   EngagementNotificationRow,
   EngagementNotificationType,
@@ -24,11 +25,6 @@ const TYPE_TONE: Record<EngagementNotificationType, "info" | "warning" | "neutra
   survey_response: "info",
   closeloop_published: "success",
 };
-
-function fmt(value: string): string {
-  const d = new Date(value);
-  return Number.isNaN(d.getTime()) ? value : d.toLocaleString("en-US");
-}
 
 // ── Email delivery ────────────────────────────────────────────────────────────
 
@@ -105,7 +101,7 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
       </div>
       <p className="text-muted-foreground">
         {summary.total} message{summary.total === 1 ? "" : "s"} recorded
-        {summary.lastRecordedAt ? `, most recently ${fmt(summary.lastRecordedAt)}` : ""}.
+        {summary.lastRecordedAt ? `, most recently ${formatEngagementDateTime(summary.lastRecordedAt)}` : ""}.
       </p>
       <p className="text-muted-foreground">Email service acceptance does not confirm inbox delivery.</p>
       {summary.broadcasts.queued > 0 ? <p>{summary.broadcasts.queued} published update(s) waiting for recipient preparation. Recipient count is not known yet.</p> : null}
@@ -121,7 +117,7 @@ function EmailDeliveryPanel({ delivery }: { delivery: DeliveryState }) {
       ) : null}
       {summary.lastFailure ? (
         <p className="text-amber-800 dark:text-amber-200">
-          Latest failed message, recorded {fmt(summary.lastFailure.at)}: {maskEmailAddresses(summary.lastFailure.message)}
+          Latest failed message, recorded {formatEngagementDateTime(summary.lastFailure.at)}: {maskEmailAddresses(summary.lastFailure.message)}
         </p>
       ) : null}
       <p className="text-xs text-muted-foreground">
@@ -249,7 +245,7 @@ export function EngagementNotificationsInbox({
               <div className="module-record-kicker">
                 <StatusBadge tone={TYPE_TONE[n.type]}>{TYPE_LABEL[n.type]}</StatusBadge>
                 {!n.is_read ? <StatusBadge tone="neutral">Unread</StatusBadge> : null}
-                <span className="text-xs text-muted-foreground">{fmt(n.created_at)}</span>
+                <span className="text-xs text-muted-foreground">{formatEngagementDateTime(n.created_at)}</span>
               </div>
               <p className="mt-1 font-medium text-foreground">{n.title}</p>
               {n.body ? <p className="text-sm text-muted-foreground">{n.body}</p> : null}

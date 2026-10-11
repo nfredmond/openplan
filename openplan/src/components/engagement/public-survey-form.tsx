@@ -2198,15 +2198,13 @@ export function PublicSurveyForm({
       </div>
 
       {/*
-        Honeypot — hidden from real users; bots fill it in. Deliberately NOT
+        Honeypot. Hidden from real users; bots fill it in. Deliberately NOT
         translated: it is `aria-hidden`, so no participant and no screen reader
         ever reads it, and a translated honeypot would be a tell.
 
-        `-start-[9999px]` rather than `-left-[9999px]`: on an Arabic page the
-        offscreen direction that keeps it out of the reading flow is the other
-        one.
+        Clip it in place so it cannot expand right-to-left page overflow.
       */}
-      <div className="absolute -start-[9999px] opacity-0" aria-hidden="true">
+      <div className="sr-only" aria-hidden="true">
         <label htmlFor="survey-website">Website</label>
         <input
           id="survey-website"
