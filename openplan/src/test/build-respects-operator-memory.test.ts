@@ -9,6 +9,24 @@ const buildCommand = (JSON.parse(readFileSync("package.json", "utf8")) as {
   scripts: { build: string };
 }).scripts.build;
 
+// Old-space limits exclude other V8 spaces. Compare the command with an
+// independent invocation of this runtime instead of assuming their allowance.
+function directHeapLimit(oldSpaceMiB: number, additionalOptions: string[] = []) {
+  const env = { ...process.env };
+  delete env.NODE_OPTIONS;
+  const result = spawnSync(process.execPath, [
+    `--max-old-space-size=${oldSpaceMiB}`,
+    ...additionalOptions,
+    "-p", "require('node:v8').getHeapStatistics().heap_size_limit / 1024 / 1024",
+  ], { env, encoding: "utf8", timeout: 10_000 });
+  expect(result.error).toBeUndefined();
+  expect(result.status).toBe(0);
+  const measured = Number(result.stdout.trim());
+  expect(Number.isFinite(measured)).toBe(true);
+  expect(measured).toBeGreaterThanOrEqual(oldSpaceMiB);
+  return measured;
+}
+
 // Invoke the actual npm command with a small executable in place of Next.
 // The child reports its real V8 limit. This does not measure webpack memory.
 function runBuild(nodeOptions: string | undefined, exitCode = 0) {
@@ -23,6 +41,7 @@ function runBuild(nodeOptions: string | undefined, exitCode = 0) {
 const v8 = require("node:v8");
 console.log(JSON.stringify({
   options: process.env.NODE_OPTIONS,
+  executable: process.execPath,
   arguments: process.argv.slice(2),
   heapLimitMiB: v8.getHeapStatistics().heap_size_limit / 1024 / 1024
 }));
@@ -40,6 +59,7 @@ process.exit(${exitCode});
     expect(result.error).toBeUndefined();
     const output = JSON.parse(result.stdout.trim()) as {
       options: string;
+      executable: string;
       arguments: string[];
       heapLimitMiB: number;
     };
@@ -54,24 +74,24 @@ describe("the build command respects operator memory settings", () => {
     const result = runBuild(options);
     expect(result.status).toBe(0);
     expect(result.output.options).toBe("--max-old-space-size=6144");
-    expect(result.output.heapLimitMiB).toBeGreaterThanOrEqual(6144);
-    expect(result.output.heapLimitMiB).toBeLessThan(6244);
+    expect(result.output.executable).toBe(process.execPath);
+    expect(result.output.heapLimitMiB).toBe(directHeapLimit(6144));
   });
 
   it("passes the operator heap to the real child without appending a larger heap", () => {
     const result = runBuild("--max-old-space-size=512");
     expect(result.status).toBe(0);
     expect(result.output.options).toBe("--max-old-space-size=512");
-    expect(result.output.heapLimitMiB).toBeGreaterThanOrEqual(512);
-    expect(result.output.heapLimitMiB).toBeLessThan(612);
+    expect(result.output.executable).toBe(process.execPath);
+    expect(result.output.heapLimitMiB).toBe(directHeapLimit(512));
   });
 
   it("preserves the operator's complete options and the webpack invocation", () => {
-    const result = runBuild("--trace-warnings --max-old-space-size=768");
+    const result = runBuild("--trace-warnings --max-semi-space-size=64 --max-old-space-size=768");
     expect(result.status).toBe(0);
-    expect(result.output.options).toBe("--trace-warnings --max-old-space-size=768");
-    expect(result.output.heapLimitMiB).toBeGreaterThanOrEqual(768);
-    expect(result.output.heapLimitMiB).toBeLessThan(868);
+    expect(result.output.options).toBe("--trace-warnings --max-semi-space-size=64 --max-old-space-size=768");
+    expect(result.output.executable).toBe(process.execPath);
+    expect(result.output.heapLimitMiB).toBe(directHeapLimit(768, ["--trace-warnings", "--max-semi-space-size=64"]));
     expect(result.output.arguments).toEqual(["build", "--webpack"]);
   });
 

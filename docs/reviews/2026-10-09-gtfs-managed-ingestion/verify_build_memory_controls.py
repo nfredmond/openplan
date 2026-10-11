@@ -15,11 +15,14 @@ original = package.read_bytes()
 data = json.loads(original)
 command = data["scripts"]["build"]
 test_file = "src/test/build-respects-operator-memory.test.ts"
+test_path = app / test_file
+original_test = test_path.read_bytes()
 records = []
 
 
-def run(name, variant, expected_failure=None):
+def run(name, variant, expected_failure=None, test_variant=None):
     package.write_text(json.dumps(variant, indent=2) + "\n")
+    test_path.write_bytes(original_test if test_variant is None else test_variant.encode())
     report = output / (name + ".json")
     result = subprocess.run([
         str(app / "node_modules/.bin/vitest"), "run", test_file,
@@ -56,10 +59,25 @@ try:
         variant = json.loads(original)
         variant["scripts"]["build"] = broken
         run(name, variant, expected)
+    test_text = original_test.decode()
+    runtime_variants = [
+        ("child-cli-overrides-heap", "#!/usr/bin/env node", "#!/usr/bin/env -S node --max-old-space-size=6144", "passes the operator heap"),
+        ("wrong-child-executable", "executable: process.execPath", 'executable: "/wrong/runtime"', "passes the operator heap"),
+        ("wrong-independent-reference", "--max-old-space-size=${oldSpaceMiB}", "--max-old-space-size=8192", "retains the default heap"),
+        ("nonfinite-reference", "Number(result.stdout.trim())", 'Number("not-a-number")', "retains the default heap"),
+        ("reference-command-fails", "--max-old-space-size=${oldSpaceMiB}", "--openplan-invalid-reference-flag", "retains the default heap"),
+        ("undersized-reference", "--max-old-space-size=${oldSpaceMiB}", "--max-old-space-size=64", "retains the default heap"),
+        ("wrong-semi-space-reference", '--max-semi-space-size=64"]', '--max-semi-space-size=4"]', "preserves the operator's complete options"),
+    ]
+    for name, before, after, expected in runtime_variants:
+        assert test_text.count(before) == 1, (name, "mutation target differs")
+        run(name, json.loads(original), expected, test_text.replace(before, after, 1))
     run("restored", json.loads(original))
 finally:
     package.write_bytes(original)
+    test_path.write_bytes(original_test)
     assert package.read_bytes() == original
+    assert test_path.read_bytes() == original_test
 
 summary = {
     "records": records,
@@ -68,4 +86,4 @@ summary = {
     "boundary": "Actual npm shell invocation and real child V8 heap. Next is replaced by a small executable. No webpack capacity, total process memory, browser, CI or release acceptance.",
 }
 (output / "controls.json").write_text(json.dumps(summary, indent=2) + "\n")
-print(json.dumps({"positiveControls": 3, "brokenControls": 5, "restored": True}))
+print(json.dumps({"positiveControls": 3, "brokenControls": 12, "restored": True}))
