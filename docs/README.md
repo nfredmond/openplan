@@ -67,6 +67,8 @@ The [October 11 disconnected aerial engine journal](reviews/2026-10-11-odm-engin
 
 The [October 11 captured aerial draft inspector](reviews/2026-10-11-odm-draft-custody/STATUS.md) compares verified captured metadata and upload bytes with the original saved plan. Native partial/complete drafts match; duplicate uploads, overwritten metadata and changed bytes refuse. Results grant no transport permission. Complete worker recovery remains open.
 
+The [October 11 original ZIP-derived source candidate](reviews/2026-10-11-odm-zip-derived-custody/STATUS.md) retains ordered member bytes and distinct image-slot filenames under the original archive/admission/context. Actual interrupted-copy recovery resumes from the captured retained ZIP without the original download. Engine-journal and runtime integration remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

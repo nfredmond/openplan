@@ -50,3 +50,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-draft-custody/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-draft-custody-controls"
+      - name: ZIP derived source harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-zip-derived-controls"
+      - name: Interrupted ZIP image copy and stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-zip-derived-native"
