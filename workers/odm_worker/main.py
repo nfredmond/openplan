@@ -58,6 +58,7 @@ import tempfile
 import threading
 import time
 import uuid
+from contextlib import nullcontext
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
@@ -117,8 +118,13 @@ def env_int(name, default):
 
 
 def config():
+    managed = os.environ.get('ODM_WORKER_MANAGED_ADMISSION', '').strip()
+    if managed not in ('', '0', '1'):
+        raise ValueError('ODM_WORKER_MANAGED_ADMISSION must be 0 or 1')
     port = env_int("ODM_WORKER_PORT", env_int("PORT", 8484))
     return {
+        "managed_admission": managed == '1',
+        "installation_id": os.environ.get('ODM_WORKER_INSTALLATION_ID', '').strip(),
         "worker_token": os.environ.get(
             "OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN", ""
         ).strip(),
@@ -142,6 +148,7 @@ def config():
 
 
 CONFIG = config()
+ADMISSIONS = None
 
 # ── Job registry ─────────────────────────────────────────────────────────────
 # request_id -> job dict. The accepted callback is stored so a retried
@@ -321,6 +328,7 @@ def process_job(job, make_client=None, prepare=None, publish=None, send=None, sl
             odm_progress = float(info.get("progress") or 0)
             overall = 10 + int(odm_progress * 0.8)
             if status_code in TERMINAL_STATUSES:
+                job['reportedEngineTerminal'] = {'taskUuid': task_uuid, 'statusCode': status_code}
                 break
             if overall >= last_sent_progress + 5:
                 last_sent_progress = overall
@@ -434,6 +442,13 @@ PIPELINE = process_job
 
 
 def worker_loop():
+    if ADMISSIONS is not None:
+        while True:
+            try:
+                if not ADMISSIONS.run_one(): time.sleep(0.2)
+            except Exception:  # preserve the start intent and queue hold
+                print('[odm-worker] durable pipeline requires reconciliation', flush=True)
+                time.sleep(0.2)
     while True:
         job = JOB_QUEUE.get()
         if job is None:
@@ -484,6 +499,16 @@ class WorkerHandler(BaseHTTPRequestHandler):
 
     def do_GET(self):  # noqa: N802 - BaseHTTPRequestHandler's naming
         if self.path == "/healthz":
+            admissions = getattr(self.server, 'admissions', None)
+            admission_status = None
+            queued = JOB_QUEUE.qsize()
+            if admissions is not None:
+                try:
+                    admission_status = {'available': True, **admissions.status()}
+                    queued = admission_status['accepted']
+                except Exception:
+                    admission_status = {'available': False, 'detail': 'Durable admission state could not be read.'}
+                    queued = None
             nodeodm = {"reachable": False, "detail": "not probed"}
             try:
                 from nodeodm_client import NodeODMClient
@@ -505,7 +530,8 @@ class WorkerHandler(BaseHTTPRequestHandler):
                     "status": "ok",
                     "contract": list(contract.SCHEMA_VERSIONS),
                     "nodeodm": nodeodm,
-                    "queued": JOB_QUEUE.qsize(),
+                    "queued": queued,
+                    **({'admission': admission_status} if admissions is not None else {}),
                 },
             )
             return
@@ -574,6 +600,21 @@ class WorkerHandler(BaseHTTPRequestHandler):
             )
             return
 
+        admissions = getattr(self.server, 'admissions', None)
+        if admissions is not None:
+            from admission_journal import IdentityConflict, QueueFull
+            try:
+                entry, first = admissions.submit(payload)
+            except IdentityConflict:
+                self._send_json(409, {'error': 'request_identity_conflict', 'detail': 'The original request ID already binds another payload.'})
+            except QueueFull:
+                self._send_json(503, {'error': 'queue_full', 'detail': 'The durable pending queue is full.'})
+            except Exception:
+                self._send_json(503, {'error': 'admission_unavailable', 'detail': 'The durable admission journal could not confirm this request.'})
+            else:
+                self._send_json(202 if first else 200, entry.admission)
+            return
+
         with JOBS_LOCK:
             existing = JOBS.get(payload["requestId"])
         if existing:
@@ -604,14 +645,17 @@ class WorkerHandler(BaseHTTPRequestHandler):
         print(f"[odm-worker] {self.address_string()} {fmt % args}")
 
 
-def build_server(host="0.0.0.0", port=None):
-    return ThreadingHTTPServer(
+def build_server(host="0.0.0.0", port=None, admissions=None):
+    server = ThreadingHTTPServer(
         (host, CONFIG["port"] if port is None else port),
         WorkerHandler,
     )
+    server.admissions = ADMISSIONS if admissions is None else admissions
+    return server
 
 
 def main():
+    global ADMISSIONS
     missing = [
         name
         for name, key in (
@@ -629,16 +673,20 @@ def main():
         )
         sys.exit(2)
 
-    os.makedirs(CONFIG["work_dir"], exist_ok=True)
-    threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
-    threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()
-    server = build_server()
-    print(
-        f"[odm-worker] serving on :{CONFIG['port']} "
-        f"(NodeODM at {CONFIG['nodeodm_url']}; artifact links under "
-        f"{CONFIG['public_url']}; contract {', '.join(contract.SCHEMA_VERSIONS)})"
-    )
-    server.serve_forever()
+    os.makedirs(CONFIG["work_dir"], mode=0o700, exist_ok=True)
+    if CONFIG['managed_admission']:
+        from runtime_admission import Runtime
+        ADMISSIONS = Runtime(CONFIG['work_dir'], CONFIG['installation_id'], max_queued=CONFIG['max_queued'], pipeline=PIPELINE)
+    with ADMISSIONS.owner() if ADMISSIONS is not None else nullcontext():
+        threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
+        threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()
+        server = build_server()
+        print(
+            f"[odm-worker] serving on :{CONFIG['port']} "
+            f"(NodeODM at {CONFIG['nodeodm_url']}; artifact links under "
+            f"{CONFIG['public_url']}; contract {', '.join(contract.SCHEMA_VERSIONS)})"
+        )
+        server.serve_forever()
 
 
 if __name__ == "__main__":

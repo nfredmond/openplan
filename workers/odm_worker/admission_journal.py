@@ -77,42 +77,52 @@ def entry(request_id, row):
 
 
 class Journal:
-    def __init__(self, root, *, timeout=2):
+    def __init__(self, root, *, timeout=2, require_existing=False):
+        if type(require_existing) is not bool:
+            raise ValueError('ODM existing journal mode must be boolean')
         if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0:
             raise ValueError('ODM journal timeout must be positive and finite')
         self.root = Path(root)
         if not self.root.is_absolute():
             raise ValueError('ODM journal root must be absolute')
         self.timeout = timeout
+        self.require_existing = require_existing
 
     @contextmanager
     def connection(self):
         for ancestor in [self.root, *self.root.parents]:
             if ancestor.is_symlink():
                 raise ValueError('ODM journal path must be private and owned without aliases')
-        try:
-            self.root.mkdir(mode=0o700)
-        except FileExistsError:
-            pass
-        else:
-            synchronize(self.root.parent)
+        if not self.require_existing:
+            try:
+                self.root.mkdir(mode=0o700)
+            except FileExistsError:
+                pass
+            else:
+                synchronize(self.root.parent)
         private(self.root, True)
         database = self.root / FILENAME
-        try:
-            descriptor = os.open(database, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
-        except FileExistsError:
+        if self.require_existing:
             private(database, False)
         else:
-            os.close(descriptor)
-            synchronize(self.root)
+            try:
+                descriptor = os.open(database, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
+            except FileExistsError:
+                private(database, False)
+            else:
+                os.close(descriptor)
+                synchronize(self.root)
         for suffix in ('-wal', '-shm'):
             companion = self.root / (FILENAME + suffix)
             if companion.exists() or companion.is_symlink():
                 private(companion, False)
-        connection = sqlite3.connect(database, timeout=self.timeout, isolation_level=None)
+        target = database.as_uri()+'?mode=rw' if self.require_existing else database
+        connection = sqlite3.connect(target, uri=self.require_existing, timeout=self.timeout, isolation_level=None)
         try:
             version = connection.execute('PRAGMA user_version').fetchone()[0]
             objects = connection.execute("SELECT type,name,sql FROM sqlite_master WHERE name NOT LIKE 'sqlite_%' ORDER BY name").fetchall()
+            if self.require_existing and version != SCHEMA_VERSION:
+                raise ValueError('Original ODM admission journal is not initialized')
             if not ((version == 0 and objects == []) or (version == SCHEMA_VERSION and objects == [('table', 'admissions', CREATE)])):
                 raise ValueError('ODM admission journal schema differs')
             if connection.execute('PRAGMA journal_mode=WAL').fetchone() != ('wal',):

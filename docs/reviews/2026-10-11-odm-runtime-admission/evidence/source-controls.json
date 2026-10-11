@@ -1,0 +1,378 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "changed-original-receipt",
+    "test": "test_original_receipt_replays_before_capacity_and_payload_conflicts",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original receipt and reference must survive exact replay"
+  },
+  {
+    "control": "request-order-replaces-admission-order",
+    "test": "test_fifo_starts_once_and_terminal_records_stay_unassessed",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original admission insertion order must survive"
+  },
+  {
+    "control": "terminal-promotes-callbackDeliveryVerification",
+    "test": "test_fifo_starts_once_and_terminal_records_stay_unassessed",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "local terminal state cannot promote custody"
+  },
+  {
+    "control": "terminal-promotes-sourceCustodyVerification",
+    "test": "test_fifo_starts_once_and_terminal_records_stay_unassessed",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "local terminal state cannot promote custody"
+  },
+  {
+    "control": "terminal-promotes-engineCustodyVerification",
+    "test": "test_fifo_starts_once_and_terminal_records_stay_unassessed",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "local terminal state cannot promote custody"
+  },
+  {
+    "control": "uncertain-start-not-held",
+    "test": "test_missing_terminal_and_local_failure_hold_accepted_queue",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "uncertain engine start must hold later accepted work"
+  },
+  {
+    "control": "local-failure-releases-queue",
+    "test": "test_missing_terminal_and_local_failure_hold_accepted_queue",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "uncertain engine start must hold later accepted work"
+  },
+  {
+    "control": "pipeline-before-start",
+    "test": "test_pipeline_exception_keeps_original_start_and_queue_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "start must precede uncertain pipeline entry"
+  },
+  {
+    "control": "missing-owner-guard",
+    "test": "test_execution_requires_lifetime_owner_and_competing_owner_refuses",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "no-lifetime-root-lock",
+    "test": "test_second_runtime_cannot_take_owned_root",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "concurrent-call-reaches-journal",
+    "test": "test_concurrent_pipeline_calls_cannot_overlap",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Concurrent execution reached journal before exclusion"
+  },
+  {
+    "control": "public-root-before-journal",
+    "test": "test_installation_seal_and_private_root_refuse_changed_identity",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Public runtime root reached journal"
+  },
+  {
+    "control": "saved-installation-check-ignored",
+    "test": "test_saved_installation_change_refuses_before_admission_or_pipeline",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-terminal-observation",
+    "test": "test_invalid_reported_terminal_types_and_states_refuse",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-terminal-record-accepted",
+    "test": "test_changed_terminal_binding_and_grade_refuse",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "terminal-write-skipped",
+    "test": "test_terminal_publication_interruption_does_not_repeat_pipeline",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "copied-receipt-replaced",
+    "test": "test_copied_root_replays_original_receipt_and_holds_uncertain_start",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "copied root must preserve original accepted receipt"
+  },
+  {
+    "control": "durable-handler-skipped",
+    "test": "test_http_both_shapes_original_receipt_conflict_and_queue_full",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "changed HTTP payload must refuse the original ID"
+  },
+  {
+    "control": "http-replay-answered-new",
+    "test": "test_http_both_shapes_original_receipt_conflict_and_queue_full",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "actual HTTP replay must preserve original receipt"
+  },
+  {
+    "control": "http-conflict-answered-accepted",
+    "test": "test_http_both_shapes_original_receipt_conflict_and_queue_full",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "changed HTTP payload must refuse the original ID"
+  },
+  {
+    "control": "http-capacity-answered-accepted",
+    "test": "test_http_both_shapes_original_receipt_conflict_and_queue_full",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "202 != 503"
+  },
+  {
+    "control": "http-auth-after-journal",
+    "test": "test_http_authentication_and_contract_checks_precede_durable_admission",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "authentication must precede durable admission"
+  },
+  {
+    "control": "http-validation-after-journal",
+    "test": "test_http_authentication_and_contract_checks_precede_durable_admission",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "contract validation must precede durable admission"
+  },
+  {
+    "control": "journal-failure-answered-accepted",
+    "test": "test_http_journal_failure_does_not_fall_back_to_memory",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "journal failure cannot answer an accepted receipt"
+  },
+  {
+    "control": "health-ignores-durable-queue",
+    "test": "test_http_health_reads_durable_queue_and_preserves_unavailable",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "health must count durable accepted work"
+  },
+  {
+    "control": "unavailable-count-becomes-zero",
+    "test": "test_http_health_reads_durable_queue_and_preserves_unavailable",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "unavailable journal count cannot become zero"
+  },
+  {
+    "control": "implicit-managed-config",
+    "test": "test_managed_configuration_requires_explicit_mode",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "pipeline-replaces-request",
+    "test": "test_pipeline_cannot_replace_original_request_or_reference",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "pipeline-request-alias",
+    "test": "test_pipeline_cannot_replace_original_request_or_reference",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "install-check-after-journal",
+    "test": "test_changed_installation_refuses_before_journal_reads",
+    "source": "library",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Changed installation accessed journal"
+  },
+  {
+    "control": "invalid-installation-id",
+    "test": "test_invalid_configuration_refuses_before_root_access",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid runtime configuration reached root"
+  },
+  {
+    "control": "invalid-pending-capacity",
+    "test": "test_invalid_configuration_refuses_before_root_access",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid runtime configuration reached root"
+  },
+  {
+    "control": "invalid-pipeline-callable",
+    "test": "test_invalid_configuration_refuses_before_root_access",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid runtime configuration reached root"
+  },
+  {
+    "control": "runtime-not-attached-before-server",
+    "test": "test_actual_main_attaches_runtime_and_owns_root_before_serving",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "main must attach durable runtime before serving"
+  },
+  {
+    "control": "server-loses-runtime",
+    "test": "test_actual_main_attaches_runtime_and_owns_root_before_serving",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "server must use the actual durable runtime"
+  },
+  {
+    "control": "managed-loop-uses-memory",
+    "test": "test_actual_main_attaches_runtime_and_owns_root_before_serving",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Managed loop reached memory queue"
+  },
+  {
+    "control": "main-releases-owner-before-server",
+    "test": "test_actual_main_attaches_runtime_and_owns_root_before_serving",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "main must hold durable runtime owner while serving"
+  },
+  {
+    "control": "reported-terminal-lost",
+    "test": "test_existing_pipeline_retains_reported_terminal_before_local_result",
+    "source": "main",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "pipeline must retain original task and terminal report"
+  },
+  {
+    "control": "missing-original-db-recreated",
+    "test": "test_missing_original_database_refuses_without_recreating_registry",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "missing-journal-directory-recreated",
+    "test": "test_missing_original_journal_directory_is_not_recreated",
+    "source": "journal",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "existing installation cannot recreate its missing journal directory"
+  },
+  {
+    "control": "database-open-allows-create",
+    "test": "test_database_disappearing_at_open_is_not_recreated",
+    "source": "journal",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "existing journal connection must not recreate a disappeared file"
+  },
+  {
+    "control": "populated-journal-resealed",
+    "test": "test_missing_original_seal_refuses_populated_journal",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unsealed-retained-records-ignored",
+    "test": "test_missing_seal_with_retained_records_refuses_before_journal_read",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unsealed retained records accessed journal"
+  },
+  {
+    "control": "empty-original-journal-initialized",
+    "test": "test_empty_original_database_is_not_initialized_as_new",
+    "source": "journal",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonboolean-existing-mode",
+    "test": "test_existing_journal_mode_requires_exact_boolean",
+    "source": "journal",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

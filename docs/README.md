@@ -71,6 +71,8 @@ The [October 11 original ZIP-derived source candidate](reviews/2026-10-11-odm-zi
 
 The [October 11 ZIP engine-journal integration candidate](reviews/2026-10-11-odm-zip-engine-integration/STATUS.md) binds actual derived image bytes and original archive lineage before command intents. Stopped-root replay preserves uncertain commands; actual cached engine drafts compare exact original slots. Runtime dispatch and complete worker recovery remain open.
 
+The [October 11 opt-in durable aerial HTTP admission candidate](reviews/2026-10-11-odm-runtime-admission/STATUS.md) preserves exact original HTTP receipts and pending work through stopped-root restoration, while holding uncertain starts. Missing original journal/seal refuses startup. Source/actor/engine stages, outputs/callback custody and full worker recovery remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
