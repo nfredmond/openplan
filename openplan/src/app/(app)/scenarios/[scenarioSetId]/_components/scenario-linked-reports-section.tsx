@@ -42,7 +42,6 @@ export function ScenarioLinkedReportsSection({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Reports</p>
           <h2 className="module-section-title">Scenario-linked report records</h2>
           <p className="module-section-description">
             Lightweight linkage only: reports are shown when they already reference this scenario set&apos;s attached runs.

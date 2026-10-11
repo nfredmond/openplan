@@ -74,7 +74,6 @@ export function ScenarioSetControls({
   return (
     <article className="module-section-surface">
       <div className="module-section-heading">
-        <p className="module-section-label">Scenario set</p>
         <h2 className="module-section-title">Metadata and framing</h2>
         <p className="module-section-description">
           Keep the planning question explicit. The scenario set stays useful later only if its framing remains legible.

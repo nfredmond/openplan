@@ -254,7 +254,6 @@ export function ModelRunTripGenScreen({ modelId, modelRunId, runTitle }: ModelRu
             <Car className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Trip generation</p>
             <h2 className="module-section-title">Trip generation screening worksheet</h2>
             <p className="module-section-description">
               Reads the trip-generation KPIs stored for run &quot;{runTitle}&quot; — daily and

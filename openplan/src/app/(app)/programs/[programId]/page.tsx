@@ -864,7 +864,6 @@ export default async function ProgramDetailPage({
           <article id="program-funding-opportunities" className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Funding</p>
                 <h2 className="module-section-title">Linked funding opportunities</h2>
                 <p className="module-section-description">
                   Track open and upcoming calls against this funding cycle.
@@ -968,7 +967,6 @@ export default async function ProgramDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Linked records</p>
                 <h2 className="module-section-title">Projects, plans, models, reports, and engagement evidence</h2>
                 <p className="module-section-description">
                   Programs inherit context from the primary project and linked plans, so model support stays visible alongside the rest of the package evidence.

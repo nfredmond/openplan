@@ -49,7 +49,6 @@ export function CountyRunCeqaVmtScreen({
             <Scale className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">CEQA VMT screen</p>
             <h2 className="module-section-title">§15064.3 transportation-impact screening</h2>
             <p className="module-section-description">
               Compares this run&apos;s stored VMT-per-capita KPI against an operator-supplied reference

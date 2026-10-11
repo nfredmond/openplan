@@ -53,7 +53,7 @@ export async function InvoicingCashStrip({ workspaceId }: { workspaceId: string 
         {reimbursementUnavailable ? (
           <p className="mt-2 text-sm text-muted-foreground">
             {reimbursementPending
-              ? "Not set up yet — the reimbursement register tables are pending in this database. Apply the Lane C migration to track funder draws."
+              ? "Not set up yet. This installation needs a database update before funder draws can be tracked; ask whoever runs OpenPlan here."
               : "Reimbursement invoice records could not be loaded right now."}
           </p>
         ) : reimbursementRecords.length === 0 ? (

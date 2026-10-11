@@ -65,7 +65,6 @@ export function GrantsOpportunityRegistrySection({
             <CalendarClock className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Registry</p>
             <h2 className="module-section-title">Funding opportunities across the workspace</h2>
             <p className="module-section-description">
               Review deadlines, decision status, linked project/program context, and editable decision notes without hopping record-by-record first.
