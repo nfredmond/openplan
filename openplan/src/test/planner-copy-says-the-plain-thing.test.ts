@@ -192,7 +192,7 @@ function collectCopy(): string[] {
  * 0 is the assertion that it stays gone.
  */
 const BASELINE: Readonly<Record<string, number>> = {
-  artifact: 41,
+  artifact: 39,
   attribute: 4,
   basemap: 4,
   basis: 22,
@@ -217,10 +217,10 @@ const BASELINE: Readonly<Record<string, number>> = {
   "moderation queue": 1,
   operator: 39,
   // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
-  packet: 117,
+  packet: 112,
   payload: 2,
   populate: 1,
-  posture: 45,
+  posture: 41,
   preset: 12,
   provenance: 9,
   readiness: 31,
@@ -231,7 +231,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   scaffold: 3,
   schema: 5,
   signal: 7,
-  spine: 6,
+  spine: 4,
   "study area": 20,
   submission: 10,
   surface: 11,

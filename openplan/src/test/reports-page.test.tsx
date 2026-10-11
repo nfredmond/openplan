@@ -379,7 +379,6 @@ describe("ReportsPage", () => {
 
     expect(screen.getAllByText(/Artifact-backed report/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
-    expect(screen.getAllByText(/Evidence, and whether it needs rebuilding/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/1 source area needs review/i)).toBeInTheDocument();
     expect(screen.getByText(/Changed sources: Report metadata\./i)).toBeInTheDocument();
     expect(
@@ -391,15 +390,11 @@ describe("ReportsPage", () => {
     expect(screen.queryByText(/Action Next action: open this report and generate the first packet\./i)).not.toBeInTheDocument();
     expect(screen.getAllByText(/Generated/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Open gap resolution/i).length).toBeGreaterThan(0);
-    expect(screen.getByText("Grants follow-through")).toBeInTheDocument();
     expect(screen.getByText(/Open gap resolution/i)).toBeInTheDocument();
     expect(screen.getByText(/in Grants/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Grant release review/i).length).toBeGreaterThan(0);
     expect(screen.getAllByText(/Refresh recommended/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Suggested Monitor/i)).toBeInTheDocument();
-    expect(
-      screen.getAllByText(/operators should refresh the supporting packet before leaning on it for final pursue language/i).length
-    ).toBeGreaterThan(0);
     expect(
       screen.getAllByText(/planning support only, not proof of award likelihood or a replacement for funding-source review/i).length
     ).toBeGreaterThan(0);
@@ -584,7 +579,6 @@ describe("ReportsPage", () => {
     expect(screen.getAllByText(/Current evidence packet/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Current \/ ready/i)).toBeInTheDocument();
     expect(screen.getByText(/Evidence chain current/i)).toBeInTheDocument();
-    expect(screen.getByText(/Evidence summary: 1 linked run · 0 scenario sets · 2 project records/i)).toBeInTheDocument();
   });
 
   it("surfaces RTP review-loop posture in the reports registry when a current packet is not yet settled", async () => {

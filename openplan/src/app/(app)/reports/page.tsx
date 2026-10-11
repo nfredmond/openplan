@@ -4,13 +4,13 @@ import { redirect } from "next/navigation";
 import {
   ArrowRight,
   FileStack,
-  FolderKanban,
   Sparkles,
 } from "lucide-react";
 import { CartographicSelectionLink } from "@/components/cartographic/cartographic-selection-link";
 import { navLabel } from "@/components/nav/nav-registry";
 import { ReportPacketCommandQueue } from "@/components/reports/report-packet-command-queue";
 import { ReportCreator, type ModelingCountyRunOption } from "@/components/reports/report-creator";
+import { FigureRow } from "@/components/ui/figure-row";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { EmptyState } from "@/components/ui/state-block";
@@ -454,47 +454,15 @@ export default async function ReportsPage({
   const currentPacketCount = reports.filter(
     (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT
   ).length;
-  const rtpFundingReviewCount = reports.filter(
-    (report) => report.packetFreshness.label === PACKET_FRESHNESS_LABELS.CURRENT && report.storedRtpFundingReview?.needsAttention
-  ).length;
   const evidenceBackedCount = reports.filter(
     (report) => report.evidenceChainDigest?.hasEvidence === true
   ).length;
   const blockedGovernanceCount = reports.filter(
     (report) => Boolean(report.evidenceChainDigest?.blockedGateDetail)
   ).length;
-  const scenarioBasisCount = reports.filter(
-    (report) => (report.evidenceChainSummary?.scenarioSetLinkCount ?? 0) > 0
-  ).length;
-  const scenarioSpinePendingCount = reports.filter(
-    (report) => (report.evidenceChainSummary?.scenarioSharedSpinePendingCount ?? 0) > 0
-  ).length;
-  const scenarioSpineVisibleCount = reports.filter((report) => {
-    const summary = report.scenarioSpineSummary;
-    if (!summary) {
-      return false;
-    }
-
-    return (
-      summary.assumptionSetCount > 0 ||
-      summary.dataPackageCount > 0 ||
-      summary.indicatorSnapshotCount > 0 ||
-      summary.pendingCount > 0
-    );
-  }).length;
   const comparisonSnapshotVisibleCount = reports.filter(
     (report) => (report.comparisonSnapshotAggregate?.comparisonSnapshotCount ?? 0) > 0
   ).length;
-  const fundingSnapshotVisibleCount = reports.filter(
-    (report) => Boolean(report.fundingDigest)
-  ).length;
-  const fundingGapVisibleCount = reports.filter(
-    (report) => (report.fundingSnapshot?.unfundedAfterLikelyAmount ?? 0) > 0
-  ).length;
-  const readyComparisonSnapshotCount = reports.reduce(
-    (sum, report) => sum + (report.comparisonSnapshotAggregate?.readyComparisonSnapshotCount ?? 0),
-    0
-  );
   const filteredReports = reports.filter(
     (report) =>
       matchesReportFreshnessFilter(
@@ -760,7 +728,7 @@ export default async function ReportsPage({
       <ReadFailureNotice className="mb-4" reads={reads} />
       <PageHeader
         title={navLabel("/reports")}
-        description="Generate report packets, see what evidence each one rests on, and keep every project's delivery history in one place."
+        description="Report packets for your projects, and the evidence each one rests on."
         actions={
           // The id stays on this wrapper, which the page owns, so the empty
           // state's link to #create-report still lands on the button.
@@ -776,42 +744,15 @@ export default async function ReportsPage({
           </div>
         }
       >
-        <div className="module-summary-grid cols-4">
-          <div className="module-summary-card">
-            <p className="module-summary-label">Total reports</p>
-            <p className="module-summary-value">{reports.length}</p>
-            <p className="module-summary-detail">Reports available here.</p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Generated</p>
-            <p className="module-summary-value">{generatedCount}</p>
-            <p className="module-summary-detail">Reports with a packet already built.</p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Needs refresh</p>
-            <p className="module-summary-value">{refreshRecommendedCount}</p>
-            <p className="module-summary-detail">The underlying data changed after the packet was built.</p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Projects covered</p>
-            <p className="module-summary-value">{distinctProjects}</p>
-            <p className="module-summary-detail">Projects with at least one report.</p>
-          </div>
-        </div>
-
-        <div className="module-inline-list">
-          <span className="module-inline-item"><strong>{currentPacketCount}</strong> packet current</span>
-          <span className="module-inline-item"><strong>{evidenceBackedCount}</strong> evidence-backed</span>
-          <span className="module-inline-item"><strong>{scenarioBasisCount}</strong> scenario-backed</span>
-          <span className="module-inline-item"><strong>{scenarioSpineVisibleCount}</strong> scenario spine visible</span>
-          <span className="module-inline-item"><strong>{comparisonSnapshotVisibleCount}</strong> comparison-backed</span>
-          <span className="module-inline-item"><strong>{fundingSnapshotVisibleCount}</strong> funding-backed</span>
-          {rtpFundingReviewCount > 0 ? <span className="module-inline-item"><strong>{rtpFundingReviewCount}</strong> RTP funding review</span> : null}
-          <span className="module-inline-item"><strong>{readyComparisonSnapshotCount}</strong> ready saved comparisons</span>
-          {fundingGapVisibleCount > 0 ? <span className="module-inline-item"><strong>{fundingGapVisibleCount}</strong> funding gap{fundingGapVisibleCount === 1 ? "" : "s"} surfaced</span> : null}
-          <span className="module-inline-item"><strong>{blockedGovernanceCount}</strong> governance hold{blockedGovernanceCount === 1 ? "" : "s"} surfaced</span>
-          {scenarioSpinePendingCount > 0 ? <span className="module-inline-item"><strong>{scenarioSpinePendingCount}</strong> spine pending</span> : null}
-        </div>
+        <FigureRow
+          label="Report figures"
+          figures={[
+            { label: "Reports", value: reports.length, note: `${distinctProjects} projects covered` },
+            { label: "Generated", value: generatedCount, note: `${currentPacketCount} current` },
+            { label: "Needs refresh", value: refreshRecommendedCount },
+            { label: "Governance holds", value: blockedGovernanceCount },
+          ]}
+        />
       </PageHeader>
 
       <article className="module-section-surface">
@@ -1057,93 +998,38 @@ export default async function ReportsPage({
                   ) : null}
                 </div>
 
-                <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm">
-                  <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-label font-semibold text-muted-foreground">
-                      Evidence, and whether it needs rebuilding
-                    </p>
+                {/* Two lines instead of four boxes (October 10, 2026). The
+                    whole card is a link, so the packet, evidence and funding
+                    detail lives on the report page it opens. */}
+                <div className="mt-3 grid gap-1.5 text-sm">
+                  {/* Why a packet is or is not current stays on the row: the
+                      changed sources and a failed evidence read are the facts
+                      that decide whether to rebuild. */}
+                  <p className="flex flex-wrap items-center gap-2">
                     <StatusBadge tone={report.sourceReviewPosture.state === "ready" ? "success" : "warning"}>
                       {report.sourceReviewPosture.label}
                     </StatusBadge>
-                  </div>
-                  <p className="mt-2 font-medium text-foreground/90">{report.sourceReviewPosture.headline}</p>
-                  <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{report.sourceReviewPosture.detail}</p>
-                  {report.sourceReviewPosture.changedSourceText ? (
-                    <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
-                      Changed sources: {report.sourceReviewPosture.changedSourceText}.
+                    <span className="text-foreground/90">{report.sourceReviewPosture.headline}</span>
+                    {report.sourceReviewPosture.changedSourceText ? (
+                      <span className="text-muted-foreground">
+                        Changed sources: {report.sourceReviewPosture.changedSourceText}.
+                      </span>
+                    ) : null}
+                  </p>
+                  {report.sourceReviewPosture.state === "ready" ? null : (
+                    <p className="text-muted-foreground">{report.sourceReviewPosture.detail}</p>
+                  )}
+                  <p className="text-muted-foreground">{packetWorkStatus.label}</p>
+                  {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
+                    <p className="text-muted-foreground">
+                      Grant release review: {report.grantModelingEvidence ? report.grantModelingReadiness?.label ?? "No visible support" : "Saved comparisons attached"}.
+                      {" "}Planning support only, not proof of award likelihood or a replacement for funding-source review.
                     </p>
                   ) : null}
-                  <p className="mt-2 text-xs leading-relaxed text-muted-foreground">
-                    Evidence summary: {report.evidenceChainDigest?.headline ?? "No evidence-chain summary attached to the latest artifact yet."}
+                  <p className="text-muted-foreground">
+                    {report.fundingDigest ? report.fundingDigest.headline : "No funding snapshot on the latest packet."}
+                    {report.grantsFollowThrough ? ` ${report.grantsFollowThrough.actionLabel} in Grants.` : ""}
                   </p>
-                </div>
-
-                <div className="module-record-detail-grid cols-2 mt-4">
-                  <div className="module-note text-sm">
-                    <p className="font-medium text-foreground">Packet posture</p>
-                    <p className="mt-2 font-medium text-foreground/90">{packetWorkStatus.label}</p>
-                    <p className="mt-1">{packetWorkStatus.detail}</p>
-                    <p className="mt-1">{report.packetFreshness.detail}</p>
-                  </div>
-                  {report.evidenceChainDigest ? (
-                    <div className="module-note text-sm">
-                      <p className="font-medium text-foreground">Evidence chain posture</p>
-                      <p className="mt-2 font-medium text-foreground/90">{report.evidenceChainDigest.headline}</p>
-                      <p className="mt-1">{report.evidenceChainDigest.detail}</p>
-                      {report.evidenceChainDigest.blockedGateDetail ? <p className="mt-1">{report.evidenceChainDigest.blockedGateDetail}</p> : null}
-                      {report.comparisonSnapshotAggregate?.comparisonSnapshotCount ? (
-                        <>
-                          <p className="mt-1">
-                            Saved comparisons: {report.comparisonSnapshotAggregate.readyComparisonSnapshotCount}/{report.comparisonSnapshotAggregate.comparisonSnapshotCount} ready
-                            {report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt
-                              ? ` · Updated ${formatDateTime(report.comparisonSnapshotAggregate.latestComparisonSnapshotUpdatedAt)}`
-                              : ""}
-                          </p>
-                          {report.grantModelingEvidence ? (
-                            <>
-                              <p className="mt-1 font-medium text-foreground/90">Grant release review</p>
-                              <p className="mt-1">
-                                {report.grantModelingReadiness?.label ?? "No visible support"}
-                              </p>
-                              <p className="mt-1">{report.grantModelingSupport.recommendedNextActionSummary}</p>
-                            </>
-                          ) : (
-                            <p className="mt-1">
-                              Saved comparison context can support grant planning language or prioritization framing for this packet. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.
-                            </p>
-                          )}
-                        </>
-                      ) : null}
-                    </div>
-                  ) : (
-                    <div className="module-note text-sm">
-                      <p className="font-medium text-foreground">Evidence chain posture</p>
-                      <p className="mt-2">No evidence summary attached to the latest artifact yet.</p>
-                    </div>
-                  )}
-                  <div className="module-note text-sm">
-                    <p className="font-medium text-foreground">Funding posture</p>
-                    {report.fundingDigest ? (
-                      <>
-                        <p className="mt-2 font-medium text-foreground/90">{report.fundingDigest.headline}</p>
-                        <p className="mt-1">{report.fundingDigest.detail}</p>
-                        {report.fundingDigest.timingDetail ? <p className="mt-1">{report.fundingDigest.timingDetail}</p> : null}
-                        {report.grantsFollowThrough ? (
-                          <div className="mt-3 border-l-2 border-amber-400/60 pl-3">
-                            <p className="text-xs font-medium text-foreground">Grants follow-through</p>
-                            <p className="mt-1 text-xs text-muted-foreground">{report.grantsFollowThrough.title}</p>
-                            <p className="mt-2 inline-flex items-center gap-2 text-xs font-semibold text-[color:var(--pine)]">
-                              {report.grantsFollowThrough.actionLabel}
-                              <ArrowRight className="h-3.5 w-3.5" />
-                              <span className="text-label font-medium text-muted-foreground">in Grants</span>
-                            </p>
-                          </div>
-                        ) : null}
-                      </>
-                    ) : (
-                      <p className="mt-2">No funding snapshot is attached to the latest artifact yet.</p>
-                    )}
-                  </div>
                 </div>
               </CartographicSelectionLink>
               );
@@ -1152,21 +1038,6 @@ export default async function ReportsPage({
         )}
       </article>
 
-      <article className="module-section-surface">
-        <div className="flex items-center gap-3">
-          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-[0.5rem] bg-emerald-500/10 text-emerald-700 dark:text-emerald-300">
-            <FolderKanban className="h-5 w-5" />
-          </span>
-          <div>
-            <h2 className="module-section-title">What&apos;s available in report packets</h2>
-          </div>
-        </div>
-        <p className="mt-3 max-w-4xl text-sm leading-relaxed text-muted-foreground">
-          Reports include schema-backed records, configured sections, run
-          attachments, and HTML artifact generation with audit metadata. PDF
-          export and storage-backed delivery will layer onto this record model.
-        </p>
-      </article>
     </section>
   );
 }
