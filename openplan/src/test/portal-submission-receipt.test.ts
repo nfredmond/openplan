@@ -8,6 +8,14 @@ describe('participant receipts and retry identity',()=>{
   fetchMock.mockResolvedValue(new Response(JSON.stringify({success:true}),{status:201}));
   expect((await submitPortalInput(input)).ok).toBe(false);
  });
+ it('sends the same browser token with every comment, so a shared connection is not one person',async()=>{
+  fetchMock.mockResolvedValue(new Response(JSON.stringify({success:true,submissionId:'id-1',receivedAt:null}),{status:201}));
+  await submitPortalInput(input);
+  await submitPortalInput({...input,requestId:'10000000-0000-4000-8000-000000000002'});
+  const tokens=fetchMock.mock.calls.map(call=>call[1].headers['x-openplan-device']);
+  expect(tokens[0]).toMatch(/^[0-9a-f-]{36}$/);
+  expect(tokens[1]).toBe(tokens[0]);
+ });
  it('keeps the request identifier after interruption and exposes the retained receipt',async()=>{
   fetchMock.mockRejectedValueOnce(new Error('Interrupted')).mockResolvedValueOnce(new Response(JSON.stringify({success:true,submissionId:'retained-id',receivedAt:'2026-09-06T12:00:00Z'}),{status:200}));
   expect((await submitPortalInput(input)).ok).toBe(false);
