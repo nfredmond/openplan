@@ -146,3 +146,7 @@ families, useful computation beyond 45 minutes, normal demand-poller admission,
 engine resume, browser/practitioner acceptance and separate-engine scientific
 validation remain unassessed or open. M3 and the full V1 contract remain incomplete.
 The relaunch agent retains hosted coordination and the main merge hold.
+
+## Later acknowledgement test repair
+
+The external branch update to c1c6a22 has a shuffled CI failure in a GTFS human-command wall-clock assertion. The [dated repair](../2026-10-11-gtfs-human-command-clock/STATUS.md) preserves the failed run and replaces that assertion with a controlled configured-deadline check. Original root snapshot proof remains bound to ea65534b; neither a test repair nor a push establishes new release acceptance.
