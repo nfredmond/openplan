@@ -291,6 +291,15 @@ export function GrantsOpportunityRegistryCard({
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}
+            {opportunity.project ? (
+              <Link
+                href={`/maps?projectId=${opportunity.project.id}&opportunityId=${opportunity.id}&new=1`}
+                className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
+              >
+                Make maps for this application
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            ) : null}
             {programHref ? (
               <Link
                 href={programHref}

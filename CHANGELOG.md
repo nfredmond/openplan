@@ -20,6 +20,28 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Apply migration `20261017000001_project_map_packages.sql` before deploying the
+app. It adds map package records, their file list and the private
+`project-map-packages` storage bucket, which accepts objects up to 1 GiB.
+Packages arrive through short-lived signed upload URLs, so the storage
+service's own upload limit must allow them. The repository's local Supabase
+configuration now sets `file_size_limit = "1GiB"`; restart a running local
+stack (`npm exec -- supabase stop`, then `start`) to pick it up. A hosted
+project needs the same limit in its storage settings.
+`OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
+
+**Maps.** A new Maps page lists map packages for every project in a workspace:
+figures as PDF, PNG and SVG, map books, a web map, a Google Earth file, a QGIS
+project, an ArcGIS Pro builder and an Illustrator kit, in one ZIP. Claude Fable
+5.1 builds a package on the planner's own computer with the transportation GIS
+skill, through the connector's new `maps` command and the planner's Claude
+subscription. No other model may build one; GPT-6 Astra through Codex is not
+open yet. A planner can also add a package they built by hand. Projects and
+grant applications link to Maps. OpenPlan reads every uploaded file back and
+checks its size and sha256 before a package shows as ready. The connector's
+controls for a run have been exercised with a stand-in for Claude Code, not a
+live model run; see the [design note](docs/reviews/2026-10-10-map-packages/DESIGN.md).
+
 **Model defaults.** Without an override, the assistant, narrative drafts and
 plan extraction use Claude Opus 5.5, and comment moderation, synthesis,
 translation and grant interpretation use Claude Haiku 5.5, both at high effort.

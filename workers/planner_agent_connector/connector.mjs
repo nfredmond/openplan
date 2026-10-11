@@ -1,16 +1,24 @@
 #!/usr/bin/env node
 import { lstat, readFile, open, chmod, mkdtemp, rm } from "node:fs/promises";
+import { homedir } from "node:os";
 import { dirname, join, resolve } from "node:path";
 import { pathToFileURL } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { checkedConnectorSetup, ConnectorError, readConnectorConfig } from "./connector-client.mjs";
 import { acquireConnectorLock, connectorCycle, privateConnectorDirectory } from "./connector-worker.mjs";
 import { connectorProviderAdapter } from "./native-provider.mjs";
+import { defaultMapRunsRoot, mapPackageCycle, mapRunCheck } from "./map-package-run.mjs";
 
 const usage = `OpenPlan project connector (Linux, Codex 0.154.0, Claude Code 2.1.263 or OpenCode 1.18.30)
 configure --config /private/directory/connection.json --setup /download/connection.json --binary /installed/bin/provider --profile /native/profile
 models --config /private/directory/connection.json
 run --config /private/directory/connection.json [--once]
+maps-check --config /private/directory/connection.json
+maps --config /private/directory/connection.json [--once] [--runs /folder/for/map/packages]
+
+maps builds map packages with Claude Code and Claude Fable 5.1 on this computer,
+one at a time, in a folder per package (default ~/OpenPlan Map Packages). A run
+can take hours. maps-check confirms this computer is ready without calling a model.
 
 Download a project connection from Planner Agent first. Native sign-in remains in
 the selected native application. API keys and browser sessions are not accepted by this connector. The
@@ -22,7 +30,8 @@ model catalog does not establish account access or model availability.
 export async function connectorMain(argv) {
   const [command, ...args] = argv;
   if (!command || command === "--help") { process.stdout.write(usage); return; }
-  const allowed = command === "configure" ? ["config", "setup", "binary", "profile"] : command === "run" ? ["config", "once"] : command === "models" ? ["config"] : [];
+  const allowed = command === "configure" ? ["config", "setup", "binary", "profile"] : command === "run" ? ["config", "once"]
+    : command === "models" || command === "maps-check" ? ["config"] : command === "maps" ? ["config", "once", "runs"] : [];
   if (!allowed.length) throw new ConnectorError("connector_command_invalid");
   const flags = {};
   for (let index = 0; index < args.length; index++) {
@@ -53,6 +62,14 @@ export async function connectorMain(argv) {
   }
   const config = await readConnectorConfig(flags.config);
   const directory = join(dirname(flags.config), `connector-${config.setup.connectionId}`);
+  if (command === "maps-check") {
+    const checks = await mapRunCheck(config);
+    for (const check of checks) process.stdout.write(`${check.ok ? "ok  " : "FAIL"}  ${check.name}: ${check.detail}\n`);
+    process.stdout.write(checks.every(check => check.ok) ? "Ready to build map packages.\n" : "Not ready. Fix each FAIL line, then run maps-check again.\n");
+    if (!checks.every(check => check.ok)) process.exitCode = 1;
+    return;
+  }
+  if (command === "maps") return await runMapPackages(config, directory, flags);
   await privateConnectorDirectory(directory);
   const lock = await acquireConnectorLock(directory);
   const stopped = new AbortController();
@@ -85,6 +102,38 @@ export async function connectorMain(argv) {
       }
       if (flags.once) break;
       await delay(3000, undefined, { signal });
+    } while (!signal.aborted);
+  } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); await lock.release(); }
+}
+
+// Map packages take hours, so they have their own lock and loop. A Planner
+// Agent connector on the same connection keeps answering project questions.
+async function runMapPackages(config, directory, flags) {
+  const mapsDirectory = join(directory, "maps");
+  // The agent may not read the folder that holds the connection token, so the
+  // packages it builds must live somewhere else.
+  const runsRoot = flags.runs ?? defaultMapRunsRoot();
+  const configFolder = dirname(flags.config);
+  if (runsRoot === configFolder || runsRoot.startsWith(`${configFolder}/`) || configFolder === homedir()) throw new ConnectorError("map_runs_folder_invalid");
+  const lock = await acquireConnectorLock(mapsDirectory);
+  const stopped = new AbortController();
+  const stop = () => stopped.abort();
+  process.on("SIGINT", stop); process.on("SIGTERM", stop);
+  const signal = AbortSignal.any([stopped.signal, lock.signal]);
+  let lastStatus;
+  const report = status => { if (lastStatus !== status) { process.stdout.write(`Map packages: ${status}\n`); lastStatus = status; } };
+  try {
+    do {
+      try {
+        const status = await mapPackageCycle(config, { runsRoot, connectorDir: dirname(flags.config), signal, report });
+        report(status);
+      } catch (error) {
+        if (signal.aborted) break;
+        if ([401, 403].includes(error.status) || flags.once) throw error;
+        report(error instanceof ConnectorError ? error.code : "connection_unavailable");
+      }
+      if (flags.once) break;
+      await delay(15_000, undefined, { signal });
     } while (!signal.aborted);
   } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); await lock.release(); }
 }

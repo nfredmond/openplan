@@ -1,0 +1,52 @@
+# Agent instructions: the QGIS project
+
+The QGIS project in this folder was built and exported by QGIS {{ qgis_version }} on the computer that made the package. The figures in `maps/` came from these layouts, so the project already matches them. Your job is to open it on another computer, confirm it is intact, and rebuild it only if it is not.
+
+## 1. Set up
+
+1. Keep the package folder whole. The project stores relative paths to `../data/*.gpkg` and `../styles/north_arrow.svg`.
+2. Install the fonts in `fonts/inter` (Windows: select the `.otf` files, right-click, Install; macOS: Font Book; Linux: copy to `~/.local/share/fonts` and run `fc-cache`). Restart QGIS afterwards.
+3. Use QGIS 3.34 LTR or later.
+
+## 2. Open and check
+
+Open `qgis/{{ p.id }}.qgz`.
+
+- [ ] No "Handle Unavailable Layers" dialog appears.
+- [ ] The Layers panel has one group per figure, named `<id> | <title>`. Inset layers are in the groups ending in "(inset)".
+- [ ] View > Map themes lists one theme per figure: {% for m in maps %}`{{ m.id }}`{% if not loop.last %}, {% endif %}{% endfor %}{% for a in atlases %}, `{{ a.id }}`{% endfor %}. Choosing a theme shows that figure's layers in the main window.
+- [ ] Project > Layouts lists {{ maps|length + atlases|length }} layouts. Open each one: the page matches `maps/png/<id>.png`.
+- [ ] Text is in {{ font }}. If it is in a fallback font, the fonts are not installed.
+
+## 3. Export again (optional)
+
+From a layout: Layout > Export as PDF, Export as SVG or Export as Image. Use 300 dpi, keep "Always export as vectors" on, and for SVG tick "Export map layers as SVG groups".{% if atlases %} For a map book use Atlas > Export Atlas as PDF.{% endif %}
+
+## 4. Rebuild from the spec (only if the project is broken or the data changed)
+
+Headless, from a shell (use the Python that ships with QGIS; on Windows that is the OSGeo4W shell or `python-qgis.bat`):
+
+```
+python3 qgis/build_qgis_project.py <path to this package folder>
+```
+
+Or in QGIS: Plugins > Python Console, then
+
+```python
+exec(open(r"<package>/qgis/build_qgis_project.py").read()); build(r"<package>")
+```
+
+Run it in a fresh QGIS session: it clears the open project. It rewrites `qgis/{{ p.id }}.qgz`, the styles in `qgis/styles`, the layout templates in `qgis/layouts`, and every file under `maps/` and `atlas/`. `qgis/qgis_build_report.json` records the QGIS version, whether the font was found, and the outputs.
+
+## 5. Done means
+
+- [ ] The project opens with no missing layers and all {{ maps|length + atlases|length }} layouts.
+- [ ] Each layout matches its reference PNG: same extent, symbols, legend entries and text. Label positions can differ slightly between QGIS versions.
+- [ ] You report the QGIS version, the operating system, whether the fonts were installed, anything that differed, and anything you did not check.
+
+## Reference: how the project is organised
+
+- Symbols and labels come from `spec/map_package.json`. Sizes are in points. Road casings merge at junctions through symbol levels.
+- Each layout's map item is locked to its own layer set, so changing layer visibility in the main window does not change a layout.
+- The legend on each layout is a set of editable shapes and labels (ids `legend_symbol_n`, `legend_label_n`), placed from the spec so it matches the ArcGIS Pro build. It is not a dynamic legend; if you add a layer, add a row or insert a QGIS legend item.
+- `qgis/styles/*.qml` are per-layer style files and `qgis/layouts/*.qpt` are layout templates, for reuse in other projects.

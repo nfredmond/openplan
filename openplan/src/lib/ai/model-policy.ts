@@ -13,7 +13,7 @@
  *   whose subscription is OpenAI.
  * - `mapping`: map and GIS tasks. Fable 5.1 is much better at mapping than
  *   GPT-6 Astra; offer Astra only to someone whose subscription is OpenAI.
- *   No in-app call site uses this role yet.
+ *   Map packages use this role (src/lib/map-packages/catalog.ts).
  *
  * The family follows the planner's preference or existing subscription:
  * `anthropic` for an Anthropic API key or Claude subscription, `openai` for a
