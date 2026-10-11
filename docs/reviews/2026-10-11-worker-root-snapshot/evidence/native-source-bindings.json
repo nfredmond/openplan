@@ -1,0 +1,8 @@
+{
+  "packagingDependencies": 5,
+  "nativeRecoveryDependencies": 42,
+  "beforeNativeExecutionFrozen": true,
+  "afterNativeExecutionByteEqual": true,
+  "publicDriverCopiesByteEqualToExecutedSources": true,
+  "limits": "Full private dependency archives remain outside version control. File bindings do not replace native or operational acceptance."
+}

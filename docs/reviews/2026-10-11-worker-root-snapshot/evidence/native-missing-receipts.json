@@ -1,0 +1,5 @@
+{
+  "claimAndProgressRollbackRefused": true,
+  "restoredExactServerPairs": true,
+  "scope": "Native rollback-only missing receipt, not external-service loss or revocation."
+}

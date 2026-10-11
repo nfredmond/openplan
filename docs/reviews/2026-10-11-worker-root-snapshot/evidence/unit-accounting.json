@@ -1,0 +1,170 @@
+[
+  {
+    "unit": "openplan-worker-root-controls-20261011-06.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-controls-20261011-06.service: Consumed 6.247s CPU time over 10.595s wall clock time, 43.1M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-ops-regression-20261011-02.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-ops-regression-20261011-02.service: Consumed 9.856s CPU time over 13.265s wall clock time, 70.2M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-native-packages-20261011-01.service",
+    "ActiveState": "failed",
+    "InvocationID": "cf47115ea4454b7aac6ce7844ac5db20",
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-native-packages-20261011-01.service: Consumed 1.174s CPU time over 1.313s wall clock time, 29.5M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-native-packages-20261011-02.service",
+    "ActiveState": "failed",
+    "InvocationID": "330b6c0f14954d15bfd6da7fee06f719",
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-native-packages-20261011-02.service: Consumed 1.169s CPU time over 1.321s wall clock time, 29.5M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-native-packages-20261011-03.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-native-packages-20261011-03.service: Consumed 9.924s CPU time over 26.047s wall clock time, 512M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-native-recovery-20261011-01.service",
+    "ActiveState": "failed",
+    "InvocationID": "bc9bc7b631dc4ee68c7cda0ba6cfbcc4",
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-native-recovery-20261011-01.service: Consumed 561ms CPU time over 588ms wall clock time, 138.8M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-native-recovery-20261011-02.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-native-recovery-20261011-02.service: Consumed 16.565s CPU time over 1min 5.066s wall clock time, 512M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting. Native file-census/copy services reached the 512MiB driver cap; no spare-memory or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-controls-20261011-07.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-controls-20261011-07.service: Consumed 6.292s CPU time over 10.648s wall clock time, 42.4M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting, not spare-capacity or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-ops-regression-20261011-03.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-ops-regression-20261011-03.service: Consumed 9.756s CPU time over 12.991s wall clock time, 66.7M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting, not spare-capacity or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-controls-20261011-08.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-controls-20261011-08.service: Consumed 6.153s CPU time over 10.495s wall clock time, 42.8M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting, not spare-capacity or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-controls-20261011-09.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-controls-20261011-09.service: Consumed 6.766s CPU time over 11.118s wall clock time, 46.5M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting, not spare-capacity or host-loss acceptance."
+  },
+  {
+    "unit": "openplan-worker-root-ops-regression-20261011-04.service",
+    "ActiveState": "inactive",
+    "InvocationID": "",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "memoryLimitBytes": 536870912,
+    "memorySwapMaxBytes": 0,
+    "cpuQuota": "100%",
+    "completedResourceAccounting": [
+      "openplan-worker-root-ops-regression-20261011-04.service: Consumed 9.782s CPU time over 13.033s wall clock time, 66.2M memory peak."
+    ],
+    "resourceLimits": "Rounded journal accounting, not spare-capacity or host-loss acceptance."
+  }
+]
