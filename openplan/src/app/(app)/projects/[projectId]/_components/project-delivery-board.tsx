@@ -452,7 +452,7 @@ export function ProjectDeliveryBoard({
             <StatusBadge tone="neutral">{projectControlsSummary.completedMilestoneCount} complete</StatusBadge>
           </div>
           {projectMilestonesPending ? (
-            <div className="module-alert mt-5 text-sm">Project milestones will appear after the Lane C migration is applied to the database.</div>
+            <div className="module-alert mt-5 text-sm">Milestones appear after a database update on this installation.</div>
           ) : milestones.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
               {milestonesReadFailed
@@ -529,7 +529,7 @@ export function ProjectDeliveryBoard({
             ) : null}
           </div>
           {projectSubmittalsPending ? (
-            <div className="module-alert mt-5 text-sm">Project submittals will appear after the Lane C migration is applied to the database.</div>
+            <div className="module-alert mt-5 text-sm">Submittals appear after a database update on this installation.</div>
           ) : submittals.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
               {submittalsReadFailed

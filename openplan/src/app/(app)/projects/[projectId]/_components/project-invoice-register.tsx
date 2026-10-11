@@ -66,7 +66,7 @@ export function ProjectInvoiceRegister({
         <StatusBadge tone="info">Outstanding {fmtCurrency(invoiceSummary.outstandingNetAmount)}</StatusBadge>
       </div>
       {projectInvoicesPending ? (
-        <div className="module-alert mt-5 text-sm">Invoice records will appear after the Lane C migration is applied to the database.</div>
+        <div className="module-alert mt-5 text-sm">Invoices appear after a database update on this installation.</div>
       ) : projectInvoices.length === 0 ? (
         <div className="module-empty-state mt-5 text-sm">
           {invoicesReadFailed
