@@ -65,6 +65,8 @@ The [October 11 native aerial draft counterexample](reviews/2026-10-11-odm-draft
 
 The [October 11 disconnected aerial engine journal](reviews/2026-10-11-odm-engine-effects/STATUS.md) freezes original source/engine/settings/task identity, preserves exact commands and replies, and refuses a second first-issue flag. Stopped-root copy replay preserves unresolved effects. Actual engine custody, ZIP-derived imagery and runtime recovery remain open.
 
+The [October 11 captured aerial draft inspector](reviews/2026-10-11-odm-draft-custody/STATUS.md) compares verified captured metadata and upload bytes with the original saved plan. Native partial/complete drafts match; duplicate uploads, overwritten metadata and changed bytes refuse. Results grant no transport permission. Complete worker recovery remains open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

@@ -46,3 +46,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-engine-effects/native_recovery.py \
             --out "$RUNNER_TEMP/odm-engine-effects-native"
+      - name: Captured draft harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-draft-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-draft-custody-controls"
