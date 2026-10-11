@@ -702,3 +702,23 @@ Vault decryption, populated SQLite, all-worker or clean-agency commissioning
 acceptance. The semantic comparator remains a proof harness. Hosted relaunch
 ownership and the main merge hold remain with the relaunch agent. No hosted
 schema, deployment, worker-contract or release change occurs in this checkpoint.
+
+## October 11 authenticated recovery and limited current browser continuation
+
+The [separate-cluster report](SEPARATE_CLUSTER_RECOVERY.md) now includes 21
+native authenticated access checks. Three retained synthetic users log in;
+owner/viewer scoped reads, outsider/anonymous refusals, private archive
+refusals and service-only queue access match their boundaries. The initial
+producer fails at an incorrectly parameterized queue request and remains
+failed. A separate continuation preserves its three login graphs, verifies
+three further graphs and passes in 67.584 seconds under the 1 GiB cap.
+Other records, files, schema, roles, properties and key custody stay unchanged.
+All new services stop again. This is bounded access evidence, not all-table RLS.
+
+The frozen f72 preview adds read-only desktop and 390px DOM observations on
+the older expanded target. Saved Oakland geometry matches the native record;
+the coverage endpoint returns 238 schedule rows in its bounding box. No model
+run or feed adoption occurs. Capture, keyboard and later resize failures remain
+visible. This adds no visual or keyboard acceptance and no browser acceptance
+against the new cluster. The exact owned preview stops. PR199 carries this
+evidence; the relaunch agent retains hosted coordination and the main merge hold.

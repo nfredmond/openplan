@@ -61,6 +61,13 @@
     "database/prove_schema_semantics.py": "caafae5bef61c050df45eeda57cd1093e696a4aec8bddb6c99b73733e39da25e",
     "database/prove_guards.py": "cba4125999bb06cf86fb5862c9a2237124fe3cec578b251a7fafe6ab2a0921fd",
     "database/native_schema_controls.py": "910058d7db594d365563c4c0d749dcf1a46ebc2925c71812d196dc17cf5fbea8",
+    "browser-f72-limited/prove_native_scope.py": "648a912c4ecdf58495eea1e0fe7e2be3705c7fd08e87e552f626cead172cee6a",
+    "browser-f72-limited/observations-summary.json": "6f50cb741edb7998ddad62b44a85275c22c1684969bcdf71df934991e5185d66",
+    "browser-f72-limited/native-browser-records.json": "29cfe4b16f7e0a973a4b9ebbc9b4e1e0def8ed457e3452eeec42e63c48b0dae5",
+    "browser-f72-limited/read_native.py": "cdf411124f258892d2ffe4bf0953198324a84c0d26d20fb93441d9dda521cddf",
+    "browser-f72-limited/limitations.json": "f1e6ef79e20c6c3f86aba25e96da82f86b48589238fe1cc867295e892d1d3f6c",
+    "browser-f72-limited/preview-stop.json": "685af0b0407830b7d62d5af88abefda82eb5465f1661b4aa74dd02295c536966",
+    "browser-f72-limited/native-scope-controls.json": "62d573a96e13e04896e5f0c7772181e7f160ebd29c0e046bfd23a1931e3396ed",
     "current-main/build-success.json": "b524b063373a2de74816b696427019de6551f5f71853605b54e87eee0ab2a612",
     "current-main/launch-controls.json": "b447e3b7ad93281fca289b5d98541d02b71ef7721daacf026b60ffbc7bbf073d",
     "current-main/current-main-join-checks.json": "d5435574b20e22c4bda826800e16059e5c52e92bd5d8e7156c1d784e52679fb4",
@@ -76,7 +83,28 @@
     "database/executed-producer/run_database.py": "f5fe7de49250f120634b51847b1fc9c627788697ab948c908049339b0d8914bf",
     "database/executed-producer/guards.py": "25a485c922cf00c2b7b130209428cab902ba7495349536a14f692d5df9d131e5",
     "database/executed-producer/prove_bootstrap.py": "6d106aa02995ba016daa8c0808414dfe77900abfb848cc6098380b321ccf0138",
-    "database/executed-producer/prove_guards.py": "cba4125999bb06cf86fb5862c9a2237124fe3cec578b251a7fafe6ab2a0921fd"
+    "database/executed-producer/prove_guards.py": "cba4125999bb06cf86fb5862c9a2237124fe3cec578b251a7fafe6ab2a0921fd",
+    "auth/failed-producer/prove_access.py": "dcd498326b21886abd1a7e9d9250b478be6e15c1417b6f11e12c5488de2713c5",
+    "auth/failed-producer/executed-source-after-failure-sha256.json": "ad2d1474eb7fba37aabbff8e47e86ffa8ebd57d93e27039e991c950881dde28e",
+    "auth/failed-producer/auth_preservation.py": "4299d1a650ee4ef98e3ba28ed2e53b8de9cb45b3e39f5418be2bfc35267e8027",
+    "auth/failed-producer/failure-summary.json": "e32aa7431fb7c9e12a1410de960adb85ea99ba7b204e0d4d728b9028a872cf46",
+    "auth/failed-producer/run_native.py": "a2f9f63defffe938335a2a173d50ab60fefd99f4f314c38417adb1d8face3e2e",
+    "auth/failed-producer/post-failure-service-observation.json": "23e822fbbacd90dce1bdda8162f0a0dde79f82b5f75e2504467ca1931abbd796",
+    "auth/failed-producer/prove_auth_preservation.py": "b57f2c14e0750aa7b6f8859f45a50f869f9954639e9cfb43b6e0888bb9b293ad",
+    "auth/failed-producer/failed-service-result.json": "e3506938cd193fff4149a5734c10bc19ca028569390c3c809813fe216ec8f815",
+    "auth/failed-producer/access_guards.py": "a6cc8dba77b09777198364cf9523468010a539212e438d2e3464ac8297fbd430",
+    "auth/failed-producer/access-controls.json": "12728b2a3feb2aee7dd7ad65a6489882896701c35ddf479c7d03a6da79f903ab",
+    "auth/failed-producer/auth-controls.json": "54c2cbaded8b9b88ddb50c451124d7bfdfdf6315f0445b9c6c62e39eff93ed45",
+    "auth/continuation/prove_access.py": "49966ec3d8a0812534b5f311a6741dd9f24e4349958a90a5a8e93cf02b312449",
+    "auth/continuation/auth_preservation.py": "4299d1a650ee4ef98e3ba28ed2e53b8de9cb45b3e39f5418be2bfc35267e8027",
+    "auth/continuation/result.json": "61326191aa23d547b931b49ba3f2343a691cded9a4c74f15fb49ac3717ad4d02",
+    "auth/continuation/run_native.py": "c7d2e90315fc55529f50658bfa6475fce029cc2be8294723ee81a9e4024fa832",
+    "auth/continuation/prove_auth_preservation.py": "b57f2c14e0750aa7b6f8859f45a50f869f9954639e9cfb43b6e0888bb9b293ad",
+    "auth/continuation/access_guards.py": "7534b638bb0c2542348a14959c09fed7788ba74a0232f0948d45dd2b9d2aa589",
+    "auth/continuation/service-result.json": "4ee583739693c14dd80b5545a799393d4fb8b1445750317fae4a082cf0e3be8b",
+    "auth/continuation/pre-execution-source-sha256.json": "3439c8336bf03b78cc99423aba696f4d345b741343b287cedfd484c665330b5b",
+    "auth/continuation/access-controls.json": "caa5ec338f67a7ecb3c26df37d7d07fffbc96836e671593169f946d1b8fd906f",
+    "auth/continuation/auth-controls.json": "54c2cbaded8b9b88ddb50c451124d7bfdfdf6315f0445b9c6c62e39eff93ed45"
   },
   "controls": {
     "baseline": true,
@@ -84,5 +112,13 @@
     "literalPrivateValueRefused": true,
     "restored": true
   },
-  "limits": "Known private values, token pattern and common-role credential contexts scanned. A literal-only first scanner falsely classified ordinary PostgreSQL role text. Context checks correct that false positive. Unknown secrets and all possible low-entropy encodings are outside this check."
+  "limits": "Known private values, token pattern and common-role credential contexts scanned. A literal-only first scanner falsely classified ordinary PostgreSQL role text. Context checks correct that false positive. Unknown secrets and all possible low-entropy encodings are outside this check.",
+  "authContinuationSourcesUnchanged": true,
+  "newPublicationControls": {
+    "baseline": true,
+    "harmless": true,
+    "actualMountedKeyRefused": true,
+    "restored": true,
+    "scope": "Known high-entropy values and JWT patterns only. Raw Auth images, credentials, DOM bodies and service configuration excluded. Unknown secrets and low-entropy encodings are outside this scan."
+  }
 }

@@ -1,0 +1,40 @@
+{
+  "head": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "buildId": "pFMvxBQGkzLl9mssii6ue",
+  "tabId": "tab_3",
+  "app": "http://127.74.9.10:3568",
+  "api": "http://127.74.9.10:29941",
+  "database": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "screenshots": {
+    "attempts": 2,
+    "captured": 0,
+    "failure": "Preview client capture failed",
+    "client": "preview-ba5a457870a5e742d48d0d5cc351dc4b"
+  },
+  "keyboard": {
+    "failedCalls": 3,
+    "partialEffectPossible": true,
+    "acceptance": false
+  },
+  "resizeFailures": [
+    15000,
+    30000
+  ],
+  "successfulWidths": [
+    1280,
+    390
+  ],
+  "selectionMethod": "Scripted native select change event, not keyboard usability",
+  "observerCorrection": "Initial observer watched /api/gtfs/service-coverage. Corrected to /api/gtfs/feeds/study-area-coverage before captured repeat. Earlier empty observation was not a network failure.",
+  "guardControlFailure": "First pure omitted-guard invocation lacked __file__; corrected namespace. Native read was separate and retained.",
+  "acceptance": {
+    "domRead": true,
+    "screenshots": false,
+    "visual": false,
+    "fullConsole": false,
+    "keyboard": false,
+    "practitioner": false,
+    "newClusterBrowser": false
+  }
+}

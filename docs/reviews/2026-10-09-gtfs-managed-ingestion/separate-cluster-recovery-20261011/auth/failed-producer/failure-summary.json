@@ -1,0 +1,149 @@
+{
+  "state": "failed",
+  "requests": [
+    {
+      "role": "owner",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "owner",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "owner",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_feed_versions",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_route_service_levels",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_stop_service_levels",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "owner",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "viewer",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "outsider",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "anon",
+      "privateArchive": true,
+      "status": 400
+    }
+  ],
+  "logins": [
+    {
+      "role": "owner",
+      "exactAuthGraph": {
+        "sessionId": "49b9b995-1116-4ac4-97d8-8ef53f2f2d17",
+        "refreshTokenId": 41,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    },
+    {
+      "role": "viewer",
+      "exactAuthGraph": {
+        "sessionId": "33abfb36-218b-4f9e-9197-2030770118c8",
+        "refreshTokenId": 42,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    },
+    {
+      "role": "outsider",
+      "exactAuthGraph": {
+        "sessionId": "50573f6d-2121-417e-9c70-d45e975c13e3",
+        "refreshTokenId": 43,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    }
+  ],
+  "failureType": "ValueError",
+  "reason": "auth-service-empty-queue"
+}

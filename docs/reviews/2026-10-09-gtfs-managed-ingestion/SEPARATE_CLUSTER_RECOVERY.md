@@ -29,7 +29,7 @@ build ID `pFMvxBQGkzLl9mssii6ue`. Its peak is 6,863,728,640 bytes under a
 10 GiB cap, no swap and one CPU. Selected regression passes 223 files and
 3,481 tests, with 45 skipped. Changed main UI lint and the direction check pass.
 The direction check retains its expired-registry and older-review reminders.
-These checks do not establish a new browser journey.
+The limited current browser read below remains separate from these checks.
 
 ## Independent cluster reconstruction
 
@@ -117,6 +117,66 @@ database properties, roles and mounted key bytes match. The original captured
 point files remain unchanged. This read does not audit every unrelated database
 or process on the computer.
 
+## Authenticated access after recovery
+
+Three synthetic retained users log in through the recovered Auth service.
+[The separate continuation](separate-cluster-recovery-20261011/auth/continuation/result.json)
+passes 21 native access checks. Owner and viewer read one scoped row in each
+of the version, route service and stop service tables. An outsider receives
+empty results; anonymous requests receive permission errors. All four roles
+are refused the private GTFS archive, while a service request confirms the
+same archive exists. The worker queue RPC returns an empty queue for the
+service role and rejects the four other roles. These reads exercise three
+GTFS tables, one archive and one RPC, not every application permission.
+
+The [first Auth producer](separate-cluster-recovery-20261011/auth/failed-producer/failure-summary.json)
+remains failed. It verifies the three logins and the first 16 access checks,
+then supplies the wrong named parameters to the queue RPC. The corrected
+continuation uses `p_limit` and `p_after`. It preserves the first three login
+graphs and verifies three more. Each password login adds exactly one session,
+refresh token, authentication method and audit row. Only the actor's sign-in
+fields change in its existing user row. Retained Auth rows stay unchanged.
+The continuation compares all other table images, files, schema, properties,
+roles and key custody. Its executed sources match their pre-execution hashes.
+
+The continuation exits 0 in 67.584 seconds with a 67,854,336-byte peak under
+the 1 GiB cap, no swap and one CPU. All four exact API services and the new
+database stop again. Pure baseline, harmless and restored controls pass;
+targeted access, login-graph and omitted-check variants fail their intended
+oracles. Passwords, tokens, raw Auth rows and service configuration remain
+private. This does not establish new-cluster browser or all-table RLS acceptance.
+
+## Limited current f72 browser read
+
+T3 navigates from the Dashboard through the Data Hub and Models to the saved
+Oakland model. The preview uses frozen f72 and build ID
+`pFMvxBQGkzLl9mssii6ue`, with the original expanded target in cluster
+`a4181e33`. It does not use the new cluster `6d7969d9`.
+[The recorded DOM observations](separate-cluster-recovery-20261011/browser-f72-limited/observations-summary.json)
+cover 1280px and 390px reads. The study area remains Oakland, the model has
+zero runs, the current BART feed remains selectable and the unadopted CTA
+candidate remains absent from the model's feed options. No model is launched
+and no feed is adopted.
+
+Scripted native-select changes repeat the form's read-only coverage request.
+The initial observer watches the wrong route and is corrected before the
+captured repeat. The actual study-area endpoint returns HTTP 200, 119 bytes,
+hash `bf1372d1f246cde823eadcafde9c467d5008372fea5ed75584335fc6c821ad90`
+and 238 scheduled service rows in the saved bounding box. The submitted
+60,606-byte geometry hash matches a fresh native project read. Native records
+also confirm zero model runs, unchanged project geometry, the same current
+BART version and the completed, unadopted CTA version. These are schedule
+rows in a bounding box, not distinct stops, polygon coverage or measured service.
+
+Two screenshot calls fail, three keyboard calls report failure with possible
+partial effects, and two later resize calls time out. The successful DOM width
+reads do not establish visible layout. The observer records no subsequent
+errors or warnings, but it does not capture the whole console history.
+This checkpoint adds no screenshot, visual, keyboard, full-console or
+practitioner acceptance. The exact owned preview stops; existing target APIs
+remain available. The [failure limits](separate-cluster-recovery-20261011/browser-f72-limited/limitations.json)
+remain explicit rather than borrowing images from an earlier build.
+
 ## CI and integration disposition
 
 [Exact f72 CI evidence](separate-cluster-recovery-20261011/exact-f72-ci-summary.json)
@@ -148,7 +208,8 @@ been upgraded or accepted for current production security maintenance.
 Directory metadata, populated SQLite, every external worker family, healthy
 computation beyond 45 minutes, no-egress useful cartography, teammate operation
 and founder-independent agency commissioning remain open. The restored-point
-T3 host previously disconnected, so this checkpoint adds no screenshot, 390px,
-full console, pointer or keyboard acceptance. Agent controls do not establish
+T3 capture and later resize failures leave visual, full-console and keyboard
+acceptance open. The limited 390px DOM read is recorded separately above.
+Agent controls do not establish
 practitioner usefulness, scientific validity or agency adoption. The nationwide,
 California, territory, tribal and overlapping-authority contract remains intact.

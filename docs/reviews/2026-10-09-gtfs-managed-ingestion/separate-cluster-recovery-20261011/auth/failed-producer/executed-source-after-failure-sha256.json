@@ -1,0 +1,10 @@
+{
+  "files": {
+    "prove_access.py": "dcd498326b21886abd1a7e9d9250b478be6e15c1417b6f11e12c5488de2713c5",
+    "auth_preservation.py": "4299d1a650ee4ef98e3ba28ed2e53b8de9cb45b3e39f5418be2bfc35267e8027",
+    "run_native.py": "a2f9f63defffe938335a2a173d50ab60fefd99f4f314c38417adb1d8face3e2e",
+    "prove_auth_preservation.py": "b57f2c14e0750aa7b6f8859f45a50f869f9954639e9cfb43b6e0888bb9b293ad",
+    "access_guards.py": "a6cc8dba77b09777198364cf9523468010a539212e438d2e3464ac8297fbd430"
+  },
+  "capture": "After failed native execution, before preparing a separate controller. No claim of a pre-execution manifest."
+}

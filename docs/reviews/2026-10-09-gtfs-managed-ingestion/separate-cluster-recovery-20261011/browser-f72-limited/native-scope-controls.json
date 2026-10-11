@@ -1,0 +1,48 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless metadata",
+      "passed": true
+    },
+    {
+      "case": "isolated-database-scope",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "isolated-source-scope",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "isolated-container-identity",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "isolated-container-name",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "isolated-container-project",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "isolated-container-running",
+      "targetedRefusal": true,
+      "omittedGuardAdmitsBrokenScope": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    }
+  ],
+  "sourceSha256": "cdf411124f258892d2ffe4bf0953198324a84c0d26d20fb93441d9dda521cddf",
+  "blindCategory": "Pure identity controls cannot establish native row contents, all database isolation or browser usability."
+}
