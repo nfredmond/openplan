@@ -47,3 +47,27 @@ migration or hosted-system changes are part of this correction.
 
 Implementation and controlled checks belong to GPT-6.1 Sol at high reasoning.
 They do not constitute an independent review or full worker-recovery acceptance.
+
+
+## Inherited actual CI commands pass with corrected source
+
+All 16 [actual inherited YAML commands](evidence/actual-ci-steps.json)
+pass locally, including every one of the 16 aerial suites and historical source
+controls. Native journal capture/replay passes. Repeated owned runtime
+preparation interruption, two-root capture and original-task resumption passes
+with 26 observations/81 controls, in 1.189 seconds.
+[Current bindings](evidence/preparation-native-source-bindings.json) retain
+the corrected journal and exact candidate worker files. Earlier preparation
+proofs remain historical. Full worker recovery stays false; no engine/callback
+transport, decoding or live authority runs.
+
+The serial actual-CI service reaches its 256 MiB configured limit and exits zero.
+Final cgroup memory-event counters are unavailable, so no event-count or spare
+capacity claim follows. It has zero active PID and stops. A publication helper
+initially expects the historical journal summary under the wrong filename; the
+actual `result.json` remains intact and publishes through the corrected path.
+GitHub checks for the next committed head remain separate.
+
+All 14 nested application documentation tests and the product direction check
+pass. Existing direction reminders stay visible. The serial documentation unit
+peaks at 285,016,064 bytes under 1 GiB, exits zero and stops.

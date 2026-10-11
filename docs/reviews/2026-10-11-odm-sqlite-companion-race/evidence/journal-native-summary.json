@@ -1,0 +1,10 @@
+{
+  "broken": 66,
+  "controls": 69,
+  "elapsedSeconds": 0.468,
+  "journalRows": 2,
+  "nativeImageryOrEngineExecuted": false,
+  "outcome": "journal_recovery_passed",
+  "positive": 3,
+  "workerRecoveryAccepted": false
+}

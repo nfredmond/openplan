@@ -75,6 +75,8 @@ The [October 11 opt-in durable aerial HTTP admission candidate](reviews/2026-10-
 
 The [October 11 owned aerial runtime preparation candidate](reviews/2026-10-11-odm-runtime-preparation/STATUS.md) binds original actor/context and task to retained local inputs and engine plans inside the actual owned runtime. Native interrupted preparation and relocated-copy recovery pass. Trusted context/URL intake, live authority, transport/results and complete worker recovery remain open.
 
+The [October 11 SQLite concurrency correction](reviews/2026-10-11-odm-sqlite-companion-race/STATUS.md) tolerates only retired transient companions, preserves unsafe/unavailable-file refusal and passes 54 tests/59 controls on two Python versions plus 200 serial native concurrency pairs. Inherited actual CI and stopped-root preparation recovery pass; exact-head GitHub checks remain separate. Preserve the main merge hold.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

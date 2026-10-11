@@ -106,3 +106,11 @@ practitioner acceptance or full-v1 scope changes.
 
 Implementation and the controlled evidence belong to GPT-6.1 Sol at high reasoning
 in this lane. These are implementation-owner checks, not an independent review.
+
+
+## Later journal correction and repeated native recovery
+
+The [concurrent SQLite correction](../2026-10-11-odm-sqlite-companion-race/STATUS.md)
+repeats all inherited actual CI commands and original preparation capture/resume
+against corrected journal source. Its current native bindings supplement the
+historical bindings above. Full worker recovery and live authority remain open.
