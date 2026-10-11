@@ -914,10 +914,10 @@ export function ExploreWorkbench({
                           : "No project is attached to this workspace yet."}
                   </p>
                 </div>
-                <div className="module-record-actions">
+                <div className="module-record-actions min-w-0 max-w-full">
                   {workspaceProjects.length > 0 ? (
                     <select
-                      className="h-8 rounded-md border border-input bg-background px-2 text-sm"
+                      className="h-8 min-w-0 max-w-full rounded-md border border-input bg-background px-2 text-sm"
                       aria-label="Attribute analysis to project"
                       value={selectedProjectId}
                       onChange={(event) => setSelectedProjectId(event.target.value)}

@@ -1,5 +1,9 @@
 # Hosted relaunch, October 10, 2026
 
+Current installation status is superseded by the
+[October 11 public cutover record](HOSTED_LIVE_2026-10-11.md).
+The findings below remain the historical checkpoint.
+
 Status at this checkpoint: a staged production build works; the public alias
 has not yet switched from the May deployment. Update this record after deployment
 acceptance. This does not declare a new semantic release or complete v1.
