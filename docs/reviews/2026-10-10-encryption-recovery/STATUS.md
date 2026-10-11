@@ -119,3 +119,20 @@ Its 360-table and one-object restoration, encrypted canary, sign-in and OWP
 reconstruction have passed; its live RLS result is still pending. It cannot
 establish acceptance of this newer patch. A new native/full candidate check and
 current CI remain required before integration.
+
+## Key-only CI coverage, October 11 follow-up
+
+The restore workflow previously omits key-helper and key-test paths. A future PR
+changing only these files can miss the native archive check. The workflow now
+lists the helper, test and key-control runner explicitly. Its existing proof
+step runs the key controls and retains their report with the restore artifact.
+
+[Operations tests](key-workflow-python-tests.json) pass all 118 tests.
+[Workflow controls](key-workflow-controls.json) include baseline, harmless and
+restored passes. Six broken declarations fail at assertions: each missing key
+path, the missing proof command, a commented command and representative mode in
+place of the full archive command. Private copies restore original bytes.
+[Workflow source hashes](key-workflow-source-hashes.json) identify the change.
+These checks inspect explicit YAML paths and executable command shape. They do
+not emulate GitHub events or establish permissions, queue availability, native
+recovery or current CI success. The current candidate checks remain pending.

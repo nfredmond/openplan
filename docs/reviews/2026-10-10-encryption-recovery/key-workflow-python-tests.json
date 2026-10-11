@@ -1,0 +1,11 @@
+{
+  "checkedAt": "2026-10-11T06:46:30.949852+00:00",
+  "command": "python3 -B -m unittest discover -s openplan/scripts/ops/tests -p test_*.py",
+  "cwd": "restore-mounted-key-check-20261011",
+  "tests": 118,
+  "failures": 0,
+  "errors": 0,
+  "durationSeconds": 13.05,
+  "privateLogSha256": "ecfacebd0f59ff1f20578bc0053a37e52e6d895378d4df12cc925013e58e5868",
+  "limits": "Operations unit tests and workflow declaration checks. No current-head native full restore or hosted acceptance."
+}
