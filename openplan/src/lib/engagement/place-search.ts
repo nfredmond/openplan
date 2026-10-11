@@ -20,7 +20,7 @@ const PLACE_TYPES = "address,street,neighborhood,locality,place,postcode";
 export type PlaceSearchResult = {
   id: string;
   name: string;
-  /** The rest of the address ("Grass Valley, California 95945"), when given. */
+  /** The rest of the address (town, state, postcode, country), when given. */
   detail: string | null;
   center: [number, number];
   /** West, south, east, north, for a place with an extent. */
