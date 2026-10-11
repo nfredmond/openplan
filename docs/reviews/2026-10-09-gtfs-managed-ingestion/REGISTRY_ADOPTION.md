@@ -78,7 +78,7 @@ This does not apply any migration to hosted services.
 wording correction removes one `ingest` occurrence, so the actual count falls
 from eight to seven. The retained baseline still says eight. The correction
 tightens that one counter to seven; it does not change detection or runtime
-application code. [Four focused language tests and controls](registry-copy-controls.json)
+application code. [Four focused language tests and controls](registry-jargon-counter-controls.json)
 pass for baseline, harmless comments and restored bytes. Reintroducing the old
 sentence, restoring the stale counter or setting an incorrect lower counter
 each fails that equality assertion. Lint passes. The original broader failure

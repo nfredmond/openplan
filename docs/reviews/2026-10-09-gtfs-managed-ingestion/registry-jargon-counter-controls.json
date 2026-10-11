@@ -1,0 +1,57 @@
+{
+  "variants": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "passedTests": 4,
+      "failedTests": 0,
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "passedTests": 4,
+      "failedTests": 0,
+      "failedAssertions": []
+    },
+    {
+      "variant": "reintroduced-ingest",
+      "result": "expected assertion failure",
+      "passedTests": 3,
+      "failedTests": 1,
+      "failedAssertions": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ]
+    },
+    {
+      "variant": "stale-counter",
+      "result": "expected assertion failure",
+      "passedTests": 3,
+      "failedTests": 1,
+      "failedAssertions": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ]
+    },
+    {
+      "variant": "incorrectly-lowered-counter",
+      "result": "expected assertion failure",
+      "passedTests": 3,
+      "failedTests": 1,
+      "failedAssertions": [
+        "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "passedTests": 4,
+      "failedTests": 0,
+      "failedAssertions": []
+    }
+  ],
+  "restoredSha256": {
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": "03ed587b466c4372403c1b21947c8758191ee06a789aeae614b54c108590639f",
+    "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "cb59cc2abe916edbe1e05f5e332c6f1598afa39709494de0f985229c9001e72c"
+  },
+  "boundary": "Actual nested-directory source scan and protected-copy assertions. No browser, layout or comprehension acceptance."
+}
