@@ -1,0 +1,75 @@
+# {{ p.title }}: maps and GIS package
+{% if notice %}
+> {{ notice }}
+{% endif %}
+{{ p.client }}{% if p.prepared_by %}. Prepared by {{ p.prepared_by }}{% endif %}. {{ p.date_line }}{% if status %}. Status: {{ status }}{% endif %}.
+
+Open `index.html` in a web browser to see every figure, the interactive map and the download links. It works from this folder with no internet connection.
+
+## What is in this folder
+
+| Folder or file | Contents |
+|---|---|
+| `index.html`, `web/` | Package website: figure gallery, interactive map, downloads, sources |
+| `maps/pdf`, `maps/png`, `maps/svg` | Each figure as a vector PDF, a {{ dpi }} dpi PNG and a layered SVG with live type; `maps/svg_outlined` has the same SVG with type converted to outlines |
+| `atlas/` | `{{ p.id }}_figures.pdf` (all figures with a cover and list){% if atlases %}, and the map books{% endif %} |
+| `data/` | GeoPackages in {{ crs.name }} (EPSG:{{ crs.epsg }}), plus GeoJSON copies of the data layers |
+| `qgis/` | QGIS project with layers, symbols, labels, map themes and print layouts, and the script that rebuilds it |
+| `arcgis/` | ArcGIS Pro toolbox and script that build the project, geodatabase and layouts on a computer with ArcGIS Pro |
+| `illustrator/` | Script, swatches and notes for editing the figures in Adobe Illustrator |
+| `google-earth/` | KMZ of the data layers |
+| `source/`, `tools/` | Original downloads with provenance, the project specification, and the kit, for a rebuild with no internet connection |
+| `spec/` | `map_package.json`, the one description of every map that all of the builders read |
+| `fonts/` | Inter (SIL Open Font License). Install it before opening the QGIS or ArcGIS Pro project |
+| `docs/` | Figure notes with alt text, data sources, data dictionary, design sheet |
+| `qa/` | Automated checks, contact sheet, grayscale and colour-vision previews |
+| `AGENTS.md` | Instructions for an AI agent that will build or edit the package |
+| `MANIFEST.sha256` | Checksum of every file |
+
+## Figures
+
+| File | Figure | Title | Page | Scale |
+|---|---|---|---|---|
+{% for m in maps %}| `{{ m.id }}` | {{ m.figure or "" }} | {{ m.title }} | {{ "%g"|format(m.page.w) }} by {{ "%g"|format(m.page.h) }} in | {{ m.scale_text }} |
+{% endfor %}{% for a in atlases %}| `{{ a.id }}` | Map book | {{ a.title }} ({{ a.atlas.pages|length }} sheets) | {{ "%g"|format(a.page.w) }} by {{ "%g"|format(a.page.h) }} in | {{ a.scale_text }} |
+{% endfor %}
+
+## Use the package
+
+- **Place a figure in a report or application.** Use the PDF for print and the PNG for Word or slides. Alt text for each figure is in `docs/figure_notes.md`.
+- **Edit in QGIS.** Install the fonts, then open `qgis/{{ p.id }}.qgz`. See `qgis/README.md`.
+- **Edit in ArcGIS Pro.** Copy this folder to a short local path such as `C:\GIS\{{ p.id }}`, install the fonts, add `arcgis/Build_Maps.pyt` as a toolbox and run **Build project and layouts**. See `arcgis/README.md`.
+- **Edit in Illustrator.** Install the fonts and run `illustrator/Open_Maps_In_Illustrator.jsx`. See `illustrator/README.md`.
+- **View in Google Earth.** Open `google-earth/{{ p.id }}.kmz`.
+
+## What was verified, and what was not
+
+{{ verification }}
+
+## Review gates
+
+{{ 'Every gate has passed on these figures.' if review.release_ready else 'This is a review package, not a release.' }} Record a review with `tgis.py attest <project> <gate> --reviewer NAME --note TEXT --evidence FILE` and rebuild. A gate goes stale when the figures change after the review.
+
+| Gate | Status | Reviewer | Date |
+|---|---|---|---|
+{% for g in review.gates %}| {{ g.gate.replace('_', ' ') }} | {{ g.status }} | {{ g.reviewer }} | {{ g.date }} |
+{% endfor %}
+{% if review.blockers %}Open items before release:
+{% for b in review.blockers %}- {{ b }}
+{% endfor %}{% endif %}
+## Rebuild from the original sources
+
+`source/` holds `project.yaml`, any supplied input files, and `cache/` with every original download this package was built from (`provenance.json` lists publisher, URL, query and retrieval date for each). `tools/` holds the kit. On a computer with QGIS 3.34 or later and its Python, from this folder:
+
+```
+python3 tools/transportation-gis/scripts/tgis.py doctor
+python3 tools/transportation-gis/scripts/tgis.py build source --offline
+```
+
+The rebuilt package appears under `source/build/`. `--offline` makes any download attempt an error, so the rebuild uses only what is in this folder. To check this package against its checksums: `python3 tools/transportation-gis/scripts/tgis.py verify .`
+
+## Credits and terms
+
+{% for c in credits %}- {{ c }}
+{% endfor %}- Fonts: Inter, SIL Open Font License 1.1 (`fonts/inter/LICENSE_OFL.txt`).
+- Web map: Leaflet, BSD 2-Clause (`web/vendor/LEAFLET_LICENSE`).

@@ -236,6 +236,16 @@ provider account access, billing and answer usefulness remain unmeasured. See th
 [worker evidence](../../docs/reviews/2026-09-12-api-worker/VERIFICATION.md) and
 [project UI evidence](../../docs/reviews/2026-09-12-api-project-ui/RESUME.md).
 
+**Map packages.** Migration `20261017000001_project_map_packages.sql` adds map
+package records and the private `project-map-packages` bucket, 1 GiB per object.
+Files arrive through short-lived signed upload URLs, so the storage service's
+own upload limit must allow them: the local `supabase/config.toml` sets
+`file_size_limit = "1GiB"`, and a hosted project needs the same in its storage
+settings. `OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
+OpenPlan runs no model for a package and holds no provider key for it. Claude
+Fable 5.1 builds packages on a planner's own computer through the connector's
+`maps` command; see the [connector guide](../../workers/planner_agent_connector/README.md#map-packages).
+
 When working with multiple local stacks, supply `OPENPLAN_SUPABASE_WORKDIR`
 explicitly to **every** live test/QA command. The application `.env.local` is not
 implicitly loaded by Vitest. Example: `OPENPLAN_SUPABASE_WORKDIR=/absolute/stack

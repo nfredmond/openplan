@@ -15,8 +15,12 @@
  */
 
 import { createAnthropic } from "@ai-sdk/anthropic";
+import { wrapLanguageModel } from "ai";
 
+import { claudeEffortFor } from "@/lib/ai/model-policy";
 import { workspaceIntegrationKey } from "./context";
+
+type WrappableModel = Parameters<typeof wrapLanguageModel>[0]["model"];
 
 /** The effective key for this request, or null when neither source has one. */
 export function anthropicApiKey(): string | null {
@@ -39,14 +43,51 @@ export function anthropicKeySource(): "workspace" | "env" | null {
 }
 
 /**
+ * Output tokens added to each call's cap for thinking. Opus 5.5 and Haiku 5.5
+ * always think, and thinking counts against the cap; every cap in the app was
+ * sized for visible text when the defaults were Opus 4.8 and Haiku 4.5 with
+ * thinking off. Kept modest so a non-streaming call stays well under the
+ * five-minute response-header timeout.
+ */
+export const CLAUDE_THINKING_ALLOWANCE_TOKENS = 8000;
+
+/**
+ * Apply the policy to a Claude model: its effort, and room for thinking on
+ * top of the caller's visible-output cap. A model ID outside the policy is
+ * returned unchanged.
+ */
+export function withAgentModelPolicy(model: WrappableModel, modelId: string): WrappableModel {
+  const effort = claudeEffortFor(modelId);
+  if (!effort) return model;
+  return wrapLanguageModel({
+    model,
+    middleware: {
+      specificationVersion: "v3",
+      transformParams: async ({ params }) => ({
+        ...params,
+        maxOutputTokens:
+          params.maxOutputTokens === undefined ? undefined : params.maxOutputTokens + CLAUDE_THINKING_ALLOWANCE_TOKENS,
+        providerOptions: {
+          ...params.providerOptions,
+          anthropic: { ...params.providerOptions?.anthropic, effort },
+        },
+      }),
+    },
+  });
+}
+
+/**
  * Construct a model bound to the effective key. Callers must gate on
  * {@link hasAnthropicAccess} first (they all do — every site keeps its honest
  * offline fallback); reaching this without a key is a programming error.
+ *
+ * A model named in the agent model policy carries the policy's effort and
+ * thinking allowance on every call; see {@link withAgentModelPolicy}.
  */
 export function anthropicModel(modelId: string) {
   const apiKey = anthropicApiKey();
   if (!apiKey) {
     throw new Error("No Anthropic API key available (workspace or deployment env)");
   }
-  return createAnthropic({ apiKey })(modelId);
+  return withAgentModelPolicy(createAnthropic({ apiKey })(modelId), modelId);
 }

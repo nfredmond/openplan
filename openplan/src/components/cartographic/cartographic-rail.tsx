@@ -18,6 +18,7 @@ import {
   LifeBuoy,
   ListChecks,
   Map as MapIcon,
+  MapPinned,
   Menu,
   MessageSquareShare,
   PlaneTakeoff,
@@ -53,6 +54,7 @@ const ICONS = {
   knowledge: Library,
   county: MapIcon,
   reports: FileText,
+  maps: MapPinned,
   aerial: PlaneTakeoff,
   // Receipt, not CreditCard: the register holds invoices the agency SENDS
   // (reimbursement claims to funders) — a payment-card glyph misread as

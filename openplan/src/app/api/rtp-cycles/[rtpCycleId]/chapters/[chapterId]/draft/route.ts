@@ -2,6 +2,7 @@ import { readEveryPage } from "@/lib/supabase/paged-read";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { generateText } from "ai";
+import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
@@ -58,12 +59,7 @@ import { buildRtpFiscalConstraint } from "@/lib/rtp/fiscal-constraint";
  * construction. Dismissal is terminal.
  */
 
-const DEFAULT_NARRATIVE_MODEL_ID = "claude-opus-4-8";
-
-const MODEL_PRICING_USD_PER_MTOKEN: Record<string, { input: number; output: number }> = {
-  "claude-opus-4-8": { input: 5.0, output: 25.0 },
-  "claude-haiku-4-5": { input: 1.0, output: 5.0 },
-};
+const DEFAULT_NARRATIVE_MODEL_ID = defaultClaudeModelId("orchestrator");
 
 const paramsSchema = z.object({
   rtpCycleId: z.string().uuid(),
@@ -130,20 +126,6 @@ function refuseOnEvidenceReadFailure(
 
 function nullIfUndefined(value: number | undefined): number | null {
   return typeof value === "number" ? value : null;
-}
-
-function estimateCostUsd(
-  modelId: string,
-  inputTokens: number | null,
-  outputTokens: number | null
-): number | null {
-  const pricing = MODEL_PRICING_USD_PER_MTOKEN[modelId];
-  if (!pricing) return null;
-  if (inputTokens === null && outputTokens === null) return null;
-  const raw =
-    ((inputTokens ?? 0) / 1_000_000) * pricing.input +
-    ((outputTokens ?? 0) / 1_000_000) * pricing.output;
-  return Math.round(raw * 1_000_000) / 1_000_000;
 }
 
 type ChapterAccess = {
@@ -755,7 +737,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const inputTokens = nullIfUndefined(usage?.inputTokens);
       const outputTokens = nullIfUndefined(usage?.outputTokens);
-      const estimatedCostUsd = estimateCostUsd(modelId, inputTokens, outputTokens);
+      const estimatedCostUsd = estimateClaudeListPriceUsd(modelId, inputTokens, outputTokens);
       const costWarning = buildAnalysisCostThresholdWarning(estimatedCostUsd);
       if (costWarning) {
         audit.warn("chapter_draft_cost_threshold_exceeded", {

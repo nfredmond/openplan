@@ -5,6 +5,7 @@ import { z } from "zod";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
+import { plannerAgentDefaultModelId } from "@/lib/ai/model-policy";
 import { providerApiConnectionPage, providerApiRevisionMetadata, type ApiListedConnection } from "@/lib/integrations/provider-api-metadata";
 
 const connectionSchema = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
@@ -88,7 +89,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
   const [connections, setConnections] = useState<Connection[]>([]);
   const [connectionId, setConnectionId] = useState("");
   const [apiMode, setApiMode] = useState("workspace_api_key");
-  const [model, setModel] = useState("");
+  const [model, setModel] = useState(() => plannerAgentDefaultModelId("codex"));
   const [question, setQuestion] = useState("");
   const [charges, setCharges] = useState(false);
   const [label, setLabel] = useState("My computer");
@@ -242,7 +243,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       <p className="text-sm">Ask about this project&apos;s stored name, summary and status, or draft a submittal. Only that project record and your question go to the selected provider. Documents and other project records are outside this task.</p>
       {error && <p role="alert" className="rounded border border-rose-300/30 p-2 text-sm text-rose-100">{error}</p>}
       {notice && <p role="status" className="text-sm text-sky-100">{notice}</p>}
-      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as Provider); setApiSelection(null); setModel(""); setCharges(false); setConnectionId(""); setSetup(null); }}>
+      <label className="block text-sm">Provider<select className={inputClass} value={provider} disabled={saving || Boolean(pending)} onChange={event => { setProvider(event.target.value as Provider); setApiSelection(null); setModel(plannerAgentDefaultModelId(event.target.value)); setCharges(false); setConnectionId(""); setSetup(null); }}>
         <option value="codex">Installed Codex</option><option value="claude">Installed Claude Code</option><option value="opencode">Installed OpenCode</option><option value="anthropic">Anthropic API</option><option value="api_connection">Saved API</option>
       </select></label>
       {provider === "api_connection" ? <div className="space-y-3">
