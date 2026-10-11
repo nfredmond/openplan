@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { describe, expect, it, vi } from "vitest";
 
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
@@ -60,6 +60,8 @@ function renderHistory(history: SafetyIngestHistoryEntry[]) {
       defaultBasemapId={null}
     />
   );
+  // Import history has its own tab in the Safety panel since October 10, 2026.
+  fireEvent.click(screen.getByRole("tab", { name: "Imports" }));
   return screen.getByRole("region", { name: /import history/i });
 }
 
