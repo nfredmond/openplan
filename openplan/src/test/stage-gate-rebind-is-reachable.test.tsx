@@ -1,5 +1,5 @@
 import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
-import type { ComponentPropsWithoutRef, ReactNode } from "react";
+import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
@@ -149,9 +149,6 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
 
 // Everything on the dashboard that is NOT the surface under test. The
 // stage-gate panel is deliberately absent from this list.
-vi.mock("@/components/operations/workspace-command-board", () => ({
-  WorkspaceCommandBoard: ({ children }: { children?: ReactNode }) => <div>{children}</div>,
-}));
 vi.mock("@/components/runs/RunHistory", () => ({ RunHistory: () => <div /> }));
 vi.mock("@/components/workspaces/workspace-geography-panel", () => ({
   WorkspaceGeographyPanel: () => <div data-testid="workspace-geography-panel" />,
