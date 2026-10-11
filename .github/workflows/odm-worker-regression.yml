@@ -1,0 +1,32 @@
+name: Aerial worker custody regression
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+permissions:
+  contents: read
+jobs:
+  odm-worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install lightweight worker dependencies
+        run: python3 -m pip install requests pyproj python-dotenv
+      - name: All aerial worker suites
+        run: |
+          set -eu
+          for suite in workers/odm_worker/test_*.py; do
+            python3 -B "$suite"
+          done
+      - name: Journal harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-admission-journal/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-admission-journal-controls"
+      - name: Disconnected journal root capture and replay
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-admission-journal/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-admission-journal-native"

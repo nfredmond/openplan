@@ -57,6 +57,8 @@ The [October 11 OCR inventory/root-set integration proof](reviews/2026-10-11-ocr
 
 The [October 11 aerial admission counterexample](reviews/2026-10-11-odm-restart-reproduction/STATUS.md) reproduces a queued ODM request receiving a new job/admission identity after complete stopped-root restoration. No imagery or engine work runs. The defect remains open; a verifying file package does not establish recovery of memory-only accepted work.
 
+The [October 11 disconnected aerial journal candidate](reviews/2026-10-11-odm-admission-journal/STATUS.md) preserves original admission and start-intent records through actual stopped-root capture and relocated journal replay. The HTTP worker remains disconnected; the native restart defect and source/engine/result/artifact integration remain open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
