@@ -44,6 +44,11 @@ the same map-first surface as `/engage/<token>`, instead of the older tabbed
 page with a small inline map. Its one link out opens in a new tab, because the
 pages behind it refuse to be framed. Existing embed snippets need no change.
 
+**Older photos.** `npm run ops:strip-engagement-photo-metadata` reports stored
+engagement photos that still carry location or device metadata from before
+uploads were re-encoded. Add `-- --apply` to clean them in place. This cannot be
+undone, so back up Storage first.
+
 **Fixed.** Tapping someone else's pin to read it also moved the resident's own
 mark onto that pin. A tap on a pin or a line now opens the comment and marks
 nothing. A tap on empty map still marks.
@@ -52,7 +57,7 @@ nothing. A tap on empty map still marks.
 removes EXIF location, device and timestamp metadata. The original bytes are
 not stored. A file that cannot be decoded is refused with a 415. `sharp` is now
 a direct dependency at 0.35.5. Photos uploaded before this change are not
-altered.
+altered until an operator runs the command under "Older photos" above.
 
 **Less text.** The map rail drops the camera-framing sentence (kept only when
 the map opens wide), the always-on draft-saving note, step-by-step help that

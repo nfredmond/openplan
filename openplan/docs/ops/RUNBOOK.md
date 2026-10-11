@@ -393,6 +393,7 @@ journals; supervisor process checks do not establish host-loss recovery.
 | Migration application, configuration edits, credential rotation | Change deployment behavior or durable schema; require identified targets and a release/incident plan. |
 | `npm run test:rls-live`, `npm run qa:gate` | Test/build activity; live checks may create records. Use explicitly selected test environments, not an unexamined production environment. |
 | `npm run ops:restore-drill` | Creates and removes disposable services/data; exercises the selected-row sample; add `-- --full-archive` for complete default-local database/Storage restoration. |
+| `npm run ops:strip-engagement-photo-metadata` | Inspection: reports engagement photos still carrying EXIF, XMP or IPTC metadata (location, device, time). With `-- --apply` it re-encodes those photos in place and reads each back; the originals cannot be recovered, so back up Storage first. Needed once for photos uploaded before 2026-10-10. |
 | Walkthrough refresh helper | Fetches/builds/restarts an already configured service. Unverified migration state blocks build/restart; a served-commit mismatch fails after restart and may require recovery. It is not a generic diagnosis or installer command. |
 
 Reproduce a defect with non-sensitive data in an isolated environment before

@@ -33,6 +33,7 @@
     "ops:check-pilot-preflight": "node scripts/ops/check-pilot-preflight.mjs",
     "ops:restore-drill": "bash scripts/ops/disposable-restore-drill.sh",
     "ops:verify-project-evidence-bundle": "tsx scripts/ops/verify-project-evidence-bundle.mts",
+    "ops:strip-engagement-photo-metadata": "node --env-file-if-exists=.env.local --conditions=react-server --import tsx scripts/ops/strip-engagement-photo-metadata.ts",
     "test:guardrail-suite": "vitest run src/test/no-paid-tier-guard.test.ts src/test/qa-harness-route-contract-guard.test.ts src/test/public-page-claims-guardrails.test.ts src/test/public-open-source-posture-guardrail.test.ts src/test/public-page-metadata-canonical-url.test.ts src/test/workspaces-bootstrap-route.test.ts src/test/workspace-membership-current.test.ts src/test/workspace-membership-required.test.tsx",
     "qa:first-week": "npm --prefix ../qa-harness run first-week-discovery",
     "qa:first-week-regression": "npm --prefix ../qa-harness run first-week-regression",

@@ -127,7 +127,10 @@ that fails without the fix:
 
 The reviewer also confirmed photos store no original bytes, that participant
 text never becomes HTML, and that every new string exists in both catalogs.
-Photos uploaded before this branch keep their metadata; no backfill was done.
+Photos uploaded before this branch keep their metadata until an operator runs
+`npm run ops:strip-engagement-photo-metadata -- --apply` (dry run without the
+flag). The local stack had no stored engagement photos, so it was dry-run
+there only; tests use real images in an in-memory bucket.
 
 ## How it was checked
 
