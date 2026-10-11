@@ -1,0 +1,9 @@
+# Planner instructions for malformed archives
+
+October 10 candidate correction. The T3 journey at `20b3faac2e93` supplied a deliberate 58-byte malformed ZIP. Processing failed once with `not_a_zip`; no adoption control appeared. A new submission with the same filename and verified BART bytes received a distinct request and version and completed ready review. The original failed record remained failed. Those browser observations preserve the failure rather than presenting it as empty transit service.
+
+Both the request card and selected-version review exposed ZIP-library debugging text and a library documentation link. They now explain that the file cannot be opened as a ZIP archive and ask the planner to choose the agency's GTFS ZIP and start a new import. Other recorded failures keep their distinct messages. The parser, database diagnostic, original input, command receipt and adoption rules do not change.
+
+[Copy controls](failure-copy-controls.json) pass baseline, harmless and restored variants. Four intended defects fail at their assertions: raw request detail, raw selected-version detail, discarded other failures and treating every failure as a malformed ZIP. Both new tests retain failure and refuse adoption. The first baseline failed because its test helper waited for a queued label when the fixture was already failed. The helper now accepts the exact failed label for those fixtures. That earlier run remains in private proof.
+
+[Final serial checks](failure-copy-tests.json) pass 1,838 tests across 76 files, with 17 live-database cases skipped and no failures. Strict selected-file lint and scoped TypeScript pass. The wider equity and planner controls also rerun and restore source. The 1 GiB service peaks at 744.4 MiB. These checks use mocked component reads and source guards; the corrected text still requires a new identified-build T3 read. They do not establish complete restore, capacity, GitHub CI or practitioner acceptance.

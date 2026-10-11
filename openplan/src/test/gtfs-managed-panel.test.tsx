@@ -11,19 +11,20 @@ const scope = { installationId: id(1), workspaceId: id(2), actorId: id(3) };
 const basis = { feedId: id(5), versionId: id(6), routeCount: 14, stopCount: 287, previousVersionId: null as string | null, previousRouteCount: null as number | null, previousStopCount: null as number | null };
 const polygon = JSON.stringify({ type: "Polygon", coordinates: [[[-122, 37], [-121.9, 37], [-121.9, 37.1], [-122, 37.1], [-122, 37]]] });
 vi.mock("@/components/models/study-area-picker", () => ({ StudyAreaPicker: ({ onCorridorChange }: { onCorridorChange: (text: string) => void }) => <button onClick={() => onCorridorChange(polygon)}>Use fixture study area</button> }));
-let state: "queued" | "ready", current: boolean, material: boolean, unknown: boolean, cancelReceipt: unknown, decisionUnavailable: boolean;
+let failureCode: string | null, failureDetail: string | null;
+let state: "queued" | "ready" | "failed", current: boolean, material: boolean, unknown: boolean, cancelReceipt: unknown, decisionUnavailable: boolean;
 let posts: { path: string; init: RequestInit }[];
 let countMode: "normal" | "missing" | "zero";
 const feed = { id: id(5), workspace_id: id(2), agency_name: "Fixture transit", source_kind: "url", feed_url: "https://example.org/feed.zip", status: "loaded", current_version_id: null };
 const version = { id: id(6), feed_id: id(5), workspace_id: id(2), status: "ready", route_count: 95, stop_count: 717, route_service_level_rows: 95, stop_service_level_rows: 717, created_at: "2026-10-10T12:00:00Z" };
 function status(requestId: string) {
  return { managed: true, requestId, cancellation: cancelReceipt, status: unknown || cancelReceipt ? null : { schemaVersion: 1, workspaceId: scope.workspaceId, requestId, versionId: id(6), feedId: id(5), state,
-  stage: state === "ready" ? "ready" : "pending", attempts: 0, leaseUntil: null, archiveConfirmed: true, submittedAt: "2026-10-10T12:00:00Z", isCurrent: current, failureCode: null, failureDetail: null, submitterAccessUnavailable: false } };
+  stage: state === "ready" ? "ready" : state === "failed" ? "failed" : "pending", attempts: 0, leaseUntil: null, archiveConfirmed: true, submittedAt: "2026-10-10T12:00:00Z", isCurrent: current, failureCode, failureDetail, submitterAccessUnavailable: false } };
 }
 function json(body: unknown, code = 200) { return new Response(JSON.stringify(body), { status: code }); }
 function registryVersion() { return countMode === "normal" ? version : { ...version, route_count: countMode === "zero" ? 0 : null, stop_count: countMode === "zero" ? 0 : null, trip_count: countMode === "zero" ? 0 : null, route_service_level_rows: countMode === "zero" ? 0 : null, stop_service_level_rows: countMode === "zero" ? 0 : null }; }
 beforeEach(() => {
- routerRefresh.mockClear();
+ routerRefresh.mockClear(); failureCode = null; failureDetail = null;
  window.localStorage.clear(); posts = []; state = "queued"; current = false; material = false; unknown = false; cancelReceipt = null; decisionUnavailable = false; countMode = "normal";
  vi.stubGlobal("fetch", vi.fn<typeof fetch>(async (path, rawInit) => {
   const url = String(path), init = rawInit ?? {};
@@ -50,9 +51,9 @@ beforeEach(() => {
  }));
 });
 afterEach(() => { cleanup(); vi.unstubAllGlobals(); });
-async function panel(readOnly = false) {
+async function panel(readOnly = false, initialLabel?: string) {
  const rendered = render(<GtfsIngestPanel workspaceId={scope.workspaceId} managed={{ enabled: true, scope }} today="2026-10-10" maxUploadBytes={10000} readOnly={readOnly} />);
- await screen.findByTestId("gtfs-managed-imports"); await screen.findByText(/This browser has no retained transit requests|Waiting for a worker/); return rendered;
+ await screen.findByTestId("gtfs-managed-imports"); await screen.findByText(initialLabel ?? /This browser has no retained transit requests|Waiting for a worker/); return rendered;
 }
 async function urlImport() {
  fireEvent.click(screen.getByRole("tab", { name: "Paste a feed address" })); fireEvent.change(screen.getByRole("textbox", { name: "GTFS feed address" }), { target: { value: "https://example.org/feed.zip" } }); fireEvent.click(screen.getByRole("button", { name: "Fetch and read this feed" }));
@@ -108,4 +109,30 @@ describe("planner managed transit panel", () => {
  it("does not convert missing historical counts into zero", async () => {
   countMode = "missing"; await panel(); fireEvent.click(screen.getByRole("button", { name: "Show every ingest of this feed" })); const history = await screen.findByTestId(`gtfs-feed-history-${id(5)}`); expect(await within(history).findByText(/not recorded route and not recorded stop/)).toBeInTheDocument(); expect(history.textContent).not.toMatch(/\b0 (?:route|stop)/);
  });
+ it("explains a malformed ZIP in retained progress and version review without library guidance", async () => {
+  state = "failed"; failureCode = "not_a_zip"; failureDetail = "Can't find end of central directory. See https://stuk.github.io/jszip/documentation/howto/read_zip.html";
+  retainGtfsClientRequest(window.localStorage, scope, { source: "url", workspaceId: scope.workspaceId, url: "https://example.org/invalid.zip" }, id(4));
+  await panel(false, "Processing failed");
+  const explanation = "This file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.";
+  expect(await screen.findByText(explanation)).toBeInTheDocument();
+  expect(screen.queryByText(/central directory|stuk.github.io/)).toBeNull();
+  fireEvent.click(screen.getByRole("button", { name: "Open version" }));
+  const selected = await screen.findByRole("region", { name: "Selected transit version" });
+  expect(await within(selected).findByText(explanation)).toBeInTheDocument();
+  expect(within(selected).queryByText(/central directory|stuk.github.io/)).toBeNull();
+  expect(within(selected).queryByRole("button", { name: "Use this reviewed version" })).toBeNull();
+  expect(posts).toHaveLength(0);
+ });
+ it("keeps other recorded failures distinct from malformed ZIP recovery", async () => {
+  state = "failed"; failureCode = "retained_archive_unavailable"; failureDetail = "The original retained archive fixture is unavailable.";
+  retainGtfsClientRequest(window.localStorage, scope, { source: "url", workspaceId: scope.workspaceId, url: "https://example.org/missing.zip" }, id(4));
+  await panel(false, "Processing failed"); expect(await screen.findByText(failureDetail)).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "Open version" }));
+  const selected = await screen.findByRole("region", { name: "Selected transit version" });
+  expect(await within(selected).findByText(failureDetail)).toBeInTheDocument();
+  expect(screen.queryByText(/Choose the agency's GTFS ZIP file/)).toBeNull();
+  expect(within(selected).queryByRole("button", { name: "Use this reviewed version" })).toBeNull();
+  expect(posts).toHaveLength(0);
+ });
+
 });

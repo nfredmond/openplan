@@ -437,3 +437,7 @@ At `3132cdddb9f8`, a duplicate React key made server refreshes accumulate 11 man
 ## Current main joined, October 10
 
 The candidate joins `06bdc7af6d40`, including the first merged UI-overhaul increment. Data Hub and Title VI label/style edits merge without replacing retained import bindings or sibling identity. [Integration checks](main-join-tests.json) pass 1836 tests across 76 files, with 17 live cases skipped and zero failures. Strict selected-file lint and scoped TypeScript pass. Both owned control suites rerun after the join, including baseline, harmless, restored and intended broken behaviors. The 1 GiB service peaks at 673.5 MiB. This does not establish browser or GitHub CI acceptance.
+
+## Joined browser flows and malformed-archive presentation, October 10
+
+[The partial identified-build journey](BROWSER_JOURNEY.md) records real URL, ZIP and refresh admissions, installed one-shot worker completion, 390px and desktop adoption, fresh service-equity version identity, retained policy edit and one-panel cardinality. A deliberate malformed ZIP stays failed while valid replacement bytes use a new request/version and complete review. Catalog, cancellation, cookie roles and geography remain open. [The presentation correction](FAILURE_COPY.md) replaces library guidance in both failed-version views without changing diagnostics. Serial checks pass 1,838 tests, with 17 live cases skipped, zero failures, strict lint and scoped TypeScript. Corrected-build browser text, complete restore, capacity, CI and release remain unverified.

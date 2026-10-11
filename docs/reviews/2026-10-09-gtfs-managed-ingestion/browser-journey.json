@@ -1,0 +1,84 @@
+{
+  "head": "20b3faac2e93",
+  "appUrl": "http://127.74.9.10:3564",
+  "database": "openplan_attempt_cli_9cb007ca9ecc4e81af6f6b5b55603391",
+  "parserBuildPreserved": true,
+  "scope": "Synthetic owner and isolated candidate; no demo or other agent browser targets",
+  "sourceArchive": {
+    "bytes": 892312,
+    "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+    "routes": 14,
+    "stops": 287,
+    "derivedRouteRows": 95,
+    "derivedStopRows": 717
+  },
+  "url": {
+    "request": "1f365fef-53d1-4687-bbf9-7c1939d3b787",
+    "version": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3",
+    "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+    "viewportWidth": 390,
+    "cookieCurrentConfirmed": true,
+    "archiveConfirmed": true,
+    "attempts": 1
+  },
+  "refresh": {
+    "request": "666867ef-e4c4-44dc-9145-95984a99b188",
+    "version": "8a86a802-a3cc-4b09-979d-6187bad01285",
+    "command": "6f5c0762-ba5b-43aa-9dd3-671a4364c80b",
+    "viewportWidth": 1280,
+    "freshEquityVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+    "equityRefusal": "no_adopted_policy",
+    "unfinishedPolicyEditPreserved": true,
+    "transitPanels": 1
+  },
+  "zip": {
+    "request": "989a4da7-304a-4b24-a577-e3fe4b2d1dd7",
+    "version": "59b1a823-d8f0-403c-b46b-6a6aa725594e",
+    "state": "ready for review",
+    "attempts": 1,
+    "nativeChooserTested": false
+  },
+  "failure": {
+    "request": "9ea2a22f-9280-40da-a673-ab9f3a8b1574",
+    "version": "b7a097b0-55d0-43ee-90e9-8f252a1bfd5e",
+    "bytes": 58,
+    "code": "not_a_zip",
+    "adoptionControlCount": 0
+  },
+  "retry": {
+    "request": "905b72f9-056d-4501-9ea7-2038af52a770",
+    "version": "6ebc8157-987c-471f-9d2a-a26e733eb886",
+    "state": "ready for review",
+    "attempts": 1,
+    "originalFailurePreserved": true
+  },
+  "images": {
+    "mobile-review": {
+      "file": "browser-images/mobile-review.png",
+      "sha256": "fbec4c8e640d64fa2336630b2c873eb2086f59e45907a0cc797c31c560cc55a4"
+    },
+    "desktop-current": {
+      "file": "browser-images/desktop-current.png",
+      "sha256": "8c18646bddadcfd4343e256aa230d1fcbc4ae833b649475732276971c8c344c6"
+    },
+    "mobile-failure": {
+      "file": "browser-images/mobile-failure.png",
+      "sha256": "73f31de9d24cb5ce0a9fccef6062c4e408aca1ffc0403782caa5557752014d04"
+    }
+  },
+  "proofs": [
+    "browser-acceptance-02/journey-joined-url.json",
+    "browser-acceptance-02/journey-joined-refresh.json",
+    "browser-acceptance-02/journey-joined-failure.json",
+    "browser-acceptance-02/build-identity-current.json"
+  ],
+  "limits": [
+    "Desktop fine text is soft in saved PNG; no full desktop legibility acceptance",
+    "390 CSS pixels with desktop UA and approximately 1.45 DPR; mobile PNG566x1224",
+    "T3 transient host error after first adoption; reopening reset editor; second adoption passed without reload",
+    "Historical console entries truncated; future page recorder observed no warnings/errors during malformed ZIP/retry only",
+    "App development service reached its 3 GiB cap and was increased to 4 GiB without swap; no observed app OOM",
+    "Catalog, cancellation, cookie role isolation and project-geography journeys incomplete",
+    "No complete restore, largest-feed capacity, full CI, fresh-install, scientific or practitioner acceptance"
+  ]
+}

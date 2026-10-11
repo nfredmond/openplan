@@ -30,6 +30,14 @@ function progressLabel(progress: Progress | null, error: string | null) {
  return "Waiting for a worker";
 }
 
+/** Explain a malformed archive without exposing ZIP-library debugging guidance.
+ * Keep other recorded failures distinct and leave their diagnostic records intact.
+ */
+function failureMessage(status: Pick<NonNullable<Progress["status"]>, "failureCode" | "failureDetail"> | null | undefined) {
+ if (status?.failureCode === "not_a_zip") return "This file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.";
+ return status?.failureDetail ?? (status?.failureCode ? `Processing failed. Diagnostic code: ${status.failureCode}. No additional failure detail was recorded.` : null);
+}
+
 function CancelRequest({ requestId, controller, disabled, report }: { requestId: string; controller: GtfsClientController; disabled: boolean; report: (error: unknown) => void }) {
  const [reason, setReason] = useState("");
  return <div className="mt-3 space-y-2">
@@ -61,13 +69,14 @@ function VersionView({ version, controller, readOnly, deciding, report }: { vers
   return () => { alive.current = false; };
  }, [reload]);
  const status = view.progress?.status, review = view.review;
+ const failure = failureMessage(status);
  const terminal = view.progress?.cancellation || ["ready", "failed", "cancelled"].includes(status?.state ?? "");
  return <section className="module-subpanel mt-3 space-y-2" aria-label="Selected transit version">
   <h4 className="font-semibold">{version.label}</h4>
   <p className="text-xs text-muted-foreground">Version {version.versionId}</p>
   <p>{view.loading ? "Reading version progress and review" : progressLabel(view.progress, view.error)}</p>
   {view.error && <p role="alert" className="text-sm text-muted-foreground">{view.error}</p>}
-  {status?.failureDetail && <p className="text-sm">{status.failureDetail}</p>}
+  {failure && <p className="text-sm">{failure}</p>}
   {status?.submitterAccessUnavailable && <p className="text-sm">The original submitter&apos;s current write access is unavailable. Processing cannot assume their authority.</p>}
   {review && <div className="space-y-2 text-sm">
    <p>Completed schedule: {review.basis.routeCount} routes and {review.basis.stopCount} stops. These are parser counts, not derived service rows or measured coverage.</p>
@@ -86,6 +95,7 @@ function VersionView({ version, controller, readOnly, deciding, report }: { vers
 function Job({ job, controller, readOnly, busy, maxUploadBytes, open, report }: { job: GtfsClientJob; controller: GtfsClientController; readOnly: boolean; busy: boolean; maxUploadBytes: number; open: (feedId: string, versionId: string) => void; report: (error: unknown) => void }) {
  const [file, setFile] = useState<File | undefined>();
  const status = job.progress?.status, cancelled = job.progress?.cancellation;
+ const failure = failureMessage(status);
  const terminal = !!cancelled || ["ready", "failed", "cancelled"].includes(status?.state ?? "");
  const intent = job.request.intent;
  return <li className="module-subpanel space-y-2" data-testid={`gtfs-managed-request-${job.request.requestId}`}>
@@ -94,7 +104,7 @@ function Job({ job, controller, readOnly, busy, maxUploadBytes, open, report }: 
   <p className="text-xs text-muted-foreground">Request {job.request.requestId}</p>
   {status && <p className="text-xs text-muted-foreground">Version {status.versionId}. Worker attempts: {status.attempts}.</p>}
   {job.error && <p role="alert" className="text-sm">{job.error}</p>}
-  {status?.failureCode && <p className="text-sm">{status.failureCode}: {status.failureDetail ?? "No additional failure detail was recorded."}</p>}
+  {failure && <p className="text-sm">{failure}</p>}
   {status?.submitterAccessUnavailable && <p className="text-sm">The original submitter&apos;s write access is unavailable. An acknowledgement error does not authorize a new actor to replay their input.</p>}
   {(cancelled?.versionCancellation?.cleanupPending || status?.state === "cancelled") && <p className="text-sm text-muted-foreground">Archive cleanup can remain pending after processing closes.</p>}
   <div className="flex flex-wrap gap-2">

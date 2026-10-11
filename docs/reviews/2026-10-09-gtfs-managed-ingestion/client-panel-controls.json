@@ -376,14 +376,14 @@
     "openplan/src/lib/gtfs/managed-client-controller.ts": "a6b65f0113b210c52e23b2f16553348eafd31a7f4a8f7bbc41248873be05a90f",
     "openplan/src/lib/gtfs/managed-client-transport.ts": "52c4c215af2bc324ac9fbcb1c1187dc281d6beec4153545ca409cb462e33d45e",
     "openplan/src/lib/gtfs/managed-ui-config.ts": "94cb9052b2df463535b54f8a2703ee192db4ab0b1771dfbd9a7adf22992fbb95",
-    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "9b9c51a28de77862547671ab1ec5f691d2d1268e925ce23433d1140ca53424b2",
+    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "3688caf8e64188645b2ebec21dc73bc4c45b58d338992c3c97282f3a9ecc0f26",
     "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "f1b62f37e25241b72a47a53fe4febf24437ba95d3dd3e5b9a7a3dbd49d6e671c",
     "openplan/src/app/(app)/data-hub/page.tsx": "e96245f2d281cab21bfd38927432a8da0ad3ff0a7888a3b6351af029d38e348d",
     "openplan/src/app/api/gtfs/versions/[versionId]/status/route.ts": "57fb7ff238673773f6a321d2ba510c8828c108bfc65090a6f064789ca79b9f77"
   },
   "testSha256": {
     "openplan/src/test/gtfs-managed-client-controller.test.ts": "b1efebf2c4d8956254636c8f238df3879bc83d6b575e50a3376dfde91e2d2540",
-    "openplan/src/test/gtfs-managed-panel.test.tsx": "913eb3f3829effa33de12ce5b89015e23bd81634744aac01bd9b2050a72c2900",
+    "openplan/src/test/gtfs-managed-panel.test.tsx": "7c97ab830d5e6f6386e400e1299d6c125634d7d0beba431ef4c7924a3883aeaa",
     "openplan/src/test/gtfs-managed-ui-config.test.ts": "1c8c6fae812e2e75c40210025fcb9de17bd76f978be95e2b21c075a63a3a5c12",
     "openplan/src/test/gtfs-managed-version-status-route.test.ts": "2a7813414a0c03eae7d3ff28b960972eb372c1eff608d41dcc6366d065b5494c",
     "openplan/src/test/gtfs-managed-panel-mount.test.ts": "2f5fbe86c499061bceda3a38b680b00bfe84666f06543e6df635167a38d32010"
