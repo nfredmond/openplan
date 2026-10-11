@@ -306,12 +306,45 @@ sensitive workflows before using private planning material.
 | Destination | Information sent or retrieved |
 |---|---|
 | Mapbox | Map styles, tiles and camera/area requests. GIS import static previews send the imported layer's bounding polygon in the image request. The public engagement map's place search sends what a resident types and the map's centre to Mapbox's geocoder; `OPENPLAN_PUBLIC_PLACE_SEARCH=off` removes it. See [pricing](https://www.mapbox.com/pricing) and [GL JS license](https://github.com/mapbox/mapbox-gl-js/blob/main/LICENSE.txt). |
+| Map style host (only without a Mapbox key) | When `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` names a public style such as OpenFreeMap's, the resident's browser fetches the style, tiles, fonts and sprites from that host. A style served by the deployment itself sends nothing out. |
 | Configured Supabase origin | Accounts, planning records, files and database queries. Local CLI evaluation keeps this service local; choosing a hosted origin sends this traffic to that provider. See [hosting responsibilities](https://supabase.com/docs/guides/self-hosting) and [managed pricing](https://supabase.com/pricing). |
 | Census, TIGERweb, LEHD, OSM and other source services | Geography/source queries and downloads. Consult [Census](https://www.census.gov/data/developers.html), [TIGERweb](https://tigerweb.geo.census.gov/), [LEHD](https://lehd.ces.census.gov/data/), [OSM terms](https://www.openstreetmap.org/copyright) and [Mobility Database](https://mobilitydatabase.org/). Transit, crash and other integrations add their own source endpoints. |
 | Anthropic | Material selected for enabled AI actions: prompts/context, comments and document text or images. [API usage is priced separately](https://platform.claude.com/docs/en/about-claude/pricing). |
 | Resend | Recipients, message content and relevant invitation/reminder links. [Provider limits and pricing](https://resend.com/pricing) apply. |
 | Configured workers | Job inputs, document/image locators or bytes, configuration, callbacks and outputs. Processing is local only when the configured service and storage are local. |
 | Source/package/image registries and tooling | Installation/update downloads and tool telemetry where enabled. Supabase distinguishes CLI telemetry from its self-hosted service in its [documentation](https://supabase.com/docs/guides/self-hosting). |
+
+### The public engagement map without a Mapbox key
+
+With no Mapbox key, the participant map on `/engage/<token>` and `/embed/<token>`
+can still be drawn by MapLibre from a style you choose. Set
+`NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` and rebuild, since `NEXT_PUBLIC_*` values are
+fixed at build time. A Mapbox key, when set, takes precedence. Place search and
+the background picker need Mapbox and are absent on this map. Other maps in
+OpenPlan (Explore, corridor analysis, the staff engagement views) still need a
+Mapbox key.
+
+Two ways to set it:
+
+- **Fully local, no outside requests.** Cut a regional extract from a Protomaps
+  build with the [pmtiles CLI](https://docs.protomaps.com/pmtiles/cli), for
+  example `pmtiles extract https://build.protomaps.com/<YYYYMMDD>.pmtiles
+  region.pmtiles --bbox=<west>,<south>,<east>,<north>`, and place it with a
+  MapLibre style JSON under `openplan/public/maps/`. Point the style's vector
+  source at `pmtiles:///maps/region.pmtiles` and set
+  `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` to the style's path on the deployment,
+  such as `/maps/<style>.json`. Street names and the
+  pin-group counts appear only if the style also lists `glyphs` (fonts) the
+  deployment serves; without them the map draws without labels. Keep the style's
+  OpenStreetMap attribution.
+- **A free public style, no key or account.** For example
+  `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL=https://tiles.openfreemap.org/styles/liberty`.
+  The style's host is added to the content-security policy automatically; list
+  any other tile, font or sprite hosts in `OPENPLAN_MAP_EXTRA_ORIGINS`. Read the
+  host's terms before relying on it for a public campaign.
+
+Both were checked in a browser on October 11, 2026, against a Ukiah-area
+extract and against OpenFreeMap's Liberty style.
 
 Hosted providers are optional integrations, with separate terms and costs.
 [Vercel Hobby](https://vercel.com/docs/plans/hobby) is for personal,

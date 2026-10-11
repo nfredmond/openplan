@@ -43,6 +43,16 @@ publish partial archives. Recurring cleanup preserves open imports, ready feeds
 and files without recorded deletion authority. Candidate migrations have not
 been applied to the walkthrough instance.
 
+**A public map without a Mapbox key.** A deployment with no Mapbox key used to
+give residents a words-only form. Set `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` to a
+MapLibre style and the participant map draws with it: a local `.pmtiles`
+extract served by the deployment (no outside requests), or a free public style
+such as OpenFreeMap's. Pins, groups of pins, comments beside the map, marking a
+spot, find-my-location and 3D buildings work as before; place search and the
+background picker still need Mapbox. A Mapbox key, when set, still wins. Other
+maps in OpenPlan still need a key. Setup is in `openplan/docs/SELF_HOSTING.md`.
+Adds `maplibre-gl` and `pmtiles` (both BSD-3-Clause); run `npm ci`.
+
 Apply migration `20261017000001_project_map_packages.sql` before deploying the
 app. It adds map package records, their file list and the private
 `project-map-packages` storage bucket, which accepts objects up to 1 GiB.
