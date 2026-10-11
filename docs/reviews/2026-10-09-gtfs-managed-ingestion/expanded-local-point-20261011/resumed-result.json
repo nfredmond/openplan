@@ -1,0 +1,403 @@
+{
+  "state": "passed-native",
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "cli": [
+    {
+      "case": "source-lost-completion-reply",
+      "exitCode": 2,
+      "wallSeconds": 1.123,
+      "jobSettled": false,
+      "terminalResolved": false,
+      "spawnedLoaderServices": 0,
+      "nativeLockHolders": 3,
+      "computationAttempts": 0,
+      "sourceNetworkAttempts": 0,
+      "nativeCandidateCount": 0
+    },
+    {
+      "case": "target-original-command-recovered",
+      "exitCode": 0,
+      "wallSeconds": 1.136,
+      "jobSettled": true,
+      "terminalResolved": true,
+      "spawnedLoaderServices": 0,
+      "nativeLockHolders": 3,
+      "computationAttempts": 0,
+      "sourceNetworkAttempts": 0,
+      "nativeCandidateCount": 0
+    }
+  ],
+  "http": {
+    "source-lost-completion-reply": [
+      {
+        "path": "/rest/v1/rpc/scan_gtfs_ingest_candidates",
+        "status": 200,
+        "requestSha256": "8f079db41ed55d049bbbafed3a864cb17e2773554e215ad07396ae2f9d2e3e16",
+        "responseSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dropped": false,
+        "candidateEmpty": true
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/complete_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9",
+        "responseSha256": "a6a87a1786fe196359472fecb805cf38256de789768bcf8d122aa1a4595f6605",
+        "dropped": true,
+        "candidateEmpty": null
+      }
+    ],
+    "target-original-command-recovered": [
+      {
+        "path": "/rest/v1/rpc/scan_gtfs_ingest_candidates",
+        "status": 200,
+        "requestSha256": "8f079db41ed55d049bbbafed3a864cb17e2773554e215ad07396ae2f9d2e3e16",
+        "responseSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dropped": false,
+        "candidateEmpty": true
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/complete_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9",
+        "responseSha256": "a6a87a1786fe196359472fecb805cf38256de789768bcf8d122aa1a4595f6605",
+        "dropped": false,
+        "candidateEmpty": null
+      }
+    ]
+  },
+  "commands": [
+    {
+      "name": "roles-readonly-capture",
+      "exitCode": 0,
+      "wallSeconds": 0.051
+    },
+    {
+      "name": "original-readonly-dump",
+      "exitCode": 0,
+      "wallSeconds": 1.029
+    },
+    {
+      "name": "source-create",
+      "exitCode": 0,
+      "wallSeconds": 0.084
+    },
+    {
+      "name": "source-restore",
+      "exitCode": 0,
+      "wallSeconds": 3.003
+    },
+    {
+      "name": "source-point-dump",
+      "exitCode": 0,
+      "wallSeconds": 1.019
+    },
+    {
+      "name": "restic-init",
+      "exitCode": 0,
+      "wallSeconds": 2.439
+    },
+    {
+      "name": "restic-backup",
+      "exitCode": 0,
+      "wallSeconds": 2.877
+    },
+    {
+      "name": "restic-full-data-check",
+      "exitCode": 0,
+      "wallSeconds": 1.098
+    },
+    {
+      "name": "restic-restore",
+      "exitCode": 0,
+      "wallSeconds": 2.209
+    },
+    {
+      "name": "target-create",
+      "exitCode": 0,
+      "wallSeconds": 0.088
+    },
+    {
+      "name": "target-restore",
+      "exitCode": 0,
+      "wallSeconds": 2.969
+    }
+  ],
+  "serviceStops": [
+    {
+      "kind": "gateway",
+      "id": "0a44d75d882cce579beb6520d28b368b759e641ac17cb8cd9a3f46337f6bf044",
+      "stage": "source",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "a128b824a2e43fc6ba60dbf317e11a6fb96d13f886a10a8135919316903033d5",
+      "stage": "source",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "5840cc20dbe2e210d74c680abb22c0a343faf12e76029187d9fbd0dc10723081",
+      "stage": "source",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "6b901ba389699706017cd40d6f1c53a9f2792b23e6274e24e1c0131ff6e93d8e",
+      "stage": "source",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "gateway",
+      "id": "137e9086945992a626466ad171f95d2af1cad75489f7dcc7006d0445a9664980",
+      "stage": "target",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "cf1be650af57d6e677a710c251e416370e76e3a4624a73a7f06f9e8069fa12c7",
+      "stage": "target",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "5ec8a5d86e2ebd7d15aa9e27efba188188e1ea4a62e1cfc878a29dfa4649917b",
+      "stage": "target",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "4608549b90281f4fd43f489a47f560d31f8a75461a3b53d5f9b12d180f424977",
+      "stage": "target",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "startedAt": "2026-10-11T12:07:04.025842+00:00",
+  "preflightPassed": true,
+  "updatedAt": "2026-10-11T12:09:47.267580+00:00",
+  "mountedKeyCapturedAndReadVerified": true,
+  "storageResponses": [
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "source",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    },
+    {
+      "label": "target",
+      "status": 200
+    }
+  ],
+  "syntheticUserSignin": true,
+  "errorType": "ValueError",
+  "reason": "expanded-signin-unrelated-record-change",
+  "failedAt": "2026-10-11T12:10:49.925292+00:00",
+  "originalServicesRestartedAfterFailure": true,
+  "originalProducerState": "failed",
+  "originalProducerReason": "expanded-signin-unrelated-record-change",
+  "continuation": "Separate exact Auth-user/session preservation validation and repeated native/database/file reads",
+  "finishedAt": "2026-10-11T12:17:06.588507+00:00",
+  "snapshotId": "08090b60e8c1fa07b71c2181704df5295ade9c9af40f45d7f8f2c09dba400acc",
+  "capturedFiles": 1541,
+  "capturedBytes": 644693866,
+  "tables": 374,
+  "sequences": 6,
+  "propertiesEqual": true,
+  "originalDatabaseUnchanged": true,
+  "originalDurableFilesUnchanged": true,
+  "allKnownGtfsRootsCaptured": true,
+  "storageObjectsReadBack": 10,
+  "rolesCapturedReused": true,
+  "mountedKeyCapturedReused": true,
+  "targetDatabase": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "sourceDatabase": "openplan_attempt_cli_9aa151eb08634def815ac5db9815f638",
+  "signinChangedTables": [
+    "auth.audit_log_entries",
+    "auth.mfa_amr_claims",
+    "auth.refresh_tokens",
+    "auth.sessions",
+    "auth.users"
+  ],
+  "exactAuthGraphVerified": true,
+  "limits": [
+    "Same physical host and PostgreSQL cluster; source roles/key reused even when captured. No independent cluster or physical host reconstruction.",
+    "Only owned fixture services stop. No demo, hosted configuration/migration, main merge, other session or original durable-byte change.",
+    "All known GTFS roots have no populated SQLite. Other worker-family artifacts and long computations remain outside this point.",
+    "Model rows in the fixture are retained data; no demand computation, calibration or scientific claim changes.",
+    "Prepared plan does not establish a successful recovery point or native installed-CLI delivery."
+  ]
+}

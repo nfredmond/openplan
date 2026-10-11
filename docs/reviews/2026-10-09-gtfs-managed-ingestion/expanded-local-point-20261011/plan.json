@@ -1,0 +1,58 @@
+{
+  "preparedAt": "2026-10-11T12:06:35.353716+00:00",
+  "state": "Third trial prepared after exact lock-holder correction",
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "databaseContainerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "originalDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "logicalApi": "http://127.74.9.10:29941",
+  "sourceDatabase": "openplan_attempt_cli_9aa151eb08634def815ac5db9815f638",
+  "targetDatabase": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "sourcePurpose": "gtfs-browser-full-restore-02",
+  "originalServiceIdentities": {
+    "rest": "e743ca20ff99bb6db5dd7152850a0f81dd1454e90a095ba5b88b767cc51bd9c2",
+    "auth": "c5763e08d0a1b7af19bf647d7fee6aadc1055bca545fbbb99f1b0701d5036879",
+    "storage": "e0051cd975d3e69878a4f5d660868a821bffa45d7d250311307d0de58b6b12a7",
+    "gateway": "258ac4e4729cce3a4c10db2f49fa1ac61f964398e5f85676145c9fee65f51488"
+  },
+  "sourceStorageFiles": 10,
+  "sourceStorageBytes": 119425015,
+  "gtfsRoots": {
+    "configured": {
+      "files": 699,
+      "bytes": 274085334
+    },
+    "replacement": {
+      "files": 29,
+      "bytes": 2873176
+    },
+    "capacity": {
+      "files": 787,
+      "bytes": 235591323
+    }
+  },
+  "sourceDatabaseProperties": {
+    "owner": "postgres",
+    "encoding": "UTF8",
+    "localeProvider": "i",
+    "connectionLimit": -1,
+    "capturedAclAndSettingsRequired": true
+  },
+  "phases": [
+    "Validate all original immutable service identities, labels, DB URIs, mounts, no owned app/worker, all private roots and source key binding before any stop.",
+    "Stop only the four exact owned fixture API services; require no original DB sessions, no SQL jobs/outgoing callbacks. Retain originals.",
+    "Capture original database read-only with properties, complete physical Storage, all three GTFS roots, protected service/app configuration and exact mounted-key/role backup. Compare before/after.",
+    "Restore into fresh source database with original locale/owner/ACL/settings. Create bounded source services from exact image IDs and copied Storage only.",
+    "Mark only copied CTA queue job and completion unresolved; use the actual installed CLI through a scoped loopback bridge, dropping the real native completion reply. Refuse any parser or external network use.",
+    "Stop only fresh source services; compare and capture one quiesced encrypted database/Storage/GTFS/configuration point. Keep original logical identity and complete roots.",
+    "Restore fresh target and complete point; compare all tables/sequences/schema/properties and every file before starting bounded target services.",
+    "Actual installed CLI recovers the original pending command and job without computation. Verify every retained Storage object through native download with exact hashes and perform synthetic-user Auth sign-in.",
+    "Use T3 for identified-build restored navigation at desktop/390px if native checks pass. Do not infer browser, operational or cross-host acceptance. Preserve all failed/source/target records."
+  ],
+  "limits": [
+    "Same physical host and PostgreSQL cluster; source roles/key reused even when captured. No independent cluster or physical host reconstruction.",
+    "Only owned fixture services stop. No demo, hosted configuration/migration, main merge, other session or original durable-byte change.",
+    "All known GTFS roots have no populated SQLite. Other worker-family artifacts and long computations remain outside this point.",
+    "Model rows in the fixture are retained data; no demand computation, calibration or scientific claim changes.",
+    "Prepared plan does not establish a successful recovery point or native installed-CLI delivery."
+  ]
+}

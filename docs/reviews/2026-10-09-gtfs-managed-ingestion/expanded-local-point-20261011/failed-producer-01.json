@@ -1,0 +1,73 @@
+{
+  "trial": 1,
+  "state": "failed",
+  "reason": "expanded-storage-download",
+  "sourceDatabase": "openplan_attempt_cli_1376ba1234084c749960f6a3924b0780",
+  "nativeCli": [],
+  "sourceObjectReadbacks": 0,
+  "originalServicesAutomaticallyRestarted": false,
+  "originalRecoveryErrorType": "KeyError",
+  "retainedCreatedServiceStops": [
+    {
+      "kind": "gateway",
+      "id": "8f6051f977f78d2def69c0feae2a84a6dbce63b593be25d1c5a971b10aec2c6d",
+      "stage": "source",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "19d7da4cd340404b595a32c1c663bfc3c9c44a1ea8ff1fb93942253ec4699f90",
+      "stage": "source",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "b475dc596c505d33e2fcd97eeda57bc0926ad9255abe6ad9b7f32c4a85be3306",
+      "stage": "source",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "1e5b5276b1f6318b69816d627775d2230ba56f987eb06c3177d55c69553236aa",
+      "stage": "source",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 137,
+      "oomKilled": false
+    }
+  ],
+  "codeBoundary": "Frozen bf1; candidate harness only. No runtime source changes.",
+  "limits": "Failed producer retained. Later specific native continuation has separate identity.",
+  "manualOriginalRecovery": {
+    "recordedAt": "2026-10-11T12:01:22.068899+00:00",
+    "originalExactServicesRestarted": true,
+    "source": "Separately captured protected original immutable service snapshot",
+    "allCreatedServicesStoppedBeforeRestart": true,
+    "portGuardCorrection": "Permit TIME_WAIT with SO_REUSEADDR, then listen to refuse active listeners.",
+    "scope": "Original owned fixture API only. No other process, database reset or durable file change."
+  },
+  "launchBookkeepingCorrection": {
+    "recordedAt": "2026-10-11T11:59:27.534131+00:00",
+    "issue": "Directory fsync incorrectly wrapped with fdopen and raised IsADirectoryError after atomic handoff replacement. The shell was not fail-fast, so native runner launch followed. Pure controls passed before launch.",
+    "correction": "Directory fsync uses os.fsync on an opened directory descriptor; shell dependent commands will use set -e.",
+    "effects": "Inspect actual native progress, do not infer service state from the failed bookkeeping command."
+  },
+  "sourceCode": "executed-source-private plus initial immutable SHA manifest preserve executed bytes; later services.py diagnostic correction is not relabeled as the executed first trial."
+}

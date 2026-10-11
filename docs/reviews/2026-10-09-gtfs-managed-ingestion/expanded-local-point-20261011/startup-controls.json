@@ -1,0 +1,38 @@
+{
+  "sourceSha256": "92fba55799f23e8fbe4448770b351eb158b79f82f0345ea3391f8ba04e30b4fa",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "active-loopback-listener",
+      "refused": true,
+      "omittedPortCheckAllowsBroken": true
+    },
+    {
+      "case": "auth-not-ready",
+      "refused": true,
+      "omittedStatusCheckAllowsBroken": true
+    },
+    {
+      "case": "rest-not-ready",
+      "refused": true,
+      "omittedStatusCheckAllowsBroken": true
+    },
+    {
+      "case": "storage-not-ready",
+      "refused": true,
+      "omittedStatusCheckAllowsBroken": true
+    }
+  ],
+  "limits": "Ephemeral loopback listener and pure readiness. No fixture service, database or API change."
+}

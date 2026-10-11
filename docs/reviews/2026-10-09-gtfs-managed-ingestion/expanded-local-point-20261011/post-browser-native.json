@@ -1,0 +1,14 @@
+{
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "targetDatabase": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "postPartialBrowserNativeReadRepeated": true,
+  "allNonAuthTablesUnchanged": true,
+  "transitProjectModelRecordsUnchanged": true,
+  "authTablesChangedAfterBrowser": [
+    "auth.audit_log_entries",
+    "auth.refresh_tokens",
+    "auth.sessions",
+    "auth.users"
+  ],
+  "limits": "Read after partial authenticated T3 DOM navigation. Any Auth changes are observed, without assigning them to a specific request. No restored visual/mobile or model computation acceptance."
+}

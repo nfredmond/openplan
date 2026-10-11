@@ -1,0 +1,13 @@
+{
+  "sessionId": "aab4bc8f-5534-4c86-9f30-de2be0e80854",
+  "refreshTokenId": 41,
+  "method": "password",
+  "newRows": {
+    "sessions": 1,
+    "refresh_tokens": 1,
+    "mfa_amr_claims": 1,
+    "audit_log_entries": 1
+  },
+  "retainedAuthRowsUnchanged": true,
+  "existingUserOnlySigninFieldsChanged": true
+}

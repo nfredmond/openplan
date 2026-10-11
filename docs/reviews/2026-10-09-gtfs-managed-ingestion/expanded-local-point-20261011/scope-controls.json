@@ -1,0 +1,158 @@
+{
+  "sourceSha256": "67ecd64dd81effad2044f1e9204601928763b17914c61d18ea36be4379bc736a",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "reason": "expanded-database-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-database-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-owner-state",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-owner-state",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-network",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-uri",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-mounts",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-original-gateway",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-source",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-source",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-plan-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-fresh-names",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-fresh-names",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-existing-database",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-active-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-active-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-unquiesced-jobs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-unquiesced-jobs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-unquiesced-jobs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-locale",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-delegated-grantors",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-connection-limit",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-pending-job",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-pending-completion",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "limits": "Pure extracted guards, protected retained configuration and copied fixtures. No native services, database or root writes."
+}

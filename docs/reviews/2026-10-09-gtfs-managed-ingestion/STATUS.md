@@ -653,3 +653,24 @@ This remains same-host/same-cluster GTFS recovery. Full Storage/configuration,
 cluster roles, populated SQLite, all worker families, physical-host recovery and
 agency commissioning remain open. The relaunch agent retains hosted coordination
 and the main-merge hold. No application or schema changes, main merge or release.
+
+## Expanded local transit point, October 11
+
+[The expanded point](EXPANDED_LOCAL_POINT.md) retains database properties, all ten
+Storage files, three GTFS roots and protected configuration/key/role backup in an
+encrypted 1,541-file/644,693,866-byte point. The installed CLI exits 2 with an
+unsettled job after a dropped native HTTP 200 reply, then exits 0 and settles the
+restored job despite an empty native queue, without computation. Exact Storage
+readback succeeds. Three original producers remain failed, including an omitted
+password authentication-method row in the Auth oracle. A separate specific Auth
+user/session continuation exits 0 and preserves old rows, original durable data,
+key/roles and non-Auth records. A separate final native/file observer exits 0;
+only three expected target journals differ. Harmless, targeted broken, omitted
+guard, copied-byte corruption and wrong-password controls pass. All aca844a99
+CI workflows pass 21,774 QA and 1,499 RLS tests with documented skips; newer acc ancestry is
+preserved separately. T3 desktop navigation/DOM works, but snapshots fail and
+recording loses the host. No new 390px, visual or console acceptance is claimed;
+the owned app stops. Same-host/cluster roles/key reuse, other worker families,
+SQLite, physical-host/agency recovery and restored browser acceptance remain
+open. The relaunch agent retains hosted coordination and the main-merge hold.
+No application/schema/worker-contract changes, main merge or release.

@@ -1,0 +1,127 @@
+{
+  "trial": 3,
+  "state": "failed",
+  "reason": "expanded-signin-unrelated-record-change",
+  "sourceDatabase": "openplan_attempt_cli_9aa151eb08634def815ac5db9815f638",
+  "nativeCli": [
+    {
+      "case": "source-lost-completion-reply",
+      "exitCode": 2,
+      "wallSeconds": 1.123,
+      "jobSettled": false,
+      "terminalResolved": false,
+      "spawnedLoaderServices": 0,
+      "nativeLockHolders": 3,
+      "computationAttempts": 0,
+      "sourceNetworkAttempts": 0,
+      "nativeCandidateCount": 0
+    },
+    {
+      "case": "target-original-command-recovered",
+      "exitCode": 0,
+      "wallSeconds": 1.136,
+      "jobSettled": true,
+      "terminalResolved": true,
+      "spawnedLoaderServices": 0,
+      "nativeLockHolders": 3,
+      "computationAttempts": 0,
+      "sourceNetworkAttempts": 0,
+      "nativeCandidateCount": 0
+    }
+  ],
+  "sourceObjectReadbacks": 20,
+  "originalServicesAutomaticallyRestarted": true,
+  "originalRecoveryErrorType": null,
+  "retainedCreatedServiceStops": [
+    {
+      "kind": "gateway",
+      "id": "0a44d75d882cce579beb6520d28b368b759e641ac17cb8cd9a3f46337f6bf044",
+      "stage": "source",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "a128b824a2e43fc6ba60dbf317e11a6fb96d13f886a10a8135919316903033d5",
+      "stage": "source",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "5840cc20dbe2e210d74c680abb22c0a343faf12e76029187d9fbd0dc10723081",
+      "stage": "source",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "6b901ba389699706017cd40d6f1c53a9f2792b23e6274e24e1c0131ff6e93d8e",
+      "stage": "source",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "gateway",
+      "id": "137e9086945992a626466ad171f95d2af1cad75489f7dcc7006d0445a9664980",
+      "stage": "target",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "cf1be650af57d6e677a710c251e416370e76e3a4624a73a7f06f9e8069fa12c7",
+      "stage": "target",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "5ec8a5d86e2ebd7d15aa9e27efba188188e1ea4a62e1cfc878a29dfa4649917b",
+      "stage": "target",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "4608549b90281f4fd43f489a47f560d31f8a75461a3b53d5f9b12d180f424977",
+      "stage": "target",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "codeBoundary": "Frozen bf1; candidate harness only. No runtime source changes.",
+  "limits": "Failed producer retained. Later specific native continuation has separate identity."
+}

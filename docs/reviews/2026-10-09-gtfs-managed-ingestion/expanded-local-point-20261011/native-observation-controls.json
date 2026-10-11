@@ -1,0 +1,72 @@
+{
+  "sourceSha256": "128540296836c39674932130b663943efd5a8d32b4bdd2b8e567cdc5d816e0df",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "lost-reply",
+      "passed": true
+    },
+    {
+      "case": "expanded-cli-exit",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-unexpected-work",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-unexpected-work",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-native-rpc",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-native-empty-queue",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-completion-delivery",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-completion-delivery",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-job-state",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-terminal",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-cli-planner-status",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure synthetic observations against the actual result guard; no services, CLI, files or database changed."
+}

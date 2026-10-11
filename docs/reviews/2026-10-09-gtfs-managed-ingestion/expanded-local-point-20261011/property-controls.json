@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "76c1da9c8cd25ec653dd6766d06b17b64efc23dd6191b265f8c26ebdf1dd48d1",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "reason": "expanded-property-target",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-property-existing",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "ICU locale silently dropped",
+      "targetedCreationFaultFails": true
+    },
+    {
+      "reason": "expanded-property-command-target",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "expanded-property-command-bytes",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "limits": "Actual extracted creation functions and copied source properties. No SQL, service, database or configuration mutation."
+}

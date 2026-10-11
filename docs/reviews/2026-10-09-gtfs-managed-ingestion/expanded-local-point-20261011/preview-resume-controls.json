@@ -1,0 +1,73 @@
+{
+  "sourceSha256": "bb987b1ccb4f399328cfcad7b7db041ffdab73f3b7dae2aed2b15af6def6ef60",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "expanded-preview-source",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-source",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-source",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-build",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-native",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-native",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-target",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-target",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-api",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-api",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-preview-port",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure launch preflight. No app, browser, native services or database changed."
+}

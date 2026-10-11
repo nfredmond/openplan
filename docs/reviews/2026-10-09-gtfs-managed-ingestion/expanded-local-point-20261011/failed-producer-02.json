@@ -1,0 +1,58 @@
+{
+  "trial": 2,
+  "state": "failed",
+  "reason": "expanded-cli-exit",
+  "sourceDatabase": "openplan_attempt_cli_c10780eaf1e04f6c96b2d1e3e30bcd3d",
+  "nativeCli": [],
+  "sourceObjectReadbacks": 10,
+  "originalServicesAutomaticallyRestarted": true,
+  "originalRecoveryErrorType": null,
+  "retainedCreatedServiceStops": [
+    {
+      "kind": "gateway",
+      "id": "7e9ee262a61502ce7763204c6778d77052338e16ecda922959c9e602b89ae061",
+      "stage": "source",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "3a48fb97cff56e2dcff03a92eff3c2b1dd79e2febc646466caf44a9ff03af718",
+      "stage": "source",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "535b5f5e0f5cabf3cc16810a0a203dcbca4360f1ba935b50f51d298abcdafd57",
+      "stage": "source",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "e6cbf735ca39fcfa93864e3c11de87598ff7bed98fe8c1fe0811d7dd0b625444",
+      "stage": "source",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "codeBoundary": "Frozen bf1; candidate harness only. No runtime source changes.",
+  "limits": "Failed producer retained. Later specific native continuation has separate identity."
+}
