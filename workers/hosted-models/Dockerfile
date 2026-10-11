@@ -18,6 +18,7 @@ ENV PYTHONUNBUFFERED=1
 ENV SPATIALITE_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/mod_spatialite.so
 ENV AEQ_WORKER_MODE=poll
 ENV AEQ_WORK_DIR=/data/model-runs
-ENV ACTIVITYSIM_WORK_DIR=/data/activitysim
+ENV OPENPLAN_HOSTED_ARTIFACT_MIRROR=1
+ENV ACTIVITYSIM_WORK_DIR=/data/activitysim/runs
 ENV ACTIVITYSIM_CLI=/opt/activitysim/bin/activitysim
 CMD ["python", "-u", "supervise.py"]

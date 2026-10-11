@@ -16,15 +16,19 @@ OpenPlan remains free software without subscription or entitlement gates.
   before production domain assignment. This branch enables automatic deployment
   from `main` only; verify a merged commit before declaring automation accepted.
   Retain the prior deployment for rollback.
-- Supabase project `lolckycpdjsgeejsmuzl` has all 399 migrations through
-  `20261016000027`. No historical user or client data is imported.
+- Supabase project `lolckycpdjsgeejsmuzl` has all 400 migrations through
+  `20261016000028`. No historical user or client data is imported.
   All ten artifact buckets are private.
   The organization `ubtudgixoqdghuvtfpem` has an active Pro subscription.
   Both OpenPlan and `nat-ford-website` belong to this organization and inherit
   that plan. Billing and project membership are verified on October 10.
 - Public email signup retains confirmation. Resend custom SMTP sends from
   `OpenPlan <openplan@natfordplanning.com>`. A synthetic signup confirmation
-  arrives. Confirmation callback and password reset completion remain pending.
+  arrives. A real browser signup confirms, creates its owner workspace and opens
+  the dashboard. Password reset opens its form and replaces the password;
+  the old password returns 400 and the new password returns 200 through Auth.
+  Gmail puts the tested reset message in Spam despite passing SPF, DKIM and DMARC.
+  Delivery to Inbox is not guaranteed for this new sender.
 - Shared paid AI credentials are unset. Corridor analysis produces an explicit
   deterministic fallback without an AI credential. Workspace provider choice
   remains available. Railway pollers are running; model and OCR execution
@@ -148,7 +152,46 @@ nested tables. All 24 focused checks pass. Removing the nested reader fails the
 new app-format check; falling back from a malformed nested table fails its
 refusal check; a harmless comment change passes. Reading the actual retained
 app payload recovers 26 demographic rows and 26 equity rows with the source's
-2023 vintage. Live rerun acceptance remains pending.
+2023 vintage. New run `5f0f5918-8961-4e97-800d-400935b6c22c` completes all three
+AequilibraE stages on worker `83ff1ba0b`. Its scientific outcome remains
+`inconclusive`; hosted execution does not establish model validity.
+
+Managed PostgreSQL defaults `extra_float_digits` to zero. Ordinary computed
+fractional KPI values fail the existing exact receipt check under that setting.
+Migration `20261016000028` sets full precision on the two KPI receipt functions
+without changing their request, ownership or numeric guards. A rollback-only
+native proof reproduces the rejection with precision zero and passes with full
+precision plus a harmless comment. An oversized nonrepresentable integer still
+fails exact conversion. The original two pending requests recover exact receipts
+through the existing recovery client, without resuming either interrupted job.
+
+ActivitySim's fitted Census microdata population step needs the operator's Census
+key separately from the ACS tables supplied by the app. The first full-precision
+ActivitySim test stops before execution because that worker key is absent. The
+existing deployment key is now configured privately on the model service.
+Acceptance of a new ActivitySim job remains pending.
+
+## Hosted model file downloads
+
+The engines retain local file references for their shared scientific handoffs.
+The hosted model image additionally mirrors those exact registered bytes into
+the private `run-artifacts` bucket. A pinned same-run copy verifies the original
+size and digest before upload; an authenticated read verifies the stored bytes.
+An uncertain mirror stops registration and preserves the original files.
+Managed writes retain their existing attempt scope and stop on uncertainty.
+
+Set `OPENPLAN_HOSTED_ARTIFACT_MIRROR=1` on the model host and Vercel. Downloads
+derive a content-addressed object path from the authorized run, stage, digest
+and canonical filename. They preserve the original `local://` references and
+mint a 15-minute signed download after the existing membership checks.
+Local installations can keep their shared-filesystem downloads. Missing or
+malformed identities and cross-run local paths are refused.
+
+The focused download route passes 20 tests; the selected worker suites pass.
+Harmless prose changes pass. Removing the source digest check, stored byte
+comparison, managed mirror call or download run boundary fails its corresponding
+targeted check. These checks do not establish live download acceptance, which
+remains pending for the next hosted build.
 
 The model service has a stable deployment identity,
 `openplan-hosted-lolckycpdjsgeejsmuzl`, for command journal destinations. Preserve

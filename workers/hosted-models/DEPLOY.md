@@ -38,3 +38,14 @@ and calibrated nationwide applicability.
 `python workers/hosted-models/test_supervise.py` verifies actual child exit and
 operator shutdown behavior. It does not execute either engine. Verify live
 heartbeats, queued stages, artifact bytes and application reads independently.
+# Private hosted downloads
+
+The hosted image sets `OPENPLAN_HOSTED_ARTIFACT_MIRROR=1`. Set the same flag on
+the Vercel application. Registered local artifacts retain their handoff paths;
+verified private Storage copies provide browser downloads. A failed byte receipt
+stops registration. Do not replace local references with signed URLs.
+
+Keep `ACTIVITYSIM_WORK_DIR=/data/activitysim/runs` and
+`LODES_CACHE_DIR=/data/source-cache/lodes` on the persistent model volume.
+ActivitySim's fitted population also requires `CENSUS_API_KEY` on this host.
+The app's supplied ACS tables do not replace the microdata key.
