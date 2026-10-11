@@ -238,3 +238,25 @@ harmless comment passes and removing the UTC option fails the stated assertion.
 This check covers date rendering, not the complete browser page. The operator
 environment example and Unreleased changelog now document the private artifact
 mirror flag and precision migration filename required by existing CI guards.
+
+## Compatible hosted execution verified
+
+Railway deployment `8bdc6df3-8566-43bd-95be-17376366c279` runs the corrected
+model image at `edc15c6005e8140caaf8654c85f0e84506d72545`. Native inspection
+finds NumPy 1.25.2, PyArrow 23.0.1 and one verified accepted component. Fresh
+job `2751645d-c78a-42a3-a5c7-32f1b2732080`, launched from the hosted browser,
+completes all six stages. ActivitySim CLI executes its 31 model steps in about
+69 seconds. The subsequent network assignment converges below the unchanged
+0.0005 solver-gap target. The comparison records matching network, assignment
+profile and solver-state hashes; it keeps the two engines separate. These are
+uncalibrated screening and execution results, not forecast validation.
+
+Chrome renders the corrected traffic map at an observed width of 390 pixels.
+Its header ends before the zoom control, and the zoom control responds. The
+viewport override is reset. The embedded T3 browser renders the map controls
+but its captured map canvas is blank; Chrome provides the rendered-map evidence.
+The latest joined application build and full CI remain pending.
+
+Native Railway API reads confirm baseline backup records on all three active
+volumes and daily/weekly schedules retaining six and 27 days respectively.
+Snapshot restoration remains outside the verified rehearsal boundary.
