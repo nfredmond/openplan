@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+When a browser loses a response, OpenPlan now says the action may have completed
+and asks the user to inspect saved records before retrying. A lost response no
+longer implies that nothing was saved.
+
+The [October 10 hosted relaunch record](docs/ops/HOSTED_RELAUNCH_2026-10-10.md)
+tracks the managed installation and unfinished acceptance work. Optional operator
+SQL blocks client Data API writes to the managed PostGIS reference catalog while
+preserving catalog reads and the application's existing RLS.
+
 **Public engagement map.** Residents can now read comments beside the map. A
 Comments button opens a list with search, topic filters, previous and next, and a
 support button. The list and the map show the same comments, and a filter
