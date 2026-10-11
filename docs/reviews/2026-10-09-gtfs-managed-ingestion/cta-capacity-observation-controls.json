@@ -1,0 +1,57 @@
+{
+  "sourceSha256": "ff84ab72239702336d185908ef0fe1a9d7eb35f499d5bd2d59da5a5e914abbdd",
+  "nativeRecordSha256": "12639ba3b4d2e04e04246f0d3d579ba2c3573d1adf7fe3fc377a5aab65e3bbde",
+  "positiveControls": 3,
+  "refusalsAndOmittedGuardFailures": 6,
+  "records": [
+    {
+      "name": "native-record-baseline",
+      "passed": true
+    },
+    {
+      "name": "harmless-comment-and-observation",
+      "passed": true
+    },
+    {
+      "name": "capacity-original-custody",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "capacity-archive-custody",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "capacity-source-parser",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "capacity-metadata",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "capacity-unrequested-adoption",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "capacity-unrelated-records",
+      "invalidObservedRecordRefused": true,
+      "omittedGuardOracleFailure": true
+    },
+    {
+      "name": "restored-native-record",
+      "passed": true
+    }
+  ],
+  "sourceRestored": true,
+  "databaseWrites": 0,
+  "storageWrites": 0,
+  "limits": [
+    "Changes apply to copied observations and isolated verification functions, not live rows or running workers.",
+    "The real native import and archive downloads precede these controls and provide a separate evidence boundary."
+  ]
+}

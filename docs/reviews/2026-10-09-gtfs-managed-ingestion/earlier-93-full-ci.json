@@ -1,0 +1,30 @@
+{
+  "run": 38122122031,
+  "headSha": "93cf7de9f66586ce1d568fd7480a513f92cf6385",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success",
+      "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38122122031/job/114418839538",
+      "logSha256": "86c93deb02c2dc1a89950ba9490a8ddf51f24aa9233bf07561a329e1c29c7b20",
+      "lines": [],
+      "countsAvailable": false
+    },
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success",
+      "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38122122031/job/114418839576",
+      "logSha256": "da60463f82cb244d39bd0b64b941f9eb6618ad9f546717bffc9710206c02289c",
+      "lines": [
+        "verify (qa gate)\tQA gate\t2026-10-11T08:16:52.8368840Z  Test Files  1577 passed | 97 skipped (1674)",
+        "verify (qa gate)\tQA gate\t2026-10-11T08:16:52.8518520Z       Tests  21748 passed | 1603 skipped (23351)",
+        "verify (qa gate)\tQA gate\t2026-10-11T08:16:52.8541210Z    Duration  1370.93s (transform 55.10s, setup 102.80s, import 381.34s, tests 2193.25s, environment 1103.13s)"
+      ],
+      "countsAvailable": true
+    }
+  ]
+}

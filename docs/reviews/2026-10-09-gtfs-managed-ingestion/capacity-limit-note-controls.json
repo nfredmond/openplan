@@ -1,0 +1,70 @@
+{
+  "sourceSha256": "1a8d4c978cdd9266a2534194849358278ce8ed06305233fdc4b15ded76bb0859",
+  "testSha256": "66233fa39256d607291ad41516b2ddfad7ac80e61d84a2ec6cb227ef072e9d27",
+  "records": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "expectedOutcome": true,
+      "protectedThreshold": null
+    },
+    {
+      "name": "harmless-comment",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "expectedOutcome": true,
+      "protectedThreshold": null
+    },
+    {
+      "name": "broken-archive",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "expectedOutcome": true,
+      "protectedThreshold": 17475566
+    },
+    {
+      "name": "broken-rows",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "expectedOutcome": true,
+      "protectedThreshold": 2167134
+    },
+    {
+      "name": "broken-pairs",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "expectedOutcome": true,
+      "protectedThreshold": 35904
+    },
+    {
+      "name": "broken-member",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "expectedOutcome": true,
+      "protectedThreshold": 126600000
+    },
+    {
+      "name": "restored",
+      "exitCode": 0,
+      "passed": 13,
+      "failed": 0,
+      "expectedOutcome": true,
+      "protectedThreshold": null
+    }
+  ],
+  "restored": true,
+  "lintPassed": true,
+  "wallSeconds": 13.292,
+  "limits": [
+    "Protects the stated historical numeric thresholds, not current largest-feed or resource capacity.",
+    "Mutations change the production constants; they do not measure a real feed.",
+    "No database, network or browser acceptance."
+  ]
+}

@@ -1,0 +1,370 @@
+{
+  "sourceSha256": "ff84ab72239702336d185908ef0fe1a9d7eb35f499d5bd2d59da5a5e914abbdd",
+  "positiveControls": 3,
+  "targetedFailures": 49,
+  "records": [
+    {
+      "name": "baseline",
+      "expectedOutcome": true
+    },
+    {
+      "name": "harmless-comment-and-observation",
+      "expectedOutcome": true
+    },
+    {
+      "name": "broken-1",
+      "function": "preflight",
+      "reason": "capacity-source",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-2",
+      "function": "preflight",
+      "reason": "capacity-source",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-3",
+      "function": "preflight",
+      "reason": "capacity-target",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-4",
+      "function": "preflight",
+      "reason": "capacity-target",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-5",
+      "function": "preflight",
+      "reason": "capacity-api",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-6",
+      "function": "preflight",
+      "reason": "capacity-full-recovery",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-7",
+      "function": "preflight",
+      "reason": "capacity-full-recovery",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-8",
+      "function": "preflight",
+      "reason": "capacity-full-recovery",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-9",
+      "function": "preflight",
+      "reason": "capacity-full-recovery",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-10",
+      "function": "preflight",
+      "reason": "capacity-serial-operation",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-11",
+      "function": "preflight",
+      "reason": "capacity-other-work",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-12",
+      "function": "container_scope",
+      "reason": "capacity-container-ownership",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-13",
+      "function": "container_scope",
+      "reason": "capacity-container-ownership",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-14",
+      "function": "container_scope",
+      "reason": "capacity-container-ownership",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-15",
+      "function": "container_scope",
+      "reason": "capacity-native-database",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-16",
+      "function": "verify_record",
+      "reason": "capacity-source-identity",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-17",
+      "function": "verify_record",
+      "reason": "capacity-file-scope",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-18",
+      "function": "verify_record",
+      "reason": "capacity-file-scope",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-19",
+      "function": "verify_record",
+      "reason": "capacity-file-scope",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-20",
+      "function": "verify_record",
+      "reason": "capacity-original-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-21",
+      "function": "verify_record",
+      "reason": "capacity-original-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-22",
+      "function": "verify_record",
+      "reason": "capacity-original-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-23",
+      "function": "verify_record",
+      "reason": "capacity-original-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-24",
+      "function": "verify_record",
+      "reason": "capacity-source-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-25",
+      "function": "verify_record",
+      "reason": "capacity-source-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-26",
+      "function": "verify_record",
+      "reason": "capacity-source-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-27",
+      "function": "verify_record",
+      "reason": "capacity-file-archive",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-28",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-29",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-30",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-31",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-32",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-33",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-34",
+      "function": "verify_record",
+      "reason": "capacity-terminal",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-35",
+      "function": "verify_record",
+      "reason": "capacity-unrequested-adoption",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-36",
+      "function": "verify_record",
+      "reason": "capacity-unrequested-adoption",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-37",
+      "function": "verify_record",
+      "reason": "capacity-archive-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-38",
+      "function": "verify_record",
+      "reason": "capacity-archive-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-39",
+      "function": "verify_record",
+      "reason": "capacity-archive-custody",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-40",
+      "function": "verify_record",
+      "reason": "capacity-metadata",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-41",
+      "function": "verify_record",
+      "reason": "capacity-metadata",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-42",
+      "function": "verify_record",
+      "reason": "capacity-metadata",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-43",
+      "function": "verify_record",
+      "reason": "capacity-metadata",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-44",
+      "function": "verify_record",
+      "reason": "capacity-derived-rows",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-45",
+      "function": "verify_record",
+      "reason": "capacity-derived-rows",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-46",
+      "function": "verify_record",
+      "reason": "capacity-unrelated-records",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-47",
+      "function": "verify_record",
+      "reason": "capacity-installed-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-48",
+      "function": "verify_record",
+      "reason": "capacity-installed-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "broken-49",
+      "function": "verify_record",
+      "reason": "capacity-installed-parser",
+      "invalidInputRefused": true,
+      "omittedGuardDetected": true
+    },
+    {
+      "name": "restored",
+      "expectedOutcome": true
+    }
+  ],
+  "databaseWrites": 0,
+  "externalDownloads": 0,
+  "sourceRestored": true,
+  "limits": [
+    "Synthetic inputs exercise scope and record comparisons only.",
+    "Native publisher processing, authentication, archive custody and resources remain unverified.",
+    "Mutation execution uses isolated parsed function copies, not a running worker."
+  ]
+}

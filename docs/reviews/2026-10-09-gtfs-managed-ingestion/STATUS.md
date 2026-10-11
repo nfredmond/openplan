@@ -516,3 +516,25 @@ Earlier c75 live RLS and full archive restore now both pass, each with 1,492 tes
 ## Joined transit and encryption production read, October 11
 
 [The identified joined candidate](JOINED_CANDIDATE_VERIFICATION.md) passes the full production build, exact additive preview schema update and T3 retained-feed/project/model read at desktop and 390px. Fresh native geometry, current-feed and cancellation records match; three positive and 26 changed-observation controls behave as intended. The earlier 4 GiB V8 heap failure, observer error and tool interruptions stay explicit. Complete joined archive recovery is now a separate running bounded service, not a passing result. Current CI, hosted schema-first coordination, integration and release remain open.
+
+
+## Joined archive completion and CTA measurement, October 11
+
+The frozen `ba1b497f` full archive drill now passes 374 tables, one private
+Storage object, encrypted-record decryption, sign-in, independent OWP
+reconstruction and all 1,499 live RLS tests, with 125 skipped and none failed.
+Its runner and twelve fresh services each have a 1 GiB limit, no swap and one
+CPU. Exact owned containers stop after success; volumes and proof remain retained.
+
+[The CTA measurement](CTA_CAPACITY.md) then completes one retained publisher
+archive of 68,738,293 bytes through the production admission library and actual
+installed worker. It processes 5,920,320 stop-time rows in 89.888 seconds, with
+a rounded 728.8M runner peak under a 1 GiB cap. Local and remote archive hashes,
+saved parser output, original custody and native ready state agree. One claim
+and completion leave the version unadopted and pre-existing transit records
+unchanged. Positive and intended broken observation/access controls pass.
+Historical size wording no longer claims largest-feed acceptance; defaults stay
+unchanged. Earlier `93cf7de9` full QA and executed shuffle pass at that source.
+Later keyless-map joins, exact-head CI, production build/read, hosted schema-first
+coordination, main integration and release remain unfinished. This advances one
+local capacity case without closing nationwide operation or the full v1 contract.
