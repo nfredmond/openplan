@@ -65,7 +65,7 @@ export function ExploreCurrentResultCard({
         comparisonActive ? "is-paired" : "",
       ].join(" ")}
     >
-      <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+      <CardHeader className="gap-3 border-b border-border px-6 py-5">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge tone="info">Current result</StatusBadge>
           <StatusBadge tone={comparisonActive ? "warning" : "neutral"}>
@@ -80,8 +80,8 @@ export function ExploreCurrentResultCard({
         </div>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <CardTitle className="text-[1.05rem] font-semibold text-white">Current Result</CardTitle>
-            <CardDescription className="max-w-xl text-sm leading-6 text-slate-300/76">
+            <CardTitle className="text-[1.05rem] font-semibold text-foreground">Current Result</CardTitle>
+            <CardDescription className="max-w-xl text-sm leading-6 text-muted-foreground">
               {comparisonActive
                 ? "The active run stays paired with the pinned baseline below so the comparison stays easy to follow."
                 : analysisResult.aiInterpretationSource === "ai"
@@ -121,14 +121,14 @@ export function ExploreCurrentResultCard({
           </div>
         ) : null}
 
-        <div className="rounded-[0.75rem] border border-white/10 bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+        <div className="rounded-[0.75rem] border border-border bg-[linear-gradient(180deg,rgba(16,28,39,0.94),rgba(11,20,29,0.9))] p-4 ">
           <div className="flex flex-wrap items-start justify-between gap-4">
             <div className="max-w-[16rem]">
-              <p className="text-label font-semibold text-cyan-200/76">Current run posture</p>
-              <p className="mt-3 text-4xl font-semibold text-white">
+              <p className="text-label font-semibold text-[color:var(--accent-2)]">Current run posture</p>
+              <p className="mt-3 text-4xl font-semibold text-foreground">
                 {typeof analysisResult.metrics.overallScore === "number" ? analysisResult.metrics.overallScore : "—"}
               </p>
-              <p className="mt-2 text-sm text-slate-300/76">
+              <p className="mt-2 text-sm text-muted-foreground">
                 {typeof analysisResult.metrics.overallScore === "number"
                   ? "OpenPlan screening composite. No qualitative score bands have been validated."
                   : analysisResult.metrics.scorePresentation?.overall.withheldReason ?? "Composite overall score is withheld because required source evidence is unavailable; supported component evidence remains below."}
@@ -148,24 +148,24 @@ export function ExploreCurrentResultCard({
               <div
                 key={item.label}
                 className={[
-                  "rounded-[0.5rem] border border-white/10 bg-white/[0.035] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]",
+                  "rounded-[0.5rem] border border-border bg-foreground/[0.04] p-4 ",
                   item.emphasis ? "sm:col-span-2 bg-[linear-gradient(180deg,rgba(34,197,94,0.12),rgba(255,255,255,0.035))]" : "",
                 ]
                   .filter(Boolean)
                   .join(" ")}
               >
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-label font-semibold text-slate-400">{item.label}</p>
+                  <p className="text-label font-semibold text-muted-foreground">{item.label}</p>
                   {item.estimated ? (
                     <StatusBadge tone="warning" title={item.estimatedNote}>
                       Estimated
                     </StatusBadge>
                   ) : null}
                 </div>
-                <p className="mt-2 text-3xl font-semibold text-white">{item.value}</p>
-                <p className="mt-2 text-xs leading-5 text-slate-300/72">{item.note}</p>
+                <p className="mt-2 text-3xl font-semibold text-foreground">{item.value}</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.note}</p>
                 {item.estimated && item.estimatedNote ? (
-                  <p className="mt-1 text-xs leading-5 text-slate-400/85">{item.estimatedNote}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.estimatedNote}</p>
                 ) : null}
               </div>
             ))}
@@ -178,10 +178,10 @@ export function ExploreCurrentResultCard({
             a planner must not do is carry a screen into a determination.
           */}
           <div className="mt-4 rounded-[0.5rem] border border-amber-300/20 bg-amber-400/[0.06] px-4 py-3">
-            <p className="text-label font-semibold text-amber-200/80">
+            <p className="text-label font-semibold text-status-warn">
               {decisionUse.label}
             </p>
-            <p className="mt-2 text-xs leading-5 text-slate-200/85">{decisionUse.detail}</p>
+            <p className="mt-2 text-xs leading-5 text-foreground">{decisionUse.detail}</p>
             {/*
               WHAT THIS RESULT IS NOT, beside the result rather than in help.
 
@@ -190,7 +190,7 @@ export function ExploreCurrentResultCard({
               to work out for themselves that the question had not been answered.
               Saying it here costs one sentence; not saying it cost them the job.
             */}
-            <p className="mt-2 text-xs leading-5 text-slate-200/85">
+            <p className="mt-2 text-xs leading-5 text-foreground">
               {CORRIDOR_ANALYSIS_DOES_NOT_ANSWER}{" "}
               <Link
                 href={withPlanningContext(CORRIDOR_ANALYSIS_TRAFFIC_HREF, projectId)}
@@ -202,32 +202,32 @@ export function ExploreCurrentResultCard({
             </p>
             {projectId ? (
               <div className="mt-4 border-t border-amber-200/15 pt-4" data-testid="project-effect-answer">
-                <p className="text-label font-semibold text-amber-200/80">
+                <p className="text-label font-semibold text-status-warn">
                   Answer to the project question
                 </p>
                 <dl className="mt-3 grid gap-3 sm:grid-cols-3">
                   <div>
-                    <dt className="text-xs font-semibold text-slate-100">Traffic after the build</dt>
-                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                    <dt className="text-xs font-semibold text-foreground">Traffic after the build</dt>
+                    <dd className="mt-1 text-xs leading-5 text-muted-foreground">
                       Not measured by this run. These are current conditions, not a project forecast.
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-semibold text-slate-100">Change in miles driven</dt>
-                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                    <dt className="text-xs font-semibold text-foreground">Change in miles driven</dt>
+                    <dd className="mt-1 text-xs leading-5 text-muted-foreground">
                       Not measured by this run. No checked baseline-versus-build result is attached.
                     </dd>
                   </div>
                   <div>
-                    <dt className="text-xs font-semibold text-slate-100">Whether benefits justify cost</dt>
-                    <dd className="mt-1 text-xs leading-5 text-slate-300/85">
+                    <dt className="text-xs font-semibold text-foreground">Whether benefits justify cost</dt>
+                    <dd className="mt-1 text-xs leading-5 text-muted-foreground">
                       Cannot be determined from a current-conditions screen. Do not treat the scores below as project benefits.
                     </dd>
                   </div>
                 </dl>
                 <Link
                   href={withPlanningContext(CORRIDOR_ANALYSIS_TRAFFIC_HREF, projectId)}
-                  className="mt-3 inline-flex text-xs font-semibold text-amber-100 underline underline-offset-2"
+                  className="mt-3 inline-flex text-xs font-semibold text-status-warn underline underline-offset-2"
                 >
                   Start the guided baseline-versus-build setup
                 </Link>
@@ -236,11 +236,11 @@ export function ExploreCurrentResultCard({
           </div>
         </div>
 
-        <div className="rounded-[0.5rem] border border-white/8 bg-black/15 p-4">
+        <div className="rounded-[0.5rem] border border-border bg-black/15 p-4">
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-label font-semibold text-slate-400">Output actions</p>
-              <p className="mt-2 text-sm text-slate-300/74">
+              <p className="text-label font-semibold text-muted-foreground">Output actions</p>
+              <p className="mt-2 text-sm text-muted-foreground">
                 Export the numeric record or geometry package for audit, sharing, or downstream reporting.
               </p>
             </div>
@@ -255,11 +255,11 @@ export function ExploreCurrentResultCard({
           </div>
         </div>
 
-        <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
+        <div className="rounded-[0.5rem] border border-border bg-foreground/[0.04] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-label font-semibold text-slate-400">Map review context</p>
-              <p className="mt-2 text-sm text-slate-300/74">
+              <p className="text-label font-semibold text-muted-foreground">Map review context</p>
+              <p className="mt-2 text-sm text-muted-foreground">
                 Captures the current tract, crash, and overlay posture that shaped this visible result surface.
               </p>
             </div>
@@ -277,34 +277,34 @@ export function ExploreCurrentResultCard({
               ))}
             </div>
           ) : (
-            <p className="mt-4 text-xs text-slate-400">
+            <p className="mt-4 text-xs text-muted-foreground">
               OpenPlan will preserve the active map-view context once those settings are saved on the run record.
             </p>
           )}
         </div>
 
         <div className="grid gap-3">
-          <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
-            <p className="text-label font-semibold text-slate-400">Summary brief</p>
-            <p className="mt-3 text-sm leading-6 text-slate-100/90">{analysisResult.summary}</p>
+          <div className="rounded-[0.5rem] border border-border bg-foreground/[0.04] p-4">
+            <p className="text-label font-semibold text-muted-foreground">Summary brief</p>
+            <p className="mt-3 text-sm leading-6 text-foreground">{analysisResult.summary}</p>
           </div>
 
           {analysisResult.aiInterpretation ? (
-            <div className="rounded-[0.5rem] border border-cyan-300/16 bg-[linear-gradient(180deg,rgba(14,35,48,0.88),rgba(11,20,29,0.94))] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.03)]">
+            <div className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--accent-2)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--accent-2)_8%,var(--panel-solid))] p-4 ">
               <div className="flex flex-wrap items-center justify-between gap-3">
-                <p className="text-label font-semibold text-cyan-200/78">AI interpretation</p>
+                <p className="text-label font-semibold text-[color:var(--accent-2)]">AI interpretation</p>
                 <StatusBadge tone="info">Human review required</StatusBadge>
               </div>
-              <p className="mt-3 text-sm leading-6 text-slate-100/88">{analysisResult.aiInterpretation}</p>
+              <p className="mt-3 text-sm leading-6 text-foreground">{analysisResult.aiInterpretation}</p>
             </div>
           ) : null}
         </div>
 
-        <div className="rounded-[0.5rem] border border-white/8 bg-white/[0.03] p-4">
+        <div className="rounded-[0.5rem] border border-border bg-foreground/[0.04] p-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
-              <p className="text-label font-semibold text-slate-400">Data source checks</p>
-              <p className="mt-2 text-sm text-slate-300/74">Review source quality, fallback behavior, and narrative inputs before sharing results.</p>
+              <p className="text-label font-semibold text-muted-foreground">Data source checks</p>
+              <p className="mt-2 text-sm text-muted-foreground">Review source quality, fallback behavior, and narrative inputs before sharing results.</p>
             </div>
             <StatusBadge tone={sourceReviewCount > 0 ? "warning" : "success"}>
               {sourceReviewCount > 0 ? `${sourceReviewCount} items to review` : "Source checks look good"}
@@ -312,12 +312,12 @@ export function ExploreCurrentResultCard({
           </div>
           <div className="mt-4 space-y-3">
             {sourceTransparency.map((item) => (
-              <div key={item.key} className="rounded-[0.5rem] border border-white/8 bg-black/18 px-4 py-3">
+              <div key={item.key} className="rounded-[0.5rem] border border-border bg-black/18 px-4 py-3">
                 <div className="flex flex-wrap items-center justify-between gap-2">
-                  <p className="text-sm font-medium text-white">{item.label}</p>
+                  <p className="text-sm font-medium text-foreground">{item.label}</p>
                   <StatusBadge tone={item.tone}>{item.status}</StatusBadge>
                 </div>
-                <p className="mt-2 text-xs leading-5 text-slate-300/74">{item.detail}</p>
+                <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.detail}</p>
               </div>
             ))}
           </div>

@@ -69,7 +69,7 @@ export function ExploreRunComparisonCard({
 }: ExploreRunComparisonCardProps) {
   return (
     <Card className="analysis-explore-surface analysis-explore-surface-comparison">
-      <CardHeader className="gap-3 border-b border-white/8 px-6 py-5">
+      <CardHeader className="gap-3 border-b border-border px-6 py-5">
         <div className="flex flex-wrap items-center gap-2">
           <StatusBadge tone="warning">Pinned baseline</StatusBadge>
           <StatusBadge tone={comparisonMetricChangeCount > 0 ? "info" : "neutral"}>
@@ -88,8 +88,8 @@ export function ExploreRunComparisonCard({
         </div>
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
-            <CardTitle className="text-[1.02rem] font-semibold text-white">Run comparison</CardTitle>
-            <CardDescription className="max-w-2xl text-sm leading-6 text-slate-300/76">
+            <CardTitle className="text-[1.02rem] font-semibold text-foreground">Run comparison</CardTitle>
+            <CardDescription className="max-w-2xl text-sm leading-6 text-muted-foreground">
               Compare the current run against a pinned baseline without losing the map or result context.
             </CardDescription>
           </div>

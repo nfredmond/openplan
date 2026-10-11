@@ -51,8 +51,8 @@ Browser: production builds of this worktree on port 3611, identified with `which
 - **Planner vocabulary (D6).** Packet, retain, campaign, posture and the other terms Nathaniel owns are unchanged; several fell in the jargon ledger only because sentences around them were removed.
 - **Engagement index and campaign pages, portal, engagement maps.** Other lanes were active on them throughout.
 - **Transit import panel on Data Hub.** GTFS lane.
-- **Corridor Analysis in light mode.** It still renders its always-dark `analysis-*` styling; the plan put this last and in its own pull request because light mode broke its tiles before.
-- **The command board component** (`components/operations/workspace-command-board.tsx`) is no longer rendered anywhere but six page tests still mock it; remove it with those mocks in a cleanup pass.
+- **Corridor Analysis in light mode** is in its own pull request (branch `work/ui-overhaul-light-20261011`): its surfaces leave the forced-dark rules, a light-mode block generated from its 166 rules maps each colour to a theme token, about 80 hard-coded utilities in six components become tokens, and the map opens on the light basemap in light mode. A mode switch mid-session keeps the basemap until the next load, because a live style switch would drop the analysis layers' data.
+- **The command board component** was removed with its mocks in PR #193 (commit 58a9e6dec).
 - **Reports filters on phones** stack as a tall column of chips.
 - **Grants program catalog** still prints one summary per program; a search or filter would shorten the Opportunities tab further.
 - **Signal palette and square corners** (M2c additions).
