@@ -78,6 +78,18 @@ export function isDeadlinePast(dateInput: string | null | undefined, now: Date):
     return false;
   }
 
+  // A date with no time is a calendar day, not midnight UTC. Read as midnight
+  // UTC, a deadline of the 14th turned overdue at 5 pm Pacific on the 13th.
+  // With no workspace time zone recorded, the day counts as past only once it
+  // has ended everywhere (the end of that date at UTC-12), which is never
+  // early. The browser can be more precise; see `lib/dashboard/coming-up.ts`.
+  const dateOnly = /^(\d{4})-(\d{2})-(\d{2})$/.exec(dateInput);
+  if (dateOnly) {
+    const [, year, month, day] = dateOnly;
+    const endEverywhere = Date.UTC(Number(year), Number(month) - 1, Number(day) + 1, 12);
+    return Number.isNaN(endEverywhere) ? false : now.getTime() >= endEverywhere;
+  }
+
   const parsed = new Date(dateInput);
   if (Number.isNaN(parsed.getTime())) {
     return false;

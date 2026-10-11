@@ -20,7 +20,6 @@ export function ProjectActivityTimeline({ timelineItems }: { timelineItems: Time
             <FileClock className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Activity timeline</p>
             <h2 className="module-section-title">Everything happening in one feed</h2>
             <p className="module-section-description">
               The feed is intentionally tighter than the page intro: type first, timestamp second, short read after that.

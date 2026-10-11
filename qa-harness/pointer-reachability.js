@@ -297,6 +297,13 @@ async function sampleControls(
         hitTopRoot,
         disabled: node.disabled === true,
         ariaHidden: node.getAttribute('aria-hidden') === 'true',
+        // FALSE INSIDE A CLOSED <details> (October 10, 2026). Chrome hides a
+        // closed disclosure's content with content-visibility rather than
+        // display, so the control keeps a box and a centre point while
+        // nothing is painted there; the hit test then blamed the next section
+        // for covering a link nobody could see. `checkVisibility` answers
+        // "is this being rendered at all".
+        rendered: typeof node.checkVisibility === 'function' ? node.checkVisibility() : true,
         viewport,
       };
     });

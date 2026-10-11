@@ -88,6 +88,9 @@ type WorkQuery = PromiseLike<WorkReadResult> & {
   is(column: string, value: null): WorkQuery;
   not(column: string, operator: string, value: unknown): WorkQuery;
   or(filter: string): WorkQuery;
+  lt(column: string, value: string): WorkQuery;
+  gte(column: string, value: string): WorkQuery;
+  lte(column: string, value: string): WorkQuery;
   order(column: string, options: { ascending: boolean }): WorkQuery;
   limit(count: number): WorkQuery;
 };
@@ -169,7 +172,26 @@ export type LoadMyWorkOptions = {
   limitPerSource?: number;
   /** Injectable clock — every overdue test in this module reads it, none calls Date.now() directly. */
   now?: Date;
+  /**
+   * Date bounds for the dated groups only (`deadlines`, `workspace_deadlines`),
+   * applied to each source's due column. The dashboard reads the overdue
+   * backlog and the coming weeks separately, so a long backlog cannot push
+   * every upcoming item past the per-source cap. Undated groups ignore them.
+   */
+  dueBefore?: string;
+  dueOnOrAfter?: string;
+  dueOnOrBefore?: string;
+  /** Read only the dated groups. */
+  datedOnly?: boolean;
 };
+
+/** The groups whose order column is the item's due date. */
+const MY_WORK_DATED_BLOCKS: readonly MyWorkBlockId[] = ["deadlines", "workspace_deadlines"];
+
+/** Sources by id, for callers that need a source's label or group. */
+export const MY_WORK_SOURCES_BY_ID = Object.fromEntries(
+  MY_WORK_SOURCES.map((source) => [source.id, source])
+) as Record<MyWorkSourceId, MyWorkSource>;
 
 function clampLimit(requested: number | undefined): number {
   if (
@@ -252,6 +274,9 @@ async function readSource(
     scope: MyWorkScope;
     roster: ProjectAssigneeRoster;
     limitPerSource: number;
+    dueBefore?: string;
+    dueOnOrAfter?: string;
+    dueOnOrBefore?: string;
   }
 ): Promise<{ result: WorkReadResult; departedIncluded: boolean }> {
   try {
@@ -260,7 +285,12 @@ async function readSource(
       .select(source.select)
       .eq(source.workspaceFilterColumn, options.workspaceId);
     const scoped = applyScope(base, source, options);
-    const filtered = applyStaticFilters(scoped.query, source);
+    let filtered = applyStaticFilters(scoped.query, source);
+    if (MY_WORK_DATED_BLOCKS.includes(source.block)) {
+      if (options.dueBefore) filtered = filtered.lt(source.orderColumn, options.dueBefore);
+      if (options.dueOnOrAfter) filtered = filtered.gte(source.orderColumn, options.dueOnOrAfter);
+      if (options.dueOnOrBefore) filtered = filtered.lte(source.orderColumn, `${options.dueOnOrBefore}T23:59:59Z`);
+    }
     const readLimit = source.readLimit
       ? source.readLimit(options.limitPerSource)
       : options.limitPerSource;
@@ -338,23 +368,30 @@ export async function loadMyWork(
   const now = options.now ?? new Date();
 
   const reads = new ReadFailureLog();
+  const sources = options.datedOnly
+    ? MY_WORK_SOURCES.filter((source) => MY_WORK_DATED_BLOCKS.includes(source.block))
+    : MY_WORK_SOURCES;
   const outcomes = await Promise.all(
-    MY_WORK_SOURCES.map((source) =>
+    sources.map((source) =>
       readSource(client, source, {
         workspaceId: options.workspaceId,
         userId: options.userId,
         scope,
         roster: options.roster,
         limitPerSource,
+        dueBefore: options.dueBefore,
+        dueOnOrAfter: options.dueOnOrAfter,
+        dueOnOrBefore: options.dueOnOrBefore,
       })
     )
   );
 
   const collected: MyWorkItem[] = [];
   const perSource: Partial<Record<MyWorkSourceId, MyWorkSourceOutcome>> = {};
+  const rowsRead: Partial<Record<MyWorkSourceId, number>> = {};
   let departedIncludedInUnassigned = true;
 
-  MY_WORK_SOURCES.forEach((source, index) => {
+  sources.forEach((source, index) => {
     const { result, departedIncluded } = outcomes[index];
     if (!departedIncluded) departedIncludedInUnassigned = false;
     // Classify first (a pending migration has a truer thing to say than "could
@@ -362,6 +399,7 @@ export async function loadMyWork(
     const pending = looksLikePendingSchema(result.error?.message);
     const failed = pending ? false : reads.check(source.readLabel, result);
     const rows = pending || failed ? [] : ((result.data ?? []) as Array<Record<string, unknown>>);
+    rowsRead[source.id] = rows.length;
     collected.push(...source.toItems(rows, { now, limitPerSource }));
     perSource[source.id] = { count: 0, pending, failed };
   });
@@ -388,6 +426,7 @@ export async function loadMyWork(
     items,
     reads,
     perSource,
+    rowsRead,
     limitPerSource,
     departedIncludedInUnassigned: scope === "unassigned" ? departedIncludedInUnassigned : true,
   };

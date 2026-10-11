@@ -59,7 +59,6 @@ export function RtpRegistryPacketBulkActions({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Packet reset queue</p>
           <h2 className="module-section-title">Reset stale customized packets in bulk</h2>
           <p className="module-section-description">
             Apply the recommended phase-aligned RTP packet preset to every cycle currently marked as needing a reset from the registry.

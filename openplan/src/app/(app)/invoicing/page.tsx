@@ -8,6 +8,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { createClient } from "@/lib/supabase/server";
 import {
   CURRENT_WORKSPACE_MEMBERSHIP_SELECT,
+  loadCurrentWorkspaceMembership,
   resolveWorkspaceMembershipSelection,
   type WorkspaceMembershipRow,
   unwrapWorkspaceRecord,
@@ -93,8 +94,18 @@ export default async function InvoicingPage({
     );
   }
 
+  // No workspace in the address means the one the header shows (October 10,
+  // 2026). This page used to stop every multi-workspace planner at a
+  // "Choose a workspace" screen even though the header already named their
+  // current workspace; the register now opens on that one and names it.
+  // An explicit ?workspaceId still wins, and an invalid one still stops.
+  const membershipCount = (membershipsResult.data ?? []).length;
+  const currentWorkspaceId =
+    requestedWorkspaceId || membershipCount < 2
+      ? null
+      : (await loadCurrentWorkspaceMembership(supabase, user.id)).membership?.workspace_id ?? null;
   const selection = resolveWorkspaceMembershipSelection(membershipsResult.data as WorkspaceMembershipRow[] | null, {
-    requestedWorkspaceId,
+    requestedWorkspaceId: requestedWorkspaceId ?? currentWorkspaceId,
     requireExplicitSelectionForMultiWorkspace: true,
   });
 
@@ -177,9 +188,8 @@ export default async function InvoicingPage({
     <section className="space-y-6">
       <PageHeader title={navLabel("/invoicing")} description={DIRECTION_DESCRIPTIONS[direction]}>
         <p className="text-sm text-muted-foreground">
-          {ACCESS_NOTE} Your role: <strong className="font-semibold text-foreground">{titleCase(membership.role)}</strong>.
-          Workspace ID{" "}
-          <strong className="font-semibold text-foreground">{formatWorkspaceIdSnippet(workspaceId)}</strong>.
+          Showing <strong className="font-semibold text-foreground">{selection.workspace.name ?? formatWorkspaceIdSnippet(workspaceId)}</strong>.
+          Your role: <strong className="font-semibold text-foreground">{titleCase(membership.role)}</strong>. {ACCESS_NOTE}
         </p>
       </PageHeader>
 

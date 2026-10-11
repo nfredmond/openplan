@@ -750,7 +750,6 @@ export default async function ScenarioSetDetailPage({
           </div>
           <article className="module-section-surface">
             <div className="module-section-heading">
-              <p className="module-section-label">Workflow</p>
               <h2 className="module-section-title">Comparison and reporting runway</h2>
               <p className="module-section-description">
                 Move from registered entries into Analysis Studio review or report assembly without losing the explicit evidence trail.
@@ -851,7 +850,6 @@ export default async function ScenarioSetDetailPage({
             </article>
             <article className="module-section-surface">
               <div className="module-section-heading">
-                <p className="module-section-label">Project linkage</p>
                 <h2 className="module-section-title">Source planning container</h2>
                 <p className="module-section-description">
                   Scenario sets stay subordinate to projects so the registry does not split from the main OpenPlan record.
@@ -937,7 +935,6 @@ export default async function ScenarioSetDetailPage({
         <div className="space-y-6">
           <article className="module-section-surface">
             <div className="module-section-heading">
-              <p className="module-section-label">Decision surface</p>
               <h2 className="module-section-title">Alternative vs baseline comparison board</h2>
               <p className="module-section-description">
                 Attached runs now roll up into a decision-useful comparison surface so planners can see where each alternative actually moves the scorecard before opening Studio.
@@ -1039,7 +1036,6 @@ export default async function ScenarioSetDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Provenance</p>
                 <h2 className="module-section-title">Assumptions, data, and measured indicators</h2>
                 <p className="module-section-description">
                   What this scenario set assumes, where those numbers came from, and what was measured
@@ -1056,7 +1052,6 @@ export default async function ScenarioSetDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Persistent comparisons</p>
                 <h2 className="module-section-title">Saved comparison snapshots</h2>
                 <p className="module-section-description">
                   Comparison artifacts now persist as first-class scenario records, so narrative, caveats, and indicator deltas can be reused downstream instead of reassembled each time.

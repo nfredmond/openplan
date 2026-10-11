@@ -855,7 +855,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Workflow</p>
                 <h2 className="module-section-title">Operator review posture</h2>
                 <p className="module-section-description">
                   Keep this page focused on the formal planning record: what is linked, what is ready, and what still needs operator action.
@@ -930,7 +929,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Metadata</p>
                 <h2 className="module-section-title">Plan scope and operating context</h2>
                 <p className="module-section-description">What this plan is, where it applies, and how it is currently classified.</p>
               </div>
@@ -969,7 +967,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Projects</p>
                 <h2 className="module-section-title">Primary and related project records</h2>
                 <p className="module-section-description">Plans can inherit planning context from a primary project and carry extra project cross-links.</p>
               </div>
@@ -1012,7 +1009,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Scenarios</p>
                 <h2 className="module-section-title">Scenario evidence</h2>
               </div>
               <Radar className="h-5 w-5 text-muted-foreground" />
@@ -1062,7 +1058,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Engagement</p>
                 <h2 className="module-section-title">Input campaigns</h2>
               </div>
               <MessagesSquare className="h-5 w-5 text-muted-foreground" />
@@ -1110,7 +1105,6 @@ export default async function PlanDetailPage({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Reports</p>
                 <h2 className="module-section-title">Output packets</h2>
               </div>
               <ScrollText className="h-5 w-5 text-muted-foreground" />
@@ -1159,7 +1153,6 @@ export default async function PlanDetailPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Models</p>
               <h2 className="module-section-title">Supporting model basis</h2>
               <p className="module-section-description">
                 Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
@@ -1255,7 +1248,6 @@ export default async function PlanDetailPage({
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Plan links</p>
               <h2 className="module-section-title">Explicit plan-to-record references</h2>
               <p className="module-section-description">These are the direct links stored on the plan record itself, separate from anything inherited through the primary project.</p>
             </div>

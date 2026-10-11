@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useMemo, useRef, useState } from "react";
+import { useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
@@ -19,10 +19,13 @@ import {
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import type { PortalTranslator } from "@/lib/engagement/portal-i18n/translator";
+import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
 import { translatePublicBasemapChoices } from "@/lib/engagement/portal-i18n/basemap-words";
 import type { PublicBasemapChoice, PublicBasemapId } from "@/lib/cartographic/basemaps";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { PublicMapPickers } from "./public-map-pickers";
+import { PublicMapPlaceSearch } from "./public-map-place-search";
+import type { PlaceSearchResult } from "@/lib/engagement/place-search";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -79,9 +82,16 @@ export type ParticipantMapItem = {
   geometry?: unknown;
   votesCount?: number;
   color?: string | null;
+  categoryId?: string | null;
+  createdAt?: string;
+  submittedBy?: string | null;
+  photoUrl?: string | null;
+  replyCount?: number;
+  /** Approved replies, oldest first, shown read-only beside the map. */
+  replies?: Array<{ id: string; body: string; submittedBy: string | null; createdAt: string }>;
+  /** Published "We did" responses that cite this comment. */
+  teamResponses?: Array<{ id: string; themeTitleText: PortalText; weDidText: PortalText }>;
 };
-
-type SupportHandler = (itemId: string) => Promise<number | null>;
 
 function safeHexColor(value: string | null | undefined): string | null {
   return typeof value === "string" && /^#[0-9a-fA-F]{6}$/.test(value.trim()) ? value.trim() : null;
@@ -93,76 +103,102 @@ function collectGeometryPositions(geometry: EngagementGeometry): [number, number
   return geometry.coordinates[0];
 }
 
+/** Where an approved comment sits on the map, or null when it has no place. */
+export function participantItemGeometry(item: ParticipantMapItem): EngagementGeometry | null {
+  const stored = readStoredEngagementGeometry(item.geometry ?? null);
+  if (stored) return stored;
+  if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
+    return { type: "Point", coordinates: [item.longitude, item.latitude] };
+  }
+  return null;
+}
+
+const POINT_SOURCE = "engagement-points";
+const SHAPE_SOURCE = "engagement-shapes";
+const SELECTED_SOURCE = "engagement-selected";
+const BUILDINGS_LAYER = "engagement-3d-buildings";
+const BUILDINGS_PITCH = 55;
+/** Pixels of slop around a tap, so a thumb can hit a 14px pin. */
+const PICK_TOLERANCE_PX = 8;
+
+const EMPTY_COLLECTION = { type: "FeatureCollection" as const, features: [] };
+
 /**
- * Popup content is ALWAYS built from DOM nodes. Title and body are public free
- * text and must never be interpolated into an HTML string — this popup is the
- * one place a stranger's words are rendered next to a control that writes.
- *
- * The two labels come from the participant's catalog rather than being English
- * literals: this popup is the ONLY way to support a comment from the map, and on
- * a map-first portal it is the vote button most residents will meet.
+ * The tilt-and-buildings switch, docked with Mapbox's own zoom buttons so it
+ * looks and sits like them. Its words come from the stage, which owns the
+ * resident's language.
  */
-export function buildParticipantPopupContent(
-  item: ParticipantMapItem,
-  options: {
-    onSupport?: SupportHandler;
-    hasVoted?: (itemId: string) => boolean;
-    supportLabel: string;
-    supportedLabel: string;
-  }
-): HTMLElement {
-  const content = document.createElement("div");
-  content.style.cssText = "padding: 4px; color: black;";
+class BuildingsControl {
+  readonly button: HTMLButtonElement;
+  private readonly container: HTMLDivElement;
 
-  if (item.title) {
-    const title = document.createElement("strong");
-    title.textContent = item.title;
-    content.appendChild(title);
+  constructor(onToggle: () => void) {
+    this.container = document.createElement("div");
+    this.container.className = "mapboxgl-ctrl mapboxgl-ctrl-group";
+    this.button = document.createElement("button");
+    this.button.type = "button";
+    this.button.textContent = "3D";
+    this.button.style.cssText = "font: 700 11px/29px system-ui, sans-serif; color: #0f172a;";
+    this.button.addEventListener("click", onToggle);
+    this.container.appendChild(this.button);
   }
 
-  const body = document.createElement("p");
-  body.style.cssText = "margin: 4px 0 0; font-size: 13px;";
-  body.textContent = item.body;
-  content.appendChild(body);
-
-  if (typeof item.votesCount === "number" && options.onSupport) {
-    const voteRow = document.createElement("div");
-    voteRow.style.cssText = "margin-top: 6px; display: flex; align-items: center; gap: 6px;";
-
-    const voteButton = document.createElement("button");
-    voteButton.type = "button";
-    voteButton.style.cssText =
-      "font-size: 12px; font-weight: 600; border: 1px solid #cbd5e1; border-radius: 6px; padding: 4px 10px; min-height: 32px; background: #f8fafc; cursor: pointer; color: #0f172a;";
-
-    const renderLabel = (count: number, voted: boolean) => {
-      voteButton.textContent = `▲ ${voted ? options.supportedLabel : options.supportLabel} · ${count}`;
-      voteButton.disabled = voted;
-      if (voted) {
-        voteButton.style.cursor = "default";
-        voteButton.style.opacity = "0.7";
-      }
-    };
-
-    renderLabel(item.votesCount, options.hasVoted?.(item.id) ?? false);
-
-    voteButton.addEventListener("click", () => {
-      if (voteButton.disabled) return;
-      voteButton.disabled = true;
-      const optimisticCount = (item.votesCount ?? 0) + 1;
-      renderLabel(optimisticCount, true);
-      void options.onSupport?.(item.id).then((confirmedCount) => {
-        if (typeof confirmedCount === "number") {
-          item.votesCount = confirmedCount;
-          renderLabel(confirmedCount, true);
-        }
-      });
-    });
-
-    voteRow.appendChild(voteButton);
-    content.appendChild(voteRow);
+  onAdd(): HTMLElement {
+    return this.container;
   }
 
-  return content;
+  onRemove(): void {
+    this.container.remove();
+  }
+}
+
+/**
+ * Extruded buildings from the background's own street data, under the labels.
+ * Backgrounds without building data get the tilt alone.
+ */
+function syncBuildings(map: mapboxgl.Map, on: boolean): void {
+  const present = Boolean(map.getLayer(BUILDINGS_LAYER));
+  if (!on) {
+    if (present) map.removeLayer(BUILDINGS_LAYER);
+    return;
+  }
+  if (present || !map.getSource("composite")) return;
+  const firstLabel = map.getStyle()?.layers?.find((layer) => layer.type === "symbol")?.id;
+  map.addLayer(
+    {
+      id: BUILDINGS_LAYER,
+      type: "fill-extrusion",
+      source: "composite",
+      "source-layer": "building",
+      filter: ["==", ["get", "extrude"], "true"],
+      minzoom: 13,
+      paint: {
+        "fill-extrusion-color": "#cbd5e1",
+        "fill-extrusion-height": ["get", "height"],
+        "fill-extrusion-base": ["get", "min_height"],
+        "fill-extrusion-opacity": 0.8,
+      },
+    },
+    firstLabel
+  );
+}
+
+/**
+ * How much of the map the open comment list covers, so the camera can keep a
+ * selected place out from under it: beside the map on a wide screen, above it
+ * on a phone.
+ */
+function overlayPadding(container: HTMLElement | null): { top: number; right: number; bottom: number; left: number } {
+  const none = { top: 24, right: 24, bottom: 24, left: 24 };
+  const stage = container?.parentElement;
+  const panel = stage?.querySelector<HTMLElement>("[data-map-overlay-panel]");
+  if (!stage || !panel) return none;
+  const stageBox = stage.getBoundingClientRect();
+  const panelBox = panel.getBoundingClientRect();
+  if (panelBox.width < stageBox.width * 0.6) {
+    return { ...none, left: Math.max(24, panelBox.right - stageBox.left + 24) };
+  }
+  return { ...none, top: Math.max(24, panelBox.bottom - stageBox.top + 24) };
 }
 
 /**
@@ -193,8 +229,10 @@ export function buildParticipantPopupContent(
  */
 export function PublicMapStage({
   items,
-  onSupport,
-  hasVoted,
+  selectedItemId = null,
+  onSelectItem,
+  feed = null,
+  placeSearch = false,
   contextLayers = null,
   initialView = null,
   drawEnabled = true,
@@ -210,8 +248,18 @@ export function PublicMapStage({
   className,
 }: {
   items: ParticipantMapItem[];
-  onSupport?: SupportHandler;
-  hasVoted?: (itemId: string) => boolean;
+  /** The comment open in the side panel; its place is outlined on the map. */
+  selectedItemId?: string | null;
+  /** A tap on somebody's pin or shape opens it. It never marks the resident's own place. */
+  onSelectItem?: (itemId: string | null) => void;
+  /**
+   * The comment list: a button docked above the map controls and, when open, a
+   * panel over the map. The panel carries `data-map-overlay-panel` so the
+   * camera can keep a selected place out from under it.
+   */
+  feed?: { button: ReactNode; panel: ReactNode; open?: boolean } | null;
+  /** Offer "Find a street or place". Decided server-side; see `place-search.ts`. */
+  placeSearch?: boolean;
   contextLayers?: ParticipantContextLayerSet | null;
   /** Where the camera opens, from `resolvePortalMapFraming`. Null = nothing framed it. */
   initialView?: { center: [number, number]; zoom: number } | null;
@@ -242,7 +290,6 @@ export function PublicMapStage({
 }) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
-  const markersRef = useRef<mapboxgl.Marker[]>([]);
   const [draw, setDraw] = useState<DrawState>(() => initialGeometry?.type === "Point" ? {mode:"point",vertices:[initialGeometry.coordinates],areaClosed:false} : initialGeometry?.type === "LineString" ? {mode:"line",vertices:initialGeometry.coordinates,areaClosed:false} : initialGeometry?.type === "Polygon" ? {mode:"area",vertices:initialGeometry.coordinates[0].slice(0,-1),areaClosed:true} : { mode: drawMode, vertices: [], areaClosed: false });
   const [announcement, setAnnouncement] = useState("");
   const [isFocused, setIsFocused] = useState(false);
@@ -301,8 +348,13 @@ export function PublicMapStage({
   const drawRef = useRef(draw);
   const drawEnabledRef = useRef(drawEnabled);
   const onGeometryChangeRef = useRef(onGeometryChange);
-  const onSupportRef = useRef(onSupport);
-  const hasVotedRef = useRef(hasVoted);
+  const onSelectItemRef = useRef(onSelectItem);
+  const itemsRef = useRef(items);
+  const buildingsControlRef = useRef<BuildingsControl | null>(null);
+  const [buildings3d, setBuildings3d] = useState(false);
+  const buildings3dRef = useRef(buildings3d);
+  /** The 3D state the camera last moved for. */
+  const appliedBuildingsRef = useRef(false);
   const contextLayersRef = useRef(contextLayers);
   const translatorRef = useRef(translator);
   /** The style currently applied to the live map, so a repaint knows whether it must wait for a swap. */
@@ -322,11 +374,80 @@ export function PublicMapStage({
     drawRef.current = draw;
     drawEnabledRef.current = drawEnabled;
     onGeometryChangeRef.current = onGeometryChange;
-    onSupportRef.current = onSupport;
-    hasVotedRef.current = hasVoted;
+    onSelectItemRef.current = onSelectItem;
+    itemsRef.current = items;
+    buildings3dRef.current = buildings3d;
     contextLayersRef.current = contextLayers;
     translatorRef.current = translator;
-  }, [draw, drawEnabled, onGeometryChange, onSupport, hasVoted, contextLayers, translator]);
+  }, [draw, drawEnabled, onGeometryChange, onSelectItem, items, buildings3d, contextLayers, translator]);
+
+  const selectedItemIdRef = useRef(selectedItemId);
+  selectedItemIdRef.current = selectedItemId;
+  /** Whether the camera has already been fitted to the data once. */
+  const framedRef = useRef(false);
+  /** The selection the camera last moved for. */
+  const flownToRef = useRef<string | null>(null);
+
+  /**
+   * Move the camera to the selected comment once per selection. Called when the
+   * selection changes and again when a style finishes painting, because a
+   * shared `?item=` link selects before the first style has loaded.
+   */
+  const bringSelectedIntoView = (map: mapboxgl.Map) => {
+    const id = selectedItemIdRef.current;
+    if (!id || flownToRef.current === id) return;
+    const item = itemsRef.current.find((entry) => entry.id === id);
+    const geometry = item ? participantItemGeometry(item) : null;
+    if (!geometry) return;
+    flownToRef.current = id;
+
+    const padding = overlayPadding(mapContainerRef.current);
+    if (geometry.type === "Point") {
+      const [lng, lat] = geometry.coordinates;
+      const pixel = map.project([lng, lat]);
+      const canvas = mapContainerRef.current;
+      const width = canvas?.clientWidth ?? 0;
+      const height = canvas?.clientHeight ?? 0;
+      const inView =
+        pixel.x >= padding.left && pixel.x <= width - padding.right &&
+        pixel.y >= padding.top && pixel.y <= height - padding.bottom;
+      // A pin inside a group is not drawn on its own, so zoom past the grouping.
+      if (!inView || map.getZoom() < 16) {
+        // `offset`, not `padding`: Mapbox keeps camera padding after the move,
+        // which would shift `getCenter()` off the crosshair Enter marks at.
+        map.easeTo({
+          center: [lng, lat],
+          zoom: Math.max(map.getZoom(), 16),
+          offset: [(padding.left - padding.right) / 2, (padding.top - padding.bottom) / 2],
+        });
+      }
+      return;
+    }
+    const bounds = new mapboxgl.LngLatBounds();
+    collectGeometryPositions(geometry).forEach((position) => bounds.extend(position));
+    map.fitBounds(bounds, {
+      padding: { top: padding.top + 40, right: padding.right + 40, bottom: padding.bottom + 40, left: padding.left + 40 },
+      maxZoom: 16,
+    });
+  };
+
+  /** The selected comment's place as map data; empty when nothing is open. */
+  const selectedFeatureCollection = () => {
+    const id = selectedItemIdRef.current;
+    const item = id ? itemsRef.current.find((entry) => entry.id === id) : undefined;
+    const geometry = item ? participantItemGeometry(item) : null;
+    if (!item || !geometry) return EMPTY_COLLECTION;
+    return {
+      type: "FeatureCollection" as const,
+      features: [
+        {
+          type: "Feature" as const,
+          geometry,
+          properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
+        },
+      ],
+    };
+  };
 
   // Tell the shell only after this stage has committed its own drawing state.
   // Calling the parent setter from inside setDraw's updater makes React render
@@ -389,6 +510,14 @@ export function PublicMapStage({
       style: selectedStyleUrl,
       center: initialView?.center ?? CONTINENTAL_US_CENTER,
       zoom: initialView?.zoom ?? NEUTRAL_ZOOM,
+      // Mapbox's own buttons, in the resident's language.
+      locale: {
+        "NavigationControl.ZoomIn": translatorRef.current.t("portal.mapZoomIn"),
+        "NavigationControl.ZoomOut": translatorRef.current.t("portal.mapZoomOut"),
+        "NavigationControl.ResetBearing": translatorRef.current.t("portal.mapResetNorth"),
+        "GeolocateControl.FindMyLocation": translatorRef.current.t("portal.mapFindMe"),
+        "GeolocateControl.LocationNotAvailable": translatorRef.current.t("portal.mapFindMeUnavailable"),
+      },
       /*
         ATTRIBUTION IS ON — added explicitly below rather than by the default,
         so its compactness is stated rather than inferred from the viewport.
@@ -456,16 +585,43 @@ export function PublicMapStage({
     // own keyboard handling is off — otherwise every arrow key is handled twice
     // and the canvas becomes a second tab stop with no accessible name.
     map.keyboard.disable();
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
+    // The compass shows once the map is turned or tilted, and puts it back.
+    map.addControl(new mapboxgl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
+    // Moves the camera only. The resident still taps, or presses Enter, to mark.
+    map.addControl(
+      new mapboxgl.GeolocateControl({
+        positionOptions: { enableHighAccuracy: true },
+        trackUserLocation: false,
+        fitBoundsOptions: { maxZoom: 16 },
+      }),
+      "top-right"
+    );
+    const buildingsControl = new BuildingsControl(() => setBuildings3d((previous) => !previous));
+    buildingsControlRef.current = buildingsControl;
+    map.addControl(buildingsControl, "top-right");
 
+    /*
+      READING SOMEBODY'S COMMENT IS NOT MARKING YOUR OWN PLACE.
+
+      Every tap used to go to the drawing tool, so tapping a neighbour's pin to
+      read it also moved the resident's own mark onto that pin, observed in a
+      browser on 2026-10-10. A tap now goes to what is under it first: a group
+      of pins zooms in, a pin or a line opens that comment. Only an empty spot
+      marks.
+
+      An area is the exception while drawing is on. One comment can outline a
+      whole neighbourhood, and letting it swallow taps would leave nowhere
+      inside it to mark. Those comments open from the list instead.
+    */
     map.on("click", (event) => {
-      if (!drawEnabledRef.current) return;
       const current = drawRef.current;
       const next = drawCoordinate(event.lngLat.lng, event.lngLat.lat);
+      const drawing = drawEnabledRef.current;
 
       // Area mode: clicking near the first vertex closes the ring. Pointer-only;
-      // keyboard users press C.
-      if (current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
+      // keyboard users press C. Checked before anything else so a pin under the
+      // first point cannot stop a resident finishing their own shape.
+      if (drawing && current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
         const firstPixel = map.project(current.vertices[0]);
         const clickPixel = map.project(next);
         if (Math.hypot(firstPixel.x - clickPixel.x, firstPixel.y - clickPixel.y) <= CLOSE_RING_PIXEL_TOLERANCE) {
@@ -475,8 +631,54 @@ export function PublicMapStage({
         }
       }
 
+      const pickable = ["engagement-clusters", "engagement-points", "engagement-shapes-line"];
+      if (!drawing) pickable.push("engagement-shapes-fill");
+      const layers = pickable.filter((id) => map.getLayer(id));
+      const { x, y } = event.point;
+      const hits = layers.length
+        ? map.queryRenderedFeatures(
+            [
+              [x - PICK_TOLERANCE_PX, y - PICK_TOLERANCE_PX],
+              [x + PICK_TOLERANCE_PX, y + PICK_TOLERANCE_PX],
+            ],
+            { layers }
+          )
+        : [];
+      const hit = hits[0];
+
+      if (hit?.layer?.id === "engagement-clusters") {
+        const clusterId = hit.properties?.cluster_id as number | undefined;
+        const source = map.getSource(POINT_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+        if (clusterId === undefined || !source || hit.geometry.type !== "Point") return;
+        const center = hit.geometry.coordinates as [number, number];
+        source.getClusterExpansionZoom(clusterId, (error, zoom) => {
+          if (error || typeof zoom !== "number") return;
+          map.easeTo({ center, zoom });
+        });
+        return;
+      }
+
+      const itemId = hit?.properties?.itemId as string | undefined;
+      if (itemId) {
+        onSelectItemRef.current?.(itemId);
+        return;
+      }
+
+      if (!drawing) {
+        onSelectItemRef.current?.(null);
+        return;
+      }
       commitVertex(next);
     });
+
+    for (const layerId of ["engagement-clusters", "engagement-points", "engagement-shapes-line"]) {
+      map.on("mouseenter", layerId, () => {
+        map.getCanvas().style.cursor = "pointer";
+      });
+      map.on("mouseleave", layerId, () => {
+        map.getCanvas().style.cursor = "";
+      });
+    }
 
     map.on("contextmenu", (event) => {
       event.preventDefault();
@@ -494,6 +696,7 @@ export function PublicMapStage({
       stopSizing();
       map.remove();
       mapRef.current = null;
+      buildingsControlRef.current = null;
     };
     // Registered once; the handlers above read live state through refs.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -544,82 +747,146 @@ export function PublicMapStage({
     const pointItems: (ParticipantMapItem & { latitude: number; longitude: number })[] = [];
     const shapeItems: (ParticipantMapItem & { parsedGeometry: EngagementGeometry })[] = [];
     for (const item of items) {
-      const geometry = readStoredEngagementGeometry(item.geometry ?? null);
-      if (geometry && geometry.type !== "Point") shapeItems.push({ ...item, parsedGeometry: geometry });
-      else if (geometry?.type === "Point") {
+      const geometry = participantItemGeometry(item);
+      if (!geometry) continue;
+      if (geometry.type === "Point") {
         pointItems.push({ ...item, longitude: geometry.coordinates[0], latitude: geometry.coordinates[1] });
-      } else if (item.geometry == null && hasEngagementLocation(item) && item.latitude !== null && item.longitude !== null) {
-        pointItems.push({ ...item, latitude: item.latitude, longitude: item.longitude });
+      } else {
+        shapeItems.push({ ...item, parsedGeometry: geometry });
       }
     }
-    const shapeItemById = new Map(shapeItems.map((item) => [item.id, item]));
     // Only what the resident has left switched on. The picker owns the set; the
     // map must never draw a layer the legend and the picker both say is off.
     const visible = new Set(visibleLayerIds);
     const layers = (contextLayersRef.current?.layers ?? []).filter((layer) => visible.has(layer.id));
 
-    const popupOptions = {
-      onSupport: onSupportRef.current
-        ? (itemId: string) => onSupportRef.current?.(itemId) ?? Promise.resolve(null)
-        : undefined,
-      hasVoted: (itemId: string) => hasVotedRef.current?.(itemId) ?? false,
-      supportLabel: translatorRef.current.t("portal.support"),
-      supportedLabel: translatorRef.current.t("portal.supported"),
+    const pointData = {
+      type: "FeatureCollection" as const,
+      features: pointItems.map((item) => ({
+        type: "Feature" as const,
+        geometry: { type: "Point" as const, coordinates: [item.longitude, item.latitude] },
+        properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
+      })),
+    };
+    const shapeData = {
+      type: "FeatureCollection" as const,
+      features: shapeItems.map((item) => ({
+        type: "Feature" as const,
+        geometry: item.parsedGeometry,
+        properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
+      })),
     };
 
     const paint = () => {
-      // The operator's published context, UNDERNEATH everything. `beforeId` is
-      // resolved after the community and sketch layers exist, so nothing an
-      // operator uploads can bury the input this map exists to collect.
-      if (shapeItems.length > 0 && !map.getSource("engagement-shapes")) {
-        map.addSource("engagement-shapes", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: shapeItems.map((item) => ({
-              type: "Feature" as const,
-              id: item.id,
-              geometry: item.parsedGeometry,
-              properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
-            })),
-          },
-        });
-
+      /*
+        THE COMMUNITY'S INPUT IS DATA ON THE MAP, NOT DOM ELEMENTS OVER IT.
+        Pins used to be one HTML marker each, which every approved comment now
+        reaches since the 200-row cap went, and a dense spot was a pile nobody
+        could tap. A clustered source groups close pins into a count until the
+        resident zooms in; a filter or a vote updates the data in place.
+      */
+      const shapeSource = map.getSource(SHAPE_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+      if (shapeSource) shapeSource.setData(shapeData);
+      else {
+        map.addSource(SHAPE_SOURCE, { type: "geojson", data: shapeData });
         const shapeColor = ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression;
         map.addLayer({
           id: "engagement-shapes-fill",
           type: "fill",
-          source: "engagement-shapes",
+          source: SHAPE_SOURCE,
           paint: { "fill-color": shapeColor, "fill-opacity": 0.2 },
           filter: ["==", ["geometry-type"], "Polygon"],
         });
         map.addLayer({
           id: "engagement-shapes-outline",
           type: "line",
-          source: "engagement-shapes",
+          source: SHAPE_SOURCE,
           paint: { "line-color": shapeColor, "line-width": 2 },
           filter: ["==", ["geometry-type"], "Polygon"],
         });
         map.addLayer({
           id: "engagement-shapes-line",
           type: "line",
-          source: "engagement-shapes",
-          paint: { "line-color": shapeColor, "line-width": 3 },
+          source: SHAPE_SOURCE,
+          paint: { "line-color": shapeColor, "line-width": 4 },
           filter: ["==", ["geometry-type"], "LineString"],
         });
+      }
 
-        const openShapePopup = (event: mapboxgl.MapMouseEvent) => {
-          const itemId = event.features?.[0]?.properties?.itemId as string | undefined;
-          const item = itemId ? shapeItemById.get(itemId) : undefined;
-          if (!item) return;
-          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
-            .setLngLat(event.lngLat)
-            .setDOMContent(buildParticipantPopupContent(item, popupOptions))
-            .addTo(map);
-        };
-        for (const layerId of ["engagement-shapes-fill", "engagement-shapes-line"]) {
-          map.on("click", layerId, openShapePopup);
-        }
+      const pointSource = map.getSource(POINT_SOURCE) as mapboxgl.GeoJSONSource | undefined;
+      if (pointSource) pointSource.setData(pointData);
+      else {
+        map.addSource(POINT_SOURCE, {
+          type: "geojson",
+          data: pointData,
+          cluster: true,
+          clusterRadius: 40,
+          clusterMaxZoom: 15,
+          // Two or three pins near each other stay pins; a pile becomes a count.
+          clusterMinPoints: 4,
+        });
+        map.addLayer({
+          id: "engagement-clusters",
+          type: "circle",
+          source: POINT_SOURCE,
+          filter: ["has", "point_count"],
+          paint: {
+            "circle-color": "#1e293b",
+            "circle-opacity": 0.9,
+            "circle-radius": ["step", ["get", "point_count"], 15, 10, 19, 50, 24],
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 2,
+          },
+        });
+        map.addLayer({
+          id: "engagement-cluster-count",
+          type: "symbol",
+          source: POINT_SOURCE,
+          filter: ["has", "point_count"],
+          layout: {
+            "text-field": ["get", "point_count_abbreviated"],
+            "text-font": ["DIN Pro Medium", "Arial Unicode MS Bold"],
+            "text-size": 13,
+            "text-allow-overlap": true,
+          },
+          paint: { "text-color": "#ffffff" },
+        });
+        map.addLayer({
+          id: "engagement-points",
+          type: "circle",
+          source: POINT_SOURCE,
+          filter: ["!", ["has", "point_count"]],
+          paint: {
+            "circle-color": ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression,
+            "circle-radius": 7,
+            "circle-stroke-color": "#ffffff",
+            "circle-stroke-width": 2,
+          },
+        });
+      }
+
+      // The comment open in the panel, ringed on top of everything else.
+      if (!map.getSource(SELECTED_SOURCE)) {
+        map.addSource(SELECTED_SOURCE, { type: "geojson", data: selectedFeatureCollection() });
+        map.addLayer({
+          id: "engagement-selected-line",
+          type: "line",
+          source: SELECTED_SOURCE,
+          filter: ["!=", ["geometry-type"], "Point"],
+          paint: { "line-color": "#0f172a", "line-width": 6, "line-opacity": 0.7 },
+        });
+        map.addLayer({
+          id: "engagement-selected-point",
+          type: "circle",
+          source: SELECTED_SOURCE,
+          filter: ["==", ["geometry-type"], "Point"],
+          paint: {
+            "circle-color": ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression,
+            "circle-radius": 10,
+            "circle-stroke-color": "#0f172a",
+            "circle-stroke-width": 3,
+          },
+        });
       }
 
       // The resident's own sketch, on top of the community's.
@@ -665,26 +932,9 @@ export function PublicMapStage({
         control this surface gives a resident over what they are looking at did
         nothing. An empty list is an instruction, not an absence of one.
       */
-      const beforeId = map.getLayer("engagement-shapes-fill")
-        ? "engagement-shapes-fill"
-        : map.getLayer("engagement-draw-fill")
-          ? "engagement-draw-fill"
-          : undefined;
-      syncContextLayers(map, layers, { beforeId });
+      syncContextLayers(map, layers, { beforeId: "engagement-shapes-fill" });
 
-      for (const marker of markersRef.current) marker.remove();
-      markersRef.current = [];
-      for (const item of pointItems) {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
-          buildParticipantPopupContent(item, popupOptions)
-        );
-        const element = document.createElement("div");
-        element.className = "w-4 h-4 rounded-full border-2 border-white shadow cursor-pointer";
-        element.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
-        markersRef.current.push(
-          new mapboxgl.Marker({ element }).setLngLat([item.longitude, item.latitude]).setPopup(popup).addTo(map)
-        );
-      }
+      syncBuildings(map, buildings3dRef.current);
 
       /*
         FRAME THE CAMERA ONLY WHEN NOTHING ELSE DID. `initialView` is the
@@ -694,7 +944,9 @@ export function PublicMapStage({
         pin somebody dropped two towns over. Fitting to the data is the fallback
         for a campaign nobody framed.
       */
-      if (!initialView) {
+      if (!initialView && !framedRef.current) {
+        // Once. A filter or a vote repaints the data; it must not move the camera.
+        framedRef.current = true;
         const bounds = new mapboxgl.LngLatBounds();
         pointItems.forEach((item) => bounds.extend([item.longitude, item.latitude]));
         shapeItems.forEach((item) =>
@@ -707,21 +959,91 @@ export function PublicMapStage({
         });
         if (!bounds.isEmpty()) map.fitBounds(bounds, { padding: 48, maxZoom: SEEDED_ZOOM + 3 });
       }
+
+      bringSelectedIntoView(map);
     };
 
-    if (!styleChanged && map.isStyleLoaded()) paint();
+    // `styleLoadedRef`, not `isStyleLoaded()`, which answers false while tiles
+    // stream in after a pan; the `once` fallback would then wait for a
+    // `style.load` that never comes, and a filter or vote would not repaint.
+    if (!styleChanged && styleLoadedRef.current) paint();
     else map.once("style.load", paint);
     // `basemap` is a dependency because a style swap wipes the registry above.
   }, [items, contextLayers, initialView, selectedStyleUrl, visibleLayerIds]);
+
+  /*
+    THE SELECTED COMMENT: ring it, and bring it into view if it is not.
+    The camera moves only when the selection changes and only when the place is
+    off screen or hidden under the open list, so reading down the list does not
+    swing the map about.
+  */
+  useEffect(() => {
+    const map = mapRef.current;
+    /*
+      `styleLoadedRef`, not `map.isStyleLoaded()`. Mapbox answers false while
+      tiles are still streaming in, long after `style.load`, so a shared link
+      that selected a comment in that window never moved the camera (seen in a
+      browser on 2026-10-10). Before `style.load`, the paint runs this instead.
+    */
+    if (!map || !styleLoadedRef.current) return;
+    (map.getSource(SELECTED_SOURCE) as mapboxgl.GeoJSONSource | undefined)?.setData(selectedFeatureCollection());
+    bringSelectedIntoView(map);
+    // Runs on a selection change only; a vote must not re-run the camera.
+  }, [selectedItemId]);
+
+  useEffect(() => {
+    if (!selectedItemId) flownToRef.current = null;
+  }, [selectedItemId]);
+
+  // The 3D switch: buildings and a tilt on, flat and north-up off.
+  useEffect(() => {
+    const control = buildingsControlRef.current;
+    if (control) {
+      const label = t("portal.map3d");
+      control.button.setAttribute("aria-label", label);
+      control.button.title = label;
+      control.button.setAttribute("aria-pressed", String(buildings3d));
+      control.button.style.background = buildings3d ? "#e2e8f0" : "";
+    }
+    // The camera moves on a flip of the switch, never on the first render.
+    const flipped = appliedBuildingsRef.current !== buildings3d;
+    appliedBuildingsRef.current = buildings3d;
+    const map = mapRef.current;
+    if (!flipped || !map || !styleLoadedRef.current) return;
+    syncBuildings(map, buildings3d);
+    map.easeTo(buildings3d ? { pitch: BUILDINGS_PITCH } : { pitch: 0, bearing: 0 });
+  }, [buildings3d, t]);
 
   // Keep the sketch source in step with the state the keyboard and pointer
   // paths share.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
+    if (!map || !styleLoadedRef.current) return;
     const source = map.getSource("engagement-draw") as mapboxgl.GeoJSONSource | undefined;
     source?.setData(buildPreviewFeatureCollection(draw));
   }, [draw]);
+
+  /**
+   * A found place moves the camera and nothing else. Focus goes to the map, so
+   * a keyboard user is one Enter away from marking the spot at its centre.
+   */
+  const goToPlace = (result: PlaceSearchResult) => {
+    const map = mapRef.current;
+    if (!map) return;
+    if (result.bbox) {
+      map.fitBounds(
+        [
+          [result.bbox[0], result.bbox[1]],
+          [result.bbox[2], result.bbox[3]],
+        ],
+        { padding: 48, maxZoom: 17 }
+      );
+    } else {
+      map.easeTo({ center: result.center, zoom: Math.max(map.getZoom(), 17) });
+    }
+    announce(t(drawEnabled ? "portal.placeSearchMoved" : "portal.placeSearchMovedReadOnly", { place: result.name }));
+    if (drawEnabled) mapContainerRef.current?.focus();
+  };
 
   const clear = () => {
     if (drawRef.current.vertices.length === 0) return;
@@ -904,8 +1226,28 @@ export function PublicMapStage({
       */}
 
       {mapUnavailable ? null : (
+        <div
+          className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(16rem,calc(100%-6rem))] flex-col gap-2"
+          // The open comment list covers this column; what it covers must not
+          // take keyboard focus (WCAG 2.4.11).
+          inert={feed?.open || undefined}
+        >
+        {placeSearch ? (
+          <div className="pointer-events-auto">
+            <PublicMapPlaceSearch
+              token={MAPBOX_ACCESS_TOKEN}
+              translator={translator}
+              getProximity={() => {
+                const center = mapRef.current?.getCenter();
+                return center ? [center.lng, center.lat] : null;
+              }}
+              onChoose={goToPlace}
+            />
+          </div>
+        ) : null}
+        {feed?.button ? <div className="pointer-events-auto">{feed.button}</div> : null}
         <PublicMapPickers
-          className="pointer-events-none absolute left-3 top-3 z-10 flex w-[min(16rem,calc(100%-1.5rem))] flex-col gap-2"
+          className="pointer-events-none flex flex-col gap-2"
           contextLayers={contextLayers}
           visibleLayerIds={visibleLayerIds}
           onVisibleLayerIdsChange={onVisibleLayerIdsChange}
@@ -944,7 +1286,10 @@ export function PublicMapStage({
           }}
           lang={translator.bcp47}
         />
+        </div>
       )}
+
+      {mapUnavailable ? null : feed?.panel}
 
       {/*
         NOBODY SAID WHERE THIS IS ABOUT. Not an error and not a failure — the

@@ -64,6 +64,14 @@ const fromMock = vi.fn((table: string) => {
     return { select: workspacesSelectMock };
   }
 
+  if (table === "projects") {
+    const chain: Record<string, unknown> = {};
+    for (const method of ["eq", "in", "order", "limit"]) chain[method] = () => chain;
+    chain.then = <T,>(resolve: (value: { data: unknown[]; error: null }) => T) =>
+      Promise.resolve({ data: [{ id: "p1", name: "Main Street", status: "active", delivery_phase: "analysis" }], error: null }).then(resolve);
+    return { select: () => chain };
+  }
+
   if (table === "assistant_action_executions") {
     return { select: actionSelectMock };
   }
@@ -137,6 +145,17 @@ vi.mock("@/lib/operations/workspace-summary", async () => {
   };
 });
 
+const loadMyWorkMock = vi.fn();
+vi.mock("@/lib/my-work/query", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/my-work/query")>("@/lib/my-work/query");
+  return { ...actual, loadMyWork: (...args: unknown[]) => loadMyWorkMock(...args) };
+});
+
+const loadWorkspaceDatesMock = vi.fn();
+vi.mock("@/lib/dashboard/workspace-dates", () => ({
+  loadWorkspaceDates: (...args: unknown[]) => loadWorkspaceDatesMock(...args),
+}));
+
 vi.mock("@/components/operations/workspace-command-board", () => ({
   WorkspaceCommandBoard: ({ children }: { children?: ReactNode }) => (
     <div>
@@ -156,6 +175,39 @@ vi.mock("@/components/workspaces/workspace-membership-required", () => ({
 
 import DashboardPage from "@/app/(app)/dashboard/page";
 import { buildWorkspaceOperationsSummaryFromSourceRows } from "@/lib/operations/workspace-summary";
+import type { MyWorkItem, MyWorkResult } from "@/lib/my-work/types";
+import { ReadFailureLog } from "@/lib/ui/read-failures";
+
+function myWorkItem(overrides: Partial<MyWorkItem>): MyWorkItem {
+  return {
+    sourceId: "deliverables",
+    block: "deadlines",
+    id: "d1",
+    title: "Deliverable",
+    projectId: "p1",
+    projectName: "Main Street",
+    dueOn: "2099-01-01",
+    isOverdue: false,
+    ownerLabel: null,
+    badge: { label: "Deliverable", tone: "neutral" },
+    detail: null,
+    href: "/projects/p1",
+    dedupKey: null,
+    ...overrides,
+  };
+}
+
+function myWorkResult(items: MyWorkItem[]): MyWorkResult {
+  return {
+    scope: "all_projects",
+    items,
+    reads: new ReadFailureLog(),
+    perSource: {},
+    rowsRead: {},
+    limitPerSource: 20,
+    departedIncludedInUnassigned: true,
+  };
+}
 
 async function renderPage(searchParams?: Record<string, string | string[] | undefined>) {
   render(
@@ -299,6 +351,8 @@ describe("DashboardPage", () => {
     });
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
+    loadMyWorkMock.mockImplementation(async () => myWorkResult([]));
+    loadWorkspaceDatesMock.mockResolvedValue({ items: [], failed: [], capped: [] });
     homeGeographyRowMock.mockReturnValue({ data: null, error: null });
     // Default: no Anthropic key resolves — the honest state of a fresh
     // deployment with no env key and no stored workspace key.
@@ -310,35 +364,44 @@ describe("DashboardPage", () => {
     });
   });
 
-  /**
-   * FINDING (2026-08-10): the checklist used to require zero
-   * projects/plans/programs/reports/runs, so creating ONE project removed it
-   * permanently — even with the home geography, the one setting the rest of
-   * the app reads, still unset. Activity is not the same as being set up.
-   */
-  it("keeps the getting-started checklist on an active workspace whose geography is unset", async () => {
-    // The default beforeEach summary has 1 project and 1 report — real
-    // activity — and the default geography row is null (unset).
+  it("keeps the full setup checklist on an active workspace whose geography is unset", async () => {
+    // The default summary has a project and a report, and the default
+    // geography row is null (unset). Activity is not the same as being set up.
     await renderPage();
 
+    expect(screen.getByRole("heading", { name: "Set up this workspace" })).toBeInTheDocument();
     expect(screen.getByText("Tell OpenPlan where you work")).toBeInTheDocument();
     expect(screen.getByText("Start here")).toBeInTheDocument();
-    // Quick actions still render for an active workspace; the checklist and
-    // the workspace's real lead actions are not mutually exclusive.
-    expect(screen.getByText("Quick actions")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Help" })).toHaveAttribute("href", "/help");
   });
 
-  it("links the getting-started card to the Help page", async () => {
+  it("folds the checklist into one line once the place is set", async () => {
+    homeGeographyRowMock.mockReturnValueOnce({
+      data: {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "00000",
+        home_geography_label: "Example County, Example State",
+        home_country_code: "US",
+      },
+      error: null,
+    });
     await renderPage();
 
-    expect(screen.getByRole("link", { name: /Help page/ })).toHaveAttribute("href", "/help");
+    expect(screen.queryByRole("heading", { name: "Set up this workspace" })).not.toBeInTheDocument();
+    const summary = screen.getByText("Setup checklist").closest("summary");
+    expect(summary?.textContent).toMatch(/1 of 3 done/);
+    expect(screen.getByText("Example County, Example State")).toBeInTheDocument();
   });
 
-  it("shows the recent-actions audit feed absorbed from the retired Command Center", async () => {
+  it("leaves the Planner Agent's action record to its own page, linked from the foot", async () => {
     await renderPage();
 
-    expect(screen.getByText("Assistant action activity")).toBeInTheDocument();
-    expect(actionEqMock).toHaveBeenCalledWith("workspace_id", "workspace-1");
+    expect(screen.queryByText("Assistant action activity")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Planner Agent activity" })).toHaveAttribute(
+      "href",
+      "/assistant-activity"
+    );
   });
 
   describe("sign-up intent", () => {
@@ -359,241 +422,95 @@ describe("DashboardPage", () => {
     });
   });
 
-  it("surfaces grants-routed RTP follow-through as the lead dashboard action", async () => {
+  it("reads the overdue backlog and the coming weeks as two bounded My Work reads", async () => {
     await renderPage();
 
-    const quickAction = screen.getByRole("link", { name: /Open RTP grants follow-through/i });
-    expect(quickAction).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
-    expect(screen.getAllByText(/funding sorted out in Grants/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/An RTP packet being current is not the same as being finished/i)).toBeInTheDocument();
-    expect(screen.queryByText(/supervised pilot/i)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open Projects Module/i })).toHaveAttribute("href", "/projects");
+    expect(loadMyWorkMock).toHaveBeenCalledTimes(2);
+    const [backlogCall, upcomingCall] = loadMyWorkMock.mock.calls.map((call) => call[1]);
+    expect(backlogCall).toMatchObject({ scope: "all_projects", limitPerSource: 20 });
+    expect(backlogCall.dueBefore).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(backlogCall.dueOnOrAfter).toBeUndefined();
+    expect(upcomingCall).toMatchObject({ scope: "all_projects", limitPerSource: 10, datedOnly: true });
+    // The two reads meet at one boundary, so no item falls between them.
+    expect(upcomingCall.dueOnOrAfter).toBe(backlogCall.dueBefore);
   });
 
-  it("no longer renders the developer changelog lines as workspace content", async () => {
+  it("reads only the caller's assigned work when the scope says so", async () => {
+    await renderPage({ scope: "mine" });
+
+    for (const call of loadMyWorkMock.mock.calls) {
+      expect(call[1].scope).toBe("assigned");
+    }
+    expect(screen.getByRole("link", { name: "Assigned to me" })).toHaveAttribute("aria-current", "page");
+  });
+
+  it("lists blocked work and workspace next steps in Needs you, and dated work in Coming up", async () => {
+    loadMyWorkMock
+      .mockResolvedValueOnce(
+        myWorkResult([
+          myWorkItem({ id: "g1", sourceId: "stage_gate_holds", block: "blocked_projects", title: "Main Street held at design gate", dueOn: null, href: "/projects/p1?tab=gates" }),
+          myWorkItem({ id: "o1", title: "Overdue traffic study", dueOn: "2026-09-01", isOverdue: true, href: "/projects/p1?tab=delivery" }),
+        ])
+      )
+      .mockResolvedValueOnce(
+        myWorkResult([myWorkItem({ id: "u1", title: "Board packet draft", dueOn: "2099-01-15", href: "/projects/p1?tab=delivery#u1" })])
+      );
+    await renderPage();
+
+    const needs = screen.getByRole("region", { name: "Needs you" });
+    expect(needs).toHaveTextContent("Main Street held at design gate");
+    expect(needs).toHaveTextContent("Run release review on current packets");
+    expect(needs).not.toHaveTextContent("Board packet draft");
+
+    const coming = screen.getByRole("region", { name: "Coming up" });
+    expect(coming).toHaveTextContent("Overdue traffic study");
+    expect(coming).toHaveTextContent("1 item overdue");
+    expect(coming).not.toHaveTextContent("Main Street held at design gate");
+  });
+
+  it("names a source that could not be read instead of showing a clear list", async () => {
+    const failed = myWorkResult([]);
+    failed.reads.check("project deliverables", { error: { message: "permission denied" } });
+    loadMyWorkMock.mockResolvedValueOnce(myWorkResult([])).mockResolvedValueOnce(failed);
+    await renderPage();
+
+    const coming = screen.getByRole("region", { name: "Coming up" });
+    expect(coming).toHaveTextContent("Could not check project deliverables");
+    expect(coming).not.toHaveTextContent("Nothing is due");
+  });
+
+  it("says so when a source returned its full cap", async () => {
+    const capped = myWorkResult([]);
+    capped.rowsRead = { deliverables: 10 };
+    loadMyWorkMock.mockResolvedValueOnce(myWorkResult([])).mockResolvedValueOnce(capped);
+    await renderPage();
+
+    expect(screen.getByRole("region", { name: "Coming up" })).toHaveTextContent(
+      "More deliverables may be due than are shown here. My Work lists them all."
+    );
+  });
+
+  it("shows a figure as not available when its read failed, never as zero", async () => {
+    await renderPage();
+
+    // The default summary carries no module observations, so the comment
+    // count was never measured.
+    const comments = screen.getByText("Comments to review").closest("a");
+    expect(comments).toHaveTextContent("Not available");
+    expect(comments).not.toHaveTextContent(/\b0\b/);
+  });
+
+  it("no longer renders the developer changelog, quick actions or the command board", async () => {
     await renderPage();
 
     for (const line of RETIRED_BASELINE_CHANGELOG_LINES) {
       expect(screen.queryByText(line)).not.toBeInTheDocument();
     }
     expect(screen.queryByText("Baseline")).not.toBeInTheDocument();
-  });
-
-  it("no longer renders the static workflow-spine ladder alongside quick actions", async () => {
-    await renderPage();
-
-    // The four-step spine was a fixed tour whose destinations quick actions
-    // already cover, and unlike quick actions it could not name this
-    // workspace's real lead action. PilotWorkflowHandoff itself survives on
-    // project and report detail pages, where it carries a real record id.
+    expect(screen.queryByText("Quick actions")).not.toBeInTheDocument();
     expect(screen.queryByText("Workflow spine")).not.toBeInTheDocument();
-    expect(
-      screen.queryByText("The shortest complete path through OpenPlan — from context to a board-ready packet.")
-    ).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Project or county context/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: /Build the report packet/i })).not.toBeInTheDocument();
-
-    expect(screen.getByText("Quick actions")).toBeInTheDocument();
-  });
-
-  it("surfaces comparison-backed report posture as planning support in dashboard copy", async () => {
-    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
-      posture: "active",
-      headline: "Review comparison-backed packet posture",
-      detail: "Comparison-backed packet posture is visible in the workspace queue.",
-      counts: {
-        projects: 1,
-        activeProjects: 1,
-        plans: 0,
-        plansNeedingSetup: 0,
-        programs: 0,
-        activePrograms: 0,
-        reports: 1,
-        reportRefreshRecommended: 0,
-        reportNoPacket: 0,
-        reportPacketCurrent: 0,
-        rtpFundingReviewPackets: 0,
-        comparisonBackedReports: 1,
-        fundingOpportunities: 1,
-        openFundingOpportunities: 1,
-        closingSoonFundingOpportunities: 0,
-        projectFundingNeedAnchorProjects: 0,
-        projectFundingSourcingProjects: 0,
-        projectFundingDecisionProjects: 0,
-        projectFundingAwardRecordProjects: 0,
-        projectFundingReimbursementStartProjects: 0,
-        projectFundingReimbursementActiveProjects: 0,
-        projectFundingGapProjects: 0,
-        queueDepth: 1,
-      },
-      nextCommand: {
-        key: "review-comparison-backed-reports",
-        title: "Review comparison-backed packet posture",
-        detail:
-          "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
-        href: "/reports?posture=comparison-backed",
-        tone: "info",
-        priority: 9,
-        badges: [{ label: "Comparison-backed", value: 1 }],
-      },
-      commandQueue: [
-        {
-          key: "review-comparison-backed-reports",
-          title: "Review comparison-backed packet posture",
-          detail:
-            "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
-          href: "/reports?posture=comparison-backed",
-          tone: "info",
-          priority: 9,
-          badges: [{ label: "Comparison-backed", value: 1 }],
-        },
-      ],
-      fullCommandQueue: [
-        {
-          key: "review-comparison-backed-reports",
-          title: "Review comparison-backed packet posture",
-          detail:
-            "1 report carries saved comparison context that can support grant planning language or prioritization framing while shaping refresh and narrative choices. Treat it as planning support, not proof of award likelihood or a replacement for funding-source review.",
-          href: "/reports?posture=comparison-backed",
-          tone: "info",
-          priority: 9,
-          badges: [{ label: "Comparison-backed", value: 1 }],
-        },
-      ],
-    });
-
-    await renderPage();
-
-    expect(
-      screen.getAllByText(/comparison-backed report packet can support grant planning language or prioritization framing/i).length
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(/not proof of award likelihood or a replacement for funding-source review/i).length
-    ).toBeGreaterThan(0);
-    // Pins the planner-voiced title: starts with "Open Reports" and is not the
-    // old dev-voiced "Open Reports Surface".
-    expect(screen.getByRole("link", { name: /^Open Reports\b(?! Surface)/ })).toHaveAttribute("href", "/reports");
-  });
-
-  it("explains why modeling-ready grant decisions are rising from the dashboard overview", async () => {
-    loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
-      posture: "attention",
-      headline: "Advance project funding decisions",
-      detail: "Modeled funding decisions are rising in the grants queue.",
-      counts: {
-        projects: 2,
-        activeProjects: 2,
-        plans: 0,
-        plansNeedingSetup: 0,
-        programs: 0,
-        activePrograms: 0,
-        reports: 1,
-        reportRefreshRecommended: 0,
-        reportNoPacket: 0,
-        reportPacketCurrent: 1,
-        rtpFundingReviewPackets: 0,
-        comparisonBackedReports: 1,
-        fundingOpportunities: 2,
-        openFundingOpportunities: 2,
-        closingSoonFundingOpportunities: 1,
-        projectFundingNeedAnchorProjects: 0,
-        projectFundingSourcingProjects: 0,
-        projectFundingDecisionProjects: 1,
-        projectFundingAwardRecordProjects: 0,
-        projectFundingReimbursementStartProjects: 0,
-        projectFundingReimbursementActiveProjects: 0,
-        projectFundingGapProjects: 0,
-        queueDepth: 1,
-      },
-      grantModelingSummary: {
-        breakdown: {
-          decisionReady: 1,
-          refreshRecommended: 0,
-          thin: 0,
-          noVisibleSupport: 1,
-        },
-        breakdownSummary:
-          "2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support.",
-        operatorDetail:
-          "Within grant decision work, opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work. Across 2 opportunity-linked projects: 1 appears decision-ready, 0 refresh recommended, 0 appears thin, 1 without visible support. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
-        leadDecisionDetail:
-          "ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready. Grant Strategy Packet is the lead packet to review. Recommended next move: Advance to pursue now. Grant Strategy Packet appears decision-ready, so operators can advance this opportunity to pursue now while the packet is current. Treat it as planning support only, not proof of award likelihood or a replacement for funding-source review.",
-      },
-      nextCommand: {
-        key: "advance-project-funding-decisions",
-        moduleKey: "grants",
-        moduleLabel: "Grants",
-        title: "Advance project funding decisions",
-        detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
-        href: "/projects/project-1#project-funding-opportunities",
-        targetProjectId: "project-1",
-        targetProjectName: "Modeled Project",
-        targetOpportunityId: "opp-1",
-        tone: "warning",
-        priority: 5,
-        badges: [
-          { label: "Decision gaps", value: 1 },
-          { label: "Modeling", value: "Appears decision-ready" },
-          { label: "Next move", value: "Advance to pursue now" },
-        ],
-      },
-      commandQueue: [
-        {
-          key: "advance-project-funding-decisions",
-          moduleKey: "grants",
-          moduleLabel: "Grants",
-          title: "Advance project funding decisions",
-          detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
-          href: "/projects/project-1#project-funding-opportunities",
-          targetProjectId: "project-1",
-          targetProjectName: "Modeled Project",
-          targetOpportunityId: "opp-1",
-          tone: "warning",
-          priority: 5,
-          badges: [
-            { label: "Decision gaps", value: 1 },
-            { label: "Modeling", value: "Appears decision-ready" },
-            { label: "Next move", value: "Advance to pursue now" },
-          ],
-        },
-      ],
-      fullCommandQueue: [
-        {
-          key: "advance-project-funding-decisions",
-          moduleKey: "grants",
-          moduleLabel: "Grants",
-          title: "Advance project funding decisions",
-          detail: "1 project funding stack has linked opportunities but nothing marked pursue yet.",
-          href: "/projects/project-1#project-funding-opportunities",
-          targetProjectId: "project-1",
-          targetProjectName: "Modeled Project",
-          targetOpportunityId: "opp-1",
-          tone: "warning",
-          priority: 5,
-          badges: [
-            { label: "Decision gaps", value: 1 },
-            { label: "Modeling", value: "Appears decision-ready" },
-            { label: "Next move", value: "Advance to pursue now" },
-          ],
-        },
-      ],
-    });
-
-    await renderPage();
-
-    expect(
-      screen.getByText(/opportunity-linked projects with modeling support that appears decision-ready rise ahead of refresh-recommended, thin, or unsupported work/i)
-    ).toBeInTheDocument();
-    expect(
-      screen.getByText(/ATP Cycle 8 for Modeled Project is rising because modeling posture appears decision-ready/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText(/Recommended next move: Advance to pursue now/i)).toBeInTheDocument();
-    // Pins the planner-voiced title: starts with "Open Grants" and is not the
-    // old dev-voiced "Open Grants Surface".
-    expect(screen.getByRole("link", { name: /^Open Grants\b(?! Surface)/ })).toHaveAttribute(
-      "href",
-      "/grants?focusOpportunityId=opp-1#funding-opportunity-opp-1"
-    );
+    expect(screen.queryByTestId("workspace-command-board")).not.toBeInTheDocument();
+    expect(screen.queryByText("What is worth your attention today")).not.toBeInTheDocument();
   });
 
   /**

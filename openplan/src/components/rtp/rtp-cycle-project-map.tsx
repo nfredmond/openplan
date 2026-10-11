@@ -425,7 +425,6 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Project map</p>
           <h2 className="module-section-title">Where this plan is spending</h2>
           <p className="module-section-description">
             Every project programmed in this cycle that has a location recorded, coloured by whether

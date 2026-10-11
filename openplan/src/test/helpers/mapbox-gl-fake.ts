@@ -209,6 +209,15 @@ export class FakeMapboxMap {
   readonly fitBoundsCalls: FakeFitBounds[] = [];
   readonly setStyleCalls: string[] = [];
   readonly panByCalls: [number, number][] = [];
+  readonly easeToCalls: Record<string, unknown>[] = [];
+  /**
+   * What a tap at any point "hits". The fake projects nothing, so a test that
+   * wants a tap to land on a pin says so here; `queryRenderedFeatures` returns
+   * the features whose layer is among those the caller asked about.
+   */
+  renderedFeatures: Array<{ layer: { id: string }; properties: Record<string, unknown>; geometry: { type: string; coordinates: unknown } }> = [];
+  readonly canvasStyle: Record<string, string> = {};
+  zoom = 10;
   removed = false;
   keyboardEnabled = true;
 
@@ -216,7 +225,15 @@ export class FakeMapboxMap {
   styleUrl: string | undefined;
   private styleLoaded = false;
 
-  private sources = new Map<string, { data: unknown; setData: (data: unknown) => void }>();
+  private sources = new Map<
+    string,
+    {
+      data: unknown;
+      options: unknown;
+      setData: (data: unknown) => void;
+      getClusterExpansionZoom: (clusterId: number, callback: (error: Error | null, zoom: number) => void) => void;
+    }
+  >();
   private layers: RegisteredLayer[] = [];
   private listeners = new Map<string, Listener[]>();
   private onceListeners = new Map<string, Listener[]>();
@@ -291,8 +308,14 @@ export class FakeMapboxMap {
     this.controls.push(control);
   }
 
+  /**
+   * Real Mapbox answers `isStyleLoaded()` false while tiles are still streaming,
+   * long after `style.load` fired. Set this to reproduce that window.
+   */
+  tilesStillLoading = false;
+
   isStyleLoaded(): boolean {
-    return this.styleLoaded;
+    return this.styleLoaded && !this.tilesStillLoading;
   }
 
   /**
@@ -315,9 +338,12 @@ export class FakeMapboxMap {
   addSource(id: string, source: { data?: unknown }): void {
     const entry = {
       data: source?.data,
+      options: source,
       setData: (data: unknown) => {
         entry.data = data;
       },
+      getClusterExpansionZoom: (_clusterId: number, callback: (error: Error | null, zoom: number) => void) =>
+        callback(null, 14),
     };
     this.sources.set(id, entry);
   }
@@ -338,8 +364,21 @@ export class FakeMapboxMap {
     this.layers = this.layers.filter((layer) => layer.id !== id);
   }
 
-  getStyle(): { layers: Array<{ id: string }> } {
-    return { layers: this.layers.map((layer) => ({ id: layer.id })) };
+  getStyle(): { layers: Array<{ id: string; type?: unknown }> } {
+    return { layers: this.layers.map((layer) => ({ id: layer.id, type: layer.spec.type })) };
+  }
+
+  queryRenderedFeatures(_box: unknown, options?: { layers?: string[] }) {
+    const wanted = new Set(options?.layers ?? []);
+    return this.renderedFeatures.filter((feature) => wanted.size === 0 || wanted.has(feature.layer.id));
+  }
+
+  getZoom(): number {
+    return this.zoom;
+  }
+
+  easeTo(options: Record<string, unknown>): void {
+    this.easeToCalls.push(options);
   }
 
   getCenter(): { lng: number; lat: number } {
@@ -364,7 +403,7 @@ export class FakeMapboxMap {
   }
 
   getCanvas(): { setAttribute: () => void; style: Record<string, string> } {
-    return { setAttribute: () => {}, style: {} };
+    return { setAttribute: () => {}, style: this.canvasStyle };
   }
 
   remove(): void {
@@ -388,6 +427,15 @@ export class FakeMapboxMap {
 
   sourceData(id: string): unknown {
     return this.sources.get(id)?.data;
+  }
+
+  sourceOptions(id: string): unknown {
+    return this.sources.get(id)?.options;
+  }
+
+  /** A tap on the map at a point the test has said what is under. */
+  tap(): void {
+    this.emit("click", { point: { x: 100, y: 100 }, lngLat: { lng: -121.05, lat: 39.2 } });
   }
 
   /** Only the pins still on the map — the paint path removes and rebuilds them. */
@@ -442,6 +490,7 @@ export function createMapboxGlModuleFake() {
     Marker: FakeMarker,
     Popup: FakePopup,
     NavigationControl: FakeControl,
+    GeolocateControl: FakeControl,
     AttributionControl: FakeControl,
     LngLatBounds: FakeLngLatBounds,
     accessToken: "",

@@ -59,7 +59,6 @@ export function ProjectPortfolioTable({ summary }: { summary: ProjectPortfolioSu
     <article className="module-section-surface" id="portfolio-table">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Portfolio</p>
           <h2 className="module-section-title">What each project needs next</h2>
         </div>
         <span className="module-record-chip">

@@ -31,6 +31,7 @@ export function GettingStartedCard({
   userId,
   workspaceId,
   dismissible,
+  inline = false,
   children,
 }: {
   userId: string;
@@ -40,6 +41,8 @@ export function GettingStartedCard({
    * while the one setting the rest of the app reads is still outstanding.
    */
   dismissible: boolean;
+  /** One row: the content and the hide control side by side. */
+  inline?: boolean;
   children: ReactNode;
 }) {
   const storageKey = `openplan:getting-started-dismissed:${userId}:${workspaceId}`;
@@ -88,24 +91,23 @@ export function GettingStartedCard({
           className="inline-flex items-center gap-1 font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
         >
           <Sparkles className="h-3.5 w-3.5" aria-hidden="true" />
-          Getting started
-        </button>{" "}
-        — reopen the setup checklist any time.
+          Setup checklist
+        </button>
       </p>
     );
   }
 
   return (
-    <div>
+    <div className={inline ? "flex flex-wrap items-start justify-between gap-x-6 gap-y-2" : undefined}>
       {children}
       {dismissible ? (
-        <p className="mt-3 text-right text-xs">
+        <p className={inline ? "text-xs" : "mt-3 text-right text-xs"}>
           <button
             type="button"
             onClick={dismiss}
             className="font-semibold text-muted-foreground underline-offset-4 hover:text-foreground hover:underline"
           >
-            Hide this checklist
+            Hide checklist
           </button>
         </p>
       ) : null}

@@ -101,7 +101,6 @@ export function RtpCycleRegistryTable({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Registry</p>
             <h2 className="module-section-title">Tracked RTP cycles</h2>
             <p className="module-section-description">
               Keep the update cadence, public-review posture, and linked packet recommendation posture visible from the same registry.
@@ -409,71 +408,56 @@ export function RtpCycleRegistryTable({
                   </div>
                 </div>
 
-                <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Geography</p>
-                    <p className="module-metric-value text-sm">{cycle.geography_label?.trim() || "Not set"}</p>
+                {/* Facts as one quiet list (October 10, 2026): they were thirteen
+                    boxed tiles per cycle, each holding a single value. */}
+                <dl className="rtp-cycle-facts">
+                  <div>
+                    <dt>Geography</dt>
+                    <dd>{cycle.geography_label?.trim() || "Not set"}</dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Horizon</p>
-                    <p className="module-metric-value text-sm">
+                  <div>
+                    <dt>Horizon</dt>
+                    <dd>
                       {typeof cycle.horizon_start_year === "number" && typeof cycle.horizon_end_year === "number"
                         ? `${cycle.horizon_start_year}–${cycle.horizon_end_year}`
                         : "Not set"}
-                    </p>
+                    </dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Adoption target</p>
-                    <p className="module-metric-value text-sm">{formatRtpDate(cycle.adoption_target_date)}</p>
+                  <div>
+                    <dt>Adoption target</dt>
+                    <dd>{formatRtpDate(cycle.adoption_target_date)}</dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Public review</p>
-                    <p className="module-metric-value text-sm">
+                  <div>
+                    <dt>Public review</dt>
+                    <dd>
                       {cycle.public_review_open_at && cycle.public_review_close_at
-                        ? `${formatRtpDate(cycle.public_review_open_at)} → ${formatRtpDate(cycle.public_review_close_at)}`
+                        ? `${formatRtpDate(cycle.public_review_open_at)} to ${formatRtpDate(cycle.public_review_close_at)}`
                         : "Not set"}
-                    </p>
+                    </dd>
                   </div>
-                </div>
-
-                <div className="grid gap-3 md:grid-cols-3 xl:grid-cols-3">
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Linked projects</p>
-                    <p className="module-metric-value text-sm">{cycle.linkedProjectCount}</p>
+                  <div>
+                    <dt>Projects</dt>
+                    <dd>
+                      {cycle.linkedProjectCount} linked: {cycle.constrainedProjectCount} constrained,{" "}
+                      {cycle.illustrativeProjectCount} illustrative
+                    </dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Constrained</p>
-                    <p className="module-metric-value text-sm">{cycle.constrainedProjectCount}</p>
+                  <div>
+                    <dt>Funding</dt>
+                    <dd>
+                      {cycle.fundedProjectCount} funded, {cycle.likelyCoveredProjectCount} likely,{" "}
+                      {cycle.unfundedProjectCount} unfunded
+                    </dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Illustrative</p>
-                    <p className="module-metric-value text-sm">{cycle.illustrativeProjectCount}</p>
+                  <div>
+                    <dt>Reimbursement</dt>
+                    <dd>
+                      {formatUsdWholeAmount(cycle.paidReimbursementAmount)} paid,{" "}
+                      {formatUsdWholeAmount(cycle.outstandingReimbursementAmount)} outstanding,{" "}
+                      {formatUsdWholeAmount(cycle.uninvoicedAwardAmount)} not invoiced
+                    </dd>
                   </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Funded</p>
-                    <p className="module-metric-value text-sm">{cycle.fundedProjectCount}</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Likely</p>
-                    <p className="module-metric-value text-sm">{cycle.likelyCoveredProjectCount}</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Unfunded</p>
-                    <p className="module-metric-value text-sm">{cycle.unfundedProjectCount}</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Paid reimbursements</p>
-                    <p className="module-metric-value text-sm">{formatUsdWholeAmount(cycle.paidReimbursementAmount)}</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Outstanding requests</p>
-                    <p className="module-metric-value text-sm">{formatUsdWholeAmount(cycle.outstandingReimbursementAmount)}</p>
-                  </div>
-                  <div className="module-metric-card">
-                    <p className="module-metric-label">Uninvoiced awards</p>
-                    <p className="module-metric-value text-sm">{formatUsdWholeAmount(cycle.uninvoicedAwardAmount)}</p>
-                  </div>
-                </div>
+                </dl>
 
                 {cycle.comparisonBackedProjectCount > 0 ? (
                   <div className="module-note text-sm">
@@ -488,6 +472,11 @@ export function RtpCycleRegistryTable({
                   </div>
                 ) : null}
 
+                {/* Packet, reimbursement and queue detail, closed by default:
+                    it was five boxes of operator state under every cycle. */}
+                <details className="rtp-cycle-more">
+                  <summary>Packet and queue details</summary>
+                  <div className="mt-3 grid gap-3">
                 <div className="rounded-[0.5rem] border border-border/70 bg-background px-4 py-3">
                   <div className="flex flex-wrap items-center justify-between gap-3">
                     <div>
@@ -612,6 +601,9 @@ export function RtpCycleRegistryTable({
                   </div>
                 </div>
 
+                  </div>
+                </details>
+
                 <div className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_18rem]">
                   <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-3">
                     <p className="text-label font-semibold text-muted-foreground">
@@ -637,7 +629,7 @@ export function RtpCycleRegistryTable({
 
                 <div className="flex flex-wrap gap-3">
                   <Link href={`/rtp/${cycle.id}`} className="module-inline-action w-fit">
-                    Open RTP cycle shell
+                    Open RTP cycle
                     <ArrowRight className="h-4 w-4" />
                   </Link>
                   {cycle.transcription && cycle.transcription.waitingCount > 0 ? (

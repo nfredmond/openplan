@@ -578,7 +578,7 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
     expect(screen.getByText(/this is not a count of zero/i)).toBeInTheDocument();
   });
 
-  it("discloses a failed chapter read instead of 'No chapter shell yet'", async () => {
+  it("discloses a failed chapter read instead of 'No chapters yet'", async () => {
     tableResults.rtp_cycle_chapters = {
       data: null,
       error: { message: "permission denied for table rtp_cycle_chapters" },
@@ -587,7 +587,7 @@ describe("the RTP cycle detail page separates a failed read from an absence", ()
     // The chapter shell is on the Document tab.
     await renderDetail("document");
 
-    expect(screen.queryByText("No chapter shell yet")).not.toBeInTheDocument();
+    expect(screen.queryByText("No chapters yet")).not.toBeInTheDocument();
     expect(screen.getByText("Chapter sections could not be read")).toBeInTheDocument();
 
     // The adoption-record proof block is on the Comments tab.

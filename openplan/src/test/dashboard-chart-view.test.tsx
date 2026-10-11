@@ -5,6 +5,7 @@ import { DashboardInsights } from "@/components/dashboard/dashboard-insights";
 import {
   DASHBOARD_CHART_IDS,
   DASHBOARD_CHARTS,
+  DEFAULT_DASHBOARD_CHART_IDS,
   dashboardChartStorageKey,
   type DashboardChartId,
 } from "@/lib/dashboard/chart-catalog";
@@ -30,8 +31,6 @@ import { blocked, series, type InsightSeries } from "@/lib/dashboard/insights";
 const USER = "user-1";
 const WORKSPACE = "workspace-1";
 
-const TILES = [{ label: "Analysis runs", value: "3", detail: "3 completed" }];
-
 function drawable(): InsightSeries {
   return series([
     { label: "Jun", value: 1, detail: "1 in Jun" },
@@ -53,7 +52,6 @@ function renderView(overrides: Partial<Record<DashboardChartId, InsightSeries>> 
     <DashboardInsights
       userId={USER}
       workspaceId={WORKSPACE}
-      tiles={TILES}
       series={seriesMap(overrides)}
     />
   );
@@ -64,39 +62,51 @@ beforeEach(() => {
 });
 
 describe("choosing which figures appear", () => {
-  it("shows every figure to somebody who has never chosen — never a blank slate", () => {
+  it("shows the default charts to somebody who has never chosen, never a blank slate", () => {
     renderView();
     for (const chart of DASHBOARD_CHARTS) {
-      expect(screen.getByRole("heading", { name: chart.title })).toBeInTheDocument();
+      const heading = screen.queryByRole("heading", { name: chart.title });
+      if (DEFAULT_DASHBOARD_CHART_IDS.includes(chart.id)) expect(heading).toBeInTheDocument();
+      else expect(heading).not.toBeInTheDocument();
     }
+  });
+
+  it("shows a retired chart's replacement, so an old stored choice is not blank", () => {
+    window.localStorage.setItem(dashboardChartStorageKey(USER, WORKSPACE), "open-work");
+    renderView();
+    expect(screen.getByRole("heading", { name: "Deadlines by month" })).toBeInTheDocument();
+    expect(screen.queryByText(/No charts are switched on/i)).not.toBeInTheDocument();
+  });
+
+  it("falls back to the default when a stored choice names nothing this release knows", () => {
+    window.localStorage.setItem(dashboardChartStorageKey(USER, WORKSPACE), "a-chart-from-the-future");
+    renderView();
+    expect(screen.getByRole("heading", { name: "Money drawn against each award" })).toBeInTheDocument();
+    expect(screen.queryByText(/No charts are switched on/i)).not.toBeInTheDocument();
   });
 
   it("draws only the figures a returning person kept", () => {
     window.localStorage.setItem(
       dashboardChartStorageKey(USER, WORKSPACE),
-      "award-drawdown,open-work"
+      "award-drawdown,composite-scores"
     );
     renderView();
 
-    expect(
-      screen.getByRole("heading", { name: "Money drawn against money awarded" })
-    ).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Where the open work sits" })).toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: "Analysis runs per month" })
-    ).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Money drawn against each award" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Composite score by run" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Corridor runs per month" })).not.toBeInTheDocument();
   });
 
   it("remembers a figure being switched off, for this person and this workspace", () => {
     renderView();
 
     fireEvent.click(screen.getByTestId("dashboard-chart-picker-toggle"));
-    fireEvent.click(screen.getByTestId("dashboard-chart-toggle-composite-scores"));
+    fireEvent.click(screen.getByTestId("dashboard-chart-toggle-comments-received"));
 
-    expect(screen.queryByRole("heading", { name: "Composite score by run" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Comments coming in" })).not.toBeInTheDocument();
     const stored = window.localStorage.getItem(dashboardChartStorageKey(USER, WORKSPACE));
     expect(stored).not.toBeNull();
-    expect(stored).not.toContain("composite-scores");
+    expect(stored).not.toContain("comments-received");
     expect(stored).toContain("runs-per-month");
     // Another person in the same workspace is unaffected.
     expect(window.localStorage.getItem(dashboardChartStorageKey("user-2", WORKSPACE))).toBeNull();
@@ -105,7 +115,7 @@ describe("choosing which figures appear", () => {
   it("says the dashboard is empty on purpose when everything is switched off", () => {
     window.localStorage.setItem(dashboardChartStorageKey(USER, WORKSPACE), "");
     renderView();
-    expect(screen.getByText(/No figures are switched on/i)).toBeInTheDocument();
+    expect(screen.getByText(/No charts are switched on/i)).toBeInTheDocument();
   });
 });
 
@@ -149,7 +159,7 @@ describe("a figure a screen reader can read", () => {
     window.localStorage.setItem(dashboardChartStorageKey(USER, WORKSPACE), "runs-per-month");
     renderView();
 
-    const label = screen.getByRole("img", { name: /Analysis runs per month/i }).getAttribute("aria-label");
+    const label = screen.getByRole("img", { name: /Corridor runs per month/i }).getAttribute("aria-label");
     expect(label).toContain("Jun: 1");
     expect(label).toContain("Jul: 4");
     expect(label).toContain("Aug: 2");
