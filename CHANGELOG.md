@@ -30,6 +30,15 @@ per 10 minutes. The same text twice is
 refused only from the same device, so two neighbours may say the same thing.
 Comments are still moderated before they appear. No migration.
 
+**Public pages in 21 languages.** The participant pages (map, comments, form,
+survey, "You said / We did") now carry OpenPlan's own wording in every offered
+language except Diné Bizaad, which OpenPlan does not machine-translate. The 19
+new catalogs were machine-translated on 2026-10-11 and have not been reviewed
+by fluent readers; each page in one of them shows a "Machine translation" label
+beside the language name. The agency's own text keeps its separate labels. To
+mark a catalog as reviewed, see `PORTAL_MACHINE_TRANSLATED_LOCALES` in
+`portal-i18n/messages.ts`. Chinese is Simplified; Hmong is White Hmong.
+
 When a browser loses a response, OpenPlan now says the action may have completed
 and asks the user to inspect saved records before retrying. A lost response no
 longer implies that nothing was saved.

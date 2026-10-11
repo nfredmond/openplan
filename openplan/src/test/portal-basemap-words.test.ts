@@ -22,7 +22,7 @@
  * it on a 390px screen. jsdom applies no stylesheet, has no box model and does
  * not run Mapbox GL. That half was checked in a real browser at 390×844.
  */
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import {
   PUBLIC_BASEMAP_IDS,
@@ -36,6 +36,14 @@ import {
 import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle, EN_PORTAL_MESSAGES } from "@/lib/engagement/portal-i18n/messages";
 import { createPortalTranslator } from "@/lib/engagement/portal-i18n/translator";
+
+/*
+  ko stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ko", () => ({ KO_PORTAL_MESSAGES: {} }));
 
 /** Every background the registry knows, not only the four offered by default. */
 const everyChoice = resolvePublicBasemapConfig({

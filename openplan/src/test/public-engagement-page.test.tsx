@@ -255,6 +255,17 @@ import {
   type PublicPortalBundle,
 } from "@/lib/engagement/public-portal-data";
 
+/*
+  ar, ko, vi, zh stand in here for a language with NO catalog, the case these
+  tests were written for: since 2026-10-11 every offered language except Diné
+  Bizaad ships a machine-translated catalog, so the fallback path is reached by
+  emptying the one this file uses.
+*/
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ar", () => ({ AR_PORTAL_MESSAGES: {} }));
+vi.mock("@/lib/engagement/portal-i18n/catalogs/ko", () => ({ KO_PORTAL_MESSAGES: {} }));
+vi.mock("@/lib/engagement/portal-i18n/catalogs/vi", () => ({ VI_PORTAL_MESSAGES: {} }));
+vi.mock("@/lib/engagement/portal-i18n/catalogs/zh", () => ({ ZH_PORTAL_MESSAGES: {} }));
+
 describe("PublicEngagementPage", () => {
   beforeEach(() => {
     vi.clearAllMocks();
