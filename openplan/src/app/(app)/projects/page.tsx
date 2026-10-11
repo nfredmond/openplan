@@ -29,6 +29,7 @@ import {
   parseStoredEvidenceChainSummary,
 } from "@/lib/reports/catalog";
 import { PACKET_FRESHNESS_LABELS } from "@/lib/reports/packet-labels";
+import { FigureRow } from "@/components/ui/figure-row";
 import { PageHeader } from "@/components/ui/page-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { ProjectPortfolioTable } from "@/components/projects/project-portfolio-table";
@@ -498,16 +499,9 @@ export default async function ProjectsPage({
   }, {});
 
   const activeCount = projects.filter((project) => project.status === "active").length;
-  const planningTypes = new Set(projects.map((project) => project.plan_type)).size;
   const scopingCount = projects.filter((project) => project.delivery_phase === "scoping").length;
   const projectsWithReportAttentionCount = projects.filter(
     (project) => project.reportSummary.attentionCount > 0
-  ).length;
-  const projectsWithEvidenceBackedReportsCount = projects.filter(
-    (project) => project.reportSummary.evidenceBackedCount > 0
-  ).length;
-  const projectsWithComparisonBackedReportsCount = projects.filter(
-    (project) => project.reportSummary.comparisonBackedCount > 0
   ).length;
   const projectsLinkedToRtpCount = projects.filter((project) => project.rtpSummary.totalCount > 0).length;
   const governanceHoldReportCount = projects.reduce(
@@ -582,7 +576,7 @@ export default async function ProjectsPage({
 
       <PageHeader
         title={navLabel("/projects")}
-        description="Everything about a project in one place — what it is, what has happened lately, and where it stands — so your team can see at a glance what is moving and what needs attention."
+        description="Every project, where it stands, and what needs attention."
         actions={
           <>
             <a
@@ -607,93 +601,48 @@ export default async function ProjectsPage({
           </>
         }
       >
-        <div className="module-summary-grid cols-3">
-          <div className="module-summary-card">
-            <p className="module-summary-label">Projects</p>
-            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, projects.length)}</p>
-            <p className="module-summary-detail">
-              {portfolioCountsUnknown
-                ? "Unavailable — your projects could not be read, so this is unknown, not zero."
-                : "Projects connected to the rest of your work here."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Active</p>
-            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, activeCount)}</p>
-            <p className="module-summary-detail">
-              {portfolioCountsUnknown
-                ? "Unavailable — nothing here was counted, because your projects could not be read. That is unknown, not zero."
-                : "Currently in motion across your portfolio."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Plan types</p>
-            <p className="module-summary-value">{unknownIfUnread(portfolioCountsUnknown, planningTypes)}</p>
-            <p className="module-summary-detail">
-              {portfolioCountsUnknown
-                ? "Unavailable — the project list could not be read, so this is not a count of zero."
-                : `Including ${scopingCount} still in scoping.`}
-            </p>
-          </div>
-        </div>
-
-        <div className="mt-4 grid gap-2 sm:grid-cols-3">
-          <div className="module-record-chip">
-            <span>Report attention</span>
-            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithReportAttentionCount)}</strong>
-          </div>
-          <div className="module-record-chip">
-            <span>Evidence-backed</span>
-            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithEvidenceBackedReportsCount)}</strong>
-          </div>
-          <div className="module-record-chip">
-            <span>Comparison-backed</span>
-            <strong>{unknownIfUnread(reportCountsUnknown, projectsWithComparisonBackedReportsCount)}</strong>
-          </div>
-          <div className="module-record-chip">
-            <span>Governance hold</span>
-            <strong>{unknownIfUnread(reportCountsUnknown, governanceHoldReportCount)}</strong>
-          </div>
-          <div className="module-record-chip">
-            <span>RTP-linked</span>
-            <strong>{unknownIfUnread(rtpCountsUnknown, projectsLinkedToRtpCount)}</strong>
-          </div>
-          {(() => {
-            const aerialCoverageCount = projects.filter((p) => (p.aerialPosture?.missionCount ?? 0) > 0).length;
-            return aerialCoverageCount > 0 ? (
-              <div className="module-record-chip">
-                <span>Aerial coverage</span>
-                <strong>{aerialCoverageCount}</strong>
-              </div>
-            ) : null;
-          })()}
-        </div>
+        <FigureRow
+          label="Project figures"
+          figures={[
+            {
+              label: "Projects",
+              value: unknownIfUnread(portfolioCountsUnknown, projects.length),
+              note: portfolioCountsUnknown
+                ? "Could not be read, so unknown, not zero."
+                : `${scopingCount} in scoping`,
+            },
+            {
+              label: "Active",
+              value: unknownIfUnread(portfolioCountsUnknown, activeCount),
+              note: portfolioCountsUnknown ? "Could not be read, so unknown, not zero." : null,
+            },
+            {
+              label: "Report attention",
+              value: unknownIfUnread(reportCountsUnknown, projectsWithReportAttentionCount),
+              note: reportCountsUnknown
+                ? "Reports could not be read, so unknown, not zero."
+                : `${governanceHoldReportCount} on governance hold`,
+            },
+            {
+              label: "RTP-linked",
+              value: unknownIfUnread(rtpCountsUnknown, projectsLinkedToRtpCount),
+              note: rtpCountsUnknown ? "RTP links could not be read, so unknown, not zero." : null,
+            },
+          ]}
+        />
       </PageHeader>
-
-      <ProjectPortfolioImporter
-        workspaceId={workspaceId}
-        recentImports={recentImports}
-        historyReadFailed={importHistoryReadFailed}
-      />
 
       {/* ABOVE the cards, deliberately: the comparative view comes first, and
           the cards below keep everything they always said. Both are skipped
           when the portfolio read failed — a table of "—" over a list that
           already says why would be noise. */}
       {projectsReadFailed ? null : (
-        <div className="space-y-6">
-          <ProjectPortfolioTable summary={portfolioSummary} />
-          <WorkPlanTemplateApplier
-            projects={filteredProjects.map((project) => ({ id: project.id, name: project.name }))}
-            templates={workPlanTemplates}
-          />
-        </div>
+        <ProjectPortfolioTable summary={portfolioSummary} />
       )}
 
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Portfolio</p>
             <h2 className="module-section-title">Your projects</h2>
           </div>
           <span className="module-record-chip">
@@ -959,6 +908,31 @@ export default async function ProjectsPage({
           </>
         )}
       </article>
+
+      {/* Tools that act on many projects at once, after the list
+          (October 10, 2026). The importer's own section keeps the
+          #import-project-list anchor the header button points at. */}
+      <section aria-labelledby="project-tools" className="grid gap-4">
+        <h2 id="project-tools" className="module-section-title">
+          Tools
+        </h2>
+        {projectsReadFailed ? null : (
+          <details className="rtp-cycle-more">
+            <summary>Apply a work plan template</summary>
+            <div className="mt-3">
+              <WorkPlanTemplateApplier
+                projects={filteredProjects.map((project) => ({ id: project.id, name: project.name }))}
+                templates={workPlanTemplates}
+              />
+            </div>
+          </details>
+        )}
+        <ProjectPortfolioImporter
+          workspaceId={workspaceId}
+          recentImports={recentImports}
+          historyReadFailed={importHistoryReadFailed}
+        />
+      </section>
     </section>
   );
 }

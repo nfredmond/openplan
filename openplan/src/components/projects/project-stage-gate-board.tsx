@@ -55,7 +55,6 @@ export function ProjectStageGateBoard({
             <ShieldCheck className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Governance</p>
             <h2 className="module-section-title">Stage-gate compliance cockpit</h2>
             <p className="module-section-description">
               This is the project-delivery control layer: where the bound template&apos;s statutory,

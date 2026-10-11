@@ -13,7 +13,6 @@ import { GrantsPageIntroHeader } from "@/components/grants/grants-page-intro-hea
 import { GrantsProgramCatalogSection } from "@/components/grants/program-catalog-section";
 import { GrantsQueueCallout } from "@/components/grants/grants-queue-callout";
 import type { FundingOpportunityNarrativeDraftRow } from "@/components/grants/funding-opportunity-narrative-draft-panel";
-import { GrantsWorkspaceQueueSection } from "@/components/grants/grants-workspace-queue-section";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
@@ -61,10 +60,6 @@ import {
   buildProjectGrantModelingEvidenceByProjectId,
   describeProjectGrantModelingReadiness,
 } from "@/lib/grants/modeling-evidence";
-import {
-  loadScenarioComparisonSummaryForProjects,
-  totalReadySnapshotCount,
-} from "@/lib/scenarios/comparison-summary";
 import { createClient } from "@/lib/supabase/server";
 import {
   loadCurrentWorkspaceMembership,
@@ -100,6 +95,10 @@ import {
 } from "@/lib/grants/page-helpers";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { PageTabNav } from "@/components/ui/page-tab-nav";
+import { PageTabPanel } from "@/components/ui/page-tab-panel";
+import { resolvePageTab } from "@/lib/ui/page-tabs";
+import { GRANTS_TABS, defaultGrantsTab } from "./_tabs";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext } from "@/lib/projects/planning-context";
 
@@ -374,20 +373,6 @@ export default async function GrantsPage({
       (projectGrantReportArtifactsData ?? []) as ReportArtifactRow[],
     );
 
-  const scenarioComparisonSummaryResult = projectIdsWithVisibleFundingOpportunities.length
-    ? await loadScenarioComparisonSummaryForProjects({
-        supabase,
-        projectIds: projectIdsWithVisibleFundingOpportunities,
-      })
-    : { rows: [], scenarioSetProjectMap: new Map<string, string>(), error: null };
-  const scenarioComparisonRows = scenarioComparisonSummaryResult.rows;
-  const scenarioComparisonIndicatorCount = new Set(scenarioComparisonRows.map((row) => row.indicator_key)).size;
-  const scenarioComparisonReadyCount = totalReadySnapshotCount(scenarioComparisonRows);
-  const scenarioComparisonProjectsWithSignal = new Set(
-    scenarioComparisonRows
-      .map((row) => scenarioComparisonSummaryResult.scenarioSetProjectMap.get(row.scenario_set_id))
-      .filter((value): value is string => Boolean(value))
-  ).size;
 
   const opportunities = ((opportunitiesData ?? []) as FundingOpportunityRow[])
     .map((opportunity) => ({
@@ -733,11 +718,8 @@ export default async function GrantsPage({
   const openCount = opportunities.filter((opportunity) => opportunity.opportunity_status === "open").length;
   const pursueCount = opportunities.filter((opportunity) => opportunity.decision_state === "pursue").length;
   const monitorCount = opportunities.filter((opportunity) => opportunity.decision_state === "monitor").length;
-  const skipCount = opportunities.filter((opportunity) => opportunity.decision_state === "skip").length;
   const closingSoonCount = opportunities.filter((opportunity) => isClosingSoon(opportunity.closes_at)).length;
   const awardedCount = opportunities.filter((opportunity) => opportunity.opportunity_status === "awarded").length;
-  const distinctProjectCount = new Set(opportunities.map((opportunity) => opportunity.project?.id).filter(Boolean)).size;
-  const distinctProgramCount = new Set(opportunities.map((opportunity) => opportunity.program?.id).filter(Boolean)).size;
   const awardedOpportunitiesMissingRecords = opportunities.filter(
     (opportunity) => opportunity.opportunity_status === "awarded" && !fundingAwardOpportunityIds.has(opportunity.id)
   );
@@ -771,10 +753,14 @@ export default async function GrantsPage({
       href: resolveGrantsQueueHref(item, membership.workspace_id, exactBillingTriageInvoiceByProjectId, invoiceById),
     }));
   const leadGrantsCommand = grantsQueue[0] ?? null;
-  const leadReimbursementCommand = grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null;
-  const leadAwardCommand = grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null;
-  const leadDecisionCommand = grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null;
-  const leadSourcingCommand = grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null;
+  // A tab repeats the header's "Where to start" only when it names a
+  // different step; the same sentence twice on one screen was noise.
+  const unlessLead = <T extends { key: string }>(command: T | null) =>
+    command && command.key === leadGrantsCommand?.key ? null : command;
+  const leadReimbursementCommand = unlessLead(grantsQueue.find((item) => isGrantsReimbursementCommand(item)) ?? null);
+  const leadAwardCommand = unlessLead(grantsQueue.find((item) => isGrantsAwardCommand(item)) ?? null);
+  const leadDecisionCommand = unlessLead(grantsQueue.find((item) => isGrantsDecisionCommand(item)) ?? null);
+  const leadSourcingCommand = unlessLead(grantsQueue.find((item) => isGrantsSourcingCommand(item)) ?? null);
   const leadModelingCommand = grantsQueue.find((item) => isGrantsModelingCommand(item)) ?? null;
   const opportunityLinkedModelingProjects = projectOptions
     .map((project) => {
@@ -808,6 +794,16 @@ export default async function GrantsPage({
   const thinnestModelingProject = thinModelingProjects[0] ?? null;
   const missingModelingProject = missingModelingProjects[0] ?? null;
 
+  const activeTab = resolvePageTab(
+    GRANTS_TABS,
+    filters.tab,
+    defaultGrantsTab({
+      invoiceId: activeFocusedInvoiceId,
+      fundingNeedProjectFocused: Boolean(focusedFundingNeedProject || focusedFundingSourcingProject || focusedFundingGapProject),
+      awardConversionFocused: Boolean(focusedAwardConversionOpportunity),
+    })
+  );
+
   return (
     <section className="module-page">
       <PlanningContextStrip context={planningContext} className="mb-4" />
@@ -816,23 +812,13 @@ export default async function GrantsPage({
           sentence a planner reads. */}
       <ReadFailureNotice className="mb-4" reads={reads} />
       <GrantsPageIntroHeader
-        scenarioComparisonIndicatorCount={scenarioComparisonIndicatorCount}
-        scenarioComparisonReadyCount={scenarioComparisonReadyCount}
-        scenarioComparisonProjectsWithSignal={scenarioComparisonProjectsWithSignal}
         trackedCount={trackedCount}
         openCount={openCount}
         pursueCount={pursueCount}
+        monitorCount={monitorCount}
         closingSoonCount={closingSoonCount}
         awardedCount={awardedCount}
-        distinctProjectCount={distinctProjectCount}
-        distinctProgramCount={distinctProgramCount}
-        monitorCount={monitorCount}
-        skipCount={skipCount}
         fundingAwardsCount={fundingAwards.length}
-        decisionReadyModelingCount={decisionReadyModelingProjects.length}
-        staleModelingCount={staleModelingProjects.length}
-        thinModelingCount={thinModelingProjects.length}
-        missingModelingCount={missingModelingProjects.length}
         operationsSummary={operationsSummary}
         workspaceCommandCallout={
           leadGrantsCommand ? (
@@ -841,8 +827,42 @@ export default async function GrantsPage({
         }
       />
 
-      <div className="grid gap-6 xl:grid-cols-[0.95fr_1.05fr]">
-        <div className="space-y-6">
+      <PageTabNav
+        tabs={GRANTS_TABS}
+        activeKey={activeTab}
+        basePath="/grants"
+        searchParams={filters}
+        ariaLabel="Grants sections"
+      />
+
+      <PageTabPanel tabKey="opportunities" active={activeTab === "opportunities"} className="grid gap-6">
+          <GrantsOpportunityRegistrySection
+            filteredOpportunities={filteredOpportunities}
+            opportunitiesCount={opportunities.length}
+            selectedStatus={selectedStatus}
+            selectedDecision={selectedDecision}
+            selectedKind={selectedKind}
+            showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
+            activeFocusedOpportunityId={activeFocusedOpportunityId}
+            projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
+            projectGrantDualDemandAgreementEvidenceByProjectId={projectGrantDualDemandAgreementEvidenceByProjectId}
+            latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
+            engagementEvidenceByProjectId={engagementEvidenceByProjectId}
+            focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
+            decisionCommandCallout={
+              leadDecisionCommand ? (
+                <GrantsQueueCallout kind="decision" command={leadDecisionCommand} />
+              ) : null
+            }
+          />
+          <GrantsProgramCatalogSection
+            trackedTitles={trackedOpportunityTitles}
+            workspaceJurisdiction={workspaceJurisdiction}
+          />
+          <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
+      </PageTabPanel>
+
+      <PageTabPanel tabKey="gaps" active={activeTab === "gaps"} className="grid gap-6">
           {fundingNeedEditorProject ? (
             <GrantsFundingNeedEditorSection
               fundingNeedEditorProject={fundingNeedEditorProject}
@@ -850,7 +870,6 @@ export default async function GrantsPage({
               activeFocusedProjectId={activeFocusedProjectId}
             />
           ) : null}
-
           <div
             id="grants-gap-resolution-lane"
             className={activeFocusedProjectId === fundingOpportunityCreatorProject?.id ? "scroll-mt-24" : "scroll-mt-24"}
@@ -868,37 +887,6 @@ export default async function GrantsPage({
               projectOptions={projectOptions}
             />
           </div>
-
-          <GrantsProgramCatalogSection
-            trackedTitles={trackedOpportunityTitles}
-            workspaceJurisdiction={workspaceJurisdiction}
-          />
-
-          <GrantsGovLiveSection trackedTitles={trackedOpportunityTitles} />
-
-          <GrantsReimbursementTriageSection
-            reimbursementPriorityQueue={reimbursementPriorityQueue}
-            awardLinkedInvoicesCount={awardLinkedInvoices.length}
-            overdueLinkedInvoiceCount={overdueLinkedInvoiceCount}
-            draftLinkedInvoiceCount={draftLinkedInvoiceCount}
-            inFlightLinkedInvoiceCount={inFlightLinkedInvoiceCount}
-            exactRelinkReadyCount={exactRelinkReadyCount}
-            fundingAwardById={fundingAwardById}
-            projectNameById={projectNameById}
-            fundingInvoices={fundingInvoices}
-            fundingAwardProjectRows={fundingAwardProjectRows}
-            fundingAwardOptions={fundingAwardOptions}
-            activeFocusedInvoiceId={activeFocusedInvoiceId}
-            activeRelinkedInvoiceId={activeRelinkedInvoiceId}
-            workspaceId={membership.workspace_id}
-            canWriteInvoices={canWriteInvoices}
-            reimbursementCommandCallout={
-              leadReimbursementCommand ? (
-                <GrantsQueueCallout kind="reimbursement" command={leadReimbursementCommand} />
-              ) : null
-            }
-          />
-
           {leadModelingCommand || opportunityLinkedModelingProjects.length > 0 ? (
             <GrantsModelingTriageSection
               opportunityLinkedModelingProjects={opportunityLinkedModelingProjects}
@@ -913,11 +901,10 @@ export default async function GrantsPage({
               leadModelingCommand={leadModelingCommand}
             />
           ) : null}
-
           <GrantsBcaScreeningSection projects={bcaScreeningProjects} canSave={canWritePrograms} />
+      </PageTabPanel>
 
-          <GrantsWorkspaceQueueSection grantsQueue={grantsQueue} />
-
+      <PageTabPanel tabKey="awards" active={activeTab === "awards"} className="grid gap-6">
           <GrantsAwardConversionSection
             awardedOpportunitiesMissingRecords={awardedOpportunitiesMissingRecords}
             awardConversionOpportunity={awardConversionOpportunity}
@@ -928,7 +915,6 @@ export default async function GrantsPage({
               ) : null
             }
           />
-
           {/*
             Two permissions, deliberately not one. Writing invoices is
             owner/admin (`invoices.write`); recording an award close-out is
@@ -955,28 +941,29 @@ export default async function GrantsPage({
             canWriteInvoices={canWriteInvoices}
             canCloseOutAwards={canWritePrograms}
           />
-        </div>
-
-        <GrantsOpportunityRegistrySection
-          filteredOpportunities={filteredOpportunities}
-          opportunitiesCount={opportunities.length}
-          selectedStatus={selectedStatus}
-          selectedDecision={selectedDecision}
-          selectedKind={selectedKind}
-          showModelingCaveat={opportunityLinkedModelingProjects.length > 0}
-          activeFocusedOpportunityId={activeFocusedOpportunityId}
-          projectGrantModelingEvidenceByProjectId={projectGrantModelingEvidenceByProjectId}
-          projectGrantDualDemandAgreementEvidenceByProjectId={projectGrantDualDemandAgreementEvidenceByProjectId}
-          latestBcaScreeningByProjectId={latestBcaScreeningByProjectId}
-          engagementEvidenceByProjectId={engagementEvidenceByProjectId}
-          focusedOpportunityNarrativeDraft={focusedOpportunityNarrativeDraft}
-          decisionCommandCallout={
-            leadDecisionCommand ? (
-              <GrantsQueueCallout kind="decision" command={leadDecisionCommand} />
-            ) : null
-          }
-        />
-      </div>
+          <GrantsReimbursementTriageSection
+            reimbursementPriorityQueue={reimbursementPriorityQueue}
+            awardLinkedInvoicesCount={awardLinkedInvoices.length}
+            overdueLinkedInvoiceCount={overdueLinkedInvoiceCount}
+            draftLinkedInvoiceCount={draftLinkedInvoiceCount}
+            inFlightLinkedInvoiceCount={inFlightLinkedInvoiceCount}
+            exactRelinkReadyCount={exactRelinkReadyCount}
+            fundingAwardById={fundingAwardById}
+            projectNameById={projectNameById}
+            fundingInvoices={fundingInvoices}
+            fundingAwardProjectRows={fundingAwardProjectRows}
+            fundingAwardOptions={fundingAwardOptions}
+            activeFocusedInvoiceId={activeFocusedInvoiceId}
+            activeRelinkedInvoiceId={activeRelinkedInvoiceId}
+            workspaceId={membership.workspace_id}
+            canWriteInvoices={canWriteInvoices}
+            reimbursementCommandCallout={
+              leadReimbursementCommand ? (
+                <GrantsQueueCallout kind="reimbursement" command={leadReimbursementCommand} />
+              ) : null
+            }
+          />
+      </PageTabPanel>
     </section>
   );
 }

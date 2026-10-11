@@ -49,7 +49,6 @@ export function ProjectSpineCrosslinkBoard({
             <GitBranch className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Shared project spine</p>
             <h2 className="module-section-title">Linked outputs across this project</h2>
             <p className="module-section-description">
               One scanable rail for the downstream outputs that reuse this project record: RTP links, project reports, scenario sets, grants, engagement, analysis, and aerial evidence.

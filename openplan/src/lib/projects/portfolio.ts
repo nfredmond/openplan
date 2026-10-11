@@ -252,8 +252,8 @@ function buildBurnColumn(inputs: ProjectPortfolioInputs, projectId: string): Por
   if (!basisAmount) {
     const detail =
       coverage === "partial"
-        ? "Some of this project's deliverables carry a budget and some do not, so their total is a partial figure rather than a project budget. Enter a project budget, or budget the remaining deliverables."
-        : "No project budget is entered and no deliverable carries one, so there is nothing to measure spending against.";
+        ? "Only some deliverables have a budget, so there is no project total to measure against."
+        : "No budget entered, so there is nothing to measure against.";
     return unavailableBurn(detail, coverage);
   }
 

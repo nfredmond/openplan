@@ -101,7 +101,6 @@ export function RtpFinancialElementSection({
   <article className="module-section-surface">
     <div className="module-section-header">
       <div className="module-section-heading">
-        <p className="module-section-label">Financial element</p>
         <h2 className="module-section-title">Can this plan be paid for?</h2>
         <p className="module-section-description">
           The constrained programme, the revenue behind it, and the cost of operating and
@@ -215,7 +214,6 @@ export function RtpFinancialElementSection({
   <article className="module-section-surface">
     <div className="module-section-header">
       <div className="module-section-heading">
-        <p className="module-section-label">Performance measures</p>
         <h2 className="module-section-title">What this plan is trying to move</h2>
         <p className="module-section-description">
           Baselines and targets, with the source each baseline came from.

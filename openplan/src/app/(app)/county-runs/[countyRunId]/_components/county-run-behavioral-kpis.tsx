@@ -43,7 +43,6 @@ export function CountyRunBehavioralKpisSection({
             <Gauge className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">County run results</p>
             <h2 className="module-section-title">Travel measures for this county</h2>
             <p className="module-section-description">
               Trips, vehicle-miles, and mode shares for this county run. Results from a run that is

@@ -147,7 +147,6 @@ export function ProjectDocumentsPanel({ library, projectId, canGenerateEvidenceB
             <FolderOpen className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Documents</p>
             <h2 className="module-section-title">Files on this project&apos;s record</h2>
           </div>
         </div>

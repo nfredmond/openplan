@@ -20,6 +20,7 @@ import {
   parseWorkspaceHomeGeography,
 } from "@/lib/workspaces/home-geography";
 import { navLabel } from "@/components/nav/nav-registry";
+import { FigureRow } from "@/components/ui/figure-row";
 import { PageHeader } from "@/components/ui/page-header";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
@@ -384,76 +385,6 @@ export default async function DataHubPage() {
   const activeConnectors = connectors.filter((connector) => connector.status === "active").length;
   const monitoredConnectors = connectors.filter((connector) => connector.policy_monitor_enabled).length;
   const staleDatasets = datasets.filter((dataset) => dataset.status === "stale" || dataset.status === "error").length;
-  const lineageCompleteDatasets = datasets.filter(
-    (dataset) =>
-      resolveDatasetLineageReadiness({
-        citationText: dataset.citation_text,
-        sourceUrl: dataset.source_url,
-        licenseLabel: dataset.license_label,
-        vintageLabel: dataset.vintage_label,
-        schemaVersion: dataset.schema_version,
-        checksum: dataset.checksum,
-        rowCount: dataset.row_count,
-        lastRefreshedAt: dataset.last_refreshed_at,
-        geographyScope: dataset.geography_scope,
-        geometryAttachment: dataset.geometry_attachment,
-      }).level === "complete"
-  ).length;
-  const overlayReadyDatasets = datasets.filter(
-    (dataset) =>
-      dataset.status === "ready" &&
-      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
-        dataset.geography_scope
-      )
-  ).length;
-  const thematicReadyDatasets = datasets.filter(
-    (dataset) =>
-      dataset.status === "ready" &&
-      Boolean(dataset.thematic_metric_key) &&
-      ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
-        ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
-          dataset.geometry_attachment === "analysis_corridor") ||
-        (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"))
-  ).length;
-  const outputReadyDatasets = datasets.filter((dataset) => {
-    const links = datasetLinksByDataset.get(dataset.id) ?? [];
-    const latestRefreshJob = latestRefreshJobByDataset.get(dataset.id);
-    const overlayReady =
-      dataset.status === "ready" &&
-      ["point", "route", "corridor", "tract", "county", "region", "statewide", "national"].includes(
-        dataset.geography_scope
-      );
-    const thematicReady =
-      dataset.status === "ready" &&
-      Boolean(dataset.thematic_metric_key) &&
-      ((dataset.geography_scope === "tract" && dataset.geometry_attachment === "analysis_tracts") ||
-        ((dataset.geography_scope === "corridor" || dataset.geography_scope === "route") &&
-          dataset.geometry_attachment === "analysis_corridor") ||
-        (dataset.geography_scope === "point" && dataset.geometry_attachment === "analysis_crash_points"));
-    const lineageReadiness = resolveDatasetLineageReadiness({
-      citationText: dataset.citation_text,
-      sourceUrl: dataset.source_url,
-      licenseLabel: dataset.license_label,
-      vintageLabel: dataset.vintage_label,
-      schemaVersion: dataset.schema_version,
-      checksum: dataset.checksum,
-      rowCount: dataset.row_count,
-      lastRefreshedAt: dataset.last_refreshed_at,
-      geographyScope: dataset.geography_scope,
-      geometryAttachment: dataset.geometry_attachment,
-    });
-
-    return (
-      resolveDatasetDependentOutputContext({
-        status: dataset.status,
-        linkedProjectCount: links.length,
-        lineageLevel: lineageReadiness.level,
-        overlayReady,
-        thematicReady,
-        latestRefreshStatus: latestRefreshJob?.status,
-      }).level === "output_ready"
-    );
-  }).length;
   const runningJobs = refreshJobs.filter((job) => job.status === "running" || job.status === "queued").length;
 
   /**
@@ -534,34 +465,20 @@ export default async function DataHubPage() {
       <CartographicSurfaceWide />
       <PageHeader
         title={navLabel("/data-hub")}
-        description="The datasets your analysis draws on — where each one came from, when it was last refreshed, and which projects rely on it."
+        description="Where your data comes from, when it was refreshed, and which projects rely on it."
       >
-      <div className="module-summary-grid cols-4">
-        <div className="module-summary-card">
-          <p className="module-summary-label">Connectors</p>
-          <p className="module-summary-value">{connectors.length}</p>
-          <p className="module-summary-detail">{activeConnectors} active in the current workspace.</p>
-        </div>
-        <div className="module-summary-card">
-          <p className="module-summary-label">Datasets</p>
-          <p className="module-summary-value">{datasets.length}</p>
-          <p className="module-summary-detail">
-            {overlayReadyDatasets} overlay-ready · {thematicReadyDatasets} thematic-ready · {outputReadyDatasets} output-ready · {lineageCompleteDatasets} lineage-complete.
-          </p>
-        </div>
-        <div className="module-summary-card">
-          <p className="module-summary-label">Refresh log</p>
-          <p className="module-summary-value">{refreshJobs.length}</p>
-          <p className="module-summary-detail">
-            {runningJobs} recorded as queued or running — no runner executes these.
-          </p>
-        </div>
-        <div className="module-summary-card">
-          <p className="module-summary-label">Needs attention</p>
-          <p className="module-summary-value">{monitoredConnectors}</p>
-          <p className="module-summary-detail">{staleDatasets} datasets currently need attention.</p>
-        </div>
-      </div>
+      <FigureRow
+        label="Data figures"
+        figures={[
+          { label: "Datasets", value: datasets.length, note: `${staleDatasets} need attention` },
+          { label: "Connectors", value: connectors.length, note: `${activeConnectors} active, ${monitoredConnectors} to check` },
+          {
+            label: "Refreshes recorded",
+            value: refreshJobs.length,
+            note: `${runningJobs} queued or running; no runner executes these`,
+          },
+        ]}
+      />
       </PageHeader>
 
       {migrationPending ? (
@@ -578,50 +495,6 @@ export default async function DataHubPage() {
         </article>
       ) : null}
 
-      <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr]">
-        <div id="register-data-source" className="space-y-6">
-          <DataHubRecordComposer
-            workspaceId={workspaceId}
-            connectors={connectors.map((connector) => ({ id: connector.id, label: connector.display_name }))}
-            projects={projects.map((project) => ({ id: project.id, label: project.name }))}
-            datasets={datasets.map((dataset) => ({
-              id: dataset.id,
-              label: dataset.name,
-              connectorId: dataset.connector_id,
-            }))}
-          />
-        </div>
-
-        <article className="module-section-surface">
-          <div className="module-section-header">
-            <div className="module-section-heading">
-              <p className="module-section-label">Foundation sources</p>
-              <h2 className="module-section-title">The sources everything else is built on</h2>
-              <p className="module-section-description">
-                What counts as a source you can cite, as opposed to something OpenPlan worked out from it.
-              </p>
-            </div>
-            <span className="module-inline-item">
-              <Database className="h-3.5 w-3.5" />
-              Connected data workspace
-            </span>
-          </div>
-
-          <div className="mt-5 space-y-3">
-            {liveFoundations.map((item) => (
-              <div key={item.label} className="module-subpanel">
-                <div className="flex flex-wrap items-center gap-2">
-                  <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
-                  {item.kicker ? (
-                    <p className="text-xs text-muted-foreground">{item.kicker}</p>
-                  ) : null}
-                </div>
-                {item.detail ? <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p> : null}
-              </div>
-            ))}
-          </div>
-        </article>
-      </div>
 
       {/*
         THE FEED CARD ABOVE NOW POINTS SOMEWHERE. It says a feed can be added
@@ -686,7 +559,6 @@ export default async function DataHubPage() {
               <Layers className="h-5 w-5" />
             </span>
             <div className="module-section-heading">
-              <p className="module-section-label">Your map layers</p>
               <h2 className="module-section-title">The GIS files your agency already has</h2>
             </div>
           </div>
@@ -713,7 +585,6 @@ export default async function DataHubPage() {
                 <Link2 className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Connector registry</p>
                 <h2 className="module-section-title">Governed source endpoints</h2>
               </div>
             </div>
@@ -774,7 +645,6 @@ export default async function DataHubPage() {
         <article className="module-section-surface xl:col-span-2">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Dataset registry</p>
               <h2 className="module-section-title">Datasets, with where they came from</h2>
               <p className="module-section-description">
                 The full list. Denser than the cards above because this is where the detail lives.
@@ -921,7 +791,11 @@ export default async function DataHubPage() {
                       </div>
                     ) : null}
 
-                    <div className="module-record-detail-grid cols-3">
+                    {/* Output readiness, provenance and refresh detail, folded
+                        (October 10, 2026): three boxes under every dataset. */}
+                    <details className="rtp-cycle-more">
+                      <summary>Source, outputs and refresh details</summary>
+                    <div className="module-record-detail-grid cols-3 mt-3">
                       <div className="module-note text-sm">
                         <p className="font-medium text-foreground">Dependent output context</p>
                         <p className="mt-2">
@@ -961,6 +835,7 @@ export default async function DataHubPage() {
                         </p>
                       </div>
                     </div>
+                    </details>
                   </div>
                 );
               })}
@@ -977,7 +852,6 @@ export default async function DataHubPage() {
                 <RefreshCw className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Refresh log</p>
                 <h2 className="module-section-title">Refreshes you recorded</h2>
                 <p className="module-section-description">
                   These are refreshes someone on your team did, or plans to do. OpenPlan does not run them for you —
@@ -1047,6 +921,58 @@ export default async function DataHubPage() {
           )}
         </article>
       </div>
+
+      {/* Registering records and the list of foundation sources, at the
+          foot (October 10, 2026); they opened the page. The composer keeps
+          the #register-data-source anchor. */}
+      <section aria-labelledby="data-hub-register" className="grid gap-4">
+        <h2 id="data-hub-register" className="module-section-title">
+          Register a source
+        </h2>
+      <div className="grid gap-6 xl:grid-cols-[0.98fr_1.02fr]">
+        <div id="register-data-source" className="space-y-6">
+          <DataHubRecordComposer
+            workspaceId={workspaceId}
+            connectors={connectors.map((connector) => ({ id: connector.id, label: connector.display_name }))}
+            projects={projects.map((project) => ({ id: project.id, label: project.name }))}
+            datasets={datasets.map((dataset) => ({
+              id: dataset.id,
+              label: dataset.name,
+              connectorId: dataset.connector_id,
+            }))}
+          />
+        </div>
+
+        <article className="module-section-surface">
+          <div className="module-section-header">
+            <div className="module-section-heading">
+              <h2 className="module-section-title">The sources everything else is built on</h2>
+              <p className="module-section-description">
+                What counts as a source you can cite, as opposed to something OpenPlan worked out from it.
+              </p>
+            </div>
+            <span className="module-inline-item">
+              <Database className="h-3.5 w-3.5" />
+              Connected data workspace
+            </span>
+          </div>
+
+          <div className="mt-5 space-y-3">
+            {liveFoundations.map((item) => (
+              <div key={item.label} className="module-subpanel">
+                <div className="flex flex-wrap items-center gap-2">
+                  <StatusBadge tone={item.tone}>{item.label}</StatusBadge>
+                  {item.kicker ? (
+                    <p className="text-xs text-muted-foreground">{item.kicker}</p>
+                  ) : null}
+                </div>
+                {item.detail ? <p className="mt-2 text-sm text-muted-foreground">{item.detail}</p> : null}
+              </div>
+            ))}
+          </div>
+        </article>
+      </div>
+      </section>
     </section>
   );
 }

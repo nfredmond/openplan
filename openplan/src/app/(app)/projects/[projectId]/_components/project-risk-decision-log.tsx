@@ -97,7 +97,6 @@ export function ProjectRiskAndDecisionLog({
                 <AlertTriangle className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Risks</p>
                 <h2 className="module-section-title">Threats and mitigations</h2>
               </div>
             </div>
@@ -144,7 +143,6 @@ export function ProjectRiskAndDecisionLog({
                 <Siren className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Issues</p>
                 <h2 className="module-section-title">Active blockers</h2>
               </div>
             </div>
@@ -204,7 +202,6 @@ export function ProjectRiskAndDecisionLog({
                 <Scale className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Decisions</p>
                 <h2 className="module-section-title">Why the project moved this way</h2>
               </div>
             </div>
@@ -245,7 +242,6 @@ export function ProjectRiskAndDecisionLog({
                 <MessagesSquare className="h-5 w-5" />
               </span>
               <div className="module-section-heading">
-                <p className="module-section-label">Meetings</p>
                 <h2 className="module-section-title">Notes and coordination history</h2>
               </div>
             </div>

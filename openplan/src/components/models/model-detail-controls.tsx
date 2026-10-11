@@ -210,7 +210,6 @@ export function ModelDetailControls({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Controls</p>
           <h2 className="module-section-title">Model record workflow</h2>
           <p className="module-section-description">
             Keep the config metadata, anchors, and traceability links current. This is readiness management, not run

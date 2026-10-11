@@ -91,7 +91,6 @@ export function ModelLinkedRecordsBoard({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Linked records</p>
           <h2 className="module-section-title">Explicit provenance and outputs</h2>
           <p className="module-section-description">
             Review the linked evidence chain without wading through repetitive empty-state blocks.

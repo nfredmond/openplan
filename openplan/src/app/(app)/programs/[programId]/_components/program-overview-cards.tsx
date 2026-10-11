@@ -35,7 +35,6 @@ export function ProgramReadinessCard({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Readiness</p>
           <h2 className="module-section-title">Package basis and timing</h2>
           <p className="module-section-description">
             {basisUnreadable
@@ -121,7 +120,6 @@ export function ProgramCycleMetadataCard({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Identity</p>
           <h2 className="module-section-title">Cycle metadata</h2>
           <p className="module-section-description">Timing and package posture that should travel with the funding record.</p>
         </div>

@@ -74,7 +74,6 @@ function ApprovedActionRecovery({ workspaceId, kind }: { workspaceId: string; ki
     <article id={`approved-${path}`} className="module-section-surface min-w-0">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Saved action recovery</p>
           <h2 className="module-section-title">Your approved {kind} requests</h2>
           <p className="module-section-description">Check the saved result after an interrupted request. Checking does not run the action or renew its approval.</p>
         </div>

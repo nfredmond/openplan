@@ -53,7 +53,6 @@ export function ProjectBudgetPanel({
             <Wallet className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Budget &amp; pace</p>
             <h2 className="module-section-title">Burn against entered budgets</h2>
             <p className="module-section-description">
               Direct spending compared with entered budgets and progress. Billing is shown separately.

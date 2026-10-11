@@ -422,6 +422,14 @@ export function RtpRegistryAdvisoryPanel({
         </article>
       ) : null}
 
+      {/* Queue bookkeeping, closed by default (October 10, 2026): which
+          cycles have no recorded queue action, which traces are older than
+          their source, and recent queue activity. Operator detail, kept one
+          click away rather than stacked beside every planner. */}
+      {unrecordedQueueCycles.length > 0 || outpacedQueueCycles.length > 0 || recentQueueActivityCount > 0 ? (
+        <details className="rtp-cycle-more">
+          <summary>Queue history and gaps</summary>
+          <div className="mt-3 space-y-4">
       {unrecordedQueueCycles.length > 0 ? (
         <article className="rounded-[0.75rem] border border-slate-500/20 bg-slate-500/[0.05] p-5 shadow-[0_20px_60px_-48px_rgba(51,65,85,0.28)]">
           <div className="flex items-start justify-between gap-3">
@@ -642,6 +650,9 @@ export function RtpRegistryAdvisoryPanel({
             <p className="mt-2 text-xs text-muted-foreground">Latest action {formatRtpDateTime(latestQueueActionAt)}</p>
           ) : null}
         </article>
+      ) : null}
+          </div>
+        </details>
       ) : null}
     </>
   );

@@ -26,7 +26,7 @@ describe("GrantsFundingNeedEditorSection", () => {
       />
     );
 
-    expect(screen.getByText("Funding need anchor")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /^Anchor funding need for / })).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
         name: /Anchor funding need for Grass Valley Corridor/,

@@ -494,7 +494,6 @@ export function RtpReportDetail({
             ) : null}
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Packet posture</p>
                 <h2 className="module-section-title">Freshness against RTP source</h2>
                 <p className="module-section-description">This compares the latest packet artifact against the current RTP cycle state.</p>
               </div>
@@ -601,7 +600,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Public review loop</p>
                 <h2 className="module-section-title">Live comment-response posture</h2>
                 <p className="module-section-description">Current cycle review readiness, engagement targeting, and moderated public-input basis for this RTP packet.</p>
               </div>
@@ -641,7 +639,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Source drift</p>
                 <h2 className="module-section-title">What changed since this packet was generated</h2>
                 <p className="module-section-description">Explicit comparison between the saved packet snapshot and the current RTP source state.</p>
               </div>
@@ -674,7 +671,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Packet source trace</p>
                 <h2 className="module-section-title">What this packet was built from</h2>
                 <p className="module-section-description">Snapshot of the RTP cycle posture captured at generation time.</p>
               </div>
@@ -758,7 +754,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Sections</p>
                 <h2 className="module-section-title">Packet structure</h2>
                 <p className="module-section-description">Tune packet structure here, then reset back to the current cycle-stage preset when needed.</p>
               </div>
@@ -793,7 +788,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Artifacts</p>
                 <h2 className="module-section-title">Generation history</h2>
                 <p className="module-section-description">Generated packet artifacts attached to this RTP cycle report record.</p>
               </div>
@@ -830,7 +824,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Cycle context</p>
                 <h2 className="module-section-title">RTP cycle source</h2>
                 <p className="module-section-description">The underlying RTP cycle this packet record is representing.</p>
               </div>
@@ -870,7 +863,6 @@ export function RtpReportDetail({
           <article className="module-section-surface">
             <div className="module-section-header">
               <div className="module-section-heading">
-                <p className="module-section-label">Preview</p>
                 <h2 className="module-section-title">Latest HTML packet</h2>
                 <p className="module-section-description">Most recent generated packet artifact preview.</p>
               </div>

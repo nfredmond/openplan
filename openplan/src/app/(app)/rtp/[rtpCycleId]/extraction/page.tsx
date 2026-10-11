@@ -401,7 +401,6 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Document review</p>
               <h1 className="module-section-title">What the plan document says</h1>
               <p className="module-section-description">
                 OpenPlan reads an adopted plan and copies out what it finds, with the page and the
@@ -451,7 +450,6 @@ export default async function RtpExtractionReviewPage({ params }: RouteContext) 
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Waiting for review</p>
               <h2 className="module-section-title">{describeReconciliationRollup(rollup)}</h2>
               <p className="module-section-description">
                 Compared against what this plan already records — by name, by period, and by figure.

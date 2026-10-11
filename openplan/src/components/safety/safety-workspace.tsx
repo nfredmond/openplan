@@ -392,6 +392,14 @@ export function SafetyWorkspace({
   const [filters, setFilters] = useState<CrashFilterSelection>(CRASH_FILTER_DEFAULTS);
   /** The collision whose detail card is open, by feature id. */
   const [selectedCrashId, setSelectedCrashId] = useState<string | null>(null);
+  // The panel's three groups (October 10, 2026 overhaul): what the crashes
+  // say, which layers draw under them, and what was imported. Every caveat
+  // lives in the default group, so none can be hidden behind a closed tab.
+  const [panelTab, setPanelTab] = useState<"crashes" | "layers" | "history">("crashes");
+  // A collision clicked on the map is read in the Crashes group.
+  useEffect(() => {
+    if (selectedCrashId) setPanelTab("crashes");
+  }, [selectedCrashId]);
   const [loading, setLoading] = useState(false);
   const [ingesting, setIngesting] = useState(false);
   const [ingestElapsedSeconds, setIngestElapsedSeconds] = useState(0);
@@ -1207,19 +1215,56 @@ export function SafetyWorkspace({
             ) : null}
           </header>
 
+          <div role="tablist" aria-label="Safety panel" className="safety-panel-tabs">
+            {(
+              [
+                ["crashes", "Crashes"],
+                ["layers", "Layers"],
+                ...(history.length > 0 ? ([["history", "Imports"]] as const) : []),
+              ] as const
+            ).map(([id, label]) => (
+              <button
+                key={id}
+                type="button"
+                role="tab"
+                id={`safety-tab-${id}`}
+                aria-controls={`safety-panel-${id}`}
+                aria-selected={panelTab === id}
+                onClick={() => setPanelTab(id)}
+                className="safety-panel-tab"
+              >
+                {label}
+              </button>
+            ))}
+          </div>
+
           {/* `overflow-y-auto` only from `lg`: on a phone this column is part of
               the one page scroll, and a nested scroll region inside it is how a
               panel ends up with a 24px window. */}
           <div className="flex min-h-0 flex-1 flex-col gap-3 p-3 lg:overflow-y-auto">
             <CrashSeverityKey className="flex flex-wrap items-center gap-x-3 gap-y-1 text-label text-muted-foreground lg:hidden" />
 
-            {selectedCollisionCard}
+            {/* Kept mounted while closed: these switches drive layers on the
+                map beside the panel, and unmounting them would drop the
+                layers. */}
+            <div
+              role="tabpanel"
+              id="safety-panel-layers"
+              aria-labelledby="safety-tab-layers"
+              hidden={panelTab !== "layers"}
+              className="flex flex-col gap-3"
+            >
+              <SafetyWorkspaceLayersPanel />
+            </div>
 
-            {/* The agency's own uploaded layers, driving the map beside this
-                column. It used to be the shell's panel, docked at the right
-                edge of the window, driving the backdrop behind the page — see
-                the component's header for what that measured. */}
-            <SafetyWorkspaceLayersPanel />
+            <div
+              role="tabpanel"
+              id="safety-panel-crashes"
+              aria-labelledby="safety-tab-crashes"
+              hidden={panelTab !== "crashes"}
+              className="flex flex-col gap-3"
+            >
+            {selectedCollisionCard}
 
       {/* Study area — the app's single geography front door, reused, not reinvented. */}
       <section className="rounded-lg border p-4" aria-label="Study area">
@@ -1282,6 +1327,24 @@ export function SafetyWorkspace({
           </p>
         )}
       </section>
+
+      {/* Controls generated from the one facet declaration in
+          `crash-filters.ts`, so a facet cannot be filterable in the API and
+          unreachable here. Facets the active source has no field for render
+          disabled with the reason rather than returning an empty list. */}
+      <CrashFilterPanel
+        selection={filters}
+        onChange={setFilters}
+        counts={facetCounts}
+        dimensionCoverage={activeDimensionCoverage}
+        severityCompleteness={activeCompleteness}
+        sourceConfigured={sourceConfigured}
+        noSourceMessage={
+          bbox
+            ? "No crash source has answered for this study area yet, so there is nothing to filter. Use the retrieval button at the top of the page; if no source covers this area, OpenPlan will say so rather than showing an empty map."
+            : "Filters appear once a study area is set and a source has answered for it. Controls over an empty record would return nothing, and nothing would read as a finding."
+        }
+      />
 
       {/* Coverage banner — source, attribution, and what the data does NOT establish. */}
       <section className="rounded-lg border p-4 text-sm" aria-label="Crash data coverage">
@@ -1580,23 +1643,6 @@ export function SafetyWorkspace({
         )}
       </section>
 
-      {/* Controls generated from the one facet declaration in
-          `crash-filters.ts`, so a facet cannot be filterable in the API and
-          unreachable here. Facets the active source has no field for render
-          disabled with the reason rather than returning an empty list. */}
-      <CrashFilterPanel
-        selection={filters}
-        onChange={setFilters}
-        counts={facetCounts}
-        dimensionCoverage={activeDimensionCoverage}
-        severityCompleteness={activeCompleteness}
-        sourceConfigured={sourceConfigured}
-        noSourceMessage={
-          bbox
-            ? "No crash source has answered for this study area yet, so there is nothing to filter. Use the retrieval button at the top of the page; if no source covers this area, OpenPlan will say so rather than showing an empty map."
-            : "Filters appear once a study area is set and a source has answered for it. Controls over an empty record would return nothing, and nothing would read as a finding."
-        }
-      />
 
       {/* The severity bands never account for these, so the count is stated
           rather than left as the difference between two numbers.
@@ -1617,7 +1663,42 @@ export function SafetyWorkspace({
       {error && <p className="text-sm text-destructive">{error}</p>}
       {response?.custodyWarning && <p role="alert" className="text-sm text-destructive">{response.custodyWarning}</p>}
 
+
+      <p className="text-xs text-muted-foreground">
+        {loading
+          ? "Loading crashes…"
+          : liveRead
+            ? /* Counted off the LIVE points, and against the source's own
+                 mappable total rather than the stored query's — mixing the two
+                 would describe one dataset with another's denominator. */
+              `Showing ${visibleFeatures.length.toLocaleString("en-US")} of ${liveRead.geocodedCount.toLocaleString("en-US")} mappable crashes from this live read, matching these filters.`
+            : response
+              ? /* "AT LEAST" WHEN THE DENOMINATOR IS A FALLBACK. If the count
+                   query failed, the route falls back to the number of rows it
+                   fetched — which is capped — so stating it flat would claim the
+                   study area holds exactly as many crashes as the map drew. */
+                `Showing ${response.returnedCount.toLocaleString("en-US")} of ${
+                  response.matchedCountIsExact === false ? "at least " : ""
+                }${response.matchedCount.toLocaleString("en-US")} crashes matching these filters in view.`
+              : "No crashes loaded."}{" "}
+        {/* Rows the query matched and could not render — an unusable coordinate
+            pair or a severity outside the vocabulary. Named separately from the
+            display cap, because "there are more beyond the cap" sends a planner
+            to widen the view while "these are in the table and undrawable"
+            sends them to the record. */}
+        {response && response.undrawableCount > 0
+          ? `${response.undrawableCount.toLocaleString("en-US")} matching ${
+              response.undrawableCount === 1 ? "crash" : "crashes"
+            } could not be drawn because the stored coordinates or severity value were unusable, so ${
+              response.undrawableCount === 1 ? "it is" : "they are"
+            } missing from the map rather than absent from the record. `
+          : ""}
+        {SAFETY_CRASH_DATA_CAVEAT}
+      </p>
+            </div>
+
       {history.length > 0 && (
+        <div role="tabpanel" id="safety-panel-history" aria-labelledby="safety-tab-history" hidden={panelTab !== "history"}>
         <section className="rounded-lg border p-4" aria-label="Import history">
           <h2 className="mb-2 text-sm font-medium">What you have imported</h2>
           <ul className="flex flex-col gap-2 text-sm">
@@ -1678,39 +1759,8 @@ export function SafetyWorkspace({
             ))}
           </ul>
         </section>
+        </div>
       )}
-
-      <p className="text-xs text-muted-foreground">
-        {loading
-          ? "Loading crashes…"
-          : liveRead
-            ? /* Counted off the LIVE points, and against the source's own
-                 mappable total rather than the stored query's — mixing the two
-                 would describe one dataset with another's denominator. */
-              `Showing ${visibleFeatures.length.toLocaleString("en-US")} of ${liveRead.geocodedCount.toLocaleString("en-US")} mappable crashes from this live read, matching these filters.`
-            : response
-              ? /* "AT LEAST" WHEN THE DENOMINATOR IS A FALLBACK. If the count
-                   query failed, the route falls back to the number of rows it
-                   fetched — which is capped — so stating it flat would claim the
-                   study area holds exactly as many crashes as the map drew. */
-                `Showing ${response.returnedCount.toLocaleString("en-US")} of ${
-                  response.matchedCountIsExact === false ? "at least " : ""
-                }${response.matchedCount.toLocaleString("en-US")} crashes matching these filters in view.`
-              : "No crashes loaded."}{" "}
-        {/* Rows the query matched and could not render — an unusable coordinate
-            pair or a severity outside the vocabulary. Named separately from the
-            display cap, because "there are more beyond the cap" sends a planner
-            to widen the view while "these are in the table and undrawable"
-            sends them to the record. */}
-        {response && response.undrawableCount > 0
-          ? `${response.undrawableCount.toLocaleString("en-US")} matching ${
-              response.undrawableCount === 1 ? "crash" : "crashes"
-            } could not be drawn because the stored coordinates or severity value were unusable, so ${
-              response.undrawableCount === 1 ? "it is" : "they are"
-            } missing from the map rather than absent from the record. `
-          : ""}
-        {SAFETY_CRASH_DATA_CAVEAT}
-      </p>
           </div>
 
           {/* THE EXPORT IS PINNED TO THE BOTTOM OF THE SIDEBAR, not left at the
