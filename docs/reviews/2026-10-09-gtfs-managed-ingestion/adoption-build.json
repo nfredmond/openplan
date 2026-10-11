@@ -1,0 +1,20 @@
+{
+  "exitCode": 0,
+  "wallSeconds": 235.354,
+  "sourceHead": "f38141f2add9e3afaf7781287a635bcfab2a269d",
+  "buildId": "dZmpB54A7m8SyF8jZYOzs",
+  "memoryMaxBytes": 10737418240,
+  "memoryHighBytes": 8589934592,
+  "swapMaxBytes": 0,
+  "cpuQuotaPercent": 100,
+  "nodeHeapMiB": 6144,
+  "workerCount": 1,
+  "largestObservedPeakBytes": 6992461824,
+  "journalResources": [
+    "openplan-gtfs-adoption-production-build-20261011-01.service: Consumed 3min 55.009s CPU time over 3min 55.406s wall clock time, 6.5G memory peak."
+  ],
+  "staticPages": 140,
+  "buildCache": "Fresh checkout without previous .next output. npm cache reused for locked dependencies.",
+  "launcherSha256": "b14108448b6f0e789331b2f917b9a51d9b9eec23fab943d2b94d7c2a946a54c9",
+  "childWrapperSha256": "0c5ae6796a86d4166b2007ba300a93366888c900470ae6830dcecfb3121ff3c7"
+}

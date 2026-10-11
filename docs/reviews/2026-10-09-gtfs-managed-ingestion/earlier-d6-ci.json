@@ -1,0 +1,40 @@
+{
+  "runId": "38125205329",
+  "sourceHead": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "ops scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "modeling scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "worker (python unit tests)",
+      "status": "completed",
+      "conclusion": "success"
+    },
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success"
+    }
+  ],
+  "qaSummary": [
+    "verify (qa gate)\tQA gate\t2026-10-11T08:53:23.8925340Z ^[[2m Test Files ^[[22m ^[[1m^[[32m1578 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m97 skipped^[[39m^[[90m (1675)^[[39m",
+    "verify (qa gate)\tQA gate\t2026-10-11T08:53:23.9087060Z ^[[2m      Tests ^[[22m ^[[1m^[[32m21765 passed^[[39m^[[22m^[[2m | ^[[22m^[[33m1603 skipped^[[39m^[[90m (23368)^[[39m",
+    "verify (qa gate)\tQA gate\t2026-10-11T08:53:23.9105169Z ^[[2m   Duration ^[[22m 1032.70s^[[2m (transform 47.94s, setup 76.43s, import 296.22s, tests 1628.37s, environment 838.83s)^[[22m"
+  ],
+  "logSha256": "94372987ec0975ad51ca25723e8bf75663c5eb768f77c1c2d1bfc01a360b350d",
+  "boundary": "Earlier d6 source only. Later 40b8 and f381 checks remain separate."
+}

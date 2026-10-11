@@ -550,3 +550,16 @@ The original source worktree joins newer main at 40b8c6827; prior frozen proofs
 keep their original source identities. Scoped TypeScript passes. Corrected-source build/browser
 verification, current CI, hosted schema-first coordination, integration and
 release remain pending. No hosted deployment, adoption or scientific claim changes.
+
+## Joined-schema build and copy counter correction, October 11
+
+[Frozen f381 production and preview upgrade](REGISTRY_ADOPTION.md) pass the
+235.354-second build and exact additive M32 application/repeat at the isolated
+recovered installation. The selected regression passes 2,915 tests and skips
+45, but fails its planner-copy equality because the corrected sentence lowers
+`ingest` from eight occurrences to seven. The guard now retains seven. Four
+focused language tests and three intended broken cases pass with source/test
+bytes restored. The failed broader suite remains recorded. Earlier d6 full
+GitHub CI and live RLS pass at their own source. Corrected-counter broader
+checks, identified browser review, later CI, archive, hosted schema-first
+disposition, main integration and release remain open.

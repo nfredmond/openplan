@@ -53,3 +53,40 @@ The frozen d6 checkout and its proof remain unchanged. Its evidence does not
 establish acceptance of that later hosted-main join. Hosted GTFS migrations,
 schema-first coordination, current CI, main integration and release remain
 separate unfinished boundaries.
+
+## Joined build, upgrade and stricter language guard
+
+[Frozen f381 production](adoption-build.json) passes with actual exit zero in
+235.354 seconds. Its fresh build output has 140 pages and ID
+`dZmpB54A7m8SyF8jZYOzs`. One worker, a 6 GiB heap and a 10 GiB service cap
+produce a rounded 6.5G final peak. The largest sampled peak is 6,992,461,824 bytes.
+The build uses its own locked dependencies and no previous `.next` output.
+
+[The selected recovered-preview upgrade](adoption-preview-upgrade.json) applies
+only reviewed M32 SQL with SHA-256
+`dc26f3316ed88dcd480990fd76f60977d1e76d29bd475e8ee14d711a42af27b7`.
+Default CLI refuses the older missing file without changing rows or history.
+Explicit `--include-all` reaches exactly 405 migrations; a repeat changes
+nothing. Checked project, model and transit table counts/hashes stay unchanged,
+and the two exact receipt functions retain `extra_float_digits=3`.
+[33 pure scope and preservation controls](adoption-preview-upgrade-controls.json)
+pass. The actual upgrade service peaks at a rounded 214M under 1 GiB.
+This does not apply any migration to hosted services.
+
+[The broader f381 regression](adoption-join-regression-failure.json) passes
+2,915 tests, skips 45 and fails one planner-language equality assertion. The
+wording correction removes one `ingest` occurrence, so the actual count falls
+from eight to seven. The retained baseline still says eight. The correction
+tightens that one counter to seven; it does not change detection or runtime
+application code. [Four focused language tests and controls](registry-copy-controls.json)
+pass for baseline, harmless comments and restored bytes. Reintroducing the old
+sentence, restoring the stale counter or setting an incorrect lower counter
+each fails that equality assertion. Lint passes. The original broader failure
+remains failed evidence; no complete passing f381 integration is claimed.
+
+Earlier d6 [full GitHub CI](earlier-d6-ci.json) now passes all five jobs,
+including the executed shuffled suite. Its QA gate passes 21,765 tests and
+skips 1,603. [Separate live RLS](earlier-d6-rls.json) passes 104 files and
+1,499 tests with 125 skipped. Those earlier source results do not establish
+later-source CI acceptance. The corrected visible journey, later CI, full
+archive, schema-first hosted disposition and release remain unfinished.

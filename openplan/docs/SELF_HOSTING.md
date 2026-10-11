@@ -30,8 +30,10 @@ public address does not change the CLI stack's status.
 The free reference path uses an existing Linux computer and
 [Docker Engine](https://docs.docker.com/engine/). Docker Desktop has separate
 terms: [government entities require a paid subscription](https://docs.docker.com/subscription-billing/desktop-license/).
-No paid provider is provisioned by these instructions. Provider-free cartography
-is not implemented: current map surfaces use Mapbox.
+No paid provider is provisioned by these instructions. Public engagement maps
+can use a configured MapLibre style without a Mapbox key. Other map surfaces
+still use Mapbox. See the public-map configuration below. This does not establish
+a complete no-egress installation.
 
 OpenPlan's target remains core planning work throughout all 50 states and DC,
 with California the deepest implementation and separately validated AequilibraE
@@ -56,7 +58,7 @@ configuration.
 |---|---|
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY` | Point all components at the intended database. Confirm a saved project survives sign-out/sign-in and that a second workspace cannot read it. Local credentials belong only to the selected local instance. |
 | `NEXT_PUBLIC_SITE_URL` | Canonical origin. Match Supabase Auth Site URL and allowed callback/reset redirects. The checked-in local Auth configuration uses `http://127.0.0.1:3000`; use one consistent origin and test actual links. |
-| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for current map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. Check the visible map and browser console, not token shape alone. |
+| `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for staff map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. Public engagement maps can instead use the MapLibre configuration below. Check the visible map and browser console, not token shape alone. |
 | `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | High-entropy secret for stored per-workspace integration keys. Generate securely, preserve with recovery configuration, and restrict access. Changing it invalidates existing encrypted keys. |
 | `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |

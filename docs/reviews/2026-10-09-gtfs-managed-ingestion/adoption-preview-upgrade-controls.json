@@ -1,0 +1,204 @@
+{
+  "driverSha256": "bd08e4c66677427a280c5e9c3f365b4a86a51ae975f4b0703c3cbaea816a6e54",
+  "controls": [
+    {
+      "name": "baseline",
+      "scenario": "baseline",
+      "result": "pass",
+      "databaseWrites": 0
+    },
+    {
+      "name": "harmless",
+      "scenario": "harmless",
+      "result": "pass",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected head",
+      "scenario": "head",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted head",
+      "scenario": "head",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected dirty",
+      "scenario": "dirty",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted dirty",
+      "scenario": "dirty",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected id",
+      "scenario": "id",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted id",
+      "scenario": "id",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected name",
+      "scenario": "name",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted name",
+      "scenario": "name",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected project",
+      "scenario": "project",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted project",
+      "scenario": "project",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected database",
+      "scenario": "database",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted database",
+      "scenario": "database",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected api",
+      "scenario": "api",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted api",
+      "scenario": "api",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected sql",
+      "scenario": "sql",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted sql",
+      "scenario": "sql",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected missing",
+      "scenario": "missing",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted missing",
+      "scenario": "missing",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected unexpected",
+      "scenario": "unexpected",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted unexpected",
+      "scenario": "unexpected",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected count",
+      "scenario": "count",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted count",
+      "scenario": "count",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected rows",
+      "scenario": "rows",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted rows",
+      "scenario": "rows",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected history",
+      "scenario": "history",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted history",
+      "scenario": "history",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected precision",
+      "scenario": "precision",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted precision",
+      "scenario": "precision",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "protected function-identity",
+      "scenario": "function-identity",
+      "result": "refused",
+      "databaseWrites": 0
+    },
+    {
+      "name": "omitted function-identity",
+      "scenario": "function-identity",
+      "result": "intended oracle failure",
+      "databaseWrites": 0
+    },
+    {
+      "name": "restored",
+      "scenario": "restored",
+      "result": "pass",
+      "databaseWrites": 0
+    }
+  ],
+  "boundary": "Pure scope/preservation fixtures and copied driver mutations. No database, CLI or Docker write acceptance."
+}
