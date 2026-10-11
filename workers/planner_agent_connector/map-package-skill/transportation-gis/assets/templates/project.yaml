@@ -1,0 +1,51 @@
+# Map package specification. One file describes the whole deliverable.
+# Full reference: references/spec.md in the transportation-gis skill.
+
+project:
+  id: my_project                 # short, lowercase; becomes file and folder names
+  title: Project Title
+  client: Agency Name            # appears on every page; write it the way the agency does
+  prepared_by: ""                # optional; leave empty when the agency is the author
+  status: draft                  # draft | final  (draft prints on each page)
+  date: 2026-01-01
+  crs: auto                      # auto picks the State Plane zone (US feet); or EPSG:2226
+
+study_area:
+  place: "City, ST"              # or  file: inputs/boundary.geojson   or  bbox: [west, south, east, north]
+  # buffer_mi: 0.25              # widen a corridor line or a small site into an area
+  legend_label: City limit
+
+layers:
+  # One entry per data layer. `source` is one of:
+  #   file: inputs/x.geojson (any GDAL format; CSV with x: and y: columns)
+  #   arcgis: <FeatureServer or MapServer layer URL>
+  #   osm: bikeways | trails | schools | transit_stops | signals | crossings | parks | roads | hospitals | libraries
+  #   tiger: <TIGERweb layer name>      acs: {...}      gtfs: <zip path or URL>
+  # The two layers below use OpenStreetMap so the starter builds anywhere. Replace them with agency data
+  # (references/data-sources.md) before anything goes to a client, or keep the note that they are unverified.
+  bikeways:
+    title: Existing bikeways
+    source: {osm: bikeways}
+    style: {preset: bikeway_class}
+  schools:
+    title: Schools
+    source: {osm: schools}
+    style: {preset: schools}
+    label: {field: name, size: 6.8, weight: medium, wrap: 16}
+
+maps:
+  - id: fig01_study_area
+    figure: Figure 1
+    title: Study Area
+    subtitle: ""
+    page: letter-landscape       # letter | tabloid | arch-d, -landscape or -portrait; figure-6.5x4.5 for a report figure
+    layers: [schools, bikeways]  # top layer first, like a legend
+    notes: "Bikeways and schools are drawn from OpenStreetMap and have not been checked against agency records."
+    alt: "[ALT TEXT: one sentence that says what the map shows]"
+
+# atlases:
+#   - id: mapbook
+#     title: Map Book
+#     base_map: fig01_study_area
+#     page: tabloid-landscape
+#     coverage: {grid: {cols: 2, rows: 2}}     # or {layer: districts, name_field: NAME} or {strip: {layer: corridor, length_mi: 0.5}}

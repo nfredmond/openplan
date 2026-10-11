@@ -1,0 +1,17 @@
+# QGIS project
+
+`{{ p.id }}.qgz` is the project that produced the delivered figures. Built and exported with QGIS {{ qgis_version }}.
+
+1. Install the fonts in `../fonts/inter`.
+2. Open `{{ p.id }}.qgz` in QGIS 3.34 or later. Keep the package folder whole; the project uses relative paths.
+3. Project > Layouts lists one print layout per figure{% if atlases %} and one atlas layout per map book{% endif %}. View > Map themes switches the main window between figures.
+
+| File | Purpose |
+|---|---|
+| `{{ p.id }}.qgz` | Project: layers, symbols, labels, map themes, print layouts |
+| `build_qgis_project.py` | Rebuilds the project and all exports from `../spec/map_package.json`. Needs only QGIS |
+| `Rebuild_Maps_Processing.py` | The same rebuild as a QGIS Processing tool (Processing > Toolbox > Scripts > Add Script to Toolbox) |
+| `styles/*.qml` | One style file per layer per figure |
+| `layouts/*.qpt` | Layout templates |
+| `qgis_build_report.json` | What the build produced |
+| `AGENT_PROMPT.md` | Checks and rebuild steps for a person or AI agent |

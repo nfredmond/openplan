@@ -50,6 +50,7 @@
  */
 
 import { RTP_PORTFOLIO_ROLE_OPTIONS } from "@/lib/rtp/catalog";
+import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 /**
  * The six target kinds, in the same order and spelling as the CHECK on
@@ -543,7 +544,7 @@ export const RTP_EXTRACTION_MODEL_ENV = "OPENPLAN_RTP_EXTRACTION_MODEL";
  * the whole failure mode. The verifier catches it, but every catch is a figure
  * the planner does not get.
  */
-export const DEFAULT_RTP_EXTRACTION_MODEL_ID = "claude-opus-4-8";
+export const DEFAULT_RTP_EXTRACTION_MODEL_ID = defaultClaudeModelId("orchestrator");
 
 export function resolveRtpExtractionModelId(
   env: Record<string, string | undefined> = process.env
