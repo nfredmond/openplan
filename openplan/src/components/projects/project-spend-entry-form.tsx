@@ -82,7 +82,7 @@ export function ProjectSpendEntryForm({
           <ReceiptText className="h-4 w-4" />
         </span>
         <div>
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Spend ledger</p>
+          <p className="text-label font-semibold text-muted-foreground">Spend ledger</p>
           <h3 className="text-sm font-semibold text-foreground">Record project spend</h3>
           <p className="mt-1 text-sm text-muted-foreground">
             Direct costs such as subconsultant charges or expenses. Attributing a deliverable is optional.
@@ -93,17 +93,17 @@ export function ProjectSpendEntryForm({
       <form className="mt-4 space-y-3" onSubmit={handleSubmit}>
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor={`${fieldId}-amount`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Amount</label>
+            <label htmlFor={`${fieldId}-amount`} className="text-label font-semibold text-muted-foreground">Amount</label>
             <Input id={`${fieldId}-amount`} value={amount} onChange={(event) => setAmount(event.target.value)} inputMode="decimal" placeholder="1250.00" required />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor={`${fieldId}-entry-date`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Entry date</label>
+            <label htmlFor={`${fieldId}-entry-date`} className="text-label font-semibold text-muted-foreground">Entry date</label>
             <Input id={`${fieldId}-entry-date`} type="date" value={entryDate} onChange={(event) => setEntryDate(event.target.value)} />
           </div>
         </div>
 
         <div className="space-y-1.5">
-          <label htmlFor={`${fieldId}-description`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Description</label>
+          <label htmlFor={`${fieldId}-description`} className="text-label font-semibold text-muted-foreground">Description</label>
           <Input
             id={`${fieldId}-description`}
             value={description}
@@ -115,11 +115,11 @@ export function ProjectSpendEntryForm({
 
         <div className="grid gap-3 md:grid-cols-2">
           <div className="space-y-1.5">
-            <label htmlFor={`${fieldId}-vendor`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Vendor</label>
+            <label htmlFor={`${fieldId}-vendor`} className="text-label font-semibold text-muted-foreground">Vendor</label>
             <Input id={`${fieldId}-vendor`} value={vendorLabel} onChange={(event) => setVendorLabel(event.target.value)} placeholder="Optional vendor or subconsultant" />
           </div>
           <div className="space-y-1.5">
-            <label htmlFor={`${fieldId}-deliverable`} className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Deliverable</label>
+            <label htmlFor={`${fieldId}-deliverable`} className="text-label font-semibold text-muted-foreground">Deliverable</label>
             <select
               id={`${fieldId}-deliverable`}
               className="flex h-10 w-full rounded-xl border border-input bg-background px-3 text-sm shadow-xs outline-none focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35"

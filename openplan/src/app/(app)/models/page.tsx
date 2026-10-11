@@ -592,7 +592,7 @@ export default async function ModelsPage({
               Filter by status, project, or model family to find the ones that need attention.
             </p>
           </div>
-          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
             <FolderKanban className="h-3.5 w-3.5" />
             {modelsReadFailed ? "Total unavailable" : `${models.length} total`}
           </span>

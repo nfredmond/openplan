@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Moon, Palette, Sun } from "lucide-react";
+import { Check, Monitor, Moon, Palette, Sun } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
 import { useTheme } from "@/components/theme-provider";
@@ -31,12 +31,18 @@ import type { PaletteDefinition } from "@/lib/theme/palettes";
  * window widths. Each button keeps an accessible name.
  */
 
+const MODE_NAMES = {
+  system: "Match this device",
+  light: "Light mode",
+  dark: "Dark mode",
+} as const;
+
 function swatchFor(palette: PaletteDefinition, mode: "light" | "dark") {
   return mode === "dark" ? palette.swatch.dark : palette.swatch.light;
 }
 
 export function ThemeControls({ className = "" }: { className?: string }) {
-  const { theme, setTheme, palette, palettes, setPalette } = useTheme();
+  const { theme, resolvedTheme, setTheme, palette, palettes, setPalette } = useTheme();
   const [mounted, setMounted] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const paletteRef = useRef<HTMLDivElement | null>(null);
@@ -80,16 +86,17 @@ export function ThemeControls({ className = "" }: { className?: string }) {
         aria-label="Colour mode"
         className="flex items-center gap-1 rounded-xl border border-border/70 bg-background/70 p-1"
       >
-        {(["light", "dark"] as const).map((mode) => {
+        {(["system", "light", "dark"] as const).map((mode) => {
           const isCurrent = theme === mode;
+          const name = MODE_NAMES[mode];
           return (
             <button
               key={mode}
               type="button"
               onClick={() => setTheme(mode)}
               aria-pressed={isCurrent}
-              title={mode === "light" ? "Light mode" : "Dark mode"}
-              aria-label={mode === "light" ? "Light mode" : "Dark mode"}
+              title={name}
+              aria-label={name}
               data-testid={`theme-mode-${mode}`}
               className={`flex items-center justify-center rounded-lg px-2.5 py-1.5 transition-colors ${
                 isCurrent
@@ -97,7 +104,9 @@ export function ThemeControls({ className = "" }: { className?: string }) {
                   : "text-muted-foreground hover:text-foreground"
               }`}
             >
-              {mode === "light" ? (
+              {mode === "system" ? (
+                <Monitor className="h-4 w-4" strokeWidth={1.9} />
+              ) : mode === "light" ? (
                 <Sun className="h-4 w-4" strokeWidth={1.9} />
               ) : (
                 <Moon className="h-4 w-4" strokeWidth={1.9} />
@@ -154,7 +163,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
           <span
             aria-hidden="true"
             className="h-4 w-4 shrink-0 rounded-full border border-border/70"
-            style={{ background: swatchFor(activePalette, theme).accent }}
+            style={{ background: swatchFor(activePalette, resolvedTheme).accent }}
           />
         </button>
 
@@ -166,7 +175,7 @@ export function ThemeControls({ className = "" }: { className?: string }) {
             className="absolute right-0 top-[calc(100%+0.5rem)] z-50 w-64 rounded-xl border border-border/70 bg-popover p-1.5 shadow-[0_24px_48px_rgba(0,0,0,0.22)]"
           >
             {palettes.map((entry) => {
-              const swatch = swatchFor(entry, theme);
+              const swatch = swatchFor(entry, resolvedTheme);
               const isCurrent = entry.id === palette;
               return (
                 <button

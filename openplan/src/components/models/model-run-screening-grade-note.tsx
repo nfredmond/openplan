@@ -190,7 +190,7 @@ export function ModelRunScreeningGradeNote({
 
         {state.status === "loaded" ? (
           <div className="space-y-2 text-xs leading-relaxed text-muted-foreground">
-            <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
+            <p className="text-label font-semibold text-foreground/70">
               This run&apos;s own figures
             </p>
 

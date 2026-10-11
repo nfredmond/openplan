@@ -10,13 +10,18 @@ import {
 } from "@/lib/theme/palettes";
 
 type OpenPlanTheme = "light" | "dark";
-type SetThemeInput = OpenPlanTheme | ((current: OpenPlanTheme) => OpenPlanTheme);
+/**
+ * What the reader chose. "system" follows the device setting and is the
+ * default (decision D3, October 1, 2026); a stored "light" or "dark" is kept.
+ */
+type ThemeChoice = OpenPlanTheme | "system";
+type SetThemeInput = ThemeChoice | ((current: ThemeChoice) => ThemeChoice);
 type SetPaletteInput = PaletteId | ((current: PaletteId) => PaletteId);
 
 type ThemeContextValue = {
-  theme: OpenPlanTheme;
+  theme: ThemeChoice;
   resolvedTheme: OpenPlanTheme;
-  themes: OpenPlanTheme[];
+  themes: ThemeChoice[];
   setTheme: (theme: SetThemeInput) => void;
   /**
    * The colour palette, which is ORTHOGONAL to light/dark. Each palette
@@ -30,12 +35,12 @@ type ThemeContextValue = {
 
 type ThemeProviderProps = {
   children: ReactNode;
-  defaultTheme?: OpenPlanTheme;
+  defaultTheme?: ThemeChoice;
   storageKey?: string;
   paletteStorageKey?: string;
 };
 
-const DEFAULT_THEME: OpenPlanTheme = "dark";
+const DEFAULT_THEME: ThemeChoice = "system";
 const DEFAULT_STORAGE_KEY = "theme";
 /**
  * A SEPARATE key from the theme, because they are separate choices. Packing
@@ -44,11 +49,11 @@ const DEFAULT_STORAGE_KEY = "theme";
  * together.
  */
 const DEFAULT_PALETTE_STORAGE_KEY = "theme-palette";
-const THEMES: OpenPlanTheme[] = ["light", "dark"];
+const THEMES: ThemeChoice[] = ["system", "light", "dark"];
 
 const ThemeContext = createContext<ThemeContextValue>({
   theme: DEFAULT_THEME,
-  resolvedTheme: DEFAULT_THEME,
+  resolvedTheme: "light",
   themes: THEMES,
   setTheme: () => {},
   palette: DEFAULT_PALETTE,
@@ -56,11 +61,22 @@ const ThemeContext = createContext<ThemeContextValue>({
   setPalette: () => {},
 });
 
-function normalizeTheme(value: string | null | undefined, fallback: OpenPlanTheme): OpenPlanTheme {
-  return value === "light" || value === "dark" ? value : fallback;
+function normalizeTheme(value: string | null | undefined, fallback: ThemeChoice): ThemeChoice {
+  return value === "light" || value === "dark" || value === "system" ? value : fallback;
 }
 
-function storedTheme(storageKey: string, fallback: OpenPlanTheme): OpenPlanTheme {
+const DARK_QUERY = "(prefers-color-scheme: dark)";
+
+function deviceTheme(): OpenPlanTheme {
+  if (typeof window === "undefined" || typeof window.matchMedia !== "function") return "light";
+  return window.matchMedia(DARK_QUERY).matches ? "dark" : "light";
+}
+
+function resolveTheme(choice: ThemeChoice): OpenPlanTheme {
+  return choice === "system" ? deviceTheme() : choice;
+}
+
+function storedTheme(storageKey: string, fallback: ThemeChoice): ThemeChoice {
   if (typeof window === "undefined") return fallback;
   try {
     return normalizeTheme(window.localStorage.getItem(storageKey), fallback);
@@ -104,10 +120,13 @@ function persistPalette(storageKey: string, palette: PaletteId) {
   }
 }
 
-function persistTheme(storageKey: string, theme: OpenPlanTheme) {
+function persistTheme(storageKey: string, theme: ThemeChoice) {
   if (typeof window === "undefined") return;
   try {
-    window.localStorage.setItem(storageKey, theme);
+    // "system" is stored as the absence of a choice, so the pre-paint script
+    // in layout.tsx needs no third branch to follow the device.
+    if (theme === "system") window.localStorage.removeItem(storageKey);
+    else window.localStorage.setItem(storageKey, theme);
   } catch {
     // Storage can be unavailable in private browsing or locked-down embeds.
   }
@@ -132,7 +151,8 @@ export function ThemeProvider({
     nothing is applied to the document until the stored values are adopted,
     which keeps the first effect from flashing the default over them.
   */
-  const [theme, setThemeState] = useState<OpenPlanTheme>(fallbackTheme);
+  const [theme, setThemeState] = useState<ThemeChoice>(fallbackTheme);
+  const [resolvedTheme, setResolvedTheme] = useState<OpenPlanTheme>("light");
   const [palette, setPaletteState] = useState<PaletteId>(DEFAULT_PALETTE);
   const [adopted, setAdopted] = useState(false);
   const themeRef = useRef(theme);
@@ -153,7 +173,21 @@ export function ThemeProvider({
   useEffect(() => {
     if (!adopted) return;
     themeRef.current = theme;
-    applyTheme(theme);
+    const resolved = resolveTheme(theme);
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setResolvedTheme(resolved);
+    applyTheme(resolved);
+    if (theme !== "system" || typeof window.matchMedia !== "function") return;
+    // Following the device: a change of the operating system setting while
+    // the page is open repaints it, as it would any native application.
+    const query = window.matchMedia(DARK_QUERY);
+    const follow = () => {
+      const next = query.matches ? "dark" : "light";
+      setResolvedTheme(next);
+      applyTheme(next);
+    };
+    query.addEventListener("change", follow);
+    return () => query.removeEventListener("change", follow);
   }, [adopted, theme]);
 
   useEffect(() => {
@@ -165,10 +199,9 @@ export function ThemeProvider({
   useEffect(() => {
     function handleStorage(event: StorageEvent) {
       if (event.key === storageKey) {
-        const nextTheme = normalizeTheme(event.newValue, fallbackTheme);
+        const nextTheme = normalizeTheme(event.newValue, "system");
         themeRef.current = nextTheme;
         setThemeState(nextTheme);
-        applyTheme(nextTheme);
         return;
       }
       // The palette follows the same cross-tab contract as the mode: two open
@@ -195,7 +228,6 @@ export function ThemeProvider({
       themeRef.current = nextTheme;
       setThemeState(nextTheme);
       persistTheme(storageKey, nextTheme);
-      applyTheme(nextTheme);
     },
     [fallbackTheme, storageKey]
   );
@@ -216,14 +248,14 @@ export function ThemeProvider({
   const value = useMemo<ThemeContextValue>(
     () => ({
       theme,
-      resolvedTheme: theme,
+      resolvedTheme,
       themes: THEMES,
       setTheme,
       palette,
       palettes: PALETTES,
       setPalette,
     }),
-    [palette, setPalette, setTheme, theme]
+    [palette, resolvedTheme, setPalette, setTheme, theme]
   );
 
   return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;

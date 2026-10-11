@@ -350,7 +350,7 @@ function ManagedRunPromotionControl({
     <div className="mt-3 rounded-[0.5rem] border border-border/70 bg-background/70 p-3">
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Promotion / reassignment</p>
+          <p className="text-xs font-semibold text-muted-foreground">Promotion / reassignment</p>
           <p className="mt-1 text-sm text-muted-foreground">
             {currentLabel
               ? `Currently attached to ${currentLabel}. Reassign if the evidence belongs to a different scenario entry.`
@@ -1787,7 +1787,7 @@ function ModelRunStagingAndArtifacts({
         >
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-xs font-semibold text-muted-foreground">
                 Rules v{String(assessment.rules_version ?? "unknown")} · scientific validation
               </p>
               <h4 className="mt-1 font-semibold text-foreground">Observed-count comparability assessment</h4>

@@ -41,7 +41,7 @@ export function ReceivableAgingStrip({ aging }: { aging: ReceivableAgingSummary 
           const empty = cell.count === 0;
           return (
             <div key={bucket} className="bg-background/70 px-3 py-2">
-              <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <p className="text-label font-semibold text-muted-foreground">
                 {BUCKET_LABELS[bucket]}
               </p>
               <p className={`mt-1 text-sm font-semibold ${empty ? "text-muted-foreground" : "text-foreground"}`}>

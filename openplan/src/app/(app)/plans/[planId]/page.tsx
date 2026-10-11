@@ -829,7 +829,7 @@ export default async function PlanDetailPage({
                   ))}
                 </div>
                 <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label font-semibold text-muted-foreground">
                     Planning output cue
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
@@ -841,7 +841,7 @@ export default async function PlanDetailPage({
             )}
             {!readinessBasisUnreadable && workflow.actionItems.length > 0 ? (
               <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/30 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   Next actions
                 </p>
                 <div className="mt-3 space-y-2 text-sm">
@@ -886,7 +886,7 @@ export default async function PlanDetailPage({
 
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Readiness checklist</p>
+                  <p className="text-label font-semibold text-muted-foreground">Readiness checklist</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">
                     {readinessBasisUnreadable ? UNKNOWN_COUNT : `${readiness.readyCheckCount}/${readiness.totalCheckCount}`}
                   </p>
@@ -900,7 +900,7 @@ export default async function PlanDetailPage({
                 </div>
 
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Linkage ledger</p>
+                  <p className="text-label font-semibold text-muted-foreground">Linkage ledger</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">
                     {planLinksUnreadable ? UNKNOWN_COUNT : planLinks.length}
                   </p>
@@ -916,7 +916,7 @@ export default async function PlanDetailPage({
 
               {!readinessBasisUnreadable && workflow.reviewNotes.length > 0 ? (
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Review notes</p>
+                  <p className="text-label font-semibold text-muted-foreground">Review notes</p>
                   <div className="mt-3 space-y-2 text-sm text-muted-foreground">
                     {workflow.reviewNotes.map((note) => (
                       <p key={note}>{note}</p>
@@ -938,23 +938,23 @@ export default async function PlanDetailPage({
 
             <div className="mt-5 grid gap-3 md:grid-cols-2">
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Geography</p>
+                <p className="text-label font-semibold text-muted-foreground">Geography</p>
                 <p className="mt-2 text-sm">{plan.geography_label ?? "Not set"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Horizon year</p>
+                <p className="text-label font-semibold text-muted-foreground">Horizon year</p>
                 <p className="mt-2 text-sm">{plan.horizon_year ?? "Not set"}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Created</p>
+                <p className="text-label font-semibold text-muted-foreground">Created</p>
                 <p className="mt-2 text-sm">{formatPlanDateTime(plan.created_at)}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Updated</p>
+                <p className="text-label font-semibold text-muted-foreground">Updated</p>
                 <p className="mt-2 text-sm">{formatPlanDateTime(plan.updated_at)}</p>
               </div>
               <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4 md:col-span-2">
-                <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Record posture</p>
+                <p className="text-label font-semibold text-muted-foreground">Record posture</p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Formal planning record only. Use linked scenarios, engagement, and reports to review basis and outputs; do not treat this surface as chapter authoring.
                 </p>
@@ -1165,7 +1165,7 @@ export default async function PlanDetailPage({
                 Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
               </p>
             </div>
-            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
               <Database className="h-3.5 w-3.5" />
               {supportingModelsUnreadable
                 ? "Supporting models unavailable"
@@ -1187,7 +1187,7 @@ export default async function PlanDetailPage({
             <div className="mt-5 space-y-4">
               <div className="grid gap-3 md:grid-cols-3">
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Supporting models</p>
+                  <p className="text-label font-semibold text-muted-foreground">Supporting models</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{supportingModels.length}</p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {supportingModelLinksUnreadable
@@ -1196,12 +1196,12 @@ export default async function PlanDetailPage({
                   </p>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">With project basis</p>
+                  <p className="text-label font-semibold text-muted-foreground">With project basis</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{projectBasedModelCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">Models that arrive through or remain anchored to the primary project context.</p>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Explicit plan links</p>
+                  <p className="text-label font-semibold text-muted-foreground">Explicit plan links</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitModelCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">Direct model references stored on or uniquely tied to this plan.</p>
                 </div>
@@ -1272,24 +1272,24 @@ export default async function PlanDetailPage({
             <div className="mt-5 space-y-4">
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Projects</p>
+                  <p className="text-label font-semibold text-muted-foreground">Projects</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitProjectCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">
                     {inheritedProjectCount > 0 ? `${inheritedProjectCount} more inherited from the primary project.` : "No inherited project context."}
                   </p>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Scenarios</p>
+                  <p className="text-label font-semibold text-muted-foreground">Scenarios</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitScenarioCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{inheritedScenarioCount} inherited from project linkage.</p>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Campaigns</p>
+                  <p className="text-label font-semibold text-muted-foreground">Campaigns</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitCampaignCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{inheritedCampaignCount} inherited from project linkage.</p>
                 </div>
                 <div className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Reports</p>
+                  <p className="text-label font-semibold text-muted-foreground">Reports</p>
                   <p className="mt-2 text-2xl font-semibold tracking-tight">{explicitReportCount}</p>
                   <p className="mt-2 text-sm text-muted-foreground">{inheritedReportCount} inherited from project linkage.</p>
                 </div>
@@ -1298,7 +1298,7 @@ export default async function PlanDetailPage({
               <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
               {planLinks.map((link) => (
                 <div key={link.id} className="rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
-                  <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-label font-semibold text-muted-foreground">
                     {formatPlanLinkTypeLabel(link.link_type)}
                   </p>
                   <p className="mt-2 text-sm font-medium">{link.label || link.linked_id}</p>

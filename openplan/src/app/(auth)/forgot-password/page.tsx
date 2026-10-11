@@ -54,7 +54,7 @@ function ForgotPasswordForm() {
   return (
     <section className={frameClassName()}>
       <header className="border-b border-border/60 px-6 py-5 sm:px-7">
-        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-label font-semibold text-muted-foreground">
           Reset password
         </p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">
@@ -98,7 +98,7 @@ function ForgotPasswordForm() {
             ) : null}
 
             <div className="flex flex-col gap-3 border-t border-border/60 pt-4 sm:flex-row sm:items-center sm:justify-between">
-              <p className="text-xs uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-xs text-muted-foreground">
                 No account access required.
               </p>
               <Button type="submit" className="sm:min-w-40" disabled={loading}>

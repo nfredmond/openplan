@@ -67,7 +67,7 @@ export default async function LandUsePlansPage() {
               ?? [...versions].sort((a, b) => b.version_number - a.version_number)[0];
             return (
               <Link key={plan.id} href={`/land-use-plans/${plan.id}`} className="rounded-xl border border-border bg-card p-5 shadow-sm transition hover:border-primary/50 hover:shadow-md">
-                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{descriptor?.planKinds.find((kind) => kind.key === plan.plan_kind_key)?.label ?? plan.plan_kind_key}</p>
+                <p className="text-xs font-semibold text-muted-foreground">{descriptor?.planKinds.find((kind) => kind.key === plan.plan_kind_key)?.label ?? plan.plan_kind_key}</p>
                 <h2 className="mt-1 text-lg font-semibold">{plan.title}</h2>
                 <p className="mt-2 text-sm text-muted-foreground">{plan.authority_label} · {plan.geography_label}</p>
                 <p className="mt-4 text-sm font-medium">{active ? `Version ${active.version_number} · ${active.state.replaceAll("_", " ")}` : "Version unavailable"}</p>

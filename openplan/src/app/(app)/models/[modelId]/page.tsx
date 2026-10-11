@@ -878,7 +878,7 @@ export default async function ModelDetailPage({
             action={
               <Link
                 href="/county-runs"
-                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary/35 hover:text-primary"
               >
                 Review county runs
               </Link>
@@ -892,7 +892,7 @@ export default async function ModelDetailPage({
             action={
               <Link
                 href="/county-runs"
-                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold uppercase tracking-[0.14em] text-foreground transition hover:border-primary/35 hover:text-primary"
+                className="inline-flex items-center rounded border border-border/70 px-3 py-1.5 text-xs font-semibold text-foreground transition hover:border-primary/35 hover:text-primary"
               >
                 Review county runs
               </Link>
@@ -1009,7 +1009,7 @@ export default async function ModelDetailPage({
                     <p className="module-section-label">Readiness</p>
                     <h2 className="module-section-title">Configuration and traceability checks</h2>
                   </div>
-                  <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                  <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
                     <FileStack className="h-3.5 w-3.5" />
                     {readiness.missingCheckCount} gaps
                   </span>

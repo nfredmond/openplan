@@ -165,8 +165,6 @@
 .op-cart-rail__group-title {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
   color: var(--muted);
   margin: 8px 18px 4px;
   opacity: 0;
@@ -453,9 +451,7 @@ html.dark .op-cart-rail__btn:hover {
 .op-cart-surface__kicker {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.08em;
   color: var(--muted);
-  text-transform: uppercase;
 }
 .op-cart-surface__title {
   font-family: var(--font-display);
@@ -543,8 +539,6 @@ html.dark .op-cart-rail__btn:hover {
   border-bottom: 1px solid var(--line);
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   color: var(--muted);
 }
 .op-cart-layers__list {
@@ -666,8 +660,6 @@ html.dark .op-cart-layer-item__swatch {
   justify-content: space-between;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   color: var(--muted);
   cursor: pointer;
   border-bottom: 1px solid var(--line);
@@ -769,7 +761,6 @@ html.dark .op-cart-layer-item__swatch {
   font-weight: 600;
   flex-shrink: 0;
   font-size: 14px;
-  text-transform: uppercase;
 }
 .op-cart-inspector__body {
   flex: 1;
@@ -779,8 +770,6 @@ html.dark .op-cart-layer-item__swatch {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   color: var(--muted);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
 }
 .op-cart-inspector__title {
   font-size: 15px;
@@ -944,8 +933,6 @@ html.dark .op-cart-zoom button:hover {
   font-family: var(--font-mono);
   font-size: var(--fs-label);
   font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.12em;
   color: var(--muted);
   background: transparent;
   border: none;
@@ -992,8 +979,6 @@ html.dark .op-cart-zoom button:hover {
   margin-top: 8px;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
   font-weight: 700;
   color: var(--warn);
   text-decoration: underline;
@@ -1554,8 +1539,6 @@ body[data-surface-wide="true"] .op-cart-legend:focus-within {
   cursor: pointer;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
   color: var(--muted);
   padding: 8px 14px;
   list-style: none;
@@ -1844,8 +1827,6 @@ body[data-map-reading="true"] .op-cart-surface {
   order: -1;
   font-family: var(--font-mono);
   font-size: var(--fs-label);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 
@@ -2313,8 +2294,6 @@ body[data-page-flush="true"] .op-cart-shell .op-cart-surface__body > .analysis-e
   margin: 12px 0 2px;
   font-size: var(--fs-label);
   font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
   color: var(--muted);
 }
 .op-cart-navsheet__link {

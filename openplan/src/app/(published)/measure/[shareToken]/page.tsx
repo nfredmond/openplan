@@ -129,7 +129,7 @@ function recipientKindLabel(value: string | null | undefined): string {
 function Figure({ heading, figure }: { heading: string; figure: OversightFigure }) {
   return (
     <div className="rounded-lg border border-border bg-card p-4">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">{heading}</h3>
+      <h3 className="text-xs font-semibold text-muted-foreground">{heading}</h3>
       <p className="mt-1 flex flex-wrap items-baseline gap-2">
         <span className="text-2xl font-semibold tabular-nums text-foreground">{figure.amountText}</span>
         {figure.isFloor ? (
@@ -147,7 +147,7 @@ function Figure({ heading, figure }: { heading: string; figure: OversightFigure 
 function Unavailable({ heading, sentence }: { heading: string; sentence: string }) {
   return (
     <div className="rounded-lg border border-amber-300/60 bg-amber-50/60 p-4 dark:border-amber-900/50 dark:bg-amber-950/30">
-      <h3 className="text-xs font-semibold uppercase tracking-[0.14em] text-amber-900/80 dark:text-amber-200/80">
+      <h3 className="text-xs font-semibold text-amber-900/80 dark:text-amber-200/80">
         {heading}
       </h3>
       <p className="mt-1 text-sm text-amber-900/90 dark:text-amber-200/90">{sentence}</p>
@@ -212,7 +212,7 @@ export default async function PublicMeasureOversightPage({
     return (
       <main className="mx-auto w-full max-w-3xl px-4 py-10 sm:py-14">
         <header className="border-b border-border pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             {MEASURE_OVERSIGHT_COPY.pageEyebrow}
           </p>
           <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">
@@ -417,7 +417,7 @@ export default async function PublicMeasureOversightPage({
   return (
     <main className="mx-auto w-full max-w-4xl px-4 py-10 sm:py-14">
       <header className="border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-xs font-semibold text-muted-foreground">
           {MEASURE_OVERSIGHT_COPY.pageEyebrow}
         </p>
         <h1 className="mt-2 text-2xl font-semibold text-foreground sm:text-3xl">{model.title}</h1>
@@ -465,7 +465,7 @@ export default async function PublicMeasureOversightPage({
             <h3 className="text-sm font-medium text-foreground">{MEASURE_OVERSIGHT_COPY.periodsHeading}</h3>
             <table className="mt-2 w-full min-w-[34rem] text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-3 font-medium">Period</th>
                   <th className="py-2 pr-3 font-medium">Covering</th>
                   <th className="py-2 pr-3 text-right font-medium">Amount received</th>
@@ -548,7 +548,7 @@ export default async function PublicMeasureOversightPage({
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full min-w-[34rem] text-sm">
                     <thead>
-                      <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                      <tr className="border-b border-border text-left text-xs text-muted-foreground">
                         <th className="py-2 pr-3 font-medium">{MEASURE_OVERSIGHT_COPY.divisionClauseColumn}</th>
                         <th className="py-2 pr-3 text-right font-medium">
                           {MEASURE_OVERSIGHT_COPY.divisionAmountColumn}
@@ -581,7 +581,7 @@ export default async function PublicMeasureOversightPage({
                 <div className="mt-4 overflow-x-auto">
                   <table className="w-full min-w-[34rem] text-sm">
                     <thead>
-                      <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                      <tr className="border-b border-border text-left text-xs text-muted-foreground">
                         <th className="py-2 pr-3 font-medium">
                           {MEASURE_OVERSIGHT_COPY.divisionReserveClauseColumn}
                         </th>
@@ -638,7 +638,7 @@ export default async function PublicMeasureOversightPage({
             ) : null}
             <table className="w-full min-w-[34rem] text-sm">
               <thead>
-                <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                <tr className="border-b border-border text-left text-xs text-muted-foreground">
                   <th className="py-2 pr-3 font-medium">Purpose</th>
                   <th className="py-2 pr-3 font-medium">Share</th>
                   <th className="py-2 pr-3 text-right font-medium">Set aside</th>
@@ -690,7 +690,7 @@ export default async function PublicMeasureOversightPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[36rem] text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
                     <th className="py-2 pr-3 font-medium">Who</th>
                     <th className="py-2 pr-3 text-right font-medium">Asked for</th>
                     <th className="py-2 pr-3 text-right font-medium">Paid</th>
@@ -758,7 +758,7 @@ export default async function PublicMeasureOversightPage({
             <div className="mt-3 overflow-x-auto">
               <table className="w-full min-w-[36rem] text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left text-xs uppercase tracking-[0.1em] text-muted-foreground">
+                  <tr className="border-b border-border text-left text-xs text-muted-foreground">
                     <th className="py-2 pr-3 font-medium">Who</th>
                     <th className="py-2 pr-3 font-medium">Year</th>
                     <th className="py-2 pr-3 text-right font-medium">Required</th>

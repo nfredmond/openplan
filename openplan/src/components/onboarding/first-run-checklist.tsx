@@ -130,7 +130,7 @@ function FirstRunStep({
             </h3>
             <span
               className={[
-                "rounded-full border px-2 py-0.5 text-label font-semibold uppercase tracking-[0.12em]",
+                "rounded-full border px-2 py-0.5 text-label font-semibold",
                 done
                   ? "border-emerald-600/30 text-emerald-700 dark:text-emerald-300"
                   : emphasis

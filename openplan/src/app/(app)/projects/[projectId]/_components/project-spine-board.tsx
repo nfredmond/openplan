@@ -100,7 +100,7 @@ export function ProjectSpineBoard({
       <div className="mt-5 rounded-[0.5rem] border border-border/70 bg-background/70 p-4">
         <div className="grid gap-3 md:grid-cols-[minmax(0,1fr)_minmax(13rem,18rem)] md:items-start">
           <div>
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               {isLoading
                 ? "Loading state"
                 : summary.boardState === "unreadable"
@@ -169,7 +169,7 @@ export function ProjectSpineBoard({
                   <p className="module-record-stamp">{row.lane}</p>
                   <div className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
                     <h3 className="module-record-title">{row.statusLabel}</h3>
-                    <span className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <span className="text-label font-semibold text-muted-foreground">
                       {row.sourceState === "unreadable"
                         ? "Unavailable"
                         : row.sourceState === "schema_pending"
@@ -190,10 +190,10 @@ export function ProjectSpineBoard({
               </div>
               <div className="grid gap-3 pl-2 md:grid-cols-[0.74fr_1.26fr]">
                 <div className="space-y-2">
-                  <p className="text-xs font-medium uppercase tracking-[0.12em] text-muted-foreground">
+                  <p className="text-xs font-medium text-muted-foreground">
                     {row.detail}
                   </p>
-                  <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
+                  <p className="text-label font-semibold text-foreground/70">
                     {row.sourceLabel}
                   </p>
                   <p className="text-xs leading-relaxed text-muted-foreground">{row.sourceDetail}</p>
@@ -213,37 +213,37 @@ export function ProjectSpineBoard({
         </div>
 
         <aside className="rounded-[0.5rem] border border-border/70 bg-background/75 p-4">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             Crosslink inspector
           </p>
           <div className={`mt-4 grid ${statGridClass} gap-3 text-center`}>
             <div>
               <p className="text-xl font-semibold text-foreground">{summary.readyCount}</p>
-              <p className="text-label uppercase tracking-[0.14em] text-muted-foreground">ready</p>
+              <p className="text-label text-muted-foreground">ready</p>
             </div>
             <div>
               <p className="text-xl font-semibold text-foreground">{summary.attentionCount}</p>
-              <p className="text-label uppercase tracking-[0.14em] text-muted-foreground">review</p>
+              <p className="text-label text-muted-foreground">review</p>
             </div>
             <div>
               <p className="text-xl font-semibold text-foreground">{summary.missingCount}</p>
-              <p className="text-label uppercase tracking-[0.14em] text-muted-foreground">missing</p>
+              <p className="text-label text-muted-foreground">missing</p>
             </div>
             {summary.schemaPendingCount > 0 ? (
               <div>
                 <p className="text-xl font-semibold text-foreground">{summary.schemaPendingCount}</p>
-                <p className="text-label uppercase tracking-[0.14em] text-muted-foreground">setup</p>
+                <p className="text-label text-muted-foreground">setup</p>
               </div>
             ) : null}
             {summary.unreadableCount > 0 ? (
               <div>
                 <p className="text-xl font-semibold text-foreground">{summary.unreadableCount}</p>
-                <p className="text-label uppercase tracking-[0.14em] text-muted-foreground">failed</p>
+                <p className="text-label text-muted-foreground">failed</p>
               </div>
             ) : null}
           </div>
           <div className="mt-5 border-t border-border/70 pt-4">
-            <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+            <p className="text-label font-semibold text-muted-foreground">
               First operator move
             </p>
             <h3 className="mt-2 text-sm font-semibold text-foreground">{summary.leadAction.lane}</h3>
@@ -275,7 +275,7 @@ export function ProjectSpineBoard({
                 <ActivitySquare className="h-4 w-4" />
               </span>
               <div>
-                <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Are these lanes up to date?</p>
+                <p className="text-xs font-semibold text-muted-foreground">Are these lanes up to date?</p>
                 <h3 className="mt-1 text-base font-semibold text-foreground">{rollup.headline}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{rollup.detail}</p>
               </div>
@@ -283,15 +283,15 @@ export function ProjectSpineBoard({
 
             <dl className="mt-5 grid grid-cols-3 gap-3 text-sm">
               <div className="border-l border-emerald-500/35 pl-3">
-                <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Current</dt>
+                <dt className="text-label font-semibold text-muted-foreground">Current</dt>
                 <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.readyCount}</dd>
               </div>
               <div className="border-l border-amber-500/45 pl-3">
-                <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review</dt>
+                <dt className="text-label font-semibold text-muted-foreground">Review</dt>
                 <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.staleCount}</dd>
               </div>
               <div className="border-l border-slate-300 pl-3 dark:border-slate-700">
-                <dt className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Missing</dt>
+                <dt className="text-label font-semibold text-muted-foreground">Missing</dt>
                 <dd className="mt-1 text-xl font-semibold text-foreground">{rollup.missingCount}</dd>
               </div>
             </dl>
@@ -302,7 +302,7 @@ export function ProjectSpineBoard({
             </p>
             {firstOperatorCheck ? (
               <div className="mt-4 rounded-[0.55rem] border border-border/70 bg-card/70 p-3 text-sm leading-relaxed">
-                <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                <p className="text-label font-semibold text-muted-foreground">
                   First operator check
                 </p>
                 <p className="mt-1 font-semibold text-foreground">{firstOperatorCheck.label}</p>
@@ -312,7 +312,7 @@ export function ProjectSpineBoard({
           </div>
 
           <div className="overflow-hidden rounded-[0.75rem] border border-border/70 bg-card/70">
-            <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
+            <div className="grid grid-cols-[1fr_auto] gap-3 border-b border-border/70 px-4 py-3 text-label font-semibold text-muted-foreground md:grid-cols-[0.62fr_0.4fr_1.1fr]">
               <span>Lane</span>
               <span>Status</span>
               <span className="hidden md:block">Operator note</span>
@@ -325,7 +325,7 @@ export function ProjectSpineBoard({
                     <p className="mt-0.5 text-xs text-muted-foreground">{lane.countLabel}</p>
                   </div>
                   <div>
-                    <StatusBadge tone={lane.tone} className="min-h-7 tracking-[0.12em]">
+                    <StatusBadge tone={lane.tone} className="min-h-7">
                       {formatProjectSpineReadinessStatus(lane.status)}
                     </StatusBadge>
                   </div>

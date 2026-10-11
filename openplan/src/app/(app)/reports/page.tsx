@@ -1060,7 +1060,7 @@ export default async function ReportsPage({
 
                 <div className="mt-4 rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3 text-sm">
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                    <p className="text-label font-semibold text-muted-foreground">
                       Evidence, and whether it needs rebuilding
                     </p>
                     <StatusBadge tone={report.sourceReviewPosture.state === "ready" ? "success" : "warning"}>

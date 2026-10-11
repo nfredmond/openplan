@@ -350,7 +350,7 @@ function MeasurePoint({
 }) {
   return (
     <div className="rounded-[0.5rem] border border-border/60 bg-muted/20 px-3 py-2">
-      <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">{caption}</p>
+      <p className="text-label font-semibold text-muted-foreground">{caption}</p>
       {valueText === null ? (
         <>
           <p className="text-sm text-muted-foreground">{emptyText}</p>
@@ -814,7 +814,7 @@ export function RtpPerformanceMeasureEditor({
 
                   {canWrite && isEditing ? (
                     <form className="space-y-4 rounded-[0.5rem] border border-border/70 bg-muted/20 p-4" onSubmit={handleSubmit}>
-                      <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                      <p className="text-xs font-semibold text-muted-foreground">
                         Edit performance measure
                       </p>
                       <MeasureFields
@@ -844,7 +844,7 @@ export function RtpPerformanceMeasureEditor({
         {canWrite ? (
           openForm === "create" ? (
             <form className="space-y-4 rounded-[0.5rem] border border-border/70 bg-muted/20 p-4" onSubmit={handleSubmit}>
-              <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+              <p className="text-xs font-semibold text-muted-foreground">
                 Add performance measure
               </p>
               <MeasureFields

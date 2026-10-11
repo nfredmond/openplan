@@ -287,7 +287,7 @@ function SectionDraftCard({
 
       {draft ? (
         <div className="mt-3 space-y-2">
-          <p className="text-label font-semibold uppercase tracking-[0.14em] text-foreground/70">
+          <p className="text-label font-semibold text-foreground/70">
             AI draft{draft.model ? ` · ${draft.model}` : ""} · {formatCreatedAt(draft.created_at)}
           </p>
           <DraftGroundingLine draft={draft} anchorId={`narrative-grounding-line-${section.sectionKey}`} />
@@ -384,7 +384,7 @@ export function DraftGroundingLine({
             {flagged.map((sentence, index) => (
               <li key={index} className="text-muted-foreground">
                 <span className="text-foreground/80">{stripFactCitationTokens(sentence.text)}</span>{" "}
-                <span className="text-label uppercase tracking-wide">
+                <span className="text-label">
                   {sentence.reason === "missing_citation"
                     ? "— no citation"
                     : sentence.reason === "unfaithful_citation"

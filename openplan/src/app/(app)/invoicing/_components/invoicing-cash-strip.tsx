@@ -47,7 +47,7 @@ export async function InvoicingCashStrip({ workspaceId }: { workspaceId: string 
       </div>
 
       <div className="bg-background/70 px-4 py-4">
-        <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-label font-semibold text-muted-foreground">
           Claimed from funders
         </p>
         {reimbursementUnavailable ? (

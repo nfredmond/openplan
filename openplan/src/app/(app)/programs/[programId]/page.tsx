@@ -980,7 +980,7 @@ export default async function ProgramDetailPage({
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <FolderKanban className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Projects</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground">Projects</h3>
                 </div>
                 {linkedProjectsUnreadable ? (
                   <SectionReadFailure title="Project links could not be read" noun="linked project records" />
@@ -1015,7 +1015,7 @@ export default async function ProgramDetailPage({
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <ClipboardList className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Plans</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground">Plans</h3>
                 </div>
                 {linkedPlansUnreadable ? (
                   <SectionReadFailure title="Plan links could not be read" noun="linked plan records" />
@@ -1050,7 +1050,7 @@ export default async function ProgramDetailPage({
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <Database className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Models</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground">Models</h3>
                 </div>
                 {supportingModelsUnreadable ? (
                   <SectionReadFailure title="Supporting models could not be read" noun="supporting model records" />
@@ -1063,17 +1063,17 @@ export default async function ProgramDetailPage({
                   <div className="space-y-3">
                     <div className="grid gap-3 md:grid-cols-3">
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Supporting models</p>
+                        <p className="text-label font-semibold text-muted-foreground">Supporting models</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{supportingModels.length}</p>
                         <p className="mt-1 text-xs text-muted-foreground">{supportingModelReadyCount} fully ready.</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Project context</p>
+                        <p className="text-label font-semibold text-muted-foreground">Project context</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{projectBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models anchored to the package project.</p>
                       </div>
                       <div className="rounded-[0.5rem] border border-border/70 bg-background/80 px-4 py-3">
-                        <p className="text-label font-semibold uppercase tracking-[0.14em] text-muted-foreground">Linked plan basis</p>
+                        <p className="text-label font-semibold text-muted-foreground">Linked plan basis</p>
                         <p className="mt-1 text-sm font-semibold text-foreground">{planBasedModelCount}</p>
                         <p className="mt-1 text-xs text-muted-foreground">Models surfaced through linked plans.</p>
                       </div>
@@ -1134,7 +1134,7 @@ export default async function ProgramDetailPage({
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <FileStack className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Reports</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground">Reports</h3>
                 </div>
                 {linkedReportsUnreadable ? (
                   <SectionReadFailure title="Report links could not be read" noun="linked report packets" />
@@ -1199,7 +1199,7 @@ export default async function ProgramDetailPage({
               <div>
                 <div className="mb-3 flex items-center gap-2">
                   <MessagesSquare className="h-4 w-4 text-muted-foreground" />
-                  <h3 className="text-sm font-semibold uppercase tracking-[0.14em] text-muted-foreground">Engagement</h3>
+                  <h3 className="text-sm font-semibold text-muted-foreground">Engagement</h3>
                 </div>
                 {linkedCampaignsUnreadable ? (
                   <SectionReadFailure title="Engagement links could not be read" noun="linked engagement campaigns" />

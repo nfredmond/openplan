@@ -144,7 +144,7 @@ export default function ExamplesEvidenceCatalogPage() {
                     <tbody>
                       {validationMetrics.map((row) => (
                         <tr key={row.label} className="border-b border-border/50 last:border-b-0">
-                          <th className="w-1/2 bg-muted/30 px-3 py-2 text-left text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+                          <th className="w-1/2 bg-muted/30 px-3 py-2 text-left text-xs font-semibold text-muted-foreground">
                             {row.label}
                           </th>
                           <td className="px-3 py-2 text-foreground">
@@ -171,7 +171,7 @@ export default function ExamplesEvidenceCatalogPage() {
                 <div className="mt-3 overflow-hidden rounded-lg border border-border/60">
                   <table className="w-full border-collapse text-sm">
                     <thead>
-                      <tr className="border-b border-border/60 bg-muted/30 text-xs uppercase tracking-[0.12em] text-muted-foreground">
+                      <tr className="border-b border-border/60 bg-muted/30 text-xs text-muted-foreground">
                         <th className="px-3 py-2 text-left">Station</th>
                         <th className="px-3 py-2 text-right">Observed</th>
                         <th className="px-3 py-2 text-right">Modeled daily PCE</th>

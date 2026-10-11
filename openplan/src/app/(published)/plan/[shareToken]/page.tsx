@@ -108,7 +108,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
     return (
       <main className={PAGE_COLUMN}>
         <header className="border-b border-border pb-6">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+          <p className="text-xs font-semibold text-muted-foreground">
             Regional Transportation Plan · Public view
           </p>
           <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground">
@@ -275,7 +275,7 @@ export default async function PublicRtpWhyPage({ params }: { params: Promise<{ s
   return (
     <main className={PAGE_COLUMN}>
       <header className="border-b border-border pb-6">
-        <p className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">
+        <p className="text-xs font-semibold text-muted-foreground">
           Regional Transportation Plan · Public view
         </p>
         <h1 className="mt-2 text-[2rem] font-semibold leading-tight tracking-tight text-foreground sm:text-[2.35rem]">

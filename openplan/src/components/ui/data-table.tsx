@@ -63,7 +63,7 @@ export function DataTable<T>({
                 scope="col"
                 style={column.width ? { width: column.width } : undefined}
                 className={cn(
-                  "data-table-header border-b border-border/60 px-3 py-2 text-label font-semibold uppercase tracking-wide text-muted-foreground",
+                  "data-table-header border-b border-border/60 px-3 py-2 text-label font-semibold text-muted-foreground",
                   alignClass(column.align)
                 )}
               >

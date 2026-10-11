@@ -5,6 +5,16 @@ import { DEFAULT_PALETTE, PALETTES } from "@/lib/theme/palettes";
 import { OPENPLAN_OG_IMAGE_PATH, OPENPLAN_SITE_NAME, resolveSiteOrigin } from "@/lib/public-page-metadata";
 import "./globals.css";
 
+// Body and interface text (decision D7, October 1, 2026). Space Grotesk stays
+// for page titles and large figures.
+const publicSans = localFont({
+  src: "./fonts/publicsans/PublicSans[wght].ttf",
+  weight: "400 700",
+  style: "normal",
+  display: "swap",
+  variable: "--font-body-sys",
+});
+
 const spaceGrotesk = localFont({
   src: "./fonts/spacegrotesk/SpaceGrotesk[wght].ttf",
   weight: "400 700",
@@ -87,7 +97,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${spaceGrotesk.variable} ${jetBrainsMono.variable} dark`}
+      className={`${publicSans.variable} ${spaceGrotesk.variable} ${jetBrainsMono.variable}`}
       data-palette={DEFAULT_PALETTE}
       data-scroll-behavior="smooth"
       suppressHydrationWarning
@@ -111,7 +121,7 @@ export default function RootLayout({
         */}
         <script
           dangerouslySetInnerHTML={{
-            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem("theme");if(t==="light"||t==="dark"){d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;}var p=localStorage.getItem("theme-palette");if(p&&${JSON.stringify(
+            __html: `(function(){try{var d=document.documentElement;var t=localStorage.getItem("theme");if(t!=="light"&&t!=="dark"){t=window.matchMedia&&window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";}d.classList.remove("light","dark");d.classList.add(t);d.style.colorScheme=t;var p=localStorage.getItem("theme-palette");if(p&&${JSON.stringify(
               PALETTE_IDS
             )}.indexOf(p)>-1){d.setAttribute("data-palette",p);}}catch(e){}})();`,
           }}
@@ -125,7 +135,7 @@ export default function RootLayout({
         <a href="#main-content" className="skip-link">
           Skip to main content
         </a>
-        <ThemeProvider defaultTheme="dark">{children}</ThemeProvider>
+        <ThemeProvider defaultTheme="system">{children}</ThemeProvider>
       </body>
     </html>
   );

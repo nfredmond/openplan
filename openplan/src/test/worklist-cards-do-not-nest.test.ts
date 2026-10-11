@@ -398,7 +398,7 @@ describe("workspace setup stays out of the Overview card stack", () => {
     );
 
     for (const panel of SETUP_PANELS) {
-      expect(dashboard, `${panel} must not be nested into the Overview checklist`).not.toMatch(
+      expect(dashboard, `${panel} must not be nested into the dashboard checklist`).not.toMatch(
         new RegExp(`<${panel}\\b`)
       );
       expect(workspace, `${panel} must remain reachable on the setup page`).toMatch(

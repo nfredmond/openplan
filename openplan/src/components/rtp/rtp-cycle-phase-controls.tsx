@@ -132,7 +132,7 @@ export function RtpCyclePhaseControls({
         </div>
 
         <div className="rounded-[0.5rem] border border-border/70 bg-muted/25 px-4 py-4">
-          <p className="text-label font-semibold uppercase tracking-[0.12em] text-muted-foreground">Recommended packet preset</p>
+          <p className="text-label font-semibold text-muted-foreground">Recommended packet preset</p>
           <p className="mt-2 text-sm font-semibold text-foreground">{describeRtpPacketPresetStage(presetStage)}</p>
           <p className="mt-1 text-xs text-muted-foreground">
             {linkedPacketReports.length > 0

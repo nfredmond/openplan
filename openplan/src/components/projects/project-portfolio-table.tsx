@@ -85,7 +85,7 @@ export function ProjectPortfolioTable({ summary }: { summary: ProjectPortfolioSu
         <div className="mt-4 overflow-x-auto">
           <table className="w-full min-w-[46rem] border-collapse text-sm">
             <thead>
-              <tr className="border-b border-border/70 text-left text-label uppercase tracking-[0.12em] text-muted-foreground">
+              <tr className="border-b border-border/70 text-left text-label text-muted-foreground">
                 <th scope="col" className="py-2 pr-3 font-semibold">Project</th>
                 <th scope="col" className="py-2 pr-3 font-semibold">Phase</th>
                 <th scope="col" className="py-2 pr-3 font-semibold">Next due</th>

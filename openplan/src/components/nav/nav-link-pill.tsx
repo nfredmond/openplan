@@ -26,7 +26,7 @@ export function NavLinkPill({ href, label }: NavLinkPillProps) {
       aria-current={isActive ? "page" : undefined}
       data-active={isActive ? "true" : "false"}
       className={cn(
-        "inline-flex items-center border-b py-1.5 text-sm font-semibold tracking-[0.01em] transition-colors duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
+        "inline-flex items-center border-b py-1.5 text-sm font-semibold transition-colors duration-150 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/40 focus-visible:ring-offset-2",
         isActive
           ? "border-[color:var(--pine)] text-foreground"
           : "border-transparent text-muted-foreground hover:border-border hover:text-foreground"

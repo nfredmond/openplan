@@ -80,17 +80,17 @@ export function CountyRunModelingEvidence({ evidence }: { evidence?: CountyRunMo
 
         <div className="grid gap-3 text-sm md:grid-cols-3">
           <div className="rounded-lg border border-border/70 p-3">
-            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Validation</div>
+            <div className="text-xs text-muted-foreground">Validation</div>
             <div className="mt-1 font-medium text-foreground">
               {passed} pass / {warned} warn / {failed} fail
             </div>
           </div>
           <div className="rounded-lg border border-border/70 p-3">
-            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Sources</div>
+            <div className="text-xs text-muted-foreground">Sources</div>
             <div className="mt-1 font-medium text-foreground">{evidence.sourceManifests.length} public inputs</div>
           </div>
           <div className="rounded-lg border border-border/70 p-3">
-            <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Track</div>
+            <div className="text-xs text-muted-foreground">Track</div>
             <div className="mt-1 font-medium text-foreground">{claimDecision?.track ?? "assignment"}</div>
           </div>
         </div>
@@ -130,7 +130,7 @@ export function CountyRunModelingEvidence({ evidence }: { evidence?: CountyRunMo
                 <div key={source.id} className="rounded-lg border border-border/70 p-3 text-sm">
                   <div className="font-medium text-foreground">{source.sourceLabel}</div>
                   <div className="mt-1 text-muted-foreground">{source.citationText}</div>
-                  <div className="mt-2 text-xs uppercase tracking-[0.14em] text-muted-foreground">
+                  <div className="mt-2 text-xs text-muted-foreground">
                     {[source.sourceKind, source.sourceVintage, source.geographyLabel].filter(Boolean).join(" / ")}
                   </div>
                 </div>
