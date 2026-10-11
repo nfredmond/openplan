@@ -109,6 +109,7 @@ vi.mock("mapbox-gl", () => {
     default: {
       Map,
       NavigationControl: ctl,
+      GeolocateControl: ctl,
       AttributionControl: ctl,
       Popup: ctl,
       Marker: ctl,
@@ -117,6 +118,7 @@ vi.mock("mapbox-gl", () => {
     },
     Map,
     NavigationControl: ctl,
+    GeolocateControl: ctl,
     AttributionControl: ctl,
   };
 });
@@ -293,7 +295,7 @@ describe("the sentence that says where the map is looking", () => {
     expect(framing).not.toContain(EN_PORTAL_MESSAGES["portal.mapFramingNoArea"]);
   });
 
-  it("names the area, in the resident's language, when something did frame it", async () => {
+  it("says nothing about the camera when a real place framed it: the map shows the place", async () => {
     const PublicMapShell = await importShell();
 
     const framed = resolvePortalMapFraming({
@@ -306,12 +308,6 @@ describe("the sentence that says where the map is looking", () => {
     expect(framed.origin).toBe("campaign_place");
 
     render(<PublicMapShell {...shellProps({ mapFraming: framed, messages: messagesFor("es") })} />);
-    const framing = screen.getByTestId("portal-map-framing").textContent ?? "";
-
-    // The agency's own name for the place survives untranslated; the sentence
-    // around it does not.
-    expect(framing).toContain("Nevada County");
-    expect(framing).toContain("la zona de la que trata esta página");
-    expect(framing).not.toContain("This map opens on");
+    expect(screen.queryByTestId("portal-map-framing")).not.toBeInTheDocument();
   });
 });

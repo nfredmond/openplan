@@ -162,8 +162,17 @@ function deriveHtmlDocumentRoutes(relativeDir: string): string[] {
 function firstPartyImportsOf(relativeFile: string): string[] {
   const source = readFileSync(path.join(process.cwd(), relativeFile), "utf8");
   const resolved: string[] = [];
-  for (const match of source.matchAll(/from\s+"(@\/[^"]+)"/g)) {
-    const base = path.join(process.cwd(), "src", match[1].slice("@/".length));
+  /*
+    RELATIVE IMPORTS COUNT TOO. Only `@/` specifiers used to be followed, so the
+    walk reached the participant message catalog solely through two incidental
+    `import type` lines; removing them on 2026-10-10 silently dropped the
+    catalog from this guard, although `./portal-recovery-copy` still imports it.
+  */
+  for (const match of source.matchAll(/from\s+"((?:@\/|\.{1,2}\/)[^"]+)"/g)) {
+    const specifier = match[1];
+    const base = specifier.startsWith("@/")
+      ? path.join(process.cwd(), "src", specifier.slice("@/".length))
+      : path.join(process.cwd(), path.dirname(relativeFile), specifier);
     for (const candidate of [`${base}.ts`, `${base}.tsx`, `${base}/index.ts`, `${base}/index.tsx`]) {
       if (existsSync(candidate)) {
         resolved.push(path.relative(process.cwd(), candidate).split(path.sep).join("/"));

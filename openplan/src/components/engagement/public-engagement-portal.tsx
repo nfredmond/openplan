@@ -7,10 +7,9 @@ import {
   type ApprovedItemGrouping,
 } from "@/lib/engagement/approved-item-grouping";
 import { usePublicCommentTranslations } from "./use-public-comment-translations";
-import { ClipboardCheck, ClipboardList, Info, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
+import { ClipboardCheck, ClipboardList, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { readStoredEngagementGeometry } from "@/lib/engagement/geometry";
-import { ENGAGEMENT_TYPES } from "@/lib/engagement/catalog";
 import {
   TRANSLATION_LANGUAGES,
   TRANSLATION_LANGUAGE_NATIVE_LABELS,
@@ -28,17 +27,14 @@ import {
 } from "@/lib/engagement/portal-i18n/translator";
 import { formatPortalDate, formatPortalNumber } from "@/lib/engagement/portal-i18n/format";
 import {
-  portalMessageView,
   portalTextBadge,
   portalTextDisclosureView,
   portalTextLang,
-  type PortalDisclosureView,
 } from "@/lib/engagement/portal-i18n/provenance";
 // Type-only: these modules reach a server-only Supabase client or the message
 // catalog for every locale, and an `import type` is erased before the client
 // bundle is built. A participant downloads their own language and nothing else.
 import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
-import type { PortalMessageKey } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalMapFraming } from "@/lib/engagement/public-portal-data";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { LocationDisplayMap } from "./location-display-map";
@@ -123,22 +119,6 @@ function replyPreviewLabel(item: ApprovedItem): string {
 }
 
 /**
- * A campaign's engagement mode, in the participant's language.
- *
- * The stored value is an internal enum. Keys exist for the three modes
- * `ENGAGEMENT_TYPES` declares; a value outside that set — which only a
- * hand-written database row can produce — returns null so the caller can fall
- * back rather than render a missing key.
- */
-type EngagementModeKey = Extract<PortalMessageKey, `engagementType.${string}`>;
-
-function engagementModeKey(value: string): EngagementModeKey | null {
-  return (ENGAGEMENT_TYPES as readonly string[]).includes(value)
-    ? (`engagementType.${value}` as EngagementModeKey)
-    : null;
-}
-
-/**
  * Whether a comment carries a place, said in the participant's language.
  *
  * Collapses "a pin" and "a drawn line or area" into one translated word rather
@@ -212,7 +192,7 @@ function OperatorText({
       </Tag>
       {badge ? (
         <span
-          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-label font-semibold uppercase tracking-wide text-muted-foreground"
+          className="ms-1.5 inline-block rounded-full border border-border/70 px-1.5 py-0.5 align-middle text-label font-semibold text-muted-foreground"
           lang={disclosure?.lang ?? translator.locale}
           dir={disclosure?.dir ?? translator.direction}
         >
@@ -280,9 +260,7 @@ export function PublicEngagementPortal({
   categories,
   approvedItems,
   readFailures = { comments: false, categories: false, closeLoop: false, project: false },
-  engagementType,
   demographicsEnabled = false,
-  projectContext,
   surveyQuestions = [],
   closeLoopEntries = [],
   emailUpdatesAvailable = false,
@@ -558,25 +536,6 @@ export function PublicEngagementPortal({
     }
   }
 
-  /*
-    The campaign's mode, in the participant's language when it is one of the
-    three `ENGAGEMENT_TYPES` declares.
-
-    The fallback branch renders a stored enum with its underscores removed, which
-    only a hand-written database row can reach — and which is an English word
-    either way. It is marked as English rather than inheriting the page's
-    language for the same reason every other fallback here is: a screen reader
-    told the page is Farsi would otherwise pronounce it with Farsi phonology.
-  */
-  const modeKey = engagementModeKey(engagementType);
-  const mode: PortalDisclosureView = modeKey
-    ? portalMessageView(translator, modeKey)
-    : {
-        sentence: engagementType.replaceAll("_", " "),
-        lang: PORTAL_DEFAULT_LOCALE,
-        dir: PORTAL_LOCALE_DIRECTION[PORTAL_DEFAULT_LOCALE],
-      };
-
   function renderComment(item: ApprovedItem, options: { isReply: boolean }) {
     const categoryText = item.categoryId ? categoryMap.get(item.categoryId) ?? null : null;
     const supported = supportedItemIds.has(item.id);
@@ -799,36 +758,15 @@ export function PublicEngagementPortal({
       */}
       <PortalPendingCopyNotice translator={translator} />
 
-      <div className="public-content-grid public-content-grid--portal">
+      {/* One column unless there is something to put beside it. */}
+      <div
+        className={
+          emailUpdatesAvailable || categories.length > 0
+            ? "public-content-grid public-content-grid--portal"
+            : "w-full max-w-3xl"
+        }
+      >
         <div className="public-surface">
-          <div className="public-section-header border-b border-border/60 pb-4">
-            {/*
-              No kicker above this heading. It used to repeat `page.kicker`,
-              which the hero one screen above already says — and a label a
-              resident reads twice is a label they stop reading.
-            */}
-            <div>
-              <h2 className="public-section-title">
-                {activeTab === "submit"
-                  ? t("portal.tab.submit")
-                  : activeTab === "survey"
-                    ? t("portal.tab.survey")
-                    : activeTab === "closeloop"
-                      ? t("portal.tab.closeLoop")
-                      : t("portal.tab.feedback")}
-              </h2>
-            </div>
-            <p className="public-section-description max-w-2xl">
-              {activeTab === "submit"
-                ? t("portal.yourInputHint")
-                : activeTab === "survey"
-                  ? t("portal.reviewNotice")
-                  : activeTab === "closeloop"
-                    ? t("closeLoop.intro")
-                    : t("page.publishedFeedbackDetail")}
-            </p>
-          </div>
-
           <div className="public-tab-strip">
             {acceptingSubmissions ? (
               <PortalTabButton
@@ -865,7 +803,8 @@ export function PublicEngagementPortal({
               active={activeTab === "feedback"}
               icon={<MessageSquare className="h-3.5 w-3.5" aria-hidden="true" />}
               label={t("portal.tab.feedback")}
-              count={topLevel.length}
+              /* No badge when the read failed: "(0)" would say nobody commented. */
+              count={readFailures.comments ? undefined : topLevel.length}
               bcp47={bcp47}
               onClick={() => setActiveTab("feedback")}
             />
@@ -874,23 +813,6 @@ export function PublicEngagementPortal({
           <div className="mt-5 space-y-5">
             {activeTab === "submit" && acceptingSubmissions ? (
               <>
-                <div className="public-fact-grid public-fact-grid--three public-fact-grid--compact">
-                  <div className="public-fact">
-                    <p className="public-fact-label">{t("portal.about")}</p>
-                    <p className="public-fact-detail text-foreground" lang={mode.lang} dir={mode.dir}>
-                      {mode.sentence}
-                    </p>
-                  </div>
-                  <div className="public-fact">
-                    <p className="public-fact-label">{t("portal.yourInput")}</p>
-                    <p className="public-fact-detail text-foreground">{t("portal.onlyRequiredField")}</p>
-                  </div>
-                  <div className="public-fact">
-                    <p className="public-fact-label">{t("portal.whatHappensNext")}</p>
-                    <p className="public-fact-detail text-foreground">{t("portal.reviewNotice")}</p>
-                  </div>
-                </div>
-
                 {/*
                   THE SAME FORM `/engage/<token>` RENDERS. Until 2026-08-14 this
                   was `SubmissionForm`, a second implementation that lived in
@@ -952,7 +874,25 @@ export function PublicEngagementPortal({
               readFailures.closeLoop && closeLoopEntries.length === 0 ? (
                 <p className="text-sm text-muted-foreground">{t("portal.partOfPageUnavailable")}</p>
               ) : (
-                <PublicCloseLoop entries={closeLoopEntries} translator={translator} />
+                <PublicCloseLoop
+                  entries={closeLoopEntries}
+                  translator={translator}
+                  sourceLink={
+                    previewMode
+                      ? null
+                      : {
+                          // Opens the comment on the map, in the same language.
+                          href: (itemId) =>
+                            `/engage/${shareToken}?item=${encodeURIComponent(itemId)}${
+                              locale.locale === PORTAL_DEFAULT_LOCALE ? "" : `&lang=${locale.locale}`
+                            }`,
+                          headline: (itemId) => {
+                            const item = topLevel.find((entry) => entry.id === itemId);
+                            return item ? item.title?.trim() || item.body.trim().split("\n")[0] : null;
+                          },
+                        }
+                  }
+                />
               )
             ) : null}
 
@@ -987,10 +927,7 @@ export function PublicEngagementPortal({
                   </div>
                 ) : (
                   <>
-                    <div className="flex flex-wrap items-center justify-between gap-3">
-                      <p className="text-xs text-muted-foreground">
-                        {t("portal.itemCount", { count: formatPortalNumber(topLevel.length, bcp47) })}
-                      </p>
+                    <div className="flex flex-wrap items-center justify-end gap-3">
                       <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground">
                         <span>{t("portal.sortBy")}</span>
                         <select
@@ -1026,12 +963,7 @@ export function PublicEngagementPortal({
           ) : null}
           {categories.length > 0 ? (
             <article className="public-surface">
-              <div className="public-section-header">
-                <div>
-                  <p className="public-section-label">{t("portal.topics")}</p>
-                  <h2 className="public-section-title">{t("portal.aboutProcess")}</h2>
-                </div>
-              </div>
+              <h2 className="public-section-title">{t("portal.feedTopics")}</h2>
               <div className="public-ledger">
                 {categories.map((category) => (
                   <div key={category.id} className="public-ledger-row">
@@ -1056,44 +988,6 @@ export function PublicEngagementPortal({
             </article>
           ) : null}
 
-          {/*
-            DELIBERATELY LEANER THAN IT WAS. This rail used to label the linked
-            project with `page.supports` and to restate two of the page's posture
-            items — all three of which the hero one screen above already says, in
-            the same words, so a resident read each of them twice. What
-            carries to the embeddable widget, where this rail is the only such
-            context, is the campaign's mode and what happens to a submission;
-            project framing belongs to the surrounding page.
-          */}
-          <article className="public-rail">
-            <div className="flex items-center gap-3">
-              <span className="public-rail-icon">
-                <Info className="h-5 w-5 text-sky-200" aria-hidden="true" />
-              </span>
-              <div>
-                <p className="public-rail-kicker">{t("portal.about")}</p>
-                <h2 className="public-rail-title" lang={mode.lang} dir={mode.dir}>
-                  {mode.sentence}
-                </h2>
-              </div>
-            </div>
-            <p className="public-rail-copy">{t("page.submissionStatusDetail")}</p>
-            {projectContext ? (
-              <div className="public-rail-context">
-                {/*
-                  The project's own name, as its agency recorded it — a proper
-                  noun, so not translated and not translatable. It carries NO
-                  label: `page.supports` and `page.linkedProject` both already
-                  introduce this same project in the hero one screen above, and a
-                  third introduction is copy a resident learns to skip.
-                */}
-                <p className="text-base font-semibold text-white">{projectContext.name}</p>
-                {projectContext.summary ? (
-                  <p className="mt-2 text-sm text-slate-300/84">{projectContext.summary}</p>
-                ) : null}
-              </div>
-            ) : null}
-          </article>
         </div>
       </div>
 
