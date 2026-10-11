@@ -1,0 +1,120 @@
+{
+  "sourceSha256": "fbcac8417c474475de87a86eaddcdd09d3f857f3a9124797259ea83fc1d0952f",
+  "testSha256": "6d841d3b46de8d64406ef59a09e53e3f119fe9c2bbf4774b976641b1dba7a09a",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "dfad2d63896fd702059eabb9956d0e18d722d498c9af730c7276a229ddd5e174"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "32413807dc38c7389d80322d20c1df4cc55884cf9f1f1dd929a783269177fd11"
+    },
+    {
+      "case": "missing-stage",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "aace4b32153289fa6cee79321028496069d9203972567b516f6d7f59bff666b0"
+    },
+    {
+      "case": "missing-prepare_archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "196a65e8cb1ded1adf0a50826eaf65dacd4313523c3d3511efcdbf369515ccf2"
+    },
+    {
+      "case": "missing-confirm_archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "203352040ca4d3b5758f599b39c5b2f0a429642339e3fb521a2e6f95072deb7a"
+    },
+    {
+      "case": "missing-prepare_output",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "8aff020a091bbd2c93e1a823c4c35ed4c6d21fbf246c08ec2f7a8131d4b60034"
+    },
+    {
+      "case": "missing-batch",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "3fd89d908fc81802368bd2efa12322540c6dfd9ecdeca864adc19441c1d6db7c"
+    },
+    {
+      "case": "missing-tracts",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "25c66634352d5f957c480e0890c376e0778291762f5df2f6102ec655dc8af24c"
+    },
+    {
+      "case": "missing-complete",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "07c94a9ae95381d6f823a608f2af2a1c2d62f75a803a254cb9a7e2f37874ab06"
+    },
+    {
+      "case": "missing-fail",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "8d80869669d4e19b1462800ba21de41aff05c6f08a19facfdcac885218fa90ed"
+    },
+    {
+      "case": "missing-adopt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "a46af30279cccb43d98c40004065e14d547bb150498bc8819a1edcd061fde915"
+    },
+    {
+      "case": "changed-dispatch-payload",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "bc7d981e569d440ff560b8f0419bcf3c04eea7e5ad2b38bdcc29f1a78a289bf1"
+    },
+    {
+      "case": "unvalidated-retained-receipt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "2dd7317c49d89fd17461065c62d6633c4157454d8b3e1d266280b31db1341340"
+    },
+    {
+      "case": "mutable-caller-input",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "5cb70b55cd7d0a30a6ee04f2ba4380b6bad0f73de8f9fc91dca63b43f4348649"
+    },
+    {
+      "case": "missing-prevalidation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "7ab6ce0c08062fdad255fb63baf81515d6c26ea5a018831d8a548d909df59a2f"
+    },
+    {
+      "case": "changed-version",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "a6a3fc4d374d97c1957f9b112cbf244d70526693881812dd7b800ffda8e577fb"
+    },
+    {
+      "case": "changed-token",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "e1d286972144ad7f7c809cd4533ff0dd358a6250aea1b56be25c5e175a43ce4b"
+    },
+    {
+      "case": "changed-command",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "7280c9a458c91a371908ef24b92819aef9886f1f95a2fdb97820d61125634136"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "4ceec063b6467ce5eb847cc09c810b33235d2d7bf29c8c366f1b587cff396390"
+    }
+  ]
+}

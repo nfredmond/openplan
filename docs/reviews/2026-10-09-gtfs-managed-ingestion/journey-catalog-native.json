@@ -1,0 +1,23 @@
+{
+  "id": "f3bc2095-3618-413c-bcc9-f3799ec7a4e1",
+  "feed_id": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+  "status": "ready",
+  "is_current": true,
+  "route_count": 14,
+  "stop_count": 287,
+  "state": "ready",
+  "attempt": 1,
+  "archive_identity": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/bb28bb0b-1c4f-4e9d-9774-fc24a42d928c/f3bc2095-3618-413c-bcc9-f3799ec7a4e1.zip",
+    "bytes": 1047999,
+    "sha256": "41717d0d66e81f760b96220c9e23a31d9d5a0a4720ccbdd947160018b1362ca5"
+  },
+  "archive_confirmed_at": "2026-10-11T02:09:23.706515+00:00",
+  "archive_available": true,
+  "source_kind": "catalog",
+  "catalog_provider": "Bay Area Rapid Transit (BART)",
+  "catalog_source_id": "53",
+  "feed_url": "https://storage.googleapis.com/storage/v1/b/mdb-latest/o/us-california-bay-area-rapid-transit-bart-gtfs-53.zip?alt=media",
+  "externalBytes": 1047999,
+  "externalSha256": "41717d0d66e81f760b96220c9e23a31d9d5a0a4720ccbdd947160018b1362ca5"
+}

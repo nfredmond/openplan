@@ -1,0 +1,39 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-metadata",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "missing-file",
+      "passed": true,
+      "expectedFailure": "Batch file inventory differs from the declared selection"
+    },
+    {
+      "case": "duplicate-file",
+      "passed": true,
+      "expectedFailure": "Batch file inventory differs from the declared selection"
+    },
+    {
+      "case": "wrong-file",
+      "passed": true,
+      "expectedFailure": "Batch file inventory differs from the declared selection"
+    },
+    {
+      "case": "different-commit",
+      "passed": true,
+      "expectedFailure": "Checkout commit changed during candidate checks"
+    }
+  ],
+  "limits": [
+    "Controls verify file identity and commit identity only. They do not prove assertions passed, test completeness beyond Vitest default discovery or order independence."
+  ]
+}

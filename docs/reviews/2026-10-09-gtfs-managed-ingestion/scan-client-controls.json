@@ -1,0 +1,59 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "endpoint",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS candidate cursor passes the exact native scan cursor null",
+        "GTFS candidate cursor passes the exact native scan cursor ed000000-0000-4000-8000-000000000001"
+      ]
+    },
+    {
+      "variant": "cursor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS candidate cursor passes the exact native scan cursor ed000000-0000-4000-8000-000000000001",
+        "GTFS candidate cursor refuses invalid cursor identity before transport"
+      ]
+    },
+    {
+      "variant": "cursor-validation",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS candidate cursor refuses invalid cursor identity before transport"
+      ]
+    },
+    {
+      "variant": "bounds",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS candidate cursor refuses scan limit 0 before transport",
+        "GTFS candidate cursor refuses scan limit 101 before transport"
+      ]
+    },
+    {
+      "variant": "row-bound",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS candidate cursor refuses inconsistent scan reply {\"rows\":[{\"version_id\":\"ed000000-0000-4000-8000-000000000001\"},{\"version_id\":\"ed000000-0000-4000-8000-000000000002\"}]}"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "ed75537cb9650d9f6473cc09880ad64bf26f5560615198402bb8a86e8677b04f",
+  "testSha256": "3030c4757fb2e9fd9d4bd504af051381c26932d8555ce3675be806f23a17fda7"
+}

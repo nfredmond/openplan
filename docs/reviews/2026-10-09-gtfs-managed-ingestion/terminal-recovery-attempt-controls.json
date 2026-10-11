@@ -1,0 +1,167 @@
+{
+  "sourceSha256": "0eaf5621853e6225bb8f7ca7581483e41265127610f7b3e50cea4cae83633e17",
+  "testSha256": "2095a10b898e457d8870703146fe41b8975430090db3a582dc08a5bcc3273faa",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "16b07815b4a419bf6a9aaeaef672e2d35125e8ce09e53d5b3d584c60132a6083"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "14d0b5de6c8c888a5b40289184c9096e116414e32922d042c37b8f96ca2dc8a0"
+    },
+    {
+      "case": "changed-claim",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "a9163a020ad5e6c3b4130454d1786efb66ff46274c74be55af850cef0208a206"
+    },
+    {
+      "case": "terminal-history",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2be86a96b6904ba21ef8bbb80240e804e2d5021cbb500afd5afaa1d8ed0232b2"
+    },
+    {
+      "case": "inactive-claim",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2169238c340ffbfdf073e39856368f983e3ba6a95beb5a2055ee1aed1a9610c3"
+    },
+    {
+      "case": "inactive-snapshot",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "ed32dc26ff49af0bc771be01672fc1e6d555f6765c1ffb64f9af93a8b3208049"
+    },
+    {
+      "case": "missing-initial-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "confirms current ownership before work",
+      "logSha256": "e25e832adb1ac7056778c5250af07fd717067976899525032e98884bf1c17a7c"
+    },
+    {
+      "case": "missing-final-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "confirms current ownership before work",
+      "logSha256": "08ced9303bbe285dc540371f32f8e1a3452936c01ee8f92d4ab0fa782eb1135b"
+    },
+    {
+      "case": "ignored-false-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "d8a1642cfc693dab4544b545bd1d8eedcbece5758bcf21ed4640c11f462ca058"
+    },
+    {
+      "case": "unpropagated-ownership-loss",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "fd808ff77f5994548fab0c72da9e74cc8575b7b707709e640cf8cc516b850dc8"
+    },
+    {
+      "case": "late-work-write",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "b9dfa518d78bdf621d3f17399d801c59bbafe10cfce9184ab3f92ccaeb66b33e"
+    },
+    {
+      "case": "terminal-slot-bypass",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c68b3780d9bdfd36606bdf7762cf0ae923cfa1411266164934793273ac7987f4"
+    },
+    {
+      "case": "terminal-operation-bypass",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "3b7e1e7204952a78f87897750085ad412de146167c10a27838c9597d3470cf97"
+    },
+    {
+      "case": "unsettled-work-write",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "155eb309b83377031652197c8c1ee4b9351f341c4e744ab08821fafb05d2dbb7"
+    },
+    {
+      "case": "terminal-outcome",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "ca07fb0fcb6e39b4f55661f8e4315be50e4a444e93e397f228e6203966ea10a7"
+    },
+    {
+      "case": "mutable-terminal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "bf73779ae23a02009c4ddf42268374f1de00f61d8b04c96dd5b87f9d7917bd05"
+    },
+    {
+      "case": "renewal-race",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "37f43cfeacdc37881e46c424e911e6a8d2e4d687a5cb6d0e9e61fdac1c654780"
+    },
+    {
+      "case": "unsafe-interval",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "54f09787a1a525bb1f382c5063ad9f90e923d0bfff7f0a23336eb599ecf645a2"
+    },
+    {
+      "case": "ignored-retained-terminal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "fe438f50aeda14d702b00dbabc2cb5ca91589182ae9cd901542e0805c7f05add"
+    },
+    {
+      "case": "missing-recovery-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "64b2c33cf1e6002091b9a5c42e78aa3bf544e20753b9ac4bfe8f42a98ff42325"
+    },
+    {
+      "case": "renew-closed-terminal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "f02ef20ad39f5519b19629c21f75e9ee13644cc47b115cf99c4dffb7a67cd8d6"
+    },
+    {
+      "case": "renew-cached-terminal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "01e29e6596793f2f0769986fd23982317464d76ffaca5726a55e13cbf8cc2ecb"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "68cf1d3a43e2f471c1f39a998733f3584d583de05a33c643a6d3c2f336ac6381"
+    }
+  ]
+}

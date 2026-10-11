@@ -1,0 +1,32 @@
+{
+  "testFiles": 70,
+  "tests": 1657,
+  "passed": 1640,
+  "skipped": 17,
+  "failed": 0,
+  "success": true,
+  "workerLimit": 1,
+  "regression": {
+    "runtimeSeconds": 89.784,
+    "memoryPeakMiB": 402.5
+  },
+  "scopedTypes": {
+    "passed": true,
+    "runtimeSeconds": 14.488,
+    "memoryPeakMiB": 600.2
+  },
+  "changedFileLint": {
+    "passed": true,
+    "runtimeSeconds": 5.159,
+    "memoryPeakMiB": 442.1
+  },
+  "controls": {
+    "runs": 51,
+    "positive": 3,
+    "intendedFailures": 48,
+    "runtimeSeconds": 117.684,
+    "memoryPeakMiB": 274.6
+  },
+  "verifiedProofHashes": 12,
+  "boundary": "Controlled component DOM, mock HTTP, browser storage and source mount inventory plus scoped GTFS/transit regression. Seventeen live database cases skipped. No T3 visual, live cookie session, full restore, installed CLI operation, capacity, CI, practitioner or release acceptance."
+}

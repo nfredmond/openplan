@@ -1,0 +1,237 @@
+{
+  "records": [
+    {
+      "kind": "early_cancel",
+      "pendingReceiptAtInterruption": null,
+      "resumed": {
+        "receipt": {
+          "command": "3d0a6fa3-becf-4e47-891b-3e0e13381e90",
+          "requestId": "f33b3a87-ab7d-4629-9658-b30027f7676b",
+          "workspaceId": "6324a5f8-2d90-4a03-a6f9-d556f6050b24",
+          "state": "cancelled",
+          "versionId": null,
+          "cancelledAt": "2026-10-10T23:47:01.04636+00:00",
+          "versionCancellation": null
+        },
+        "calls": [
+          "cancel_gtfs_submission"
+        ],
+        "maxRssKiB": 94648
+      },
+      "retained": {
+        "receipt": {
+          "command": "3d0a6fa3-becf-4e47-891b-3e0e13381e90",
+          "requestId": "f33b3a87-ab7d-4629-9658-b30027f7676b",
+          "workspaceId": "6324a5f8-2d90-4a03-a6f9-d556f6050b24",
+          "state": "cancelled",
+          "versionId": null,
+          "cancelledAt": "2026-10-10T23:47:01.04636+00:00",
+          "versionCancellation": null
+        },
+        "calls": [
+          "cancel_gtfs_submission"
+        ],
+        "maxRssKiB": 94508
+      },
+      "revokedActor": {
+        "denied": true,
+        "calls": [
+          "cancel_gtfs_submission"
+        ]
+      },
+      "viewerWriteDenied": true,
+      "untrustedRolesDenied": true
+    },
+    {
+      "kind": "unfinished_cancel",
+      "pendingReceiptAtInterruption": null,
+      "resumed": {
+        "receipt": {
+          "command": "33a47821-8e82-4f74-af58-e0b796f7a499",
+          "requestId": "2312206a-8d9a-45a3-9ced-0edd7a515f73",
+          "workspaceId": "6324a5f8-2d90-4a03-a6f9-d556f6050b24",
+          "state": "cancelled",
+          "versionId": "1ba36183-4c87-4390-ac36-685f2ddd7e74",
+          "cancelledAt": "2026-10-10T23:47:03.15129+00:00",
+          "versionCancellation": {
+            "command": "33a47821-8e82-4f74-af58-e0b796f7a499",
+            "version": "1ba36183-4c87-4390-ac36-685f2ddd7e74",
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "cleanupPending": false,
+            "closedAt": "2026-10-10T23:47:03.149718+00:00"
+          }
+        },
+        "calls": [
+          "cancel_gtfs_submission"
+        ],
+        "maxRssKiB": 94068
+      },
+      "retained": {
+        "receipt": {
+          "command": "33a47821-8e82-4f74-af58-e0b796f7a499",
+          "requestId": "2312206a-8d9a-45a3-9ced-0edd7a515f73",
+          "workspaceId": "6324a5f8-2d90-4a03-a6f9-d556f6050b24",
+          "state": "cancelled",
+          "versionId": "1ba36183-4c87-4390-ac36-685f2ddd7e74",
+          "cancelledAt": "2026-10-10T23:47:03.15129+00:00",
+          "versionCancellation": {
+            "command": "33a47821-8e82-4f74-af58-e0b796f7a499",
+            "version": "1ba36183-4c87-4390-ac36-685f2ddd7e74",
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "cleanupPending": false,
+            "closedAt": "2026-10-10T23:47:03.149718+00:00"
+          }
+        },
+        "calls": [
+          "cancel_gtfs_submission"
+        ],
+        "maxRssKiB": 94772
+      },
+      "revokedActor": {
+        "denied": true,
+        "calls": [
+          "cancel_gtfs_submission"
+        ]
+      },
+      "viewerWriteDenied": true,
+      "untrustedRolesDenied": true
+    },
+    {
+      "kind": "adopt",
+      "pendingReceiptAtInterruption": null,
+      "resumed": {
+        "receipt": {
+          "command": "334b377c-45e1-40ab-88f3-8d050b21b6f9",
+          "version": "9dfeda7a-536f-4417-8203-d9868bc8a2a2",
+          "adopted": true,
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "6cd3834f-599a-4834-acc9-5ccd42fa916b",
+            "versionId": "9dfeda7a-536f-4417-8203-d9868bc8a2a2",
+            "routeCount": 14,
+            "stopCount": 287,
+            "previousVersionId": null,
+            "previousRouteCount": null,
+            "previousStopCount": null
+          },
+          "adoptedAt": "2026-10-10T23:47:05.324592+00:00",
+          "reviewAccepted": true,
+          "humanAcceptShrinkage": false
+        },
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ],
+        "maxRssKiB": 95676
+      },
+      "retained": {
+        "receipt": {
+          "command": "334b377c-45e1-40ab-88f3-8d050b21b6f9",
+          "version": "9dfeda7a-536f-4417-8203-d9868bc8a2a2",
+          "adopted": true,
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "6cd3834f-599a-4834-acc9-5ccd42fa916b",
+            "versionId": "9dfeda7a-536f-4417-8203-d9868bc8a2a2",
+            "routeCount": 14,
+            "stopCount": 287,
+            "previousVersionId": null,
+            "previousRouteCount": null,
+            "previousStopCount": null
+          },
+          "adoptedAt": "2026-10-10T23:47:05.324592+00:00",
+          "reviewAccepted": true,
+          "humanAcceptShrinkage": false
+        },
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ],
+        "maxRssKiB": 95444
+      },
+      "revokedActor": {
+        "denied": true,
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ]
+      },
+      "viewerWriteDenied": true,
+      "untrustedRolesDenied": true
+    },
+    {
+      "kind": "material_adopt",
+      "pendingReceiptAtInterruption": null,
+      "resumed": {
+        "receipt": {
+          "command": "972029af-ea8c-428a-b64a-923da3f1c5aa",
+          "version": "a2fd0756-0073-407c-b402-35de4afd5a68",
+          "adopted": true,
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "561cfeef-ee40-4247-a9e8-00192827b0d7",
+            "versionId": "a2fd0756-0073-407c-b402-35de4afd5a68",
+            "routeCount": 6,
+            "stopCount": 7,
+            "previousVersionId": "cab17c7d-0c09-44af-8559-7e871776d676",
+            "previousRouteCount": 10,
+            "previousStopCount": 10
+          },
+          "adoptedAt": "2026-10-10T23:47:07.651474+00:00",
+          "reviewAccepted": true,
+          "humanAcceptShrinkage": true
+        },
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ],
+        "maxRssKiB": 95232
+      },
+      "retained": {
+        "receipt": {
+          "command": "972029af-ea8c-428a-b64a-923da3f1c5aa",
+          "version": "a2fd0756-0073-407c-b402-35de4afd5a68",
+          "adopted": true,
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "561cfeef-ee40-4247-a9e8-00192827b0d7",
+            "versionId": "a2fd0756-0073-407c-b402-35de4afd5a68",
+            "routeCount": 6,
+            "stopCount": 7,
+            "previousVersionId": "cab17c7d-0c09-44af-8559-7e871776d676",
+            "previousRouteCount": 10,
+            "previousStopCount": 10
+          },
+          "adoptedAt": "2026-10-10T23:47:07.651474+00:00",
+          "reviewAccepted": true,
+          "humanAcceptShrinkage": true
+        },
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ],
+        "maxRssKiB": 95992
+      },
+      "revokedActor": {
+        "denied": true,
+        "calls": [
+          "adopt_reviewed_gtfs_ingest"
+        ]
+      },
+      "viewerWriteDenied": true,
+      "untrustedRolesDenied": true
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-human-command.ts": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+    "openplan/src/lib/gtfs/managed-request-cancellation.ts": "647ecb1a7a310bd2f93ff3b17ca61f2faddf1ee3df6bd0e7d0bf5e379cab73fa",
+    "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+    "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_human_native.mts": "8bd8bc7b8789dbc7ac48cdcf0e3c466bbf1bb666404ea0d44fda65cf72f61560",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_human_native.py": "4d682ccfd793158abeec2fdbd00906213f99772cf36e7181d83cef3c0f31f830"
+  },
+  "boundary": "Actual PostgreSQL/PostgREST service, viewer, anon/authenticated roles and real committed-reply process interruption through private human journals. Synthetic completed counts and archive confirmation identities do not establish actual Storage custody, parser publication, scheduled or observed service, application session authorization, official CLI migration/restore or browser acceptance."
+}

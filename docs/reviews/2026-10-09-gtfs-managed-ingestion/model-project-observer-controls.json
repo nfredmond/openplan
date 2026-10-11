@@ -1,0 +1,56 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-field",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "changed-geometry",
+      "passed": true,
+      "expectedFailure": "browser-geometry-mismatch"
+    },
+    {
+      "case": "wrong-feed",
+      "passed": true,
+      "expectedFailure": "coverage-target-mismatch"
+    },
+    {
+      "case": "failed-request",
+      "passed": true,
+      "expectedFailure": "coverage-response-not-established"
+    },
+    {
+      "case": "mobile-overflow",
+      "passed": true,
+      "expectedFailure": "layout-overflow"
+    },
+    {
+      "case": "console-error",
+      "passed": true,
+      "expectedFailure": "captured-console-error"
+    },
+    {
+      "case": "wrong-project",
+      "passed": true,
+      "expectedFailure": "model-project-binding"
+    },
+    {
+      "case": "unexpected-run",
+      "passed": true,
+      "expectedFailure": "unexpected-model-execution"
+    }
+  ],
+  "nativeReadRepeated": true,
+  "limits": [
+    "Controls mutate isolated copies of actual native and browser observations, not database rows or production source.",
+    "Recorded future-only console and declared viewport interval. No physical phone or scientific acceptance."
+  ]
+}

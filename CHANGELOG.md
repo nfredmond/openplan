@@ -20,7 +20,28 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
-No changes are recorded here.
+The managed transit import candidate moves URL, catalog, ZIP and refresh imports
+to an installed worker when the installation explicitly enables it. The worker
+retains exact private bytes, recovers interrupted attempts and leaves completed
+versions for planner review and adoption. The default remains disabled. This
+candidate is not a released version; final checks and release verification remain
+unfinished. See [operation and recovery](openplan/docs/ops/GTFS_MANAGED_INGESTION.md)
+before configuring an isolated candidate installation.
+
+The candidate includes four additive migrations, applied in order:
+
+- `20261016000028_gtfs_managed_execution.sql` adds managed execution, receipts,
+  guarded publication and recurring cleanup of late uploads.
+- `20261016000029_gtfs_submission_status.sql` adds retained request-status reads.
+- `20261016000030_gtfs_human_review.sql` adds planner review and checked adoption.
+- `20261016000031_gtfs_request_cancellation.sql` adds cancellation of retained
+  requests, including requests whose admission reply is uncertain.
+
+Transit downloads stop when their worker is cancelled. The download deadline
+also bounds stalled DNS and redirect cleanup. Interrupted responses cannot
+publish partial archives. Recurring cleanup preserves open imports, ready feeds
+and files without recorded deletion authority. Candidate migrations have not
+been applied to the walkthrough instance.
 
 ## 0.68.0 (2026-10-09)
 

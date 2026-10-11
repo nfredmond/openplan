@@ -1,0 +1,77 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "late-admission",
+      "result": "expected assertion failure",
+      "assertion": "late admission created cancelled request"
+    },
+    {
+      "variant": "writer",
+      "result": "expected assertion failure",
+      "assertion": "viewer cancelled request"
+    },
+    {
+      "variant": "reason",
+      "result": "expected assertion failure",
+      "assertion": "empty cancellation reason accepted"
+    },
+    {
+      "variant": "replay",
+      "result": "expected assertion failure",
+      "assertion": "changed reason replay accepted"
+    },
+    {
+      "variant": "request-identity",
+      "result": "expected assertion failure",
+      "assertion": "second cancellation command replaced identity"
+    },
+    {
+      "variant": "read-scope",
+      "result": "expected assertion failure",
+      "assertion": "foreign cancellation disclosed"
+    },
+    {
+      "variant": "reader",
+      "result": "expected assertion failure",
+      "assertion": "outsider read cancellation"
+    },
+    {
+      "variant": "native-close",
+      "result": "expected assertion failure",
+      "assertion": "unfinished request was not closed"
+    },
+    {
+      "variant": "private-bypass",
+      "result": "expected assertion failure",
+      "assertion": "service bypassed cancellation wrapper"
+    },
+    {
+      "variant": "write-role",
+      "result": "expected assertion failure",
+      "assertion": "authenticated client cancelled request"
+    },
+    {
+      "variant": "read-role",
+      "result": "expected assertion failure",
+      "assertion": "authenticated client read cancellation"
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "assertion": null
+    }
+  ],
+  "migrationSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+  "checksSha256": "0895e5085de68db6610d42688db602e3a31f8c3c2350382989df4950aede7d38",
+  "boundary": "Actual PostgreSQL rollback fixtures and current service/authenticated roles. Does not establish concurrent interleaving, HTTP/session authorization, Storage cleanup, official migration installation/restore, power-loss durability or browser usability."
+}

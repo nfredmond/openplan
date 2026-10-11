@@ -184,8 +184,11 @@ export type GrantInventory = {
 const NON_TABLE_OBJECTS =
   /^\s*(?:ALL\s+(?:FUNCTIONS|SEQUENCES|ROUTINES|PROCEDURES)\b|FUNCTION\b|PROCEDURE\b|ROUTINE\b|SEQUENCE\b|SCHEMA\b|DATABASE\b|DOMAIN\b|TYPE\b|LARGE\s+OBJECT\b|TABLESPACE\b|FOREIGN\b|PARAMETER\b)/i;
 
-function bareTable(name: string): string {
-  return name.trim().replace(/^public\./i, "").replace(/"/g, "").toLowerCase();
+/** This inventory follows public tables. Private schemas keep their own privileges. */
+function bareTable(name: string): string | null {
+  const normalized = name.trim().replace(/"/g, "").toLowerCase();
+  if (normalized.includes(".") && !normalized.startsWith("public.")) return null;
+  return normalized.replace(/^public\./, "");
 }
 
 /** Index of `keyword` as a standalone word at paren depth 0 and outside strings, or -1. */
@@ -273,13 +276,16 @@ export function parseGrantStatement(input: string): ParsedStatement | null {
   let reach: ParsedStatement["reach"];
   let tables: string[];
   if (/^\s*ALL\s+TABLES\s+IN\s+SCHEMA\b/i.test(objectText)) {
+    const schemas = splitTopLevel(objectText.replace(/^\s*ALL\s+TABLES\s+IN\s+SCHEMA\b/i, ""), ",")
+      .map((schema) => schema.trim().replace(/"/g, "").toLowerCase());
+    if (!schemas.includes("public")) return null;
     reach = "blanket";
     tables = [];
   } else {
     reach = "named";
     tables = splitTopLevel(objectText.replace(/^\s*TABLE\b/i, ""), ",")
       .map(bareTable)
-      .filter(Boolean);
+      .filter((table): table is string => Boolean(table));
     if (!tables.length) return null;
   }
 
@@ -683,11 +689,16 @@ export function loadGrantInventory(options: { dir?: string } = {}): GrantInvento
     columnGrants: () => columnGrants,
     revokedTables: () => revokedTables,
     holds: (table, role, privilege) => {
-      const key = keyOf(bareTable(table), role, privilege);
+      const name = bareTable(table);
+      if (name === null) return "none";
+      const key = keyOf(name, role, privilege);
       if (held.has(key)) return "table";
       return (heldColumns.get(key)?.size ?? 0) > 0 ? "column" : "none";
     },
-    heldBy: (table, role, privilege) => held.get(keyOf(bareTable(table), role, privilege)) ?? null,
+    heldBy: (table, role, privilege) => {
+      const name = bareTable(table);
+      return name === null ? null : held.get(keyOf(name, role, privilege)) ?? null;
+    },
   };
 }
 

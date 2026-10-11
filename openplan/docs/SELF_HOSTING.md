@@ -244,6 +244,11 @@ refuses a stack whose API URL differs from the application's effective URL.
 
 ## Services, schedules and upgrades
 
+The opt-in retained transit import candidate has a separate
+[worker and recovery procedure](ops/GTFS_MANAGED_INGESTION.md). It requires
+coordinated private file persistence and explicit worker installation. Its four
+migrations remain unreleased; do not enable it on an unverified installation.
+
 A production installation needs named ownership of TLS, firewall rules,
 service supervision, database and storage persistence, secrets, outbound
 connections, monitoring, backups and recovery. No single checked-in command

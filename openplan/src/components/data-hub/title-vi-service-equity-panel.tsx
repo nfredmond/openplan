@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Scale } from "lucide-react";
 
 import type {
@@ -194,16 +194,21 @@ export function TitleViServiceEquityPanel({
   workspaceId,
   today,
   readOnly = false,
+  feedVersionRevision = "",
 }: {
   workspaceId: string;
   /** `YYYY-MM-DD` from the server, so an adoption date never depends on a browser clock. */
   today: string;
   readOnly?: boolean;
+  /** Current adopted feed identities from the scoped server read. */
+  feedVersionRevision?: string;
 }) {
   const [policy, setPolicy] = useState<PolicyBody | null>(null);
   const [equity, setEquity] = useState<EquityBody | null>(null);
   const [serviceDay, setServiceDay] = useState<string>("monday");
   const [error, setError] = useState<string | null>(null);
+  const equityGeneration = useRef(0);
+  const invalidateEquity = useCallback(() => { equityGeneration.current++; }, []);
   const [editing, setEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
@@ -236,22 +241,25 @@ export function TitleViServiceEquityPanel({
 
   const loadEquity = useCallback(
     async (day: string) => {
+      const generation = ++equityGeneration.current;
+      setEquity(null);
       try {
         const response = await fetch(
-          `/api/title-vi/service-equity?workspaceId=${workspaceId}&serviceDay=${day}`
+          `/api/title-vi/service-equity?workspaceId=${workspaceId}&serviceDay=${day}`,
+          { cache: "no-store" }
         );
         if (!response.ok) {
           const body = (await response.json().catch(() => ({}))) as { error?: string; hint?: string };
-          // A read failure is reported AS a read failure. Rendering it as an
-          // empty comparison would say no tract has service.
-          setEquity(null);
+          if (generation !== equityGeneration.current) return;
           setError(body.hint ? `${body.error ?? "Read failed"} ${body.hint}` : body.error ?? "Read failed");
           return;
         }
+        const body = (await response.json()) as EquityBody;
+        if (generation !== equityGeneration.current) return;
         setError(null);
-        setEquity((await response.json()) as EquityBody);
+        setEquity(body);
       } catch {
-        setEquity(null);
+        if (generation !== equityGeneration.current) return;
         setError("Could not compare service equity.");
       }
     },
@@ -263,8 +271,12 @@ export function TitleViServiceEquityPanel({
   }, [loadPolicy]);
 
   useEffect(() => {
-    void loadEquity(serviceDay);
-  }, [loadEquity, serviceDay]);
+    let active = true;
+    // Defer the loading state until after this render. A replacement feed or
+    // service-day read supersedes an older response without erasing policy edits.
+    void Promise.resolve().then(() => { if (active) void loadEquity(serviceDay); });
+    return () => { active = false; invalidateEquity(); };
+  }, [loadEquity, serviceDay, feedVersionRevision, invalidateEquity]);
 
   const numberOrNull = (raw: string): number | null => {
     const trimmed = raw.trim();

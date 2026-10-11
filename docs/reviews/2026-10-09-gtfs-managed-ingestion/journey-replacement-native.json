@@ -1,0 +1,59 @@
+{
+  "id": "efd51598-a404-4501-97b2-eeca83622c18",
+  "status": "ready",
+  "is_current": false,
+  "state": "ready",
+  "attempt": 2,
+  "archive_identity": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/16e2e138-400a-49ff-8bc3-089ff185e5d7/efd51598-a404-4501-97b2-eeca83622c18.zip",
+    "bytes": 892312,
+    "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+  },
+  "archive_confirmed_at": "2026-10-11T02:13:17.53536+00:00",
+  "archive_available": true,
+  "claims": [
+    {
+      "attempt": 1,
+      "claimed_at": "2026-10-11T02:13:16.432722+00:00",
+      "initial_lease_until": "2026-10-11T02:15:16.432722+00:00"
+    },
+    {
+      "attempt": 2,
+      "claimed_at": "2026-10-11T02:15:20.637938+00:00",
+      "initial_lease_until": "2026-10-11T02:17:20.637938+00:00"
+    }
+  ],
+  "route_rows": 95,
+  "stop_rows": 717,
+  "current_version_id": "8a86a802-a3cc-4b09-979d-6187bad01285",
+  "archiveUnchanged": true,
+  "oldRootSourceRetained": [
+    {
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+    }
+  ],
+  "newRootJournals": [
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da-submissions/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/source/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/artifact/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-prepare-output/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-archive-confirmation/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-route-0/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-5/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-archive-preparation/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-7/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-parsing/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-1/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-2/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-3/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-tracts/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-0/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-6/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-terminal/pending.json",
+    "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-efd51598-a404-4501-97b2-eeca83622c18/attempt-277508a7-e9b7-4174-91e9-3370c3026ab9/commands/command-stop-4/pending.json"
+  ]
+}

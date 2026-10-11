@@ -1,3 +1,4 @@
+import { randomUUID } from "node:crypto";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
@@ -12,6 +13,7 @@ import {
 } from "lucide-react";
 import { DataHubRecordComposer } from "@/components/data-hub/data-hub-record-composer";
 import { GtfsIngestPanel } from "@/components/data-hub/gtfs-ingest-panel";
+import { gtfsManagedClientMode } from "@/lib/gtfs/managed-ui-config";
 import { TitleViServiceEquityPanel } from "@/components/data-hub/title-vi-service-equity-panel";
 import { WorkspaceGisManager } from "@/components/workspace-gis/workspace-gis-manager";
 import {
@@ -271,7 +273,7 @@ export default async function DataHubPage() {
     supabase
       .from("gtfs_feed_versions")
       .select(
-        "feed_id, workspace_id, service_start_date, service_end_date, route_service_level_rows, stop_service_level_rows"
+        "id, feed_id, workspace_id, service_start_date, service_end_date, route_service_level_rows, stop_service_level_rows"
       )
       .eq("workspace_id", workspaceId) as unknown as CurrentVersionQuery
   ).limit(200);
@@ -337,6 +339,14 @@ export default async function DataHubPage() {
     // 'ready'` together, because either alone is wrong in a different direction.
     transitFeedVersionsQuery,
   ]);
+
+  // A fresh server read invalidates dependent service evidence even when a
+  // changed feed lies beyond this page's bounded current-version list.
+  const transitFeedRevision = JSON.stringify({
+    read: randomUUID(),
+    versionIds: transitFeedVersionsResult.error ? null :
+      ((transitFeedVersionsResult.data ?? []) as Array<{ id: string }>).map(version => version.id).sort(),
+  });
 
   const connectors = ((connectorsResult.data ?? []) as ConnectorRow[]).slice(0, 8);
   const datasets = ((datasetsResult.data ?? []) as DatasetRow[]).slice(0, 10);
@@ -635,6 +645,8 @@ export default async function DataHubPage() {
         a client component may not read it directly.
       */}
       <GtfsIngestPanel
+        key={`transit:${workspaceId}:${user.id}`}
+        managed={gtfsManagedClientMode(workspaceId, user.id)}
         workspaceId={workspaceId}
         maxUploadBytes={BODY_LIMITS.gtfsFeedRaw}
         today={todayIso}
@@ -649,6 +661,8 @@ export default async function DataHubPage() {
         which is this repository's most-repeated defect class.
       */}
       <TitleViServiceEquityPanel
+        key={`equity:${workspaceId}:${user.id}`}
+        feedVersionRevision={transitFeedRevision}
         workspaceId={workspaceId}
         today={todayIso}
         readOnly={isReadOnlyWorkspaceRole(membership.role)}

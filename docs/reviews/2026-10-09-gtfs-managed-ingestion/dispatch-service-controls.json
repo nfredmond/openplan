@@ -1,0 +1,312 @@
+{
+  "sourceSha256": "a8f761bb4ba44c08c16f5c45c6509edc3bc1e57ec3acf409e6596d8a2e285abd",
+  "testSha256": "cd33528f6f9c9b8f72ad01fd74fecb3ad0aa7ed967544aaca9e053d48f516ebf",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "25372356ae7ae19a9be4e68ad41e1f314932a86a41d8ce2f35b5de0f96df5030"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "f1c1b703d4f762b2c57ba55caaa965dca79182d60bc109204081e3e33faf2e19"
+    },
+    {
+      "case": "gtfs-claim-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "6e51c01623027bd7a0f6ac676895bc4615e78d92ec4f464506e84b6f47722c4f"
+    },
+    {
+      "case": "gtfs-claim-interval-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "9d588fcfcb4d719a266bda61b7a484bc78fdadea540e37d0743ca421e2e4a552"
+    },
+    {
+      "case": "gtfs-execution-and-public-stage-differ",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "4e02dc0ca124f1efc8fd379b225dc47f2e11944b2b27903967557a8b70d6c9ca"
+    },
+    {
+      "case": "gtfs-tract-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "4bd6070df0e796537f79bd7c63ba09d85db3bffd739bb7ffe7e49ad6c0d1f01d"
+    },
+    {
+      "case": "gtfs-tract-outcome-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "42f258af7651b6578313f35e82ea8a19e50459b66a408341f0bdb2a7e4ab8bed"
+    },
+    {
+      "case": "gtfs-attempt-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "0fe5825ca81607576a05f4166d8d2cbc4c0ec936414925be29ac2129e7056a96"
+    },
+    {
+      "case": "gtfs-claim-is-ahead-of-execution",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "5e8741703dc1ecb7de91c08d3702d960bc9d5a97883a10d4613e739dd927e4a5"
+    },
+    {
+      "case": "gtfs-active-attempt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "11c132a973532e2f7a89b1debd167b71224e6c317e883baecccbd541425dd16b"
+    },
+    {
+      "case": "gtfs-preparation-ownership-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "a6078f6da14da190e6164c9ac95242b9746c498fe3e189830dbcbe3f93e9f301"
+    },
+    {
+      "case": "gtfs-confirmed-archive-missing",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "950fe1b27a1d31e5b97bd46202faa46dabc7331bff555ca839aa1ce5ce85af05"
+    },
+    {
+      "case": "gtfs-parsing-archive-unconfirmed",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "5528c9ec6d2dc328958a02f009e6a98b08c5facaed1262bee3e93a697b832e4c"
+    },
+    {
+      "case": "gtfs-upload-source-differs-from-archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "2936656cd19495835bfe7955c8a22fb53918a2694abb7b119e449193cd0274d4"
+    },
+    {
+      "case": "gtfs-url-source-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "066f4fc3c758f38a7beaeb8ec38ca69b4526081bde6ac6cd4c954b90b2bb021a"
+    },
+    {
+      "case": "gtfs-catalog-identity-missing",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "6e25982c84b8e18fd84cbed574b1ceea295dd1104fa9676ef57b8dc13ae2c7a9"
+    },
+    {
+      "case": "gtfs-completion-evidence-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "1e0784fe3c434f4df3b09cff93a27ef00c1817b30b374869875624d2debe0756"
+    },
+    {
+      "case": "gtfs-ready-receipt-missing",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "948011f3463ffff39d59f62e16559701cf3a21c50f8935b35737b8364c7dc666"
+    },
+    {
+      "case": "gtfs-member-status-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "c7ba8a5fdea93f77143a3cb9c707cd9c3577de2008b7e710fbd139a5962d9bf7"
+    },
+    {
+      "case": "gtfs-current-version-is-not-ready",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "bce6db51f6d87a72691b28596b656401bfad17aa6fd5613c831275410e4facf8"
+    },
+    {
+      "case": "gtfs-running-lease-missing",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "4a97049e1aedf5f98afad7eb8d3ca545491f3b76898c1dc4cd2848201d9938cc"
+    },
+    {
+      "case": "gtfs-inactive-lease-retained",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "271d25d16b3c38cdc925ae9bf2c7ddd6337df0f0688a11c948d2a4737569818d"
+    },
+    {
+      "case": "gtfs-failure-code-missing",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "a3fd942d63c10b472330ff779c00c969438475a78805974ec9c8d75b5e717a5a"
+    },
+    {
+      "case": "gtfs-queue-duplicated-a-version",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "cd59ca89e991014d66901fcc675101162c274f37a7f5fe5e71e628d64a522c1d"
+    },
+    {
+      "case": "gtfs-archive-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "b974cb1a892d4b9896d46db369ab7ab0df4e21fac6a08284a1eaa457f121131b"
+    },
+    {
+      "case": "gtfs-output-plan-capacity-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "bd8228a2f148a4a10bf004c80fd4e6095c8630625429f41a9ad858e5ba796264"
+    },
+    {
+      "case": "gtfs-manifest-order-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "b4413cfa45425e4763ee30256ee6441d8f845f03e4250de99d01d9a75db9cf70"
+    },
+    {
+      "case": "gtfs-manifest-totals-differ",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "ffcf6e1b6b1b5331ca04a3c3b24b071b3d1c019ba5ba453a59e0e58039a4f93e"
+    },
+    {
+      "case": "gtfs-stage-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "54cea0dd3af1ed0b90ea3d7e35b52fd4ecc3a918c61c391c6a21cf11f2c952c5"
+    },
+    {
+      "case": "gtfs-archive-preparation-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "206d501212fd65ad91c7b59d526932d61df6b86f7f36db87da7084fe388e362f"
+    },
+    {
+      "case": "gtfs-archive-confirmation-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "11becdfb35e0c4494558cbf277050e8f3b34490bdb48bc00c9b5119eb12f1225"
+    },
+    {
+      "case": "gtfs-output-preparation-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "cdf0b28d1b29095c70b98506e2b48f3d8aa9e40540ff24a25aa2dd478887edc2"
+    },
+    {
+      "case": "gtfs-batch-row-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "b573af5fa46ad90756a216783721b5b71088f083c2c7a3943058b6c3cde26f13"
+    },
+    {
+      "case": "gtfs-batch-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "7e347dbb1a0ec714f63bf6c2d15faa41b5969dc7cafe97b3f7db66634a44f0f7"
+    },
+    {
+      "case": "gtfs-tract-command-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "037eab164ee5421062bdddf646699a942de36c5a6e3eb5087000af7464aa717b"
+    },
+    {
+      "case": "gtfs-finalization-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "a8da42a5f4ce6a8052987c19b21eed6835d40f5d50b30c74bdce60306a74ec3d"
+    },
+    {
+      "case": "gtfs-failure-receipt-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "fefb068f4110099bc725df43701ec3c8cb7bf54a6b03e56f436858ce45da8017"
+    },
+    {
+      "case": "gtfs-adoption-receipt-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "2345bace8e97046ddc799cc64125740ebd28cc22526d82c8a1cb4ca6e946e5b4"
+    },
+    {
+      "case": "gtfs-adoption-predecessor-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "d0fdc6dfbbadafcf7d6f4b306bc1cf1a918b7f923f307a4ea4e18f8ac87cfcf4"
+    },
+    {
+      "case": "gtfs-adoption-outcome-differs-from-shrinkage-evidence",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "0d8c060651b5fc7c5df24c2e5873c8bfb94f1cc6ec5db951ba2d48e9718e4e0e"
+    },
+    {
+      "case": "gtfs-current-adoption-predecessor-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "353f9fe35d7835e41d4175645a72d9d6182baf81a8bc7bd8c004568e3d960b40"
+    },
+    {
+      "case": "loose-attempt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "3585fd33f7dbbc76a68c16bf429d9d317f51548fd3666eebf794eac73be46a83"
+    },
+    {
+      "case": "loose-status",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "af2340250ed69c03cc41f434193367f89199efdcfdc23bdaa675d52818c548c7"
+    },
+    {
+      "case": "queue-response-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "d8c349e7d5a2679fa6d39d49947fb3e606edee1976023be98702c237ecb9b93a"
+    },
+    {
+      "case": "queue-input-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "3cab090c85724b536bb11ea7c2e371fa7144446d58d5beb721201d56e727143a"
+    },
+    {
+      "case": "coerced-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "2e67a83412d1f56e969369c18d823ae375f5080a40fa59beee3d30ce01b8576b"
+    },
+    {
+      "case": "ignored-response-error",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "eff1f734c4d54ea1b229aebaf2f73cfca6768d6b75d42a916d7cfde99d5a9014"
+    },
+    {
+      "case": "missing-deadline",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "73b0da63d515c9735538acb563efadbeeeba90fe2dee52390cd041c7050de914"
+    },
+    {
+      "case": "missing-pre-dispatch-cancel",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "bd81cec002f65e3e7135363a63a88454222cac716778cdd75dd6f6bdafc81823"
+    },
+    {
+      "case": "missing-pre-cancel",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "9b083523c32e9f8c618679002aff0d4a86f26adccaa5a0f4b58131a485c552cd"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "c2957ca24d4f534c40a1970d63ad3ce70cbf0340a85fd5d1a0d4c9c3a4375fcf"
+    }
+  ]
+}

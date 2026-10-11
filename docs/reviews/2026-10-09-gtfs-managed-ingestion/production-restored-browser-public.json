@@ -1,0 +1,53 @@
+{
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "buildId": "tzACilpmH3AJLJJ3QduUw",
+  "targetDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "restoredDesktop": {
+    "href": "http://127.74.9.10:3564/data-hub",
+    "managedPanels": 1,
+    "selected": "bart-full-restore-check\n\nVersion 21d86ed0-2479-4ade-8ce5-40eae7d0b481\n\nReady for review\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A recorded historical command does not prove which version is in use now.\n\nRead version again",
+    "viewport": {
+      "documentWidth": 1280,
+      "height": 800,
+      "width": 1280
+    }
+  },
+  "restoredMobile": {
+    "width": 390,
+    "height": 844,
+    "documentWidth": 390,
+    "reviewText": "bart-full-restore-check\n\nVersion 21d86ed0-2479-4ade-8ce5-40eae7d0b481\n\nReady for review\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A recorded historical command does not prove which version is in use now.\n\nRead version again"
+  },
+  "historicalReplay": {
+    "decision": "Adoption. Exact command receipt confirmed in this session.\n\nCommand 287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c\n\nVersion b784a5c6-fc6c-4b01-aef3-1991e57a24f3. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record",
+    "errors": [],
+    "observedReads": [
+      {
+        "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+        "status": 200
+      }
+    ]
+  },
+  "nativeVersions": [
+    {
+      "id": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+      "status": "ready",
+      "current": false
+    },
+    {
+      "id": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "status": "ready",
+      "current": true
+    },
+    {
+      "id": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3",
+      "status": "ready",
+      "current": false
+    }
+  ],
+  "limits": [
+    "T3 reconnect resets the initial future-only console recorder; no clean historical-console claim.",
+    "Retained owner session and actual review/replay; no new normal browser password sign-in in production.",
+    "Same cluster and logical origin. No adoption of the restored ZIP, whole-host recovery or practitioner acceptance."
+  ]
+}

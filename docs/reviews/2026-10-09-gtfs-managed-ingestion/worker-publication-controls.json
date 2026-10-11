@@ -1,0 +1,125 @@
+{
+  "sourceSha256": "9ae7de33dfd4d55bde295156bd18c0cc3bcd7c4d563d403f44f4affe8a0f2e8e",
+  "testSha256": "900a06f6ca69acf3e45341c7f8e61752bdc665d7a52ee6ab8648644bee2b3725",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "3f87d4d3df1d9b03cd9cb7715aea64df3fe89343b90dfb9fac265e8598045fff"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "07d12f9a2a85c4198b2839383f5f83c1f892db349ce0c30199d35773653401b6"
+    },
+    {
+      "case": "gtfs-publication-artifact-size-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "97199a78815a516c15e6884e3efde36bb5fd2bf82781a600c5e3796a1245f113"
+    },
+    {
+      "case": "gtfs-publication-artifact-read-is-incomplete",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "refuses a short descriptor read",
+      "logSha256": "6c6e3dfbe235b1014438f544799ce0a9027217dbd04b7c1ea0ad008952b816d1"
+    },
+    {
+      "case": "gtfs-publication-artifact-content-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c8b14680f8ca103de08bb464ef049d7eaa84b4988370a2484fa212ae37eca827"
+    },
+    {
+      "case": "missing-preparation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "61214b21c482f8bb9e11f9472877c6d9918a412e92f73bfb41e455611ab9892f"
+    },
+    {
+      "case": "changed-row-workspace",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c1b649da046f48ce7ed7ab49461be1666047f16a7289895d507c507a32e1d32e"
+    },
+    {
+      "case": "incomplete-batches",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "1fa46abe1988ec3fd7470aa3cc6218cd1c0a7fe97d9c1bd2926c454f388b2c16"
+    },
+    {
+      "case": "wrong-manifest-hash",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "34c9cf26e2496bbc2280c6dcc1452ccb21df2682c587d06ed082cc4c3786b7b4"
+    },
+    {
+      "case": "wrong-adoption-count",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "e961ca971c3e3c2c683ab1f7a9893b6b9d286cd829a8e6dec8efd628d63112dc"
+    },
+    {
+      "case": "wrong-metadata-count",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "6630e07a4f57a9def37e6feed387b462cf107391b14a25d75f8ecf63b06f2a40"
+    },
+    {
+      "case": "late-metadata-check",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "d85a8e6335c42d0630ee35557d660fed3d18427a8ea43c7e701a42c77407e8b0"
+    },
+    {
+      "case": "ignored-cancellation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "d1270ea284f2fe1ae04e47ea4d63029aa3eabe5895b05ed336559f29ee81cb50"
+    },
+    {
+      "case": "lost-artifact-signal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "propagates artifact-lock cancellation",
+      "logSha256": "d9bad998cf1449647a9da02171f63f17778978e8c130d49e172075a0ac6c31e8"
+    },
+    {
+      "case": "unchecked-batch-size",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "refuses invalid batch size 1001",
+      "logSha256": "f770fe05f896d8ac9c408bac08ca06627669b9b6a997152a1a50465a47b2f548"
+    },
+    {
+      "case": "unchecked-output-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "6658d0768aef8863cf44b27fef51a146e355d985a155b86b5bbed472051163a5"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "4ab06dd869b074e84e8d2ebbf27ad4353abbcfe80dc50c032d3e8f5d35f201b9"
+    }
+  ]
+}

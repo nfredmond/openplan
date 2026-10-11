@@ -1,0 +1,76 @@
+{
+  "sourceSha256": "a9134fe5ca52de286d6caa58872ea5c1b26d17d3e007ab455a2037fce9177b94",
+  "checksSha256": "53c2b00697aab3fa9461ecc99d844c6f3d95eaed3a0dc3a9d33011077e368919",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "page-bound",
+      "result": "expected assertion failure",
+      "assertion": "unbounded reconciliation accepted"
+    },
+    {
+      "variant": "key-shape",
+      "result": "expected assertion failure",
+      "assertion": "invalid key retired"
+    },
+    {
+      "variant": "version-suffix",
+      "result": "expected assertion failure",
+      "assertion": "different version key retired"
+    },
+    {
+      "variant": "scope",
+      "result": "expected assertion failure",
+      "assertion": "foreign scope retired"
+    },
+    {
+      "variant": "identity",
+      "result": "expected assertion failure",
+      "assertion": "retired identity changed"
+    },
+    {
+      "variant": "queue-capture",
+      "result": "expected assertion failure",
+      "assertion": "cleanup request not retained"
+    },
+    {
+      "variant": "legacy-close-capture",
+      "result": "expected assertion failure",
+      "assertion": "unconfirmed legacy archive lost"
+    },
+    {
+      "variant": "closed-state",
+      "result": "expected assertion failure",
+      "assertion": "open archive selected"
+    },
+    {
+      "variant": "closure-required",
+      "result": "expected assertion failure",
+      "assertion": "unclosed archive selected"
+    },
+    {
+      "variant": "deletion-capture",
+      "result": "expected assertion failure",
+      "assertion": "deleted parent archive lost"
+    },
+    {
+      "variant": "rotation",
+      "result": "expected assertion failure",
+      "assertion": "reconciliation rotation starved later keys"
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "assertion": null
+    }
+  ]
+}

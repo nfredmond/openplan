@@ -1,0 +1,188 @@
+{
+  "records": [
+    {
+      "case": "live",
+      "initialLeaseSecondsRemaining": 119.750708,
+      "actualWaitSeconds": 0,
+      "resumed": {
+        "mode": "resume-live",
+        "result": {
+          "outcomes": [
+            {
+              "versionId": "5beeb674-cd0d-48ff-9339-514477852fe2",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 1,
+        "calls": [
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "b19cd3bf-6129-4a3d-a061-55572176aca8",
+        "retainedAttempts": 1,
+        "maxRssKiB": 145856
+      },
+      "retained": {
+        "mode": "retained",
+        "result": {
+          "outcomes": [],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 0,
+        "calls": [
+          "scan_gtfs_ingest_candidates"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "b19cd3bf-6129-4a3d-a061-55572176aca8",
+        "retainedAttempts": 1,
+        "maxRssKiB": 101564
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "attempt": 1,
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      }
+    },
+    {
+      "case": "expired",
+      "initialLeaseSecondsRemaining": 119.821478,
+      "actualWaitSeconds": 120.37331132500549,
+      "resumed": {
+        "mode": "resume-expired",
+        "result": {
+          "outcomes": [
+            {
+              "versionId": "bbc48c02-b67c-4770-8d01-3c203f6a4b8e",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "sourceRequests": 0,
+        "uploads": 1,
+        "calls": [
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest"
+        ],
+        "staleWhileRunning": true,
+        "attemptDirectory": "41256d90-aa26-4e7d-9321-d024ad5971c3",
+        "retainedAttempts": 2,
+        "maxRssKiB": 148916
+      },
+      "retained": {
+        "mode": "retained",
+        "result": {
+          "outcomes": [],
+          "pendingCount": 0,
+          "candidateCount": 0
+        },
+        "sourceRequests": 0,
+        "uploads": 0,
+        "calls": [
+          "scan_gtfs_ingest_candidates"
+        ],
+        "staleWhileRunning": false,
+        "attemptDirectory": "41256d90-aa26-4e7d-9321-d024ad5971c3",
+        "retainedAttempts": 2,
+        "maxRssKiB": 101028
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "attempt": 2,
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      }
+    }
+  ],
+  "syntheticDebugExpiry": false,
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "0e42a4a61a011a3ab22e26e7dc0aa9ed8d4bfcf7bba7fe7800b9d11e17f07674",
+    "openplan/src/lib/gtfs/managed-worker-intake.ts": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+    "openplan/src/lib/gtfs/managed-worker-service.ts": "ed75537cb9650d9f6473cc09880ad64bf26f5560615198402bb8a86e8677b04f",
+    "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.mts": "4d8ee04639acef6e5361eb6e62391bf8d835d13bfe062b09f9d98cece9da3388",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_queue_native.py": "d2325223f110dc12df52e1d83bb2ef0a9e10d711842f944b79af2faa41dbe719"
+  },
+  "boundary": "Actual server-clock expiry. Actual database queue, process loss, live ownership recovery/replacement, local HTTP, Storage and parser. No application routes, full restore, capacity or browser acceptance."
+}

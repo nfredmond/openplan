@@ -1,0 +1,10 @@
+{
+  "unit": "openplan-gtfs-browser-app-20261010-09",
+  "head": "2caefd6a9a41",
+  "heapLimitMiB": 2048,
+  "serviceLimitGiB": 4,
+  "memoryPeakGiB": 3.6,
+  "observed": "V8 heap out of memory, port no longer listening",
+  "t3CrashCausality": "not established",
+  "next": "Fresh owned dev service with 3072 MiB heap and 5 GiB cap, then production build."
+}

@@ -19,6 +19,8 @@ import {
   gtfsCaveatContextFromVersionRow,
 } from "@/lib/gtfs/route-projections";
 import { selectGtfsCaveats } from "@/lib/gtfs/caveats";
+import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
+import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
 
 /**
  * THE WORKSPACE'S TRANSIT FEEDS: what is here, and how another one gets here.
@@ -264,6 +266,11 @@ export async function POST(request: NextRequest) {
     }
 
     const service = createServiceRoleClient();
+
+    if (managedGtfsEnabled()) {
+      return managedGtfsRouteSubmission(request, { service, workspaceId, actorId: user.id, intent: payload.data,
+        resolve: archive => resolveManagedGtfsSubmission(service, payload.data, archive) });
+    }
 
     /* ------------------------------------------------------------------ */
     /* Resolve the source                                                  */

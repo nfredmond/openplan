@@ -1,0 +1,104 @@
+{
+  "success": true,
+  "numTotalTests": 986,
+  "numPassedTests": 969,
+  "numFailedTests": 0,
+  "numPendingTests": 17,
+  "files": 37,
+  "reportSha256": "0bf542437bc4b1ba99e0bc19c768f417220652977fcbe0316bec06f8d71c8f8a",
+  "skipped": [
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version seeds a feed whose card, pointer and version all agree (the assertions are not vacuous)",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version finds no feed whose status disagrees with its current version",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version finds no current_version_id pointing anywhere but at this feed's current version",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version finds no current version its own feed does not point at",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version detects a disagreement when one is deliberately introduced",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-feed-status-mirrors-its-current-version.test.ts",
+      "name": "no gtfs_feeds row disagrees with its current version detects a pointer aimed at a version of another feed",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database records the ingest as pending BEFORE any network work could have happened",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database writes the derived rows and marks ready with the counts in one statement",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database reports the rows it WROTE, not the rows it was handed",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database computes the generated columns the row builders deliberately do not write",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database refuses to store `ready` over an empty feed \u2014 the constraint, not a convention",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database adopts the version and moves all three halves of the mirror together",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database withholds a refetch that derives materially less, and leaves the feed in use alone",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database never leaves the three mirrored facts disagreeing",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database refuses to adopt a version that is not ready, in the database itself",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database preserves a finalized refresh when a late failure arrives",
+      "status": "skipped"
+    },
+    {
+      "file": "openplan/src/test/gtfs-persist.test.ts",
+      "name": "persisting a feed against a real database deletes derived rows only for the version it was given",
+      "status": "skipped"
+    }
+  ],
+  "sourceHashes": {
+    "openplan/src/lib/gtfs/persist.ts": "fd063333307ff015c8456ec704cea02b09bc20b5f9e6cd4e4cb147f06ba3aa3c",
+    "openplan/src/test/gtfs-reaper-rpc.test.ts": "9870a612a8ec0a0fb05604866c72f2248b259e7dd9aa9a4b0f8120f42b483570",
+    "openplan/src/test/a-gtfs-tier-comes-only-from-the-parser.test.ts": "8d3bda56676c5f046153a5c627183578dd4631981dfcca59c4b7c16296c771b3",
+    "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql": "a9134fe5ca52de286d6caa58872ea5c1b26d17d3e007ab455a2037fce9177b94"
+  },
+  "command": "vitest run src/test/*gtfs*.test.ts src/test/the-timetable-is-not-persisted.test.ts src/test/write-policy-coverage-guard.test.ts src/test/migrations/inventory.test.ts --maxWorkers=1",
+  "cwd": "openplan/"
+}

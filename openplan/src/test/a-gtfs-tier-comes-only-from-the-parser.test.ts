@@ -1,56 +1,12 @@
 /**
- * A GTFS SERVICE-LEVEL TIER IS DECIDED BY THE PARSER AND IS UNREACHABLE FROM ANY
- * PAYLOAD — BY CONSTRUCTION, NOT BY CONVENTION.
+ * Transit service claims come from timetable derivation, not request fields.
+ * A sparse timetable must keep its lower-bound and undetermined-headway labels.
+ * The private saved-parser decoder also names those fields so a worker can
+ * recover verified parser output. Its schema is not a user input contract.
  *
- * TWO COLUMNS, AND THEY ARE THE HONEST HALF OF EVERY HEADWAY THIS PRODUCT
- * PRODUCES.
- *
- *   `median_headway_basis` (20260805000007) is a closed CHECK vocabulary of
- *   three values, TWO of which are refusals. A stop with one bus at 06:10 and
- *   one at 18:40 has two served hours in a thirteen-hour span; a median taken
- *   over served hours alone reads "60 minutes", which is a claim of hourly
- *   service the schedule flatly contradicts. `not_determined_span_mostly_
- *   unserved` is the product declining to answer. Promoting it to
- *   `hourly_average_over_span` turns "we cannot say" into a number — on a figure
- *   that gets lifted into a regional transportation plan, a Title VI service-
- *   equity finding, or a transit-priority determination.
- *
- *   `peak_headway_is_lower_bound` is the same rule as a boolean, and it fails in
- *   the more dangerous direction because it fails SILENTLY. Its default is
- *   `true` — the weaker claim — so a row that forgets it under-claims, which is
- *   safe. A row that sets it `false` when the peak hour held one departure turns
- *   a once-a-day stop into "60 minute headway", which reads as hourly service to
- *   every downstream consumer and to every reader of the table it lands in.
- *
- * WHY THIS FILE EXISTS SEPARATELY FROM THE SHARED TIER GUARD.
- * `an-agent-may-not-promote-a-tier.test.ts` now knows about
- * `median_headway_basis` — `GTFS_MEDIAN_HEADWAY_BASES` was added to its
- * `TIER_VOCABULARIES` on 2026-08-06 — but that guard answers one question: can a
- * REGISTERED ASSISTANT ACTION reach a tier write. The transit lane has exactly
- * one registered action, `refresh_gtfs_feed` (`runtime/action-metadata.ts`),
- * whose payload is an id and which reaches no basis column — so today the
- * answer is safe, and it would stay safe-looking right up until the moment a
- * second, wider transit action is registered.
- *
- * CORRECTED 2026-08-06: this paragraph previously asserted "the transit lane
- * has no registered action at all", which was already untrue when it was
- * written. The argument below did not depend on it, but a false premise
- * standing beside a correct argument is how the argument gets discarded with
- * it.
- *
- * The property that actually holds today is stronger and worth pinning while it
- * is still true: THERE IS NO PARAMETER ANYWHERE THROUGH WHICH A BASIS COULD BE
- * SUPPLIED. `writeParsedFeedVersion` takes a `ParsedGtfsFeed` and copies both
- * values off the parser's own derivation. Not "no caller does"; no caller CAN.
- * `persist.ts`'s own header states this in prose ("there is no parameter
- * anywhere in this file through which a caller … could supply either"). Prose is
- * a suggestion a capable successor may reasonably override. This is the fact it
- * has to engage with instead.
- *
- * `peak_headway_is_lower_bound` has no CHECK constraint — it is a boolean — so
- * the shared guard's CHECK-vocabulary derivation cannot see it and never will.
- * That is the general shape of this file's argument: a tier does not stop being
- * a tier because its vocabulary happens to have two values instead of three.
+ * This source guard scans literal schemas, API references and row assignments.
+ * It is not a complete data-flow proof. Parser, artifact custody and publication
+ * tests separately check the saved bytes and their use by the worker.
  */
 
 import { readdirSync, readFileSync, statSync } from "node:fs";
@@ -122,20 +78,15 @@ const ROUTE_FILES = PRODUCT_FILES.filter((file) => file.startsWith("src/app/api/
 /* Every zod shape in the product                                               */
 /* -------------------------------------------------------------------------- */
 
-export type ZodShape = { file: string; line: number; keys: string[] };
+export type ZodShape = { file: string; line: number; keys: string[]; binding: string | null };
 
 /**
  * The property names of every `z.object({…})` and `.extend({…})` in the product.
  *
- * WHY ZOD AND NOT "the request body". A route reads its body through a schema in
- * this codebase — every one of them — and zod STRIPS unknown keys, which is the
- * detail that made an earlier guard in this repository vacuous: it asserted an
- * import payload could not set `status`, and passed with the guard removed,
- * because the field never reached the code under test at all. The consequence
- * runs the other way too, and it is the useful one: a field that is not in a
- * schema cannot reach a route no matter what a caller sends. So the schemas ARE
- * the payload surface, and enumerating them is enumerating what any caller — a
- * planner, a script, an assistant action — can supply.
+ * Request schemas may strip unknown fields, so a payload test can pass without
+ * exercising the intended refusal. Scan schema declarations as well. Saved
+ * parser output has one explicit private-schema exception, checked below;
+ * these declarations alone do not prove where all runtime values originate.
  *
  * `z.discriminatedUnion` and `z.union` are composed of `z.object` calls, so they
  * are covered by construction. A schema built from a computed key would not be,
@@ -162,8 +113,11 @@ function collectZodShapes(): ZodShape[] {
             keys.push(property.name.text);
           }
         }
+        let owner: ts.Node | undefined = node;
+        while (owner && !ts.isVariableDeclaration(owner)) owner = owner.parent;
         shapes.push({
           file,
+          binding: owner && ts.isVariableDeclaration(owner) && ts.isIdentifier(owner.name) ? owner.name.text : null,
           line: source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1,
           keys,
         });
@@ -247,9 +201,23 @@ describe("the scanners this guard rests on", () => {
   });
 });
 
-describe("no payload anywhere can name a GTFS service-level tier", () => {
-  it.each(TIER_FIELD_NAMES)("no zod schema declares %s", (field) => {
-    const offenders = ZOD_SHAPES.filter((shape) => shape.keys.includes(field)).map(
+const PARSER_ARTIFACT = "src/lib/gtfs/parsed-artifact.ts";
+
+describe("user payloads cannot name a GTFS service-level tier", () => {
+  it("keeps the saved-parser schema private and its decoder in the publication worker", () => {
+    const consumers = PRODUCT_FILES.filter(file => file !== PARSER_ARTIFACT && readSource(file).includes("parsed-artifact"));
+    expect(consumers).toEqual(["src/lib/gtfs/managed-worker-publication.ts"]);
+    const exported = parseSource(PARSER_ARTIFACT).statements.filter(node =>
+      ts.isExportDeclaration(node) || (ts.canHaveModifiers(node) && ts.getModifiers(node)?.some(modifier => modifier.kind === ts.SyntaxKind.ExportKeyword)));
+    expect(exported.map(node => ts.isFunctionDeclaration(node) ? node.name?.text : "other export")).toEqual(["decodeGtfsParsedArtifact"]);
+    const levels = ZOD_SHAPES.filter(shape => shape.file === PARSER_ARTIFACT && shape.binding === "level");
+    expect(levels).toHaveLength(1);
+    expect(levels[0].keys).toContain("medianHeadwayBasis");
+    expect(levels[0].keys).toContain("peakHeadwayIsLowerBound");
+  });
+  it.each(TIER_FIELD_NAMES)("no request-capable zod schema declares %s", (field) => {
+    const offenders = ZOD_SHAPES.filter((shape) => shape.keys.includes(field)
+      && !(shape.file === PARSER_ARTIFACT && shape.binding === "level")).map(
       (shape) => `${shape.file}:${shape.line}`
     );
 
