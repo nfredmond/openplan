@@ -1,0 +1,66 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "binding",
+      "reason": "api-continuation-database",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "binding",
+      "reason": "api-continuation-database",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "binding",
+      "reason": "api-continuation-address",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "binding",
+      "reason": "api-continuation-address",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "replies",
+      "reason": "api-continuation-exact-reply",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "replies",
+      "reason": "api-continuation-exact-reply",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "file_changes",
+      "reason": "api-continuation-file-census",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "file_changes",
+      "reason": "api-continuation-file-changes",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "sourceSha256": "d22c1e889f20c8fe3641db7b4cf3917fefe7cb84a4f01821dd6b1a4e948134ae",
+  "limits": "Synthetic exact-binding, reply and file-census observations. No credentials, API, journal or database writes."
+}

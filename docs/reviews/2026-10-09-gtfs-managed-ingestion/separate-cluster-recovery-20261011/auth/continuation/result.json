@@ -1,0 +1,229 @@
+{
+  "state": "passed-native-authenticated-recovery",
+  "requests": [
+    {
+      "role": "owner",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "owner",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "owner",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "viewer",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 1
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_feed_versions",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_route_service_levels",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "outsider",
+      "table": "gtfs_stop_service_levels",
+      "status": 200,
+      "rows": 0
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_feed_versions",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_route_service_levels",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "anon",
+      "table": "gtfs_stop_service_levels",
+      "status": 401,
+      "rows": null
+    },
+    {
+      "role": "owner",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "viewer",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "outsider",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "anon",
+      "privateArchive": true,
+      "status": 400
+    },
+    {
+      "role": "service",
+      "workerRpc": true,
+      "status": 200
+    },
+    {
+      "role": "owner",
+      "workerRpc": true,
+      "status": 403
+    },
+    {
+      "role": "viewer",
+      "workerRpc": true,
+      "status": 403
+    },
+    {
+      "role": "outsider",
+      "workerRpc": true,
+      "status": 403
+    },
+    {
+      "role": "anon",
+      "workerRpc": true,
+      "status": 401
+    }
+  ],
+  "logins": [
+    {
+      "role": "owner",
+      "exactAuthGraph": {
+        "sessionId": "065972a5-2090-4c69-b641-c3b11e7a2999",
+        "refreshTokenId": 44,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    },
+    {
+      "role": "viewer",
+      "exactAuthGraph": {
+        "sessionId": "dbb0cdf6-bf08-48ad-99e1-fa0808179a95",
+        "refreshTokenId": 45,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    },
+    {
+      "role": "outsider",
+      "exactAuthGraph": {
+        "sessionId": "5b16a090-44ae-47aa-8bd1-2d55bc913f2b",
+        "refreshTokenId": 46,
+        "method": "password",
+        "newRows": {
+          "sessions": 1,
+          "refresh_tokens": 1,
+          "mfa_amr_claims": 1,
+          "audit_log_entries": 1
+        },
+        "retainedAuthRowsUnchanged": true,
+        "existingUserOnlySigninFieldsChanged": true
+      }
+    }
+  ],
+  "serviceStops": [
+    {
+      "kind": "gateway",
+      "id": "c79ab64039f369123baa7092f10e97bda8fcb70a92298eea80ea38e3b0ab7026",
+      "stage": "api",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "608599e4b4c5cf14918c337a8cadf3dac16cf1f80f5dc213aa603d75c9679e91",
+      "stage": "api",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "b5366c7573dc9f32a2c7717756d2fd3d1924beba68125338c266c3f897fb17f5",
+      "stage": "api",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "6fcf9a332c8616e2746ec38cebe18bbb5479191ca7c209ff37530cf4b7ce5ab6",
+      "stage": "api",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "originalProducerState": "failed",
+  "originalProducerReason": "auth-service-empty-queue",
+  "priorLoginGraphsPreserved": 3,
+  "wallSeconds": 67.584,
+  "tables": 374,
+  "sequences": 6,
+  "privateArchiveBytes": 68738293,
+  "databaseStopped": true,
+  "filesUnchanged": true,
+  "propertiesRolesKeyEqual": true,
+  "scope": "Three synthetic retained users on separate local cluster. Read-only GTFS/Storage/RPC probes with exact password-login deltas. No browser, cross-host, agency or all-table RLS acceptance."
+}

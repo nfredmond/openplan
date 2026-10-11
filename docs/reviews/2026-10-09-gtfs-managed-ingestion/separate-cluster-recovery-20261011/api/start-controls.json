@@ -1,0 +1,51 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "verify_result",
+      "reason": "api-database-result",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "verify_result",
+      "reason": "api-database-result",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "verify_result",
+      "reason": "api-database-result",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "verify_stage",
+      "reason": "expanded-stack-stage",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "verify_stage",
+      "reason": "expanded-stack-stage",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "sourceSha256": {
+    "start_services.py": "6f5ecfc6a8736819c23191154a7978b3b4ec4af4daeb8613e3a849dbc4e3382e",
+    "services.py": "39413f49ce655a8a22d78065ccd2f93ee97e40c4a8f7d2c74abf2a3028d5e881"
+  },
+  "limits": "Pure admission controls. No native service, Storage, credential authentication or database writes."
+}

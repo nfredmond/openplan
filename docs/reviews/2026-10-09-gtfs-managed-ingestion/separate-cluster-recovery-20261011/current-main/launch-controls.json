@@ -1,0 +1,160 @@
+{
+  "launcherSha256": "c4c9a87c75e2d079e99ad53ee73cf0f145354d36ae5960c3fd87d0a601528545",
+  "controls": [
+    {
+      "name": "baseline",
+      "scenario": "baseline",
+      "result": "survived",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "harmless",
+      "scenario": "harmless",
+      "result": "survived",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "start",
+      "scenario": "start",
+      "result": "survived",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong mode",
+      "scenario": "wrong mode",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong mode",
+      "scenario": "wrong mode",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong cwd",
+      "scenario": "wrong cwd",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong cwd",
+      "scenario": "wrong cwd",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong head",
+      "scenario": "wrong head",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong head",
+      "scenario": "wrong head",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected dirty",
+      "scenario": "dirty",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit dirty",
+      "scenario": "dirty",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong database",
+      "scenario": "wrong database",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong database",
+      "scenario": "wrong database",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong proof API",
+      "scenario": "wrong proof API",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong proof API",
+      "scenario": "wrong proof API",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected wrong app API",
+      "scenario": "wrong app API",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit wrong app API",
+      "scenario": "wrong app API",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "protected occupied",
+      "scenario": "occupied",
+      "result": "refused",
+      "failure": null,
+      "actualLaunches": 0
+    },
+    {
+      "name": "omit occupied",
+      "scenario": "occupied",
+      "result": "intended oracle failure",
+      "failure": "Invalid owned launch was accepted",
+      "actualLaunches": 0
+    },
+    {
+      "name": "wrong parser output identity",
+      "scenario": "baseline",
+      "result": "intended oracle failure",
+      "failure": "Parser identity differs",
+      "actualLaunches": 0
+    },
+    {
+      "name": "omitted parser output identity",
+      "scenario": "baseline",
+      "result": "intended oracle failure",
+      "failure": "Parser identity differs",
+      "actualLaunches": 0
+    },
+    {
+      "name": "restored",
+      "scenario": "baseline",
+      "result": "survived",
+      "failure": null,
+      "actualLaunches": 0
+    }
+  ],
+  "limits": "Synthetic configuration and pure preflight only. No Node, network, database or build acceptance."
+}

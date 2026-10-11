@@ -1,0 +1,93 @@
+{
+  "sourceSha256": "4299d1a650ee4ef98e3ba28ed2e53b8de9cb45b3e39f5418be2bfc35267e8027",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "expanded-auth-table-scope",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-duplicate-id",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-user-census",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-user-signin-time",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-user-fields",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-retained-rows",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-new-row-count",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-session-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-session-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-token-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-token-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-method-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-method-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-audit-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-auth-audit-owner",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure synthetic exact Auth row controls. No native session, user, credential or database change."
+}

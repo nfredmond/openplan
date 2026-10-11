@@ -1,0 +1,8 @@
+{
+  "ActiveState": "failed",
+  "SubState": "failed",
+  "ExecMainStartTimestampMonotonic": "150451574549",
+  "ExecMainExitTimestampMonotonic": "150489948120",
+  "ExecMainStatus": "1",
+  "MemoryPeak": "66785280"
+}

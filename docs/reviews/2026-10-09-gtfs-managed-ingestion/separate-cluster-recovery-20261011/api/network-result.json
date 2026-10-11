@@ -1,0 +1,43 @@
+{
+  "state": "passed-native-network-attachment",
+  "commands": [
+    {
+      "case": "create-private-network",
+      "exitCode": 0
+    },
+    {
+      "case": "read-new-network",
+      "exitCode": 0
+    },
+    {
+      "case": "disconnect-new-database-none",
+      "exitCode": 0
+    },
+    {
+      "case": "attach-new-database-private-network",
+      "exitCode": 0
+    },
+    {
+      "case": "read-attached-network",
+      "exitCode": 0
+    },
+    {
+      "case": "before-private-hba",
+      "exitCode": 0
+    },
+    {
+      "case": "after-private-hba",
+      "exitCode": 0
+    },
+    {
+      "case": "reload-private-hba",
+      "exitCode": 0
+    }
+  ],
+  "networkId": "e49544a14fad8916c5d20951536bb71f420ca599ad80c1e07279eed481bd34bb",
+  "databaseId": "6d7969d9b92f6bca1b1e6811cde9c313db4fd7b1ab33539c082a3016786962ef",
+  "subnet": "192.168.224.0/20",
+  "databasePortPublished": false,
+  "internalNetwork": true,
+  "originalApiServicesChanged": false
+}

@@ -1,0 +1,7 @@
+{
+  "unit": "openplan-gtfs-current-main-preview-20261011-01.service",
+  "verifiedCwd": "/home/nathaniel/.local/state/openplan/gtfs-current-main-join-20261011/openplan",
+  "stoppedPid": 1203154,
+  "after": "ActiveState=inactive\nMainPID=0\nMemoryPeak=[not set]\n",
+  "scope": "Owned preview only. Existing expanded target APIs remain available."
+}

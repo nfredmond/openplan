@@ -1,0 +1,70 @@
+{
+  "sourceSha256": "8bbb712d33b024ea430035e70fee56c3c2fa6601b5469cfe75498ef334fe8f28",
+  "records": [
+    {
+      "case": "baseline-harmless-and-restored-string-URL-Request",
+      "passed": true
+    },
+    {
+      "case": "origin",
+      "intendedRefusal": "expanded-cli-request-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "path",
+      "intendedRefusal": "expanded-cli-request-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "search",
+      "intendedRefusal": "expanded-cli-request-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "hash",
+      "intendedRefusal": "expanded-cli-request-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "auth-url",
+      "intendedRefusal": "expanded-cli-request-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "bridge-remote",
+      "intendedRefusal": "expanded-cli-bridge-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "bridge-path",
+      "intendedRefusal": "expanded-cli-bridge-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "bridge-auth",
+      "intendedRefusal": "expanded-cli-bridge-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "method",
+      "intendedRefusal": "expanded-cli-method",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "parser",
+      "intendedRefusal": "expanded-cli-child-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "argument",
+      "intendedRefusal": "expanded-cli-child-scope",
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "binary",
+      "intendedRefusal": "expanded-cli-child-bytes",
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure exact function controls; no CLI, native database, file journal or network used."
+}

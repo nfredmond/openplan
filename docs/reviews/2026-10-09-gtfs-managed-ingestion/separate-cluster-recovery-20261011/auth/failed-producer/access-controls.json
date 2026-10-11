@@ -1,0 +1,158 @@
+{
+  "sourceSha256": "a6cc8dba77b09777198364cf9523468010a539212e438d2e3464ac8297fbd430",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "signin",
+      "reason": "auth-recovered-signin",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "signin",
+      "reason": "auth-recovered-signin",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "identity",
+      "reason": "auth-recovered-identity",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rows",
+      "reason": "auth-read-role",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "ValueError"
+    },
+    {
+      "case": "rows",
+      "reason": "auth-member-retained-row",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rows",
+      "reason": "auth-member-retained-row",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rows",
+      "reason": "auth-outsider-hidden-row",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rows",
+      "reason": "auth-anon-table-refused",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "archive",
+      "reason": "auth-private-object-positive-control",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "archive",
+      "reason": "auth-private-object-role",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "archive",
+      "reason": "auth-private-object-refused",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rpc",
+      "reason": "auth-rpc-role",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "ValueError"
+    },
+    {
+      "case": "rpc",
+      "reason": "auth-service-empty-queue",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "rpc",
+      "reason": "auth-user-worker-rpc-refused",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "non_auth",
+      "reason": "auth-final-table-census",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "non_auth",
+      "reason": "auth-final-non-auth-records",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "non_auth",
+      "reason": "auth-final-sequences",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "non_auth",
+      "reason": "auth-final-token-sequence",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "final_auth",
+      "reason": "auth-final-exact-rows",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "schema",
+      "reason": "auth-final-schema",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    }
+  ],
+  "limits": "Pure synthetic actor, row, private-object, worker-RPC and final-image observation controls. Native Auth, actual RLS and browser behavior remain separate."
+}

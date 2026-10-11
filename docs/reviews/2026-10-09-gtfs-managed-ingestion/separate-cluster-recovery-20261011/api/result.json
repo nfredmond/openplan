@@ -1,0 +1,188 @@
+{
+  "state": "passed-separate-cluster-native-api",
+  "cli": [
+    {
+      "case": "separate-original-command-recovered",
+      "exitCode": 0,
+      "wallSeconds": 1.06,
+      "jobSettled": true,
+      "terminalResolved": true,
+      "spawnedLoaderServices": 0,
+      "nativeLockHolders": 3,
+      "computationAttempts": 0,
+      "sourceNetworkAttempts": 0,
+      "nativeCandidateCount": 0
+    }
+  ],
+  "http": {
+    "separate-original-command-recovered": [
+      {
+        "path": "/rest/v1/rpc/scan_gtfs_ingest_candidates",
+        "status": 200,
+        "requestSha256": "8f079db41ed55d049bbbafed3a864cb17e2773554e215ad07396ae2f9d2e3e16",
+        "responseSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+        "dropped": false,
+        "candidateEmpty": true
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "status": 200,
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false,
+        "candidateEmpty": null
+      },
+      {
+        "path": "/rest/v1/rpc/complete_gtfs_ingest",
+        "status": 200,
+        "requestSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9",
+        "responseSha256": "a6a87a1786fe196359472fecb805cf38256de789768bcf8d122aa1a4595f6605",
+        "dropped": false,
+        "candidateEmpty": null
+      }
+    ]
+  },
+  "serviceStops": [
+    {
+      "kind": "gateway",
+      "id": "c79ab64039f369123baa7092f10e97bda8fcb70a92298eea80ea38e3b0ab7026",
+      "stage": "api",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "rest",
+      "id": "608599e4b4c5cf14918c337a8cadf3dac16cf1f80f5dc213aa603d75c9679e91",
+      "stage": "api",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "memorySwapLimit": 134217728,
+      "exactIdentityStopped": true,
+      "exitCode": 255,
+      "oomKilled": false
+    },
+    {
+      "kind": "auth",
+      "id": "b5366c7573dc9f32a2c7717756d2fd3d1924beba68125338c266c3f897fb17f5",
+      "stage": "api",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "memoryLimit": 268435456,
+      "memorySwapLimit": 268435456,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    },
+    {
+      "kind": "storage",
+      "id": "6fcf9a332c8616e2746ec38cebe18bbb5479191ca7c209ff37530cf4b7ce5ab6",
+      "stage": "api",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "memoryLimit": 536870912,
+      "memorySwapLimit": 536870912,
+      "exactIdentityStopped": true,
+      "exitCode": 0,
+      "oomKilled": false
+    }
+  ],
+  "logicalApi": "http://127.74.9.10:29941",
+  "nativeApi": "http://192.168.224.6:8000",
+  "cliSourceHead": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "parserContextHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "readiness": [
+    200,
+    200,
+    200
+  ],
+  "storageResponses": [
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    },
+    {
+      "label": "separate-native",
+      "status": 200
+    }
+  ],
+  "wallSeconds": 35.129,
+  "tables": 374,
+  "sequences": 6,
+  "storageObjects": 10,
+  "changedFiles": [
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/pending.json",
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-b87fe3ef-00df-4e53-9a19-5e1e3e291470/attempt-97abc410-d9d7-40ef-b75d-0d3e5b78a4c9/commands/command-terminal/pending.json",
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-b87fe3ef-00df-4e53-9a19-5e1e3e291470/pending.json"
+  ],
+  "schema": {
+    "schemaCoreSha256": "6615c4910d9cc0d37ae550875dc26a666946818703f2d953b5155ff072b1c051",
+    "defaultStatementsSha256": "2fccdd2ccfa8a4e93e64005f7cc874828c3ac76a6b8ef577811a76778efcc874",
+    "policyCatalogSha256": "0d98e26b1bc223c6d6e76c4d01960e1e249fc135dfa78de618b8a413f8a41a92",
+    "defaultCatalogSha256": "d7fd3960bd3453547c5795ed192ffd6ac05f54515a156157298e6513b93165e9",
+    "policies": 769,
+    "defaultPrivilegeGroups": 27,
+    "defaultStatements": 80
+  },
+  "roleAttributesPasswordsAndGrantsEqual": true,
+  "mountedKeyBytesEqual": true,
+  "databaseStopped": true,
+  "scope": "Separate cluster and volume on the same host/disk. Private bridge API only. No browser, external host, historical decryption, model validation or all-worker recovery acceptance."
+}

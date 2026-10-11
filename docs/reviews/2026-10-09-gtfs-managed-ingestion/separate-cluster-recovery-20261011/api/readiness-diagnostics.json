@@ -1,0 +1,110 @@
+[
+  {
+    "cycle": 0,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/auth/v1/health",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 0,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 0,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/storage/v1/status",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 0,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/auth/v1/health",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 0,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 0,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/storage/v1/status",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/auth/v1/health",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/storage/v1/status",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/auth/v1/health",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 1,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/storage/v1/status",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 2,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/auth/v1/health",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 2,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 2,
+    "origin": "http://127.74.9.11:29941",
+    "path": "/storage/v1/status",
+    "errorType": "ConnectionError"
+  },
+  {
+    "cycle": 2,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/auth/v1/health",
+    "status": 200
+  },
+  {
+    "cycle": 2,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/rest/v1/gtfs_feed_versions?select=id&limit=0",
+    "status": 200
+  },
+  {
+    "cycle": 2,
+    "origin": "http://192.168.224.6:8000",
+    "path": "/storage/v1/status",
+    "status": 502
+  }
+]

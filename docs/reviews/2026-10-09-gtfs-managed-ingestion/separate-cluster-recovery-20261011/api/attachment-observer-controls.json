@@ -1,0 +1,57 @@
+{
+  "sourceSha256": "579e79eff6d7d7a5d449275a585a4c2b6310ca7fea3214f8576cd3f7196c449e",
+  "cases": [
+    {
+      "case": "baseline",
+      "guard": "Retain existing network and reconcile its identity before continuing",
+      "result": "survived"
+    },
+    {
+      "case": "harmless",
+      "guard": "Retain existing network and reconcile its identity before continuing",
+      "result": "survived"
+    },
+    {
+      "case": "broken",
+      "guard": "Retain existing network and reconcile its identity before continuing",
+      "result": "refused"
+    },
+    {
+      "case": "omitted",
+      "guard": "Retain existing network and reconcile its identity before continuing",
+      "result": "intended omitted-guard oracle failure"
+    },
+    {
+      "case": "restored",
+      "guard": "Retain existing network and reconcile its identity before continuing",
+      "result": "survived"
+    },
+    {
+      "case": "baseline",
+      "guard": "Private HBA append differs",
+      "result": "survived"
+    },
+    {
+      "case": "harmless",
+      "guard": "Private HBA append differs",
+      "result": "survived"
+    },
+    {
+      "case": "broken",
+      "guard": "Private HBA append differs",
+      "result": "refused"
+    },
+    {
+      "case": "omitted",
+      "guard": "Private HBA append differs",
+      "result": "intended omitted-guard oracle failure"
+    },
+    {
+      "case": "restored",
+      "guard": "Private HBA append differs",
+      "result": "survived"
+    }
+  ],
+  "acceptanceOrdering": "Native attachment observation occurs before these extracted observer controls. Accept it only after the controls pass.",
+  "scope": "Two direct driver refusals, not Docker/SCRAM/API or HBA parser behavior."
+}

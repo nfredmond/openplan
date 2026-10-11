@@ -1,0 +1,49 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "nativeExitCode": 0,
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back"
+    },
+    {
+      "case": "harmless policy role ordering",
+      "nativeExitCode": 0,
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back"
+    },
+    {
+      "case": "changed native predicate",
+      "nativeExitCode": 0,
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back"
+    },
+    {
+      "case": "changed native policy role",
+      "nativeExitCode": 0,
+      "result": "intended refusal",
+      "reason": "schema-policy-catalog",
+      "transaction": "rolled back"
+    },
+    {
+      "case": "changed native default privilege",
+      "nativeExitCode": 0,
+      "result": "intended refusal",
+      "reason": "schema-default-catalog",
+      "transaction": "rolled back"
+    },
+    {
+      "case": "restored",
+      "nativeExitCode": 0,
+      "result": "survived",
+      "reason": null,
+      "transaction": "rolled back"
+    }
+  ],
+  "catalogPreservedAfterRollback": true,
+  "wallSeconds": 0.878,
+  "scope": "Exact new isolated cluster, transactional metadata only. Original producer and source database unchanged. No API or browser acceptance."
+}

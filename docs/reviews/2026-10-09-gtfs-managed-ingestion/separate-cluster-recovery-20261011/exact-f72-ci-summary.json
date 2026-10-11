@@ -1,0 +1,46 @@
+{
+  "head": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "externalMainMerge": "7d92f3971482f0399f5f1a7cb6a495fab980124a",
+  "mergeTreeEqualsHead": true,
+  "runs": {
+    "CI": 38139451243,
+    "RLS Isolation": 38139451316,
+    "Restore Drill": 38139451242,
+    "Worker security and cancellation": 38139451254
+  },
+  "qa": {
+    "filesPassed": 1579,
+    "filesSkipped": 97,
+    "testsPassed": 21774,
+    "testsSkipped": 1604
+  },
+  "rls": {
+    "filesPassed": 104,
+    "testsPassed": 1499,
+    "testsSkipped": 125
+  },
+  "restore": {
+    "tables": 374,
+    "sequences": 6,
+    "storageObjects": 1,
+    "storageBytes": 38,
+    "databaseKeyCustody": {
+      "archiveFile": "database-root-private.key",
+      "captured": true,
+      "targetRestarted": true,
+      "mountedBytesVerified": true,
+      "previousTargetKeyRetained": true
+    },
+    "bootstrapPreserved": true,
+    "owpEqual": true,
+    "owpSourceSha256": "27b2e234a2c62b8cdde8c79e304980d1b7eed9ce437262350b65c35dd7133a59",
+    "owpTargetSha256": "27b2e234a2c62b8cdde8c79e304980d1b7eed9ce437262350b65c35dd7133a59",
+    "scope": "Default local CLI database and Storage; no external workers, custom roles or scheduled SQL jobs"
+  },
+  "privateLogSha256": {
+    "ci-f72-log-private.txt": "03d2526a14aeb02e44fc1d71b71bd191610498722eaa9b585d07b38bf29e4a4a",
+    "rls-f72-log-private.txt": "13c8acaaf36f832bf52f9fd407edb1293fc3b2cf99c3c7eef041f0a4265629be",
+    "restore-f72-log-private.txt": "d647ab13b9ca9dd8ea65a33f9744f894b1d1fb102abf9f6cc571ae21473072d4"
+  },
+  "limits": "Exact f72 workflows pass separately. No assertion about later main CI, public deployment, browser or release acceptance."
+}

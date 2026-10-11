@@ -1,0 +1,60 @@
+{
+  "sourceSha256": "e46471a369495d5f591a4b6b84939132ee2fa638fc35b8477b08a2fb04678527",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "expanded-storage-name",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "expanded-storage-physical-census"
+    },
+    {
+      "case": "expanded-storage-download",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "expanded-storage-bound",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "expanded-storage-bytes"
+    },
+    {
+      "case": "expanded-storage-bytes",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "expanded-storage-physical-census"
+    },
+    {
+      "case": "expanded-storage-object-census",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "expanded-storage-physical-census",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    },
+    {
+      "case": "expanded-storage-restored-readback",
+      "refused": true,
+      "omittedGuardFailsIntendedReasonOracle": true,
+      "omittedOutcome": "broken-observation-admitted"
+    }
+  ],
+  "limits": "Fake streaming transport and exact SQL projection. Exact guard omissions change the required first failure or admit the observation. Native download is a separate check."
+}

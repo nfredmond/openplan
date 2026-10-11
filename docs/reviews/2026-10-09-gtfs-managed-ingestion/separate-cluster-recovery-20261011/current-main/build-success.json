@@ -1,0 +1,21 @@
+{
+  "exitCode": 0,
+  "wallSeconds": 170.044,
+  "source": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "buildId": "pFMvxBQGkzLl9mssii6ue",
+  "memoryPeakBytes": 6863728640,
+  "memoryMaxBytes": 10737418240,
+  "memoryHighBytes": 8589934592,
+  "nodeHeapMiB": 6144,
+  "swapDisabled": true,
+  "cpuLimit": 1,
+  "privateLogSha256": "21d8614fed465bab637fa4b9fcefa3eef782b846363bbec6d80533476f5079dc",
+  "generationLines": [
+    "  Collecting page data using 1 worker ...",
+    "  Generating static pages using 1 worker (0/140) ...",
+    "  Generating static pages using 1 worker (35/140)",
+    "  Generating static pages using 1 worker (70/140)",
+    "  Generating static pages using 1 worker (105/140)",
+    "\u2713 Generating static pages using 1 worker (140/140) in 3.3s"
+  ]
+}

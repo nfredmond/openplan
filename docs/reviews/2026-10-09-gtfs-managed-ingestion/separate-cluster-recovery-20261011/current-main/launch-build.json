@@ -1,0 +1,9 @@
+{
+  "head": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "cwd": "/home/nathaniel/.local/state/openplan/gtfs-current-main-join-20261011/openplan",
+  "mode": "build",
+  "app": "http://127.74.9.10:3568",
+  "database": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "nodeOptions": "--max-old-space-size=6144",
+  "workerCount": 1
+}

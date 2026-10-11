@@ -1,0 +1,82 @@
+{
+  "state": "failed",
+  "executionSourceSha256": {
+    "run_database.py": "f5fe7de49250f120634b51847b1fc9c627788697ab948c908049339b0d8914bf",
+    "guards.py": "25a485c922cf00c2b7b130209428cab902ba7495349536a14f692d5df9d131e5",
+    "prove_bootstrap.py": "6d106aa02995ba016daa8c0808414dfe77900abfb848cc6098380b321ccf0138",
+    "prove_guards.py": "cba4125999bb06cf86fb5862c9a2237124fe3cec578b251a7fafe6ab2a0921fd"
+  },
+  "commands": [
+    {
+      "name": "encrypted-repository-check",
+      "exitCode": 0,
+      "wallSeconds": 1.069
+    },
+    {
+      "name": "encrypted-point-restore",
+      "exitCode": 0,
+      "wallSeconds": 1.895
+    },
+    {
+      "name": "create-fresh-volume",
+      "exitCode": 0,
+      "wallSeconds": 0.019
+    },
+    {
+      "name": "create-fresh-container",
+      "exitCode": 0,
+      "wallSeconds": 0.146
+    },
+    {
+      "name": "start-new-cluster",
+      "exitCode": 0,
+      "wallSeconds": 0.129
+    },
+    {
+      "name": "restore-captured-roles",
+      "exitCode": 0,
+      "wallSeconds": 0.064
+    },
+    {
+      "name": "restored-role-dump",
+      "exitCode": 0,
+      "wallSeconds": 0.049
+    },
+    {
+      "name": "create-empty-captured-database",
+      "exitCode": 0,
+      "wallSeconds": 0.091
+    },
+    {
+      "name": "restore-captured-database",
+      "exitCode": 0,
+      "wallSeconds": 3.179
+    },
+    {
+      "name": "restore-captured-properties",
+      "exitCode": 0,
+      "wallSeconds": 0.046
+    },
+    {
+      "name": "captured-original-schema",
+      "exitCode": 0,
+      "wallSeconds": 0.385
+    },
+    {
+      "name": "fresh-target-schema",
+      "exitCode": 0,
+      "wallSeconds": 0.389
+    },
+    {
+      "name": "failure-native-database-log",
+      "exitCode": 0,
+      "wallSeconds": 0.011
+    },
+    {
+      "name": "stop-exact-failed-database",
+      "exitCode": 0,
+      "wallSeconds": 1.457
+    }
+  ],
+  "scope": "Separate cluster on the same host and physical disk; database/roles/key phase only."
+}

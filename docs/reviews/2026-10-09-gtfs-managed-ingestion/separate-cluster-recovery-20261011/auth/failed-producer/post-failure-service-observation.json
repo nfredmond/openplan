@@ -1,0 +1,37 @@
+[
+  {
+    "role": "rest",
+    "id": "608599e4b4c5cf14918c337a8cadf3dac16cf1f80f5dc213aa603d75c9679e91",
+    "running": false,
+    "exitCode": 255,
+    "oomKilled": false
+  },
+  {
+    "role": "auth",
+    "id": "b5366c7573dc9f32a2c7717756d2fd3d1924beba68125338c266c3f897fb17f5",
+    "running": false,
+    "exitCode": 0,
+    "oomKilled": false
+  },
+  {
+    "role": "storage",
+    "id": "6fcf9a332c8616e2746ec38cebe18bbb5479191ca7c209ff37530cf4b7ce5ab6",
+    "running": false,
+    "exitCode": 0,
+    "oomKilled": false
+  },
+  {
+    "role": "gateway",
+    "id": "c79ab64039f369123baa7092f10e97bda8fcb70a92298eea80ea38e3b0ab7026",
+    "running": false,
+    "exitCode": 0,
+    "oomKilled": false
+  },
+  {
+    "role": "database",
+    "id": "6d7969d9b92f6bca1b1e6811cde9c313db4fd7b1ab33539c082a3016786962ef",
+    "running": false,
+    "exitCode": 0,
+    "oomKilled": false
+  }
+]

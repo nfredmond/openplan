@@ -1,0 +1,9 @@
+{
+  "service": {
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "42176512"
+  },
+  "failure": "New hard-link guard classified a directory as a file after the type guard was omitted. Native input remained refused; this did not isolate the intended type behavior.",
+  "captureTiming": "After failure, before hard-link predicate and path-normalization corrections."
+}
