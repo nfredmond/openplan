@@ -24,13 +24,14 @@ def sql(query,database=None):
 assert sql('SELECT count(*) FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid();',source['database'])=='0';sql(f'CREATE DATABASE {config["database"]} TEMPLATE {source["database"]};','postgres')
 migration=root/'openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql'
 sql('-- UUID pagination rotates eligible discovery'+migration.read_text().split('-- UUID pagination rotates eligible discovery')[1].split('-- Retained tokens can inspect')[0])
+sql((root/'openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql').read_text())
 workspace,actor=str(uuid.uuid4()),str(uuid.uuid4());sql(f"INSERT INTO auth.users(id,email) VALUES('{actor}','{actor}@example.invalid'); INSERT INTO public.workspaces(id,name,slug) VALUES('{workspace}','Synthetic admission recovery','proof-{workspace}'); INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('{workspace}','{actor}','owner');")
 custodian=str(uuid.uuid4());sql(f"INSERT INTO auth.users(id,email) VALUES('{custodian}','{custodian}@example.invalid'); INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('{workspace}','{custodian}','owner');")
 records=[]
 with storage(config) as native,gateway('public',database=config['database'],subjects=(actor,)) as rest:
  env={**os.environ,'NODE_OPTIONS':'--max-old-space-size=512','OPENPLAN_PROOF_HTTP_URL':rest['url'],'OPENPLAN_PROOF_HTTP_TOKEN':rest['service_token'],'OPENPLAN_PROOF_STORAGE_URL':native['url'],'OPENPLAN_PROOF_STORAGE_TOKEN':native['token'],'OPENPLAN_PROOF_WORKSPACE':workspace,'OPENPLAN_PROOF_ACTOR':actor,'OPENPLAN_PROOF_PARSER_BUILD':subprocess.check_output(['git','rev-parse','HEAD'],cwd=root,text=True).strip()}
  try:
-  for kind,boundary in [('upload','local'),('upload','admit'),('upload','upload'),('upload','confirm'),('url','admit'),('catalog','admit')]:
+  for kind,boundary in [('upload','local'),('upload','admit'),('upload','upload'),('upload','confirm'),('url','admit'),('catalog','admit'),('upload','cancel-before-admit')]:
    directory=out/f'{kind}-{boundary}'
    def run(mode):
     child=subprocess.Popen(['node','--import',str(root/'openplan/node_modules/tsx/dist/loader.mjs'),str(here/'verify_submission_native.mts'),str(directory),mode,str(archive),kind],cwd=root/'openplan',env=env,stdout=subprocess.PIPE,stderr=subprocess.PIPE,text=True,start_new_session=True)
@@ -43,11 +44,17 @@ with storage(config) as native,gateway('public',database=config['database'],subj
      assert child.returncode==(-signal.SIGKILL if mode.startswith('interrupt-') else 0),(mode,stderr[:1500]);return json.loads(stdout.strip().splitlines()[-1]) if stdout.strip() else None
     finally:
      if child.poll() is None:os.killpg(child.pid,signal.SIGKILL);child.communicate(timeout=5)
-   run('seed');run('interrupt-'+boundary)
+   run('seed');run('interrupt-'+('local' if boundary=='cancel-before-admit' else boundary))
    identity=json.loads((directory/'identity.json').read_text());request=identity['requestId']
    interrupted=json.loads((directory/'interrupted.json').read_text());assert interrupted['resolutions']==1
    if kind=='upload':assert hashlib.sha256((directory/'submissions'/request/'archive.zip').read_bytes()).hexdigest()==hashlib.sha256(archive.read_bytes()).hexdigest(),'Private bytes differ at interruption'
-   before=int(sql(f"SELECT count(*) FROM openplan_gtfs.submissions WHERE request_id='{request}';"));assert before==(0 if boundary=='local' else 1)
+   before=int(sql(f"SELECT count(*) FROM openplan_gtfs.submissions WHERE request_id='{request}';"));assert before==(0 if boundary in ['local','cancel-before-admit'] else 1)
+   if boundary=='cancel-before-admit':
+    response=requests.post(rest['url']+'/rpc/cancel_gtfs_submission',headers={'Authorization':'Bearer '+rest['service_token']},json={'p_workspace':workspace,'p_request':request,'p_actor':actor,'p_command':str(uuid.uuid4()),'p_reason':'Planner cancelled before admission'},timeout=10);assert response.status_code==200 and response.json()['versionId'] is None
+    cancelled=run('cancelled');assert cancelled['uploads']==0 and cancelled['resolutions']==0
+    assert int(sql(f"SELECT count(*) FROM openplan_gtfs.submissions WHERE request_id='{request}';"))==0
+    assert int(sql(f"SELECT count(*) FROM openplan_gtfs.request_cancellations WHERE request_id='{request}';"))==1
+    records.append({'kind':kind,'boundary':boundary,'beforeCommittedSubmissions':before,'interrupted':interrupted,'cancelled':cancelled,'committedSubmissionsAfterRecovery':0});print(kind,boundary,'native cancellation recovery pass',flush=True);continue
    resumed=run('resume-'+boundary);retained=run('retained')
    assert resumed['registration']==retained['registration'],'Replay changed admission identity'
    assert int(sql(f"SELECT count(*) FROM openplan_gtfs.submissions WHERE request_id='{request}';"))==1,'Replay duplicated submission'
@@ -67,5 +74,5 @@ with storage(config) as native,gateway('public',database=config['database'],subj
    if identity.get('versionId'):paths.append(f'{workspace}/{identity["feedId"]}/{identity["versionId"]}.zip')
   if paths:
    deleted=requests.delete(native['url']+'/object/gtfs-uploads',headers={'Authorization':'Bearer '+native['token']},json={'prefixes':paths},timeout=10);assert deleted.status_code==200,'Synthetic object cleanup failed'
-summary={'records':records,'sourceSha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [root/'openplan/src/lib/gtfs/managed-submission-recovery.ts',root/'openplan/src/lib/gtfs/managed-source.ts',root/'openplan/src/lib/gtfs/managed-admission.ts',root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-service.ts',migration,here/'verify_submission_native.mts',Path(__file__).resolve()]},'boundary':'Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance.'}
+summary={'records':records,'sourceSha256':{str(p.relative_to(root)):hashlib.sha256(p.read_bytes()).hexdigest() for p in [root/'openplan/src/lib/gtfs/managed-submission-recovery.ts',root/'openplan/src/lib/gtfs/managed-request-cancellation.ts',root/'openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql',root/'openplan/src/lib/gtfs/managed-source.ts',root/'openplan/src/lib/gtfs/managed-admission.ts',root/'openplan/src/lib/gtfs/managed-worker-queue.ts',root/'openplan/src/lib/gtfs/managed-worker-service.ts',migration,here/'verify_submission_native.mts',Path(__file__).resolve()]},'boundary':'Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. Early cancellation after exact private ZIP retention prevents admission and skips cancelled history. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance.'}
 (out/'result.json').write_text(json.dumps(summary,indent=2)+'\n')

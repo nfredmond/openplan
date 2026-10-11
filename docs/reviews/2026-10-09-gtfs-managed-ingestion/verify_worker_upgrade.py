@@ -22,7 +22,8 @@ archive = subprocess.check_output(['git','archive',main_head,'openplan/supabase/
 with tarfile.open(fileobj=io.BytesIO(archive)) as bundle:
     bundle.extractall(out/'main',filter='data')
 main_files = sorted((main_package/'supabase/migrations').glob('*.sql'))
-candidate_file = root/'openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql'
+candidate_files = sorted(path for path in (root/'openplan/supabase/migrations').glob('*.sql') if path.name not in {main.name for main in main_files})
+assert [path.name.split('_')[0] for path in candidate_files] == ['20261016000028','20261016000029','20261016000030','20261016000031']
 assert main_files[-1].name == '20261016000027_run_project_workspace_foreign_keys.sql'
 assert all(path.read_bytes() == (root/'openplan/supabase/migrations'/path.name).read_bytes() for path in main_files)
 
@@ -87,8 +88,11 @@ assert len(before['gtfs_feed_versions']) >= 5 and before['gtfs_route_service_lev
 candidate_database='openplan_attempt_cli_'+uuid.uuid4().hex
 sql('postgres',f'CREATE DATABASE {candidate_database} TEMPLATE {main_database};')
 (out/'candidate-database.json').write_text(json.dumps({'container':container,'database':candidate_database})+'\n')
-source=candidate_file.read_text();assert source.count('\nBEGIN;\n') == 1 and source.endswith('COMMIT;\n')
-ddl=source.replace('\nBEGIN;\n','\n',1).removesuffix('COMMIT;\n')
+ddl_parts=[]
+for candidate_file in candidate_files:
+    source=candidate_file.read_text();assert source.count('BEGIN;') == 1 and source.count('COMMIT;') == 1 and source.rstrip().endswith('COMMIT;')
+    ddl_parts.append(source.replace('BEGIN;','',1).rsplit('COMMIT;',1)[0])
+ddl='\n'.join(ddl_parts)
 controls=[]
 for name,extra,passes in [
  ('baseline','',True),('harmless','\n-- Harmless migration comment.',True),
@@ -116,7 +120,7 @@ assert sql(main_database,"SELECT count(*) FROM pg_namespace WHERE nspname='openp
 assert versions(main_database)==[path.name.split('_')[0] for path in main_files]
 record={'mainHead':main_head,'cliVersion':cli_version,'mainMigrationCount':len(main_files),'candidateMigrationCount':len(expected),
         'mainMigrations':{path.name:hashlib.sha256(path.read_bytes()).hexdigest() for path in main_files},
-        'candidateMigrationSha256':hashlib.sha256(candidate_file.read_bytes()).hexdigest(),
+        'candidateMigrations':{path.name:hashlib.sha256(path.read_bytes()).hexdigest() for path in candidate_files},
         'proofSha256':hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
         'controls':controls,'rowCounts':{table:len(rows) for table,rows in before.items()},
         'beforeSha256':hashlib.sha256((out/'before.json').read_bytes()).hexdigest(),

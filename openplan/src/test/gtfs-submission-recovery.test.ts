@@ -6,10 +6,12 @@ import { createClient } from "@supabase/supabase-js";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { admitGtfsSubmission } from "@/lib/gtfs/managed-admission";
 import { runGtfsSubmissionRecoveryPass, type GtfsSubmissionRecoveryOptions } from "@/lib/gtfs/managed-submission-recovery";
+import { readGtfsRequestCancellation } from "@/lib/gtfs/managed-request-cancellation";
+vi.mock("@/lib/gtfs/managed-request-cancellation", async original => ({ ...await original<typeof import("@/lib/gtfs/managed-request-cancellation")>(), readGtfsRequestCancellation: vi.fn(async () => null) }));
 vi.mock("@/lib/gtfs/managed-admission", async original => ({ ...await original<typeof import("@/lib/gtfs/managed-admission")>(), admitGtfsSubmission: vi.fn() }));
 const id = (n: number) => `ec000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const directories: string[] = [], admit = vi.mocked(admitGtfsSubmission);
-afterEach(async () => { for (const path of directories.splice(0)) await rm(path, { recursive: true, force: true }); vi.clearAllMocks(); });
+afterEach(async () => { for (const path of directories.splice(0)) await rm(path, { recursive: true, force: true }); vi.clearAllMocks(); vi.mocked(readGtfsRequestCancellation).mockResolvedValue(null); });
 beforeEach(() => { admit.mockImplementation(async options => {
   const file = join(options.directory, "pending.json"), saved = JSON.parse(await readFile(file, "utf8"));
   if (saved.resolved === null) saved.resolved = await options.resolve(saved.archive);
@@ -42,6 +44,22 @@ async function fixture(count = 1) {
     marker: (n = 1) => readFile(join(directory, id(n), "handoff/pending.json"), "utf8").then(JSON.parse) };
 }
 describe("retained transit submission polling", () => {
+  it("retains early cancellation and skips its history without resolving or admitting", async () => {
+    const f = await fixture(), cancellation = { command: id(40), requestId: id(1), workspaceId: id(10), state: "cancelled" as const, versionId: null, versionCancellation: null, cancelledAt: "2026-10-10T12:00:00Z" };
+    vi.mocked(readGtfsRequestCancellation).mockResolvedValue(cancellation);
+    expect(await f.run()).toEqual({ outcomes: [{ requestId: id(1), state: "cancelled_request" }], pendingCount: 0 });
+    expect(readGtfsRequestCancellation).toHaveBeenCalledWith(f.options.service, { workspaceId: id(10), requestId: id(1), actorId: id(11) }, expect.any(AbortSignal));
+    expect(f.resolve).not.toHaveBeenCalled(); expect(admit).not.toHaveBeenCalled(); expect((await f.marker()).cancellation).toEqual(cancellation);
+    vi.mocked(readGtfsRequestCancellation).mockClear(); f.authorize.mockClear(); expect(await f.run()).toEqual({ outcomes: [], pendingCount: 0 }); expect(readGtfsRequestCancellation).not.toHaveBeenCalled(); expect(f.authorize).not.toHaveBeenCalled();
+  });
+  it("keeps unavailable cancellation unconfirmed before source resolution", async () => { const f = await fixture(); vi.mocked(readGtfsRequestCancellation).mockRejectedValue(new Error("unavailable")); expect(await f.run()).toEqual({ outcomes: [{ requestId: id(1), state: "unconfirmed" }], pendingCount: 1 }); expect(f.resolve).not.toHaveBeenCalled(); expect(admit).not.toHaveBeenCalled(); });
+  it.each(["binding", "requestId", "workspaceId"])("refuses changed cancelled history %s", async field => {
+    const f = await fixture(), cancellation = { command: id(40), requestId: id(1), workspaceId: id(10), state: "cancelled" as const, versionId: null, versionCancellation: null, cancelledAt: "2026-10-10T12:00:00Z" };
+    vi.mocked(readGtfsRequestCancellation).mockResolvedValue(cancellation); await f.run();
+    const marker = await f.marker(); if (field === "binding") marker.binding.actorId = id(90); else marker.cancellation[field] = id(90);
+    await writeFile(join(f.directory, id(1), "handoff/pending.json"), JSON.stringify(marker));
+    expect(await f.run()).toEqual({ outcomes: [{ requestId: id(1), state: "unconfirmed" }], pendingCount: 1 }); expect(admit).not.toHaveBeenCalled();
+  });
   it("authorizes the original actor and hands off exact retained intent without resupplying bytes", async () => {
     const f = await fixture(), result = await f.run(); expect(result).toEqual({ outcomes: [{ requestId: id(1), state: "handed_off" }], pendingCount: 0 });
     expect(f.authorize.mock.calls[0][0].binding).toMatchObject({ actorId: id(11), workspaceId: id(10), requestId: id(1) });

@@ -73,6 +73,7 @@ const RECOGNIZED_GATES = [
   // Shared helpers for modules with no matrix action of their own.
   "requireWorkspaceWriteAccess",
   "requireNetworkPackageWriteAccess",
+  "authorizeGtfsHumanRoute",
   // Module loaders that resolve a parent record and apply the matrix.
   // `authorizeRtpCycleWrite` was extracted OUT of the horizon-bands route when
   // the scaffold route became its second caller (2026-08-10) — which moved the
@@ -190,6 +191,25 @@ function mutatingWorkspaceRoutes(): RouteFile[] {
 }
 
 describe("every mutating workspace route authorizes by ROLE, not by row visibility", () => {
+  it("calls the GTFS human gate in write mode and returns refusal before command dispatch", () => {
+    const routes = mutatingWorkspaceRoutes();
+    for (const [id, command] of [
+      ["gtfs/submissions/[requestId]/cancel/route.ts", "cancelGtfsRequest"],
+      ["gtfs/versions/[versionId]/adopt/route.ts", "executeGtfsHumanCommand"],
+    ]) {
+      const route = routes.find(candidate => candidate.id === id);
+      expect(route, `${id} must remain in the write inventory`).toBeDefined();
+      const executable = route!.source.replace(/\/\/[^\n]*|\/\*[\s\S]*?\*\//g, "");
+      const authorization = /await\s+authorizeGtfsHumanRoute\(request,\s*payload\.data\.workspaceId,\s*true\)/.exec(executable);
+      const refusal = /if\s*\(\s*["']response["']\s+in\s+authorized\s*\)\s*return\s+authorized\.response/.exec(executable);
+      const dispatch = new RegExp(`await\\s+${command}\\s*\\(`).exec(executable);
+      expect(authorization, `${id} must request write permission`).not.toBeNull();
+      expect(refusal, `${id} must return authorization refusal`).not.toBeNull();
+      expect(dispatch, `${id} must use its retained command helper`).not.toBeNull();
+      expect(refusal!.index).toBeGreaterThan(authorization!.index);
+      expect(dispatch!.index).toBeGreaterThan(refusal!.index);
+    }
+  });
   it("gates or explicitly exempts each one", () => {
     const offenders = mutatingWorkspaceRoutes()
       .filter((route) => !RECOGNIZED_GATES.some((gate) => route.source.includes(gate)))

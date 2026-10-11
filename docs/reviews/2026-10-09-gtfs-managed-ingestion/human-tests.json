@@ -1,0 +1,25 @@
+{
+  "testFiles": 65,
+  "tests": 1588,
+  "passed": 1571,
+  "skipped": 17,
+  "failed": 0,
+  "success": true,
+  "workerLimit": 1,
+  "regression": {
+    "runtimeSeconds": 84.394,
+    "memoryPeakMiB": 437.3
+  },
+  "scopedTypes": {
+    "passed": true,
+    "runtimeSeconds": 5.904,
+    "memoryPeakMiB": 444.8
+  },
+  "changedFileLint": {
+    "passed": true,
+    "runtimeSeconds": 3.888,
+    "memoryPeakMiB": 358.4
+  },
+  "verifiedProofHashes": 48,
+  "boundary": "Scoped candidate regression. Seventeen live-database cases skipped. Does not establish browser, full CI, full restore, capacity, practitioner or release acceptance."
+}

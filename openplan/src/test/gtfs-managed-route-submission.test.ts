@@ -5,6 +5,8 @@ import { NextRequest } from "next/server";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { managedGtfsEnabled, managedGtfsRequestDirectory, managedGtfsRouteSubmission, GtfsSourceResolutionError } from "@/lib/gtfs/managed-route";
 import { admitGtfsSubmission } from "@/lib/gtfs/managed-admission";
+import { readGtfsRequestCancellation } from "@/lib/gtfs/managed-request-cancellation";
+vi.mock("@/lib/gtfs/managed-request-cancellation", () => ({ readGtfsRequestCancellation: vi.fn(async () => null) }));
 vi.mock("@/lib/gtfs/managed-admission", () => ({ admitGtfsSubmission: vi.fn() }));
 const admit = vi.mocked(admitGtfsSubmission), id = (n: number) => `ed000000-0000-4000-8000-${String(n).padStart(12, "0")}`;
 const env = { OPENPLAN_GTFS_MANAGED_INGESTION: "1", OPENPLAN_GTFS_INSTALLATION_ID: id(8), OPENPLAN_GTFS_WORK_DIR: "/private/synthetic/worker",
@@ -14,8 +16,10 @@ const status = { schemaVersion: 1 as const, workspaceId: id(2), requestId: id(1)
 const options = { workspaceId: id(2), actorId: id(5), intent: { source: "url", url: "https://example.invalid/feed.zip" },
   resolve: vi.fn(async () => ({ feedId: null, source: { kind: "url" as const, provisionalName: "URL feed", sourceUrl: "https://example.invalid/feed.zip", normalizedSourceUrl: "https://example.invalid/feed.zip" } })), service: { rpc: vi.fn(), storage: {} } as unknown as Parameters<typeof admitGtfsSubmission>[0]["service"] };
 const request = (identity: string | null = id(1)) => new NextRequest("http://127.0.0.1:3210/api/gtfs/feeds", { method: "POST", ...(identity ? { headers: { "x-openplan-gtfs-request-id": identity } } : {}) });
-afterEach(() => vi.clearAllMocks());
+afterEach(() => { vi.clearAllMocks(); vi.mocked(readGtfsRequestCancellation).mockResolvedValue(null); });
 describe("managed GTFS route submission", () => {
+  it("reports a cancelled request before retaining or resolving another admission", async () => { const cancellation = { command: id(9), requestId: id(1), workspaceId: id(2), state: "cancelled" as const, versionId: null, versionCancellation: null, cancelledAt: "2026-10-10T12:00:00Z" }; vi.mocked(readGtfsRequestCancellation).mockResolvedValue(cancellation); const result = await managedGtfsRouteSubmission(request(), options, env); expect(result.status).toBe(200); expect(await result.json()).toMatchObject({ cancellation, status: null }); expect(admit).not.toHaveBeenCalled(); expect(readGtfsRequestCancellation).toHaveBeenCalledWith(options.service, { workspaceId: id(2), actorId: id(5), requestId: id(1) }, expect.any(AbortSignal)); });
+  it("keeps cancellation lookup errors unconfirmed before admission", async () => { vi.mocked(readGtfsRequestCancellation).mockRejectedValue(new Error("private unavailable")); const result = await managedGtfsRouteSubmission(request(), options, env); expect(result.status).toBe(503); expect(admit).not.toHaveBeenCalled(); });
   it("refuses agent submissions before admission when async action custody is unavailable", async () => {
     const req = request(); req.headers.set("x-openplan-assistant-execution-source", "planner_agent_quick_link");
     const result = await managedGtfsRouteSubmission(req, options, env); expect(result.status).toBe(403); expect(admit).not.toHaveBeenCalled();

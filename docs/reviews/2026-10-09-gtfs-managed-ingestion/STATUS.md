@@ -374,3 +374,24 @@ cancellation reservations. Human completion review/adoption and retained browser
 request handling are separate drafts. Candidate migrations 28 and 29 are not
 released; draft migration 30 is excluded from this checkpoint. Full worker CLI,
 upgrade/restore, capacity, live application roles and T3 journeys remain open.
+
+## October 10: exact human review and early cancellation
+
+[Human decisions](HUMAN_DECISIONS.md) connect manual completed-version review,
+exact adoption commands and durable cancellation before version admission.
+Native SQL, both admission/cancellation transaction orders, interrupted HTTP
+commands, current-role refusals and private submission recovery pass. The CLI
+upgrades populated predecessor 393 through current main 399 to candidate 403
+without changing existing GTFS records or enrolling historical imports.
+
+Browser request, decision and progress helpers preserve identity and separate
+unconfirmed, cancelled, ready and current outcomes. The 65-file regression
+passes 1,571 tests, skips 17 live cases and has no failures. Scoped TypeScript,
+changed-file lint and targeted controls pass. The shared write-role inventory
+now checks the human gate and refusal before dispatch.
+
+These helpers are not yet connected to the planner panel. All four migrations
+remain candidates. Full restore, installed CLI operation, capacity, application
+session roles, T3 desktop/390px journeys, GitHub CI, integration and release
+verification remain open. Historical missing-cancellation and missing-human-route
+paragraphs above describe earlier checkpoints.

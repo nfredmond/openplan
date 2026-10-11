@@ -5,10 +5,11 @@ import { z } from "zod";
 import { acquireConnectorLock, privateConnectorDirectory, writeConnectorJournal } from "../../../../workers/planner_agent_connector/connector-worker.mjs";
 import { readPrivateJson } from "../../../../workers/planner_agent_connector/connector-client.mjs";
 import { admitGtfsSubmission, readGtfsSavedSubmission, type GtfsAdmissionOptions, type GtfsSavedSubmission } from "./managed-admission";
+import { readGtfsRequestCancellation, verifyGtfsRequestCancellation } from "./managed-request-cancellation";
 
 const id = z.string().uuid().transform(value => value.toLowerCase());
 const rootSchema = z.object({ schemaVersion: z.literal(1), target: z.string(), installationId: id, cursor: id.nullable() }).strict();
-type Outcome = { requestId: string; state: "handed_off" | "unconfirmed" };
+type Outcome = { requestId: string; state: "handed_off" | "cancelled_request" | "unconfirmed" };
 export type GtfsSubmissionRecoveryOptions = Pick<GtfsAdmissionOptions, "target" | "installationId" | "service" | "serviceKey" | "signal" | "storageFetch" | "env" | "uploadTimeoutMs"> & {
   directory: string; maxJobs?: number; maxRecords?: number;
   authorize: (saved: GtfsSavedSubmission, signal: AbortSignal) => Promise<void>;
@@ -57,11 +58,23 @@ export async function runGtfsSubmissionRecoveryPass(options: GtfsSubmissionRecov
         requireMatch(saved.binding.requestId === requestId && saved.binding.target === binding.target && saved.binding.installationId === binding.installationId, "GTFS recovery request binding differs");
         const markerPath = join(directory, "handoff"), marker = await optional(join(markerPath, "pending.json"));
         if (marker !== null) {
+          if (typeof marker === "object" && "cancellation" in marker) {
+            const cancelled = z.object({ binding: z.unknown(), cancellation: z.unknown() }).strict().parse(marker);
+            requireMatch(isDeepStrictEqual(cancelled.binding, saved.binding), "GTFS cancelled request binding differs");
+            verifyGtfsRequestCancellation(cancelled.cancellation, saved.binding);
+            continue;
+          }
           requireMatch(saved.response !== null && saved.resolved !== null && isDeepStrictEqual(marker, { binding: saved.binding, resolved: saved.resolved, response: saved.response }), "GTFS recovery handoff differs");
           continue;
         }
         if (outcomes.length >= maxJobs) { pendingCount++; continue; }
         await options.authorize(saved, signal); signal.throwIfAborted();
+        const cancellation = await readGtfsRequestCancellation(options.service, { workspaceId: saved.binding.workspaceId, requestId, actorId: saved.binding.actorId }, signal);
+        if (cancellation !== null) {
+          signal.throwIfAborted(); await privateConnectorDirectory(markerPath);
+          await writeConnectorJournal(markerPath, { binding: saved.binding, cancellation });
+          outcomes.push({ requestId, state: "cancelled_request" }); continue;
+        }
         const result = await admitGtfsSubmission({ ...options, directory, workspaceId: saved.binding.workspaceId, actorId: saved.binding.actorId,
           requestId, intent: saved.binding.intent, signal, resolve: archive => options.resolve(saved, archive, signal) });
         requireMatch(result.registration.requestId === requestId && result.status.requestId === requestId && result.status.workspaceId === saved.binding.workspaceId

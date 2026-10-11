@@ -9,6 +9,7 @@ import { GTFS_REQUEST_ID_HEADER, managedGtfsEnabled, managedGtfsRequestDirectory
 import { readGtfsSavedSubmission } from "@/lib/gtfs/managed-admission";
 import { readGtfsSubmissionStatus } from "@/lib/gtfs/managed-worker-service";
 import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
+import { readGtfsRequestCancellation } from "@/lib/gtfs/managed-request-cancellation";
 
 export const runtime = "nodejs";
 export const maxDuration = 60;
@@ -30,9 +31,11 @@ export async function GET(request: NextRequest, context: { params: Promise<{ req
     if (!user) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     const membership = await checkWorkspaceMembership(supabase, user.id, query.data.workspaceId);
     if (!membership.ok) return membershipResponse(membership.kind);
-    const status = await readGtfsSubmissionStatus(createServiceRoleClient(), { ...query.data, ...params.data, actorId: user.id }, request.signal);
-    return NextResponse.json({ managed: true, requestId: params.data.requestId, status,
-      ...(status === null ? { detail: "Submission is unconfirmed. Recover the same request or retain its original input." } : {}) });
+    const service = createServiceRoleClient(), scope = { ...query.data, ...params.data, actorId: user.id };
+    const cancellation = await readGtfsRequestCancellation(service, scope, request.signal);
+    const status = await readGtfsSubmissionStatus(service, scope, request.signal);
+    return NextResponse.json({ managed: true, requestId: params.data.requestId, status, cancellation,
+      ...(status === null && cancellation === null ? { detail: "Submission is unconfirmed. Recover the same request or retain its original input." } : {}) });
   } catch (error) {
     audit.error("gtfs_submission_status_unavailable", { error });
     return NextResponse.json({ error: "Transit submission status is unavailable", detail: "Retain this request identity and retry." }, { status: 503 });

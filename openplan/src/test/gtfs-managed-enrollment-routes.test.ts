@@ -4,6 +4,8 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
 import { readGtfsSavedSubmission } from "@/lib/gtfs/managed-admission";
 import { readGtfsSubmissionStatus } from "@/lib/gtfs/managed-worker-service";
+import { readGtfsRequestCancellation } from "@/lib/gtfs/managed-request-cancellation";
+vi.mock("@/lib/gtfs/managed-request-cancellation", () => ({ readGtfsRequestCancellation: vi.fn(async () => null) }));
 import { runGtfsIngest } from "@/lib/gtfs/ingest";
 import { POST as create } from "@/app/api/gtfs/feeds/route";
 import { POST as upload } from "@/app/api/gtfs/feeds/upload/route";
@@ -23,6 +25,7 @@ const context = { params: Promise.resolve({ requestId: id(3) }) }, workspaceId =
 const submission = vi.mocked(managedGtfsRouteSubmission), saved = vi.mocked(readGtfsSavedSubmission), readStatus = vi.mocked(readGtfsSubmissionStatus);
 const request = (path: string, body?: unknown, headers: Record<string, string> = {}) => new NextRequest(`http://127.0.0.1:3210${path}`, { method: body === undefined ? "GET" : "POST", headers: { "content-type": "application/json", "x-openplan-gtfs-request-id": id(3), ...headers }, ...(body === undefined ? {} : { body: JSON.stringify(body) }) });
 beforeEach(() => {
+ vi.mocked(readGtfsRequestCancellation).mockResolvedValue(null);
  vi.stubEnv("OPENPLAN_GTFS_MANAGED_INGESTION", "1"); vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", target); vi.stubEnv("OPENPLAN_GTFS_INSTALLATION_ID", id(8)); vi.stubEnv("OPENPLAN_GTFS_PARSER_BUILD", "a".repeat(40)); vi.stubEnv("OPENPLAN_GTFS_WORK_DIR", "/private/synthetic/worker");
  mocks.user = userId; mocks.role = "member"; mocks.membershipError = null; mocks.projections = []; mocks.filters = [];
  submission.mockImplementation(async () => NextResponse.json({ managed: true, requestId: id(3), feedId, versionId: id(5), createdFeed: true, detail: "Synthetic queue handoff", caveats: [],
@@ -67,6 +70,14 @@ describe("managed transit enrollment routes", () => {
   expect(result.status).toBe(200); expect(await result.json()).toMatchObject({ managed: true, requestId: id(3), status: null });
   expect(readStatus).toHaveBeenCalledWith(mocks.service, { workspaceId, requestId: id(3), actorId: userId }, req.signal);
  });
+ it("shows a committed early cancellation separately from missing version status", async () => {
+  const cancellation = { command: id(8), requestId: id(3), workspaceId, state: "cancelled" as const, versionId: null, versionCancellation: null, cancelledAt: "2026-10-10T12:00:00Z" };
+  vi.mocked(readGtfsRequestCancellation).mockResolvedValue(cancellation);
+  const req = request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), result = await status(req, context), body = await result.json();
+  expect(body).toMatchObject({ status: null, cancellation }); expect(body).not.toHaveProperty("detail");
+  expect(readGtfsRequestCancellation).toHaveBeenCalledWith(mocks.service, { workspaceId, requestId: id(3), actorId: userId }, req.signal);
+ });
+ it("does not invent an absent cancellation when its lookup is unavailable", async () => { vi.mocked(readGtfsRequestCancellation).mockRejectedValue(new Error("Private cancellation evidence")); const result = await status(request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), context); expect(result.status).toBe(503); expect(JSON.stringify(await result.json())).not.toContain("Private cancellation evidence"); expect(readStatus).not.toHaveBeenCalled(); });
  it("does not read status for a nonmember", async () => { mocks.role = null; expect((await status(request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), context)).status).toBe(404); expect(readStatus).not.toHaveBeenCalled(); });
  it("keeps unavailable status distinct from a missing committed submission", async () => { readStatus.mockRejectedValue(new Error("Private database detail")); const result = await status(request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), context); expect(result.status).toBe(503); expect(JSON.stringify(await result.json())).not.toContain("Private database detail"); });
 });

@@ -62,6 +62,20 @@ const options = { ...identity, directory: join(directory, "submissions", identit
   } } satisfies Parameters<typeof admitGtfsSubmission>[0];
 let handoff = null;
 let result;
+if (mode === "cancelled") {
+  handoff = await runGtfsSubmissionRecoveryPass({ ...options, directory: join(directory, "submissions"),
+    authorize: (saved, signal) => authorizeManagedGtfsSubmission(service, saved, signal),
+    resolve: () => { throw new Error("Cancelled request resolved its source"); } });
+  assert.deepEqual(handoff, { outcomes: [{ requestId: identity.requestId, state: "cancelled_request" }], pendingCount: 0 });
+  const cancellation = JSON.parse(await readFile(join(options.directory, "handoff/pending.json"), "utf8")).cancellation;
+  assert.equal(cancellation.versionId, null); assert.equal(cancellation.requestId, identity.requestId);
+  const retained = await runGtfsSubmissionRecoveryPass({ ...options, directory: join(directory, "submissions"),
+    authorize: () => { throw new Error("Cancelled history rechecked authorization"); }, resolve: () => { throw new Error("Cancelled history resolved source"); } });
+  assert.deepEqual(retained, { outcomes: [], pendingCount: 0 });
+  assert.equal(uploads, 0); assert.equal(resolutions, 0);
+  assert.ok(calls.every(name => ["workspace_members", "read_gtfs_submission_cancellation"].includes(name)));
+  console.log(JSON.stringify({ mode, cancellation, handoff, retained, uploads, resolutions, calls })); process.exit(0);
+}
 if (mode.startsWith("resume-")) {
   handoff = await runGtfsSubmissionRecoveryPass({ ...options, directory: join(directory, "submissions"),
     authorize: (saved, signal) => authorizeManagedGtfsSubmission(service, saved, signal), resolve: (_saved, archive) => options.resolve(archive), maxJobs: 1 });

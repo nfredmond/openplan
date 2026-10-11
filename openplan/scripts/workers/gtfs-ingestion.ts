@@ -21,7 +21,7 @@ async function main() {
             serviceKey: process.env.SUPABASE_SERVICE_ROLE_KEY ?? "", signal: stopping.signal, env: process.env,
             authorize: (saved, signal) => authorizeManagedGtfsSubmission(service, saved, signal),
             resolve: (saved, archive) => resolveManagedGtfsSubmission(service, saved.binding.intent, archive) });
-          console.log(`Transit submissions: ${pass.outcomes.filter(item => item.state === "handed_off").length} handed to processing; ${pass.pendingCount} retained submissions unconfirmed. Handoff does not establish processing completion or adoption.`);
+          console.log(`Transit submissions: ${pass.outcomes.filter(item => item.state === "handed_off").length} handed to processing; ${pass.outcomes.filter(item => item.state === "cancelled_request").length} cancelled requests retained; ${pass.pendingCount} retained submissions unconfirmed. Handoff does not establish processing completion or adoption.`);
           return pass;
         } catch {
           stopping.signal.throwIfAborted();

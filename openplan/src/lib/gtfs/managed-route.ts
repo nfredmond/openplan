@@ -5,6 +5,7 @@ import { gtfsQueueOptions } from "./managed-worker-queue";
 import { admitGtfsSubmission, type GtfsAdmissionOptions } from "./managed-admission";
 import { GTFS_ALWAYS_APPLICABLE_CAVEATS } from "./caveats";
 import { readAssistantExecutionSource } from "../assistant/action-approval-server";
+import { readGtfsRequestCancellation } from "./managed-request-cancellation";
 
 export const GTFS_REQUEST_ID_HEADER = "x-openplan-gtfs-request-id";
 
@@ -46,6 +47,9 @@ export async function managedGtfsRouteSubmission(request: NextRequest, options: 
   const requestId = identity.data;
   try {
     const configuration = managedGtfsRequestDirectory(requestId, env);
+    const cancellation = await readGtfsRequestCancellation(options.service, { workspaceId: options.workspaceId, actorId: options.actorId, requestId }, request.signal);
+    if (cancellation !== null) return NextResponse.json({ managed: true, requestId, cancellation, status: null,
+      detail: "This request is cancelled. It cannot admit a later import." });
     const result = await admitGtfsSubmission({ ...configuration, ...options, requestId,
       serviceKey: env.SUPABASE_SERVICE_ROLE_KEY ?? "", signal: request.signal, env });
     return NextResponse.json({ managed: true, requestId, feedId: result.registration.feedId, versionId: result.registration.versionId,
