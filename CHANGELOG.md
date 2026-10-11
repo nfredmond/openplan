@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Apply `20261016000032_model_kpi_receipt_float_precision.sql` before deploying
+hosted model workers. It preserves full floating-point precision in the two KPI
+receipt functions, so exact immutable receipt checks accept the recorded values.
+Hosted artifact downloads can use verified private Storage copies when
+`OPENPLAN_HOSTED_ARTIFACT_MIRROR=1` is set in both workers and the web app.
+Model timestamps now show UTC consistently across server and browser rendering.
+
 When a browser loses a response, OpenPlan now says the action may have completed
 and asks the user to inspect saved records before retrying. A lost response no
 longer implies that nothing was saved.

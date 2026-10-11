@@ -227,3 +227,14 @@ separate transit candidate. Its unchanged SQL is renamed to version 32. The
 linked CLI repairs only this migration identity; verification finds version 32
 applied and candidate version 28 absent. The database function settings remain
 unchanged. The coordination record reserves transit versions 28 through 31.
+
+## Browser timestamp correction
+
+A direct hosted model-page load reproduces React hydration error 418. The server
+and browser use different default time zones for model timestamps. Both model
+catalog and run records now use the same UTC formatter with an explicit UTC
+label. Catalog tests pass under UTC, Los Angeles and Honolulu time zones; a
+harmless comment passes and removing the UTC option fails the stated assertion.
+This check covers date rendering, not the complete browser page. The operator
+environment example and Unreleased changelog now document the private artifact
+mirror flag and precision migration filename required by existing CI guards.

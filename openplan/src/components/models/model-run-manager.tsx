@@ -61,6 +61,7 @@ import {
 } from "@/lib/models/worker-health";
 import { modelRecoveryNeedsReview, modelRecoveryNotice, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import { managedRunStatusPresentation } from "@/lib/models/run-status";
+import { formatModelDateTime } from "@/lib/models/catalog";
 
 const TrafficVolumeMap = dynamic(
   () => import("@/components/models/traffic-volume-map").then((m) => m.TrafficVolumeMap),
@@ -240,12 +241,6 @@ type ModelRunManagerProps = {
   /** The scenario this model opens ready to run; normally the saved baseline. */
   initialScenarioEntryId?: string;
 };
-
-function fmtDateTime(value: string | null | undefined) {
-  if (!value) return "Unknown";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? value : parsed.toLocaleString("en-US");
-}
 
 const NON_TERMINAL_RUN_STATUSES = new Set(["queued", "running"]);
 const RUN_POLL_INTERVAL_MS = 5000;
@@ -1355,7 +1350,7 @@ export function ModelRunManager({
                       <div className="space-y-1.5">
                         <div className="flex flex-wrap items-start justify-between gap-3">
                           <h3 className="module-record-title">{run.run_title}</h3>
-                          <p className="module-record-stamp">{fmtDateTime(run.completed_at ?? run.started_at ?? run.created_at)}</p>
+                          <p className="module-record-stamp">{formatModelDateTime(run.completed_at ?? run.started_at ?? run.created_at)}</p>
                         </div>
                         {/*
                           A FAILED RUN MUST NOT DESCRIBE ITSELF AS A RECORDED ONE.
