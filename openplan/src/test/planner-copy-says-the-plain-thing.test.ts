@@ -217,13 +217,13 @@ const BASELINE: Readonly<Record<string, number>> = {
   "moderation queue": 1,
   operator: 39,
   // M2d.3 uses Nathaniel's requested reimbursement packet terminology for retained funder files.
-  packet: 112,
+  packet: 111,
   payload: 2,
   populate: 1,
   posture: 40,
   preset: 12,
   provenance: 9,
-  readiness: 31,
+  readiness: 30,
   // Safety must distinguish crash records from people killed or injured.
   record: 232,
   registry: 12,
@@ -239,7 +239,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
   // times: where work waits, what is active, and what the caller can switch.
-  workspace: 141,
+  workspace: 140,
 };
 
 describe("planner copy says the plain thing", () => {
