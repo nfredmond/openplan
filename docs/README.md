@@ -53,6 +53,8 @@ The [October 11 explicit worker inventory candidate](reviews/2026-10-11-installa
 
 The [October 11 native OCR text-layer recovery proof](reviews/2026-10-11-ocr-worker-recovery/STATUS.md) recovers exact original callback bytes from a stopped private-root package without another download or extraction. A blank page, original admission replay and changed-request refusal survive. Scanned OCR quality, a live OpenPlan consumer and the remaining M3 floor stay open.
 
+The [October 11 OCR inventory/root-set integration proof](reviews/2026-10-11-ocr-inventory-root-set/STATUS.md) binds a selected synthetic configuration and root through both existing operators, then continues the original result in a fresh runtime. The consumer reads a persisted ledger, and 53 controls pass. One fixture is configured; the other 14 families and installation coverage remain unassessed.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
