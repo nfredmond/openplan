@@ -451,3 +451,20 @@ commissioning, all worker families, useful 45-minute computation, physical-host
 recovery, model continuation and separate-engine scientific acceptance remain
 open. M3 and the complete V1 floor remain incomplete; no capability grade changes.
 Hosted coordination and the main merge hold remain with the relaunch owner.
+
+## October 11 selected worker-root set, bounded M3 candidate
+
+[The set command and native checks](../reviews/2026-10-11-worker-root-set/STATUS.md)
+retain exact private selection bytes and component bindings for an explicitly
+selected set. Each component is checked against the initial source inventory;
+all sources are rechecked before final publication. Five known roots and a fresh
+relocated copy verify. Changed selection and missing component bindings refuse.
+The original point and immutable set remain unchanged.
+
+This advances recoverable private-state custody. It does not discover every
+installation root, fence writers, align a new database/Storage cut or authorize
+computation. The latest T3 host retry provides no new browser acceptance.
+Independent commissioning, all-worker coverage, useful 45-minute computation,
+physical-host recovery and separate-engine scientific acceptance remain open.
+M3 and the V1 floor stay incomplete; no capability grade changes. The relaunch
+agent retains hosted coordination and the main merge hold.

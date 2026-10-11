@@ -109,6 +109,63 @@ inventories, Storage, real-worker quiescence and a different physical host still
 require their own verification. The default-local archive commands below do not
 capture the worker roots automatically.
 
+## Capture an explicitly selected worker-root set
+
+The candidate Linux set command retains one private inventory and every selected
+root as a single verified package. It does not discover omitted workers. Establish
+the required roots from the installation's actual configuration and preserve that
+authority separately. A private inventory has this shape; paths below are examples:
+
+```json
+{
+  "format": "openplan-worker-root-inventory-v1",
+  "roots": [
+    {"id": "transit", "path": "/private/installation/transit-worker"},
+    {"id": "model", "path": "/private/installation/model-worker"}
+  ]
+}
+```
+
+Use unique IDs containing only ASCII letters, numbers, `.`, `_` or `-`, beginning
+with a letter or number, with at most 64 characters. Paths must be absolute and
+private, without aliases or overlapping roots. Keep the inventory private and
+operator-owned. Its exact bytes, including any opaque metadata, are retained.
+An empty `roots` list means zero selected roots; it does not establish an empty
+installation. Quiesce every relevant writer and keep it stopped through the whole
+coordinated point. From `openplan/`, using a fresh destination with a private parent:
+
+```bash
+python3 scripts/ops/worker_root_set_snapshot.py \
+  --inventory /private/installation/worker-inventory.json \
+  --destination /private/recovery-point/worker-root-set \
+  --writers-quiesced --timeout 120
+python3 scripts/ops/worker_root_set_snapshot.py \
+  --destination /private/recovery-point/worker-root-set --verify --timeout 120
+```
+
+Require both commands to exit 0. The timeout covers the selected set. The command
+inventories all sources before component copying, binds each component to that
+initial inventory, and rechecks all sources and selection bytes before publishing
+the final manifest. These checks detect observed changes; they do not acquire a
+writer fence or detect every change and exact restoration between observations.
+Retain an incomplete destination for diagnosis and use a fresh one on retry.
+Nested component manifests do not establish complete set capture.
+
+The package contains exact `inventory.json`, component packages under `roots/<id>/`,
+and final `snapshot.json`. Verification uses only these retained files and works
+without the original source paths. Preserve the set manifest hash through the
+protected coordinated point with database, Storage, installation identity and
+configuration. Self-consistent retained files do not authenticate their own origin.
+This command does not encrypt data or create that coordinated point automatically.
+
+Recover verified `roots/<id>/root/` directories into fresh working locations,
+preserving relative paths, modes and original command custody. Keep the retained
+set unchanged while working copies recover receipts. Source-path identity binds
+the original selection; it does not authorize computation at a new location.
+The [dated set checks](../../../docs/reviews/2026-10-11-worker-root-set/STATUS.md)
+record five known retained roots, exact relocation checks and the remaining
+installation, browser, physical-host and scientific boundaries.
+
 ## Capture a complete selected worker root
 
 The candidate Linux root operator packages one explicitly selected private worker

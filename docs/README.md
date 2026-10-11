@@ -45,6 +45,8 @@ The [October 11 managed admission and progress point](reviews/2026-10-11-managed
 
 The [October 11 complete selected worker-root snapshot candidate](reviews/2026-10-11-worker-root-snapshot/STATUS.md) adds a supported private-root package command, native SQLite/WAL controls and five known-root checks. Fresh package copies recover original managed receipts without computation; installation-wide recovery and the remaining M3 floor stay open.
 
+The [October 11 selected worker-root set candidate](reviews/2026-10-11-worker-root-set/STATUS.md) retains exact selection bytes, binds components to the initial source inventory and publishes one final set manifest. Five known roots and a relocated copy verify. It does not discover omitted installation roots or establish a new database/Storage cut. The failed T3 host retry remains explicit.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.
