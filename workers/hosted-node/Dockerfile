@@ -14,6 +14,7 @@ RUN npm ci --include=dev
 COPY openplan/tsconfig.json ./
 COPY openplan/src ./src
 COPY openplan/scripts ./scripts
+COPY workers/planner_agent_connector /app/workers/planner_agent_connector
 COPY workers/hosted-node/supervise.mjs /app/supervise.mjs
 ENV NODE_ENV=production
 ENV CHROME_EXECUTABLE_PATH=/usr/local/bin/openplan-chromium
