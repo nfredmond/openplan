@@ -1,0 +1,41 @@
+{
+  "cases": [
+    {
+      "case": "actual executed driver bytes",
+      "result": "survived"
+    },
+    {
+      "case": "harmless map ordering",
+      "result": "survived"
+    },
+    {
+      "case": "changed native_packages.py",
+      "result": "intended refusal",
+      "reason": "Restored file bytes or mode differ"
+    },
+    {
+      "case": "omitted binding native_packages.py",
+      "result": "changed digest accepted; intended refusal oracle fails"
+    },
+    {
+      "case": "changed recovery_launch.py",
+      "result": "intended refusal",
+      "reason": "Restored file bytes or mode differ"
+    },
+    {
+      "case": "omitted binding recovery_launch.py",
+      "result": "changed digest accepted; intended refusal oracle fails"
+    },
+    {
+      "case": "changed target_recovery.py",
+      "result": "intended refusal",
+      "reason": "Restored file bytes or mode differ"
+    },
+    {
+      "case": "omitted binding target_recovery.py",
+      "result": "changed digest accepted; intended refusal oracle fails"
+    }
+  ],
+  "guardSourceSha256": "c38b7d04653a9f407b78787318c94d1d985a02ca789d80067d536753d5384050",
+  "scope": "Existing exact-census equality guard protects archived driver digest bindings. No source edit or native service. Does not authenticate external provenance or replace native acceptance."
+}

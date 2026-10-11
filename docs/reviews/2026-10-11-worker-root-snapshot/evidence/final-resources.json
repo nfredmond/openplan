@@ -1,0 +1,26 @@
+[
+  {
+    "kind": "target-database",
+    "id": "25ab5068a1c3c3e33d95350dfd56c75783d7f18716c035fb62e68ccc88f0c07a",
+    "running": false,
+    "exitCode": 0,
+    "oomKilled": false,
+    "memoryBytes": 1073741824,
+    "memorySwapBytes": 1073741824,
+    "nanoCpus": 1000000000,
+    "pidsLimit": 128,
+    "scope": "Exact already-owned fixture resource only. Not host-capacity acceptance."
+  },
+  {
+    "kind": "target-rest",
+    "id": "85ffadf50b9cad1f471afd3de98465dd49e79de88998f3455f59e07564764f44",
+    "running": false,
+    "exitCode": 255,
+    "oomKilled": false,
+    "memoryBytes": 134217728,
+    "memorySwapBytes": 134217728,
+    "nanoCpus": 500000000,
+    "pidsLimit": 128,
+    "scope": "Exact already-owned fixture resource only. Not host-capacity acceptance."
+  }
+]

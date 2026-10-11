@@ -44,6 +44,8 @@ pointer to AGENTS.md, not a second rulebook.
 
 The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
 
+The [October 11 complete selected worker-root snapshot candidate](reviews/2026-10-11-worker-root-snapshot/STATUS.md) adds a supported private-root package command, native SQLite/WAL controls and five known-root checks. Fresh package copies recover original managed receipts without computation; installation-wide recovery and the remaining M3 floor stay open.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

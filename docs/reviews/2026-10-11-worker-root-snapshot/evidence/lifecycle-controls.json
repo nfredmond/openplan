@@ -1,0 +1,28 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived; three active-state cases refused"
+    },
+    {
+      "case": "harmless-comment",
+      "result": "survived; three active-state cases refused"
+    },
+    {
+      "case": "database-active",
+      "result": "omission accepts active state; intended refusal oracle fails",
+      "reason": "package-owned-target-begins-stopped"
+    },
+    {
+      "case": "api-active",
+      "result": "omission accepts active state; intended refusal oracle fails",
+      "reason": "package-owned-target-begins-stopped"
+    },
+    {
+      "case": "final-active",
+      "result": "omission accepts active state; intended refusal oracle fails",
+      "reason": "package-owned-target-finally-stopped"
+    }
+  ],
+  "scope": "Lifecycle guard fixtures only; exact native resource identity/configuration remain independently checked by existing container/service guards."
+}
