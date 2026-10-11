@@ -319,7 +319,10 @@ describe("a worklist card does not contain another card", () => {
     // this, "no box inside an item card" passes trivially the day the list
     // idiom is renamed and ITEM_CARD matches nothing — the shape of vacuous
     // coverage this repository has shipped repeatedly.
-    expect(cards).toBeGreaterThanOrEqual(50);
+    // 46 on October 10, 2026, down from more than 50: the UI overhaul removed
+    // card walls (Regional Plan's per-cycle tiles, the dashboard's boards).
+    // The floor stays well above zero, which is what it is for.
+    expect(cards).toBeGreaterThanOrEqual(40);
     expect(files).toContain("src/app/(app)/projects/page.tsx");
     expect(files).toContain("src/components/my-work/my-work-board.tsx");
     // Derived, not written down: a component only reachable through an import.

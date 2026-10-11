@@ -194,8 +194,8 @@ import {
   resolveReimbursementProfile,
 } from "@/lib/invoicing/reimbursement-profile-binding";
 
-async function renderPage() {
-  render(await GrantsPage({ searchParams: Promise.resolve({}) }));
+async function renderPage(searchParams: { tab?: string } = {}) {
+  render(await GrantsPage({ searchParams: Promise.resolve(searchParams) }));
 }
 
 /**
@@ -657,7 +657,8 @@ describe("GrantsPage", () => {
     });
     seedComposerStackAward();
 
-    await renderPage();
+    // Award close-out is on the Awards tab since October 10, 2026.
+    await renderPage({ tab: "awards" });
 
     expect(screen.getByRole("button", { name: "Close out award" })).toBeInTheDocument();
   });

@@ -4900,3 +4900,37 @@
     color: var(--foreground);
   }
 }
+
+/* ═══ UI OVERHAUL, OCTOBER 10, 2026: PUBLISHED MODEL STUDIES ═══ */
+@layer components {
+  .model-studies {
+    display: grid;
+    gap: 0.75rem;
+    margin-top: 2.5rem;
+    border-top: 1px solid var(--border);
+    padding-top: 1.5rem;
+  }
+
+  .model-study {
+    border-bottom: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+    padding: 0.6rem 0;
+  }
+
+  .model-study > summary {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 0.4rem 0.9rem;
+    cursor: pointer;
+  }
+
+  .model-study-title {
+    font-weight: 600;
+    color: var(--foreground);
+  }
+
+  .model-study-claim {
+    font-size: var(--fs-compact);
+    color: var(--muted-foreground);
+  }
+}

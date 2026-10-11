@@ -464,11 +464,6 @@ export default async function ModelsPage({
         projectId={planningContext.status === "active" ? planningContext.project.id : null}
       />
 
-      <PublishedDistributedWorkLoadingCard study={publishedDistributedWorkLoading} />
-      <PublishedStructuralDemandDiagnosisCard study={publishedStructuralDemandDiagnosis} />
-      <PublishedComparableObservationCard study={publishedComparableObservationStudy} />
-      <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
-
       <PageHeader
         title={navLabel("/models")}
         description="Keep methods, assumptions, and results connected to the plans and projects they support."
@@ -730,6 +725,63 @@ export default async function ModelsPage({
       </article>
 
       <NetworkPackagesPanel workspaceId={membership.workspace_id} />
+
+      {/*
+        THE PUBLISHED STUDIES, BELOW THE PLANNER'S WORK (October 10, 2026).
+        They opened this page, above its own header, with release numbers and
+        file hashes. Each now sits in a closed disclosure whose summary keeps
+        the scientific outcome and the sentence that no accuracy conclusion
+        follows, so the claim tier is visible without opening anything. A
+        study that could not be read stays open: "unavailable, not zero" is a
+        fact the planner must see. Nothing inside the cards is shortened.
+      */}
+      <section aria-labelledby="published-model-studies" className="model-studies">
+        <h2 id="published-model-studies" className="module-section-title">
+          Published model studies
+        </h2>
+        <p className="module-section-description">
+          Development studies of the two modeling methods, with their files and checks.
+        </p>
+        {[
+          {
+            key: "work-loading",
+            title: "Source-bound work-trip loading",
+            outcome: publishedDistributedWorkLoading?.scientificOutcome ?? null,
+            card: <PublishedDistributedWorkLoadingCard study={publishedDistributedWorkLoading} />,
+          },
+          {
+            key: "demand-diagnosis",
+            title: "Demand distribution, external travel, and network loading",
+            outcome: publishedStructuralDemandDiagnosis?.scientificOutcome ?? null,
+            card: <PublishedStructuralDemandDiagnosisCard study={publishedStructuralDemandDiagnosis} />,
+          },
+          {
+            key: "comparable-observations",
+            title: "Comparable observations and whole-road matches",
+            outcome: publishedComparableObservationStudy?.scientificOutcome ?? null,
+            card: <PublishedComparableObservationCard study={publishedComparableObservationStudy} />,
+          },
+          {
+            key: "structural-diagnosis",
+            title: "Why all fourteen assessments are inconclusive",
+            outcome: publishedStructuralDiagnosis?.scientificOutcome ?? null,
+            card: <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />,
+          },
+        ].map((study) =>
+          study.outcome === null ? (
+            <div key={study.key}>{study.card}</div>
+          ) : (
+            <details key={study.key} className="model-study">
+              <summary>
+                <span className="model-study-title">{study.title}</span>
+                <StatusBadge tone="warning">{study.outcome}</StatusBadge>
+                <span className="model-study-claim">No model accuracy conclusion follows.</span>
+              </summary>
+              <div className="mt-3">{study.card}</div>
+            </details>
+          )
+        )}
+      </section>
     </section>
   );
 }

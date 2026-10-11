@@ -20,6 +20,8 @@ export type GrantsPageSearchParams = Promise<{
   focusOpportunityId?: string;
   focusInvoiceId?: string;
   relinkedInvoiceId?: string;
+  /** Which part of the page is open: opportunities, funding gaps or awards. */
+  tab?: string;
 }>;
 
 export type FundingOpportunityRow = {
