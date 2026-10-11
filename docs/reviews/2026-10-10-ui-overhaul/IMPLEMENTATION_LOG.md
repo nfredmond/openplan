@@ -36,7 +36,7 @@ Words: 2,199 before, 390 after.
 | Build notes removed ("Next slice", "Lane C migration" ×5, "Chapter shell", "will layer onto this record model"); new guard `planner-pages-carry-no-build-notes` reads string literals and JSX text | Restoring "Lane C" in JSX text or "next slice" in a template literal fails it; a comment passes; interpolation split is a stated blind category |
 | 127 kicker labels above section headings removed from 79 files | Copy, nesting and page suites |
 | Figure rows (`FigureRow`) replace tile walls on Regional Plan, Grants, Travel modeling, Projects, Data Hub, Reports, Programming Cycles; each keeps "unknown, not zero" | Projects tests: showing a number for a failed read fails them |
-| Grants: three URL tabs; every `/grants#…` link opens the tab holding its target; checks and decision form folded; lead step said once; program catalog details folded (Opportunities tab 9,182 to about 1,000 words after the catalog fold) | New `grants-links-open-the-right-tab`; three targeted breaks fail it |
+| Grants: three URL tabs; every `/grants#…` link opens the tab holding its target; checks and decision form folded; lead step said once; program catalog details folded (page 9,182 words before; Opportunities tab 3,483 after the catalog fold, measured on the build at cd9258b28, most of it the funding program summaries) | New `grants-links-open-the-right-tab`; three targeted breaks fail it |
 | Travel modeling: title first; one line per step (claim step always shows its caveat); published studies below the work in disclosures whose summary keeps the outcome and "No model accuracy conclusion follows." | New published-studies test; dropping either fails it. The strip tests caught a first version that hid the claim caveat |
 | Projects, Data Hub, Reports: lists first, tools and detail folded or moved down; report rows keep why a packet is or is not current | Reports tests; removing changed sources or not-ready guidance fails them |
 | Invoices opens on the header's workspace instead of "Choose a workspace" | New test; restoring the chooser fails it |
@@ -54,6 +54,7 @@ Browser: production builds of this worktree on port 3611, identified with `which
 - **Corridor Analysis in light mode.** It still renders its always-dark `analysis-*` styling; the plan put this last and in its own pull request because light mode broke its tiles before.
 - **The command board component** (`components/operations/workspace-command-board.tsx`) is no longer rendered anywhere but six page tests still mock it; remove it with those mocks in a cleanup pass.
 - **Reports filters on phones** stack as a tall column of chips.
+- **Grants program catalog** still prints one summary per program; a search or filter would shorten the Opportunities tab further.
 - **Signal palette and square corners** (M2c additions).
 - **Aerial's Atlantic-wide first view** in the test workspace comes from smoke-test missions drawn near 0.02°, 0.02°; the camera frames real records.
 - **Keyboard and screen-reader walk**, and observation with practicing planners.
