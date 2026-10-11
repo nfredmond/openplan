@@ -4,6 +4,14 @@ This is an opt-in development candidate. Migrations `20261016000028` through `20
 
 Apply migrations 28 through 31 before deploying this candidate app, even when managed admission is disabled. The existing ingest reaper calls `public.reconcile_gtfs_storage_cleanup`, which migration 28 introduces. Coordinate schema-first rollout with the installation owner. An existing hosted supervisor does not commission the separate GTFS queue.
 
+## Upgrade after a later migration
+
+A selected installation may already record a migration newer than these four GTFS files. The demonstrated current-main installation includes `20261017000001_project_map_packages.sql`. Supabase CLI 2.111.0 refuses to insert the missing GTFS migrations before that recorded version with the default `migration up` command.
+
+After capturing the coordinated backup and checking the target and complete missing-file inventory, use `migration up --include-all` for that installation. Keep the normal target selection, such as `--local` or the operator's protected database connection. The option applies every local migration missing from that target's history, so first verify that every listed file belongs to the reviewed rollout. Do not rename applied files, mark unapplied SQL as applied, or reset the database to get past the refusal. Verify the complete resulting history and repeat application before deploying the candidate app.
+
+[The populated current-main upgrade proof](../../../docs/reviews/2026-10-09-gtfs-managed-ingestion/CURRENT_MAIN_UPGRADE.md) applies exactly the reviewed GTFS migrations 28 through 31 after the map schema, preserves project, map-package and transit records, and verifies an unchanged repeat. It uses retained local database clones. It does not authorize or establish hosted application of these files.
+
 ## Configure the app and worker
 
 Run the app and worker from the nested `openplan/` package with Node 24, using the same protected Supabase configuration. The service-role key belongs on the server only. On the demonstrated Linux setup, both processes use the same Unix owner and persistent private file location.
