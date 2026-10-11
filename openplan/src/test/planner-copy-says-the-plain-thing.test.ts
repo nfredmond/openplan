@@ -220,9 +220,9 @@ const BASELINE: Readonly<Record<string, number>> = {
   packet: 117,
   payload: 2,
   populate: 1,
-  posture: 46,
+  posture: 45,
   preset: 12,
-  provenance: 10,
+  provenance: 9,
   readiness: 31,
   // Safety must distinguish crash records from people killed or injured.
   record: 233,
