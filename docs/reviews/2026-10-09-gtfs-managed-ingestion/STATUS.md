@@ -619,3 +619,18 @@ has the same tree; browser observations retain bf1 identity. Current-head full
 CI, hosted schema-first disposition, integration, release and the full M3/v1
 contract remain open. Nathaniel confirms the relaunch agent retains coordination
 and its main-merge hold. No hosted or demo changes occur.
+
+## Restored worker-file terminal recovery, October 11
+
+[Fresh-process terminal replay](WORKER_FILE_REPLAY.md) passes nine native cases
+from relocated copies of encrypted-backup-restored CTA files. Cached and uncertain
+completion replies retain the original command and native claim; no computation
+repeats. Different target/installation/actor, terminal context and changed archive
+refuse at their intended boundaries. All 18 transit tables and all 787 original,
+backup-restored and final relocated files agree after the checks. Scope controls
+and three positive/17 broken result controls pass. The service exits zero after
+118.077 seconds at a rounded 947.6M under 1 GiB, no swap and one CPU. This remains
+same-host recovery against the original isolated recovered database. A coordinated
+database/Storage/configuration point, physical-host loss, SQLite/WAL, full worker
+computation and agency commissioning remain unproved. Hosted ownership and the
+main-merge hold remain with the relaunch agent.

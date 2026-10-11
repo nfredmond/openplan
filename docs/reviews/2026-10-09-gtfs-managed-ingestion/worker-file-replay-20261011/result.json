@@ -1,0 +1,190 @@
+{
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "backupSourceHead": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "snapshotId": "ca655ea95b25edbd2f7f31c886a1b18fc10a52392c50338ddfa1e157a05fc092",
+  "records": [
+    {
+      "case": "cached",
+      "exitCode": 0,
+      "wallSeconds": 1.382,
+      "mode": "cached",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": true,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "harmless",
+      "exitCode": 0,
+      "wallSeconds": 1.292,
+      "mode": "cached",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": true,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "uncertain-native-reply",
+      "exitCode": 0,
+      "wallSeconds": 1.314,
+      "mode": "uncertain",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "complete_gtfs_ingest",
+          "argumentsSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": false,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "wrong-installation",
+      "exitCode": 2,
+      "wallSeconds": 1.144,
+      "mode": "wrong-installation",
+      "refused": true,
+      "reason": "GTFS journal attempt scope differs",
+      "computations": 0,
+      "calls": []
+    },
+    {
+      "case": "wrong-target",
+      "exitCode": 2,
+      "wallSeconds": 1.182,
+      "mode": "wrong-target",
+      "refused": true,
+      "reason": "GTFS journal attempt scope differs",
+      "computations": 0,
+      "calls": []
+    },
+    {
+      "case": "wrong-original-actor",
+      "exitCode": 2,
+      "wallSeconds": 0.324,
+      "mode": "cached",
+      "refused": true,
+      "reason": "replay-original-actor",
+      "computations": 0,
+      "calls": []
+    },
+    {
+      "case": "foreign-terminal-context",
+      "exitCode": 2,
+      "wallSeconds": 1.288,
+      "mode": "cached",
+      "refused": true,
+      "reason": "GTFS retained terminal context differs",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ]
+    },
+    {
+      "case": "changed-restored-archive",
+      "exitCode": 2,
+      "wallSeconds": 0.434,
+      "mode": "cached",
+      "refused": true,
+      "reason": "replay-file-bytes",
+      "computations": 0,
+      "calls": []
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "wallSeconds": 1.255,
+      "mode": "cached",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": true,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    }
+  ],
+  "nativeTableCount": 18,
+  "nativeBeforeAfterEqual": true,
+  "originalFilesUnchanged": true,
+  "backupRestorationUnchanged": true,
+  "finishedAt": "2026-10-11T10:53:14.503147+00:00",
+  "limits": [
+    "Fresh processes use relocated copies of an encrypted-backup restoration on the same physical host.",
+    "Native server is the original isolated recovered installation, not a database restored together with these files.",
+    "No physical-host independence, coordinated whole-installation point, SQLite/WAL, new parsing, model computation or agency acceptance."
+  ],
+  "relocatedWorkerFileBytesAndModesEqual": true,
+  "independentFinalNativeReadEqual": true,
+  "runner": {
+    "unit": "openplan-gtfs-worker-file-replay-20261011-01.service",
+    "exitCode": 0,
+    "wallSeconds": 118.077,
+    "journalPeak": "947.6M",
+    "sampledPeakBytes": 993722368,
+    "memoryMaxBytes": 1073741824,
+    "swapDisabled": true,
+    "cpuLimit": 1
+  },
+  "probeSourceSha256": {
+    "run.py": "ee59b673ad8a6f6b8059ecee3ae737fdf0456edcc3adc98334a4032e6d284cf8",
+    "replay.mts": "778e42795ace4248f482e644d7c2cc0d8fee2c167a617f8440a55d39a9623c4b",
+    "prove_scope.py": "c93226b838007547d04c0e7cc854385386d8e91f9f0678970735e24abb07f448",
+    "verify_results.py": "84d50abee33bd60e5519c3e99d7b94ecde4a02aa02a780f04aaf3e6d072daa98"
+  }
+}
