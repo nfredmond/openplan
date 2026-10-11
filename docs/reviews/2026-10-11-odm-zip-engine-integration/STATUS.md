@@ -87,11 +87,21 @@ image extension and HTTP success do not establish usable imagery.
 
 ## Integration checks and remaining work
 
-All [14 aerial test scripts](evidence/odm-suites.json) pass serially. Local CI
-command and nested application documentation checks are being completed before
-publication. GitHub CI remains a separate check of the eventual committed head.
-Resources and failed trials remain in the private proof directory. The current
-native services are stopped; later CI/documentation services will also stop.
+All [14 aerial test scripts](evidence/odm-suites.json) pass serially. [Five CI discovery/fail-fast controls](evidence/ci-discovery-controls.json)
+and both [new actual YAML commands](evidence/actual-ci-steps.json) pass locally.
+All [14 nested application documentation tests](evidence/documentation-checks.json)
+and the direction check pass. The first documentation invocation refused an
+unsupported Vitest option before running tests; that failed record remains.
+Existing direction reminders remain visible. GitHub CI remains a separate check
+of the eventual committed head.
+
+[Resource records](evidence/resources.json) retain passing and failed service
+invocations. The combined Python checks peak at 63,238,144 bytes, native engine
+driver at 46,272,512 bytes and actual CI commands at 64,208,896 bytes, each under
+256 MiB. Passing documentation peaks at 302,202,880 bytes under 1 GiB. All services
+use one CPU and no extra swap. All owned services have no active process, and
+all four new engines are stopped. Failed services keep their failed status.
+Engine limits describe configured capacity, rather than measured engine peaks.
 
 Next connect durable admission, retained source custody and original engine
 stages in an isolated runtime candidate. Preserve uncertain effects for explicit
