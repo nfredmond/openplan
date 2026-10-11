@@ -28,7 +28,8 @@ export const ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS = 15 * 60;
 export const ENGAGEMENT_PHOTO_UPLOAD_LOOKBACK_MINUTES = 120;
 
 export const PUBLIC_PHOTO_UPLOAD_RATE_WINDOW_MINUTES = 10;
-export const PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW = 5;
+// Per connection; raised from 5 with the comment limit so a meeting room can attach photos.
+export const PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW = 15;
 
 export const ENGAGEMENT_PHOTO_CONTENT_TYPES = {
   "image/jpeg": "jpg",

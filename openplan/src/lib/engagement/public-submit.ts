@@ -1,9 +1,13 @@
 import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
+import { PARTICIPANT_DEVICE_HEADER, PARTICIPANT_DEVICE_ID_PATTERN } from "@/lib/engagement/participant-device";
 
 export const PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES = 10;
 export const PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES = 60;
-export const PUBLIC_SUBMISSION_MAX_PER_WINDOW = 3;
+// Per CONNECTION. Raised from 3 on 2026-10-11 so a meeting room on one Wi-Fi
+// can take part; comments are moderated before they appear, and the same text
+// from the same device is still refused.
+export const PUBLIC_SUBMISSION_MAX_PER_WINDOW = 12;
 export const PUBLIC_SUBMISSION_RECENT_LOOKBACK_MINUTES = Math.max(
   PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES,
   PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES
@@ -85,6 +89,16 @@ function parseRefererHost(request: NextRequest): string | null {
   }
 }
 
+/**
+ * One browser's token, hashed; null when the request carried none or a
+ * malformed one. Used to tell people on a shared connection apart, never to
+ * identify anyone. See `participant-device.ts`.
+ */
+export function buildPublicParticipantDeviceFingerprint(request: NextRequest): string | null {
+  const raw = request.headers.get(PARTICIPANT_DEVICE_HEADER)?.trim() ?? "";
+  return PARTICIPANT_DEVICE_ID_PATTERN.test(raw) ? hashValue(`device:${raw.toLowerCase()}`) : null;
+}
+
 export function buildPublicSubmissionSupportMetadata(
   request: NextRequest,
   input: {
@@ -97,6 +111,7 @@ export function buildPublicSubmissionSupportMetadata(
   return {
     submitted_via: "public_portal",
     source_fingerprint: buildPublicSubmissionClientFingerprint(request),
+    device_fingerprint: buildPublicParticipantDeviceFingerprint(request),
     body_fingerprint: buildPublicSubmissionBodyFingerprint(input),
     referer_host: parseRefererHost(request),
     user_agent: getPublicSubmissionUserAgent(request),
@@ -129,11 +144,22 @@ export function evaluatePublicSubmissionSafety(input: {
 
     return item.metadata_json?.source_fingerprint === clientFingerprint;
   });
+  /*
+    A DUPLICATE IS THE SAME TEXT FROM THE SAME DEVICE. Two neighbours at one
+    meeting may well type the same short sentence, and each is a person heard.
+    Without a device token the connection stands in for the device, as before.
+  */
+  const deviceFingerprint = buildPublicParticipantDeviceFingerprint(input.request);
+  const sameSender = (item: RecentPublicSubmissionRecord) =>
+    deviceFingerprint
+      ? item.metadata_json?.device_fingerprint === deviceFingerprint
+      : item.metadata_json?.source_fingerprint === clientFingerprint;
   const duplicateRecentItem = input.recentItems.find((item) => {
     const createdAt = parseTimestamp(item.created_at);
     if (createdAt === null || nowMs - createdAt > duplicateWindowMs) {
       return false;
     }
+    if (!sameSender(item)) return false;
 
     if (item.metadata_json?.body_fingerprint === bodyFingerprint) {
       return true;

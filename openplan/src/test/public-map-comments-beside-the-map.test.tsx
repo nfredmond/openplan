@@ -258,6 +258,23 @@ describe("what happened to a comment, on the comment", () => {
   });
 });
 
+describe("support from a shared connection", () => {
+  it("sends this browser's token with a vote, so neighbours on one Wi-Fi each count", async () => {
+    const fetchMock = vi.fn(async () => new Response(JSON.stringify({ votesCount: 4 }), { status: 201 }));
+    vi.stubGlobal("fetch", fetchMock);
+    await renderShell();
+    fireEvent.click(screen.getByTestId("portal-feed-open"));
+    fireEvent.click(screen.getByText("Crossing is dangerous"));
+    await act(async () => {
+      fireEvent.click(screen.getByRole("button", { name: /support/i }));
+    });
+    const [url, init] = fetchMock.mock.calls[0] as unknown as [string, RequestInit];
+    expect(url).toContain("/items/item-crossing/vote");
+    expect((init.headers as Record<string, string>)["x-openplan-device"]).toMatch(/^[0-9a-f-]{36}$/);
+    vi.unstubAllGlobals();
+  });
+});
+
 describe("the list and the map show the same comments", () => {
   it("lists every comment, including one with no place, and counts them", async () => {
     await renderShell();

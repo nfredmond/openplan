@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import {
   buildPublicSubmissionBodyFingerprint,
+  buildPublicParticipantDeviceFingerprint,
   buildPublicSubmissionClientFingerprint,
   buildPublicSubmissionSupportMetadata,
   evaluatePublicSubmissionSafety,
@@ -350,31 +351,37 @@ export async function POST(request: NextRequest, context: RouteContext) {
       it compares, stored on every public item since submission metadata began.
     */
     const sinceMinutes = (minutes: number) => new Date(Date.now() - minutes * 60 * 1000).toISOString();
-    const recentByFingerprint = (
-      key: "source_fingerprint" | "body_fingerprint",
-      value: string,
+    const recentMatching = (
+      filters: Array<[key: "source_fingerprint" | "body_fingerprint" | "device_fingerprint", value: string]>,
       windowMinutes: number,
       limit: number
-    ) =>
-      supabase
+    ) => {
+      let query = supabase
         .from("engagement_items")
         .select("id, title, body, created_at, metadata_json")
         .eq("campaign_id", campaign.id)
-        .eq("source_type", "public")
-        .eq(`metadata_json->>${key}`, value)
+        .eq("source_type", "public");
+      for (const [key, value] of filters) query = query.eq(`metadata_json->>${key}`, value);
+      return query
         .gte("created_at", sinceMinutes(windowMinutes))
         .order("created_at", { ascending: false })
         .limit(limit);
+    };
+    const connectionFingerprint = buildPublicSubmissionClientFingerprint(request);
+    const deviceFingerprint = buildPublicParticipantDeviceFingerprint(request);
     const [fromClient, sameText] = await Promise.all([
-      recentByFingerprint(
-        "source_fingerprint",
-        buildPublicSubmissionClientFingerprint(request),
+      recentMatching(
+        [["source_fingerprint", connectionFingerprint]],
         PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES,
         PUBLIC_SUBMISSION_MAX_PER_WINDOW
       ),
-      recentByFingerprint(
-        "body_fingerprint",
-        buildPublicSubmissionBodyFingerprint({ title: parsed.data.title, body: parsed.data.body }),
+      // The same text from the same DEVICE; the connection stands in when the
+      // browser sent no device token. Neighbours on one Wi-Fi may agree.
+      recentMatching(
+        [
+          ["body_fingerprint", buildPublicSubmissionBodyFingerprint({ title: parsed.data.title, body: parsed.data.body })],
+          deviceFingerprint ? ["device_fingerprint", deviceFingerprint] : ["source_fingerprint", connectionFingerprint],
+        ],
         PUBLIC_SUBMISSION_DUPLICATE_WINDOW_MINUTES,
         1
       ),

@@ -21,6 +21,7 @@ vi.mock("@/lib/engagement/survey-responses", () => ({
   insertRetryableSurveyResponse: (...args: unknown[]) => insertSurveyResponseMock(...args),
 }));
 
+import { PUBLIC_SUBMISSION_MAX_PER_WINDOW } from "@/lib/engagement/public-submit";
 import { POST } from "@/app/api/engage/[shareToken]/survey/submit/route";
 
 const Q_ID = "11111111-1111-4111-8111-111111111111";
@@ -80,7 +81,9 @@ describe("POST /api/engage/[shareToken]/survey/submit", () => {
 
   it("429 when the fingerprint is rate-limited", async () => {
     const now = new Date().toISOString();
-    loadRecentFingerprintSessionsMock.mockResolvedValue([{ id: "a", created_at: now }, { id: "b", created_at: now }, { id: "c", created_at: now }]);
+    loadRecentFingerprintSessionsMock.mockResolvedValue(
+      Array.from({ length: PUBLIC_SUBMISSION_MAX_PER_WINDOW }, (_, index) => ({ id: `s${index}`, created_at: now }))
+    );
     const res = await POST(req({ answers: [{ questionId: Q_ID, answer: { option_id: OPT_ID } }] }), params);
     expect(res.status).toBe(429);
   });

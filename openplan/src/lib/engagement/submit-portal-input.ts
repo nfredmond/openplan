@@ -21,6 +21,7 @@
  */
 
 import type { EngagementGeometry } from "./geometry";
+import { participantDeviceHeaders } from "@/lib/engagement/participant-device";
 
 export type PortalSubmissionDemographics = {
   ageBand?: string;
@@ -84,7 +85,7 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
     if (input.photoFile && !photoPath) {
       const uploadResponse = await fetch(`/api/engage/${input.shareToken}/photo-upload`, {
         method: "POST",
-        headers: { "content-type": input.photoFile.type },
+        headers: { "content-type": input.photoFile.type, ...participantDeviceHeaders() },
         body: input.photoFile,
       });
       const uploadPayload = (await uploadResponse.json()) as { error?: string; photoPath?: string };
@@ -112,7 +113,7 @@ export async function submitPortalInput(input: PortalSubmissionInput): Promise<P
 
     const response = await fetch(`/api/engage/${input.shareToken}/submit`, {
       method: "POST",
-      headers: { "content-type": "application/json" },
+      headers: { "content-type": "application/json", ...participantDeviceHeaders() },
       body: JSON.stringify({
         requestId: input.requestId,
         configurationVersionId: input.configurationVersionId || undefined,

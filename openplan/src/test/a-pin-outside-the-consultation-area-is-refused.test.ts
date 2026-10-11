@@ -68,14 +68,13 @@ const campaignFrom = () => ({
 
 const itemsFrom = () => ({
   select: () => ({
-    // campaign, source type, then the fingerprint each safety check filters on.
-    eq: () => ({
-      eq: () => ({
-        eq: () => ({
-          gte: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
-        }),
-      }),
-    }),
+    // campaign, source type, then however many fingerprints a safety check filters on.
+    eq: function filtered(): unknown {
+      return {
+        eq: filtered,
+        gte: () => ({ order: () => ({ limit: async () => ({ data: [], error: null }) }) }),
+      };
+    },
   }),
   insert: (row: Record<string, unknown>) => {
     insertedRows.push(row);

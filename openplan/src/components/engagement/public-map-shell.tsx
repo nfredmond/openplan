@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { ArrowRight, ChevronUp } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { participantDeviceHeaders } from "@/lib/engagement/participant-device";
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
 import type { EngagementDrawMode } from "@/lib/engagement/draw-state";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
@@ -205,7 +206,10 @@ export function PublicMapShell({
       }
 
       try {
-        const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/vote`, { method: "POST" });
+        const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/vote`, {
+          method: "POST",
+          headers: participantDeviceHeaders(),
+        });
         const payload = (await response.json()) as { votesCount?: number };
         if (!response.ok) throw new Error("vote failed");
         const confirmed = typeof payload.votesCount === "number" ? payload.votesCount : baseCount + 1;

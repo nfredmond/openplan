@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**A meeting room on one Wi-Fi can take part.** Public comment limits were per
+connection, so everyone sharing a network counted as one person. Each browser
+now sends a random token, stored only as a hash and identifying no one. Support
+is one per device per comment instead of one per connection. Per connection,
+the limits are now 12 comments (was 3), 120 support votes (was 30, now 30 per
+device) and 15 photo uploads (was 5) per 10 minutes. The same text twice is
+refused only from the same device, so two neighbours may say the same thing.
+Comments are still moderated before they appear. No migration.
+
 **Public engagement map.** Residents can now read comments beside the map. A
 Comments button opens a list with search, topic filters, previous and next, and a
 support button. The list and the map show the same comments, and a filter
