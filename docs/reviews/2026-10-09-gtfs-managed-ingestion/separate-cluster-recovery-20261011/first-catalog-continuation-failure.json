@@ -1,0 +1,8 @@
+{
+  "state": "failed",
+  "reason": "schema-policy-statement-census",
+  "nativePolicyCount": 769,
+  "dumpPolicyStarts": 769,
+  "singleLinePolicyCount": 248,
+  "boundary": "The conservative single-line terminator check refuses 521 valid multiline policy definitions. Native role/catalog restart works; no accepted continuation result."
+}

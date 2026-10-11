@@ -1,0 +1,91 @@
+{
+  "sourceSha256": "02b9d7d8a4dd0386043fa7732dd890183438a3ffb23e293a081e764d11d50ba3",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "harmless",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "protected api-network-identity",
+      "result": "refused",
+      "reason": "api-network-identity"
+    },
+    {
+      "case": "omit api-network-identity",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-network-identity"
+    },
+    {
+      "case": "protected api-network-owner",
+      "result": "refused",
+      "reason": "api-network-owner"
+    },
+    {
+      "case": "omit api-network-owner",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-network-owner"
+    },
+    {
+      "case": "protected api-network-peers",
+      "result": "refused",
+      "reason": "api-network-peers"
+    },
+    {
+      "case": "omit api-network-peers",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-network-peers"
+    },
+    {
+      "case": "protected api-network-ipam-count",
+      "result": "refused",
+      "reason": "api-network-ipam-count"
+    },
+    {
+      "case": "omit api-network-ipam-count",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-network-ipam-count"
+    },
+    {
+      "case": "protected api-network-cidr",
+      "result": "refused",
+      "reason": "api-network-cidr"
+    },
+    {
+      "case": "omit api-network-cidr",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-network-cidr"
+    },
+    {
+      "case": "protected api-database-network",
+      "result": "refused",
+      "reason": "api-database-network"
+    },
+    {
+      "case": "omit api-database-network",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-database-network"
+    },
+    {
+      "case": "protected api-hba-cidr",
+      "result": "refused",
+      "reason": "api-hba-cidr"
+    },
+    {
+      "case": "omit api-hba-cidr",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "api-hba-cidr"
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "reason": null
+    }
+  ],
+  "scope": "Pure ownership and CIDR fixtures; no native network, HBA, password or API acceptance."
+}

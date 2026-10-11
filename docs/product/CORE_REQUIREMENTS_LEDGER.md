@@ -364,3 +364,21 @@ external-worker commissioning, native GUI control, planner usefulness or
 independent scientific validation. Migrations 28 through 31 remain candidates;
 exact-head integration, hosted schema-first coordination and release are
 unfinished. No requirement or capability grade becomes complete.
+
+## October 11 separate-cluster transit recovery, bounded M3 evidence
+
+[The separate local-cluster continuation](../reviews/2026-10-09-gtfs-managed-ingestion/SEPARATE_CLUSTER_RECOVERY.md)
+adds independently reconstructed roles/passwords/grants, exact mounted-key
+custody, 374 native table images, six sequences, complete policy/default-privilege
+comparison and ten exact Storage downloads. The installed CLI recovers the
+retained command without computation; only three permitted journals change.
+Failed raw-schema and API producers stay visible beside separate passing
+continuations. Original source records, properties, roles, key and point files
+remain equal. Exact f72 build, selected regression and all four CI workflows
+pass separately. PR190 reaches main through an observed external merge.
+
+This advances independent-operation and data-custody engineering evidence.
+The physical host/disk remains shared. Clean commissioning, cross-host recovery,
+all workers beyond 45 minutes, populated SQLite, restored browser acceptance and
+agency usefulness remain open. This point has no historical Vault secret.
+M3 and the complete V1 floor remain incomplete; no capability grade changes.

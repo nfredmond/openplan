@@ -1,0 +1,89 @@
+{
+  "sourceSha256": "f5fe7de49250f120634b51847b1fc9c627788697ab948c908049339b0d8914bf",
+  "cases": [
+    {
+      "case": "fresh baseline",
+      "existingCluster": false,
+      "result": "survived",
+      "failure": null,
+      "calls": [
+        "initdb",
+        "postgres"
+      ]
+    },
+    {
+      "case": "existing baseline",
+      "existingCluster": true,
+      "result": "survived",
+      "failure": null,
+      "calls": [
+        "postgres"
+      ]
+    },
+    {
+      "case": "harmless",
+      "existingCluster": true,
+      "result": "survived",
+      "failure": null,
+      "calls": [
+        "postgres"
+      ]
+    },
+    {
+      "case": "repeat initialization",
+      "existingCluster": true,
+      "result": "intended oracle failure",
+      "failure": "bootstrap-init-count",
+      "calls": [
+        "initdb",
+        "postgres"
+      ]
+    },
+    {
+      "case": "omit initialization",
+      "existingCluster": false,
+      "result": "intended oracle failure",
+      "failure": "bootstrap-init-count",
+      "calls": [
+        "postgres"
+      ]
+    },
+    {
+      "case": "wrong version path",
+      "existingCluster": true,
+      "result": "intended oracle failure",
+      "failure": "bootstrap-init-count",
+      "calls": [
+        "initdb",
+        "postgres"
+      ]
+    },
+    {
+      "case": "omit server execution",
+      "existingCluster": true,
+      "result": "intended oracle failure",
+      "failure": "bootstrap-server-execution",
+      "calls": []
+    },
+    {
+      "case": "restored fresh",
+      "existingCluster": false,
+      "result": "survived",
+      "failure": null,
+      "calls": [
+        "initdb",
+        "postgres"
+      ]
+    },
+    {
+      "case": "restored existing",
+      "existingCluster": true,
+      "result": "survived",
+      "failure": null,
+      "calls": [
+        "postgres"
+      ]
+    }
+  ],
+  "limits": "Extracted actual shell branch with fixture executables and data; no UID, PostgreSQL, key, role or native restart acceptance."
+}

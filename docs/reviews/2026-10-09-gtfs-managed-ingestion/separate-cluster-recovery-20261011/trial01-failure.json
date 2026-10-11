@@ -1,0 +1,71 @@
+{
+  "state": "failed",
+  "failure": "coordinated-schema-image-differs",
+  "commands": [
+    {
+      "name": "encrypted-repository-check",
+      "exitCode": 0,
+      "wallSeconds": 1.077
+    },
+    {
+      "name": "encrypted-point-restore",
+      "exitCode": 0,
+      "wallSeconds": 1.911
+    },
+    {
+      "name": "create-fresh-volume",
+      "exitCode": 0,
+      "wallSeconds": 0.017
+    },
+    {
+      "name": "create-fresh-container",
+      "exitCode": 0,
+      "wallSeconds": 0.103
+    },
+    {
+      "name": "start-new-cluster",
+      "exitCode": 0,
+      "wallSeconds": 0.133
+    },
+    {
+      "name": "restore-captured-roles",
+      "exitCode": 0,
+      "wallSeconds": 0.063
+    },
+    {
+      "name": "restored-role-dump",
+      "exitCode": 0,
+      "wallSeconds": 0.051
+    },
+    {
+      "name": "create-empty-captured-database",
+      "exitCode": 0,
+      "wallSeconds": 0.091
+    },
+    {
+      "name": "restore-captured-database",
+      "exitCode": 0,
+      "wallSeconds": 3.192
+    },
+    {
+      "name": "restore-captured-properties",
+      "exitCode": 0,
+      "wallSeconds": 0.047
+    },
+    {
+      "name": "failure-native-database-log",
+      "exitCode": 0,
+      "wallSeconds": 0.012
+    },
+    {
+      "name": "stop-exact-failed-database",
+      "exitCode": 0,
+      "wallSeconds": 1.453
+    }
+  ],
+  "service": "Result=exit-code\nExecMainStatus=1\nMemoryPeak=1073745920\n",
+  "capturedRolesVerifiedBeforeFailure": true,
+  "capturedTableAndSequenceImagesMatchBeforeSchemaRefusal": true,
+  "nativeDiagnosticRestart": "Initial script refuses the already initialized directory; no reset or overwrite.",
+  "nativeDatabaseStopped": true
+}

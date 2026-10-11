@@ -1,0 +1,91 @@
+{
+  "sourceSha256": "4d843eb04d31a1c5158bfd98effb3a66abcc2a218f36ecc84e77396133e94b14",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "harmless",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "protected resume-producer-state",
+      "result": "refused",
+      "reason": "resume-producer-state"
+    },
+    {
+      "case": "omit resume-producer-state",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-producer-state"
+    },
+    {
+      "case": "protected resume-executed-source",
+      "result": "refused",
+      "reason": "resume-executed-source"
+    },
+    {
+      "case": "omit resume-executed-source",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-executed-source"
+    },
+    {
+      "case": "protected resume-schema-control-source",
+      "result": "refused",
+      "reason": "resume-schema-control-source"
+    },
+    {
+      "case": "omit resume-schema-control-source",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-schema-control-source"
+    },
+    {
+      "case": "protected resume-active-clients",
+      "result": "refused",
+      "reason": "resume-active-clients"
+    },
+    {
+      "case": "omit resume-active-clients",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-active-clients"
+    },
+    {
+      "case": "protected resume-source-schema",
+      "result": "refused",
+      "reason": "resume-source-schema"
+    },
+    {
+      "case": "omit resume-source-schema",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-source-schema"
+    },
+    {
+      "case": "protected resume-table-images",
+      "result": "refused",
+      "reason": "resume-table-images"
+    },
+    {
+      "case": "omit resume-table-images",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-table-images"
+    },
+    {
+      "case": "protected resume-sequence-images",
+      "result": "refused",
+      "reason": "resume-sequence-images"
+    },
+    {
+      "case": "omit resume-sequence-images",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "resume-sequence-images"
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "reason": null
+    }
+  ],
+  "scope": "Pure continuation inputs; no native database or restart acceptance."
+}

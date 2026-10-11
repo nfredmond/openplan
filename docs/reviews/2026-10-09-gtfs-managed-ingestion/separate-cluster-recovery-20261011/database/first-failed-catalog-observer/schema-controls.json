@@ -1,0 +1,181 @@
+{
+  "sourceSha256": "03e2c0630618cdda7a2943ea4d7149d3d4c03378af59691504557001de0c1aad",
+  "cases": [
+    {
+      "case": "baseline",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "harmless role and ACL ordering",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "case": "protected schema-catalog-sections",
+      "result": "refused",
+      "reason": "schema-catalog-sections"
+    },
+    {
+      "case": "omit schema-catalog-sections",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-catalog-sections"
+    },
+    {
+      "case": "protected schema-policy-statement-census",
+      "result": "refused",
+      "reason": "schema-policy-statement-census"
+    },
+    {
+      "case": "omit schema-policy-statement-census",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-policy-statement-census"
+    },
+    {
+      "case": "protected schema-default-statement-shape",
+      "result": "refused",
+      "reason": "schema-default-statement-shape"
+    },
+    {
+      "case": "omit schema-default-statement-shape",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-default-statement-shape"
+    },
+    {
+      "case": "protected schema-policy-catalog",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "omit schema-policy-catalog",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "protected schema-default-catalog",
+      "result": "refused",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "omit schema-default-catalog",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "protected schema-default-statements",
+      "result": "refused",
+      "reason": "schema-default-statements"
+    },
+    {
+      "case": "omit schema-default-statements",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-default-statements"
+    },
+    {
+      "case": "protected schema-core-statements",
+      "result": "refused",
+      "reason": "schema-core-statements"
+    },
+    {
+      "case": "omit schema-core-statements",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-core-statements"
+    },
+    {
+      "case": "protected schema-policy-projection",
+      "result": "refused",
+      "reason": "schema-policy-projection"
+    },
+    {
+      "case": "omit schema-policy-projection",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-policy-projection"
+    },
+    {
+      "case": "protected schema-policy-role-duplicates",
+      "result": "refused",
+      "reason": "schema-policy-role-duplicates"
+    },
+    {
+      "case": "omit schema-policy-role-duplicates",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-policy-role-duplicates"
+    },
+    {
+      "case": "protected schema-default-projection",
+      "result": "refused",
+      "reason": "schema-default-projection"
+    },
+    {
+      "case": "omit schema-default-projection",
+      "result": "intended omitted-guard oracle failure",
+      "reason": "schema-default-projection"
+    },
+    {
+      "case": "changed policy schema",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy table",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy name",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy command",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy permissive",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy roles",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy using",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed policy check",
+      "result": "refused",
+      "reason": "schema-policy-catalog"
+    },
+    {
+      "case": "changed default privilege grantor",
+      "result": "refused",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "changed default privilege grantee",
+      "result": "refused",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "changed default privilege privilege",
+      "result": "refused",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "changed default privilege grantable",
+      "result": "refused",
+      "reason": "schema-default-catalog"
+    },
+    {
+      "case": "restored",
+      "result": "survived",
+      "reason": null
+    }
+  ],
+  "limits": "Synthetic schema text and catalog observations. The actual catalog projection, quiescence and database identity need native checks. Single-line policy statement census refuses unsupported multiline serialization; other schema text and exact default privilege statements remain checked."
+}

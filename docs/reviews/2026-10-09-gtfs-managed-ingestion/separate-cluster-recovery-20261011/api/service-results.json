@@ -1,0 +1,29 @@
+[
+  {
+    "unit": "openplan-gtfs-separate-cluster-api-start-20261011-01.service",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "ExecMainStartTimestampMonotonic": "149385704682",
+    "ExecMainExitTimestampMonotonic": "149405601353",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "60452864"
+  },
+  {
+    "unit": "openplan-gtfs-separate-cluster-api-diagnose-20261011-01.service",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "ExecMainStartTimestampMonotonic": "149444941196",
+    "ExecMainExitTimestampMonotonic": "149448754425",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "41959424"
+  },
+  {
+    "unit": "openplan-gtfs-separate-cluster-native-api-20261011-01.service",
+    "ActiveState": "active",
+    "SubState": "exited",
+    "ExecMainStartTimestampMonotonic": "149646573149",
+    "ExecMainExitTimestampMonotonic": "149681836638",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "157224960"
+  }
+]

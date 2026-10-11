@@ -1,0 +1,9 @@
+{
+  "state": "passed-original-preservation-read",
+  "wallSeconds": 26.273,
+  "tables": 374,
+  "sequences": 6,
+  "originalDatabasePropertiesRolesAndKeyEqual": true,
+  "capturedPointFilesEqual": true,
+  "scope": "Read-only preserved source fixture. Does not inspect every unrelated database or all-host processes."
+}

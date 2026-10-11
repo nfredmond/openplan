@@ -1,0 +1,28 @@
+{
+  "state": "passed-native-database-continuation",
+  "originalProducerState": "failed",
+  "originalProducerFailure": "coordinated-schema-image-differs",
+  "wallSeconds": 31.098,
+  "targetDatabase": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "databaseContainerId": "6d7969d9b92f6bca1b1e6811cde9c313db4fd7b1ab33539c082a3016786962ef",
+  "snapshotId": "08090b60e8c1fa07b71c2181704df5295ade9c9af40f45d7f8f2c09dba400acc",
+  "tables": 374,
+  "sequences": 6,
+  "capturedFiles": 1541,
+  "capturedBytes": 644693866,
+  "schema": {
+    "schemaCoreSha256": "6615c4910d9cc0d37ae550875dc26a666946818703f2d953b5155ff072b1c051",
+    "defaultStatementsSha256": "2fccdd2ccfa8a4e93e64005f7cc874828c3ac76a6b8ef577811a76778efcc874",
+    "policyCatalogSha256": "0d98e26b1bc223c6d6e76c4d01960e1e249fc135dfa78de618b8a413f8a41a92",
+    "defaultCatalogSha256": "d7fd3960bd3453547c5795ed192ffd6ac05f54515a156157298e6513b93165e9",
+    "policies": 769,
+    "defaultPrivilegeGroups": 27,
+    "defaultStatements": 80
+  },
+  "roleAttributesPasswordsAndGrantsEqual": true,
+  "independentlyMountedKeyBytesEqual": true,
+  "nativeRestartOfInitializedCluster": true,
+  "originalSourceSchemaMatchesCapturedPoint": true,
+  "originalCapturedPointAndRestoredFilesUnchanged": true,
+  "scope": "Separate local cluster and volume, same physical host/disk. No API/installed CLI/Storage download, historical decryption or browser acceptance."
+}

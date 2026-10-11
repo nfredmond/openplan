@@ -674,3 +674,31 @@ the owned app stops. Same-host/cluster roles/key reuse, other worker families,
 SQLite, physical-host/agency recovery and restored browser acceptance remain
 open. The relaunch agent retains hosted coordination and the main-merge hold.
 No application/schema/worker-contract changes, main merge or release.
+
+## Separate local cluster recovery, October 11
+
+[The separate-cluster continuation](SEPARATE_CLUSTER_RECOVERY.md) restores the
+same encrypted point into a new cluster and volume, with independently
+reconstructed roles/passwords/grants and a separate mounted key. Native
+comparison passes 374 tables, six sequences, database properties, 769 policies,
+27 default-privilege groups and 80 statements. Both original raw-schema
+producers remain failed; role OID changes reorder emitted SQL without changing
+the catalog. A separately controlled semantic observer passes, including actual
+rolled-back policy/predicate/default-privilege mutations. A first multiline
+observer failure also remains retained.
+
+The first API loopback readiness producer fails and stops its four new services.
+Private bridge readiness succeeds separately. Native Storage reads all ten
+objects exactly. Frozen f72 installed CLI recovers the original receipt in
+1.06 seconds with an empty queue and no computation or source download. Only
+three expected journals change. The final database/file observer and original
+source preservation read pass. All four new APIs and the exact new database
+stop, with proof retained. Current f72 production build and 3,481 selected tests
+pass; all four exact-head CI workflows pass separately. Remote main includes
+PR190 through an observed external merge, not a merge by this session.
+
+This remains the same physical host/disk and adds no new browser, historical
+Vault decryption, populated SQLite, all-worker or clean-agency commissioning
+acceptance. The semantic comparator remains a proof harness. Hosted relaunch
+ownership and the main merge hold remain with the relaunch agent. No hosted
+schema, deployment, worker-contract or release change occurs in this checkpoint.

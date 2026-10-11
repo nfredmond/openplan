@@ -1,0 +1,11 @@
+{
+  "source": "f72d4b5910dd08ace916ee585cb9fa2749a408e2",
+  "dependencySource": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "packageLockSha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+  "independentDirectory": true,
+  "completedBuildCopied": false,
+  "cacheCopied": true,
+  "nativeSqliteValue": 7,
+  "esbuildExecuted": true,
+  "maplibreVersion": "6.13.0"
+}
