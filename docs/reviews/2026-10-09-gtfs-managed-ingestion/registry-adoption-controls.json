@@ -1,0 +1,97 @@
+{
+  "variants": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": [],
+      "passedTests": 43,
+      "failedTests": 0
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": [],
+      "passedTests": 43,
+      "failedTests": 0
+    },
+    {
+      "variant": "false-no-results",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted ready version separate from the version in use",
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted pending version separate from the version in use",
+        "GtfsIngestPanel \u2014 the lane is reachable preserves a failed feed status when no version is in use"
+      ],
+      "passedTests": 40,
+      "failedTests": 3
+    },
+    {
+      "variant": "raw-pending",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted ready version separate from the version in use",
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted pending version separate from the version in use"
+      ],
+      "passedTests": 41,
+      "failedTests": 2
+    },
+    {
+      "variant": "ignore-current-pointer",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable reports missing details for an adopted version as unavailable"
+      ],
+      "passedTests": 42,
+      "failedTests": 1
+    },
+    {
+      "variant": "missing-details-as-none",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable reports missing details for an adopted version as unavailable"
+      ],
+      "passedTests": 42,
+      "failedTests": 1
+    },
+    {
+      "variant": "recent-as-current",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted ready version separate from the version in use",
+        "GtfsIngestPanel \u2014 the lane is reachable keeps an unadopted pending version separate from the version in use"
+      ],
+      "passedTests": 41,
+      "failedTests": 2
+    },
+    {
+      "variant": "failed-as-unadopted",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable preserves a failed feed status when no version is in use"
+      ],
+      "passedTests": 42,
+      "failedTests": 1
+    },
+    {
+      "variant": "adopted-as-unadopted",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GtfsIngestPanel \u2014 the lane is reachable reports missing details for an adopted version as unavailable"
+      ],
+      "passedTests": 42,
+      "failedTests": 1
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": [],
+      "passedTests": 43,
+      "failedTests": 0
+    }
+  ],
+  "restoredSha256": {
+    "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "cb59cc2abe916edbe1e05f5e332c6f1598afa39709494de0f985229c9001e72c",
+    "openplan/src/test/gtfs-ingest-panel.test.tsx": "1a21cc07530c7056202094a1f7399c8773a5d374f9f0594f8b7df487a0444f15"
+  },
+  "boundary": "Rendered jsdom registry with mocked API responses. No native database, browser, adoption action or provider operation acceptance."
+}

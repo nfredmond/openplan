@@ -1,0 +1,32 @@
+{
+  "head": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "buildId": "dqkHWviYmJc1vpkhKohd-",
+  "desktop": {
+    "width": 1280,
+    "documentWidth": 1280,
+    "registryText": "CTA schedule, capacity proof\n\npending\nurl\n\nNo ingest of this feed has been adopted, so it derives no service levels yet.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed"
+  },
+  "mobile": {
+    "width": 390,
+    "documentWidth": 390,
+    "registryText": "CTA schedule, capacity proof\n\npending\nurl\n\nNo ingest of this feed has been adopted, so it derives no service levels yet.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed"
+  },
+  "screenshots": [
+    {
+      "name": "registry-defect-1.png",
+      "sha256": "7ac59f775a89cdab167d6a967bd373aa21b83b772fd9d82d13f7709e2e365bf9",
+      "bytes": 394133
+    },
+    {
+      "name": "registry-defect-2.png",
+      "sha256": "06a80e840d28c3f67b78e845aaa6fd559bb63b986a6c7e6e5a794076882b206d",
+      "bytes": 183942
+    },
+    {
+      "name": "registry-defect-3.png",
+      "sha256": "6a1a59b58eeb7d991b9e03d6325c24d22590bf2804bf68bec08df409efa37904",
+      "bytes": 141624
+    }
+  ],
+  "result": "observed wording defect; corrected-source browser verification pending"
+}

@@ -538,3 +538,15 @@ unchanged. Earlier `93cf7de9` full QA and executed shuffle pass at that source.
 Later keyless-map joins, exact-head CI, production build/read, hosted schema-first
 coordination, main integration and release remain unfinished. This advances one
 local capacity case without closing nationwide operation or the full v1 contract.
+
+## Registry adoption review, October 11
+
+[The frozen keyless build](REGISTRY_ADOPTION.md) passes selected integration and
+an actual-status production build at d6fd7d00. T3 desktop/390px review finds false
+registry wording for the completed but unadopted CTA version. The correction
+separates saved results, the version in use and unavailable current metadata.
+43 panel tests and seven broken behavior controls pass with restored bytes.
+The original source worktree joins newer main at 40b8c6827; prior frozen proofs
+keep their original source identities. Scoped TypeScript passes. Corrected-source build/browser
+verification, current CI, hosted schema-first coordination, integration and
+release remain pending. No hosted deployment, adoption or scientific claim changes.

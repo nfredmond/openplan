@@ -1,0 +1,20 @@
+{
+  "exitCode": 0,
+  "wallSeconds": 88.123,
+  "sourceHead": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "buildId": "dqkHWviYmJc1vpkhKohd-",
+  "memoryMaxBytes": 10737418240,
+  "memoryHighBytes": 8589934592,
+  "swapMaxBytes": 0,
+  "cpuQuotaPercent": 100,
+  "workerCount": 1,
+  "nodeHeapMiB": 6144,
+  "largestObservedPeakBytes": 5951483904,
+  "journalResources": [
+    "openplan-gtfs-keyless-production-build-20261011-02.service: Consumed 1min 27.950s CPU time over 1min 28.170s wall clock time, 5.5G memory peak."
+  ],
+  "staticPages": 140,
+  "buildCache": "Retained from the output-only first run; actual child status captured in the retry.",
+  "launcherSha256": "b56bea4b25744008da7e7d8835bea3b6fc83599e5684547ebc05e4fed9f66965",
+  "childWrapperSha256": "db479fff08d9d416adf61cff6d2ae53c19c7b8f78a1dc20d61c1d8f8040905cb"
+}

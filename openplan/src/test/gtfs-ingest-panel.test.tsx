@@ -246,6 +246,57 @@ afterEach(() => {
 /* -------------------------------------------------------------------------- */
 
 describe("GtfsIngestPanel — the lane is reachable", () => {
+  it.each(["ready", "pending"])("keeps an unadopted %s version separate from the version in use", async (status) => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: {
+        ...registryBody([feedRow({ status: "pending", current_version_id: null })], []),
+        recentVersions: [versionRow({ status })],
+      },
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("Not adopted")).toBeInTheDocument();
+    expect(feed.getByText("No version of this feed is in use. Review and adopt a completed version before using its service results.")).toBeInTheDocument();
+    expect(feed.queryByText(/derives no service levels/i)).toBeNull();
+    expect(feed.queryByText(/service-level rows derived/i)).toBeNull();
+    expect(feed.queryByText(/Ready for review/i)).toBeNull();
+  });
+
+  it("reports missing details for an adopted version as unavailable", async () => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: registryBody([feedRow({ status: "pending" })], []),
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("Service details for the version in use are unavailable. Review the feed’s version history before using its results.")).toBeInTheDocument();
+    expect(feed.queryByText("Not adopted")).toBeNull();
+    expect(feed.queryByText(/No version of this feed is in use/i)).toBeNull();
+    expect(feed.queryByText(/service-level rows derived/i)).toBeNull();
+  });
+
+  it("preserves a failed feed status when no version is in use", async () => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: registryBody([feedRow({ status: "failed", current_version_id: null })], []),
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("failed")).toBeInTheDocument();
+    expect(feed.queryByText("Not adopted")).toBeNull();
+    expect(feed.getByText(/No version of this feed is in use/i)).toBeInTheDocument();
+  });
+
   it("reads this workspace's feeds on mount, naming the workspace", async () => {
     await renderPanel();
 

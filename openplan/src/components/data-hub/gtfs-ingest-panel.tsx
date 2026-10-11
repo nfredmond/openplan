@@ -804,7 +804,9 @@ export function GtfsIngestPanel({
               <div key={feed.id} className="module-subpanel" data-testid={`gtfs-feed-${feed.id}`}>
                 <div className="flex flex-wrap items-center gap-2">
                   <p className="text-sm font-semibold">{(feed.agency_name ?? "").trim() || "Unnamed feed"}</p>
-                  <span className="module-record-chip">{(feed.status ?? "").trim() || "no recorded status"}</span>
+                  <span className="module-record-chip">{feed.status?.trim() === "pending" && !feed.current_version_id
+                    ? "Not adopted"
+                    : (feed.status ?? "").trim() || "no recorded status"}</span>
                   <span className="module-record-chip">{(feed.source_kind ?? "unknown source").trim()}</span>
                   {window?.state === "expired" && (
                     <span className="module-record-chip text-amber-700 dark:text-amber-300">Schedule expired</span>
@@ -822,7 +824,9 @@ export function GtfsIngestPanel({
                   </>
                 ) : (
                   <p className="mt-2 text-sm text-muted-foreground">
-                    No ingest of this feed has been adopted, so it derives no service levels yet.
+                    {feed.current_version_id
+                      ? "Service details for the version in use are unavailable. Review the feed’s version history before using its results."
+                      : "No version of this feed is in use. Review and adopt a completed version before using its service results."}
                   </p>
                 )}
 
