@@ -16,6 +16,13 @@ or replace this volume while attempts or local artifacts remain in custody.
 Include it in a separate backup and recovery procedure.
 
 Provide the managed Supabase URL and service role through private host variables.
+Set `OPENPLAN_DEPLOYMENT_ID` to a stable identity for the installation. The
+October 10 hosted installation uses `openplan-hosted-lolckycpdjsgeejsmuzl`.
+Preserve that identity and the Supabase logical URL when restoring the same
+installation's journal; a new installation needs a different identity.
+Set `OPENPLAN_COMMIT_SHA` from the running source's actual commit so heartbeat
+records identify the worker build. Railway Git deployments supply
+`RAILWAY_GIT_COMMIT_SHA`; the configured start command exports it at runtime.
 The service opens no inbound port. The supervisor fails if either poller exits,
 including exit zero, and stops its sibling before returning. Operator signals
 stop both pollers normally. Existing stage ownership and reconciliation rules

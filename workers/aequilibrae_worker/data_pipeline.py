@@ -138,8 +138,11 @@ def supplied_measure_table(
             or f"The app reported no {table_name} data for this study area and gave no reason.",
         }
 
-    measures = table.get("measures")
-    raw_rows = table.get("rows")
+    # The app serializes ZoneAttributeTableResult as {status, table}. Older
+    # retained payloads put the same table fields beside status directly.
+    measure_table = table.get("table", table)
+    measures = measure_table.get("measures") if isinstance(measure_table, dict) else None
+    raw_rows = measure_table.get("rows") if isinstance(measure_table, dict) else None
     if not isinstance(measures, list) or not measures or not isinstance(raw_rows, dict):
         return None, {
             "status": "malformed",
@@ -171,10 +174,10 @@ def supplied_measure_table(
     return rows, {
         "status": "supplied",
         "reason": None,
-        "level": table.get("level"),
+        "level": measure_table.get("level"),
         "geographies": len(rows),
         "measures": [str(m) for m in measures],
-        "measure_provenance": table.get("measureProvenance"),
+        "measure_provenance": measure_table.get("measureProvenance"),
         "rows_skipped": skipped,
         "source_id": source.get("id"),
         "source_label": source.get("label"),
