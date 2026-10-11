@@ -1,0 +1,73 @@
+{
+  "sourceSha256": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+  "testSha256": "295fa2bc30e354f22f9d891c66859a9c34a70ab982663f90efd18b8870ee5a7c",
+  "sourceRestored": true,
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "early-deadline",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "expected true to be false"
+    },
+    {
+      "case": "late-deadline",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "expected false to be true"
+    },
+    {
+      "case": "missing-deadline",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "expected false to be true"
+    },
+    {
+      "case": "waits-for-transport",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "Command still waits for uncooperative transport"
+    },
+    {
+      "case": "missing-transport-signal",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "expected undefined to be false"
+    },
+    {
+      "case": "wrong-timeout-reason",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "to contain"
+    },
+    {
+      "case": "non-error-timeout",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "to be an instance of Error"
+    },
+    {
+      "case": "unconfirmed-receipt-promoted",
+      "exitCode": 1,
+      "result": "failed intended assertion",
+      "expectedFailure": "\"receipt\": null"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    }
+  ]
+}

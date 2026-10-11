@@ -1,0 +1,17 @@
+{
+  "failedClockTrial": {
+    "unit": "openplan-gtfs-human-clock-tests-20261011-01.service",
+    "reason": "RPC timeout abort precedes asynchronous filesystem lock release; immediate command settlement assertion failed"
+  },
+  "failedControlRunner": {
+    "unit": "openplan-gtfs-human-clock-controls-20261011-01.service",
+    "reason": "receipt promotion failed intended assertion, but runner expected unquoted receipt text instead of quoted JSON diff"
+  },
+  "blindCategories": [
+    "Real clock scheduling latency",
+    "Public network or TLS",
+    "Live SQL authorization or receipt custody",
+    "Browser or planner acceptance",
+    "Worker deployment or hosted cutover"
+  ]
+}
