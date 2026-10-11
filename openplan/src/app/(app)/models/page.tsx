@@ -10,6 +10,7 @@ import { PlanningContextStrip } from "@/components/projects/planning-context-str
 import { AnalysisSequenceStrip } from "@/components/models/analysis-sequence-strip";
 import { loadAnalysisSequenceFacts } from "@/components/models/analysis-sequence-facts";
 import { ProjectComparisonStarter } from "@/components/models/project-comparison-starter";
+import { FigureRow } from "@/components/ui/figure-row";
 import { PageHeader } from "@/components/ui/page-header";
 import { navLabel } from "@/components/nav/nav-registry";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -413,62 +414,6 @@ export default async function ModelsPage({
   return (
     <section className="module-page min-w-0 grid-cols-[minmax(0,1fr)]">
       <PlanningContextStrip context={planningContext} />
-      {planningContext.status === "active" ? (
-        <ProjectComparisonStarter
-          projectId={planningContext.project.id}
-          projectName={planningContext.project.name}
-          facts={sequenceFacts}
-        />
-      ) : (
-        <section
-          id="choose-project-comparison"
-          className="mb-6 border-l-4 border-sky-500 bg-sky-50/70 px-5 py-4 dark:bg-sky-950/20"
-          data-testid="project-comparison-project-picker"
-        >
-          <h2 className="text-lg font-semibold text-foreground">Start with the project you are comparing</h2>
-          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
-            Choose one project. OpenPlan will keep it selected while it sets up the no-build baseline,
-            build scenario, shared worker-built road network, and separate AequilibraE and ActivitySim runs.
-          </p>
-          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
-            Time to allow: roughly 10–40 minutes for all four jobs in a small area. Large areas, a busy queue,
-            source downloads, or count calibration can take hours.
-          </p>
-          {projectsReadFailed ? (
-            <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
-              Projects could not be read, so no project can be selected without guessing.
-            </p>
-          ) : (projectsData ?? []).length > 0 ? (
-            <form action="/models" method="get" className="mt-4 flex max-w-xl flex-wrap items-end gap-3">
-              <label className="min-w-64 flex-1 text-sm font-medium text-foreground">
-                Project
-                <select name="projectId" required defaultValue="" className="module-select mt-1 w-full">
-                  <option value="" disabled>Select a project</option>
-                  {(projectsData ?? []).map((project) => (
-                    <option key={project.id} value={project.id}>{project.name ?? "Untitled project"}</option>
-                  ))}
-                </select>
-              </label>
-              <button type="submit" className="module-intro-action">Start project comparison</button>
-            </form>
-          ) : (
-            <p className="mt-3 text-sm text-muted-foreground">
-              No projects are available yet. Create the project first so its place and cost stay attached to the comparison.
-            </p>
-          )}
-        </section>
-      )}
-      <AnalysisSequenceStrip
-        facts={sequenceFacts}
-        currentStepId="model"
-        projectId={planningContext.status === "active" ? planningContext.project.id : null}
-      />
-
-      <PublishedDistributedWorkLoadingCard study={publishedDistributedWorkLoading} />
-      <PublishedStructuralDemandDiagnosisCard study={publishedStructuralDemandDiagnosis} />
-      <PublishedComparableObservationCard study={publishedComparableObservationStudy} />
-      <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />
-
       <PageHeader
         title={navLabel("/models")}
         description="Keep methods, assumptions, and results connected to the plans and projects they support."
@@ -536,39 +481,34 @@ export default async function ModelsPage({
             planner reads. */}
         <ReadFailureNotice reads={reads} testId="models-read-failures" title="Part of this page could not be read" />
 
-        <div className="module-summary-grid cols-3">
-          <div className="module-summary-card">
-            <p className="module-summary-label">Models</p>
-            <p className="module-summary-value">{modelsReadFailed ? "—" : models.length}</p>
-            <p className="module-summary-detail">
-              {modelsReadFailed
+        <FigureRow
+          label="Travel model figures"
+          figures={[
+            {
+              label: "Models",
+              value: modelsReadFailed ? "—" : models.length,
+              note: modelsReadFailed
                 ? "Your models could not be read, so this is unavailable rather than zero."
                 : hasActiveFilters
-                  ? "Matching the current filters."
-                  : "The travel models this account keeps."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Ready for review</p>
-            <p className="module-summary-value">{modelsReadFailed ? "—" : reviewReadyCount}</p>
-            <p className="module-summary-detail">
-              {modelsReadFailed
-                ? "Unavailable while your models cannot be read."
-                : "Runs that reached review or approval."}
-            </p>
-          </div>
-          <div className="module-summary-card">
-            <p className="module-summary-label">Linked results</p>
-            <p className="module-summary-value">{modelsReadFailed || linksReadFailed ? "—" : traceableCount}</p>
-            <p className="module-summary-detail">
-              {modelsReadFailed
+                  ? "Matching the current filters"
+                  : null,
+            },
+            {
+              label: "Ready for review",
+              value: modelsReadFailed ? "—" : reviewReadyCount,
+              note: modelsReadFailed ? "Unavailable while your models cannot be read." : null,
+            },
+            {
+              label: "Linked results",
+              value: modelsReadFailed || linksReadFailed ? "—" : traceableCount,
+              note: modelsReadFailed
                 ? "Unavailable while your models cannot be read."
                 : linksReadFailed
                   ? "What each model connects to could not be read, so this is unknown, not zero."
-                  : `${readinessGreenCount} currently pass every check.`}
-            </p>
-          </div>
-        </div>
+                  : `${readinessGreenCount} pass every check`,
+            },
+          ]}
+        />
 
         <Link
           href={
@@ -583,10 +523,61 @@ export default async function ModelsPage({
         </Link>
       </PageHeader>
 
+      {planningContext.status === "active" ? (
+        <ProjectComparisonStarter
+          projectId={planningContext.project.id}
+          projectName={planningContext.project.name}
+          facts={sequenceFacts}
+        />
+      ) : (
+        <section
+          id="choose-project-comparison"
+          className="mb-6 border-l-4 border-sky-500 bg-sky-50/70 px-5 py-4 dark:bg-sky-950/20"
+          data-testid="project-comparison-project-picker"
+        >
+          <h2 className="text-lg font-semibold text-foreground">Start with the project you are comparing</h2>
+          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
+            Choose one project. OpenPlan will keep it selected while it sets up the no-build baseline,
+            build scenario, shared worker-built road network, and separate AequilibraE and ActivitySim runs.
+          </p>
+          <p className="mt-2 max-w-[44rem] text-sm leading-6 text-muted-foreground">
+            Time to allow: roughly 10–40 minutes for all four jobs in a small area. Large areas, a busy queue,
+            source downloads, or count calibration can take hours.
+          </p>
+          {projectsReadFailed ? (
+            <p className="mt-3 text-sm text-amber-700 dark:text-amber-300">
+              Projects could not be read, so no project can be selected without guessing.
+            </p>
+          ) : (projectsData ?? []).length > 0 ? (
+            <form action="/models" method="get" className="mt-4 flex max-w-xl flex-wrap items-end gap-3">
+              <label className="min-w-64 flex-1 text-sm font-medium text-foreground">
+                Project
+                <select name="projectId" required defaultValue="" className="module-select mt-1 w-full">
+                  <option value="" disabled>Select a project</option>
+                  {(projectsData ?? []).map((project) => (
+                    <option key={project.id} value={project.id}>{project.name ?? "Untitled project"}</option>
+                  ))}
+                </select>
+              </label>
+              <button type="submit" className="module-intro-action">Start project comparison</button>
+            </form>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">
+              No projects are available yet. Create the project first so its place and cost stay attached to the comparison.
+            </p>
+          )}
+        </section>
+      )}
+      <AnalysisSequenceStrip
+        facts={sequenceFacts}
+        currentStepId="model"
+        projectId={planningContext.status === "active" ? planningContext.project.id : null}
+      />
+
+
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Your models</p>
             <h2 className="module-section-title">Travel models</h2>
             <p className="module-section-description">
               Filter by status, project, or model family to find the ones that need attention.
@@ -730,6 +721,63 @@ export default async function ModelsPage({
       </article>
 
       <NetworkPackagesPanel workspaceId={membership.workspace_id} />
+
+      {/*
+        THE PUBLISHED STUDIES, BELOW THE PLANNER'S WORK (October 10, 2026).
+        They opened this page, above its own header, with release numbers and
+        file hashes. Each now sits in a closed disclosure whose summary keeps
+        the scientific outcome and the sentence that no accuracy conclusion
+        follows, so the claim tier is visible without opening anything. A
+        study that could not be read stays open: "unavailable, not zero" is a
+        fact the planner must see. Nothing inside the cards is shortened.
+      */}
+      <section aria-labelledby="published-model-studies" className="model-studies">
+        <h2 id="published-model-studies" className="module-section-title">
+          Published model studies
+        </h2>
+        <p className="module-section-description">
+          Development studies of the two modeling methods, with their files and checks.
+        </p>
+        {[
+          {
+            key: "work-loading",
+            title: "Source-bound work-trip loading",
+            outcome: publishedDistributedWorkLoading?.scientificOutcome ?? null,
+            card: <PublishedDistributedWorkLoadingCard study={publishedDistributedWorkLoading} />,
+          },
+          {
+            key: "demand-diagnosis",
+            title: "Demand distribution, external travel, and network loading",
+            outcome: publishedStructuralDemandDiagnosis?.scientificOutcome ?? null,
+            card: <PublishedStructuralDemandDiagnosisCard study={publishedStructuralDemandDiagnosis} />,
+          },
+          {
+            key: "comparable-observations",
+            title: "Comparable observations and whole-road matches",
+            outcome: publishedComparableObservationStudy?.scientificOutcome ?? null,
+            card: <PublishedComparableObservationCard study={publishedComparableObservationStudy} />,
+          },
+          {
+            key: "structural-diagnosis",
+            title: "Why all fourteen assessments are inconclusive",
+            outcome: publishedStructuralDiagnosis?.scientificOutcome ?? null,
+            card: <PublishedStructuralDiagnosisCard study={publishedStructuralDiagnosis} />,
+          },
+        ].map((study) =>
+          study.outcome === null ? (
+            <div key={study.key}>{study.card}</div>
+          ) : (
+            <details key={study.key} className="model-study">
+              <summary>
+                <span className="model-study-title">{study.title}</span>
+                <StatusBadge tone="warning">{study.outcome}</StatusBadge>
+                <span className="model-study-claim">No model accuracy conclusion follows.</span>
+              </summary>
+              <div className="mt-3">{study.card}</div>
+            </details>
+          )
+        )}
+      </section>
     </section>
   );
 }

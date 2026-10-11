@@ -25,7 +25,6 @@ export function ProjectSpineReadinessRollup({
             <GitBranch className="h-5 w-5" />
           </span>
           <div className="module-section-heading">
-            <p className="module-section-label">Everything linked to this project</p>
             <h2 className="module-section-title">Is the work on this project up to date?</h2>
             <p className="module-section-description">
               Whether this project&apos;s plan, report, funding, engagement, analysis, and aerial

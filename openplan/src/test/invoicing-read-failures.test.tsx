@@ -249,7 +249,7 @@ describe("the reimbursement lane does not render a failed read as an answer", ()
     await renderLane();
 
     expect(
-      screen.getAllByText(/Invoice register tables are pending in the current database/i).length
+      screen.getAllByText(/Invoices need a database update on this installation/i).length
     ).toBeGreaterThan(0);
     expect(
       screen.queryAllByText(/Record your first invoice to start tracking what you are owed/i)

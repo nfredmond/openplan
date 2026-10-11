@@ -273,7 +273,6 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Document review · chapter text</p>
               <h1 className="module-section-title">The plan&apos;s own words</h1>
               <p className="module-section-description">
                 When OpenPlan reads an adopted plan it copies policy, goal and action statements out
@@ -299,7 +298,6 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Waiting to be placed</p>
               <h2 className="module-section-title">
                 {waitingViews.length} block{waitingViews.length === 1 ? "" : "s"} of copied text
               </h2>
@@ -357,7 +355,6 @@ export default async function RtpTranscribedChaptersPage({ params }: RouteContex
         <article className="module-section-surface">
           <div className="module-section-header">
             <div className="module-section-heading">
-              <p className="module-section-label">Already placed</p>
               <h2 className="module-section-title">Copied text waiting in your chapters</h2>
               <p className="module-section-description">
                 Each block keeps saying which document and page it came from until somebody accepts

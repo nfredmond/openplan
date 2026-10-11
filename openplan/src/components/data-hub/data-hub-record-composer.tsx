@@ -943,7 +943,6 @@ export function DataHubRecordComposer({
   return (
     <article className="module-section-surface">
       <div className="module-section-heading">
-        <p className="module-section-label">Create records</p>
         <h2 className="module-section-title">Register a source, a dataset, or a refresh run</h2>
         <p className="module-section-description">
           These three records are how OpenPlan knows where your numbers came from. A connector is a

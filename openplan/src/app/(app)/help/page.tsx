@@ -70,7 +70,6 @@ export default function HelpPage() {
       <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Getting started</p>
             <h2 className="module-section-title">The first things to do in a new workspace</h2>
             <p className="module-section-description">
               Six steps, in order. The dashboard tracks the state of the most important ones.
@@ -158,7 +157,6 @@ export default function HelpPage() {
       <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">AI features</p>
             <h2 className="module-section-title">Which features need an AI key</h2>
             <p className="module-section-description">
               OpenPlan itself is free. Its AI features run on an AI-provider (Anthropic) key that is
@@ -195,7 +193,6 @@ export default function HelpPage() {
       <article className="mt-8 border-t border-border/60 pt-8">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">The modules</p>
             <h2 className="module-section-title">What each part of OpenPlan does</h2>
             <p className="module-section-description">
               Grouped the same way as the navigation rail on the left.

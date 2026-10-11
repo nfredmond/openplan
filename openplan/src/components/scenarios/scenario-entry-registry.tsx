@@ -792,7 +792,6 @@ export function ScenarioEntryRegistry({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Baseline</p>
             <h2 className="module-section-title">Anchor scenario</h2>
             <p className="module-section-description">
               The baseline stays visually separate so reviewers can see what every alternative is being compared against.
@@ -836,7 +835,6 @@ export function ScenarioEntryRegistry({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Registry</p>
             <h2 className="module-section-title">Alternatives and attachments</h2>
             <p className="module-section-description">
               Alternative cards make the attachment state, assumptions, and comparison blockers explicit instead of hiding them in notes.
@@ -879,7 +877,6 @@ export function ScenarioEntryRegistry({
       <article className="module-section-surface">
         <div className="module-section-header">
           <div className="module-section-heading">
-            <p className="module-section-label">Comparison summary</p>
             <h2 className="module-section-title">Readiness and blockers</h2>
             <p className="module-section-description">
               This stays lightweight in V1: enough structure to explain readiness, evidence posture, and why a comparison is blocked.

@@ -1006,7 +1006,6 @@ export default async function ModelDetailPage({
               <article className="module-section-surface">
                 <div className="module-section-header">
                   <div className="module-section-heading">
-                    <p className="module-section-label">Readiness</p>
                     <h2 className="module-section-title">Configuration and traceability checks</h2>
                   </div>
                   <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
@@ -1032,7 +1031,6 @@ export default async function ModelDetailPage({
             <article className="module-section-surface">
               <div className="module-section-header">
                 <div className="module-section-heading">
-                  <p className="module-section-label">Anchors</p>
                   <h2 className="module-section-title">Primary planning context</h2>
                   <p className="module-section-description">
                     These anchors define what decision frame the model record belongs to before any explicit cross-links are added.

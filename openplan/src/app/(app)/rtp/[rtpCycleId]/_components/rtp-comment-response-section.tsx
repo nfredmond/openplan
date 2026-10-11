@@ -32,7 +32,6 @@ export function RtpCommentResponseSection({
     <article className="module-section-surface">
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Comment-response record</p>
           <h2 className="module-section-title">What the public said, and what we said back</h2>
           <p className="module-section-description">
             Approved public comments on this plan, paired with the agency&apos;s published responses.

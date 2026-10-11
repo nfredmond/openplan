@@ -31,7 +31,6 @@ export function GrantsAwardConversionSection({
       {awardCommandCallout}
       <div className="module-section-header">
         <div className="module-section-heading">
-          <p className="module-section-label">Award conversion</p>
           <h2 className="module-section-title">Awarded opportunities still missing committed award records</h2>
           <p className="module-section-description">
             Close the gap between an opportunity marked awarded and the committed award record that reimbursement and invoicing build on.

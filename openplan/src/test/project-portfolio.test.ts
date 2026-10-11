@@ -417,7 +417,7 @@ describe("the burn column", () => {
     expect(p2?.burn.available).toBe(false);
     expect(p2?.burn.burnPercent).toBeNull();
     expect(p2?.burn.coverage).toBe("partial");
-    expect(p2?.burn.unavailableReason).toContain("partial figure");
+    expect(p2?.burn.unavailableReason).toContain("Only some deliverables have a budget");
   });
 
   it("uses the deliverable budget total once every deliverable carries one", async () => {
