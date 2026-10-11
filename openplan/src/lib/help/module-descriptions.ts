@@ -22,6 +22,8 @@ export const MODULE_DESCRIPTIONS: Record<string, string> = {
     "One record per project, from scoping through delivery: milestones, decisions, risks, issues, meetings, funding, and the stage-gate board your delivery process follows.",
   "/reports":
     "Where analysis, comparisons, and narrative come together into documents you can hand to a board or a funder — with the sources and caveats attached to every claim.",
+  "/maps":
+    "Map packages for your projects: figures, map books, a web map, and QGIS and ArcGIS Pro projects. Claude Fable 5.1 builds them on your own computer, or you add a package you made.",
   "/assistant-activity":
     "A complete record of everything the built-in planning assistant has done in this workspace: what it proposed, who approved it, and what actually ran.",
   "/rtp":

@@ -39,6 +39,7 @@ vi.mock("@/lib/observability/audit", () => ({
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({

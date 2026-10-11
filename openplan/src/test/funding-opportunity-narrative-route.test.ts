@@ -42,6 +42,7 @@ vi.mock("@/lib/programs/api", () => ({
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({
@@ -118,7 +119,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
         id: DRAFT_ID,
         opportunity_id: OPPORTUNITY_ID,
         draft_markdown: "Drafted narrative paragraphs.",
-        model: "claude-opus-4-8",
+        model: "claude-opus-5-5",
         source: "ai",
         created_at: "2026-07-17T00:00:00.000Z",
       },
@@ -249,15 +250,15 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
         id: DRAFT_ID,
         opportunity_id: OPPORTUNITY_ID,
         draft_markdown: "Drafted narrative paragraphs.",
-        model: "claude-opus-4-8",
+        model: "claude-opus-5-5",
         source: "ai",
       },
       usage: {
         inputTokens: 1200,
         outputTokens: 800,
         totalTokens: 2000,
-        // 1200/1M * $5 + 800/1M * $25 for claude-opus-4-8
-        estimatedCostUsd: 0.026,
+        // 1200/1M * $4 + 800/1M * $20 for claude-opus-5-5
+        estimatedCostUsd: 0.0208,
       },
     });
 
@@ -272,7 +273,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
     );
 
     // The generation call uses the configured default model and a grounded prompt.
-    expect(anthropicMock).toHaveBeenCalledWith("claude-opus-4-8");
+    expect(anthropicMock).toHaveBeenCalledWith("claude-opus-5-5");
     expect(generateTextMock).toHaveBeenCalledTimes(1);
     const generationArgs = generateTextMock.mock.calls[0][0] as { system: string; prompt: string };
     expect(generationArgs.prompt).toContain("2027 ATP countywide active transportation call");
@@ -306,7 +307,7 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft", () => {
       workspace_id: WORKSPACE_ID,
       opportunity_id: OPPORTUNITY_ID,
       draft_markdown: "Drafted narrative paragraphs.",
-      model: "claude-opus-4-8",
+      model: "claude-opus-5-5",
       source: "ai",
       created_by: USER_ID,
       grounding_json: expect.objectContaining({

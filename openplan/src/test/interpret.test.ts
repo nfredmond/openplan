@@ -5,6 +5,7 @@ const anthropicMock = vi.fn((modelId: string) => ({ __modelId: modelId }));
 
 vi.mock("ai", () => ({
   generateText: (...args: unknown[]) => generateTextMock(...args),
+  wrapLanguageModel: ({ model }: { model: unknown }) => model,
 }));
 
 vi.mock("@ai-sdk/anthropic", () => ({
@@ -132,8 +133,8 @@ describe("generateGrantInterpretation", () => {
 
     expect(result.source).toBe("ai");
     expect(result.fallbackReason).toBeNull();
-    expect(result.model).toBe("claude-haiku-4-5-20251001");
-    expect(result.estimatedCostUsd).toBe(0.0015);
+    expect(result.model).toBe("claude-haiku-5-5");
+    expect(result.estimatedCostUsd).toBe(0.00015);
     // Usage passthrough on the success path stays intact.
     expect(result.inputTokens).toBe(500);
     expect(result.outputTokens).toBe(200);
@@ -213,6 +214,6 @@ describe("generateGrantInterpretation", () => {
     // output: 5678/1_000_000 * 5.0 = 0.02839
     // total: 0.029624
     expect(result.source).toBe("ai");
-    expect(result.estimatedCostUsd).toBe(0.029624);
+    expect(result.estimatedCostUsd).toBe(0.002962);
   });
 });
