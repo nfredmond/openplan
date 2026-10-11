@@ -1,0 +1,12 @@
+{
+  "run": 38127929362,
+  "head": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "status": "completed",
+  "conclusion": "success",
+  "logSha256": "ce4b329dae62c1ff5467ffaac06ba941330088df7b75ceaa51aa925b07cc0766",
+  "testSummaries": [
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:50:54.4691865Z  Test Files  104 passed (104)",
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:50:54.4699922Z       Tests  1499 passed | 125 skipped (1624)"
+  ],
+  "limits": "Native GitHub RLS at exact6a. Separate full archive and hosted topology remain independent."
+}

@@ -577,8 +577,31 @@ observation controls behave as intended. Native scope and repeated-read guards
 pass separate refusal and omitted-guard controls.
 
 Current GitHub full QA and executed shuffle pass 21,778 tests each, with 1,604
-skipped; all five CI jobs pass. Live RLS, archive CI and a separate local full
-archive drill remain running.
+skipped; all five CI jobs pass. Live RLS passes 104 files and 1,499 tests,
+with 125 skipped. Exact-source archive CI also passes, with 374 tables and one
+Storage object in its retained artifact. The separate bounded local archive also
+passes with actual exit zero in 2,889.426 seconds, matching OWP reconstruction
+and 1,499 RLS tests with 125 skipped. Its twelve verified containers stop after
+success; volumes and proof remain retained. The final journal peak is 985.1M
+under the 1 GiB runner cap.
 Earlier failures and earlier-source passes keep their boundaries. Hosted
 schema-first disposition, main integration, release and the remaining M3/v1
 contract stay open. No hosted or demo changes occur.
+
+## Retained HTTP and file backup boundaries, October 11
+
+[Native retained HTTP checks](RETAINED_HTTP_TRANSPORT.md) pass initial/restored
+14-test suites, a harmless comment and four targeted broken behaviors. Actual
+connections close on cancellation/deadline; interrupted partial bytes stay refused.
+Test lint and scoped TypeScript pass. Runtime bytes remain unchanged.
+
+[The separate file-only backup](WORKER_FILE_BACKUP_PLAN.md#completed-file-only-probe)
+restores all 787 files and 235,591,323 bytes from a copied encrypted repository,
+with caches disabled and unchanged source inventory. Wrong password, missing pack,
+changed archive and omitted comparison guards fail for recorded reasons. Its actual
+service exits zero in 12.033 seconds at a rounded 720.8M under 1 GiB. This adds no
+database/Storage consistency, SQLite, cross-host, worker replay or agency acceptance.
+
+The [schema-first source handoff](schema-first-release-handoff.json) identifies
+exact M28 through M31 hashes. Hosted application, admission, main integration and
+release remain pending the installation owner's coordinated disposition.

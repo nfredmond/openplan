@@ -1,0 +1,26 @@
+{
+  "producerSha256": "c38b7d04653a9f407b78787318c94d1d985a02ca789d80067d536753d5384050",
+  "baselineAndHarmlessCases": 10,
+  "brokenGuards": [
+    {
+      "mutation": "omit census guard",
+      "result": "intended oracle assertion failure",
+      "reason": "Comparison refusal reason differs"
+    },
+    {
+      "mutation": "omit byte guard",
+      "result": "intended oracle assertion failure",
+      "reason": "Changed file observation was accepted"
+    },
+    {
+      "mutation": "omit mode guard",
+      "result": "intended oracle assertion failure",
+      "reason": "Changed file observation was accepted"
+    }
+  ],
+  "restored": true,
+  "sourceAndSnapshotWrites": 0,
+  "nativeWrongPasswordReasonObserved": true,
+  "nativeMissingPackReasonObserved": true,
+  "limits": "Actual comparison function with copied native inventory observations. No native recapture, worker replay, database or physical-host acceptance."
+}

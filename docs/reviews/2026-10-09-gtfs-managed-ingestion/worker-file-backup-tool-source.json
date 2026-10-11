@@ -1,0 +1,19 @@
+{
+  "release": "v0.19.1",
+  "archiveUrl": "https://github.com/restic/restic/releases/download/v0.19.1/restic_0.19.1_linux_amd64.bz2",
+  "archiveBytes": 10107515,
+  "archiveSha256": "f415415624dcc452f2a02b8c33641791a8c6d6d3b65bbb3543fcf9a25151585c",
+  "checksumsUrl": "https://github.com/restic/restic/releases/download/v0.19.1/SHA256SUMS",
+  "checksumsSha256": "fb520966ee01d2a3d4219c66762c66efa56300833b6f639f36082b7462f91cb8",
+  "binarySha256": "20d4142678d0d95ec11a4759def1b73fd9190abc9ca19e4b62d067c0b387e639",
+  "signatureVerified": true,
+  "execution": false,
+  "limitation": "Official checksum signature and documented primary fingerprint agree. No backup, cross-host or installation acceptance.",
+  "signingPrimaryFingerprint": "CF8F18F2844575973F79D4E191A6868BD3F7A907",
+  "publicKeyBytes": 33940,
+  "publicKeyUrl": "https://restic.net/gpg-key-alex.asc",
+  "signatureSha256": "649f3a48d322c3d7a457ef58e2dc4c5094b1f823192cdbac3f092ea23e194d9a",
+  "firstSignatureAttempt": "Public-key download was bounded to32768bytes and truncated; import refused. Complete33940-byte public key then inspected and signature checked.",
+  "licenseSourceUrl": "https://raw.githubusercontent.com/restic/restic/v0.19.1/LICENSE",
+  "licenseSha256": "6f08a01a9fab5b24e139a09f15cc24a73087c7bc09e3bacf099fdf2d767bf897"
+}

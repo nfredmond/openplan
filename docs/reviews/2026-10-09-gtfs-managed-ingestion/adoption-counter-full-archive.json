@@ -1,0 +1,153 @@
+{
+  "sourceHead": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "actualChildExitCode": 0,
+  "wallSeconds": 2889.426,
+  "tables": 374,
+  "sequences": 6,
+  "storageObjects": 1,
+  "databaseKeyCustody": {
+    "archiveFile": "database-root-private.key",
+    "captured": true,
+    "targetRestarted": true,
+    "mountedBytesVerified": true,
+    "previousTargetKeyRetained": true
+  },
+  "owpSourceTargetEqual": true,
+  "owpSha256": "76023dc5f2f1e2d635e983676a999192212087a5d0680406820852969c432ecc",
+  "manifestSha256": "d2c79d389281bebf82c2ac2bb037b00289d425899fbd26b3b7054ea0dbf6eab2",
+  "privateLogSha256": "737036703a945ff4a24017fea09d6eff3fabcb2aa7157409bfe197b7804f9632",
+  "restoredSignInObserved": true,
+  "rlsFilesPassed": 104,
+  "rlsTestsPassed": 1499,
+  "rlsTestsSkipped": 125,
+  "largestObservedRunnerPeakBytes": 1033023488,
+  "finalJournalRoundedPeak": "985.1M",
+  "runnerMemoryMaxBytes": 1073741824,
+  "runnerSwapDisabled": true,
+  "runnerCpuLimit": 1,
+  "services": [
+    {
+      "id": "55b077a438b3ef4f2ecc2bea4f59ea9431c75c6b7f085714ef9d61947ed7578a",
+      "name": "supabase_db_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "5e2755fea9f79baae8c1625b0986426eb7cc1434a37746bf5b88b01209b984b5",
+      "name": "supabase_kong_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "40aba6a00187009b67420f84951e2b0cee78c327f70980b14494a8bb55b40afc",
+      "name": "supabase_auth_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "e7bcca20d4d9a90b8c95138f4bbee588e60637030a8e4806383c062c727b8a19",
+      "name": "supabase_inbucket_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "d73318dde216182eba0539c3ccd9289c174f657318fb6a94e1f74a1d93280867",
+      "name": "supabase_rest_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "ece339990cc908d9fb193a7f29010bce05cfbde514bfd77d052d85f6e976eea6",
+      "name": "supabase_storage_openplan-restore-source-1671007",
+      "project": "openplan-restore-source-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "651b3150c16a37450af3d12fe26fb2201cc1978b97fab38ac45f54ab3ff0f23f",
+      "name": "supabase_db_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "8ed6a539e9a39ed032e14a2e0fab36cf1b3fa370704ddabf4cc33b8701ba66de",
+      "name": "supabase_kong_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "d2822093ed4a3160b2c87b4c227dd2df8de6888ae99715be852f72cd6a74a767",
+      "name": "supabase_auth_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "8fb0bf0f9acd04c46c5413828ab1aee84fe6ab14b1fad0f0b241612edcbc8764",
+      "name": "supabase_inbucket_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "2b5def9047a63331fc2a41270e6b7238669b78b75b3b1914d16d89f0172f59c9",
+      "name": "supabase_rest_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    },
+    {
+      "id": "a0227e724a6e56ba89ecdfa4cac28262e7b924e6b6f52f89b46aa226c4de8e15",
+      "name": "supabase_storage_openplan-restore-target-1671007",
+      "project": "openplan-restore-target-1671007",
+      "runningBeforeStop": true,
+      "oomKilled": false,
+      "memoryMax": 1073741824,
+      "swapDisabled": true,
+      "cpuLimit": 1
+    }
+  ],
+  "allOwnedServicesStopped": true,
+  "volumesAndProofRetained": true,
+  "limits": "Default-local same-host full database/Storage fixture. External worker/configuration capture, independent disk/host recovery, production topology and agency commissioning remain unproved."
+}

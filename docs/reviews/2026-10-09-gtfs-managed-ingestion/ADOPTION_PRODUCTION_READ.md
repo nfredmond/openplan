@@ -92,8 +92,21 @@ in-memory copies, with no Docker or database writes.
 
 [Source hashes](candidate-adoption-source-hashes.json) identify these records.
 [Current-source GitHub CI](gtfs-6a-ci.json) passes all five jobs. Full QA and the
-executed shuffled suite each pass 21,778 tests, with 1,604 skipped. Live RLS,
-archive CI and the current-source local full archive drill remain running.
+executed shuffled suite each pass 21,778 tests, with 1,604 skipped.
+[Live RLS](gtfs-6a-rls.json) passes 104 files and 1,499 tests, with 125 skipped.
+[Archive CI](gtfs-6a-restore.json) passes at the same source. Its retained artifact
+contains 374 tables, 6 sequences and 1 Storage object, verified mounted
+key custody and matching independent OWP reconstruction. Restored sign-in and
+the final 104-file RLS pass are observed.
+
+[The separate bounded local archive](adoption-counter-full-archive.json) also
+passes with actual child exit zero in 2,889.426 seconds. It restores 374 tables,
+six sequences and one object, verifies mounted key custody, restores sign-in,
+compares independent OWP records and passes 1,499 RLS tests with 125 skipped.
+All twelve own services retain 1 GiB/no-swap/one-CPU limits and no OOM flag.
+The largest recorded runner peak is 1,033,023,488 bytes; the final journal rounds
+it to 985.1M. Only those twelve containers stop after immutable ID, name, project
+and limit checks. Volumes and private proof remain retained.
 The encryption checkpoint's [earlier successful archive CI](earlier-904-restore.json)
 retains its source boundary. Hosted schema-first disposition, main integration,
 release, clean agency commissioning, cross-host recovery, all-worker long
