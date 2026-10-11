@@ -45,13 +45,13 @@ describe("renderKnowledgeBaseExcerptLines", () => {
 
 describe("buildAssistantChatSystemPrompt KB integration", () => {
   it("always carries the uploaded-document honesty instruction", () => {
-    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT);
+    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT, { today: "2026-10-11" });
     expect(prompt).toContain("attribute each to its document by title");
     expect(prompt).toContain("not independently verified");
   });
 
   it("appends a KB excerpts section when excerpts are provided", () => {
-    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT, { knowledgeBaseExcerpts: [excerpt()] });
+    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT, { today: "2026-10-11", knowledgeBaseExcerpts: [excerpt()] });
     // The section header is distinct from the instruction line, which also
     // mentions "KNOWLEDGE BASE EXCERPTS".
     expect(prompt).toContain("KNOWLEDGE BASE EXCERPTS (uploaded documents");
@@ -60,7 +60,7 @@ describe("buildAssistantChatSystemPrompt KB integration", () => {
   });
 
   it("omits the KB section when there are no excerpts", () => {
-    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT, { knowledgeBaseExcerpts: [] });
+    const prompt = buildAssistantChatSystemPrompt(RUN_CONTEXT, { today: "2026-10-11", knowledgeBaseExcerpts: [] });
     expect(prompt).not.toContain("KNOWLEDGE BASE EXCERPTS (uploaded documents");
   });
 });

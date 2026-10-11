@@ -144,7 +144,10 @@ export async function POST(request: NextRequest) {
         query: parsed.data.question,
         limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
       });
-      const systemPrompt = buildAssistantChatSystemPrompt(context, { knowledgeBaseExcerpts });
+      const systemPrompt = buildAssistantChatSystemPrompt(context, {
+        today: new Date().toISOString().slice(0, 10),
+        knowledgeBaseExcerpts,
+      });
       // Drop any leading assistant turns so the forwarded conversation always
       // starts with a user message — the Messages API 400s otherwise, and a
       // dropped-reply history window can otherwise begin with an assistant entry.
