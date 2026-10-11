@@ -77,6 +77,8 @@ The [October 11 owned aerial runtime preparation candidate](reviews/2026-10-11-o
 
 The [October 11 SQLite concurrency correction](reviews/2026-10-11-odm-sqlite-companion-race/STATUS.md) tolerates only retired transient companions, preserves unsafe/unavailable-file refusal and passes 54 tests/59 controls on two Python versions plus 200 serial native concurrency pairs. Inherited actual CI and stopped-root preparation recovery pass; exact-head GitHub checks remain separate. Preserve the main merge hold.
 
+The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
+
 ## Evaluate and operate
 
 - [README](../README.md): local one-computer evaluation.

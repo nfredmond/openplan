@@ -71,3 +71,11 @@ GitHub checks for the next committed head remain separate.
 All 14 nested application documentation tests and the product direction check
 pass. Existing direction reminders stay visible. The serial documentation unit
 peaks at 285,016,064 bytes under 1 GiB, exits zero and stops.
+
+
+## Exact-head GitHub identifies a separate fixture race
+
+The committed `530637b1f` run passes journal checks but fails in native HTTP
+recovery while reading a partial listener. The [separate readiness correction](../2026-10-11-odm-native-readiness-race/STATUS.md)
+reproduces that actual failure deterministically and publishes complete listener
+JSON atomically. This does not revise the retained original SQLite counterexample.

@@ -95,3 +95,13 @@ Original actor/live authority, URL cancellation, commit/results, usable artifact
 links, callback custody and independent full restoration remain open. The legacy
 pipeline still lacks these boundaries. No requirement grade, scientific claim,
 browser evidence, practitioner acceptance or full-v1 acceptance changes.
+
+
+## Later native harness readiness correction
+
+The [dated readiness report](../2026-10-11-odm-native-readiness-race/STATUS.md)
+records the distinct GitHub partial-listener failure and atomic publication fix.
+Deterministically paused native writers pass; direct partial publication fails
+at the observed JSON read. Current 30-observation/93-control native bindings
+supplement the historical records above. The actual worker implementation does
+not change.

@@ -24,8 +24,9 @@ def run(repo, out):
     import native_recovery as helpers
     root = helpers.load('odm_native_independent_root', repo / 'docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py')
     operator = repo / 'openplan/scripts/ops/worker_root_snapshot.py'
+    readiness = repo / 'docs/reviews/2026-10-11-odm-native-readiness-race/readiness.py'
     deps = [Path(__file__), Path(__file__).with_name('oracle.py'), Path(helpers.__file__),
-            repo / 'docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py', operator,
+            readiness, repo / 'docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py', operator,
             operator.with_name('worker_journal_snapshot.py')]
     deps += sorted((repo / 'workers/odm_worker').glob('*.py'))
     binding = {str(path): helpers.digest(path) for path in deps}
@@ -72,11 +73,10 @@ def run(repo, out):
     wrapper = out / 'worker-wrapper.py'
     helpers.write(wrapper, ('import json,os,sys\nfrom pathlib import Path\nos.umask(0o077)\n'
                            'sys.path.insert(0,sys.argv[1])\nimport main\noriginal=main.build_server\n'
+                           'sys.path.insert(0,sys.argv[3])\nfrom readiness import publish_readiness\n'
                            'def local_server(*args,**kwargs):\n'
                            f'    server=original(host={helpers.HOST!r},port=0)\n'
-                           '    with Path(sys.argv[2]).open("x") as stream:\n'
-                           '        json.dump({"port":server.server_address[1],"pid":os.getpid(),"admission":main.ADMISSIONS.status()},stream)\n'
-                           '        stream.flush()\n        os.fsync(stream.fileno())\n'
+                           '    publish_readiness(Path(sys.argv[2]), {"port":server.server_address[1],"pid":os.getpid(),"admission":main.ADMISSIONS.status()})\n'
                            '    return server\nmain.build_server=local_server\nmain.main()\n').encode())
     server = ThreadingHTTPServer((helpers.HOST, 0), Handler)
     server.daemon_threads = True
@@ -100,7 +100,7 @@ def run(repo, out):
         listener = out / f'{name}-listener-private.json'
         log = (out / f'{name}-worker-private.log').open('xb')
         streams.append(log)
-        process = subprocess.Popen([sys.executable, '-B', str(wrapper), str(repo / 'workers/odm_worker'), str(listener)],
+        process = subprocess.Popen([sys.executable, '-B', str(wrapper), str(repo / 'workers/odm_worker'), str(listener), str(readiness.parent)],
                                    cwd=out, env=dict(env, ODM_WORKER_WORK_DIR=str(work_dir)),
                                    stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
         children.append(process)
@@ -113,7 +113,7 @@ def run(repo, out):
         process=None
         try:
             with log_path.open('xb') as log:
-                process=subprocess.Popen([sys.executable,'-B',str(wrapper),str(repo/'workers/odm_worker'),str(listener)],
+                process=subprocess.Popen([sys.executable,'-B',str(wrapper),str(repo/'workers/odm_worker'),str(listener),str(readiness.parent)],
                     cwd=out,env=dict(env,ODM_WORKER_WORK_DIR=str(copied_root)),stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT)
                 children.append(process)
                 helpers.wait_for(lambda:process.poll() is not None or listener.exists(),timeout=10)
