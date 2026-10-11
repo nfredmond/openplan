@@ -1,0 +1,15 @@
+test_refuses_wrong_source_file_type (test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_wrong_source_file_type) ... FAIL
+
+======================================================================
+FAIL: test_refuses_wrong_source_file_type (test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_wrong_source_file_type)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan/scripts/ops/tests/test_worker_journal_snapshot.py", line 160, in test_refuses_wrong_source_file_type
+    self.assertIn('wrong file type', str(refused))
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'wrong file type' not found in 'Snapshot destination must be outside the source journal directory'
+
+----------------------------------------------------------------------
+Ran 1 test in 0.001s
+
+FAILED (failures=1)

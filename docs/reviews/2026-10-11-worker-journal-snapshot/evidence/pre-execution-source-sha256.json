@@ -1,0 +1,5 @@
+{
+  "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+  "openplan/scripts/ops/tests/test_worker_journal_snapshot.py": "8d8ba41c04e67022b7836c0765168fcb4175f3cb7e68a8bb23ef9e19cc07e2fe",
+  "docs/reviews/2026-10-11-worker-journal-snapshot/verify_snapshot_controls.py": "4cc981c3e6cb457ab952b2e05218dd5650bdfa83d898cdd02bc3328e503558f1"
+}

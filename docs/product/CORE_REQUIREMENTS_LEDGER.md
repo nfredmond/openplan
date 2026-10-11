@@ -382,3 +382,18 @@ The physical host/disk remains shared. Clean commissioning, cross-host recovery,
 all workers beyond 45 minutes, populated SQLite, restored browser acceptance and
 agency usefulness remain open. This point has no historical Vault secret.
 M3 and the complete V1 floor remain incomplete; no capability grade changes.
+
+## October 11 populated model journal snapshot, bounded M3 candidate
+
+[The operator command and native checks](../reviews/2026-10-11-worker-journal-snapshot/STATUS.md)
+implement the documented SQLite backup-API method for a private model command
+journal. Native WAL records, pending/resolved requests, a saved result and an
+interrupted start survive. Private paths, read-only access, fresh destinations,
+integrity, deadline, hashes and durable publication have targeted controls.
+All 29 broken variants fail their intended assertions; 141 ops tests pass.
+
+This advances the independent-operation and data-custody floor for one journal.
+Operator-declared quiescence is not a live writer fence. Full worker-root and
+installation-wide recovery, server reconciliation, all worker families,
+hardware-loss recovery, clean commissioning and scientific acceptance remain
+open. M3 and the complete V1 floor remain incomplete; no capability grade changes.

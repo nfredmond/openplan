@@ -1,0 +1,240 @@
+{
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "test": "test_worker_journal_snapshot",
+      "intendedOracle": null,
+      "sourceSha256": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "test": "test_worker_journal_snapshot",
+      "intendedOracle": null,
+      "sourceSha256": "13c195862243b8b4b547e50ae543ce48f70335d6c056dea24d45ff06513e6f6e"
+    },
+    {
+      "case": "harmless-json-whitespace",
+      "exitCode": 0,
+      "test": "test_worker_journal_snapshot",
+      "intendedOracle": null,
+      "sourceSha256": "aa87bd449fec5415b2e39cf63b4d7999c992c9bb12f07910d9831a98b95ac2b2"
+    },
+    {
+      "case": "main-file-only",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_committed_wal_records_and_receipts_survive",
+      "intendedOracle": "missing committed WAL records",
+      "sourceSha256": "691acc978dd39376d1d42829f30e8d349d320b16fa3ee0704ad40841ea864259"
+    },
+    {
+      "case": "ignore-wal",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_committed_wal_records_and_receipts_survive",
+      "intendedOracle": "missing committed WAL records",
+      "sourceSha256": "0452d0064715f32326a67751bceda3e100fc4539ca367a2aec83b8be617d73c3"
+    },
+    {
+      "case": "lose-receipt",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_committed_wal_records_and_receipts_survive",
+      "intendedOracle": "missing committed WAL records",
+      "sourceSha256": "b009973f5818121f01b57fb8f92b518be6bfcb56ea8184c6485bd7bfe1bdeb70"
+    },
+    {
+      "case": "lose-start",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_interrupted_start_refuses_replay_and_saved_result_needs_no_computation",
+      "intendedOracle": "ComputationUnconfirmed not raised",
+      "sourceSha256": "d13301c9675e372fff40ec2f4b264f47f765e5a645a871fc812460b9a8d32550"
+    },
+    {
+      "case": "writable-source",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_source_connection_refuses_database_writes",
+      "intendedOracle": "OperationalError not raised",
+      "sourceSha256": "2e8ff13d48f0ba6245ca89e53945e89a1d3190d55fce78dcc7699b2231ea0b74"
+    },
+    {
+      "case": "omit-quiescence",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_requires_declared_quiescence_before_destination_creation",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "9d0b73d4af1005934773bb971e199227992a6ec779817944ca0755dc6a50025e"
+    },
+    {
+      "case": "omit-timeout-validation",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_requires_positive_finite_deadline",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "246f4527261b4a63c737ed4f3014cbd8d5df95479ef7409995da32ea969c4219"
+    },
+    {
+      "case": "omit-symlink-refusal",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_source_alias_before_destination_creation",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "71795bd5247b8eb0035c691834be86a37848c8f7c239bf1c045d8ae7d0f321a7"
+    },
+    {
+      "case": "omit-private-mode",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_accessible_journal",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "942dfca035270b868ff0d88964dfe8d9917d1ba674454294c6b36d41c6d7bfd3"
+    },
+    {
+      "case": "omit-owner",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_foreign_owner_predicate",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "31c05614ff9255e989f55ea4bf40b32de71c0a8af6e498c14adb02add402efd0"
+    },
+    {
+      "case": "omit-file-type",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_wrong_source_file_type",
+      "intendedOracle": "invalid source type created a destination",
+      "sourceSha256": "f2a29e7f76524b9f3fdf41df870a47b6b86b3b8e7c7bee3257305ddd21d0e31d"
+    },
+    {
+      "case": "omit-hard-link-refusal",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_hard_link_before_destination_creation",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "8347014dc83aec27cf8b7551207633d14e925e39712b7879caeab79344a7c42e"
+    },
+    {
+      "case": "omit-journal-name",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_another_database_name",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "c37f3233ecdd3df997bc28628751b37d9cb79c995ffccd17fa3ed903f1035042"
+    },
+    {
+      "case": "nested-output",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_refuses_output_inside_source_directory",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "153384baa09508d9c9ca074647de595aad9fff2ea037c19c35bcd9456cea7a6c"
+    },
+    {
+      "case": "disguised-destination",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_normalizes_destination_parent_before_nested_refusal",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "f42431117d19092112fab5deba819bd9b7be2a8119a2c9a86f97c871bcb17434"
+    },
+    {
+      "case": "disguised-source",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_normalizes_source_before_nested_refusal",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "d4abe1b28c56ce2fea71ad5e9152e472c31752d096f202b1ada9663ea5fef70d"
+    },
+    {
+      "case": "reuse-destination",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_preserves_an_existing_destination",
+      "intendedOracle": "FileExistsError not raised",
+      "sourceSha256": "48326bf47cfabf33be3a11a95779114d7751d40dfb28fd3d908de722ef04f89d"
+    },
+    {
+      "case": "omit-integrity",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_rejects_native_index_corruption_without_completion_receipt",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "135ecc81349fad5bcb3026f9b7af7026f083d607cf803b137caf08ab39cdfdad"
+    },
+    {
+      "case": "omit-command-schema",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_rejects_valid_sqlite_without_command_schema",
+      "intendedOracle": "ValueError not raised",
+      "sourceSha256": "71378e64a50a301f687f5f0fbc11f426dabc52d5d0554da42360eec28675e673"
+    },
+    {
+      "case": "omit-deadline",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_locked_source_cli_exits_at_deadline_without_receipt",
+      "intendedOracle": "backup did not enforce its deadline",
+      "sourceSha256": "376c96c4a735cae2c64a3ef9858709f1bffdab8f83bd237d36012280e706bd85"
+    },
+    {
+      "case": "false-digest",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_committed_wal_records_and_receipts_survive",
+      "intendedOracle": "snapshot digest does not match bytes",
+      "sourceSha256": "14ed4117c9b9d85d8e34603f156e3027d78dc6df1861ecbbcd1d38db5ddf5c22"
+    },
+    {
+      "case": "false-size",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_committed_wal_records_and_receipts_survive",
+      "intendedOracle": "snapshot size does not match bytes",
+      "sourceSha256": "e66453e69192c44285d50338cc6510eee5c9ddd29009020c2d5e3811629d6416"
+    },
+    {
+      "case": "omit-database-sync",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_failed_database_sync_never_publishes_receipt",
+      "intendedOracle": "OSError not raised",
+      "sourceSha256": "addcdaaea2f0b19a93ecde536803690158fb6f524386f65b5ff60ecdd70a66b0"
+    },
+    {
+      "case": "omit-receipt-sync",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_syncs_database_then_receipt_then_both_directories",
+      "intendedOracle": "snapshot durability order changed",
+      "sourceSha256": "e7d4dadefce716260bf22b2578b5e47d552256806bcccfb6480b4e6fb4f560e3"
+    },
+    {
+      "case": "omit-directory-sync",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_syncs_database_then_receipt_then_both_directories",
+      "intendedOracle": "snapshot durability order changed",
+      "sourceSha256": "75ec338c8a6b7d5a9bca9c45708e1e0c3cbe1555d6ddf94375f179e88387fbac"
+    },
+    {
+      "case": "omit-parent-sync",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_syncs_database_then_receipt_then_both_directories",
+      "intendedOracle": "snapshot durability order changed",
+      "sourceSha256": "c84b380670fdd218a5af3c7f332f9947a60d4ae436fccc3a8d96b6c9b4637618"
+    },
+    {
+      "case": "non-atomic-publication",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_failed_atomic_publication_never_returns_completed_snapshot",
+      "intendedOracle": "OSError not raised",
+      "sourceSha256": "e32ad1d449392544f36dadc9c91d788064ac07679ab3aa9505d0433404aab42d"
+    },
+    {
+      "case": "keep-failed-receipt",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_failed_directory_sync_removes_completion_receipt",
+      "intendedOracle": "failed directory durability retained a completion receipt",
+      "sourceSha256": "c836d6c13d6d5ef4f2347b608609208050820efe7d8d6422866a8613584451e1"
+    },
+    {
+      "case": "disclose-command",
+      "exitCode": 1,
+      "test": "test_worker_journal_snapshot.WorkerJournalSnapshotTests.test_completed_cli_emits_only_snapshot_metadata",
+      "intendedOracle": "CLI disclosed command contents",
+      "sourceSha256": "62ccd17769ae75b9069c2dd66132e8f41b0bab335983eae0a3ea1cfb509c437f"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "test": "test_worker_journal_snapshot",
+      "intendedOracle": null,
+      "sourceSha256": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb"
+    }
+  ],
+  "targetedBrokenVariants": 29,
+  "positiveControls": 4,
+  "sourceSha256": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+  "testSha256": "8d8ba41c04e67022b7836c0765168fcb4175f3cb7e68a8bb23ef9e19cc07e2fe",
+  "blindCategory": "Local Linux SQLite and filesystem behavior only. Owner mismatch uses a mocked UID predicate. Fsync ordering and injected failures do not establish power-loss recovery, race-proof host fencing, installation-wide consistency, server reconciliation or scientific acceptance."
+}

@@ -1,0 +1,14 @@
+{
+  "service": {
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "42266624"
+  },
+  "failure": "omit-symlink-refusal failed a different nested-destination guard; first fixture did not isolate symlink behavior",
+  "capturedSourceHashesAfterFailure": {
+    "executed-tests.py": "b2398a91148e22874070f2b64ad4051e56a8789bf8b9f8add08613aede506007",
+    "executed-helper.py": "390ab5954449ceeb55a089b8268403393fa5bdd696d5146f4254901d1fdac4ca",
+    "executed-controls.py": "d41df656c7c4f27aeec7907207cf0bf11396c0d01cfc3e675ecab54b2fffe1d3"
+  },
+  "captureTiming": "After failure, before fixture correction. Not a pre-execution manifest."
+}
