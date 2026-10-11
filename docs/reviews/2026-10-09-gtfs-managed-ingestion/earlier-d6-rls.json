@@ -1,0 +1,13 @@
+{
+  "runId": "38125205341",
+  "sourceHead": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "status": "completed",
+  "conclusion": "success",
+  "summary": [
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:06:13.2181409Z  Test Files  104 passed (104)",
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:06:13.2189575Z       Tests  1499 passed | 125 skipped (1624)",
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:06:13.2191563Z    Duration  1778.26s (transform 2.11s, setup 2.32s, import 6.10s, tests 1736.37s, environment 25.02s)"
+  ],
+  "logSha256": "c666d83e6042ff1e7d644c06081625a0220f78576a4cc096bac57b679a8b507f",
+  "boundary": "Earlier d6 source. Later 40b8 and f381 live RLS remain separate."
+}

@@ -1,0 +1,277 @@
+{
+  "head": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "buildId": "8RvVDpNJGWrngjjyMcIfO",
+  "health": {
+    "checkedAt": "2026-10-11T09:28:38.920Z",
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    },
+    "deployment": {
+      "commit": "6a750ff265ad",
+      "version": "0.68.0"
+    },
+    "service": "openplan",
+    "status": "ok"
+  },
+  "projectId": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+  "modelId": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "navigation": [
+    "/dashboard",
+    "/data-hub (native sidebar link)",
+    "/projects (native bottom navigation)",
+    "/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc (native project card)",
+    "/models (native sidebar)",
+    "/models/492638e4-9937-4e61-a31c-d69f7e36f49b (native model card)"
+  ],
+  "priorConsole": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-11T04:32:09.140Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-11T04:32:09.141Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "Failed to fetch RSC payload for http://127.74.9.10:3568/data-hub. Falling back to browser navigation. TypeError: Cannot read properties of undefined (reading 'includes')\n    at window.fetch (<anonymous>:1:457)",
+      "timestamp": "2026-10-11T07:27:27.135Z",
+      "source": "console"
+    }
+  ],
+  "initialAbortedPrefetches": [
+    {
+      "path": "/workspace",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.315Z"
+    },
+    {
+      "path": "/projects",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.316Z"
+    },
+    {
+      "path": "/maps",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.360Z"
+    },
+    {
+      "path": "/land-use-plans",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.369Z"
+    },
+    {
+      "path": "/assistant-activity",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.372Z"
+    },
+    {
+      "path": "/rtp",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.373Z"
+    },
+    {
+      "path": "/explore",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.492Z"
+    },
+    {
+      "path": "/safety",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.493Z"
+    },
+    {
+      "path": "/engagement",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.508Z"
+    },
+    {
+      "path": "/data-hub",
+      "method": "GET",
+      "status": null,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T09:28:10.510Z"
+    }
+  ],
+  "feedReview": {
+    "mobile": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nwww.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "testIds": [],
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 390
+    },
+    "desktop": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nwww.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 1280
+    }
+  },
+  "modelFeed": {
+    "desktop": {
+      "width": 1280,
+      "documentWidth": 1280,
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "feedText": "Travel modeling\nSynthetic retained transit geography review\nSynthetic retained transit geography review\nDraft\nTravel Demand Model\nNeeds setup\n\nIsolated engineering fixture for saved project geometry and published-schedule coverage disclosure. No model execution or measured-service finding.\n\nNo validated screening run on file\n\nModeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims.\n\nReview county runs\nRuns\nOverview\nEdit model\nLaunch and track this model's runs\n\nEach launch keeps an exact copy of its inputs, so a run can always be traced back to what went into it. Attach the results to the right scenario entry when they arrive.\n\nRuns\n\n0\n\nRuns recorded for this model.\n\nLatest status\n\nNone\n\nNo runs launched yet.\n\nScenario entries\n\n0\n\nScenario entries a run's results can be attached to.\n\nRun modes available\n\n5\n\nDeterministic Corridor · Fast Screening · Behavioral Demand · Sketch Activity Model · Trip Generation\n\nLaunch run\n\nUse the model's defaults, then optionally attach the results to a specific scenario entry.\n\nRun mode\nDeterministic Corridor (returns right away)\nFast Screening (prototype)\nBehavioral Demand (readiness check — not a forecast)\nSketch Activity Model (runs in this app)\nTrip Generation (screening worksheet — runs in this app)\n\nFast Screening\n\nLaunchable\n\nScreening-grade traffic assignment and accessibility review, run by AequilibraE outside this app.\n\nExpected runtime: Keeps working after you leave the page — expect results in a few minutes.\n\nCaveat: Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.\n\nWhere it runs: not in this app. Launching queues the run for a separate AequilibraE processing worker, which whoever operates this OpenPlan installation has to be running for it to finish.\n\nZone geography (TAZ resolution)\nCensus tracts (default)\nBlock groups (~3x finer zones)\n\nBlock groups lower the intrazonal trip share, so trip lengths and screening VMT resolve finer. Population and households are tract ACS totals disaggregated by LODES residence weights. Both resolutions are screening-grade.\n\nTransit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.\n\nTune the assignment to local traffic counts, where you have them. The CEQA VMT input is unchanged either way.\n\nThe held-out counts choose and reject calibration steps; they are candidate-selection evidence, not an independent accuracy test. A calibrated-to-counts claim requires a separate untouched validation result. Where no counts match, calibration does not run. Calibrated VMT publishes under distinct KPI names — it never becomes the CEQA §15064.3 determination input.\n\nRun title\nScenario entry (optional)\nNot attached to a scenario entry\nAttach completed run to selected scenario entry\nQuery text\nStudy area\nSearch a place\nDraw an area\n\nOakland\n\n≈ 596 km² bounding extent\n\nClear\n\nStarting from Oakland. Change it here to run somewhere else — this does not alter the source.\n\nAdvanced: edit raw corridor GeoJSON\n\nModeling worker health\n\nAequilibraE: No compatible heartbeat was observed; this may be an older worker or no worker at all.\n\nLaunch run\n\nRun history\n\nThe latest runs launched from this model.\n\n0 stored\nNo runs yet. Every launch is recorded here, with a link to its results once they exist.",
+      "errors": []
+    },
+    "mobile": {
+      "width": 390,
+      "documentWidth": 390,
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "feedText": "Travel modeling\nSynthetic retained transit geography review\nSynthetic retained transit geography review\nDraft\nTravel Demand Model\nNeeds setup\n\nIsolated engineering fixture for saved project geometry and published-schedule coverage disclosure. No model execution or measured-service finding.\n\nNo validated screening run on file\n\nModeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims.\n\nReview county runs\nRuns\nOverview\nEdit model\nLaunch and track this model's runs\n\nEach launch keeps an exact copy of its inputs, so a run can always be traced back to what went into it. Attach the results to the right scenario entry when they arrive.\n\nRuns\n\n0\n\nRuns recorded for this model.\n\nLatest status\n\nNone\n\nNo runs launched yet.\n\nScenario entries\n\n0\n\nScenario entries a run's results can be attached to.\n\nRun modes available\n\n5\n\nDeterministic Corridor · Fast Screening · Behavioral Demand · Sketch Activity Model · Trip Generation\n\nLaunch run\n\nUse the model's defaults, then optionally attach the results to a specific scenario entry.\n\nRun mode\nDeterministic Corridor (returns right away)\nFast Screening (prototype)\nBehavioral Demand (readiness check — not a forecast)\nSketch Activity Model (runs in this app)\nTrip Generation (screening worksheet — runs in this app)\n\nFast Screening\n\nLaunchable\n\nScreening-grade traffic assignment and accessibility review, run by AequilibraE outside this app.\n\nExpected runtime: Keeps working after you leave the page — expect results in a few minutes.\n\nCaveat: Screening-grade prototype output. Do not treat it as behavioral demand or forecast-ready calibration.\n\nWhere it runs: not in this app. Launching queues the run for a separate AequilibraE processing worker, which whoever operates this OpenPlan installation has to be running for it to finish.\n\nZone geography (TAZ resolution)\nCensus tracts (default)\nBlock groups (~3x finer zones)\n\nBlock groups lower the intrazonal trip share, so trip lengths and screening VMT resolve finer. Population and households are tract ACS totals disaggregated by LODES residence weights. Both resolutions are screening-grade.\n\nTransit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.\n\nTune the assignment to local traffic counts, where you have them. The CEQA VMT input is unchanged either way.\n\nThe held-out counts choose and reject calibration steps; they are candidate-selection evidence, not an independent accuracy test. A calibrated-to-counts claim requires a separate untouched validation result. Where no counts match, calibration does not run. Calibrated VMT publishes under distinct KPI names — it never becomes the CEQA §15064.3 determination input.\n\nRun title\nScenario entry (optional)\nNot attached to a scenario entry\nAttach completed run to selected scenario entry\nQuery text\nStudy area\nSearch a place\nDraw an area\n\nOakland\n\n≈ 596 km² bounding extent\n\nClear\n\nStarting from Oakland. Change it here to run somewhere else — this does not alter the source.\n\nAdvanced: edit raw corridor GeoJSON\n\nModeling worker health\n\nAequilibraE: No compatible heartbeat was observed; this may be an older worker or no worker at all.\n\nLaunch run\n\nRun history\n\nThe latest runs launched from this model.\n\n0 stored\nNo runs yet. Every launch is recorded here, with a link to its results once they exist.",
+      "errors": []
+    }
+  },
+  "cta": {
+    "desktop": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nCTA schedule, capacity proof\n\nVersion b87fe3ef-00df-4e53-9a19-5e1e3e291470\n\nReady for review\n\nCompleted schedule: 132 routes and 11138 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "panelCount": 1,
+      "registryText": "CTA schedule, capacity proof\n\nNot adopted\nurl\n\nNo version of this feed is in use. Review and adopt a completed version before using its service results.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed",
+      "selectedVersion": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 1280
+    },
+    "mobile": {
+      "detailText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, selected planning team and account. Removing an entry from this browser does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Saved versions below remain separately readable.\n\nOpen a recent version\nSelect a version\nCTA schedule, capacity proof: b87fe3ef\ndeveloper.trimet.org: 1ca4fa87\nbart-full-restore-check: 21d86ed0\nwww.bart.gov: efd51598\ndeveloper.trimet.org: 743a0929\nBay Area Rapid Transit (BART): f3bc2095\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd\nCTA schedule, capacity proof\n\nVersion b87fe3ef-00df-4e53-9a19-5e1e3e291470\n\nReady for review\n\nCompleted schedule: 132 routes and 11138 stops. These are parser counts, not derived service rows or measured coverage.\n\nNo predecessor is currently in use.\n\nUse this reviewed version\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "panelCount": 1,
+      "registryText": "CTA schedule, capacity proof\n\nNot adopted\nurl\n\nNo version of this feed is in use. Review and adopt a completed version before using its service results.\n\nShow every ingest of this feed\nRefresh from source\nRemove feed",
+      "selectedVersion": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 390
+    }
+  },
+  "cancelled": {
+    "desktop": {
+      "cardText": "developer.trimet.org\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640\n\nCancelled\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "panelCount": 1,
+      "selectedVersion": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 1280
+    },
+    "mobile": {
+      "cardText": "developer.trimet.org\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640\n\nCancelled\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "panelCount": 1,
+      "selectedVersion": "1ca4fa87-713d-4a0e-8015-9edd428f1640",
+      "url": "http://127.74.9.10:3568/data-hub",
+      "width": 390
+    }
+  },
+  "desktop": {
+    "width": 1280,
+    "documentWidth": 1280,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "feedOptions": [
+      "",
+      "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+      "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+      "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+    ],
+    "savedOaklandSourceVisible": true,
+    "zeroRunsVisible": true,
+    "scientificCaveatVisible": true,
+    "errors": [],
+    "coverage": {
+      "bodyKeys": [
+        "workspaceId",
+        "feedId",
+        "corridorGeojson"
+      ],
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "method": "POST",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "url": "/api/gtfs/feeds/study-area-coverage",
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    }
+  },
+  "mobile": {
+    "width": 390,
+    "documentWidth": 390,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "feedOptions": [
+      "",
+      "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+      "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+      "16e2e138-400a-49ff-8bc3-089ff185e5d7"
+    ],
+    "savedOaklandSourceVisible": true,
+    "zeroRunsVisible": true,
+    "scientificCaveatVisible": true,
+    "errors": []
+  },
+  "observer": {
+    "consoleErrors": [],
+    "coverage": [
+      {
+        "bodyKeys": [
+          "workspaceId",
+          "feedId",
+          "corridorGeojson"
+        ],
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "method": "POST",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "url": "/api/gtfs/feeds/study-area-coverage",
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      }
+    ],
+    "errors": [],
+    "instrumentationErrors": [],
+    "startedAt": "2026-10-11T09:28:20.071Z"
+  },
+  "finishedAt": "2026-10-11T09:37:20.997Z"
+}

@@ -1,0 +1,43 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "reason": "coordinated-table-image-differs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "coordinated-table-image-differs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "coordinated-table-image-differs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "coordinated-sequence-image-differs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "coordinated-schema-image-differs",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "195113d6704bfb94fca21dac8690ceb3feb8e76ab1f45287748f324ab435be30",
+  "limits": "Actual extracted comparison and copied images only. No native database or file changes."
+}

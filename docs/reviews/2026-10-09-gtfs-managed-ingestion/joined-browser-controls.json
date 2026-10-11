@@ -1,0 +1,141 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-note",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "wrong-served-build",
+      "passed": true,
+      "expectedFailure": "served-build-mismatch"
+    },
+    {
+      "case": "wrong-parser-count",
+      "passed": true,
+      "expectedFailure": "current-feed-metadata-mismatch"
+    },
+    {
+      "case": "wrong-native-coverage",
+      "passed": true,
+      "expectedFailure": "native-coverage-count-mismatch"
+    },
+    {
+      "case": "feed-mobile-overflow",
+      "passed": true,
+      "expectedFailure": "feed-layout-overflow"
+    },
+    {
+      "case": "wrong-visible-version",
+      "passed": true,
+      "expectedFailure": "visible-current-feed-custody"
+    },
+    {
+      "case": "lost-archive-disclosure",
+      "passed": true,
+      "expectedFailure": "visible-archive-disclosure"
+    },
+    {
+      "case": "feed-console-error",
+      "passed": true,
+      "expectedFailure": "feed-console-error"
+    },
+    {
+      "case": "duplicate-capture",
+      "passed": true,
+      "expectedFailure": "capture-inventory"
+    },
+    {
+      "case": "different-build",
+      "passed": true,
+      "expectedFailure": "build-identity"
+    },
+    {
+      "case": "changed-project",
+      "passed": true,
+      "expectedFailure": "source-project-changed"
+    },
+    {
+      "case": "wrong-project",
+      "passed": true,
+      "expectedFailure": "model-project-binding"
+    },
+    {
+      "case": "unexpected-run",
+      "passed": true,
+      "expectedFailure": "unexpected-model-execution"
+    },
+    {
+      "case": "different-geometry",
+      "passed": true,
+      "expectedFailure": "browser-geometry-mismatch"
+    },
+    {
+      "case": "wrong-feed",
+      "passed": true,
+      "expectedFailure": "coverage-target-mismatch"
+    },
+    {
+      "case": "failed-coverage",
+      "passed": true,
+      "expectedFailure": "coverage-response-not-established"
+    },
+    {
+      "case": "replaced-current-version",
+      "passed": true,
+      "expectedFailure": "current-feed-changed"
+    },
+    {
+      "case": "nonterminal-cancellation",
+      "passed": true,
+      "expectedFailure": "cancelled-terminal-not-established"
+    },
+    {
+      "case": "published-cancelled-results",
+      "passed": true,
+      "expectedFailure": "cancelled-results-changed"
+    },
+    {
+      "case": "mobile-overflow",
+      "passed": true,
+      "expectedFailure": "layout-overflow"
+    },
+    {
+      "case": "lost-source-disclosure",
+      "passed": true,
+      "expectedFailure": "visible-model-custody"
+    },
+    {
+      "case": "duplicate-history-panel",
+      "passed": true,
+      "expectedFailure": "visible-cancellation-identity"
+    },
+    {
+      "case": "console-error",
+      "passed": true,
+      "expectedFailure": "captured-console-error"
+    },
+    {
+      "case": "missing-capture",
+      "passed": true,
+      "expectedFailure": "capture-inventory"
+    },
+    {
+      "case": "changed-capture-hash",
+      "passed": true,
+      "expectedFailure": "capture-bytes-changed"
+    }
+  ],
+  "nativeReadRepeated": true,
+  "limits": [
+    "Controls alter isolated copies of browser, native and artifact observations. No database, app or capture edits.",
+    "Recorded 486 build read after T3 reopened, with a future-only console interval. No scientific validity, physical phone or hosted commissioning claim."
+  ]
+}

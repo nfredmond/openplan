@@ -1,0 +1,15 @@
+{
+  "files": 38,
+  "tests": 1015,
+  "passed": 998,
+  "skipped": 17,
+  "failed": 0,
+  "typecheck": "scoped pass",
+  "eslint": "changed TypeScript pass",
+  "diffCheck": "pass",
+  "sources": {
+    "openplan/src/lib/gtfs/fetch.ts": "2deb8a78497ea0a28b7ddbad61ab52c0a83eb459e8c49cb786e2f2548ee4ae99",
+    "openplan/src/lib/http/outbound-url.ts": "b708b52a4f9159d22212b1769ac71904c7bacef736908ba90f0478cef10e37a6",
+    "openplan/src/test/gtfs-fetch-cancellation.test.ts": "05d44af6a3f7f4a54fba940e588a7687cdad41a2bc626eee019e55f86fb1ce11"
+  }
+}

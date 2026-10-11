@@ -1,0 +1,170 @@
+{
+  "storageImage": "public.ecr.aws/supabase/storage-api:v1.67.20",
+  "postgres": "17.6",
+  "sourceHead": "5ff3d37f72f09efcac3237cd8c2f19e023a39ea2",
+  "fixtureSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "runnerSha256": "4b13afad4a8d1c87a58e629696ee12e48ce688962de30bde1a69e8531edc04a4",
+  "helperSha256": "4484dabe9f1202fe3f9ebc8a033ba97ae080cf3154c33dd664be4fc449e5cb6a",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "cases": [
+        {
+          "case": "closed-before-start",
+          "http": 400,
+          "storageCode": "403"
+        },
+        {
+          "case": "anonymous-live",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": false,
+          "after": {
+            "state": "awaiting_archive",
+            "status": "pending",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "service-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "anonymous-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "cases": [
+        {
+          "case": "closed-before-start",
+          "http": 400,
+          "storageCode": "403"
+        },
+        {
+          "case": "anonymous-live",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": false,
+          "after": {
+            "state": "awaiting_archive",
+            "status": "pending",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "service-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "anonymous-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        }
+      ]
+    },
+    {
+      "variant": "deny-live",
+      "result": "expected assertion failure",
+      "message": "Upload never reached the owned file backend",
+      "cases": [
+        {
+          "case": "closed-before-start",
+          "http": 400,
+          "storageCode": "403"
+        }
+      ]
+    },
+    {
+      "variant": "allow-closed",
+      "result": "expected assertion failure",
+      "message": "Closed import was allowed to start",
+      "cases": []
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "cases": [
+        {
+          "case": "closed-before-start",
+          "http": 400,
+          "storageCode": "403"
+        },
+        {
+          "case": "anonymous-live",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": false,
+          "after": {
+            "state": "awaiting_archive",
+            "status": "pending",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "service-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        },
+        {
+          "case": "anonymous-late",
+          "http": 200,
+          "bytes": 892312,
+          "bodyObservedBeforeCancellation": true,
+          "after": {
+            "state": "cancelled",
+            "status": "failed",
+            "objectRows": 1,
+            "cleanupRows": 0
+          }
+        }
+      ]
+    }
+  ],
+  "temporaryResourcesRemoved": true
+}

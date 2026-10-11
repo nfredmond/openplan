@@ -1,0 +1,244 @@
+{
+  "sourceSha256": "f7559028fa95e6443fb7b46bb88ffe12626f8f8b5944720d7e22e52a327b972c",
+  "testSha256": "ce76d17bfa87a22e47ae033995fb421cff1bda8a9916bfd095356b600afae799",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "5e35eb61ee0f2c30a78c0fc923982b33223b299d295b494c7e2ecbf8bfa4fd8a"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "674c498410a76aa50254b211149a202ed088535abf3309bea26b52315503213a"
+    },
+    {
+      "case": "gtfs-artifact-file-is-not-private",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2e27116a2c9d01c7fdf9f18195d6bfcb2d4105f98a5cfed30ccfb6c178344b5d"
+    },
+    {
+      "case": "gtfs-artifact-size-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "e640b209d054186e9c3c1f37c4345bbe1990a195b1ceb3b1d6086f1ba424cce9"
+    },
+    {
+      "case": "gtfs-artifact-read-is-incomplete",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "rejects a short local read",
+      "logSha256": "a0f49e0f601451d2a828bef319b2cfc6970a5215257cfa3d52e86e0e42a9e641"
+    },
+    {
+      "case": "gtfs-artifact-content-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "38768e1025cc775aa6489682af197bc7254d5f82c7717abff7146475d5948d68"
+    },
+    {
+      "case": "gtfs-artifact-needs-an-active-retained-archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "refuses inactive",
+      "logSha256": "edd86a2c6cd770abbd65ba17cfc55f52d73ae892dadda54ca7e5716e5d6599c2"
+    },
+    {
+      "case": "gtfs-artifact-target-is-invalid",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c30e39535f579e9e1a203759973e58b11cea324ebba68c93de6766c5bc081fcf"
+    },
+    {
+      "case": "gtfs-artifact-archive-exceeds-configured-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0e26d97748b01b004091cc48b46a9befabec33bdbe9adeab533bfe535b3c5796"
+    },
+    {
+      "case": "gtfs-artifact-ownership-is-unconfirmed",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "refuses an unconfirmed renewal",
+      "logSha256": "4534c1b6a19411dd070687826a3fed2115a741eed47f5e4d4a10a462eaf9e23c"
+    },
+    {
+      "case": "gtfs-artifact-binding-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "7194f0d3cb9847ffbf12c8ef8bb37ddf51d77bc92af4ce1f8da77733f7bcdce3"
+    },
+    {
+      "case": "gtfs-retained-archive-could-not-be-verified",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "refuses unconfirmed Storage bytes",
+      "logSha256": "fc963cf88f58bf14875ce63e6c84100eb3252485a643bf0fdc5582ad6216eb23"
+    },
+    {
+      "case": "gtfs-artifact-parsing-was-interrupted",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "leaves an interrupted parse",
+      "logSha256": "cd050b59f43a5e079e746f2c13e17075fbf4b29282fedcbb5b3cd0bb5837984b"
+    },
+    {
+      "case": "gtfs-artifact-output-exceeds-configured-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "dce3d115ab61507cc8a7f38ff65e54835cab6ba2c8df10a48496eb4a677652f8"
+    },
+    {
+      "case": "gtfs-saved-output-exceeds-configured-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "3e54414b1212e14b99ee81bdc01ab757591f9fb69b46c729990d306ab6568295"
+    },
+    {
+      "case": "follow-symlink",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0aae5cc8ce2ae5c4c6d4630a80029571f3855161c9090ee685747e6531366894"
+    },
+    {
+      "case": "missing-archive-sync",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "b2677a2107bba40edefb3c4b987bb505216e1d018d6fbb59456b1ba8590be231"
+    },
+    {
+      "case": "missing-output-sync",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "857b0ab0d648668dfa3dcb045abf993207ab179312f6b31733cc20c5786e555a"
+    },
+    {
+      "case": "missing-directory-sync",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "b2f462eb9a264824c6b1cf39391c075da743712e049f6140bdd4f8eb83bbe868"
+    },
+    {
+      "case": "missing-completion-record",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "d3e1b0d9697361da7dd32389bf02610aad7a991f010829d9add97cb34690000d"
+    },
+    {
+      "case": "unconfirmed-archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "e9f239d53fc064bd15d03bfee6958b3728444dab54ca7708e5264b0027635809"
+    },
+    {
+      "case": "missing-parsing-stage",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "970b9e7a723b7ab639b1a89245dc4c2a69ccccd448c85d61704da7215324679f"
+    },
+    {
+      "case": "ignored-cancellation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "39e5fd0fcd54c13b0a5323e7ed66a8a5a7fcaed22c37a8604db658857e31bb3f"
+    },
+    {
+      "case": "cached-archive-refetch",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "dbcd2c425d1c28f22cf90a9089446f1449a0544262d305d17d2410de7658f1e5"
+    },
+    {
+      "case": "unsafe-output-name",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "64ab8d47c359cbe2d24a30c678322e448d74916a283d64da6145480aab74f761"
+    },
+    {
+      "case": "loose-saved-root",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "4d21472aee10c71ceca70b56d56ce0b564bc00efb76312b1d10d26ea52ad52b8"
+    },
+    {
+      "case": "loose-binding",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "575782585f2d879e13555d48b9b07eb312497071d71eaff84826a35fea46de0e"
+    },
+    {
+      "case": "loose-saved-output",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "3c0bd0e2e581c5257c897843ddc44b5b47d3f01e0d8dcdc87d3e1723fb5a9f35"
+    },
+    {
+      "case": "loose-receipt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0ef89fb25fa27bbdc1dbc6d6b8eb39ceeeca219b684738ec0852733b5404845e"
+    },
+    {
+      "case": "loose-archive",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "04f5d0b2997c0bcebf4e8b1fb3f75a9c3bf80600377260f91bab61d64d2dc0d3"
+    },
+    {
+      "case": "invalid-installation",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "290f614f0e48b4161dfa166f541011f8bf992a1082a3dc2d16fb95c6c5004e14"
+    },
+    {
+      "case": "invalid-build",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0129494681e34f0102a72a0668147e20ba690cc2ab154f5d6e2fbc0298e3c877"
+    },
+    {
+      "case": "zero-output-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "513d727481b92e1568ca509b7cb0f87b5a9464e62e297516e5ed1ec7a152ea0b"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "7a497abb559c9e90956cb01b8ab42d61e0f1a57799c1a1caf4e5b53d3909107b"
+    }
+  ]
+}

@@ -1,0 +1,223 @@
+{
+  "sourceSha256": "aa84b1b0121dffd96bdd9e64fe1daec2055c618791933ac3c58b4ee8e3421276",
+  "testSha256": "45f48c751750cc8f09aff9c7f5007705e2186925f6f3d1ef0a7687ae955200cb",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "27e4181e8ba8ddfe453f1f5601387ccd73f4008f651c5d650edb35bb4d058c81"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "5e8a31c56ec2d03810b9369ed30ea7aa6c3825f19555c76aab30dda814b87f6b"
+    },
+    {
+      "case": "gtfs-parsed-outcome-differs-from-receipt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "ced440a18a493e2e8bae2a8f82bb2c573a52746882e716fafe4ccd70cd491c03"
+    },
+    {
+      "case": "gtfs-parsed-archive-size-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "3e000fb880cd3390bad204b1e877992c00dde6b7761862dda018f71f4830f281"
+    },
+    {
+      "case": "gtfs-parsed-entity-identities-repeat",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "411c3881ac85bb4111a3610d0bfbbcc64bffae6779512515c4348c107aec5556"
+    },
+    {
+      "case": "gtfs-parsed-service-basis-repeats-or-is-incomplete",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "3d7f645ccf86c65c2cf63922d7d384545afde55b6d087374edeaea89adf10af9"
+    },
+    {
+      "case": "gtfs-parsed-service-identities-repeat",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "a2d082ab7c0043dd288dee123a1c84fa39cdf3e2cf61b06f050cb8820e8d3575"
+    },
+    {
+      "case": "gtfs-parsed-service-references-a-missing-entity",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "a959621501923bd71c7f268019e6aabaa42ba9ade54aeef7ef4873c5bfa6e43e"
+    },
+    {
+      "case": "gtfs-parsed-stop-route-count-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c0215af390ac66fefaaa0b5b618a7a7e1af2055c5dc91338c4682b8b5b820502"
+    },
+    {
+      "case": "gtfs-parsed-service-date-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "5a722d0d501a90296a211075e811274ba0d2d8444bbdef6e94d6cc43c85bcbb4"
+    },
+    {
+      "case": "gtfs-parsed-departure-counts-differ",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "aa12895996c7ff5c3d33b79f442f016c7e2bfc8e18a3cba9c39181a58f7b504a"
+    },
+    {
+      "case": "gtfs-parsed-service-span-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "7473f9c9d397cbb81e8a621fe1eecaff08cacc415bceb7ba49e319e4d1ab9d9f"
+    },
+    {
+      "case": "loose-schema-0",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "220e582b0c742f1d01d0c4abef1dec6ca36a30000871717e704415cc425ebaa8"
+    },
+    {
+      "case": "loose-schema-1",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "02257178edf1077eb68704a24f9d8c5c157a6cf2920f108d6340ab665412ac2c"
+    },
+    {
+      "case": "loose-schema-2",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "a5d759f4946cf75fc65a11d2bf8121cbf926cfa1028952cfb07b45a91c22ceec"
+    },
+    {
+      "case": "loose-schema-3",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "ecdaedb766ac739a0014847104ae0c01da2c2f5b150453fdce84a7a2947570a0"
+    },
+    {
+      "case": "loose-schema-4",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "a9fa23b2fe66df6612d4337e8909f6f022174df252e7d0478f2b1a4de9d6b41c"
+    },
+    {
+      "case": "loose-schema-5",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "20a44619b7abf4d1a99db6f7e66cb869a5bea14e18cd13f792f0e35d475d1fe5"
+    },
+    {
+      "case": "loose-schema-6",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0f4dc23700ee8656a5358cf37b41c76a168fa12042c71aed82c2e32b46d7e52e"
+    },
+    {
+      "case": "loose-schema-7",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "4f86335d65cef209ebc3ad558abb705ae225eb1114e9377cb9282182b1ec58bd"
+    },
+    {
+      "case": "loose-schema-8",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "8b883c0ef4c2bbbb62d55f3fddac3324dd0f3052dd1902625a8ff75bbdbd7f9e"
+    },
+    {
+      "case": "loose-schema-9",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "7785eae2186d9ee9d1daba6c18d4ee5f5715695dec6fa1453b366fb9c77fc1ca"
+    },
+    {
+      "case": "loose-schema-10",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "4bb16e03437a9f57ff971579a6031e344f5e25ddafbb7fd10375e16b78262bf0"
+    },
+    {
+      "case": "loose-schema-11",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "aeacba7c86821054c1aa4fd01765ec624108ae55648b71fe9d82cd1797902a3e"
+    },
+    {
+      "case": "loose-schema-12",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2a6e4273caef911fd4285098665eb82532a4b5bd28714bbcc7237e4e770ccd87"
+    },
+    {
+      "case": "unchecked-shape",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0b27748602a668246eb10e36bf8df0221e0c4dea11e933be54986c57915c1c28"
+    },
+    {
+      "case": "invalid-coordinate",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "e2611bddc4bfe0f9f72606033c01cbcad6203eaa83a1f0f013b2a2edb5f5294c"
+    },
+    {
+      "case": "invalid-longitude",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "01d0da9eb0dc00cb0a9731243cf5bf6827486908c10f6e7e94729dd0f594176e"
+    },
+    {
+      "case": "invalid-date",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "51e02858b26ed1678c17983b6ba90c5bca7b6871941199622bccf32be0ff45a6"
+    },
+    {
+      "case": "fractional-counts",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "abf1199ebed6975ebf433acb5320457b7ebe99b98f1b52287c022a0a8e830966"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "1d99b86a74aaf8bcdf0044cf54aa993e237410716cbee760e30a4a5a04958e2d"
+    }
+  ]
+}

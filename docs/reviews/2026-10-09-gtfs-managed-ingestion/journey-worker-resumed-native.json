@@ -1,0 +1,23 @@
+{
+  "id": "743a0929-b626-4bcc-8381-bbd897b60911",
+  "feed_id": "eea1b4cd-0402-4bb9-906e-cff7eceedbbb",
+  "status": "ready",
+  "is_current": false,
+  "route_count": 81,
+  "stop_count": 6027,
+  "trip_count": 67515,
+  "state": "ready",
+  "attempt": 1,
+  "archive_identity": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/eea1b4cd-0402-4bb9-906e-cff7eceedbbb/743a0929-b626-4bcc-8381-bbd897b60911.zip",
+    "bytes": 43392539,
+    "sha256": "bf808d4f3c8da436f1a873aa9d2ae0e198b29017d4b06ed30f39ce56714eaaa5"
+  },
+  "route_rows": 1023,
+  "stop_rows": 39272,
+  "claims": 1,
+  "externalReadMatches": true,
+  "boundary": "Private retained TriMet schedule, actual owned CLI interruption and same-attempt recovery. No archive redistribution, endorsement, observed service, largest-feed or multiworker capacity acceptance.",
+  "publisher": "https://developer.trimet.org/GTFS.shtml",
+  "terms": "https://developer.trimet.org/terms_of_use.shtml"
+}

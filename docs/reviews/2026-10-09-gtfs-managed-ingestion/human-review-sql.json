@@ -1,0 +1,97 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "member-read",
+      "result": "expected assertion failure",
+      "assertion": "nonmember read review"
+    },
+    {
+      "variant": "workspace-read",
+      "result": "expected assertion failure",
+      "assertion": "foreign workspace read review"
+    },
+    {
+      "variant": "harmless-wrapper-role",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "viewer-write",
+      "result": "expected assertion failure",
+      "assertion": "viewer adopted reviewed feed"
+    },
+    {
+      "variant": "harmless-wrapper-basis",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "review-basis",
+      "result": "expected assertion failure",
+      "assertion": "changed reviewed counts accepted"
+    },
+    {
+      "variant": "acceptance",
+      "result": "expected assertion failure",
+      "assertion": "unaccepted shrinkage adopted"
+    },
+    {
+      "variant": "receipt-acceptance",
+      "result": "expected assertion failure",
+      "assertion": "changed human acceptance replay accepted"
+    },
+    {
+      "variant": "receipt-basis",
+      "result": "expected assertion failure",
+      "assertion": "changed human basis replay accepted"
+    },
+    {
+      "variant": "harmless-ready-redundancy",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "ready",
+      "result": "expected assertion failure",
+      "assertion": "unfinished version reviewed as ready"
+    },
+    {
+      "variant": "completion",
+      "result": "expected assertion failure",
+      "assertion": "missing completion reviewed"
+    },
+    {
+      "variant": "shrinkage-disclosure",
+      "result": "expected assertion failure",
+      "assertion": "material review concealed shrinkage"
+    },
+    {
+      "variant": "read-role",
+      "result": "expected assertion failure",
+      "assertion": "authenticated client invoked review"
+    },
+    {
+      "variant": "adopt-role",
+      "result": "expected assertion failure",
+      "assertion": "authenticated client invoked adoption"
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "assertion": null
+    }
+  ],
+  "migrationSha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+  "checksSha256": "174f4b0fdb783986c38b55d699f5d6ca5cec74e214fe3714a5602068a527daed",
+  "boundary": "Native PostgreSQL transaction rollback fixtures through managed commands and service/authenticated role checks. Synthetic counts and confirmation receipts do not establish physical Storage custody, actual service, an HTTP/app journey, migration CLI installation/restore or browser acceptance."
+}

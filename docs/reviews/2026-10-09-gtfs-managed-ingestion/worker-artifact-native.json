@@ -1,0 +1,46 @@
+{
+  "sourceSha256": "f7559028fa95e6443fb7b46bb88ffe12626f8f8b5944720d7e22e52a327b972c",
+  "parserBuild": "873626c988d2ffa46bf2d80cdbb0e381c17c9eb6",
+  "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "archiveBytes": 892312,
+  "first": {
+    "event": "artifact",
+    "receipt": {
+      "byteSize": 495655,
+      "sha256": "5987b5d8bc6acfd2c18b05447323f25c2a9c19c6f8eafae91fc2148f22d4f890",
+      "parsed": true
+    },
+    "retained": false,
+    "downloads": 1,
+    "renewals": 8,
+    "delivered": [
+      "confirm_archive",
+      "stage"
+    ],
+    "routes": 14,
+    "stops": 287,
+    "maxRssKiB": 138152
+  },
+  "recovered": {
+    "event": "artifact",
+    "receipt": {
+      "byteSize": 495655,
+      "sha256": "5987b5d8bc6acfd2c18b05447323f25c2a9c19c6f8eafae91fc2148f22d4f890",
+      "parsed": true
+    },
+    "retained": true,
+    "downloads": 0,
+    "renewals": 1,
+    "delivered": [
+      "confirm_archive"
+    ],
+    "routes": 14,
+    "stops": 287,
+    "maxRssKiB": 100544
+  },
+  "killedOwnParentAfterRetainedOutput": true,
+  "observedLockRelease": true,
+  "corruptOutputRefused": true,
+  "nativeStorageRemoved": true,
+  "scope": "Actual isolated Storage and production parser child; controlled RPC acknowledgements, no native managed database lifecycle or power-loss proof"
+}

@@ -1,0 +1,28 @@
+{
+  "baseHead": "0e4c9976e",
+  "supersedes": "hosted-schema-join-candidate.json",
+  "migrationFiles": [
+    {
+      "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+      "sha256": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb",
+      "bytes": 83286
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql",
+      "sha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645",
+      "bytes": 1113
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql",
+      "sha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+      "bytes": 6489
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+      "sha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+      "bytes": 6025
+    }
+  ],
+  "schemaBeforeAppRequiredEvenWithManagedModeOff": true,
+  "limits": "Reviewed candidate SQL. No cloud migration, hosted GTFS enablement, release or deployment acceptance."
+}

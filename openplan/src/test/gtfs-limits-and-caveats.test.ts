@@ -73,7 +73,7 @@ describe("every bound is operator-configurable, and nothing is a bare literal", 
     for (const value of Object.values(resolved)) expect(value).toBeGreaterThan(0);
   });
 
-  it("keeps the defaults large enough for the largest real US feed measured", () => {
+  it("keeps the defaults above the historical King County measurements", () => {
     // King County Metro, measured 2026-08-05: 17,475,566-byte archive,
     // 2,167,134 stop_times rows, 35,904 stop/service pairs. A default that
     // refuses a real agency is a product that does not work there.

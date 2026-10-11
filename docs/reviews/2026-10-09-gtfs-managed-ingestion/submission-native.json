@@ -1,0 +1,550 @@
+{
+  "records": [
+    {
+      "kind": "upload",
+      "boundary": "local",
+      "beforeCommittedSubmissions": 0,
+      "interrupted": {
+        "boundary": "private-bytes-before-admission",
+        "uploads": 0,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-local",
+        "kind": "upload",
+        "registration": {
+          "requestId": "3f56ea14-e82a-4951-a749-ee75892dd83b",
+          "feedId": "2202432a-e7e4-473a-918e-9b2afcfee170",
+          "versionId": "c569ef8d-4d96-4ccd-8b26-47cb607c4139",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 1,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_status",
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "publication": {
+          "outcomes": [
+            {
+              "versionId": "c569ef8d-4d96-4ccd-8b26-47cb607c4139",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "maxRssKiB": 151280
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "upload",
+        "registration": {
+          "requestId": "3f56ea14-e82a-4951-a749-ee75892dd83b",
+          "feedId": "2202432a-e7e4-473a-918e-9b2afcfee170",
+          "versionId": "c569ef8d-4d96-4ccd-8b26-47cb607c4139",
+          "createdFeed": true
+        },
+        "state": "ready",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 109512
+      },
+      "database": {
+        "state": "ready",
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "current": false,
+        "completion": 1,
+        "archiveConfirmed": true
+      },
+      "originalActorReplayDenied": true
+    },
+    {
+      "kind": "upload",
+      "boundary": "admit",
+      "beforeCommittedSubmissions": 1,
+      "interrupted": {
+        "boundary": "admission-committed",
+        "uploads": 0,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-admit",
+        "kind": "upload",
+        "registration": {
+          "requestId": "a3786fb5-8261-4735-8a2a-a0c04100fb12",
+          "feedId": "6d328845-8685-4591-b09e-3ef5b967cec8",
+          "versionId": "2aff2b91-566b-44ef-b848-9656877597df",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 1,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_status",
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "publication": {
+          "outcomes": [
+            {
+              "versionId": "2aff2b91-566b-44ef-b848-9656877597df",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "maxRssKiB": 149048
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "upload",
+        "registration": {
+          "requestId": "a3786fb5-8261-4735-8a2a-a0c04100fb12",
+          "feedId": "6d328845-8685-4591-b09e-3ef5b967cec8",
+          "versionId": "2aff2b91-566b-44ef-b848-9656877597df",
+          "createdFeed": true
+        },
+        "state": "ready",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 108720
+      },
+      "database": {
+        "state": "ready",
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "current": false,
+        "completion": 1,
+        "archiveConfirmed": true
+      },
+      "originalActorReplayDenied": true
+    },
+    {
+      "kind": "upload",
+      "boundary": "upload",
+      "beforeCommittedSubmissions": 1,
+      "interrupted": {
+        "boundary": "upload-committed",
+        "uploads": 1,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-upload",
+        "kind": "upload",
+        "registration": {
+          "requestId": "c38c4165-017d-4542-a0b1-da77149ed7b0",
+          "feedId": "111d0043-b8bc-4af8-ae8e-950fef8b4526",
+          "versionId": "bca1a252-601d-45ec-ad45-785d0ef79f5d",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_status",
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "publication": {
+          "outcomes": [
+            {
+              "versionId": "bca1a252-601d-45ec-ad45-785d0ef79f5d",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "maxRssKiB": 151684
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "upload",
+        "registration": {
+          "requestId": "c38c4165-017d-4542-a0b1-da77149ed7b0",
+          "feedId": "111d0043-b8bc-4af8-ae8e-950fef8b4526",
+          "versionId": "bca1a252-601d-45ec-ad45-785d0ef79f5d",
+          "createdFeed": true
+        },
+        "state": "ready",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 108828
+      },
+      "database": {
+        "state": "ready",
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "current": false,
+        "completion": 1,
+        "archiveConfirmed": true
+      },
+      "originalActorReplayDenied": true
+    },
+    {
+      "kind": "upload",
+      "boundary": "confirm",
+      "beforeCommittedSubmissions": 1,
+      "interrupted": {
+        "boundary": "confirmation-committed",
+        "uploads": 1,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status",
+          "confirm_gtfs_archive"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-confirm",
+        "kind": "upload",
+        "registration": {
+          "requestId": "b31e5d45-9b0f-46e7-88c0-94c9dfe94258",
+          "feedId": "add9538a-83c1-4e1b-8d78-2ab4896de359",
+          "versionId": "6f7234e0-485d-43ad-b898-726cd5625013",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status",
+          "scan_gtfs_ingest_candidates",
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "publication": {
+          "outcomes": [
+            {
+              "versionId": "6f7234e0-485d-43ad-b898-726cd5625013",
+              "state": "finished"
+            }
+          ],
+          "pendingCount": 0,
+          "candidateCount": 1
+        },
+        "maxRssKiB": 147152
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "upload",
+        "registration": {
+          "requestId": "b31e5d45-9b0f-46e7-88c0-94c9dfe94258",
+          "feedId": "add9538a-83c1-4e1b-8d78-2ab4896de359",
+          "versionId": "6f7234e0-485d-43ad-b898-726cd5625013",
+          "createdFeed": true
+        },
+        "state": "ready",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 110088
+      },
+      "database": {
+        "state": "ready",
+        "stops": 717,
+        "routes": 95,
+        "status": "ready",
+        "current": false,
+        "completion": 1,
+        "archiveConfirmed": true
+      },
+      "originalActorReplayDenied": true
+    },
+    {
+      "kind": "url",
+      "boundary": "admit",
+      "beforeCommittedSubmissions": 1,
+      "interrupted": {
+        "boundary": "admission-committed",
+        "uploads": 0,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-admit",
+        "kind": "url",
+        "registration": {
+          "requestId": "9ee5661a-37f6-47c8-8d17-8195f40b6b09",
+          "feedId": "6a879471-6551-475a-989a-514a0b30f8a5",
+          "versionId": "828b91a2-a3de-40c2-b341-044ed0f74dfe",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 109124
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "url",
+        "registration": {
+          "requestId": "9ee5661a-37f6-47c8-8d17-8195f40b6b09",
+          "feedId": "6a879471-6551-475a-989a-514a0b30f8a5",
+          "versionId": "828b91a2-a3de-40c2-b341-044ed0f74dfe",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 108752
+      },
+      "database": {
+        "state": "queued",
+        "stops": 0,
+        "routes": 0,
+        "status": "pending",
+        "current": false,
+        "completion": 0,
+        "archiveConfirmed": false
+      },
+      "originalActorReplayDenied": true
+    },
+    {
+      "kind": "catalog",
+      "boundary": "admit",
+      "beforeCommittedSubmissions": 1,
+      "interrupted": {
+        "boundary": "admission-committed",
+        "uploads": 0,
+        "resolutions": 1,
+        "calls": [
+          "admit_gtfs_ingest"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-admit",
+        "kind": "catalog",
+        "registration": {
+          "requestId": "6def38ab-8839-4be9-ba9c-ee346c6c4517",
+          "feedId": "7cf37c88-c896-4f4d-9a71-a30f5f2bff03",
+          "versionId": "c48113b6-f6a4-4361-b81f-9ccac5689a0d",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 110104
+      },
+      "retained": {
+        "mode": "retained",
+        "kind": "catalog",
+        "registration": {
+          "requestId": "6def38ab-8839-4be9-ba9c-ee346c6c4517",
+          "feedId": "7cf37c88-c896-4f4d-9a71-a30f5f2bff03",
+          "versionId": "c48113b6-f6a4-4361-b81f-9ccac5689a0d",
+          "createdFeed": true
+        },
+        "state": "queued",
+        "uploads": 0,
+        "resolutions": 0,
+        "calls": [
+          "admit_gtfs_ingest",
+          "read_gtfs_ingest_status"
+        ],
+        "publication": null,
+        "maxRssKiB": 108584
+      },
+      "database": {
+        "state": "queued",
+        "stops": 0,
+        "routes": 0,
+        "status": "pending",
+        "current": false,
+        "completion": 0,
+        "archiveConfirmed": false
+      },
+      "originalActorReplayDenied": true
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-admission.ts": "bd4362ce04c67b81991021225fdf2af9d7e3e905826a853afd90f97f1670a497",
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "0e42a4a61a011a3ab22e26e7dc0aa9ed8d4bfcf7bba7fe7800b9d11e17f07674",
+    "openplan/src/lib/gtfs/managed-worker-service.ts": "ed75537cb9650d9f6473cc09880ad64bf26f5560615198402bb8a86e8677b04f",
+    "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.mts": "8342eda40f7fd72098f00670a7140cdf1591b8b02ade02f0dc1e27b8682ab7b8",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_submission_native.py": "2921a507772d90df41c7fee52cdc17e9ec09027d593e427a2340a884a1da6b16"
+  },
+  "boundary": "Native PostgreSQL/PostgREST/Storage, retained ZIP process recovery and full ZIP parser publication. URL/catalog prove saved resolution and identity only. No application route, actual catalog request, public network, full CLI upgrade/restore, capacity, adoption or browser acceptance."
+}

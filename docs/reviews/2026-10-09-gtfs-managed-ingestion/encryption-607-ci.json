@@ -1,0 +1,64 @@
+{
+  "run": 38126795848,
+  "head": "6072ec77406c166b1421c3e785035337ef0731a9",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "verify (qa gate)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:01:11Z",
+      "completedAt": "2026-10-11T09:16:58Z"
+    },
+    {
+      "name": "worker (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:00:11Z",
+      "completedAt": "2026-10-11T09:01:58Z"
+    },
+    {
+      "name": "ops scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:02:00Z",
+      "completedAt": "2026-10-11T09:03:01Z"
+    },
+    {
+      "name": "modeling scripts (python unit tests)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:03:02Z",
+      "completedAt": "2026-10-11T09:04:13Z"
+    },
+    {
+      "name": "order independence (shuffled vitest)",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:06:36Z",
+      "completedAt": "2026-10-11T09:29:49Z"
+    }
+  ],
+  "logSha256": "f5fcdde28dee700ab7a3383bae82ded6f36687c7013ab33c175cd1c181d1a970",
+  "summaries": [],
+  "limit": "GitHub evidence at this exact source; no current GTFS or hosted acceptance.",
+  "testSummaries": [
+    "verify (qa gate)\tQA gate\t2026-10-11T09:15:01.7369381Z  Test Files  1545 passed | 97 skipped (1642)",
+    "verify (qa gate)\tQA gate\t2026-10-11T09:15:01.7458686Z       Tests  20830 passed | 1604 skipped (22434)",
+    "order independence (shuffled vitest)\tShuffled suite\t2026-10-11T09:29:46.5753765Z  Test Files  1545 passed | 97 skipped (1642)",
+    "order independence (shuffled vitest)\tShuffled suite\t2026-10-11T09:29:46.5883040Z       Tests  20830 passed | 1604 skipped (22434)"
+  ],
+  "parsedTestCounts": [
+    {
+      "job": "verify (qa gate)",
+      "passed": 20830,
+      "skipped": 1604
+    },
+    {
+      "job": "order independence (shuffled vitest)",
+      "passed": 20830,
+      "skipped": 1604
+    }
+  ]
+}

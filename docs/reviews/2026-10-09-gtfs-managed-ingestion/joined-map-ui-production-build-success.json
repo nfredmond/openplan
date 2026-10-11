@@ -1,0 +1,22 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "cleanSource": true,
+  "buildId": "V-81SxKhPY1f6Mv6vyN7x",
+  "unit": "openplan-gtfs-map-ui-production-build-20261010-04.service",
+  "exitCode": 0,
+  "result": "success",
+  "buildWallSeconds": 110.99,
+  "buildCpuSeconds": 110.819,
+  "buildMemoryPeakRounded": "4.9G",
+  "largestObservedPeakBytes": 5302833152,
+  "memoryMaxBytes": 8589934592,
+  "swapMaxBytes": 0,
+  "heapMiB": 4096,
+  "pageWorkers": 1,
+  "coreLimitBytes": 0,
+  "webpack": true,
+  "typescriptPassed": true,
+  "pagesGenerated": 137,
+  "logSha256": "ac23df75077815c65f1064178bdfefec610ce2d738cf33bed57d2f526fc8ff2b",
+  "boundary": "Complete owned production build. No browser, live database, current CI, hosted commissioning or release acceptance."
+}

@@ -1,0 +1,19 @@
+{
+  "exitCode": 0,
+  "wallSeconds": 175.853,
+  "sourceHead": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "buildId": "8RvVDpNJGWrngjjyMcIfO",
+  "memoryMaxBytes": 10737418240,
+  "memoryHighBytes": 8589934592,
+  "swapMaxBytes": 0,
+  "cpuQuotaPercent": 100,
+  "nodeHeapMiB": 6144,
+  "workerCount": 1,
+  "largestObservedPeakBytes": 6590922752,
+  "journalResources": [
+    "openplan-gtfs-counter-production-build-20261011-01.service: Consumed 2min 55.418s CPU time over 2min 55.894s wall clock time, 6.1G memory peak."
+  ],
+  "staticPages": 140,
+  "buildCache": "Independent copied f381 dependencies and .next/cache; no previous complete output.",
+  "launcherSha256": "1dc057da77f48fbbed319262e2e5de32a3538793c1949c107f706e4d8db80b8d"
+}

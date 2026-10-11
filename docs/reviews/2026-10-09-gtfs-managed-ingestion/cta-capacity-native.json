@@ -1,0 +1,221 @@
+{
+  "sourceHead": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "requestId": "f5636e91-d8fd-44b9-a209-772c7c70c271",
+  "versionId": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+  "feedId": "19690044-6c48-45c6-8f77-002c1d6d2586",
+  "sourceUrl": "https://www.transitchicago.com/downloads/sch_data/google_transit.zip",
+  "native": {
+    "state": "ready",
+    "status": "ready",
+    "attempt": 1,
+    "tokenAbsent": true,
+    "archiveAvailable": true,
+    "archive": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/19690044-6c48-45c6-8f77-002c1d6d2586/b87fe3ef-00df-4e53-9a19-5e1e3e291470.zip",
+      "bytes": 68738293,
+      "sha256": "a9372be5b70fcee4ed98c9476433f86065637a9a500b8af6afbb84d000ef2746"
+    },
+    "isCurrent": false,
+    "currentVersion": null,
+    "routes": 132,
+    "stops": 11138,
+    "trips": 96025,
+    "stopTimeRows": 5920320,
+    "claims": 1,
+    "completions": 1,
+    "routeRows": 1678,
+    "stopRows": 74517
+  },
+  "archive": {
+    "bytes": 68738293,
+    "sha256": "a9372be5b70fcee4ed98c9476433f86065637a9a500b8af6afbb84d000ef2746",
+    "remoteMatches": true
+  },
+  "parsed": {
+    "stats": {
+      "archiveBytes": 68738293,
+      "bytesDecompressed": 374844052,
+      "elapsedMs": 30695,
+      "stopTimesRows": 5920320,
+      "stopTimesWithoutTime": 0,
+      "tripRows": 96025,
+      "stopServicePairs": 100399,
+      "routeServicePairs": 1964,
+      "scheduledTrips": 96025,
+      "frequencyTrips": 0,
+      "exactTimesFrequencyTrips": 0
+    },
+    "routeCount": 132,
+    "stopCount": 11138,
+    "routeServiceRows": 1678,
+    "stopServiceRows": 74517,
+    "serviceWindow": {
+      "startDate": "2026-09-11",
+      "endDate": "2026-11-30",
+      "source": "both"
+    }
+  },
+  "members": [
+    {
+      "name": "trips.txt",
+      "compressedBytes": 895399,
+      "declaredBytes": 6182916
+    },
+    {
+      "name": "stop_times.txt",
+      "compressedBytes": 53821322,
+      "declaredBytes": 367361926
+    },
+    {
+      "name": "transfers.txt",
+      "compressedBytes": 554,
+      "declaredBytes": 2334
+    },
+    {
+      "name": "agency.txt",
+      "compressedBytes": 145,
+      "declaredBytes": 221
+    },
+    {
+      "name": "calendar.txt",
+      "compressedBytes": 574,
+      "declaredBytes": 5085
+    },
+    {
+      "name": "calendar_dates.txt",
+      "compressedBytes": 261,
+      "declaredBytes": 1605
+    },
+    {
+      "name": "frequencies.txt",
+      "compressedBytes": 39,
+      "declaredBytes": 42
+    },
+    {
+      "name": "routes.txt",
+      "compressedBytes": 1948,
+      "declaredBytes": 10851
+    },
+    {
+      "name": "shapes.txt",
+      "compressedBytes": 13752062,
+      "declaredBytes": 54423937
+    },
+    {
+      "name": "stops.txt",
+      "compressedBytes": 257816,
+      "declaredBytes": 1281406
+    },
+    {
+      "name": "developers_license_agreement.htm",
+      "compressedBytes": 6219,
+      "declaredBytes": 19206
+    }
+  ],
+  "preexistingUnchanged": true,
+  "worker": {
+    "exitCode": 0,
+    "wallSeconds": 89.888,
+    "parserObservations": [
+      {
+        "pid": 959275,
+        "observedParserChild": true,
+        "atSeconds": 17.52
+      }
+    ],
+    "sourceHeadAfter": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0"
+  },
+  "limits": [
+    "One publisher feed and selected local installation, not largest-feed or nationwide capacity.",
+    "Authenticated synthetic writer and production admission library, not a new browser route journey.",
+    "Archives and complete parsed source remain private; no agency endorsement or redistribution claim.",
+    "Schedule derivation does not establish measured transit service, legal applicability or scientific model validity."
+  ],
+  "sourceBinding": {
+    "schemaVersion": 1,
+    "installationId": "6bdd3b83-c653-48d1-9b7b-b68c19f0c1d0",
+    "target": "http://127.74.9.10:29941",
+    "versionId": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+    "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "feedId": "19690044-6c48-45c6-8f77-002c1d6d2586",
+    "actorId": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "requestId": "f5636e91-d8fd-44b9-a209-772c7c70c271",
+    "source": {
+      "kind": "url",
+      "provisionalName": "CTA schedule, capacity proof",
+      "sourceUrl": "https://www.transitchicago.com/downloads/sch_data/google_transit.zip",
+      "normalizedSourceUrl": "https://www.transitchicago.com/downloads/sch_data/google_transit.zip",
+      "catalogProvider": null,
+      "catalogSourceId": null,
+      "catalogRowStatus": null
+    }
+  },
+  "savedArchive": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/19690044-6c48-45c6-8f77-002c1d6d2586/b87fe3ef-00df-4e53-9a19-5e1e3e291470.zip",
+    "sha256": "a9372be5b70fcee4ed98c9476433f86065637a9a500b8af6afbb84d000ef2746",
+    "bytes": 68738293
+  },
+  "downloadProvenance": {
+    "finalUrl": "https://www.transitchicago.com/downloads/sch_data/google_transit.zip",
+    "hops": [
+      "https://www.transitchicago.com/downloads/sch_data/google_transit.zip"
+    ],
+    "httpStatus": 200,
+    "contentType": "application/x-zip-compressed"
+  },
+  "artifactBinding": {
+    "schemaVersion": 1,
+    "installationId": "6bdd3b83-c653-48d1-9b7b-b68c19f0c1d0",
+    "target": "http://127.74.9.10:29941",
+    "versionId": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+    "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "feedId": "19690044-6c48-45c6-8f77-002c1d6d2586",
+    "actorId": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "parserBuild": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+    "limits": {
+      "maxArchiveBytes": 201326592,
+      "maxCatalogBytes": 16777216,
+      "maxMemberUncompressedBytes": 2147483648,
+      "maxTotalUncompressedBytes": 3221225472,
+      "maxDeclaredCompressionRatio": 100,
+      "maxRowsPerTable": 40000000,
+      "maxStopServicePairs": 1500000,
+      "maxRouteServicePairs": 200000,
+      "maxBufferedFrequencyStopTimes": 3000000,
+      "maxExpandedFrequencyDepartures": 20000000,
+      "maxServiceDates": 1100,
+      "parseBudgetMs": 180000,
+      "maxWarningExamples": 20,
+      "maxWarningExampleChars": 200
+    },
+    "maxOutputBytes": 134217728,
+    "archive": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/19690044-6c48-45c6-8f77-002c1d6d2586/b87fe3ef-00df-4e53-9a19-5e1e3e291470.zip",
+      "sha256": "a9372be5b70fcee4ed98c9476433f86065637a9a500b8af6afbb84d000ef2746",
+      "bytes": 68738293
+    }
+  },
+  "expectedBinding": {
+    "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "actorId": "8a73f1cd-f0e9-42de-ac19-9d18da4fe426",
+    "installationId": "6bdd3b83-c653-48d1-9b7b-b68c19f0c1d0"
+  },
+  "resources": {
+    "runnerMemoryMaxBytes": 1073741824,
+    "runnerSwapMaxBytes": 0,
+    "cpuQuotaPercent": 100,
+    "journalRoundedRunnerPeak": "728.8M",
+    "largestObservedRunnerPeakBytes": 624803840,
+    "wholeServiceWallSeconds": 93.882,
+    "workerWallSeconds": 89.888,
+    "parserReportedSeconds": 30.695,
+    "verifierMaxBytes": 1073741824,
+    "verifierSwapMaxBytes": 0,
+    "verifierJournalRoundedPeak": "215.2M",
+    "verifierServiceWallSeconds": 4.172
+  },
+  "productionDriverSha256": "ff84ab72239702336d185908ef0fe1a9d7eb35f499d5bd2d59da5a5e914abbdd",
+  "admissionObserverSha256": "35f7b19c53ef91b2e7c05b13883b5046255e04ce0b0e29c874775d57a429485d",
+  "privateOriginalRecordSha256": "12639ba3b4d2e04e04246f0d3d579ba2c3573d1adf7fe3fc377a5aab65e3bbde",
+  "configurationChangedForImport": false
+}

@@ -1,0 +1,55 @@
+{
+  "head": "1e2df247380d3f8e9eb7fb1adfde369079cddb48",
+  "before": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "job": "Waiting for a worker\n\nhttps://www.bart.gov/dev/schedules/google_transit.zip\n\nRequest 6dfcec6f-5439-4d96-9812-5891a6c35440\n\nVersion bc705053-49bc-43a7-8886-a798046dd261. Worker attempts: 0.\n\nCheck progress\nOpen version\nRecover saved input\nRemove browser record\nReason for cancellation\nCancel this request",
+      "runtime": []
+    }
+  },
+  "after": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "decision": "Cancellation. Exact command receipt confirmed in this session.\n\nCommand 890697f6-7af0-48d4-ab36-65f4d8d0f8d6\n\nRequest 6dfcec6f-5439-4d96-9812-5891a6c35440. Reason: Synthetic cancellation check before any worker claims this import.\n\nReplay exact command\nRemove browser decision record",
+      "job": "Cancelled\n\nhttps://www.bart.gov/dev/schedules/google_transit.zip\n\nRequest 6dfcec6f-5439-4d96-9812-5891a6c35440\n\nVersion bc705053-49bc-43a7-8886-a798046dd261. Worker attempts: 0.\n\nSynthetic cancellation check before any worker claims this import.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove browser record",
+      "panels": 1,
+      "runtime": []
+    }
+  },
+  "replay": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "decision": "Cancellation. Exact command receipt confirmed in this session.\n\nCommand 890697f6-7af0-48d4-ab36-65f4d8d0f8d6\n\nRequest 6dfcec6f-5439-4d96-9812-5891a6c35440. Reason: Synthetic cancellation check before any worker claims this import.\n\nReplay exact command\nRemove browser decision record",
+      "job": "Cancelled\n\nhttps://www.bart.gov/dev/schedules/google_transit.zip\n\nRequest 6dfcec6f-5439-4d96-9812-5891a6c35440\n\nVersion bc705053-49bc-43a7-8886-a798046dd261. Worker attempts: 0.\n\nSynthetic cancellation check before any worker claims this import.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove browser record"
+    }
+  },
+  "native": {
+    "version": "bc705053-49bc-43a7-8886-a798046dd261",
+    "executionState": "cancelled",
+    "attempts": 0,
+    "claims": 0,
+    "archivePrepared": false,
+    "archiveConfirmed": false,
+    "available": false,
+    "legacyVersionStatus": "failed"
+  },
+  "worker": {
+    "unit": "openplan-gtfs-browser-worker-once-20261010-07",
+    "exit": 0,
+    "handedToProcessing": 0,
+    "cancelledRetained": 1,
+    "terminalObservations": 0,
+    "wallMs": 785,
+    "memoryPeakMiB": 87.4
+  },
+  "boundary": "Real cookie-authorized UI cancellation, reload and exact replay of a queued import. This does not prove cancellation during active download/parser work or pending admission."
+}

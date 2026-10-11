@@ -1,0 +1,92 @@
+{
+  "finishedAt": "2026-10-11T10:21:19.294201+00:00",
+  "toolRelease": "v0.19.1",
+  "binarySha256": "20d4142678d0d95ec11a4759def1b73fd9190abc9ca19e4b62d067c0b387e639",
+  "signatureVerified": true,
+  "sourceWorkerCheckpoint": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "sourceFiles": 787,
+  "sourceBytes": 235591323,
+  "sourceInventorySha256": "7bec58be94bab1be6ecbcf24dcd2ce5427f8e90513851e89c67575d610538415",
+  "snapshotId": "ca655ea95b25edbd2f7f31c886a1b18fc10a52392c50338ddfa1e157a05fc092",
+  "sourceBeforeAfterEqual": true,
+  "restoredFileBytesAndModesEqual": true,
+  "copyRestoredWithCacheDisabled": true,
+  "observationControls": {
+    "baseline": true,
+    "harmlessOrder": true,
+    "missingFileRefused": true,
+    "changedHashRefused": true,
+    "omittedOracleProducesAssertionFailure": true,
+    "restored": true,
+    "sourceWrites": 0
+  },
+  "changedRestoredArchiveRefused": true,
+  "wrongPasswordRefused": true,
+  "missingPackRefused": true,
+  "restoredDataCheck": true,
+  "commands": [
+    {
+      "name": "initialize",
+      "exitCode": 0,
+      "wallSeconds": 2.847
+    },
+    {
+      "name": "backup-help",
+      "exitCode": 0,
+      "wallSeconds": 0.009
+    },
+    {
+      "name": "restore-help",
+      "exitCode": 0,
+      "wallSeconds": 0.008
+    },
+    {
+      "name": "capture",
+      "exitCode": 0,
+      "wallSeconds": 1.743
+    },
+    {
+      "name": "complete-data-check",
+      "exitCode": 0,
+      "wallSeconds": 0.922
+    },
+    {
+      "name": "copied-complete-data-check",
+      "exitCode": 0,
+      "wallSeconds": 0.911
+    },
+    {
+      "name": "copied-restore",
+      "exitCode": 0,
+      "wallSeconds": 1.283
+    },
+    {
+      "name": "wrong-password-refusal",
+      "exitCode": 12,
+      "wallSeconds": 0.477
+    },
+    {
+      "name": "missing-pack-refusal",
+      "exitCode": 1,
+      "wallSeconds": 0.89
+    },
+    {
+      "name": "restored-complete-data-check",
+      "exitCode": 0,
+      "wallSeconds": 0.927
+    }
+  ],
+  "limits": "File-only engineering probe. No coordinated database/Storage/configuration capture, physical host/disk independence, worker replay, path relocation, agency commissioning or scientific acceptance. Original worker proof retained without writes.",
+  "actualServiceExit": 0,
+  "wallSeconds": 12.033,
+  "cpuSeconds": 10.286,
+  "journalRoundedPeak": "720.8M",
+  "memoryMaxBytes": 1073741824,
+  "swapDisabled": true,
+  "cpuLimit": 1,
+  "goMaxProcs": 1,
+  "runnerSha256": "c38b7d04653a9f407b78787318c94d1d985a02ca789d80067d536753d5384050",
+  "nativeWrongPasswordReason": "Fatal: wrong password or no key found",
+  "nativeMissingPackReason": "Recorded data pack does not exist; complete-data check refuses the copy.",
+  "comparisonControlsSha256": "687ff04c6a77cb014d9af43ce5ae0d746bf2bf65cb16c43ac05b61d18aba069b"
+}

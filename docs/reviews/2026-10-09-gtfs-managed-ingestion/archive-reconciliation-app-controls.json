@@ -1,0 +1,42 @@
+{
+  "sourceSha256": "fd063333307ff015c8456ec704cea02b09bc20b5f9e6cd4e4cb147f06ba3aa3c",
+  "testSha256": "9870a612a8ec0a0fb05604866c72f2248b259e7dd9aa9a4b0f8120f42b483570",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass"
+    },
+    {
+      "variant": "harmless",
+      "result": "pass"
+    },
+    {
+      "variant": "path-shape",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "version-match",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "page-size",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "duplicate-version",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "extra-fields",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "stop-at-first-failure",
+      "result": "expected assertion failure"
+    },
+    {
+      "variant": "restored",
+      "result": "pass"
+    }
+  ]
+}

@@ -1,0 +1,168 @@
+{
+  "advisor": {
+    "source": "https://raw.githubusercontent.com/supabase/splinter/fccca4b1c4d8b48b8ccd69bd6b30e84adcb92975/splinter.sql",
+    "commit": "fccca4b1c4d8b48b8ccd69bd6b30e84adcb92975",
+    "sha256": "d8d558baad3e03832e521c527907fa50a9a172fabd899dd0f5c2504a5a0e9349"
+  },
+  "migrationSha256": "ec31f4b5d281ee32e278f65d1f847e0d86613f5900276e33c07692c2e72905b3",
+  "baselineFindings": 1675,
+  "candidateFindings": 1691,
+  "newFindings": [
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "executions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "submissions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "prepare_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "batch_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "tract_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "completion_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "batch_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "claims",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "completion_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "executions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "prepare_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "submissions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "tract_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "write_context",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    }
+  ],
+  "schemaAbsentAfterRollback": true,
+  "baselineCsvSha256": "a48e24fbc0b45e54ff1e89ad2aa866bec1400038e23f8e955846de91f23160bc",
+  "candidateCsvSha256": "12ec0122fa1d4bbdf05c158a72cb218048472426feb8cb1e00f06581013ff52a"
+}

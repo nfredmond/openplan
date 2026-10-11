@@ -1,0 +1,308 @@
+{
+  "alerts": [],
+  "id": "gtfs-managed-request-b8362580-4aee-4156-aff7-e504ba83c64d",
+  "latest": "Waiting for a worker\n\nhttps://developer.trimet.org/schedule/gtfs.zip\n\nRequest b8362580-4aee-4156-aff7-e504ba83c64d\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640. Worker attempts: 0.\n\nCheck progress\nOpen version\nRecover saved request\nRemove from this browser\nReason for cancellation\nCancel this request",
+  "panels": 1,
+  "recorder": {
+    "admissionDrops": 1,
+    "dropAdmissionReply": false,
+    "errors": [],
+    "requests": [
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/e5da8f06-b5af-474f-a208-fa07a64ff34d"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/1f365fef-53d1-4687-bbf9-7c1939d3b787"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/989a4da7-304a-4b24-a577-e3fe4b2d1dd7"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/666867ef-e4c4-44dc-9145-95984a99b188"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/9ea2a22f-9280-40da-a673-ab9f3a8b1574"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/905b72f9-056d-4501-9ea7-2038af52a770"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/6dfcec6f-5439-4d96-9812-5891a6c35440"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/50df53c4-9631-4009-82f6-1031f6a39aec"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/53876f80-d130-4e06-b0ac-f22b0fdc88d1"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/41b57982-a546-4869-b74d-4aa160c37ac6"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/498d6cbe-2d57-4219-82ea-716a327ca974"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/e5da8f06-b5af-474f-a208-fa07a64ff34d"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/1f365fef-53d1-4687-bbf9-7c1939d3b787"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/989a4da7-304a-4b24-a577-e3fe4b2d1dd7"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/666867ef-e4c4-44dc-9145-95984a99b188"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/9ea2a22f-9280-40da-a673-ab9f3a8b1574"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/905b72f9-056d-4501-9ea7-2038af52a770"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/6dfcec6f-5439-4d96-9812-5891a6c35440"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/50df53c4-9631-4009-82f6-1031f6a39aec"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/53876f80-d130-4e06-b0ac-f22b0fdc88d1"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/41b57982-a546-4869-b74d-4aa160c37ac6"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/498d6cbe-2d57-4219-82ea-716a327ca974"
+      },
+      {
+        "droppedAcknowledgement": true,
+        "method": "POST",
+        "requestId": "b8362580-4aee-4156-aff7-e504ba83c64d",
+        "status": 202,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/b8362580-4aee-4156-aff7-e504ba83c64d"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/feeds"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/e5da8f06-b5af-474f-a208-fa07a64ff34d"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/1f365fef-53d1-4687-bbf9-7c1939d3b787"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/989a4da7-304a-4b24-a577-e3fe4b2d1dd7"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/666867ef-e4c4-44dc-9145-95984a99b188"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/9ea2a22f-9280-40da-a673-ab9f3a8b1574"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/905b72f9-056d-4501-9ea7-2038af52a770"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/6dfcec6f-5439-4d96-9812-5891a6c35440"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/50df53c4-9631-4009-82f6-1031f6a39aec"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/53876f80-d130-4e06-b0ac-f22b0fdc88d1"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/41b57982-a546-4869-b74d-4aa160c37ac6"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/498d6cbe-2d57-4219-82ea-716a327ca974"
+      },
+      {
+        "method": "GET",
+        "requestId": null,
+        "status": 200,
+        "url": "/api/gtfs/submissions/b8362580-4aee-4156-aff7-e504ba83c64d"
+      }
+    ]
+  }
+}

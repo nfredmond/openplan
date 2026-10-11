@@ -1,0 +1,16 @@
+{
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "buildId": "tzACilpmH3AJLJJ3QduUw",
+  "unit": "openplan-gtfs-recovered-build-20261010-01",
+  "exitCode": 0,
+  "seconds": 230.186,
+  "memoryPeakBytes": 6389723136,
+  "memoryLimitGiB": 8,
+  "swapLimitBytes": 0,
+  "buildWorkers": 1,
+  "nextVersion": "16.3.8",
+  "buildMode": "webpack",
+  "typescript": "passed",
+  "staticPages": 137,
+  "boundary": "Identified local production build with protected restored-installation runtime. No browser or scientific acceptance."
+}

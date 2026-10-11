@@ -1,0 +1,20 @@
+[
+  {
+    "case": "harmless",
+    "exitCode": 0,
+    "newBlockingFindings": 0,
+    "schemaAbsentAfterRollback": true
+  },
+  {
+    "case": "broken",
+    "exitCode": 1,
+    "newBlockingFindings": 1,
+    "schemaAbsentAfterRollback": true
+  },
+  {
+    "case": "restored",
+    "exitCode": 0,
+    "newBlockingFindings": 0,
+    "schemaAbsentAfterRollback": true
+  }
+]

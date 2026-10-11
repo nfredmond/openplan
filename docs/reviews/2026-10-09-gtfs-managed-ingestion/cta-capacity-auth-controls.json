@@ -1,0 +1,64 @@
+{
+  "sourceSha256": "35f7b19c53ef91b2e7c05b13883b5046255e04ce0b0e29c874775d57a429485d",
+  "positiveControls": 3,
+  "nativeRefusals": 2,
+  "omittedGuardOracleFailures": 2,
+  "records": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "intendedReason": null,
+      "omittedGuardRejectedByOracle": false,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "harmless-comment",
+      "exitCode": 0,
+      "intendedReason": null,
+      "omittedGuardRejectedByOracle": false,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "wrong-original-actor",
+      "exitCode": 1,
+      "intendedReason": "capacity-fixture-signin",
+      "omittedGuardRejectedByOracle": false,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "omitted-original-actor-guard",
+      "exitCode": 0,
+      "intendedReason": "capacity-fixture-signin",
+      "omittedGuardRejectedByOracle": true,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "viewer-cannot-write",
+      "exitCode": 1,
+      "intendedReason": "capacity-fixture-writer",
+      "omittedGuardRejectedByOracle": false,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "omitted-current-writer-guard",
+      "exitCode": 0,
+      "intendedReason": "capacity-fixture-writer",
+      "omittedGuardRejectedByOracle": true,
+      "transitAdmissionPerformed": false
+    },
+    {
+      "name": "restored",
+      "exitCode": 0,
+      "intendedReason": null,
+      "omittedGuardRejectedByOracle": false,
+      "transitAdmissionPerformed": false
+    }
+  ],
+  "transitIdentityCountsUnchanged": true,
+  "sourceRestored": true,
+  "limits": [
+    "Actual local password grants and current membership through RLS, using synthetic fixture users.",
+    "Auth creates fixture sessions; this is not a whole-database no-write check.",
+    "No URL download, transit admission, worker, browser or feed-capacity acceptance."
+  ]
+}

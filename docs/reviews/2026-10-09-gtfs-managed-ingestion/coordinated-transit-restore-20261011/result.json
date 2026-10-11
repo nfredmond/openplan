@@ -1,0 +1,297 @@
+{
+  "state": "passed",
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "backendStops": [
+    {
+      "identity": "9ce98cec13aa2a7bf834946bce790b3a1c7b96a34d2ba9c6dd9f12623071aece",
+      "name": "openplan-gtfs-coordinated-rest-a546893835a4400997e280ce2644c0ea",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "swapLimit": 134217728,
+      "nanoCpus": 500000000,
+      "exactIdentityStopped": true,
+      "retainedStoppedContainer": true,
+      "exitCode": 255,
+      "startupOomKilled": false
+    },
+    {
+      "identity": "6b317b3499ea8f52f91aaa681442f8297a6556d16f6538270b7896fa4ebefc28",
+      "name": "openplan-gtfs-coordinated-rest-c2c37c35ab4f44d591385afe480fd1ae",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "swapLimit": 134217728,
+      "nanoCpus": 500000000,
+      "exactIdentityStopped": true,
+      "retainedStoppedContainer": true,
+      "exitCode": 255,
+      "startupOomKilled": false
+    }
+  ],
+  "http": {
+    "lost": [
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/complete_gtfs_ingest",
+        "requestSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9",
+        "status": 200,
+        "responseSha256": "a6a87a1786fe196359472fecb805cf38256de789768bcf8d122aa1a4595f6605",
+        "dropped": true
+      }
+    ],
+    "recovery": [
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/complete_gtfs_ingest",
+        "requestSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9",
+        "status": 200,
+        "responseSha256": "a6a87a1786fe196359472fecb805cf38256de789768bcf8d122aa1a4595f6605",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/claim_gtfs_ingest",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "a413f77820c23b9c3b60290c41e85e3369d5a1bed9903cd1b041bbb54e65282f",
+        "dropped": false
+      },
+      {
+        "method": "POST",
+        "path": "/rest/v1/rpc/read_gtfs_ingest_attempt",
+        "requestSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7",
+        "status": 200,
+        "responseSha256": "8102ea25210f441be7fed47c4e4938b672634f64b3f915a7d2febc2fa2a881dd",
+        "dropped": false
+      }
+    ]
+  },
+  "replays": [
+    {
+      "case": "lost-replayed-completion-reply",
+      "exitCode": 2,
+      "wallSeconds": 1.259,
+      "mode": "uncertain",
+      "refused": true,
+      "reason": "GTFS worker acknowledgement unavailable",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "complete_gtfs_ingest",
+          "argumentsSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9"
+        }
+      ]
+    },
+    {
+      "case": "restored-native-completion",
+      "exitCode": 0,
+      "wallSeconds": 1.312,
+      "mode": "uncertain",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "complete_gtfs_ingest",
+          "argumentsSha256": "826f637d3c93c52b302a0e1a7ce0b6991ee501b5735864b6071af7ed98d85be9"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": false,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "restored-cached-repeat",
+      "exitCode": 0,
+      "wallSeconds": 1.22,
+      "mode": "cached",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": true,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "harmless-review-note",
+      "exitCode": 0,
+      "wallSeconds": 1.211,
+      "mode": "cached",
+      "state": "recovered_terminal",
+      "computations": 0,
+      "calls": [
+        {
+          "name": "claim_gtfs_ingest",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        },
+        {
+          "name": "read_gtfs_ingest_attempt",
+          "argumentsSha256": "3bdc584f3f0a18e48acc1b8eb6a55a1d144c2af39bc1e4be1ff0b3fca6eff7e7"
+        }
+      ],
+      "terminalEqual": true,
+      "retainedReceipt": true,
+      "routes": 132,
+      "stops": 11138,
+      "stopTimeRows": 5920320
+    },
+    {
+      "case": "wrong-installation",
+      "exitCode": 2,
+      "wallSeconds": 1.177,
+      "mode": "wrong-installation",
+      "refused": true,
+      "reason": "GTFS journal attempt scope differs",
+      "computations": 0,
+      "calls": []
+    }
+  ],
+  "commands": [
+    {
+      "name": "template-readonly-capture",
+      "exitCode": 0,
+      "bytes": 12447534,
+      "sha256": "1afe66b7ce49e6c3af94443d007cf3add2358d7e9df955fbdc64b49e7982a252",
+      "wallSeconds": 1.05
+    },
+    {
+      "name": "source-restore",
+      "exitCode": 0,
+      "wallSeconds": 3.068
+    },
+    {
+      "name": "coordinated-database-capture",
+      "exitCode": 0,
+      "bytes": 12447002,
+      "sha256": "7071a2bf0d64b216328c87cd4426792aca66ec9cc955cc7222eb53fbce57d2a6",
+      "wallSeconds": 1.03
+    },
+    {
+      "name": "encrypted-initialize",
+      "exitCode": 0,
+      "wallSeconds": 2.976,
+      "logSha256": "278d76b70e024432206d509b463222e65ebd15b690b1ed5ddbef3efebb7698cd"
+    },
+    {
+      "name": "encrypted-coordinated-capture",
+      "exitCode": 0,
+      "wallSeconds": 1.806,
+      "logSha256": "a51142893a0ec1e73ba464f627e3f7f79bc6efb3a4a0d143b7def48d12e1ba59"
+    },
+    {
+      "name": "encrypted-complete-data-check",
+      "exitCode": 0,
+      "wallSeconds": 0.994,
+      "logSha256": "c8a4dcea6845b206d82590a207067419f31a47b7c243c66ccb8bd959b04087cf"
+    },
+    {
+      "name": "encrypted-coordinated-restore",
+      "exitCode": 0,
+      "wallSeconds": 1.317,
+      "logSha256": "e38d17ef9e47358b1938d1edcc689b9e9c79c7de7529ef44f77614787ccb01c8"
+    },
+    {
+      "name": "target-restore",
+      "exitCode": 0,
+      "wallSeconds": 3.12
+    }
+  ],
+  "startedAt": "2026-10-11T11:16:49.180086+00:00",
+  "noWriterIntervalStartedAt": "2026-10-11T11:18:39.826912+00:00",
+  "noWriterIntervalEndedAt": "2026-10-11T11:19:14.266616+00:00",
+  "coordinatedSnapshotId": "d5f8e99f7c740a05f2b21927a72e83ab77ccb98e693438263e79b3d3f933dd3c",
+  "capturedFiles": 788,
+  "capturedBytes": 248044157,
+  "nativeIncompleteImageRefused": true,
+  "nativeControlRolledBack": true,
+  "finishedAt": "2026-10-11T11:21:33.032459+00:00",
+  "tableCount": 374,
+  "sequenceCount": 6,
+  "schemaEqual": true,
+  "nativeAllImagesEqual": true,
+  "originalFilesUnchanged": true,
+  "capturedBundleUnchanged": true,
+  "restoredOnlyTerminalReceiptChanged": true,
+  "workerFiles": 787,
+  "workerBytes": 235591323,
+  "limits": [
+    "Same PostgreSQL cluster and physical host; cluster roles and Vault key are reused, not reconstructed.",
+    "The point covers database and this complete GTFS worker root, not the full external Storage volume or all protected configuration.",
+    "No populated SQLite/WAL, new parser/model computation, installed-CLI commissioning, agency/practitioner or scientific acceptance."
+  ]
+}

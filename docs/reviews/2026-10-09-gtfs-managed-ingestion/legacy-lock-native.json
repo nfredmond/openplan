@@ -1,0 +1,757 @@
+{
+  "migrationSha256": "82b394f8ddbd9971d818f851280e0fd132f0de8950d17417d9e74db77b11687e",
+  "proofSha256": "52d65e5c810271bcda1235a8a8823ac8197bac2ad91a59d9cd86f37c6d5510be",
+  "previousFunctionHashes": {
+    "promotion": "7a2e3f92cc4422575d829309cb14924105dd1b61a93d84f0ad7481d3cf705b93",
+    "reaper": "39a7604dd8d836987533a77380db8781f806095a33f54b793bdcfbf43bf5d90c",
+    "closure": "d66f318fc12c9bcc32fbcc7bbb03ee6a9f1041f3effce65f1245b66fd539dbd8"
+  },
+  "cases": [
+    {
+      "case": "before-promotion",
+      "expected": "native deadlock",
+      "result": {
+        "kind": "promotion",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "basis": {
+              "feedId": "dd80e004-93fb-4574-94c6-4d2a8649f5e3",
+              "stopCount": 1,
+              "versionId": "60b8ec36-3175-4e6b-864b-34851f35cd21",
+              "routeCount": 1,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "previousRouteCount": null
+            },
+            "adopted": true,
+            "command": "aa026069-ad4b-4d82-8c3c-5f4f4c2bf423",
+            "version": "60b8ec36-3175-4e6b-864b-34851f35cd21",
+            "adoptedAt": "2026-10-10T07:12:32.915385+00:00",
+            "alreadyCurrent": false,
+            "reviewAccepted": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "60b8ec36-3175-4e6b-864b-34851f35cd21",
+        "feed": "dd80e004-93fb-4574-94c6-4d2a8649f5e3"
+      }
+    },
+    {
+      "case": "before-reaper",
+      "expected": "native deadlock",
+      "result": {
+        "kind": "reaper",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "7009a6a2-55dc-4f6a-adc5-a5e12066147a",
+            "version": "25e6732e-1b4e-4dc0-968f-b6100c3307b2",
+            "closedAt": "2026-10-10T07:12:34.937484+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "25e6732e-1b4e-4dc0-968f-b6100c3307b2",
+        "feed": "e254ff7f-7f0f-4431-bf5e-5f61197d6d9d"
+      }
+    },
+    {
+      "case": "before-closure",
+      "expected": "native deadlock",
+      "result": {
+        "kind": "closure",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "ed8f8c08-6c1f-4c8d-a12d-dad48340417f",
+            "version": "12774dd7-f663-454d-93db-8912c910e0dc",
+            "closedAt": "2026-10-10T07:12:35.946565+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "12774dd7-f663-454d-93db-8912c910e0dc",
+        "feed": "bc268d78-44a7-4de2-b0be-49e750611a0d"
+      }
+    },
+    {
+      "case": "fixed-promotion",
+      "expected": "success",
+      "result": {
+        "kind": "promotion",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "basis": {
+              "feedId": "a437e7b4-26f9-45fa-82c4-e5c671e25ec4",
+              "stopCount": 1,
+              "versionId": "083bcfb3-081a-4fc8-ad6e-17ba27cbbe2f",
+              "routeCount": 1,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "previousRouteCount": null
+            },
+            "adopted": true,
+            "command": "5791e36d-07ca-4741-9f4e-11fd22ece271",
+            "version": "083bcfb3-081a-4fc8-ad6e-17ba27cbbe2f",
+            "adoptedAt": "2026-10-10T07:12:35.960074+00:00",
+            "alreadyCurrent": false,
+            "reviewAccepted": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": "",
+          "code": null
+        },
+        "version": "083bcfb3-081a-4fc8-ad6e-17ba27cbbe2f",
+        "feed": "a437e7b4-26f9-45fa-82c4-e5c671e25ec4"
+      }
+    },
+    {
+      "case": "fixed-reaper",
+      "expected": "success",
+      "result": {
+        "kind": "reaper",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "2bb54eb3-36f8-43ad-bb18-f904fbbc8aee",
+            "version": "ae556719-4d6d-44c7-aa93-4ff516aafbc4",
+            "closedAt": "2026-10-10T07:12:35.973159+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": false,
+          "code": null
+        },
+        "version": "ae556719-4d6d-44c7-aa93-4ff516aafbc4",
+        "feed": "176405f5-7ba3-41dc-923c-20870fdae8ab"
+      }
+    },
+    {
+      "case": "fixed-closure",
+      "expected": "success",
+      "result": {
+        "kind": "closure",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "1a3ec2c0-1601-4d29-81e4-dde936be2b4b",
+            "version": "fb8ad489-5a2c-47c4-ab54-1217b340e158",
+            "closedAt": "2026-10-10T07:12:35.982009+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "version": "fb8ad489-5a2c-47c4-ab54-1217b340e158",
+        "feed": "441183ab-1178-4e5c-8749-81baf74d8c94"
+      }
+    },
+    {
+      "case": "harmless-promotion",
+      "expected": "success",
+      "result": {
+        "kind": "promotion",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "basis": {
+              "feedId": "2b9f1e75-fb8a-4335-8e91-41be34927fcf",
+              "stopCount": 1,
+              "versionId": "94b3069e-ecff-4495-bc14-3a1418d5d28e",
+              "routeCount": 1,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "previousRouteCount": null
+            },
+            "adopted": true,
+            "command": "e8301274-0fec-45ea-8207-be565952508a",
+            "version": "94b3069e-ecff-4495-bc14-3a1418d5d28e",
+            "adoptedAt": "2026-10-10T07:12:35.994011+00:00",
+            "alreadyCurrent": false,
+            "reviewAccepted": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": "",
+          "code": null
+        },
+        "version": "94b3069e-ecff-4495-bc14-3a1418d5d28e",
+        "feed": "2b9f1e75-fb8a-4335-8e91-41be34927fcf"
+      }
+    },
+    {
+      "case": "harmless-reaper",
+      "expected": "success",
+      "result": {
+        "kind": "reaper",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "7565bb90-f733-45ab-a982-1f7eaf9dc730",
+            "version": "d3d06665-00ef-443e-a785-30caa1e25cc0",
+            "closedAt": "2026-10-10T07:12:36.005903+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": false,
+          "code": null
+        },
+        "version": "d3d06665-00ef-443e-a785-30caa1e25cc0",
+        "feed": "e488b181-daa9-4667-94f1-82bb48a64fe4"
+      }
+    },
+    {
+      "case": "harmless-closure",
+      "expected": "success",
+      "result": {
+        "kind": "closure",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "402b5e20-250b-4583-b201-c3b193e170b6",
+            "version": "73ae89e3-7834-4e07-a785-1549fdfff3e7",
+            "closedAt": "2026-10-10T07:12:36.013979+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "version": "73ae89e3-7834-4e07-a785-1549fdfff3e7",
+        "feed": "68ea2953-84f7-43eb-b405-fe65c4ca9847"
+      }
+    },
+    {
+      "case": "reverse-promotion",
+      "expected": "intended assertion failure",
+      "assertion": "Mixed lifecycle deadlocked",
+      "result": {
+        "kind": "promotion",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "basis": {
+              "feedId": "1e0f633a-2393-4ce5-b9d0-494582228ac2",
+              "stopCount": 1,
+              "versionId": "3ad8599a-03fd-4869-9769-ee7574b2d3ac",
+              "routeCount": 1,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "previousRouteCount": null
+            },
+            "adopted": true,
+            "command": "abf9794f-6fd5-45e7-b382-4819a601e286",
+            "version": "3ad8599a-03fd-4869-9769-ee7574b2d3ac",
+            "adoptedAt": "2026-10-10T07:12:36.028037+00:00",
+            "alreadyCurrent": false,
+            "reviewAccepted": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "3ad8599a-03fd-4869-9769-ee7574b2d3ac",
+        "feed": "1e0f633a-2393-4ce5-b9d0-494582228ac2"
+      }
+    },
+    {
+      "case": "reverse-reaper",
+      "expected": "intended assertion failure",
+      "assertion": "Mixed lifecycle deadlocked",
+      "result": {
+        "kind": "reaper",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "2fc60dd3-3625-41ae-9751-04224d9e2538",
+            "version": "b66aabc4-6057-4538-85ce-5e09a0ba4768",
+            "closedAt": "2026-10-10T07:12:38.041986+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "b66aabc4-6057-4538-85ce-5e09a0ba4768",
+        "feed": "7077e2eb-261c-4a65-aee6-fcd71bc2f51b"
+      }
+    },
+    {
+      "case": "reverse-closure",
+      "expected": "intended assertion failure",
+      "assertion": "Mixed lifecycle deadlocked",
+      "result": {
+        "kind": "closure",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "3e6f6ce6-06cb-4003-8104-691fd51b3ce4",
+            "version": "bb879570-bc6b-4239-ae55-9ec21711c845",
+            "closedAt": "2026-10-10T07:12:39.052835+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": null,
+          "code": "40P01",
+          "message": "deadlock detected"
+        },
+        "version": "bb879570-bc6b-4239-ae55-9ec21711c845",
+        "feed": "2f2c598e-cd24-4c7f-8a37-f62ccbb35f52"
+      }
+    },
+    {
+      "case": "restored-promotion",
+      "expected": "success",
+      "result": {
+        "kind": "promotion",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "basis": {
+              "feedId": "2b8410fc-581d-4357-9d40-609c84ffbe87",
+              "stopCount": 1,
+              "versionId": "a4971123-9113-4961-a77a-b553e3aab3f9",
+              "routeCount": 1,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "previousRouteCount": null
+            },
+            "adopted": true,
+            "command": "52ca6ae3-7219-4714-9826-fb51506e0287",
+            "version": "a4971123-9113-4961-a77a-b553e3aab3f9",
+            "adoptedAt": "2026-10-10T07:12:39.065399+00:00",
+            "alreadyCurrent": false,
+            "reviewAccepted": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": "",
+          "code": null
+        },
+        "version": "a4971123-9113-4961-a77a-b553e3aab3f9",
+        "feed": "2b8410fc-581d-4357-9d40-609c84ffbe87"
+      }
+    },
+    {
+      "case": "restored-reaper",
+      "expected": "success",
+      "result": {
+        "kind": "reaper",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "58b62f59-3e85-4121-9c85-f7058e3e40eb",
+            "version": "fa42d1de-a103-4df1-b3e4-ed320af2edef",
+            "closedAt": "2026-10-10T07:12:39.077399+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": false,
+          "code": null
+        },
+        "version": "fa42d1de-a103-4df1-b3e4-ed320af2edef",
+        "feed": "316e8a64-0dd6-4d62-b480-06c7f909f681"
+      }
+    },
+    {
+      "case": "restored-closure",
+      "expected": "success",
+      "result": {
+        "kind": "closure",
+        "blockedOnManagedTransaction": true,
+        "managed": {
+          "value": {
+            "state": "cancelled",
+            "closure": {
+              "recorded": true,
+              "feedStatusChanged": true
+            },
+            "command": "b249aff1-933d-47dc-8e26-a6ca2aaf5bad",
+            "version": "2abc9a3a-3c72-45c4-b708-56be06aa3653",
+            "closedAt": "2026-10-10T07:12:39.084855+00:00",
+            "cleanupPending": false
+          },
+          "code": null
+        },
+        "legacy": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "version": "2abc9a3a-3c72-45c4-b708-56be06aa3653",
+        "feed": "5a5cb767-d6bc-4d62-9b42-d41ce34c0fee"
+      }
+    }
+  ],
+  "associationCases": [
+    {
+      "case": "fixed-promotion",
+      "expected": "refusal",
+      "result": {
+        "kind": "promotion",
+        "result": {
+          "value": null,
+          "code": "P0002",
+          "message": "gtfs_feed_version 7f521272-1e18-4b94-96fa-e1e4c718070b does not exist"
+        },
+        "observed": {
+          "feed": "1a59af55-205a-4054-8218-293a1f14a66b",
+          "closed": null,
+          "status": "ready",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "1a59af55-205a-4054-8218-293a1f14a66b",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "fixed-reaper",
+      "expected": "refusal",
+      "result": {
+        "kind": "reaper",
+        "result": {
+          "value": false,
+          "code": null
+        },
+        "observed": {
+          "feed": "46b584bb-7271-4a85-b61c-ec24a85eb470",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "46b584bb-7271-4a85-b61c-ec24a85eb470",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "fixed-closure",
+      "expected": "refusal",
+      "result": {
+        "kind": "closure",
+        "result": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "observed": {
+          "feed": "4607c38d-a09a-4c8d-b696-8e24d9a67b97",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "4607c38d-a09a-4c8d-b696-8e24d9a67b97",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "harmless-promotion",
+      "expected": "refusal",
+      "result": {
+        "kind": "promotion",
+        "result": {
+          "value": null,
+          "code": "P0002",
+          "message": "gtfs_feed_version 7328f762-015a-4099-aaa3-cd0ae8f99ae2 does not exist"
+        },
+        "observed": {
+          "feed": "7c39828b-f942-4760-bf48-2a1b43b6a100",
+          "closed": null,
+          "status": "ready",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "7c39828b-f942-4760-bf48-2a1b43b6a100",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "harmless-reaper",
+      "expected": "refusal",
+      "result": {
+        "kind": "reaper",
+        "result": {
+          "value": false,
+          "code": null
+        },
+        "observed": {
+          "feed": "c5dcd28b-a555-4789-b043-56f1a744fd20",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "c5dcd28b-a555-4789-b043-56f1a744fd20",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "harmless-closure",
+      "expected": "refusal",
+      "result": {
+        "kind": "closure",
+        "result": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "observed": {
+          "feed": "97af0508-c497-4093-892a-33bc74977877",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "97af0508-c497-4093-892a-33bc74977877",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "omit-recheck-promotion",
+      "expected": "intended assertion failure",
+      "assertion": "Moved version did not refuse at association recheck",
+      "result": {
+        "kind": "promotion",
+        "result": {
+          "value": "",
+          "code": null
+        },
+        "observed": {
+          "feed": "910d5c6e-9815-4542-afc6-38e92701d1cc",
+          "closed": null,
+          "status": "ready",
+          "current": true,
+          "abandoned": null
+        },
+        "destination": "910d5c6e-9815-4542-afc6-38e92701d1cc",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "omit-recheck-reaper",
+      "expected": "intended assertion failure",
+      "assertion": "Moved version did not refuse at association recheck",
+      "result": {
+        "kind": "reaper",
+        "result": {
+          "value": true,
+          "code": null
+        },
+        "observed": {
+          "feed": "c36aab5e-3828-4f9a-bec4-21dbf912f8e4",
+          "closed": null,
+          "status": "failed",
+          "current": false,
+          "abandoned": "2026-10-10T07:12:39.24938+00:00"
+        },
+        "destination": "c36aab5e-3828-4f9a-bec4-21dbf912f8e4",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "omit-recheck-closure",
+      "expected": "intended assertion failure",
+      "assertion": "Moved version did not refuse at association recheck",
+      "result": {
+        "kind": "closure",
+        "result": {
+          "value": {
+            "recorded": true,
+            "feedStatusChanged": true
+          },
+          "code": null
+        },
+        "observed": {
+          "feed": "dfb020a7-16c0-46d4-9c61-21abe0fb83d5",
+          "closed": "2026-10-10T07:12:39.268896+00:00",
+          "status": "failed",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "dfb020a7-16c0-46d4-9c61-21abe0fb83d5",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "restored-promotion",
+      "expected": "refusal",
+      "result": {
+        "kind": "promotion",
+        "result": {
+          "value": null,
+          "code": "P0002",
+          "message": "gtfs_feed_version 979ffec8-b500-406e-a10e-6b41bc81a691 does not exist"
+        },
+        "observed": {
+          "feed": "fc548104-d930-4e93-86fb-3aec24be0ea6",
+          "closed": null,
+          "status": "ready",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "fc548104-d930-4e93-86fb-3aec24be0ea6",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "restored-reaper",
+      "expected": "refusal",
+      "result": {
+        "kind": "reaper",
+        "result": {
+          "value": false,
+          "code": null
+        },
+        "observed": {
+          "feed": "5ee5f149-e0b7-480c-bdb0-f341602c3696",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "5ee5f149-e0b7-480c-bdb0-f341602c3696",
+        "blockedBeforeMove": true
+      }
+    },
+    {
+      "case": "restored-closure",
+      "expected": "refusal",
+      "result": {
+        "kind": "closure",
+        "result": {
+          "value": {
+            "recorded": false,
+            "feedStatusChanged": false
+          },
+          "code": null
+        },
+        "observed": {
+          "feed": "2b06764f-1aa2-4e3b-bb37-2a98ad152179",
+          "closed": null,
+          "status": "pending",
+          "current": false,
+          "abandoned": null
+        },
+        "destination": "2b06764f-1aa2-4e3b-bb37-2a98ad152179",
+        "blockedBeforeMove": true
+      }
+    }
+  ],
+  "privileges": {
+    "promotion": {
+      "anon": false,
+      "service": true,
+      "authenticated": false
+    },
+    "reaper": {
+      "anon": false,
+      "service": true,
+      "authenticated": false
+    },
+    "closure": {
+      "anon": false,
+      "service": true,
+      "authenticated": false
+    }
+  },
+  "scope": "Actual two-connection service-role commands with an explicit feed-lock interleaving, native deadlock counterexamples and single-function reversals. Synthetic fixtures; not every direct SQL caller, reverse initial schedule, HTTP load or browser acceptance."
+}

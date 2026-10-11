@@ -1,0 +1,68 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "unrecognized-gate",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility gates or explicitly exempts each one"
+      ]
+    },
+    {
+      "variant": "membership-only-helper",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility recognizes only gates that actually consult a role"
+      ]
+    },
+    {
+      "variant": "cancel-read-mode",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility calls the GTFS human gate in write mode and returns refusal before command dispatch"
+      ]
+    },
+    {
+      "variant": "adopt-read-mode",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility calls the GTFS human gate in write mode and returns refusal before command dispatch"
+      ]
+    },
+    {
+      "variant": "cancel-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility calls the GTFS human gate in write mode and returns refusal before command dispatch"
+      ]
+    },
+    {
+      "variant": "adopt-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "every mutating workspace route authorizes by ROLE, not by row visibility calls the GTFS human gate in write mode and returns refusal before command dispatch"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": {
+    "src/test/workspace-write-role-gate-guard.test.ts": "b37890b69200315f6f78e5c9104cdede0960a15b2d1b7e85aa6a2af323ff80ac",
+    "src/lib/gtfs/managed-human-route.ts": "9daaceed3185e57a5138b1e8d46b9a3f574762933d428cedbb3fb1b3082d0209",
+    "src/app/api/gtfs/submissions/[requestId]/cancel/route.ts": "b86fc32cd0cd1cd69269b9878f7a6afa69512403298991eb575eec0b7f82d76a",
+    "src/app/api/gtfs/versions/[versionId]/adopt/route.ts": "768aeb387d95ef47a9f117d3da12a5f70789c963d20a93032f423d0af981028b"
+  },
+  "boundary": "Source inventory from the actual nested package, helper role invocation, write-mode call and refusal ordering. Lexical inspection does not establish runtime authorization or live RLS; separate route and native role cases cover those boundaries."
+}

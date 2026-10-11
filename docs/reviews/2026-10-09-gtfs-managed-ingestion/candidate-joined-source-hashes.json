@@ -1,0 +1,10 @@
+{
+  "appHead": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "gtfsParent": "b246ae1b5fb652c2a3abf7ba04e3610e156d733f",
+  "encryptionParent": "e24a8e27f2857fd717f9d2cbdcecb527e1807cab",
+  "main": "e435e58b1741f7c3438b98f4bfcf3756a70ee12b",
+  "verificationDriverSha256": "f068ddedc621b9d869a786dae1fb8fcee3e98c88399585d388b417467e5f552e",
+  "browserRecordSha256": "1da057fcd01877569f17db1fad4bf3d6e09ae833b50047221aa66e0e7546d211",
+  "artifactRecordSha256": "be0821b85c28119b563842485204d99d1d6f69e413c66da7dc32c3870eda50a5",
+  "controlsSha256": "d6a89d564631e5411db45f5c40c10d5fc6375f8d4b8301db48064dd2d2ecfca7"
+}

@@ -1,0 +1,52 @@
+{
+  "cta": {
+    "versionId": "b87fe3ef-00df-4e53-9a19-5e1e3e291470",
+    "feedId": "19690044-6c48-45c6-8f77-002c1d6d2586",
+    "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "state": "ready",
+    "status": "ready",
+    "isCurrent": false,
+    "currentVersion": null,
+    "tokenAbsent": true,
+    "routeCount": 132,
+    "stopCount": 11138,
+    "claims": 1,
+    "routeRows": 1678,
+    "stopRows": 74517
+  },
+  "currentVersionMetadata": {
+    "id": "8a86a802-a3cc-4b09-979d-6187bad01285",
+    "feed_id": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "route_count": 14,
+    "stop_count": 287,
+    "service_end_date": "2027-01-10"
+  },
+  "envelopeStopServiceRows": 238,
+  "project": {
+    "id": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "place_label": "Oakland"
+  },
+  "sourceProjectUnchanged": true,
+  "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+  "model": {
+    "id": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "project_id": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+    "status": "draft",
+    "runs": 0
+  },
+  "cancelled": {
+    "state": "cancelled",
+    "attempt": 1,
+    "tokenAbsent": true,
+    "status": "failed",
+    "failureCode": "abandoned",
+    "isCurrent": false,
+    "currentVersion": null,
+    "claims": 1,
+    "routeRows": 0,
+    "stopRows": 0
+  },
+  "currentFeedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285"
+}

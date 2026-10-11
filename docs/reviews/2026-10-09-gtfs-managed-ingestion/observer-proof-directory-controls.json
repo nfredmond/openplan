@@ -1,0 +1,55 @@
+{
+  "records": [
+    {
+      "script": "verify_current_cancellation.py",
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_current_cancellation.py",
+      "case": "harmless-path",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_current_cancellation.py",
+      "case": "restored",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_current_cancellation.py",
+      "case": "wrong-proof-directory",
+      "exitCode": 1,
+      "expectedMissingInput": "current-active-before-native.json",
+      "passed": true
+    },
+    {
+      "script": "verify_model_project_browser.py",
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_model_project_browser.py",
+      "case": "harmless-path",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_model_project_browser.py",
+      "case": "restored",
+      "exitCode": 0,
+      "passed": true
+    },
+    {
+      "script": "verify_model_project_browser.py",
+      "case": "wrong-proof-directory",
+      "exitCode": 1,
+      "expectedMissingInput": "model-project-browser-public.json",
+      "passed": true
+    }
+  ],
+  "boundary": "Actual repository CLI invocations with explicit retained proof directory. Content controls are separate; wrong-directory refusal does not prove live system state."
+}

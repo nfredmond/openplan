@@ -1,0 +1,29 @@
+{
+  "helperSha256": "48b93757069dd5d43cee9ef3c331db763b58debf9bb9c70d44518201d2951797",
+  "officialComposeSha256": "8ba18fd43e9afba90e8287c8e8afc4bdda1e38d2228e57ff660968bb550da054",
+  "records": [
+    {
+      "case": "baseline-cli-file-shape",
+      "passed": true
+    },
+    {
+      "case": "harmless-label",
+      "passed": true
+    },
+    {
+      "case": "official-compose-ownership",
+      "refused": true,
+      "reason": "Database key container ownership differs"
+    },
+    {
+      "case": "directory-volume-even-with-cli-ownership",
+      "refused": true,
+      "reason": "Database key requires one read-only file bind"
+    },
+    {
+      "case": "restored",
+      "passed": true
+    }
+  ],
+  "scope": "Docker responses are synthetic copies informed by pinned source. The helper reads only a disposable synthetic regular file. No Docker command, real secret, key write, service restart or native production acceptance."
+}

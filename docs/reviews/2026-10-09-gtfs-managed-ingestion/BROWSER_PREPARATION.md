@@ -1,0 +1,15 @@
+# Candidate browser database preparation
+
+October 10, 2026. This is isolated candidate infrastructure, not installation or release acceptance.
+
+The owned browser database is a clone of the populated official CLI candidate from [human upgrade verification](HUMAN_DECISIONS.md). Its ledger contains all 403 repository migrations, including unreleased candidates 28 through 31. Preparation refuses a different container, an unrecognized database name, another active connection, a database over 1 GiB, a ledger mismatch or a different Auth schema. It compares Auth users, identities and existing GTFS versions before and after cloning.
+
+The predecessor has the installed Auth schema but an empty Auth migration ledger. Starting GoTrue with that ledger would replay historical DDL. The preparer compares the schema with the owned installed Auth database, then copies only the exact numeric version ledger. It excludes dump ownership, grants, comments and restriction markers from schema comparison. It does not change users or identities.
+
+The first real preparation stopped with SQLSTATE 42501 because `postgres` cannot insert into the Auth-owned ledger. That clone remains retained and incomplete. The corrected preparer privately reads the owned Auth service's configured database role, checks its insert permission and writes the ledger as `supabase_auth_admin`. It grants no additional privileges. [Native preparation](browser-preparation-native.json) records the matching schema, 77 ledger entries and unchanged source records. Preparation alone establishes no sign-in or application behavior.
+
+[Controlled checks](browser-preparation-controls.json) include baseline, harmless and restored runs and 20 deliberately broken metadata or configuration variants. Each fails at its intended assertion. These checks substitute schema, row and subprocess responses; they do not contact their simulated targets. The separate native preparation uses the real owned database. Neither check establishes a fresh installation, complete restore, Auth startup, application-cookie authorization, browser acceptance or current Envoy gateway compatibility.
+
+Run `prepare_browser_database.py` with a private source configuration path and a new private output directory. Run `verify_browser_preparation_controls.py` with another new output directory. Configurations and failure diagnostics remain under the private proof directory. Do not print credentials or retarget this setup to the walkthrough instance.
+
+[Current Supabase self-hosting documentation](https://supabase.com/docs/guides/self-hosting) and the [Envoy gateway notice](https://supabase.com/changelog/48048-self-hosted-supabase-envoy-becomes-the-default-api-gateway-b) were reviewed on October 10. It makes Envoy the default gateway and retains Kong as an option. This proof uses the installed Kong 2.8.1 image and installed Auth, REST and Storage images. It does not test the current default Envoy deployment. Private copies of the retrieved documentation remain under `gtfs-managed-ingestion-proof-20261009/supabase-docs`.

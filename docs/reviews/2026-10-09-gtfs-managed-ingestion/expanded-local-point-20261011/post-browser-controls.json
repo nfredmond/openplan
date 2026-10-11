@@ -1,0 +1,33 @@
+{
+  "sourceSha256": "1a57543b1d99761e28e28d1847dd6e3ec30d727971f39176e7272ac00671ef47",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "expanded-browser-native-table-census",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-browser-nonauth-write",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-browser-schema-write",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure extracted top-level guards. Native reader launched before these controls; its observation remains unaccepted until controls pass. No app/native data/source mutation."
+}

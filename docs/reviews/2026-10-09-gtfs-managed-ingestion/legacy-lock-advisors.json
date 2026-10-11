@@ -1,0 +1,199 @@
+{
+  "advisor": {
+    "source": "https://raw.githubusercontent.com/supabase/splinter/fccca4b1c4d8b48b8ccd69bd6b30e84adcb92975/splinter.sql",
+    "sha256": "d8d558baad3e03832e521c527907fa50a9a172fabd899dd0f5c2504a5a0e9349"
+  },
+  "migrationSha256": "82b394f8ddbd9971d818f851280e0fd132f0de8950d17417d9e74db77b11687e",
+  "proofSha256": "584efcc4fdf0048052936e4933b4bc1e4a57cc301c5bd10515c4a582fe320e61",
+  "baselineFindings": 1651,
+  "candidateFindings": 1671,
+  "newFindings": [
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "executions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "submissions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "prepare_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "batch_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "tract_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "completion_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "terminal_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "unused_index",
+      "level": "INFO",
+      "metadata": {
+        "name": "terminal_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "adoption_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "batch_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "claims",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "completion_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "executions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "prepare_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "submissions",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "terminal_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "tract_receipts",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    },
+    {
+      "name": "rls_enabled_no_policy",
+      "level": "INFO",
+      "metadata": {
+        "name": "write_context",
+        "type": "table",
+        "schema": "openplan_gtfs"
+      }
+    }
+  ],
+  "variant": "baseline",
+  "newBlockingFindings": 0,
+  "schemaAbsentAfterRollback": true,
+  "outputHashes": {
+    "baseline": "24b2c733aa9323747b019ce17e7c33dcdb298a7881d56fea7009eefb9c80bab6",
+    "candidate": "68fa9b93efd5aae8bee01fc44b2f4406f784f52fad89517650183d7500849afb"
+  }
+}

@@ -1,0 +1,20 @@
+import { mapped, loaderAllowed, paths } from './cli-preload.mjs';
+import { readFileSync,writeFileSync } from 'node:fs';
+import { createHash } from 'node:crypto';
+import { isDeepStrictEqual } from 'node:util';
+const source=readFileSync(new URL('./cli-preload.mjs',import.meta.url),'utf8');
+const config={bridge:'http://127.0.0.1:43123',loader:'/private/loader',loaderService:'--service=0.25.12',loaderSha256:'1'.repeat(64)};
+const url='http://127.74.9.10:29941'+paths[0];const signal=new AbortController().signal;
+const init={method:'POST',body:'{"p_limit":10}',headers:{authorization:'Bearer synthetic'},signal};
+const records=[];
+for(const input of [url,new URL(url),new Request(url,init)]) {
+  const [next,options]=mapped(input,input instanceof Request?undefined:init,{...config,reviewerNote:'Unrelated'});
+  const request=new Request(next,options);if(request.url!==config.bridge+paths[0]||request.method!=='POST'||await request.text()!==init.body||request.headers.get('authorization')!==init.headers.authorization||request.signal.aborted)throw new Error('Mapping changed request');
+}
+records.push({case:'baseline-harmless-and-restored-string-URL-Request',passed:true});
+const variants=[['origin','expanded-cli-request-scope',url.replace('127.74.9.10','example.com'),init,config],['path','expanded-cli-request-scope','http://127.74.9.10:29941/storage/v1/object/private',init,config],['search','expanded-cli-request-scope',url+'?a=1',init,config],['hash','expanded-cli-request-scope',url+'#a',init,config],['auth-url','expanded-cli-request-scope',url.replace('http://','http://user:pass@'),init,config],['bridge-remote','expanded-cli-bridge-scope',url,init,{...config,bridge:'https://example.com'}],['bridge-path','expanded-cli-bridge-scope',url,init,{...config,bridge:config.bridge+'/path'}],['bridge-auth','expanded-cli-bridge-scope',url,init,{...config,bridge:'http://user:pass@127.0.0.1:43123'}],['method','expanded-cli-method',url,{...init,method:'GET'},config]];
+for(const [name,reason,input,options,configuration] of variants){let refused=false;try{mapped(input,options,configuration)}catch(e){if(e.message!==reason)throw e;refused=true}if(!refused)throw new Error('Broken mapping survived '+name);const body=source.slice(source.indexOf('export function mapped'),source.indexOf('export function loaderAllowed')).replace('export function mapped','function mapped');const line=body.split('\n').find(x=>x.includes("'"+reason+"'"));const omitted=body.replace(line,'');const mutant=new Function('paths','requireValue',omitted+';return mapped;')(paths,(value,r)=>{if(!value)throw new Error(r)});mutant(input,options,configuration);records.push({case:name,intendedRefusal:reason,omittedGuardAllowsBroken:true});}
+loaderAllowed(config.loader,[config.loaderService,'--ping'],config,config.loaderSha256);
+for(const [name,file,args,digest,reason] of [['parser','/private/parser',['--parse'],config.loaderSha256,'expanded-cli-child-scope'],['argument',config.loader,['--service=foreign','--ping'],config.loaderSha256,'expanded-cli-child-scope'],['binary',config.loader,[config.loaderService,'--ping'],'0'.repeat(64),'expanded-cli-child-bytes']]){let refused=false;try{loaderAllowed(file,args,config,digest)}catch(e){if(e.message!==reason)throw e;refused=true}if(!refused)throw new Error('Broken loader survived');const body=source.slice(source.indexOf('export function loaderAllowed'),source.indexOf('export function lockAllowed')).replace('export function loaderAllowed','function loaderAllowed');const line=body.split('\n').find(x=>x.includes("'"+reason+"'"));new Function('requireValue',body.replace(line,'')+';return loaderAllowed;')((v,r)=>{if(!v)throw new Error(r)})(file,args,config,digest);records.push({case:name,intendedRefusal:reason,omittedGuardAllowsBroken:true});}
+writeFileSync(new URL('./cli-controls.json',import.meta.url),JSON.stringify({sourceSha256:createHash('sha256').update(source).digest('hex'),records,limits:'Pure exact function controls; no CLI, native database, file journal or network used.'},null,2)+'\n');
+console.log('Request preservation and 12 targeted CLI mapping/child refusals with omitted-guard oracles pass.');

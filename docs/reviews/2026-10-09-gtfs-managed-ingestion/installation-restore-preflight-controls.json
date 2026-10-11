@@ -1,0 +1,72 @@
+{
+  "records": [
+    {
+      "variant": "native baseline",
+      "result": "pass",
+      "boundary": "Read-only ownership, foreign-table, scheduled-job, running-attempt and app/worker checks; no writer stopped."
+    },
+    {
+      "variant": "simulated baseline",
+      "result": "pass"
+    },
+    {
+      "variant": "harmless unrelated label",
+      "result": "pass"
+    },
+    {
+      "variant": "database label",
+      "result": "intended refusal",
+      "reason": "Database container ownership differs"
+    },
+    {
+      "variant": "source name",
+      "result": "intended refusal",
+      "reason": "Source database identity differs"
+    },
+    {
+      "variant": "foreign table",
+      "result": "intended refusal",
+      "reason": "Foreign tables require a separate source inventory"
+    },
+    {
+      "variant": "scheduled job",
+      "result": "intended refusal",
+      "reason": "Scheduled jobs are not quiesced"
+    },
+    {
+      "variant": "running worker",
+      "result": "intended refusal",
+      "reason": "Active worker ownership requires a separate interruption checkpoint"
+    },
+    {
+      "variant": "service id",
+      "result": "intended refusal",
+      "reason": "API service ownership differs"
+    },
+    {
+      "variant": "service label",
+      "result": "intended refusal",
+      "reason": "API service ownership differs"
+    },
+    {
+      "variant": "active app",
+      "result": "intended refusal",
+      "reason": "An owned app or worker still runs"
+    },
+    {
+      "variant": "active worker",
+      "result": "intended refusal",
+      "reason": "An owned app or worker still runs"
+    },
+    {
+      "variant": "low disk",
+      "result": "intended refusal",
+      "reason": "Insufficient space for this measured 55 MiB source and retained targets"
+    },
+    {
+      "variant": "restored native read",
+      "result": "pass"
+    }
+  ],
+  "boundary": "Two native read-only passes and simulated guard controls. No source mutation, stop, archive, target creation or restored service acceptance."
+}

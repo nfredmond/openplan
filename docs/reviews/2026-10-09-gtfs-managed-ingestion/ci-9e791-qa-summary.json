@@ -1,0 +1,31 @@
+{
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38105870179/job/114371168736",
+  "conclusion": "failure",
+  "testFiles": {
+    "failed": 9,
+    "passed": 1551,
+    "skipped": 96,
+    "total": 1656
+  },
+  "tests": {
+    "failed": 11,
+    "passed": 21391,
+    "skipped": 1595,
+    "total": 22997
+  },
+  "failedFiles": [
+    "src/test/a-policy-without-a-grant-is-a-locked-door.test.ts",
+    "src/test/local-measure-fund-migration.test.ts",
+    "src/test/measure-claims-migration.test.ts",
+    "src/test/migrations/release-ordering.test.ts",
+    "src/test/one-comment-stripper.test.ts",
+    "src/test/planner-copy-says-the-plain-thing.test.ts",
+    "src/test/rtp-extraction-staging-migration.test.ts",
+    "src/test/safety-crash-parties-are-member-only.test.ts",
+    "src/test/workspace-gis-migration.test.ts"
+  ],
+  "limits": [
+    "This is failed remote QA, not release acceptance. The later source correction requires a fresh CI result. Live RLS, restore and shuffled jobs are separate."
+  ]
+}

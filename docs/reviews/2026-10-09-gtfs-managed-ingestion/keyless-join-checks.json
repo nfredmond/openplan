@@ -1,0 +1,78 @@
+{
+  "head": "d6fd7d00fc886fdbda1487154ecf2d6cb885d6e7",
+  "checks": [
+    {
+      "check": "direction",
+      "exitCode": 0,
+      "seconds": 0.314
+    },
+    {
+      "check": "ops",
+      "exitCode": 0,
+      "seconds": 12.634
+    },
+    {
+      "check": "key-custody",
+      "exitCode": 0,
+      "seconds": 4.811
+    },
+    {
+      "check": "restore",
+      "exitCode": 0,
+      "seconds": 9.867
+    },
+    {
+      "check": "key-workflow",
+      "exitCode": 0,
+      "seconds": 0.409
+    },
+    {
+      "check": "equity",
+      "exitCode": 0,
+      "seconds": 39.568
+    },
+    {
+      "check": "client",
+      "exitCode": 0,
+      "seconds": 110.1
+    },
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 5.464
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 10.135
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 206.529
+    }
+  ],
+  "testFiles": 144,
+  "regression": {
+    "numTotalTests": 2914,
+    "numPassedTests": 2869,
+    "numPendingTests": 45,
+    "numFailedTests": 0
+  },
+  "sourceSha256": {
+    "src/app/(app)/data-hub/page.tsx": "4c5d0cccee94aba30e3c681ccb2c154cf2efe3e6f35a37a49bfefca250fecbd7",
+    "src/components/data-hub/managed-gtfs-imports.tsx": "768ddfaec3b67a9ed796c9794435644a3ec9b81053cd5d61ac3a67ea32644899",
+    "src/components/data-hub/title-vi-service-equity-panel.tsx": "3b86526a37f583fec23446a4a84754cf2ce4fc9af0c2f9002603556c2438ecc6",
+    "src/test/gtfs-managed-panel-mount.test.ts": "37aa1188daa76e708175dcb9a32528649983176361717b2ed8cdd7053a2508f9",
+    "src/test/gtfs-managed-panel.test.tsx": "e01fd942f6f9c5248112caaa2f591b409c7fa2bf7bfee5a14b99aea5c33d85cc",
+    "src/components/data-hub/gtfs-ingest-panel.tsx": "6e70d4ebecbe50bfac808aba9e776bdee486dd4394f68f497d4a8e8b8f600f36",
+    "src/test/gtfs-ingest-panel.test.tsx": "b867f9303f3177098cdcfb9947181d33f33ab54bb527e2a95fd9daac59857a5e",
+    "src/test/gtfs-equity-refresh.test.tsx": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68",
+    "src/lib/gtfs/limits.ts": "1a8d4c978cdd9266a2534194849358278ce8ed06305233fdc4b15ded76bb0859",
+    "src/test/gtfs-limits-and-caveats.test.ts": "66233fa39256d607291ad41516b2ddfad7ac80e61d84a2ec6cb227ef072e9d27",
+    "src/components/engagement/public-map-stage.tsx": "9388baeaf7132173be9d62915e1c21ae5629dca503e3a5c6c21e0f0049078623",
+    "src/lib/cartographic/open-map-style.ts": "f6195a94bc8e35ae057fbe236c81894838cff663e2b49cd5b495294624037e58",
+    "src/test/public-map-draws-without-a-mapbox-key.test.tsx": "58b1c08a3673ab35eb68df2cd368a93c5e54005de05f6a229bb6972851ffc578"
+  },
+  "boundary": "Owned integration controls, scoped TypeScript, strict selected-file lint and GTFS plus merged UI regressions. No new browser, live database, full restore, capacity or GitHub CI acceptance."
+}

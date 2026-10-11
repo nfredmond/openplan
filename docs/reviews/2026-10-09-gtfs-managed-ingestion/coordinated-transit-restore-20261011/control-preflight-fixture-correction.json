@@ -1,0 +1,6 @@
+{
+  "initialOracleFailure": "Omitting the database-name guard exposed a second OpenAPI guard because the synthetic database variant also removed the OpenAPI environment setting.",
+  "correction": "Keep the disabled OpenAPI setting when mutating only the database URI. All 21 broken scope and omitted-guard controls pass after correction.",
+  "executionBoundary": "The initial shell sequence did not stop after this pure-control failure and ran two read-only bounded startup diagnostics. No database creation, restore or worker RPC ran in that sequence. Full trial launches only after a later set-e sequence passes every control.",
+  "runtimeSourceChanged": false
+}

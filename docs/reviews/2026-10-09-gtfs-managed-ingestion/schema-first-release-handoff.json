@@ -1,0 +1,47 @@
+{
+  "preparedAt": "2026-10-11T09:55:04.369722+00:00",
+  "testedSource": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "localEvidenceJoin": "f40a53d5287af19b9a6774ef118aeac75f81ed9e",
+  "observedMain": "091d3ecff4eb3d93817334d14cb2f5bd4556d52c",
+  "sql": [
+    {
+      "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+      "sha256": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb",
+      "bytes": 83286
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql",
+      "sha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645",
+      "bytes": 1113
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql",
+      "sha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+      "bytes": 6489
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+      "sha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+      "bytes": 6025
+    }
+  ],
+  "requiresSchemaBeforeAppEvenAdmissionOff": true,
+  "reason": "Existing reaper calls public.reconcile_gtfs_storage_cleanup introduced by M28.",
+  "mainExistingLaterMigrations": [
+    "20261016000032_model_kpi_receipt_float_precision.sql",
+    "20261017000001_project_map_packages.sql"
+  ],
+  "targetMigrationCount": "Read actual selected target. No count inferred from local fixtures.",
+  "nativeUpgradeEvidence": "CURRENT_MAIN_UPGRADE.md and adoption-preview-upgrade.json retain their exact source boundaries.",
+  "safeRolloutReview": [
+    "Installation owner identifies target and current cutover state.",
+    "Capture coordinated backup and exact missing-file inventory.",
+    "Review every missing local migration before --include-all; do not rewrite history or reset.",
+    "Verify resulting history, repeat and privileges before candidate app deployment.",
+    "Keep managed admission off until private app/worker files, pinned parser and installed queue are commissioned.",
+    "Verify recurring archive cleanup independently, including late uploads."
+  ],
+  "targetApplied": false,
+  "hostedAdmissionEnabledByThisLane": false,
+  "authorization": "Prepared reviewable source inventory only. Existing hosted owner hold remains; no cloud operation performed."
+}

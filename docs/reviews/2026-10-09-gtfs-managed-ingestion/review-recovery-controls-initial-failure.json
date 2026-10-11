@@ -1,0 +1,11 @@
+{
+  "case": "initial-control-expectation",
+  "acceptance": false,
+  "reason": "The targeted overflow tests fail as intended, but the harness expects did not throw instead of Vitest's actual expected [Function] to throw an error wording.",
+  "failedTests": [
+    "refuses an unrepresentable parser timer 2147483647",
+    "refuses an unrepresentable parser timer 9007199254740991"
+  ],
+  "reportSha256": "106add5d0b9ab1946a0e9603acae4c73426ff453ae5f0ec2d6aa37399221b4b0",
+  "sourceRestoredInFinally": true
+}

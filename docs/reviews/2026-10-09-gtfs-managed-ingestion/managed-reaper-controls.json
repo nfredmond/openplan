@@ -1,0 +1,67 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-comment",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "legacy-unmanaged-version",
+      "passed": true
+    },
+    {
+      "case": "removed-managed-exclusion",
+      "expectedSqlState": "55000",
+      "passed": true
+    },
+    {
+      "case": "invoker-private-query",
+      "expectedSqlState": "42501",
+      "passed": true
+    },
+    {
+      "case": "anon-privileges",
+      "passed": true
+    },
+    {
+      "case": "authenticated-privileges",
+      "passed": true
+    },
+    {
+      "case": "service_role-privileges",
+      "passed": true
+    },
+    {
+      "case": "opened-authenticated-execute",
+      "expectedAssertion": "reaper-execute-scope",
+      "passed": true
+    }
+  ],
+  "migrations": [
+    {
+      "path": "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql",
+      "sha256": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb"
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql",
+      "sha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645"
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql",
+      "sha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd"
+    },
+    {
+      "path": "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql",
+      "sha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091"
+    }
+  ],
+  "managedVersion": "f2c57336-9dfb-4b2c-b9e2-f5711107abd9",
+  "limits": "Native SQL and privileges on a retained clone of the recorded predecessor. Future cutoff deliberately challenges age eligibility while the lease stays live. No 15-minute wall-clock run, Storage transport, hosted operation, browser or scientific acceptance. No proof database is deleted."
+}

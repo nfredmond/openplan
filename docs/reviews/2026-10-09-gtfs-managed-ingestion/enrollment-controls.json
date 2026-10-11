@@ -1,0 +1,344 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "agent-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission refuses agent submissions before admission when async action custody is unavailable"
+      ]
+    },
+    {
+      "variant": "request-uuid",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission requires a retained valid request UUID null before admission",
+        "managed GTFS route submission requires a retained valid request UUID invalid before admission",
+        "managed GTFS route submission requires a retained valid request UUID ed000000-0000-4000-8000-000000000001,ed000000-0000-4000-8000-000000000002 before admission"
+      ]
+    },
+    {
+      "variant": "route-workspace",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission reports queued processing separately from completion and adoption"
+      ]
+    },
+    {
+      "variant": "request-header",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission reports queued processing separately from completion and adoption",
+        "managed GTFS route submission requires a retained valid request UUID null before admission",
+        "managed GTFS route submission requires a retained valid request UUID invalid before admission",
+        "managed GTFS route submission requires a retained valid request UUID ed000000-0000-4000-8000-000000000001,ed000000-0000-4000-8000-000000000002 before admission",
+        "managed GTFS route submission retains request identity when admission outcome is unavailable",
+        "managed GTFS route submission preserves an identified source refusal instead of inventing an admitted version"
+      ]
+    },
+    {
+      "variant": "ready-tier",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission reports ready as a reviewable version without claiming adoption"
+      ]
+    },
+    {
+      "variant": "queue-http",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission reports queued processing separately from completion and adoption"
+      ]
+    },
+    {
+      "variant": "outcome-privacy",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission retains request identity when admission outcome is unavailable"
+      ]
+    },
+    {
+      "variant": "source-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS route submission preserves an identified source refusal instead of inventing an admitted version"
+      ]
+    },
+    {
+      "variant": "membership-role",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority refuses unavailable writer authority {\"role\":\"viewer\"}"
+      ]
+    },
+    {
+      "variant": "membership-projection",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority permits current original actor role owner with exact scoped role projection",
+        "retained submission original authority permits current original actor role admin with exact scoped role projection",
+        "retained submission original authority permits current original actor role member with exact scoped role projection"
+      ]
+    },
+    {
+      "variant": "membership-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority permits current original actor role owner with exact scoped role projection",
+        "retained submission original authority permits current original actor role admin with exact scoped role projection",
+        "retained submission original authority permits current original actor role member with exact scoped role projection"
+      ]
+    },
+    {
+      "variant": "membership-actor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority permits current original actor role owner with exact scoped role projection",
+        "retained submission original authority permits current original actor role admin with exact scoped role projection",
+        "retained submission original authority permits current original actor role member with exact scoped role projection"
+      ]
+    },
+    {
+      "variant": "membership-ack",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority bounds cancelled membership acknowledgement when a transport ignores its signal"
+      ]
+    },
+    {
+      "variant": "harmless-membership-pre-check",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "membership-pre-cancel",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained submission original authority stops before a pre-cancelled membership read",
+        "retained submission original authority bounds cancelled membership acknowledgement when a transport ignores its signal"
+      ]
+    },
+    {
+      "variant": "feed-projection",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution resolves normalized URL identity with an explicit workspace and projection"
+      ]
+    },
+    {
+      "variant": "feed-workspace",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution resolves normalized URL identity with an explicit workspace and projection",
+        "managed GTFS source resolution checks uploaded replacement feed scope and exact id projection",
+        "managed GTFS source resolution refreshes the selected feed from scoped stored metadata"
+      ]
+    },
+    {
+      "variant": "feed-failure",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution does not treat a failed feed lookup as a new feed"
+      ]
+    },
+    {
+      "variant": "catalog-identity",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution takes catalog source identity and address from the resolved row"
+      ]
+    },
+    {
+      "variant": "upload-hash",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution binds uploaded bytes and filename without a publisher request"
+      ]
+    },
+    {
+      "variant": "upload-feed-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution refuses a missing or mismatched replacement feed {\"id\":\"ea000000-0000-4000-8000-000000000090\"}"
+      ]
+    },
+    {
+      "variant": "refresh-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution refuses unavailable or mismatched refresh source {\"id\":\"ea000000-0000-4000-8000-000000000003\",\"workspace_id\":\"ea000000-0000-4000-8000-000000000090\",\"agency_name\":\"Saved agency\",\"source_kind\":\"url\",\"feed_url\":\"https://example.invalid/original.zip\",\"catalog_provider\":null,\"catalog_source_id\":null}",
+        "managed GTFS source resolution refuses unavailable or mismatched refresh source {\"id\":\"ea000000-0000-4000-8000-000000000090\",\"workspace_id\":\"ea000000-0000-4000-8000-000000000001\",\"agency_name\":\"Saved agency\",\"source_kind\":\"url\",\"feed_url\":\"https://example.invalid/original.zip\",\"catalog_provider\":null,\"catalog_source_id\":null}"
+      ]
+    },
+    {
+      "variant": "refresh-feed-identity",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution refreshes the selected feed from scoped stored metadata"
+      ]
+    },
+    {
+      "variant": "intent-overrides",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source resolution refuses caller source overrides and unknown intent fields"
+      ]
+    },
+    {
+      "variant": "status-endpoint",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS submission status custody sends the exact authenticated request and workspace scope"
+      ]
+    },
+    {
+      "variant": "status-request",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS submission status custody refuses a reply for another requestId"
+      ]
+    },
+    {
+      "variant": "status-workspace",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS submission status custody refuses a reply for another workspaceId"
+      ]
+    },
+    {
+      "variant": "url-enrollment",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes enrolls url only after current session membership and writer authorization",
+        "managed transit enrollment routes enrolls catalog only after current session membership and writer authorization"
+      ]
+    },
+    {
+      "variant": "upload-enrollment",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes enrolls upload only after current session membership and writer authorization"
+      ]
+    },
+    {
+      "variant": "refresh-enrollment",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes enrolls refresh only after current session membership and writer authorization",
+        "managed transit enrollment routes refuses unknown refresh adoption before seeing a completed version"
+      ]
+    },
+    {
+      "variant": "url-writer",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses viewer url enrollment before retaining input",
+        "managed transit enrollment routes refuses viewer catalog enrollment before retaining input"
+      ]
+    },
+    {
+      "variant": "upload-writer",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses viewer upload enrollment before retaining input"
+      ]
+    },
+    {
+      "variant": "refresh-writer",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses viewer refresh enrollment before retaining input"
+      ]
+    },
+    {
+      "variant": "recovery-writer",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses viewer recover enrollment before retaining input"
+      ]
+    },
+    {
+      "variant": "recovery-header",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses recovery whose header identifies another request"
+      ]
+    },
+    {
+      "variant": "recovery-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses retained recovery with changed actorId",
+        "managed transit enrollment routes refuses retained recovery with changed workspaceId",
+        "managed transit enrollment routes refuses retained recovery with changed requestId",
+        "managed transit enrollment routes refuses retained recovery with changed installationId",
+        "managed transit enrollment routes refuses retained recovery with changed target"
+      ]
+    },
+    {
+      "variant": "recovery-enabled",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses disabled managed recovery without reading private records"
+      ]
+    },
+    {
+      "variant": "status-member",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses missing membership recover enrollment",
+        "managed transit enrollment routes does not read status for a nonmember"
+      ]
+    },
+    {
+      "variant": "status-actor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes allows a viewer to read unconfirmed status with the authenticated actor"
+      ]
+    },
+    {
+      "variant": "refresh-adoption",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses unknown refresh adoption before seeing a completed version"
+      ]
+    },
+    {
+      "variant": "empty-upload",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit enrollment routes refuses empty uploaded bytes before retaining input"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-route.ts": "dea8606cd7217cc457042bf17d490e49bdafe9807ba364d2f1d54157ba7099da",
+    "openplan/src/lib/gtfs/managed-source.ts": "ca4f9c8515e1adfd10b2381233c3862f50efa3534788fa733cc12570f974f1c7",
+    "openplan/src/lib/gtfs/managed-worker-service.ts": "6e0baee3466d5419daef83a7add1237081131db42c4ff1b57e96fb27945c8593",
+    "openplan/src/app/api/gtfs/feeds/route.ts": "508154f6636417184d176635282839437133b2987c88f64bfb1a560dcf346e37",
+    "openplan/src/app/api/gtfs/feeds/upload/route.ts": "d4c0ec9ef8816101956aa3342675b8c36cb2103c59891c76775af639d3c89a39",
+    "openplan/src/app/api/gtfs/feeds/[feedId]/refresh/route.ts": "c05f8311f86e8b839611193950900a95d877bd812c9ff94cb51453acda706e48",
+    "openplan/src/app/api/gtfs/submissions/[requestId]/route.ts": "d937db828f4a58b1e66a8ad417c16eddbd3028e06313e5a423a8179dbf35ee50"
+  },
+  "testSha256": {
+    "src/test/gtfs-managed-enrollment-routes.test.ts": "7df5fa4d21d2c4761cd29c8370eb98bebadbb8cfa6cd7134b9b7434b65b15931",
+    "src/test/gtfs-managed-route-submission.test.ts": "cb53575eedbe0405e22120c5211f899dac66da2ead3c87b0dbda61e1ff084316",
+    "src/test/gtfs-submission-status.test.ts": "3f5db0860e8b5e3d415015cf30e41161bf6ba48a842312e03f9e4475da971c0b",
+    "src/test/gtfs-managed-source.test.ts": "c874868510b482719b487f48b2c6bd73e259de3e4edae61643b0ec06463fbe62"
+  }
+}

@@ -345,3 +345,22 @@ Later candidate integration and release status belong to the
 [v0.68 record](../reviews/2026-10-07-v068-release/VERIFICATION.md).
 This mapping does not declare a release or complete CORE-ENG-01 through 04,
 M9b, any nationwide capability or the V1 contract.
+
+## October 11 retained transit operation, candidate M3 evidence
+
+The independent-installation and data-custody floor gains a bounded retained
+transit case. [Worker and reconstruction evidence](../reviews/2026-10-09-gtfs-managed-ingestion/STATUS.md)
+records exact request/source identity, immutable private archives, supervised
+parsing, guarded publication, explicit adoption, cancellation, replacement
+attempts and selected-database/private-file reconstruction. The later joined
+full archive passes encrypted-record decryption, sign-in, OWP reconstruction and
+1,499 live RLS tests, with 125 skipped. [The CTA measurement](../reviews/2026-10-09-gtfs-managed-ingestion/CTA_CAPACITY.md)
+processes one 68,738,293-byte publisher input and 5,920,320 stop-time rows through
+the installed worker under a 1 GiB limit. The version remains unadopted.
+
+This advances M3 engineering evidence and preserves the complete floor. It does
+not close largest-feed or nationwide capacity, physical-host recovery, full
+external-worker commissioning, native GUI control, planner usefulness or
+independent scientific validation. Migrations 28 through 31 remain candidates;
+exact-head integration, hosted schema-first coordination and release are
+unfinished. No requirement or capability grade becomes complete.

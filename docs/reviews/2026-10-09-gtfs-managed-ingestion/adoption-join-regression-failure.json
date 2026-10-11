@@ -1,0 +1,29 @@
+{
+  "sourceHead": "f38141f2add9e3afaf7781287a635bcfab2a269d",
+  "result": "failed",
+  "passedChecksBeforeRegression": [
+    "direction",
+    "ops",
+    "key-custody",
+    "restore",
+    "key-workflow",
+    "equity",
+    "client",
+    "lint",
+    "types"
+  ],
+  "regression": {
+    "numPassedTests": 2915,
+    "numPendingTests": 45,
+    "numFailedTests": 1
+  },
+  "testFiles": 149,
+  "failedAssertions": [
+    "planner copy says the plain thing uses no term from the ledger more often than the recorded baseline"
+  ],
+  "diagnosis": "The registry wording removes one ingest occurrence, lowering actual count from8 to7 while equality baseline remains8. Fix tightens only that counter. Original failed suite remains retained.",
+  "journalResources": [
+    "openplan-gtfs-adoption-integration-20261011-01.service: Consumed 6min 26.993s CPU time over 6min 48.292s wall clock time, 777.1M memory peak."
+  ],
+  "boundary": "Selected regression at frozen f381, not a complete passing integration or full QA gate."
+}

@@ -1,0 +1,32 @@
+{
+  "services": [
+    {
+      "identity": "3c7c3a443fa0b8abc4c582ea19b7241df1b2e9e37f3d099bfa333820df6ce454",
+      "name": "openplan-gtfs-coordinated-rest-bc2e8f3261c94cb982b28e0aefdb6672",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "swapLimit": 134217728,
+      "nanoCpus": 500000000,
+      "exactIdentityStopped": true,
+      "retainedStoppedContainer": true,
+      "exitCode": 255,
+      "startupOomKilled": false
+    },
+    {
+      "identity": "e6a2c66c1dbeb36ab4241edcff6c857d7a64f97f6c10e1f3b121dc7211204f59",
+      "name": "openplan-gtfs-coordinated-rest-15e630ad5093436d99ce0a91458b3bf1",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "memoryLimit": 134217728,
+      "swapLimit": 134217728,
+      "nanoCpus": 500000000,
+      "exactIdentityStopped": true,
+      "retainedStoppedContainer": true,
+      "exitCode": 255,
+      "startupOomKilled": false
+    }
+  ],
+  "headReadiness200": true,
+  "generatedApiDescriptionDisabled404": true,
+  "same128MiBCap": true,
+  "nativeRpcCalls": 0
+}

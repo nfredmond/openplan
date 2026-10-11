@@ -1,0 +1,52 @@
+{
+  "targetDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "completed": {
+    "id": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+    "status": "ready",
+    "is_current": false,
+    "route_count": 14,
+    "stop_count": 287,
+    "state": "ready",
+    "attempt": 1,
+    "archive_identity": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/6a80fa3b-c265-4e16-a408-6a9178397e2a/21d86ed0-2479-4ade-8ce5-40eae7d0b481.zip",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+    },
+    "claims": 1,
+    "route_rows": 95,
+    "stop_rows": 717
+  },
+  "source": {
+    "id": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+    "status": "pending",
+    "is_current": false,
+    "route_count": 0,
+    "stop_count": 0,
+    "state": "queued",
+    "attempt": 0,
+    "archive_identity": {
+      "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/6a80fa3b-c265-4e16-a408-6a9178397e2a/21d86ed0-2479-4ade-8ce5-40eae7d0b481.zip",
+      "bytes": 892312,
+      "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+    },
+    "claims": 0,
+    "route_rows": 0,
+    "stop_rows": 0
+  },
+  "historicalSha256": {
+    "gtfs_feed_versions": "c66aa6000375e77029cc850c446b0e71769cb914c981ed4cda080a6207c3730f",
+    "openplan_gtfs.claims": "7d21d0a536d85e6efab4ab58a3c01608538341e11a7b9cc149ebcaffd2b80fb4"
+  },
+  "historicalVersionsAndClaimsUnchanged": true,
+  "workerService": {
+    "unit": "openplan-gtfs-recovered-worker-once-20261010-01",
+    "exitCode": 0,
+    "seconds": 2.943,
+    "memoryPeakMiB": 151.3
+  },
+  "limits": [
+    "Native completed input and selected historical row equality.",
+    "No browser cookie, full live RLS, whole-host restore or scientific acceptance."
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "run": 38127929367,
+  "head": "6a750ff265ad27839c0af4779afd1cc7c2bd3129",
+  "status": "completed",
+  "conclusion": "success",
+  "logSha256": "8bc585c29861e509a29963e49f915b9c24e091f86085de3e60d178b4cbba3c41",
+  "summaries": [
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T09:26:48.7033058Z [restore-drill] restored account signed in",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T10:09:30.1289053Z  Test Files  104 passed (104)",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T10:09:30.1299155Z       Tests  1499 passed | 125 skipped (1624)",
+    "restore-drill\tRun npm run ops:restore-drill -- --full-archive\t2026-10-11T10:09:30.1808405Z [restore-drill] PASS database rows, evidence custody, storage bytes, relationships, and live RLS"
+  ],
+  "limits": "Exact6a GitHub default-local full database/Storage drill. Local bounded source, external worker files, physical-host recovery and hosted cutover remain separate.",
+  "artifactId": 11698629949,
+  "artifactZipSha256": "e0bba0b8a4c6e0ae4c35b9026e68cbe374d875866390f5e33bd66df8df92e170",
+  "manifestSha256": "5ffc282744843497e127e1254e8eaba5cd339ea2a409b04cfb5758830c6c766a",
+  "tables": 374,
+  "sequences": 6,
+  "storageObjects": 1,
+  "databaseKeyCustody": {
+    "archiveFile": "database-root-private.key",
+    "captured": true,
+    "targetRestarted": true,
+    "mountedBytesVerified": true,
+    "previousTargetKeyRetained": true
+  },
+  "owpSourceTargetEqual": true,
+  "owpSha256": "2e69c170703cb5f25067090812cc42963b71905db6d73c60381e4b15fc6ef6bc",
+  "restoredSignInObserved": true,
+  "encryptedCanaryGate": "Exact source drill requires successful Vault decryption before copied manifest and observed restored sign-in; completed exit0 and final PASS retain this executed boundary."
+}

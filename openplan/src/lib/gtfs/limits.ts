@@ -30,10 +30,10 @@
  *     that says "CTA-class" is EXTRAPOLATED from King County by archive ratio
  *     (94 MiB / 16.7 MiB = 5.6x) and is an estimate, not a measurement.
  *
- * A DEFAULT MUST FIT THE LARGEST REAL US FEED AND STILL REFUSE A BOMB. Those
- * two requirements are what set every ceiling here; a ceiling that rejects CTA
- * is a product that does not work in Chicago, and a ceiling with no upper bound
- * at all is a denial-of-service surface on a free public deployment.
+ * Defaults leave room above these historical inputs and retain finite bounds
+ * for untrusted archives. These samples and extrapolations do not establish
+ * capacity for the largest US feed. Operators must measure current feeds and
+ * their installation's memory and processing time separately.
  *
  * THE OVERRIDE CONVENTION, matching `src/lib/config/run-cap.ts`: an unparseable
  * or non-positive value falls back to the DEFAULT rather than to zero. A typo in
@@ -58,15 +58,14 @@ function limit(env: string, defaultValue: number, rationale: string): GtfsLimit 
 /**
  * THE ARCHIVE ITSELF, as bytes on the wire or bytes uploaded.
  *
- * 192 MiB: CTA's real feed is 94 MiB, the largest US feed measured, and a
- * ceiling barely above the largest known input is a ceiling that will refuse
- * next year's version of it. Doubling the largest measured feed and rounding is
- * the smallest defensible headroom.
+ * 192 MiB leaves approximately twice the historical 94 MiB CTA size report.
+ * That report was not verified by a download. This configurable default is
+ * input headroom, not evidence of nationwide feed capacity or memory use.
  */
 export const GTFS_MAX_ARCHIVE_BYTES = limit(
   "OPENPLAN_GTFS_MAX_ARCHIVE_BYTES",
   192 * 1024 * 1024,
-  "2x the largest measured US feed (CTA Chicago, 94 MiB) rounded up.",
+  "Approximately 2x the historical CTA size report (94 MiB, not downloaded); capacity requires separate measurement.",
 );
 
 /**

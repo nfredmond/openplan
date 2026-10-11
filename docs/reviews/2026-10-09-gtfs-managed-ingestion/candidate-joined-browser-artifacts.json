@@ -1,0 +1,46 @@
+{
+  "head": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "buildId": "i0I-j8j9_N0rIACWRyRKQ",
+  "images": [
+    {
+      "path": "candidate-joined-feed-desktop.png",
+      "bytes": 435446,
+      "sha256": "975ca0ed78b650aca0c5a84a7d0a3d247975cc9ba04655caa475c5d442f932ab"
+    },
+    {
+      "path": "candidate-joined-feed-390.png",
+      "bytes": 160493,
+      "sha256": "c7dac9f44f6e5c8ca5b961d0521fb3982ee6614f3ae12c9e6e035432258305ed"
+    },
+    {
+      "path": "candidate-joined-cancelled-desktop.png",
+      "bytes": 322736,
+      "sha256": "a92764bd3a020c629cebf71535e96488e14101e5ededfc222d813b7d2f4d37aa"
+    },
+    {
+      "path": "candidate-joined-cancelled-390.png",
+      "bytes": 135315,
+      "sha256": "233b26fe5ecd785b9d05eb32495e076473df6c66bc028a6a2ae20ae27ea757ad"
+    },
+    {
+      "path": "candidate-joined-study-desktop.png",
+      "bytes": 253283,
+      "sha256": "dd8df2b81066ad40591bee7bdb2f6cde817f7c381104658a3a6c4d801f4e8cc4"
+    },
+    {
+      "path": "candidate-joined-study-390.png",
+      "bytes": 118826,
+      "sha256": "9a2619237408c9ba89e4ed559014c89c6b3692d7b847dbd2ac8264bb88db1254"
+    },
+    {
+      "path": "candidate-joined-model-feed-desktop.png",
+      "bytes": 361585,
+      "sha256": "23078d2bb6c27e02c71c599cda75372db6b159813f0bc28a197ae59c755f8024"
+    },
+    {
+      "path": "candidate-joined-model-feed-390.png",
+      "bytes": 176722,
+      "sha256": "0c3d23d56c92c35ced66c64deb075d6a756fe31d363903e5721441034ae211a7"
+    }
+  ]
+}

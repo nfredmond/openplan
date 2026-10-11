@@ -1,0 +1,84 @@
+{
+  "sourceSha256": "8bbb712d33b024ea430035e70fee56c3c2fa6601b5469cfe75498ef334fe8f28",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "executable",
+      "reason": "expanded-cli-lock-command",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "arguments",
+      "reason": "expanded-cli-lock-command",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "fork",
+      "reason": "expanded-cli-lock-command",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "child",
+      "reason": "expanded-cli-lock-command",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "foreign-root",
+      "reason": "expanded-cli-lock-path",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "symlink",
+      "reason": "expanded-cli-lock-path",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "public-file",
+      "reason": "expanded-cli-lock-path",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "binary",
+      "reason": "expanded-cli-lock-bytes",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "cat-binary",
+      "reason": "expanded-cli-lock-bytes",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "stdio",
+      "reason": "expanded-cli-lock-options",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "environment",
+      "reason": "expanded-cli-lock-options",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure exact lock-spawn controls. No native lock, CLI, network, service or database effect."
+}

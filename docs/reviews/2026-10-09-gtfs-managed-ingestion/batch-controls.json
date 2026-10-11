@@ -1,0 +1,265 @@
+{
+  "sourceSha256": "0f5c5a3936106fe013a2cd7ac7345b36c4519ca3b41550ddf7e4645e5200139d",
+  "checksSha256": "299a3c6a89c6565766991baf4e600c45b288e47c01b8420ee650eb54eb95e3bf",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "case": "source-field-type",
+      "exitCode": 3,
+      "expectedFailure": "nontext source metadata accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "dea7b50b35f90f26e181b3b2c0f110a7693f086b1d9f424378accf0288b24369"
+    },
+    {
+      "case": "upload-byte-type",
+      "exitCode": 3,
+      "expectedFailure": "invalid upload byte count accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "56d3845668f3f7d4175768dee3857bbc45e25cf908beb60714a1b3b7bcf5f2a6"
+    },
+    {
+      "case": "upload-byte-integrity",
+      "exitCode": 3,
+      "expectedFailure": "invalid upload byte count accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "56d3845668f3f7d4175768dee3857bbc45e25cf908beb60714a1b3b7bcf5f2a6"
+    },
+    {
+      "case": "archive-byte-type",
+      "exitCode": 3,
+      "expectedFailure": "invalid archive byte count accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "13efc55d067d90458cc2be286ecd66ef3cbb53edc361423a001d03c63e03d11c"
+    },
+    {
+      "case": "archive-byte-integrity",
+      "exitCode": 3,
+      "expectedFailure": "invalid archive byte count accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "13efc55d067d90458cc2be286ecd66ef3cbb53edc361423a001d03c63e03d11c"
+    },
+    {
+      "case": "changed-admission",
+      "exitCode": 3,
+      "expectedFailure": "changed request replay accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "f898d69602da7976f8ba86a8a00f637a8505212a7da7e2941871aef58c8f789c"
+    },
+    {
+      "case": "viewer-admission",
+      "exitCode": 3,
+      "expectedFailure": "viewer admitted work",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "7a19d8811167a62e1de47a4f0e85ef955c808f1cca2792af75985c1e075d7fb3"
+    },
+    {
+      "case": "token-rebinding",
+      "exitCode": 3,
+      "expectedFailure": "token rebound to another version",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "c966ce287ca436417b5fcc854f642ec98c9a4839ce3a10d3a38c3cc2ca36628a"
+    },
+    {
+      "case": "live-replacement",
+      "exitCode": 3,
+      "expectedFailure": "live owner replaced",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "1f16c70191a4c0454915fe62e7d147ce2ae9ba33e4c7e0f744977070af351d9b"
+    },
+    {
+      "case": "expired-revival",
+      "exitCode": 3,
+      "expectedFailure": "expired token revived",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "82ad0dd0a38e26c4435df4033a395202dc02748a8ead6f9c1e616b1efbe82bda"
+    },
+    {
+      "case": "wrong-attempt-ownership",
+      "exitCode": 3,
+      "expectedFailure": "unowned archive confirmation accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "8c8093233f7ce5d027ab9ea88c0ea7a2f6bc073ff11492578e1935f263aca042"
+    },
+    {
+      "case": "revoked-owner-renewal",
+      "exitCode": 3,
+      "expectedFailure": "revoked actor renewed",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "34139922f16b3c64d8ff26aacaf697e8a4fe2b0307af9e9ef7bbcc54f54a3520"
+    },
+    {
+      "case": "version-fence",
+      "exitCode": 3,
+      "expectedFailure": "direct managed version write accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "6987241028b901d4677ec4e91e00e903e5761d5dbcce7ffe805ae9a0025698c8"
+    },
+    {
+      "case": "batch-fence",
+      "exitCode": 3,
+      "expectedFailure": "direct managed batch accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "90eb5eb78f053b1c2fd60359e9382a5bcb29c92c0cefc14fd3ac8aa93256e342"
+    },
+    {
+      "case": "pointer-fence",
+      "exitCode": 3,
+      "expectedFailure": "direct managed pointer accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "65a56993063ad02650caf8b7530fb865186ad213a655a6724eabb2ddcc6a9cdb"
+    },
+    {
+      "case": "archive-replacement",
+      "exitCode": 3,
+      "expectedFailure": "prepared archive replaced",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "42345839c8260eaf9e343afdd3e43dbd07688a95ada0da6a13f33f962587d5a2"
+    },
+    {
+      "case": "parse-before-custody",
+      "exitCode": 3,
+      "expectedFailure": "parsing began without retained archive",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "2bd41c8e070959c8b00a45621bb5b441f71f244067c80b80ff6367fdf1c1f197"
+    },
+    {
+      "case": "mutable-refetch",
+      "exitCode": 3,
+      "expectedFailure": "prepared archive allowed mutable refetch",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "3d09148573bb342fef4d6fa3e29c0e136e333e726d45450aaae8a3104dc98f93"
+    },
+    {
+      "case": "unowned-confirmation",
+      "exitCode": 3,
+      "expectedFailure": "unowned archive confirmation accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "8c8093233f7ce5d027ab9ea88c0ea7a2f6bc073ff11492578e1935f263aca042"
+    },
+    {
+      "case": "client-execution",
+      "exitCode": 3,
+      "expectedFailure": "client invoked admission",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "2ea62b32fd07efaa91b955c27ecfbc1b2a9562b00b7f01b59515a50f0bbbf295"
+    },
+    {
+      "case": "private-schema-exposure",
+      "exitCode": 3,
+      "expectedFailure": "private journal exposed",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "d24e6d9978a16bcfbd057089211ba4082e3b2963e7e7d338463d7b044ee8d38a"
+    },
+    {
+      "case": "truncate-privilege",
+      "exitCode": 3,
+      "expectedFailure": "runtime truncate remains available",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "704c15f3a376be50de1b5b86d6b29ac7f96fd48cea443a31bc03659d98b75c89"
+    },
+    {
+      "case": "preparation-stage",
+      "exitCode": 3,
+      "expectedFailure": "preparation accepted before parsing",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "a8abc19c49012042260e504acfbb5c94f8bf809ac3d0ef447862a11fa7d37a35"
+    },
+    {
+      "case": "prepared-owner",
+      "exitCode": 3,
+      "expectedFailure": "unprepared owner wrote batch",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "a49b068e84cbc8cfcb58b9c971d6e840b53b1c395c5d1a94830393df9ad76137"
+    },
+    {
+      "case": "batch-ordinal",
+      "exitCode": 3,
+      "expectedFailure": "batch ordinal gap accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "7fcbc9df4aceaf7d8ec6f461ec4e8d2fabdf9179d65e5eb2f831a42e0d4f0ecb"
+    },
+    {
+      "case": "batch-replay-payload",
+      "exitCode": 3,
+      "expectedFailure": "changed batch replay accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "b324a8c86669e5caf55651bca46aac3e680c3c3bb8ac54f39ca26fa3be807ccf"
+    },
+    {
+      "case": "batch-scope",
+      "exitCode": 3,
+      "expectedFailure": "batch workspace scope change accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "f5215f26e26d2ff2839dd77b8a665db79f35ebc342d31d1cf2f16cab3339088f"
+    },
+    {
+      "case": "batch-fields",
+      "exitCode": 3,
+      "expectedFailure": "unexpected batch field accepted",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "1e83d485328787c490562e86cc388ed455ef7196fce537f1a4f09e67cb1e0564"
+    },
+    {
+      "case": "prepare-routes",
+      "exitCode": 3,
+      "expectedFailure": "preparation omitted prior output",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "24087105751d028f690ff69e6069b89f1e233490c8a1c986aa32e97dc81ce7a2"
+    },
+    {
+      "case": "prepare-stops",
+      "exitCode": 3,
+      "expectedFailure": "preparation omitted prior output",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "24087105751d028f690ff69e6069b89f1e233490c8a1c986aa32e97dc81ce7a2"
+    },
+    {
+      "case": "prepare-tracts",
+      "exitCode": 3,
+      "expectedFailure": "preparation omitted prior output",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "24087105751d028f690ff69e6069b89f1e233490c8a1c986aa32e97dc81ce7a2"
+    },
+    {
+      "case": "preparation-replay-deletes",
+      "exitCode": 3,
+      "expectedFailure": "preparation replay changed receipt",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "e197ef99ba8ce8382cbea7ea4b085cbc0a88d6afc2522b04bddd6898d00da344"
+    },
+    {
+      "case": "prepare-client-execution",
+      "exitCode": 3,
+      "expectedFailure": "client called preparation",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "c1caf36e26b14505ae4b4adb95018854f56b3e59780ce0b297db8864583f1162"
+    },
+    {
+      "case": "batch-client-execution",
+      "exitCode": 3,
+      "expectedFailure": "client called batch writer",
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "8b5a9c910ce60c244e1c1a0996c8bd82f234f17fd03dc9ddad3b44650da23432"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": null,
+      "schemaAbsentAfterRollback": true,
+      "logSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    }
+  ]
+}

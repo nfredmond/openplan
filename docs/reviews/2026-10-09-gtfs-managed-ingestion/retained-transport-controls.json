@@ -1,0 +1,92 @@
+{
+  "testedAt": "2026-10-11T10:18:55.935521+00:00",
+  "sourceHead": "f40a53d5287af19b9a6774ef118aeac75f81ed9e",
+  "runtimeSourceSha256": "92e712dce8aea3e0332cd06945e67a181d370fd2689c43a442049ce2b680a04e",
+  "testSha256": "3c8f78d6719faac4c28d83ca04786794304544b815ca006bf4798a1f5b192e91",
+  "controls": [
+    {
+      "name": "baseline",
+      "exitCode": 0,
+      "passed": 14,
+      "failed": 0,
+      "result": "survived",
+      "intendedReason": null,
+      "wallSeconds": 1.489
+    },
+    {
+      "name": "harmless",
+      "exitCode": 0,
+      "passed": 3,
+      "failed": 0,
+      "result": "survived",
+      "intendedReason": null,
+      "wallSeconds": 1.137
+    },
+    {
+      "name": "missing-transport-signal",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "result": "intended assertion failure",
+      "intendedReason": "Owned HTTP observation did not settle",
+      "wallSeconds": 1.962
+    },
+    {
+      "name": "cancelled-bytes-published",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "result": "intended assertion failure",
+      "intendedReason": "cancelled",
+      "wallSeconds": 0.996
+    },
+    {
+      "name": "deadline-not-interrupted",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "result": "intended assertion failure",
+      "intendedReason": "Owned HTTP observation did not settle",
+      "wallSeconds": 1.952
+    },
+    {
+      "name": "partial-body-not-disposed",
+      "exitCode": 1,
+      "passed": 0,
+      "failed": 1,
+      "result": "intended assertion failure",
+      "intendedReason": "Owned HTTP observation did not settle",
+      "wallSeconds": 1.959
+    },
+    {
+      "name": "restored",
+      "exitCode": 0,
+      "passed": 14,
+      "failed": 0,
+      "result": "survived",
+      "intendedReason": null,
+      "wallSeconds": 1.404
+    }
+  ],
+  "restoredSource": true,
+  "network": "Installed SDK and native fetch against an owned ephemeral loopback HTTP server. No database, demo, hosted provider, public DNS or TLS.",
+  "limits": "These connection observations do not establish Storage-server authorization, late uploads, production service version parity or sustained capacity.",
+  "service": "openplan-gtfs-retained-transport-controls-20261011-01.service",
+  "actualServiceExit": 0,
+  "journalRoundedPeak": "197.2M",
+  "lint": {
+    "actualServiceExit": 0,
+    "wallSeconds": 1.735,
+    "journalRoundedPeak": "260.5M"
+  },
+  "scopedTypeScript": {
+    "actualServiceExit": 0,
+    "wallSeconds": 2.332,
+    "journalRoundedPeak": "270.3M"
+  },
+  "memoryMaxBytes": 1073741824,
+  "swapDisabled": true,
+  "cpuLimit": 1,
+  "runnerSha256": "fdad910c89b2b4a739574a51f706308f1d6c793a3cc39d520eb52c0691841bfc",
+  "installedStorageSdk": "2.110.7"
+}

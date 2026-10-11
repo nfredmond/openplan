@@ -1,0 +1,45 @@
+{
+  "sourceDatabase": "openplan_attempt_cli_9cb007ca9ecc4e81af6f6b5b55603391",
+  "targetDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "apiUrl": "http://127.74.9.10:29941",
+  "sameLogicalOrigin": true,
+  "originalWorkerDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/browser-acceptance-02/worker-private",
+  "recoveredWorkerDirectory": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/browser-full-restore-02/recovered-private/worker-private",
+  "installationId": "6bdd3b83-c653-48d1-9b7b-b68c19f0c1d0",
+  "parserBuild": "3aa44ff8015509fa81a6e83e526b9b4d036a8034",
+  "containers": {
+    "rest": {
+      "name": "openplan-gtfs-restored-rest-932fcb15385e",
+      "image": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+      "status": "created",
+      "memoryLimit": "256m",
+      "id": "e743ca20ff99bb6db5dd7152850a0f81dd1454e90a095ba5b88b767cc51bd9c2"
+    },
+    "auth": {
+      "name": "openplan-gtfs-restored-auth-a455caea7cfe",
+      "image": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+      "status": "created",
+      "memoryLimit": "256m",
+      "id": "c5763e08d0a1b7af19bf647d7fee6aadc1055bca545fbbb99f1b0701d5036879"
+    },
+    "storage": {
+      "name": "openplan-gtfs-restored-storage-65cdacdeed55",
+      "image": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+      "status": "created",
+      "memoryLimit": "512m",
+      "id": "e0051cd975d3e69878a4f5d660868a821bffa45d7d250311307d0de58b6b12a7"
+    },
+    "gateway": {
+      "name": "openplan-gtfs-restored-gateway-9d4c12ffc641",
+      "image": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d",
+      "status": "created",
+      "memoryLimit": "256m",
+      "id": "258ac4e4729cce3a4c10db2f49fa1ac61f964398e5f85676145c9fee65f51488"
+    }
+  },
+  "limits": [
+    "Existing cluster roles, installed images and same logical origin.",
+    "Private originals retained; no source container or database removed.",
+    "Health alone does not establish restore acceptance."
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-note",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "different-build",
+      "passed": true,
+      "expectedFailure": "build-identity"
+    },
+    {
+      "case": "changed-project",
+      "passed": true,
+      "expectedFailure": "source-project-changed"
+    },
+    {
+      "case": "wrong-project",
+      "passed": true,
+      "expectedFailure": "model-project-binding"
+    },
+    {
+      "case": "unexpected-run",
+      "passed": true,
+      "expectedFailure": "unexpected-model-execution"
+    },
+    {
+      "case": "different-geometry",
+      "passed": true,
+      "expectedFailure": "browser-geometry-mismatch"
+    },
+    {
+      "case": "wrong-feed",
+      "passed": true,
+      "expectedFailure": "coverage-target-mismatch"
+    },
+    {
+      "case": "failed-coverage",
+      "passed": true,
+      "expectedFailure": "coverage-response-not-established"
+    },
+    {
+      "case": "replaced-current-version",
+      "passed": true,
+      "expectedFailure": "current-feed-changed"
+    },
+    {
+      "case": "nonterminal-cancellation",
+      "passed": true,
+      "expectedFailure": "cancelled-terminal-not-established"
+    },
+    {
+      "case": "published-cancelled-results",
+      "passed": true,
+      "expectedFailure": "cancelled-results-changed"
+    },
+    {
+      "case": "mobile-overflow",
+      "passed": true,
+      "expectedFailure": "layout-overflow"
+    },
+    {
+      "case": "lost-source-disclosure",
+      "passed": true,
+      "expectedFailure": "visible-model-custody"
+    },
+    {
+      "case": "duplicate-history-panel",
+      "passed": true,
+      "expectedFailure": "visible-cancellation-identity"
+    },
+    {
+      "case": "console-error",
+      "passed": true,
+      "expectedFailure": "captured-console-error"
+    },
+    {
+      "case": "missing-capture",
+      "passed": true,
+      "expectedFailure": "capture-inventory"
+    },
+    {
+      "case": "changed-capture-hash",
+      "passed": true,
+      "expectedFailure": "capture-bytes-changed"
+    }
+  ],
+  "nativeReadRepeated": true,
+  "limits": [
+    "Controls alter isolated copies of browser, native and artifact observations. No database, app or capture edits.",
+    "Recorded c75 build read and future-only console interval. No post-crash browser acceptance, scientific validity or physical phone claim."
+  ]
+}

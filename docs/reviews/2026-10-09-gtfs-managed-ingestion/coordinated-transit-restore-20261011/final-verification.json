@@ -1,0 +1,18 @@
+{
+  "checkedAt": "2026-10-11T11:23:09.514186+00:00",
+  "inventoryImagesEqual": 10,
+  "tableCount": 374,
+  "sequenceCount": 6,
+  "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+  "originalPendingPayloadAndCommandIdPreserved": true,
+  "sourceUnresolvedAndTargetExactReceipt": true,
+  "ownedBackendsStillStopped": 2,
+  "serviceJournalWallSeconds": 283.978,
+  "serviceJournalPeakMiB": 841.9,
+  "recordedPeakSampleBytes": 882835456,
+  "runnerMemoryLimitBytes": 1073741824,
+  "runnerSwapLimitBytes": 0,
+  "runnerCpuQuota": "one CPU",
+  "serviceMainExitCode": "Not retained after transient unit collection; final producer result and service journal are retained, not inferred from default systemctl state.",
+  "limits": "Independent read of retained native images, exact journals and immutable stopped-service state after the producer. No additional full native query or physical-host acceptance."
+}

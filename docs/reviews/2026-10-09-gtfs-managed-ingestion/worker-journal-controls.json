@@ -1,0 +1,168 @@
+{
+  "sourceSha256": "0002821cb4bde8d29e4facfe044688a627d83874b9d3e4fd2da2e6db4bec760e",
+  "testSha256": "8d7170f819ef084ab7f57b4e68d9d4be67c3beb4d389d39bcc16386d761850f4",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "b5f9bdb9d59154953a506e412bd08b658114406e61c1ac96fa7252c8802196a0"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "d1893b2d14a15b59e82df2bdee6db58a2fa4e2ff8305b1a09b1d8600af1c0951"
+    },
+    {
+      "case": "gtfs-journal-target-is-invalid",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "643fa4d028b5b3a52da3178bc651019cbc4a26b05cace8352269d3dffd6b8c6b"
+    },
+    {
+      "case": "gtfs-journal-session-is-closed",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "810f4b0ffcd6d176f3d7c3e3f5fd853285f0672b86d4f7a41eea8f9d91c01fb7"
+    },
+    {
+      "case": "gtfs-journal-record-exceeds-configured-bound",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "c7daafd68eccfe5e939a7ccdaf2bfbd6a3061bf9721feb50a40d4eddd7d4572e"
+    },
+    {
+      "case": "gtfs-journal-attempt-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "6925b5ceeca919d1391602be59e5daa5d1932ea10ce5c4a4fa66612da6c14ffb"
+    },
+    {
+      "case": "gtfs-journal-command-is-already-running",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "87786fe0b797aa5c1ebae954d671a86144c6bbb4757a6e9af5eef85dc7745dc6"
+    },
+    {
+      "case": "gtfs-journal-command-scope-differs",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "4e999193bf501a8c1e5565ba473423697aa5406021df984dea3119c875adf3a1"
+    },
+    {
+      "case": "gtfs-journal-command-payload-changed",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "db2d2addc5cbc348bb6b5c7b651a08f107a500ef003967e2335bfb9e8c8f903e"
+    },
+    {
+      "case": "gtfs-journal-unresolved-receipt-is-invalid",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "afbe16ffc1da5b6bfad48bd572b0f3b93d8162ab072ad202faf54e0631ee51fa"
+    },
+    {
+      "case": "gtfs-journal-callback-must-await-deliveries",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "6ef4e6092a26a5a152b1fbd01bad1b39555516ca60c003f262f42d694e1a0611"
+    },
+    {
+      "case": "unsafe-slot",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "1d351450f7259993e58a21c362b71b156f789634dfc0ffdb88784a1a250b8e8f"
+    },
+    {
+      "case": "mutable-caller-payload",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "cf8d88cd6158c5bd53f7b12c6b8c47dbe7680590d61d9700c9efb010bc71fc7d"
+    },
+    {
+      "case": "loose-identity",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "0910f00e993042314d27f1c779f975b48f671e6c4e52e4285226a46130fff939"
+    },
+    {
+      "case": "loose-command",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "731d07b6c01f30092041ef808075483e3dd2f5c3f28c7cfa9d6b46f1a3205b70"
+    },
+    {
+      "case": "missing-parent-sync",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "5b1da2647d1d48d7d98449a9e97067504fb2eb7114bc790c781bb12af3749e60"
+    },
+    {
+      "case": "missing-attempt-save",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "64524673d80e5f3cffe5d05f2efa8cfaaa3ba549a94a2afc7e22039fc3a16b44"
+    },
+    {
+      "case": "missing-command-save",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "015278ffd25b4e81ad0eff73104b029039df85959a1a87564f2860c97c0441dc"
+    },
+    {
+      "case": "missing-receipt-save",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "541b759b96a70d1c9a57df5d6b9c07fd1ca9ff817ff3639b3e8d45a1e9fb4e66"
+    },
+    {
+      "case": "no-cached-verification",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "d9aff001b16583c45a24716ec153298bebfa672aae098d9bc732f93feceafeac"
+    },
+    {
+      "case": "no-new-verification",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "ea1a47ea646c9058b2448542e94352180f0170ded2f6ca98efd0e61e34e8a785"
+    },
+    {
+      "case": "mutable-verifier-receipt",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "0a63ed66aa89bf594762dc62b018bc560f2442e7bf738b4bca85790ef87f33c9"
+    },
+    {
+      "case": "mutable-submitted-payload",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "c4a250c8d06986390cce986754d64a229856945bbecb622f34bb1be7ac4cfa37"
+    },
+    {
+      "case": "no-pre-cancel",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "2019ae4c4332c4423cfa5509434eebf5ac58743fdda011dd3dd7789c51e06498"
+    },
+    {
+      "case": "no-inflight-cancel",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "1fce6b62b27bc715c35db439d654f9b131b72b8f0b4a809cc31df05c431995c3"
+    },
+    {
+      "case": "claim-cache",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "logSha256": "4fba527218706b8810b79083b9084194eee71231d7283d2c7b12f80e932abf1c"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "logSha256": "ab7a7adf32b282d4636ab1a5760eda7836469b53fa1ca58d4ff3e638f7488445"
+    }
+  ]
+}

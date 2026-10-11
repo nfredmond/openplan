@@ -1,0 +1,93 @@
+{
+  "driverSha256": "e3dbe7ff77c7820f0a5eb24d5e5027976d702ada6eb78a78f94b6b195c21d1ff",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "refusal": null
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "refusal": null
+    },
+    {
+      "name": "protected exit",
+      "result": "refused",
+      "refusal": "Default CLI unexpectedly accepted older missing migrations"
+    },
+    {
+      "name": "omit exit",
+      "result": "intended oracle failure",
+      "failure": "Invalid default upgrade refusal was accepted"
+    },
+    {
+      "name": "protected reason",
+      "result": "refused",
+      "refusal": "Default CLI failed for another reason"
+    },
+    {
+      "name": "omit reason",
+      "result": "intended oracle failure",
+      "failure": "Invalid default upgrade refusal was accepted"
+    },
+    {
+      "name": "protected history",
+      "result": "refused",
+      "refusal": "Default refusal changed migration history"
+    },
+    {
+      "name": "omit history",
+      "result": "intended oracle failure",
+      "failure": "Invalid default upgrade refusal was accepted"
+    },
+    {
+      "name": "protected rows",
+      "result": "refused",
+      "refusal": "Default refusal changed existing rows"
+    },
+    {
+      "name": "omit rows",
+      "result": "intended oracle failure",
+      "failure": "Invalid default upgrade refusal was accepted"
+    },
+    {
+      "name": "protected schema",
+      "result": "refused",
+      "refusal": "Default refusal installed managed schema"
+    },
+    {
+      "name": "omit schema",
+      "result": "intended oracle failure",
+      "failure": "Invalid default upgrade refusal was accepted"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "refusal": null
+    },
+    {
+      "name": "main-tail baseline",
+      "result": "survived"
+    },
+    {
+      "name": "main-tail harmless",
+      "result": "survived"
+    },
+    {
+      "name": "main-tail restored",
+      "result": "survived"
+    },
+    {
+      "name": "main-tail changed inventory",
+      "result": "intended assertion failure",
+      "assertion": "assert main_files[-1].name == '20261017000001_project_map_packages.sql'"
+    },
+    {
+      "name": "omit main-tail guard",
+      "result": "intended oracle failure",
+      "failure": "Omitted main-tail guard accepted outdated inventory"
+    }
+  ],
+  "scope": "Pure specific-refusal oracle. No CLI, database, migration semantics or deployment acceptance."
+}

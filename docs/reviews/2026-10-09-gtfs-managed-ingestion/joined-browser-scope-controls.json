@@ -1,0 +1,46 @@
+{
+  "records": [
+    {
+      "case": "actual-cli-baseline",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "sqlDispatchRefused": false
+    },
+    {
+      "case": "actual-cli-harmless-note",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "sqlDispatchRefused": false
+    },
+    {
+      "case": "wrong-database-refused-before-query",
+      "passed": true,
+      "exitCode": 1,
+      "expectedFailure": "isolated-database-scope",
+      "sqlDispatchRefused": true
+    },
+    {
+      "case": "missing-proof-directory",
+      "passed": true,
+      "exitCode": 1,
+      "expectedFailure": "FileNotFoundError",
+      "sqlDispatchRefused": true
+    },
+    {
+      "case": "actual-cli-restored",
+      "passed": true,
+      "exitCode": 0,
+      "expectedFailure": null,
+      "sqlDispatchRefused": false
+    }
+  ],
+  "protectedConfigurationUnchanged": true,
+  "protectedConfigurationSha256": "1d386d259e419d9dcff18f540cd33059e097418d35cbf526b31b4e0a1aa9aa07",
+  "limits": [
+    "Copies retain private settings with mode 0600. None are printed or committed.",
+    "Wrong target and missing input fail before SQL dispatch, verified by a Docker sentinel. No unowned database is queried.",
+    "Positive commands reread native records for saved 486 observations. They do not repeat browser navigation."
+  ]
+}

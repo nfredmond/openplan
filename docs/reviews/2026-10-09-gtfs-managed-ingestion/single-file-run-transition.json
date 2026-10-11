@@ -1,0 +1,7 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "unit": "openplan-gtfs-full-candidate-single-files-20261010-01",
+  "completedFiles": 21,
+  "outcome": "Stopped only the owned unit to continue the remaining unchanged inventory with checked adaptive process bounds. An interrupted in-flight file has no credit and is rerun. Completed reports remain guarded and retained.",
+  "recordedPeakBytes": 1370468352
+}

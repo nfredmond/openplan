@@ -1,0 +1,20 @@
+{
+  "head": "ba1b497fce5c83f5cdb36031a56ce447d2719fb0",
+  "buildId": "i0I-j8j9_N0rIACWRyRKQ",
+  "heapMiB": 6144,
+  "serviceMemoryMaxGiB": 10,
+  "serviceSwapMax": 0,
+  "oneBuildWorker": true,
+  "result": {
+    "ActiveState": "inactive",
+    "Result": "success",
+    "ExecMainStatus": "0"
+  },
+  "largestObservedPeakBytes": 7780728832,
+  "journalCompletion": [
+    "openplan-gtfs-encryption-production-build-20261011-02.service: Consumed 2min 45.412s CPU time over 2min 45.667s wall clock time, 7.2G memory peak."
+  ],
+  "checkedAt": "2026-10-11T07:25:27.427966+00:00",
+  "logSha256": "d479aa240c53c3b1b57ab3d84cb5a7f348a5f740e9744c0c57ff6468bec0656f",
+  "limits": "Full local production webpack, TypeScript and page build. No browser, hosted, installation or scientific acceptance."
+}

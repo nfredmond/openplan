@@ -57,19 +57,35 @@ def test_materialized_handoff_includes_exact_network_setup_summary() -> None:
                 ("network_setup_summary", setup),
             ], start=4)
         ]
+        # Production creates the execution workspace before materialization.
+        destination = root / "materialized"
+        destination.mkdir(mode=0o700)
         screening = Path(
             worker._materialize_screening_dir(
-                run_id, str(skim), str(zones), str(setup), str(root / "materialized"),
+                run_id, str(skim), str(zones), str(setup), str(destination),
                 source_artifacts=sources, consumer_stage_id=consumer_stage_id
             )
         )
 
         copied = json.loads((screening / "work" / "network_setup_summary.json").read_text())
         assert copied == setup_payload
+        assert (screening / "work" / "network_setup_summary.json").read_bytes() == setup.read_bytes(), "The handoff must preserve exact setup bytes"
         manifest = json.loads((screening / "bundle_manifest.json").read_text())
         assert manifest["model_run_id"] == run_id
         assert manifest["consumer_stage_id"] == consumer_stage_id
         assert manifest["source_artifacts"] == sources
+
+        retained_manifest = (screening / "bundle_manifest.json").read_bytes()
+        try:
+            worker._materialize_screening_dir(
+                run_id, str(skim), str(zones), str(setup), str(destination),
+                source_artifacts=sources, consumer_stage_id=consumer_stage_id,
+            )
+        except FileExistsError:
+            pass
+        else:
+            raise AssertionError("A repeated handoff must refuse the existing screening directory")
+        assert (screening / "bundle_manifest.json").read_bytes() == retained_manifest
 
 
 if __name__ == "__main__":

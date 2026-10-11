@@ -1,0 +1,33 @@
+{
+  "checks": [
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 1.878
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 5.319
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 65.912
+    }
+  ],
+  "testFiles": 71,
+  "regression": {
+    "numTotalTestSuites": 242,
+    "numTotalTests": 1665,
+    "numPassedTests": 1648,
+    "numPendingTests": 17,
+    "numFailedTests": 0
+  },
+  "changedSourceSha256": {
+    "openplan/src/app/(app)/data-hub/page.tsx": "25a28c77392ddfd6141bd14e61e3630d278892e8c5e32fb0247353b1eb830de5",
+    "openplan/src/test/gtfs-managed-panel-mount.test.ts": "2f5fbe86c499061bceda3a38b680b00bfe84666f06543e6df635167a38d32010"
+  },
+  "newEquityTestSha256": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68",
+  "boundary": "Changed-file lint with zero warnings, scoped TypeScript and serial GTFS/transit/role/body-bound tests. No new live database, browser, full restore, largest-feed capacity, full CI or practitioner acceptance."
+}

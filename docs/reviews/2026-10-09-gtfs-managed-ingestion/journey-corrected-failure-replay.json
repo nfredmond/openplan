@@ -1,0 +1,138 @@
+{
+  "head": "1e2df247380d3f8e9eb7fb1adfde369079cddb48",
+  "at": "2026-10-11T01:45:32.426Z",
+  "initial": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "decisions": [
+        "Adoption. Receipt has not been checked in this session.\n\nCommand 5637827a-e4a7-41d1-a560-aef5f65bfb84\n\nVersion acf6f2dd-6f05-49e9-8e14-9f39b4b2c10c. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record",
+        "Adoption. Receipt has not been checked in this session.\n\nCommand 287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c\n\nVersion b784a5c6-fc6c-4b01-aef3-1991e57a24f3. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record",
+        "Adoption. Receipt has not been checked in this session.\n\nCommand 6f5c0762-ba5b-43aa-9dd3-671a4364c80b\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record"
+      ],
+      "failed": "Submission unconfirmed\n\nopenplan-invalid-fixture.zip\n\nRequest 9ea2a22f-9280-40da-a673-ab9f3a8b1574\n\nCheck progress\nRecover saved input\nRemove browser record\n\nRecover the server's saved input first. If it is unavailable, resupply the exact original input with this request UUID.\n\nOriginal ZIP for this request\nResupply original input\nReason for cancellation\nCancel this request",
+      "href": "http://127.74.9.10:3564/data-hub",
+      "panels": 1
+    }
+  },
+  "failed": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "adoptionButtons": 0,
+      "failed": "Processing failed\n\nopenplan-invalid-fixture.zip\n\nRequest 9ea2a22f-9280-40da-a673-ab9f3a8b1574\n\nVersion b7a097b0-55d0-43ee-90e9-8f252a1bfd5e. Worker attempts: 1.\n\nThis file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.\n\nCheck progress\nOpen version\nRemove browser record\n\nThis version remains failed. Start a new import to try processing again; its bytes and identity stay separate.",
+      "network": [
+        {
+          "at": "2026-10-11T01:44:54.607Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:54.910Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:55.418Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.005Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.493Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.910Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        }
+      ],
+      "panels": 1,
+      "review": "openplan-invalid-fixture\n\nVersion b7a097b0-55d0-43ee-90e9-8f252a1bfd5e\n\nProcessing failed\n\nThis file could not be opened as a ZIP archive. Choose the agency's GTFS ZIP file and start a new import.\n\nRead version again",
+      "runtime": []
+    }
+  },
+  "capture": {
+    "url": "http://127.74.9.10:3564/data-hub",
+    "screenshotPath": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-127-74-9-10-mv35uztb-1d86f529.png"
+  },
+  "historicalReplay": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "decision": "Adoption. Exact command receipt confirmed in this session.\n\nCommand 287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c\n\nVersion b784a5c6-fc6c-4b01-aef3-1991e57a24f3. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record",
+      "network": [
+        {
+          "at": "2026-10-11T01:44:54.607Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:54.910Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:55.418Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.005Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.493Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        },
+        {
+          "at": "2026-10-11T01:44:56.910Z",
+          "method": "GET",
+          "status": 200,
+          "url": "/api/gtfs/feeds?workspaceId=e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+        }
+      ],
+      "panels": 1,
+      "runtime": []
+    }
+  },
+  "native": {
+    "failedVersion": "b7a097b0-55d0-43ee-90e9-8f252a1bfd5e",
+    "state": "failed",
+    "code": "not_a_zip",
+    "rawDetailRetained": true,
+    "currentBeforeAndAfter": "8a86a802-a3cc-4b09-979d-6187bad01285",
+    "historicalVersionCurrent": false
+  },
+  "limits": [
+    "T3 click interruptions occurred; mobile navigation succeeded by inspected coordinates.",
+    "Future-only console recorder does not establish a clean full session.",
+    "The controller captured fetch before the observer, so command POST is not included in that observer.",
+    "No practitioner acceptance or full restore/capacity acceptance."
+  ]
+}

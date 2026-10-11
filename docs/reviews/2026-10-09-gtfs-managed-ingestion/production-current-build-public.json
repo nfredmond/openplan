@@ -1,0 +1,17 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "buildId": "OtS1dhNAWFSbvpN5eAXRv",
+  "unit": "openplan-gtfs-recovered-build-20261010-02",
+  "exitCode": 0,
+  "seconds": 210.581,
+  "memoryPeakDisplay": "7G",
+  "memoryPeakSource": "systemd completion journal, rounded display",
+  "memoryLimitGiB": 8,
+  "swapLimitBytes": 0,
+  "buildWorkers": 1,
+  "nextVersion": "16.3.8",
+  "buildMode": "webpack",
+  "typescript": "passed",
+  "staticPages": 137,
+  "boundary": "Identified build after bounded candidate CI corrections. Browser, full local regression and current CI remain separate."
+}

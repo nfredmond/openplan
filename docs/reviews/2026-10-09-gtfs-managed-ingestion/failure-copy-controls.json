@@ -1,0 +1,50 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "raw-job-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel explains a malformed ZIP in retained progress and version review without library guidance"
+      ]
+    },
+    {
+      "variant": "raw-selected-detail",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel explains a malformed ZIP in retained progress and version review without library guidance"
+      ]
+    },
+    {
+      "variant": "discard-other-failures",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel keeps other recorded failures distinct from malformed ZIP recovery"
+      ]
+    },
+    {
+      "variant": "every-failure-is-zip",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel keeps other recorded failures distinct from malformed ZIP recovery"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "3688caf8e64188645b2ebec21dc73bc4c45b58d338992c3c97282f3a9ecc0f26",
+  "testSha256": "7c97ab830d5e6f6386e400e1299d6c125634d7d0beba431ef4c7924a3883aeaa",
+  "boundary": "Mocked progress and selected-version UI. Three positive and four targeted broken controls. No native diagnostics mutation, browser, physical file chooser, complete restore, capacity or CI acceptance."
+}

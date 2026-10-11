@@ -1,0 +1,13 @@
+{
+  "state": "running",
+  "attempt": 1,
+  "archive_identity": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/16e2e138-400a-49ff-8bc3-089ff185e5d7/efd51598-a404-4501-97b2-eeca83622c18.zip",
+    "bytes": 892312,
+    "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+  },
+  "archive_available": true,
+  "lease_until": "2026-10-11T02:15:17.650029+00:00",
+  "checked_at": "2026-10-11T02:15:13.662647+00:00",
+  "claims": 1
+}

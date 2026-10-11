@@ -1,0 +1,19 @@
+{
+  "request_id": "498d6cbe-2d57-4219-82ea-716a327ca974",
+  "version_id": "21d86ed0-2479-4ade-8ce5-40eae7d0b481",
+  "state": "queued",
+  "attempt": 0,
+  "archive_identity": {
+    "path": "e9df9fa9-8c14-4800-8b85-2d5a074fb513/6a80fa3b-c265-4e16-a408-6a9178397e2a/21d86ed0-2479-4ade-8ce5-40eae7d0b481.zip",
+    "bytes": 892312,
+    "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+  },
+  "claims": 0,
+  "savedInput": {
+    "path": "71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da-submissions/498d6cbe-2d57-4219-82ea-716a327ca974/archive.zip",
+    "bytes": 892312,
+    "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080"
+  },
+  "head": "2caefd6a9a41",
+  "boundary": "Real browser File/DataTransfer ZIP submission, native queued identity and private input bytes before processing. Native file chooser untested."
+}

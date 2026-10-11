@@ -1,0 +1,48 @@
+{
+  "head": "1e2df247380d3f8e9eb7fb1adfde369079cddb48",
+  "checks": [
+    {
+      "check": "equity",
+      "exitCode": 0,
+      "seconds": 42.832
+    },
+    {
+      "check": "client",
+      "exitCode": 0,
+      "seconds": 118.544
+    },
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 5.26
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 14.236
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 88.426
+    }
+  ],
+  "testFiles": 76,
+  "regression": {
+    "numTotalTests": 1858,
+    "numPassedTests": 1841,
+    "numPendingTests": 17,
+    "numFailedTests": 0
+  },
+  "sourceSha256": {
+    "src/app/(app)/data-hub/page.tsx": "e96245f2d281cab21bfd38927432a8da0ad3ff0a7888a3b6351af029d38e348d",
+    "src/components/data-hub/managed-gtfs-imports.tsx": "7e9d38843278f31325cf48d52a005b3ae8a9af95ff1b85edd599ac348fe795fc",
+    "src/components/data-hub/title-vi-service-equity-panel.tsx": "3b86526a37f583fec23446a4a84754cf2ce4fc9af0c2f9002603556c2438ecc6",
+    "src/test/gtfs-managed-panel-mount.test.ts": "2f5fbe86c499061bceda3a38b680b00bfe84666f06543e6df635167a38d32010",
+    "src/test/gtfs-managed-panel.test.tsx": "7c97ab830d5e6f6386e400e1299d6c125634d7d0beba431ef4c7924a3883aeaa",
+    "src/components/data-hub/gtfs-ingest-panel.tsx": "6e70d4ebecbe50bfac808aba9e776bdee486dd4394f68f497d4a8e8b8f600f36",
+    "src/test/gtfs-ingest-panel.test.tsx": "b867f9303f3177098cdcfb9947181d33f33ab54bb527e2a95fd9daac59857a5e",
+    "src/test/gtfs-equity-refresh.test.tsx": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68"
+  },
+  "boundary": "Owned integration controls, scoped TypeScript, strict selected-file lint and GTFS plus merged UI regressions. No new browser, live database, full restore, capacity or GitHub CI acceptance."
+}

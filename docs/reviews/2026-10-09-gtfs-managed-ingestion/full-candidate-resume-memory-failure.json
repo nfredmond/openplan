@@ -1,0 +1,7 @@
+{
+  "head": "9e7918dd6cc0a020baf33153d9928835cf2a7efb",
+  "unit": "openplan-gtfs-full-candidate-checks-20261010-02",
+  "limitBytes": 2147483648,
+  "nodeHeapMiB": 768,
+  "observed": "Multiple worker V8 heap failures at about 733 MiB live heap. Owned unit stopped before continuing repeated aborts. No test result accepted."
+}

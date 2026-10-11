@@ -1,0 +1,48 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "replay-source-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "replay-target-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "replay-container-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "replay-container-project",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "replay-original-writer-active",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "replay-other-work-pending",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "ee59b673ad8a6f6b8059ecee3ae737fdf0456edcc3adc98334a4032e6d284cf8",
+  "limits": "Extracted guards and copied fixture only. No Docker, database, files, worker or network mutation."
+}

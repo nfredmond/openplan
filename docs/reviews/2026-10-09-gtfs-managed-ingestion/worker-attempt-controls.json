@@ -1,0 +1,139 @@
+{
+  "sourceSha256": "6ac2bf54ae05049f76303202dcb09310438e1de25f3be8e47a04cb196989dbe9",
+  "testSha256": "aeead705e5a9a8fdc282c042215d68db4ba49e7827a54c673b4b58e06757cfeb",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "c5520acba270863f112842454fdbc0f93397240012fcb5ceb0a075a68aa0771c"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "0d1d1cc6fc27302268f3156774e3ee86d9c13b6892c14ac98b5f7ad9ea55a404"
+    },
+    {
+      "case": "changed-claim",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "1c76468744dcb772f52aacf491aa9560615d19a325c7721d7328134f630f529b"
+    },
+    {
+      "case": "terminal-history",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "c21074ad16d557c2a3b419fc3df26dc461ac3c2a0f737466b443f40a115dc9e5"
+    },
+    {
+      "case": "inactive-claim",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "413e5c314efb84410dd9b11cb44c08047596e456e5bd0c8411b93b9d6ec4fda5"
+    },
+    {
+      "case": "inactive-snapshot",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2e7fefab25a20c5c6ae186ada936d6c27c46380be2334190abbbd7ab1cc0f309"
+    },
+    {
+      "case": "missing-initial-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "confirms current ownership before work",
+      "logSha256": "61399fddd2ecb796dd127a338ce5a5c3ba1f492b0aa7b0c2e69bc6ec00a6bfcd"
+    },
+    {
+      "case": "missing-final-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": "confirms current ownership before work",
+      "logSha256": "809d9380a1067f13772e68f3bad192c2c83011e14d32e608149d98d935a77844"
+    },
+    {
+      "case": "ignored-false-renewal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "0c940fb675fa55a4e879ace0e3aba7afa53af7856ed21755915158c538550af9"
+    },
+    {
+      "case": "unpropagated-ownership-loss",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "05aa1b57485a8c0abe5031d0001cfea33bff05de65ce2b10ca9b95e568c21403"
+    },
+    {
+      "case": "late-work-write",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2387cd156c5c0e0a20866b6ce2b3848841c8a19feb2b5ad060637710664ecc29"
+    },
+    {
+      "case": "terminal-slot-bypass",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "bbdf7da24b33b4d64e4287a6968fbfc86b127fc20460435841bdebfed3162c1e"
+    },
+    {
+      "case": "terminal-operation-bypass",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "82167ee177f2c8ea3602d2be0610de416048e9f2570d41ecc9e4c9e5fed60ec6"
+    },
+    {
+      "case": "unsettled-work-write",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "311bb9746df45448da4bdf2afb3bb29cd09f564cd3d8d05e0ad68062a8acacd4"
+    },
+    {
+      "case": "terminal-outcome",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "53221201e04297034d129dc84108ba34acab76f25fb39bc1041badb65a0216c9"
+    },
+    {
+      "case": "mutable-terminal",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "bb0df5e662914b84f36844c9f593d54e3007a5bd9d3f65321abc03a334a1046c"
+    },
+    {
+      "case": "renewal-race",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "4f791ccdd7b20595ea69bf810f5d5187f7fb562d9fbcf906fce86018165f524c"
+    },
+    {
+      "case": "unsafe-interval",
+      "exitCode": 1,
+      "expectedFailure": true,
+      "testFilter": null,
+      "logSha256": "2a31b40d90d06589733c79342d3841671174744715a2134aeac0ceeb36598bae"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "expectedFailure": false,
+      "testFilter": null,
+      "logSha256": "550386bb1094867134fb2b38fd8763cbf977c02aff44dda900f901773a8dac15"
+    }
+  ]
+}

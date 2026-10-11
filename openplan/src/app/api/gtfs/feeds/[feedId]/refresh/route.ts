@@ -18,6 +18,8 @@ import { recordAssistantActionExecution } from "@/lib/observability/action-audit
 import { resolveGtfsCatalogRedirect } from "@/lib/gtfs/catalog";
 import { runGtfsIngest } from "@/lib/gtfs/ingest";
 import { GTFS_FEED_REFRESH_SOURCE_COLUMNS } from "@/lib/gtfs/route-projections";
+import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
+import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
 
 /**
  * FETCH THIS FEED AGAIN, FROM WHERE THE DATABASE SAYS IT CAME FROM.
@@ -208,6 +210,14 @@ export async function POST(
     }
 
     const service = createServiceRoleClient();
+
+    if (managedGtfsEnabled()) {
+      if (payload.data.adoptDespiteCollapse !== undefined) return NextResponse.json({ error: "Review the completed version before adoption",
+        detail: "Managed imports require an exact completed-version review. A refresh request cannot approve an unseen version." }, { status: 409 });
+      const intent = { source: "refresh" as const, workspaceId, feedId };
+      return managedGtfsRouteSubmission(request, { service, workspaceId, actorId: user.id, intent,
+        resolve: archive => resolveManagedGtfsSubmission(service, intent, archive) });
+    }
 
     const feedResult = await service
       .from("gtfs_feeds")

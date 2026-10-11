@@ -1,0 +1,22 @@
+{
+  "head": "aca844a99bc4e1bcb887a2eb57b3515946cd1c06",
+  "runId": 38135480061,
+  "artifactId": 11701282386,
+  "tableEntries": 374,
+  "sequenceEntries": 6,
+  "storageFiles": 1,
+  "storageBytes": 38,
+  "keyCustody": {
+    "archiveFile": "database-root-private.key",
+    "captured": true,
+    "targetRestarted": true,
+    "mountedBytesVerified": true,
+    "previousTargetKeyRetained": true
+  },
+  "bootstrapPreserved": true,
+  "independentOwpEqual": true,
+  "sourceOwpSha256": "3a39ba733804e8f280ceb878553a23b35d278bc7f6cd0bcd8a862d9ce22c85b4",
+  "targetOwpSha256": "3a39ba733804e8f280ceb878553a23b35d278bc7f6cd0bcd8a862d9ce22c85b4",
+  "scope": "Default local CLI database and Storage; no external workers, custom roles or scheduled SQL jobs",
+  "limits": "Exact aca CI artifact. Does not establish new acc source, same-host expanded transit point or hosted acceptance."
+}

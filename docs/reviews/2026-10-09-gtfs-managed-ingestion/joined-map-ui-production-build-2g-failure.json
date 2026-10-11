@@ -1,0 +1,21 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "unit": "openplan-gtfs-map-ui-production-build-20261010-03.service",
+  "fields": {
+    "ActiveState": "failed",
+    "Result": "exit-code",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "5853081600",
+    "CPUUsageNSec": "155748517000",
+    "MemoryHigh": "infinity",
+    "MemoryMax": "6442450944",
+    "MemorySwapMax": "0"
+  },
+  "wallSeconds": 275.213,
+  "cpuSeconds": 155.748,
+  "heapMiB": 2048,
+  "webpackCompiled": true,
+  "fullBuildPassed": false,
+  "failure": "TypeScript worker reaches 2 GiB V8 heap limit and aborts; Next returns failure. No service OOM kill. Initial 4 GiB cap with 3500 MiB soft cap is adjusted to 6 GiB/no soft throttling during this same attempt.",
+  "boundary": "No full build, browser or release acceptance."
+}

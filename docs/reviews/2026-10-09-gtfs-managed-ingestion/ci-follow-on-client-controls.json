@@ -1,0 +1,392 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "retain-before-post",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller retains identity before bytes leave and reads committed queued progress after a 202",
+        "managed transit browser controller does not transmit when browser retention fails",
+        "managed transit browser controller keeps unknown POST replies unconfirmed and retries the original intent and UUID"
+      ]
+    },
+    {
+      "variant": "decision-before-post",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller retains a decision before dispatch and requires its exact receipt"
+      ]
+    },
+    {
+      "variant": "viewer-writes",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller allows viewer reads but refuses every write"
+      ]
+    },
+    {
+      "variant": "same-input-recovery",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller recovers retained server custody instead of resolving the URL again"
+      ]
+    },
+    {
+      "variant": "retry-uuid",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller keeps unknown POST replies unconfirmed and retries the original intent and UUID"
+      ]
+    },
+    {
+      "variant": "terminal-recovery",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not recover terminal ready with the same version",
+        "managed transit browser controller does not recover terminal failed with the same version",
+        "managed transit browser controller does not recover terminal cancelled with the same version"
+      ]
+    },
+    {
+      "variant": "admitted-resupply",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller refuses resupply for an already admitted version"
+      ]
+    },
+    {
+      "variant": "progress-wire",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller rejects status from another workspace and clears stale progress"
+      ]
+    },
+    {
+      "variant": "progress-http",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not publish valid-looking status from an HTTP refusal"
+      ]
+    },
+    {
+      "variant": "decision-http",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not confirm a mismatched command or a valid-looking receipt in an HTTP refusal"
+      ]
+    },
+    {
+      "variant": "decision-receipt",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not confirm a mismatched command or a valid-looking receipt in an HTTP refusal"
+      ]
+    },
+    {
+      "variant": "older-progress",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not let an older progress read overwrite a newer completed read"
+      ]
+    },
+    {
+      "variant": "inspect-version",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller opens workspace progress without creating another actor's retained intent"
+      ]
+    },
+    {
+      "variant": "disposed-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not display late responses after scope disposal"
+      ]
+    },
+    {
+      "variant": "automatic-decision",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not automatically replay decisions on browser reload",
+        "managed transit browser controller forgetting browser history sends no server deletion or cancellation"
+      ]
+    },
+    {
+      "variant": "receipt-command",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser controller does not confirm a mismatched command or a valid-looking receipt in an HTTP refusal",
+        "browser transit receipts and bounded transport rejects changed adoption command"
+      ]
+    },
+    {
+      "variant": "receipt-version",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport rejects changed adoption version"
+      ]
+    },
+    {
+      "variant": "receipt-basis",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport rejects changed adoption basis"
+      ]
+    },
+    {
+      "variant": "receipt-acceptance",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport rejects changed adoption humanAcceptShrinkage"
+      ]
+    },
+    {
+      "variant": "receipt-evidence",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport requires adoption evidence and explicit material acceptance"
+      ]
+    },
+    {
+      "variant": "receipt-material",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport requires adoption evidence and explicit material acceptance"
+      ]
+    },
+    {
+      "variant": "cancel-command",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport rejects another cancellation command or workspace"
+      ]
+    },
+    {
+      "variant": "response-bound",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport refuses oversized bodies, external paths and pre-cancelled requests"
+      ]
+    },
+    {
+      "variant": "response-deadline",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport bounds stalled headers and discards their late response",
+        "browser transit receipts and bounded transport bounds a stalled JSON body and cancels its reader"
+      ]
+    },
+    {
+      "variant": "pre-cancel",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport refuses oversized bodies, external paths and pre-cancelled requests"
+      ]
+    },
+    {
+      "variant": "normalized-path",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser transit receipts and bounded transport refuses oversized bodies, external paths and pre-cancelled requests"
+      ]
+    },
+    {
+      "variant": "material-ui",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel requires explicit acceptance of material shrinkage"
+      ]
+    },
+    {
+      "variant": "parser-review-ui",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel opens another submitter's completed workspace version and reviews parser counts"
+      ]
+    },
+    {
+      "variant": "url-door",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel uses retained URL identity and shows queued progress without success or adoption",
+        "planner managed transit panel refreshes dependent server reads and preserves custody on an equivalent server render",
+        "planner managed transit panel cancels an unconfirmed request with an explicit reason and preserves its identity",
+        "planner managed transit panel does not send untracked imports when enabled configuration is unavailable"
+      ]
+    },
+    {
+      "variant": "catalog-door",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel uses retained ZIP, catalog and refresh imports from the existing doors"
+      ]
+    },
+    {
+      "variant": "refresh-door",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel uses retained ZIP, catalog and refresh imports from the existing doors"
+      ]
+    },
+    {
+      "variant": "zip-door",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel uses retained ZIP, catalog and refresh imports from the existing doors"
+      ]
+    },
+    {
+      "variant": "configuration-fallback",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser configuration does not fall back when enabled OPENPLAN_GTFS_INSTALLATION_ID is invalid",
+        "managed transit browser configuration does not fall back when enabled OPENPLAN_GTFS_PARSER_BUILD is invalid",
+        "managed transit browser configuration does not fall back when enabled NEXT_PUBLIC_SUPABASE_URL is invalid",
+        "managed transit browser configuration does not fall back when enabled OPENPLAN_GTFS_WORK_DIR is invalid",
+        "managed transit browser configuration does not fall back when enabled OPENPLAN_GTFS_MANAGED_INGESTION is invalid"
+      ]
+    },
+    {
+      "variant": "configuration-private",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit browser configuration exposes only installation, workspace and actor identity"
+      ]
+    },
+    {
+      "variant": "mount-config",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount binds the visible panel to the current workspace and session actor"
+      ]
+    },
+    {
+      "variant": "mount-actor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount binds the visible panel to the current workspace and session actor"
+      ]
+    },
+    {
+      "variant": "mount-scope-key",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed transit Data Hub mount binds the visible panel to the current workspace and session actor",
+        "managed transit Data Hub mount keeps sibling transit and equity identity distinct during server refresh"
+      ]
+    },
+    {
+      "variant": "route-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed version status route returns authorization refusal 401 before dispatch",
+        "managed version status route returns authorization refusal 404 before dispatch",
+        "managed version status route returns authorization refusal 503 before dispatch",
+        "managed version status route returns authorization refusal 409 before dispatch"
+      ]
+    },
+    {
+      "variant": "route-actor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed version status route reads with the current member without original-actor impersonation or writes"
+      ]
+    },
+    {
+      "variant": "route-cancellation",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed version status route reads with the current member without original-actor impersonation or writes",
+        "managed version status route does not fabricate cancellation when its lookup is unavailable"
+      ]
+    },
+    {
+      "variant": "route-unavailable",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed version status route keeps legacy or unavailable progress distinct from empty service",
+        "managed version status route does not fabricate cancellation when its lookup is unavailable"
+      ]
+    },
+    {
+      "variant": "missing-current-route_service_level_rows",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing current counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-current-stop_service_level_rows",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing current counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-current-route_count",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing current counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-current-stop_count",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing current counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-current-trip_count",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing current counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-history-route_service_level_rows",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing historical counts into zero"
+      ]
+    },
+    {
+      "variant": "missing-history-stop_service_level_rows",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "planner managed transit panel does not convert missing historical counts into zero"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-client-controller.ts": "a6b65f0113b210c52e23b2f16553348eafd31a7f4a8f7bbc41248873be05a90f",
+    "openplan/src/lib/gtfs/managed-client-transport.ts": "52c4c215af2bc324ac9fbcb1c1187dc281d6beec4153545ca409cb462e33d45e",
+    "openplan/src/lib/gtfs/managed-ui-config.ts": "94cb9052b2df463535b54f8a2703ee192db4ab0b1771dfbd9a7adf22992fbb95",
+    "openplan/src/components/data-hub/managed-gtfs-imports.tsx": "768ddfaec3b67a9ed796c9794435644a3ec9b81053cd5d61ac3a67ea32644899",
+    "openplan/src/components/data-hub/gtfs-ingest-panel.tsx": "6e70d4ebecbe50bfac808aba9e776bdee486dd4394f68f497d4a8e8b8f600f36",
+    "openplan/src/app/(app)/data-hub/page.tsx": "e96245f2d281cab21bfd38927432a8da0ad3ff0a7888a3b6351af029d38e348d",
+    "openplan/src/app/api/gtfs/versions/[versionId]/status/route.ts": "57fb7ff238673773f6a321d2ba510c8828c108bfc65090a6f064789ca79b9f77"
+  },
+  "testSha256": {
+    "openplan/src/test/gtfs-managed-client-controller.test.ts": "b1efebf2c4d8956254636c8f238df3879bc83d6b575e50a3376dfde91e2d2540",
+    "openplan/src/test/gtfs-managed-panel.test.tsx": "e01fd942f6f9c5248112caaa2f591b409c7fa2bf7bfee5a14b99aea5c33d85cc",
+    "openplan/src/test/gtfs-managed-ui-config.test.ts": "1c8c6fae812e2e75c40210025fcb9de17bd76f978be95e2b21c075a63a3a5c12",
+    "openplan/src/test/gtfs-managed-version-status-route.test.ts": "2a7813414a0c03eae7d3ff28b960972eb372c1eff608d41dcc6366d065b5494c",
+    "openplan/src/test/gtfs-managed-panel-mount.test.ts": "37aa1188daa76e708175dcb9a32528649983176361717b2ed8cdd7053a2508f9"
+  },
+  "boundary": "Controlled component DOM, browser storage, mock HTTP and source mount inventory. Does not prove T3 navigation, screenshots, live application sessions, worker installation, complete restore, capacity, CI or practitioner acceptance."
+}

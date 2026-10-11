@@ -1,0 +1,294 @@
+{
+  "sourceSha256": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+  "testSha256": "25a05b3389d709b89db810e584b40b60a6fc600dd66f1a9eaca2a584b2684dc8",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses changed actorId source binding",
+        "managed GTFS source intake refuses changed requestId source binding",
+        "managed GTFS source intake refuses changed workspaceId source binding",
+        "managed GTFS source intake refuses changed feedId source binding",
+        "managed GTFS source intake refuses changed source source binding",
+        "managed GTFS source intake refuses changed installationId source binding",
+        "managed GTFS source intake refuses changed target source binding"
+      ]
+    },
+    {
+      "variant": "unbound-file",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses an unbound existing local file"
+      ]
+    },
+    {
+      "variant": "private-file",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses public local source files"
+      ]
+    },
+    {
+      "variant": "file-symlink",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses symlink local source files"
+      ]
+    },
+    {
+      "variant": "size-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses source bytes over the current installation cap before preparing or uploading"
+      ]
+    },
+    {
+      "variant": "file-sync",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake saves private synced bytes before preparation/upload and checks actual remote bytes before confirmation",
+        "managed GTFS source intake recovers saved bytes under a replacement claim without fetching a changed URL",
+        "managed GTFS source intake recovers a complete linked file when its receipt was interrupted",
+        "managed GTFS source intake reconciles a lost upload reply using the actual immutable object",
+        "managed GTFS source intake refuses a path-only upload acknowledgement with no object bytes",
+        "managed GTFS source intake refuses mismatched existing bytes without overwriting the object",
+        "managed GTFS source intake refuses a conflicting object after uncertain upload",
+        "managed GTFS source intake refuses changed actorId source binding",
+        "managed GTFS source intake refuses changed requestId source binding",
+        "managed GTFS source intake refuses changed workspaceId source binding",
+        "managed GTFS source intake refuses changed feedId source binding",
+        "managed GTFS source intake refuses changed source source binding",
+        "managed GTFS source intake refuses changed installationId source binding",
+        "managed GTFS source intake refuses changed target source binding",
+        "managed GTFS source intake refuses changed local bytes without refetching",
+        "managed GTFS source intake refuses a missing saved file without refetching",
+        "managed GTFS source intake refuses public local source files",
+        "managed GTFS source intake refuses symlink local source files",
+        "managed GTFS source intake refuses local bytes when the prepared source differs",
+        "managed GTFS source intake passes existing public-source limits and cancellation into the fetcher",
+        "managed GTFS source intake carries ownership cancellation to the external upload request and refuses confirmation",
+        "managed GTFS source intake bounds an ignored upload deadline and recovers saved bytes on retry",
+        "managed GTFS source intake refuses inactive refreshed custody before parsing",
+        "managed GTFS source intake refuses actor refreshed custody before parsing",
+        "managed GTFS source intake refuses archive refreshed custody before parsing",
+        "managed GTFS source intake refuses unconfirmed refreshed custody before parsing",
+        "managed GTFS source intake connects only the refreshed confirmed attempt to retained parsing/publication"
+      ]
+    },
+    {
+      "variant": "saved-hash",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses changed local bytes without refetching"
+      ]
+    },
+    {
+      "variant": "missing-saved-file",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses a missing saved file without refetching"
+      ]
+    },
+    {
+      "variant": "prepared-refetch",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake recovers already prepared remote bytes into a new private directory without URL fetch",
+        "managed GTFS source intake refuses a prepared but unavailable archive without fetching its mutable source"
+      ]
+    },
+    {
+      "variant": "snapshot-custody",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses local bytes when the prepared source differs"
+      ]
+    },
+    {
+      "variant": "fetch-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake passes existing public-source limits and cancellation into the fetcher"
+      ]
+    },
+    {
+      "variant": "fetch-refusal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake returns an explicit source refusal without inventing a terminal command for interruptions"
+      ]
+    },
+    {
+      "variant": "transport-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "GTFS native upload transport closes a real pending HTTP upload response when ownership ends",
+        "managed GTFS source intake saves private synced bytes before preparation/upload and checks actual remote bytes before confirmation",
+        "managed GTFS source intake recovers saved bytes under a replacement claim without fetching a changed URL",
+        "managed GTFS source intake recovers a complete linked file when its receipt was interrupted",
+        "managed GTFS source intake reconciles a lost upload reply using the actual immutable object",
+        "managed GTFS source intake refuses changed actorId source binding",
+        "managed GTFS source intake refuses changed requestId source binding",
+        "managed GTFS source intake refuses changed workspaceId source binding",
+        "managed GTFS source intake refuses changed feedId source binding",
+        "managed GTFS source intake refuses changed source source binding",
+        "managed GTFS source intake refuses changed installationId source binding",
+        "managed GTFS source intake refuses changed target source binding",
+        "managed GTFS source intake refuses changed local bytes without refetching",
+        "managed GTFS source intake refuses a missing saved file without refetching",
+        "managed GTFS source intake refuses public local source files",
+        "managed GTFS source intake refuses symlink local source files",
+        "managed GTFS source intake refuses local bytes when the prepared source differs",
+        "managed GTFS source intake passes existing public-source limits and cancellation into the fetcher",
+        "managed GTFS source intake carries ownership cancellation to the external upload request and refuses confirmation",
+        "managed GTFS source intake bounds an ignored upload deadline and recovers saved bytes on retry",
+        "managed GTFS source intake refuses inactive refreshed custody before parsing",
+        "managed GTFS source intake refuses actor refreshed custody before parsing",
+        "managed GTFS source intake refuses archive refreshed custody before parsing",
+        "managed GTFS source intake refuses unconfirmed refreshed custody before parsing",
+        "managed GTFS source intake connects only the refreshed confirmed attempt to retained parsing/publication"
+      ]
+    },
+    {
+      "variant": "inherited-signal",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake the dedicated SDK transport honors both inherited cancellation and pre-cancelled ownership"
+      ]
+    },
+    {
+      "variant": "transport-preabort",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake the dedicated SDK transport honors both inherited cancellation and pre-cancelled ownership"
+      ]
+    },
+    {
+      "variant": "upsert",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake saves private synced bytes before preparation/upload and checks actual remote bytes before confirmation",
+        "managed GTFS source intake recovers saved bytes under a replacement claim without fetching a changed URL",
+        "managed GTFS source intake recovers a complete linked file when its receipt was interrupted",
+        "managed GTFS source intake reconciles a lost upload reply using the actual immutable object",
+        "managed GTFS source intake refuses changed actorId source binding",
+        "managed GTFS source intake refuses changed requestId source binding",
+        "managed GTFS source intake refuses changed workspaceId source binding",
+        "managed GTFS source intake refuses changed feedId source binding",
+        "managed GTFS source intake refuses changed source source binding",
+        "managed GTFS source intake refuses changed installationId source binding",
+        "managed GTFS source intake refuses changed target source binding",
+        "managed GTFS source intake refuses changed local bytes without refetching",
+        "managed GTFS source intake refuses a missing saved file without refetching",
+        "managed GTFS source intake refuses public local source files",
+        "managed GTFS source intake refuses symlink local source files",
+        "managed GTFS source intake refuses local bytes when the prepared source differs",
+        "managed GTFS source intake passes existing public-source limits and cancellation into the fetcher",
+        "managed GTFS source intake bounds an ignored upload deadline and recovers saved bytes on retry",
+        "managed GTFS source intake refuses inactive refreshed custody before parsing",
+        "managed GTFS source intake refuses actor refreshed custody before parsing",
+        "managed GTFS source intake refuses archive refreshed custody before parsing",
+        "managed GTFS source intake refuses unconfirmed refreshed custody before parsing",
+        "managed GTFS source intake connects only the refreshed confirmed attempt to retained parsing/publication"
+      ]
+    },
+    {
+      "variant": "remote-conflict",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses mismatched existing bytes without overwriting the object"
+      ]
+    },
+    {
+      "variant": "skip-download",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses a path-only upload acknowledgement with no object bytes",
+        "managed GTFS source intake refuses a conflicting object after uncertain upload",
+        "managed GTFS source intake bounds an ignored upload deadline and recovers saved bytes on retry"
+      ]
+    },
+    {
+      "variant": "upload-unbounded",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake bounds an ignored upload deadline and recovers saved bytes on retry"
+      ]
+    },
+    {
+      "variant": "refresh-active",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses inactive refreshed custody before parsing",
+        "managed GTFS source intake refuses actor refreshed custody before parsing",
+        "managed GTFS source intake refuses archive refreshed custody before parsing",
+        "managed GTFS source intake refuses unconfirmed refreshed custody before parsing"
+      ]
+    },
+    {
+      "variant": "refresh-confirmed",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses unconfirmed refreshed custody before parsing"
+      ]
+    },
+    {
+      "variant": "refresh-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses actor refreshed custody before parsing"
+      ]
+    },
+    {
+      "variant": "parser-stale-snapshot",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake connects only the refreshed confirmed attempt to retained parsing/publication"
+      ]
+    },
+    {
+      "variant": "parser-shared-directory",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses sharing parser and source journal directories"
+      ]
+    },
+    {
+      "variant": "inactive-attempt",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses inactive intake before I/O"
+      ]
+    },
+    {
+      "variant": "invalid-target",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses invalid-target intake before I/O"
+      ]
+    },
+    {
+      "variant": "record-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "managed GTFS source intake refuses oversized source metadata before source I/O"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ]
+}

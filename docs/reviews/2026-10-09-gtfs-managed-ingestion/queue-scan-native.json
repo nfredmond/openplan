@@ -1,0 +1,59 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass"
+    },
+    {
+      "variant": "harmless",
+      "result": "pass"
+    },
+    {
+      "variant": "cursor",
+      "result": "expected assertion failure",
+      "assertion": "rotating cursor page differs"
+    },
+    {
+      "variant": "limit",
+      "result": "expected assertion failure",
+      "assertion": "initial bounded page differs"
+    },
+    {
+      "variant": "membership",
+      "result": "expected assertion failure",
+      "assertion": "active, awaiting or revoked work appears eligible"
+    },
+    {
+      "variant": "lease-state",
+      "result": "expected assertion failure",
+      "assertion": "active, awaiting or revoked work appears eligible"
+    },
+    {
+      "variant": "limit-guard",
+      "result": "expected assertion failure",
+      "assertion": "invalid limit is accepted"
+    },
+    {
+      "variant": "role",
+      "result": "expected assertion failure",
+      "assertion": "untrusted role can scan private queue"
+    },
+    {
+      "variant": "restored",
+      "result": "pass"
+    }
+  ],
+  "eligibleVersions": [
+    "56f54734-a981-4567-8f2c-1d02e92ff7dd",
+    "b50e67d1-5e79-467d-b28a-22164126c258",
+    "c737bd30-45c9-48fe-bbaa-8d5302cbd383"
+  ],
+  "excluded": {
+    "revoked": "11a0b2b5-e82c-4ce5-85e0-6900f60a5c09",
+    "liveLease": "7fe03eef-6ff3-4aa9-baee-f11b6b58f576",
+    "awaitingArchive": "9556e2a0-4013-431e-bd25-2c3064f9c46b"
+  },
+  "migrationSha256": "67a0947936df1526bfdd8bbe947d89f692ccbd8b3dede35f3febc72ae21ac5a1",
+  "runnerSha256": "bced2dbfa3fdc08e46683204f71f67606bbc2d80aca806d8cffc89ac4c078672",
+  "boundary": "Native PostgreSQL and PostgREST service/anon/authenticated roles. Retained main-derived clone plus current candidate scan fragment, not full CLI upgrade, application enrollment or browser acceptance."
+}

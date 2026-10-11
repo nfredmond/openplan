@@ -1,0 +1,98 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "cases": [
+        {
+          "order": "cancel-first",
+          "blockingObserved": true,
+          "laterCode": "55000",
+          "rows": {
+            "state": null,
+            "submissions": 0,
+            "cancellations": 1
+          }
+        },
+        {
+          "order": "admit-first",
+          "blockingObserved": true,
+          "laterCode": null,
+          "rows": {
+            "state": "cancelled",
+            "submissions": 1,
+            "cancellations": 1
+          }
+        }
+      ]
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "cases": [
+        {
+          "order": "cancel-first",
+          "blockingObserved": true,
+          "laterCode": "55000",
+          "rows": {
+            "state": null,
+            "submissions": 0,
+            "cancellations": 1
+          }
+        },
+        {
+          "order": "admit-first",
+          "blockingObserved": true,
+          "laterCode": null,
+          "rows": {
+            "state": "cancelled",
+            "submissions": 1,
+            "cancellations": 1
+          }
+        }
+      ]
+    },
+    {
+      "variant": "missing-request-lock",
+      "result": "expected assertion failures",
+      "cases": [
+        {
+          "order": "cancel-first",
+          "intendedAssertion": "contending request bypassed admission lock"
+        },
+        {
+          "order": "admit-first",
+          "intendedAssertion": "contending request bypassed admission lock"
+        }
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "cases": [
+        {
+          "order": "cancel-first",
+          "blockingObserved": true,
+          "laterCode": "55000",
+          "rows": {
+            "state": null,
+            "submissions": 0,
+            "cancellations": 1
+          }
+        },
+        {
+          "order": "admit-first",
+          "blockingObserved": true,
+          "laterCode": null,
+          "rows": {
+            "state": "cancelled",
+            "submissions": 1,
+            "cancellations": 1
+          }
+        }
+      ]
+    }
+  ],
+  "migrationSha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+  "boundary": "Actual service-role commands in both transaction orders, with pg_blocking_pids observing the expected owner before commit. Retained clone and synthetic URL metadata. No upload, HTTP/session, official CLI migration, restore or browser acceptance."
+}

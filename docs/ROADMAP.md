@@ -262,6 +262,8 @@ await main integration. They do not complete clean agency commissioning, populat
 guest-loss recovery, external-worker backup/restore, either demand worker or
 capacity acceptance. Continue M3 from those remaining boundaries.
 
+**October 10 retained transit candidate.** [The current evidence](reviews/2026-10-09-gtfs-managed-ingestion/STATUS.md) records exact private source bytes, immutable archive reconciliation, owned installed worker operation, cancellation, replacement attempts and planner review/adoption. [The later joined production read](reviews/2026-10-09-gtfs-managed-ingestion/JOINED_PRODUCTION_READ.md) verifies desktop/390px saved-project geography and advisory transit coverage without launching a model. The candidate stays opt-in. Migrations 28 through 31 remain unreleased and must precede app deployment, including with admission disabled. Current CI, schema-first hosted coordination and development release remain separate. Same-cluster reconstruction and representative-feed timings do not close clean agency installation, cross-host restore, all-worker long computation or full M3.
+
 ### M3a. Dependable desktop control and demo recovery
 
 - **Outcome:** Nathaniel starts from the existing desktop icon and understands which site is running, whether the demonstration target is accepted and ready, what work is underway and how to recover without shell commands. CORE-OPS-CONTROL-01 covers this early operational requirement.

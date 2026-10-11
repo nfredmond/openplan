@@ -1,0 +1,281 @@
+{
+  "head": "1e2df247380d3f8e9eb7fb1adfde369079cddb48",
+  "viewer": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "managedText": "Import progress and completed-version review\n\nImports continue in the installed worker after this page closes. Processing completion does not put a version into use. Review its completed counts before adopting it. Service results describe published schedules, not observed operations.\n\nThis browser retains request and command identities for this installation, workspace and account. Removing a browser record does not cancel processing or retract a decision. ZIP bytes are retained privately on the installation, not in browser history.\n\nThis browser has no retained transit requests for this account. Workspace versions below remain separately readable.\n\nOpen a recent workspace version\nSelect a version\nwww.bart.gov: bc705053\nopenplan-invalid-fixture: 6ebc8157\nopenplan-invalid-fixture: b7a097b0\nwww.bart.gov: 8a86a802\nbart-retained-check: 59b1a823\nwww.bart.gov: b784a5c6\nbart: acf6f2dd",
+      "read": {
+        "body": {
+          "cancellation": null,
+          "managed": true,
+          "requestId": "666867ef-e4c4-44dc-9145-95984a99b188",
+          "status": {
+            "archiveConfirmed": true,
+            "attempts": 1,
+            "failureCode": null,
+            "failureDetail": null,
+            "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+            "isCurrent": true,
+            "leaseUntil": null,
+            "requestId": "666867ef-e4c4-44dc-9145-95984a99b188",
+            "schemaVersion": 1,
+            "stage": "ready",
+            "state": "ready",
+            "submittedAt": "2026-10-11T01:27:36.42116+00:00",
+            "submitterAccessUnavailable": false,
+            "versionId": "8a86a802-a3cc-4b09-979d-6187bad01285",
+            "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+          }
+        },
+        "status": 200
+      },
+      "retainedJobs": 0,
+      "role": "viewer",
+      "write": {
+        "body": {
+          "error": "Viewers have read-only access to this workspace"
+        },
+        "requestId": "b0c1193c-f797-45cf-83d6-1b12e8b0f73c",
+        "status": 403
+      }
+    }
+  },
+  "viewerDecisions": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/data-hub"
+    },
+    "value": {
+      "outcomes": [
+        {
+          "body": {
+            "error": "Viewers have read-only access to this workspace"
+          },
+          "commandId": "38f542ab-a442-4027-8288-09413be985b8",
+          "name": "adopt",
+          "status": 403
+        },
+        {
+          "body": {
+            "error": "Viewers have read-only access to this workspace"
+          },
+          "commandId": "7cf047a3-084f-40a6-a9a2-67d78624ed18",
+          "name": "cancel",
+          "status": 403
+        },
+        {
+          "body": {
+            "detail": "A planner must review and issue this command directly. Agent approval and audit for these commands are not established.",
+            "error": "Planner Agent managed transit decisions are not available"
+          },
+          "commandId": "69c2d2fc-9f3d-4bda-b248-bc2d0224b308",
+          "name": "agent",
+          "status": 403
+        }
+      ],
+      "review": {
+        "basis": {
+          "feedId": "79b5ee12-7be3-4502-b661-8b7537de4ede",
+          "previousRouteCount": null,
+          "previousStopCount": null,
+          "previousVersionId": null,
+          "routeCount": 14,
+          "stopCount": 287,
+          "versionId": "6ebc8157-987c-471f-9d2a-a26e733eb886"
+        },
+        "isCurrent": false,
+        "materialShrinkage": false
+      },
+      "reviewStatus": 200
+    }
+  },
+  "outsider": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/dashboard"
+    },
+    "value": {
+      "outcomes": [
+        {
+          "body": {
+            "error": "Workspace not found"
+          },
+          "name": "feeds",
+          "status": 404
+        },
+        {
+          "body": {
+            "error": "Workspace not found"
+          },
+          "name": "status",
+          "status": 404
+        },
+        {
+          "body": {
+            "error": "Workspace not found"
+          },
+          "name": "review",
+          "status": 404
+        },
+        {
+          "body": {
+            "error": "Workspace not found"
+          },
+          "name": "submission",
+          "status": 404
+        }
+      ],
+      "role": "owner of a separate synthetic workspace",
+      "workspaceName": "Synthetic separate workspace",
+      "write": {
+        "body": {
+          "error": "Workspace not found"
+        },
+        "requestId": "89139803-37ea-45f7-b8c4-8f623b67635a",
+        "status": 404
+      }
+    }
+  },
+  "ownerBaseline": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/dashboard"
+    },
+    "value": {
+      "agent": {
+        "body": {
+          "detail": "A planner must review and issue this command directly. Agent approval and audit for these commands are not established.",
+          "error": "Planner Agent managed transit decisions are not available"
+        },
+        "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+        "status": 403
+      },
+      "baseline": {
+        "body": {
+          "adoption": {
+            "adopted": true,
+            "adoptedAt": "2026-10-11T01:25:54.136836+00:00",
+            "alreadyCurrent": false,
+            "basis": {
+              "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+              "previousRouteCount": null,
+              "previousStopCount": null,
+              "previousVersionId": null,
+              "routeCount": 14,
+              "stopCount": 287,
+              "versionId": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+            },
+            "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+            "humanAcceptShrinkage": false,
+            "reviewAccepted": true,
+            "version": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+          },
+          "detail": "The exact adoption command is recorded. Check current feed status; a historical receipt does not reapply an earlier adoption.",
+          "managed": true
+        },
+        "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+        "status": 200
+      }
+    }
+  },
+  "harmlessMember": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/dashboard"
+    },
+    "value": {
+      "body": {
+        "adoption": {
+          "adopted": true,
+          "adoptedAt": "2026-10-11T01:25:54.136836+00:00",
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+            "previousRouteCount": null,
+            "previousStopCount": null,
+            "previousVersionId": null,
+            "routeCount": 14,
+            "stopCount": 287,
+            "versionId": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+          },
+          "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+          "humanAcceptShrinkage": false,
+          "reviewAccepted": true,
+          "version": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+        },
+        "detail": "The exact adoption command is recorded. Check current feed status; a historical receipt does not reapply an earlier adoption.",
+        "managed": true
+      },
+      "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+      "status": 200
+    }
+  },
+  "revokedWriter": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/dashboard"
+    },
+    "value": {
+      "body": {
+        "error": "Viewers have read-only access to this workspace"
+      },
+      "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+      "status": 403
+    }
+  },
+  "restoredOwner": {
+    "toolIcon": {
+      "_tag": "website",
+      "pageUrl": "http://127.74.9.10:3564/dashboard"
+    },
+    "value": {
+      "body": {
+        "adoption": {
+          "adopted": true,
+          "adoptedAt": "2026-10-11T01:25:54.136836+00:00",
+          "alreadyCurrent": false,
+          "basis": {
+            "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+            "previousRouteCount": null,
+            "previousStopCount": null,
+            "previousVersionId": null,
+            "routeCount": 14,
+            "stopCount": 287,
+            "versionId": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+          },
+          "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+          "humanAcceptShrinkage": false,
+          "reviewAccepted": true,
+          "version": "b784a5c6-fc6c-4b01-aef3-1991e57a24f3"
+        },
+        "detail": "The exact adoption command is recorded. Check current feed status; a historical receipt does not reapply an earlier adoption.",
+        "managed": true
+      },
+      "command": "287fe7a6-0eb6-4620-8a8f-0cd1ad92ef7c",
+      "status": 200
+    }
+  },
+  "rolesRestored": {
+    "chunk_id": "fbf46e",
+    "wall_time_seconds": 1.4006e-05,
+    "exit_code": 0,
+    "original_token_count": 30,
+    "output": "BEGIN\nUPDATE 1\nUPDATE 1\nCOMMIT\n711aa232-ce82-46de-a1d6-e413eaaa30c8|viewer\n8a73f1cd-f0e9-42de-ac19-9d18da4fe426|owner\n"
+  },
+  "native": {
+    "deniedAdmissionRows": 0,
+    "deniedAdoptionReceipts": 0,
+    "deniedCancellationReceipts": 0,
+    "retryVersionCurrent": false
+  },
+  "limits": [
+    "Viewer adoption control is present. Its disabled state was not captured in this interval; direct route refusal is established.",
+    "Native SQL temporary fixture role changes preserve the owner-floor trigger, then restore both original roles in finally.",
+    "This is cookie/route authorization evidence, separate from native RLS role tests.",
+    "T3 host interruptions, expected denial responses and proof-only credential bridge CORS failures occurred; no clean full-console claim.",
+    "Next development child restarted at its memory threshold at 18:49:16. The systemd parent has zero restarts; production stability is not established."
+  ]
+}

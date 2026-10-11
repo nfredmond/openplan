@@ -1,0 +1,35 @@
+{
+  "preparedAt": "2026-10-11T11:16:29.235766+00:00",
+  "state": "Prepared third fresh trial; prior two failures retained",
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "containerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "templateDatabase": "openplan_recovered_2553c3e83129432e86c97cf3aef72aee",
+  "sourceDatabase": "openplan_attempt_cli_329eebb140854bec9805381311653bac",
+  "targetDatabase": "openplan_attempt_cli_9f07f66444294f88a790237dc7deb81f",
+  "logicalTarget": "http://127.74.9.10:29941",
+  "workerSnapshotId": "ca655ea95b25edbd2f7f31c886a1b18fc10a52392c50338ddfa1e157a05fc092",
+  "phases": [
+    "Validate source checkout, immutable container, unused source/target names and original/restored file inventory.",
+    "Capture the original isolated fixture read-only, restore into a fresh source database and retain complete table/sequence/definition inventory.",
+    "Run original terminal delivery through a scoped native bridge that drops the successful completion reply. Retain the same unresolved copied command.",
+    "Stop only the owned bridge/backend after immutable identity checks; verify the source database has no remaining client sessions.",
+    "Capture the fresh source database and complete private worker root in one documented no-writer interval. Record source before/after inventories.",
+    "Restore into a fresh target database and worker directory, compare complete inventories before any native recovery.",
+    "Rebind only scoped local transport to the restored database while preserving logical installation identity and exact private journal bytes.",
+    "Fresh-process native recovery returns the matching server receipt; repeated cached read sends no completion. Refuse wrong identity and incomplete image in copied/rollback-only controls.",
+    "Keep databases, dumps and private proof retained. Stop only exact owned ephemeral backends, then report limits."
+  ],
+  "guards": [
+    "Never modify, reset or terminate sessions in the template or existing proof databases.",
+    "Never touch hosted schema/configuration, demo, another lane, shared worker contract or main merge.",
+    "All database names are new UUID names, never caller-selected arbitrary names.",
+    "Only three named transit RPCs may cross the bridge; headers/body are private and public logs retain hashes only.",
+    "Each changed guard needs a harmless survivor and targeted broken behavior; mutation changes restore in finally.",
+    "Expensive work is serial, with 1 GiB/no swap/one CPU for the runner and independently bounded owned service."
+  ],
+  "limits": [
+    "Same PostgreSQL cluster and physical host; cluster roles and Vault key are reused, not reconstructed.",
+    "The point covers database and this complete GTFS worker root, not the full external Storage volume or all protected configuration.",
+    "No populated SQLite/WAL, new parser/model computation, installed-CLI commissioning, agency/practitioner or scientific acceptance."
+  ]
+}

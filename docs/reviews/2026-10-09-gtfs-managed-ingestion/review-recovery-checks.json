@@ -1,0 +1,36 @@
+{
+  "checks": [
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 2.722
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 10.505
+    },
+    {
+      "check": "expanded-native-types",
+      "exitCode": 0,
+      "journalElapsedSeconds": 10.293,
+      "journalPeakRounded": "658.5M",
+      "serviceMemoryMaxGiB": 1
+    }
+  ],
+  "focusedTests": {
+    "numTotalTestSuites": 6,
+    "numPassedTests": 81,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-attempt.ts": "9e75c3f0d0848017f34e3d187a519770dd3796ce8f27afd2515d9f2f02a5ffef",
+    "openplan/src/lib/gtfs/managed-worker-queue.ts": "2104b350433329ec29e7dacfa743c4d146da6cc4beba947c2ab2c53dacdc5cac",
+    "openplan/scripts/workers/gtfs-ingestion.ts": "8c363bc44d4e06d8f66d4bff978842baba10cdfc30f0490b3a09d39d01ea9261",
+    "openplan/src/test/gtfs-managed-worker-attempt.test.ts": "e657ec98a32f10c8eda7b9c6bf64cd92618c112c99675ed5e382d1498af9f3e6",
+    "openplan/src/test/gtfs-managed-worker-queue.test.ts": "aca0c45f79a4270aa49633888bbefbfae678666b4475e12593c3161896aa303e",
+    "openplan/src/test/gtfs-worker-cli-options.test.ts": "63a956adfb4191e33d345616f9ca67ad1bb0436a65fd45050f89c0b01801c93d",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_cancelled_terminal_native.mts": "713e591c1d50d378d5e1c5eedfc7dc255e9ba497b181ea42c2b499c0b65dc086"
+  }
+}

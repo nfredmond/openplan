@@ -1,0 +1,41 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "runId": 38112785923,
+  "conclusion": "failure",
+  "records": [
+    {
+      "name": "qa",
+      "jobId": 114391638192,
+      "filesPassed": 1571,
+      "filesFailed": 1,
+      "filesSkipped": 96,
+      "testsPassed": 21655,
+      "testsFailed": 4,
+      "testsSkipped": 1595,
+      "logSha256": "68558ef9bb83786a8204185c0961fc4d80c1c66460056dc784fc3e90fe6389e7"
+    },
+    {
+      "name": "shuffle",
+      "jobId": 114391638217,
+      "filesPassed": 1571,
+      "filesFailed": 1,
+      "filesSkipped": 96,
+      "testsPassed": 21655,
+      "testsFailed": 4,
+      "testsSkipped": 1595,
+      "logSha256": "ec83b5510a8d082ce568602af69d2100e981f526a7287b71a4914a3721a5697d"
+    }
+  ],
+  "failureFile": "src/test/build-respects-operator-memory.test.ts",
+  "observedHeapMiB": [
+    6336,
+    704,
+    960
+  ],
+  "incorrectUpperBoundsMiB": [
+    6244,
+    612,
+    868
+  ],
+  "boundary": "Both complete suites fail four build memory probe assertions. Neither receives a passing QA result. The independently completed production build retains its own source and boundary."
+}

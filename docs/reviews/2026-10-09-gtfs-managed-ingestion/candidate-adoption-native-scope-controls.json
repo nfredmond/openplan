@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "23ddc514cae69dbee17843f42af1a1f424e062b1615bbca16806166e33f2b71c",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "isolated-database-scope",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "isolated-source-scope",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "isolated-container-identity",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "isolated-container-name",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "isolated-container-project",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "isolated-container-running",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    },
+    {
+      "case": "native-records-changed-during-controls",
+      "refused": true,
+      "omittedGuardAcceptsBrokenFixture": true
+    }
+  ],
+  "limit": "Extracted guard controls alter in-memory copies. No Docker, database, app or capture writes."
+}

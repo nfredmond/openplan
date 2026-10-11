@@ -1,0 +1,480 @@
+{
+  "records": [
+    {
+      "boundary": "local",
+      "interrupted": {
+        "boundary": "local-saved-before-prepare",
+        "sourceRequests": 1,
+        "uploads": 0,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-before-upload",
+        "state": "finished",
+        "sourceRequests": 0,
+        "uploads": 1,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "02e0e34ac1438f616a1a273d65d097f9144b9bd712de4523e6150d187a49a619",
+        "maxRssKiB": 147224
+      },
+      "retained": {
+        "mode": "retained",
+        "state": "recovered_terminal",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 0,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "02e0e34ac1438f616a1a273d65d097f9144b9bd712de4523e6150d187a49a619",
+        "maxRssKiB": 127136
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "status": "ready",
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      },
+      "controls": [
+        {
+          "field": "status",
+          "result": "expected assertion failure",
+          "message": "Native intake is not ready"
+        },
+        {
+          "field": "current",
+          "result": "expected assertion failure",
+          "message": "Native completion adopted without review"
+        },
+        {
+          "field": "routes",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "stops",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "batches",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "completion",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "sha256",
+          "result": "expected assertion failure",
+          "message": "Native source hash differs"
+        }
+      ]
+    },
+    {
+      "boundary": "prepare",
+      "interrupted": {
+        "boundary": "prepare_gtfs_archive-committed",
+        "sourceRequests": 1,
+        "uploads": 0,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "prepare_gtfs_archive"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-before-upload",
+        "state": "finished",
+        "sourceRequests": 0,
+        "uploads": 1,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "d75ea2ad7e71aeff2b79078039b32ac1b9119430cd92de2d0e954d04a5688ce5",
+        "maxRssKiB": 148560
+      },
+      "retained": {
+        "mode": "retained",
+        "state": "recovered_terminal",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 0,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "d75ea2ad7e71aeff2b79078039b32ac1b9119430cd92de2d0e954d04a5688ce5",
+        "maxRssKiB": 124428
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "status": "ready",
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      },
+      "controls": [
+        {
+          "field": "status",
+          "result": "expected assertion failure",
+          "message": "Native intake is not ready"
+        },
+        {
+          "field": "current",
+          "result": "expected assertion failure",
+          "message": "Native completion adopted without review"
+        },
+        {
+          "field": "routes",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "stops",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "batches",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "completion",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "sha256",
+          "result": "expected assertion failure",
+          "message": "Native source hash differs"
+        }
+      ]
+    },
+    {
+      "boundary": "upload",
+      "interrupted": {
+        "boundary": "upload-committed",
+        "sourceRequests": 1,
+        "uploads": 1,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "prepare_gtfs_archive"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-after-upload",
+        "state": "finished",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "da36a01ff2e6fed4fc87c2c8984f5e7b189eb9f6418bf3a61877134add67a8c0",
+        "maxRssKiB": 143112
+      },
+      "retained": {
+        "mode": "retained",
+        "state": "recovered_terminal",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 0,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "da36a01ff2e6fed4fc87c2c8984f5e7b189eb9f6418bf3a61877134add67a8c0",
+        "maxRssKiB": 125608
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "status": "ready",
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      },
+      "controls": [
+        {
+          "field": "status",
+          "result": "expected assertion failure",
+          "message": "Native intake is not ready"
+        },
+        {
+          "field": "current",
+          "result": "expected assertion failure",
+          "message": "Native completion adopted without review"
+        },
+        {
+          "field": "routes",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "stops",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "batches",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "completion",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "sha256",
+          "result": "expected assertion failure",
+          "message": "Native source hash differs"
+        }
+      ]
+    },
+    {
+      "boundary": "confirm",
+      "interrupted": {
+        "boundary": "confirm_gtfs_archive-committed",
+        "sourceRequests": 1,
+        "uploads": 1,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "prepare_gtfs_archive",
+          "confirm_gtfs_archive"
+        ]
+      },
+      "resumed": {
+        "mode": "resume-after-upload",
+        "state": "finished",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 1,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "confirm_gtfs_archive",
+          "read_gtfs_ingest_attempt",
+          "renew_gtfs_ingest",
+          "stage_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "renew_gtfs_ingest",
+          "prepare_gtfs_derived",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "write_gtfs_ingest_batch",
+          "compute_managed_gtfs_tracts",
+          "renew_gtfs_ingest",
+          "complete_gtfs_ingest"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "0c160fd81bc4b14f2c0cc6ef8d5497d18d8c333fc27eff63d4489aca72f08c41",
+        "maxRssKiB": 144048
+      },
+      "retained": {
+        "mode": "retained",
+        "state": "recovered_terminal",
+        "sourceRequests": 0,
+        "uploads": 0,
+        "workCalls": 0,
+        "calls": [
+          "claim_gtfs_ingest",
+          "read_gtfs_ingest_attempt"
+        ],
+        "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "outputSha256": "0c160fd81bc4b14f2c0cc6ef8d5497d18d8c333fc27eff63d4489aca72f08c41",
+        "maxRssKiB": 123156
+      },
+      "database": {
+        "stops": 717,
+        "routes": 95,
+        "sha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+        "status": "ready",
+        "batches": 9,
+        "current": false,
+        "completion": 1
+      },
+      "controls": [
+        {
+          "field": "status",
+          "result": "expected assertion failure",
+          "message": "Native intake is not ready"
+        },
+        {
+          "field": "current",
+          "result": "expected assertion failure",
+          "message": "Native completion adopted without review"
+        },
+        {
+          "field": "routes",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "stops",
+          "result": "expected assertion failure",
+          "message": "Native source publication incomplete"
+        },
+        {
+          "field": "batches",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "completion",
+          "result": "expected assertion failure",
+          "message": "Native receipt set differs"
+        },
+        {
+          "field": "sha256",
+          "result": "expected assertion failure",
+          "message": "Native source hash differs"
+        }
+      ]
+    }
+  ],
+  "archiveSha256": "affdc4d70cac01f71e54f049c754ba36824a885edcdef2ef8b024820c9e93080",
+  "sourceSha256": {
+    "openplan/src/lib/gtfs/managed-worker-intake.ts": "5f104b03240e2b7143c097a9bc51686c45eaee0eeaf20efbcf71a9bc3d79673e",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_intake_native.mts": "6be379087f8d4cd7aefa2c6904bb50f180a9adc04b24d6fca5ec505cfa85448c",
+    "docs/reviews/2026-10-09-gtfs-managed-ingestion/verify_intake_native.py": "8dfbb4d4bdbe87feaae33eb4f04ef6f61cf92c8928450456a0a15d6ba42fb023"
+  },
+  "boundary": "Actual local HTTP, PostgreSQL, PostgREST, Storage and parser. Controlled public DNS/transport mapping. No public TLS, browser, power-loss, full restore or capacity acceptance."
+}

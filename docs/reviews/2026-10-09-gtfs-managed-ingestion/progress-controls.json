@@ -1,0 +1,144 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "outer-request",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses a different outer request and private fields"
+      ]
+    },
+    {
+      "variant": "public-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses changed public status requestId",
+        "transit browser progress boundaries refuses changed public status workspaceId"
+      ]
+    },
+    {
+      "variant": "private-status",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses a different outer request and private fields"
+      ]
+    },
+    {
+      "variant": "ready-stage",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries requires a completed stage and archive before showing ready"
+      ]
+    },
+    {
+      "variant": "ready-archive",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries requires a completed stage and archive before showing ready"
+      ]
+    },
+    {
+      "variant": "failure-code",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries requires a failure code and does not treat queued as current"
+      ]
+    },
+    {
+      "variant": "current-ready",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries requires a failure code and does not treat queued as current"
+      ]
+    },
+    {
+      "variant": "lease",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries requires active ownership evidence and no lease for inactive jobs"
+      ]
+    },
+    {
+      "variant": "cancel-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses changed cancellation requestId",
+        "transit browser progress boundaries refuses changed cancellation workspaceId"
+      ]
+    },
+    {
+      "variant": "cancel-closure",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses a cancellation claiming another version closure"
+      ]
+    },
+    {
+      "variant": "cancel-stage",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses conflicting cancellation and active processing"
+      ]
+    },
+    {
+      "variant": "uuid",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses unavailable response bodies and invalid local scope"
+      ]
+    },
+    {
+      "variant": "managed",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser progress boundaries refuses unavailable response bodies and invalid local scope"
+      ]
+    },
+    {
+      "variant": "review-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser review boundaries refuses a different reviewed feedId",
+        "transit browser review boundaries refuses a different reviewed versionId"
+      ]
+    },
+    {
+      "variant": "review-predecessor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser review boundaries requires complete predecessor counts"
+      ]
+    },
+    {
+      "variant": "review-material",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser review boundaries refuses concealed shrinkage or an invented current version"
+      ]
+    },
+    {
+      "variant": "review-current",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "transit browser review boundaries refuses concealed shrinkage or an invented current version"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "fcbc7c5e9087a0d3b319e653890af2d96589a893c50e585a1e2b10ce570311d3",
+  "testSha256": "3a5c03f5793d56da84a3ae1fe1f4b0ac95f979445efd054cb093c02629eb81ba",
+  "boundary": "Controlled wire values and pure presentation guards. No component rendering, live HTTP, current database state, real browser navigation or planner acceptance."
+}

@@ -1,0 +1,106 @@
+{
+  "sourceSha256": "92fba55799f23e8fbe4448770b351eb158b79f82f0345ea3391f8ba04e30b4fa",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "owned-stopped",
+      "passed": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-network",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-environment",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-uri",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "rest",
+      "reason": "expanded-new-openapi",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-loopback",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "gateway",
+      "reason": "expanded-new-loopback",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "storage",
+      "reason": "expanded-new-mounts",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "kind": "gateway",
+      "reason": "expanded-new-mounts",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "limits": "Copied protected metadata and in-memory guard mutations. No Docker, network, database, source files or services changed."
+}

@@ -1,0 +1,17 @@
+{
+  "containerId": "d59d28ec4015cb56645295fca3dc79e014d67b90f407479bd0ed6f32488ff8f2",
+  "purpose": "gtfs-browser-acceptance-02",
+  "observedExitCode": 137,
+  "dockerOOMFlagAtFailure": false,
+  "kernelEvidence": [
+    "Oct 10 18:13:02 natford kernel: memory: usage 131076kB, limit 131072kB, failcnt 93",
+    "Oct 10 18:13:02 natford kernel: Memory cgroup stats for /system.slice/docker-d59d28ec4015cb56645295fca3dc79e014d67b90f407479bd0ed6f32488ff8f2.scope:",
+    "Oct 10 18:13:02 natford kernel: oom-kill:constraint=CONSTRAINT_MEMCG,nodemask=(null),cpuset=docker-d59d28ec4015cb56645295fca3dc79e014d67b90f407479bd0ed6f32488ff8f2.scope,mems_allowed=0,oom_memcg=/system.slice/docker-d59d28ec4015cb56645295fca3dc79e014d67b90f407479bd0ed6f32488ff8f2.scope,task_memcg=/system.slice/docker-d59d28ec4015cb56645295fca3dc79e014d67b90f407479bd0ed6f32488ff8f2.scope,task=postgrest,pid=2562086,uid=1000",
+    "Oct 10 18:13:02 natford kernel: Memory cgroup out of memory: Killed process 2562086 (postgrest) total-vm:1073830780kB, anon-rss:127988kB, file-rss:12060kB, shmem-rss:0kB, UID:1000 pgtables:504kB oom_score_adj:0"
+  ],
+  "beforeMemoryBytes": 134217728,
+  "afterMemoryBytes": 268435456,
+  "afterMemorySwapBytes": 268435456,
+  "recovery": "Restarted only owned container and increased cap to 256 MiB without swap. App error boundary reached then retried.",
+  "boundary": "Proof topology adjustment. No production capacity or whole-host operating acceptance."
+}

@@ -1,0 +1,37 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "observerInterval": {
+    "endedAt": "2026-10-11T05:02:31.762Z",
+    "errors": [],
+    "startedAt": "2026-10-11T04:57:47.860Z",
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) T3Code(Alpha)/0.0.45 Chrome/152.0.7977.130 Electron/44.4.2 Safari/537.36"
+  },
+  "earlierConsole": [
+    {
+      "level": "error",
+      "text": "Electron sandboxed_renderer.bundle.js script failed to run",
+      "timestamp": "2026-10-11T04:32:09.140Z",
+      "source": "console"
+    },
+    {
+      "level": "error",
+      "text": "TypeError: Cannot destructure property 'preloadScripts' of 'binding.startupData' as it is null.\n    at node:electron/js2c/sandbox_bundle:2:124925\n    at node:electron/js2c/sandbox_bundle:2:125860\n    at ___electron_webpack_init__ (node:electron/js2c/sandbox_bundle:2:125864)\n    at node:electron/js2c/sandbox_bundle:2:125987",
+      "timestamp": "2026-10-11T04:32:09.141Z",
+      "source": "console"
+    }
+  ],
+  "failedPrefetch": [
+    {
+      "url": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b?_rsc=Dn_dAdO9xYGadnhX",
+      "method": "GET",
+      "status": null,
+      "failed": true,
+      "errorText": "net::ERR_ABORTED",
+      "timestamp": "2026-10-11T05:00:28.369Z"
+    }
+  ],
+  "limits": [
+    "Earlier Electron errors precede the declared observation interval.",
+    "The aborted model prefetch is preserved; actual later navigation and coverage POST complete."
+  ]
+}

@@ -1,0 +1,102 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "wrong-current-source",
+      "expectedFailure": "replay-current-source",
+      "passed": true
+    },
+    {
+      "case": "wrong-backup-source",
+      "expectedFailure": "replay-backup-source",
+      "passed": true
+    },
+    {
+      "case": "different-snapshot",
+      "expectedFailure": "replay-snapshot-identity",
+      "passed": true
+    },
+    {
+      "case": "native-record-changed",
+      "expectedFailure": "replay-native-stability",
+      "passed": true
+    },
+    {
+      "case": "changed-original-files",
+      "expectedFailure": "replay-file-stability",
+      "passed": true
+    },
+    {
+      "case": "changed-relocated-copy",
+      "expectedFailure": "replay-final-independent-comparison",
+      "passed": true
+    },
+    {
+      "case": "failed-service",
+      "expectedFailure": "replay-actual-bounded-service",
+      "passed": true
+    },
+    {
+      "case": "missing-case",
+      "expectedFailure": "replay-case-census",
+      "passed": true
+    },
+    {
+      "case": "changed-terminal-receipt",
+      "expectedFailure": "replay-terminal-custody",
+      "passed": true
+    },
+    {
+      "case": "repeated-computation",
+      "expectedFailure": "replay-recomputation",
+      "passed": true
+    },
+    {
+      "case": "different-parser-count",
+      "expectedFailure": "replay-restored-parser-counts",
+      "passed": true
+    },
+    {
+      "case": "uncertain-never-contacted-server",
+      "expectedFailure": "replay-native-sequence",
+      "passed": true
+    },
+    {
+      "case": "uncertain-cached-reply",
+      "expectedFailure": "replay-native-reply-origin",
+      "passed": true
+    },
+    {
+      "case": "invalid-request-hash",
+      "expectedFailure": "replay-argument-hash",
+      "passed": true
+    },
+    {
+      "case": "new-claim-request",
+      "expectedFailure": "replay-original-claim-arguments",
+      "passed": true
+    },
+    {
+      "case": "wrong-refusal",
+      "expectedFailure": "replay-intended-native-refusal",
+      "passed": true
+    },
+    {
+      "case": "foreign-terminal-write",
+      "expectedFailure": "replay-refusal-before-write",
+      "passed": true
+    }
+  ],
+  "limits": "Copied result observations only. No app, source, backup, restored files, database or external service writes."
+}

@@ -1,0 +1,20 @@
+{
+  "records": [
+    {
+      "check": "all-workers-recheck",
+      "exitCode": 0,
+      "seconds": 121.046
+    }
+  ],
+  "boundary": "All discovered scripts run serially under the existing worker interpreters. Base HEAD plus the recorded fixture correction, not pristine f639 source. Engineering checks only; no scientific or hosted commissioning acceptance.",
+  "suitesPassed": 188,
+  "suitesFailed": 0,
+  "suitesNotRun": 0,
+  "serviceMemoryMaxBytes": 2147483648,
+  "journalMemoryPeak": "247M, rounded systemd report",
+  "baseHead": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "uncommittedCorrection": {
+    "path": "workers/activitysim_worker/test_screening_handoff.py",
+    "sha256": "68c9e51b2beebd06163dfe84f89b24e8fd0b1eb463f5b3b6d11747a29dfc1a0f"
+  }
+}

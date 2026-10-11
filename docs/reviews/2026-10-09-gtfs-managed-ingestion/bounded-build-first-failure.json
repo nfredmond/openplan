@@ -1,0 +1,18 @@
+{
+  "head": "fa2e0ba0edfe1d64e9635692e2e3bb9700824196",
+  "cleanSource": true,
+  "previousTestServiceInactive": true,
+  "availableMemoryKiB": 9494816,
+  "memoryMaxBytes": 4294967296,
+  "swapMaxBytes": 0,
+  "nodeHeapMiB": 3072,
+  "pageWorkers": 1,
+  "unit": "openplan-gtfs-map-ui-production-build-20261010-01",
+  "result": "oom-kill",
+  "actualHeapMiB": 6144,
+  "observedMemoryPeakBytes": 4294967296,
+  "wallSeconds": 42.223,
+  "cpuSeconds": 42.145,
+  "cause": "npm build script appends --max-old-space-size=6144 after the supplied lower value. The owned 4 GiB cgroup reaches its cap.",
+  "boundary": "Failed build. No browser or release acceptance. Other services not stopped."
+}

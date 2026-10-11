@@ -51,7 +51,8 @@ def storage(config):
                 assert created_bucket.status_code in (200,201), 'Private GTFS test bucket creation failed'
                 response=requests.get(url+'/bucket/gtfs-uploads',headers=headers,timeout=10)
             assert response.status_code==200 and response.json()['public'] is False, 'Expected private GTFS bucket'
-            yield {'url':url,'token':settings['SERVICE_KEY'],'image':source['Config']['Image']}
+            yield {'url':url,'token':settings['SERVICE_KEY'],'image':source['Config']['Image'],
+                   'object_directory':str(objects),'anon_token':settings['ANON_KEY']}
         finally:
             if created:docker('rm','-f',name)
             envfile.unlink(missing_ok=True)

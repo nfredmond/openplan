@@ -1,0 +1,106 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless-field",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "different-build",
+      "passed": true,
+      "expectedFailure": "build-identity"
+    },
+    {
+      "case": "no-parser",
+      "passed": true,
+      "expectedFailure": "active-parser-not-established"
+    },
+    {
+      "case": "changed-actor",
+      "passed": true,
+      "expectedFailure": "submission-identity-changed"
+    },
+    {
+      "case": "another-claim",
+      "passed": true,
+      "expectedFailure": "duplicate-worker-attempt"
+    },
+    {
+      "case": "unfinished-state",
+      "passed": true,
+      "expectedFailure": "cancelled-terminal-not-established"
+    },
+    {
+      "case": "live-parser",
+      "passed": true,
+      "expectedFailure": "parser-still-running"
+    },
+    {
+      "case": "adopted-version",
+      "passed": true,
+      "expectedFailure": "unexpected-adoption"
+    },
+    {
+      "case": "published-results",
+      "passed": true,
+      "expectedFailure": "cancelled-results-published"
+    },
+    {
+      "case": "changed-bytes",
+      "passed": true,
+      "expectedFailure": "saved-bytes-changed"
+    },
+    {
+      "case": "retained-object",
+      "passed": true,
+      "expectedFailure": "archive-cleanup-not-established"
+    },
+    {
+      "case": "unauthenticated-probe",
+      "passed": true,
+      "expectedFailure": "archive-cleanup-not-established"
+    },
+    {
+      "case": "lost-retired-key",
+      "passed": true,
+      "expectedFailure": "recurring-key-not-retained"
+    },
+    {
+      "case": "different-command",
+      "passed": true,
+      "expectedFailure": "cancellation-receipt-binding"
+    },
+    {
+      "case": "second-admission-identity",
+      "passed": true,
+      "expectedFailure": "admission-recovery-identity"
+    },
+    {
+      "case": "failed-replay",
+      "passed": true,
+      "expectedFailure": "command-replay-not-established"
+    },
+    {
+      "case": "mobile-overflow",
+      "passed": true,
+      "expectedFailure": "layout-overflow"
+    },
+    {
+      "case": "console-error",
+      "passed": true,
+      "expectedFailure": "captured-console-error"
+    }
+  ],
+  "limits": [
+    "Controls alter isolated copies of actual observations, not application source or database rows.",
+    "Controlled acknowledgement loss occurs after an actual admission reply. It is not a public-network fault.",
+    "Future-only console observations and desktop browser at 390 CSS pixels. No physical phone, hosted service, practitioner or scientific acceptance."
+  ]
+}

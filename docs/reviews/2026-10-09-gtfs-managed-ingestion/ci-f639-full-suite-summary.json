@@ -1,0 +1,40 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "run": 38107225444,
+  "conclusion": "success",
+  "records": [
+    {
+      "job": "qa",
+      "lines": [
+        "verify (qa gate)\tQA gate\t2026-10-11T03:41:01.7826471Z  Test Files  1561 passed | 96 skipped (1657)",
+        "verify (qa gate)\tQA gate\t2026-10-11T03:41:01.7938649Z       Tests  21405 passed | 1595 skipped (23000)"
+      ],
+      "passed": 21405,
+      "skipped": 1595,
+      "failed": 0,
+      "files": 1657,
+      "log": "ci-f639-qa-success.log",
+      "logSha256": "0f1501fb9b3018d2bed1d322b991004dae40d263734d3422f025f6771223b7ae",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38107225444/job/114375181379"
+    },
+    {
+      "job": "shuffled",
+      "lines": [
+        "2026-10-11T03:28:43.1516034Z Running the suite in shuffled order with seed 323150.",
+        "2026-10-11T03:40:53.4565116Z  Test Files  1561 passed | 96 skipped (1657)",
+        "2026-10-11T03:40:53.4685904Z       Tests  21405 passed | 1595 skipped (23000)"
+      ],
+      "passed": 21405,
+      "skipped": 1595,
+      "failed": 0,
+      "files": 1657,
+      "log": "ci-f639-shuffled-direct-success.log",
+      "logSha256": "2aee1f5095a7d7b09767c70911b38312e4bd86ee9e8248adddbe650a6a3ce504",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38107225444/job/114375181395"
+    }
+  ],
+  "qaCommand": "lint, deadcode, full tests, native connector tests, configured RLS gate, dependency audit and webpack build",
+  "liveRlsSeparate": true,
+  "limits": "Offline CI full QA and shuffled suite, not live database, practitioner or scientific acceptance. Local interrupted/partial runs remain distinct. The first gh run view shuffled log lacks its final summary; direct completed-job download supplies it.",
+  "url": "https://github.com/nfredmond/openplan/actions/runs/38107225444"
+}

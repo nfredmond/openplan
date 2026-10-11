@@ -1,0 +1,43 @@
+{
+  "head": "c75fa343d6b0c9fed028bda042f73a7fc2a1a637",
+  "run": 38110964759,
+  "records": [
+    {
+      "job": 114386262520,
+      "label": "qa",
+      "summary": [
+        "Test Files  1566 passed | 96 skipped (1662)",
+        "Tests  21622 passed | 1595 skipped (23217)"
+      ],
+      "files": {
+        "passed": 1566,
+        "skipped": 96,
+        "total": 1662
+      },
+      "tests": {
+        "passed": 21622,
+        "skipped": 1595,
+        "total": 23217
+      }
+    },
+    {
+      "job": 114386262457,
+      "label": "shuffled",
+      "summary": [
+        "Test Files  1566 passed | 96 skipped (1662)",
+        "Tests  21622 passed | 1595 skipped (23217)"
+      ],
+      "files": {
+        "passed": 1566,
+        "skipped": 96,
+        "total": 1662
+      },
+      "tests": {
+        "passed": 21622,
+        "skipped": 1595,
+        "total": 23217
+      }
+    }
+  ],
+  "boundary": "CI and shuffled suites at c75. This precedes UI main join and the build-command correction."
+}

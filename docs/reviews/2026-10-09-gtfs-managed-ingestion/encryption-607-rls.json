@@ -1,0 +1,29 @@
+{
+  "run": 38126795836,
+  "head": "6072ec77406c166b1421c3e785035337ef0731a9",
+  "status": "completed",
+  "conclusion": "success",
+  "jobs": [
+    {
+      "name": "live RLS isolation",
+      "status": "completed",
+      "conclusion": "success",
+      "startedAt": "2026-10-11T09:00:11Z",
+      "completedAt": "2026-10-11T09:34:41Z"
+    }
+  ],
+  "logSha256": "cdc670b8c5b7884c503dd38aa6a6d0145f6ee1121db0c182e502b1b963448613",
+  "summaries": [],
+  "limit": "GitHub evidence at this exact source; no current GTFS or hosted acceptance.",
+  "testSummaries": [
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:34:20.5989460Z  Test Files  104 passed (104)",
+    "live RLS isolation\tRun live RLS isolation proof\t2026-10-11T09:34:20.5995453Z       Tests  1499 passed | 125 skipped (1624)"
+  ],
+  "parsedTestCounts": [
+    {
+      "job": "live RLS isolation",
+      "passed": 1499,
+      "skipped": 125
+    }
+  ]
+}

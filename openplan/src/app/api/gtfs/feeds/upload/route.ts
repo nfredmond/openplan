@@ -7,6 +7,8 @@ import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 import { runGtfsIngest } from "@/lib/gtfs/ingest";
+import { managedGtfsEnabled, managedGtfsRouteSubmission } from "@/lib/gtfs/managed-route";
+import { resolveManagedGtfsSubmission } from "@/lib/gtfs/managed-source";
 
 /**
  * A `.zip` A PLANNER WAS EMAILED, TURNED INTO SERVICE LEVELS.
@@ -206,6 +208,12 @@ export async function POST(request: NextRequest) {
         { error: "The uploaded feed is empty", detail: "Nothing was received." },
         { status: 400 }
       );
+    }
+
+    if (managedGtfsEnabled()) {
+      const intent = { source: "upload" as const, ...query.data };
+      return managedGtfsRouteSubmission(request, { service, workspaceId, actorId: user.id, intent, upload: bodyRead.bytes,
+        resolve: archive => resolveManagedGtfsSubmission(service, intent, archive) });
     }
 
     const result = await runGtfsIngest({

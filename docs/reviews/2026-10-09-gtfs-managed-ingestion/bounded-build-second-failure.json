@@ -1,0 +1,14 @@
+{
+  "head": "fa2e0ba0edfe1d64e9635692e2e3bb9700824196",
+  "unit": "openplan-gtfs-map-ui-production-build-20261010-02",
+  "result": "oom-kill",
+  "execMainStatus": 143,
+  "actualHeapMiB": 3072,
+  "memoryMaxBytes": 4294967296,
+  "swapMaxBytes": 0,
+  "observedMemoryPeakBytes": 4294967296,
+  "wallSeconds": 46.769,
+  "cpuSeconds": 46.657,
+  "commandEvidence": "map-ui-production-build-effective-command.json",
+  "boundary": "Failed build. Explicit 3 GiB heap still reaches the aggregate 4 GiB cgroup cap. No new browser or release acceptance. Further builds paused for memory investigation."
+}

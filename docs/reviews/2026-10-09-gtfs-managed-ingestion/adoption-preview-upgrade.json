@@ -1,0 +1,67 @@
+{
+  "sourceHead": "f38141f2add9e3afaf7781287a635bcfab2a269d",
+  "migration": "20261016000032_model_kpi_receipt_float_precision.sql",
+  "sha256": "dc26f3316ed88dcd480990fd76f60977d1e76d29bd475e8ee14d711a42af27b7",
+  "beforeMigrationCount": 404,
+  "afterMigrationCount": 405,
+  "checks": [
+    {
+      "check": "default-refusal",
+      "exitCode": 1
+    },
+    {
+      "check": "reviewed-upgrade",
+      "exitCode": 0
+    },
+    {
+      "check": "repeat",
+      "exitCode": 0
+    }
+  ],
+  "preservedTables": {
+    "models": {
+      "hash": "d3468a132b6a1deea8b170b897910865",
+      "count": 2
+    },
+    "projects": {
+      "hash": "daf32e502c727ce55ea2a462c1731922",
+      "count": 1
+    },
+    "gtfs_feeds": {
+      "hash": "8b67d57b5fec3aeba87597c5e94f016f",
+      "count": 10
+    },
+    "model_runs": {
+      "hash": "7ef809b3e6055d5cc461dbe04ddabae0",
+      "count": 111
+    },
+    "gtfs_feed_versions": {
+      "hash": "be77eb383a914e94205170eb850f94c7",
+      "count": 18
+    },
+    "gtfs_tract_service": {
+      "hash": "d41d8cd98f00b204e9800998ecf8427e",
+      "count": 0
+    },
+    "gtfs_stop_service_levels": {
+      "hash": "fb6161629eb19601691169a9c470ee87",
+      "count": 119530
+    },
+    "gtfs_route_service_levels": {
+      "hash": "0100f1bd84286c5de7d0973d78827c96",
+      "count": 3458
+    }
+  },
+  "functions": {
+    "record_legacy_model_kpi(uuid,jsonb)": [
+      "search_path=\"\"",
+      "extra_float_digits=3"
+    ],
+    "write_model_attempt_kpi(uuid,uuid,jsonb)": [
+      "search_path=\"\"",
+      "extra_float_digits=3"
+    ]
+  },
+  "wallSeconds": 40.427,
+  "boundary": "Exact owned same-cluster recovered preview upgrade only. No hosted migration, full upgrade acceptance or cross-host recovery."
+}

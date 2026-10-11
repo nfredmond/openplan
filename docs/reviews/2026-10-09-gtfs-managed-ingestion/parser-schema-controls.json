@@ -1,0 +1,36 @@
+{
+  "guardSha256": "8d3bda56676c5f046153a5c627183578dd4631981dfcca59c4b7c16296c771b3",
+  "artifactSha256": "aa84b1b0121dffd96bdd9e64fe1daec2055c618791933ac3c58b4ee8e3421276",
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "assertion": null
+    },
+    {
+      "variant": "new-request-shape",
+      "result": "expected assertion failure",
+      "assertion": "no request-capable zod schema declares medianHeadwayBasis"
+    },
+    {
+      "variant": "export-level",
+      "result": "expected assertion failure",
+      "assertion": "keeps the saved-parser schema private"
+    },
+    {
+      "variant": "route-import",
+      "result": "expected assertion failure",
+      "assertion": "keeps the saved-parser schema private"
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "assertion": null
+    }
+  ]
+}

@@ -1,0 +1,68 @@
+{
+  "sourceSha256": "42fed5c6658625294a5b47cfb4cb13539899dffe3d72eb7424c9058e787a1e14",
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "expanded-resume-producer",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-producer",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-target",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-target",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-target",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-original-cli",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-original-cli",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-preservation",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-preservation",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    },
+    {
+      "case": "expanded-resume-preservation",
+      "refused": true,
+      "omittedGuardAllowsBroken": true
+    }
+  ],
+  "limits": "Pure continuation guards, no service stop/start or native read."
+}

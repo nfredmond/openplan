@@ -1,0 +1,37 @@
+{
+  "records": [
+    {
+      "check": "client-controls",
+      "exitCode": 0,
+      "seconds": 118.875
+    },
+    {
+      "check": "equity-controls",
+      "exitCode": 0,
+      "seconds": 41.45
+    },
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 3.295
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 10.101
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 16.058
+    }
+  ],
+  "testFiles": 12,
+  "regression": {
+    "numTotalTests": 119,
+    "numPassedTests": 119,
+    "numPendingTests": 0,
+    "numFailedTests": 0
+  },
+  "boundary": "CI failure reproductions, static schema audit, source mount controls and mock/browser-storage component controls. No new identified-build browser, full local suite, live database or release acceptance."
+}

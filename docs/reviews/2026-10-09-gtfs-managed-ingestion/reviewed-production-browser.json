@@ -1,0 +1,114 @@
+{
+  "head": "c75fa343d6b0c9fed028bda042f73a7fc2a1a637",
+  "buildId": "palf6jxoWtH9FdWik_Q6r",
+  "version": "0.68.0",
+  "parserBuild": "3aa44ff8015509fa81a6e83e526b9b4d036a8034",
+  "observer": {
+    "coverageRequests": [
+      {
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "geometryType": "Polygon",
+        "method": "POST",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "time": "2026-10-11T04:26:03.903Z",
+        "url": "/api/gtfs/feeds/study-area-coverage",
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      }
+    ],
+    "endedAt": "2026-10-11T04:26:43.209Z",
+    "errors": [],
+    "startedAt": "2026-10-11T04:18:59.365Z",
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) T3Code(Alpha)/0.0.45 Chrome/152.0.7977.130 Electron/44.4.2 Safari/537.36"
+  },
+  "desktop": {
+    "coverage": {
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "geometryType": "Polygon",
+      "method": "POST",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "time": "2026-10-11T04:26:03.903Z",
+      "url": "/api/gtfs/feeds/study-area-coverage",
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    },
+    "documentWidth": 1280,
+    "errors": [],
+    "height": 800,
+    "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "time": "2026-10-11T04:26:13.890Z",
+    "width": 1280,
+    "zeroRunsVisible": true
+  },
+  "mobile": {
+    "documentWidth": 390,
+    "errors": [],
+    "height": 844,
+    "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "time": "2026-10-11T04:26:15.259Z",
+    "width": 390,
+    "zeroRunsVisible": true
+  },
+  "cancelled": {
+    "desktop": {
+      "cardText": "Cancelled\n\nhttps://developer.trimet.org/schedule/gtfs.zip\n\nRequest b8362580-4aee-4156-aff7-e504ba83c64d\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640. Worker attempts: 1.\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove from this browser",
+      "documentWidth": 1280,
+      "errors": [],
+      "height": 800,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "panelCount": 1,
+      "time": "2026-10-11T04:23:52.521Z",
+      "width": 1280
+    },
+    "mobile": {
+      "cardText": "Cancelled\n\nhttps://developer.trimet.org/schedule/gtfs.zip\n\nRequest b8362580-4aee-4156-aff7-e504ba83c64d\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640. Worker attempts: 1.\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove from this browser",
+      "documentWidth": 390,
+      "errors": [],
+      "height": 844,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "panelCount": 1,
+      "time": "2026-10-11T04:23:52.145Z",
+      "width": 390
+    }
+  },
+  "navigation": [
+    "Dashboard",
+    "Data Hub",
+    "Projects",
+    "Synthetic retained-transit geography check",
+    "Travel modeling",
+    "Synthetic retained transit geography review"
+  ],
+  "modelId": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "projectId": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+  "limits": [
+    "Same-cluster restored engineering fixture. Read continuation does not repeat native interruption, upload, or restoration proofs.",
+    "Future-only console interval. Earlier connection-refused entries occurred before the owned production service started.",
+    "T3 snapshots briefly returned a loading placeholder. Saved captures and DOM observations establish the later visible state.",
+    "T3 selector and key calls sometimes returned an automation failure. Subsequent actual URL, selected values and coverage response establish completed interactions.",
+    "390 CSS pixels with desktop user agent, not a physical phone.",
+    "No model run, scientific, practicing-planner, cross-host or hosted GTFS acceptance. Candidate migrations remain unreleased."
+  ]
+}

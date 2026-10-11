@@ -1,0 +1,175 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "buildId": "V-81SxKhPY1f6Mv6vyN7x",
+  "projectId": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+  "modelId": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "desktop": {
+    "coverage": {
+      "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "geometryBytes": 60606,
+      "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "geometryType": "Polygon",
+      "method": "POST",
+      "response": {
+        "coverage": "yes",
+        "reason": null,
+        "serviceEndDate": "2027-01-10",
+        "stopServiceRowsInStudyArea": 238,
+        "usesFrequencies": false
+      },
+      "status": 200,
+      "time": "2026-10-11T05:00:57.917Z",
+      "url": "/api/gtfs/feeds/study-area-coverage",
+      "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+    },
+    "documentWidth": 1280,
+    "errors": [],
+    "height": 800,
+    "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "time": "2026-10-11T05:01:25.701Z",
+    "width": 1280,
+    "zeroRunsVisible": true
+  },
+  "mobile": {
+    "documentWidth": 390,
+    "errors": [],
+    "height": 844,
+    "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "savedOaklandSourceVisible": true,
+    "scientificCaveatVisible": true,
+    "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+    "time": "2026-10-11T05:01:34.801Z",
+    "width": 390,
+    "zeroRunsVisible": true
+  },
+  "cancelled": {
+    "desktop": {
+      "cardText": "Cancelled\n\nhttps://developer.trimet.org/schedule/gtfs.zip\n\nRequest b8362580-4aee-4156-aff7-e504ba83c64d\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640. Worker attempts: 1.\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove from this browser",
+      "documentWidth": 1280,
+      "errors": [],
+      "height": 800,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "panelCount": 1,
+      "time": "2026-10-11T04:58:03.900Z",
+      "width": 1280
+    },
+    "mobile": {
+      "cardText": "Cancelled\n\nhttps://developer.trimet.org/schedule/gtfs.zip\n\nRequest b8362580-4aee-4156-aff7-e504ba83c64d\n\nVersion 1ca4fa87-713d-4a0e-8015-9edd428f1640. Worker attempts: 1.\n\nSynthetic planner cancellation while the restored installation reads the TriMet schedule.\n\nArchive cleanup can remain pending after processing closes.\n\nCheck progress\nOpen version\nRemove from this browser",
+      "documentWidth": 390,
+      "errors": [],
+      "height": 844,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "panelCount": 1,
+      "time": "2026-10-11T04:58:15.154Z",
+      "width": 390
+    }
+  },
+  "feedReview": {
+    "desktop": {
+      "detailText": "www.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 1280,
+      "errors": [],
+      "height": 800,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "time": "2026-10-11T04:59:16.712Z",
+      "width": 1280
+    },
+    "mobile": {
+      "detailText": "www.bart.gov\n\nVersion 8a86a802-a3cc-4b09-979d-6187bad01285\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version 8a86a802-a3cc-4b09-979d-6187bad01285.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A historical command receipt does not prove which version is in use now.\n\nRead version again",
+      "documentWidth": 390,
+      "errors": [],
+      "height": 844,
+      "href": "http://127.74.9.10:3564/data-hub",
+      "selectedVersion": "8a86a802-a3cc-4b09-979d-6187bad01285",
+      "time": "2026-10-11T04:59:24.344Z",
+      "width": 390
+    }
+  },
+  "modelFeed": {
+    "desktop": {
+      "documentWidth": 1280,
+      "errors": [],
+      "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+      "height": 800,
+      "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "time": "2026-10-11T05:02:14.142Z",
+      "width": 1280
+    },
+    "mobile": {
+      "documentWidth": 390,
+      "errors": [],
+      "feedText": "Transit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart · schedule through 2027-01-10\nBay Area Rapid Transit (BART) · schedule through 2026-08-09\nwww.bart.gov · schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed — verified against its checksum — instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2027-01-10. An expired schedule is usually the last one the agency published and is normally the right thing to model from — the run records that it was expired so nobody has to guess later.",
+      "height": 844,
+      "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+      "selectedFeed": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+      "time": "2026-10-11T05:02:09.808Z",
+      "width": 390
+    }
+  },
+  "health": {
+    "checkedAt": "2026-10-11T05:02:31.806Z",
+    "checks": {
+      "app": "ok",
+      "database": "not_checked"
+    },
+    "deployment": {
+      "commit": "48648251cbda",
+      "version": "0.68.0"
+    },
+    "service": "openplan",
+    "status": "ok"
+  },
+  "observer": {
+    "coverageRequests": [
+      {
+        "feedId": "16e2e138-400a-49ff-8bc3-089ff185e5d7",
+        "geometryBytes": 60606,
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "geometryType": "Polygon",
+        "method": "POST",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200,
+        "time": "2026-10-11T05:00:57.917Z",
+        "url": "/api/gtfs/feeds/study-area-coverage",
+        "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+      }
+    ],
+    "endedAt": "2026-10-11T05:02:31.762Z",
+    "errors": [],
+    "navigation": [
+      {
+        "href": "http://127.74.9.10:3564/dashboard",
+        "time": "2026-10-11T04:57:47.860Z"
+      },
+      {
+        "href": "http://127.74.9.10:3564/data-hub",
+        "time": "2026-10-11T04:58:03.900Z"
+      },
+      {
+        "href": "http://127.74.9.10:3564/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+        "time": "2026-10-11T05:00:16.891Z"
+      },
+      {
+        "href": "http://127.74.9.10:3564/models",
+        "time": "2026-10-11T05:00:25.330Z"
+      },
+      {
+        "href": "http://127.74.9.10:3564/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+        "time": "2026-10-11T05:01:25.701Z"
+      }
+    ],
+    "startedAt": "2026-10-11T04:57:47.860Z",
+    "ua": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) T3Code(Alpha)/0.0.45 Chrome/152.0.7977.130 Electron/44.4.2 Safari/537.36"
+  }
+}

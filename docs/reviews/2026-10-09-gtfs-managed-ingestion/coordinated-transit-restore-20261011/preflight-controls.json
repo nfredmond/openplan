@@ -1,0 +1,148 @@
+{
+  "records": [
+    {
+      "case": "owned-stopped-backend",
+      "passed": true
+    },
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-source",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-source",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-container",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-container-project",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-container-project",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-template",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-template",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-database-identities",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-database-identities",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-existing-database",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_scope",
+      "reason": "coordinated-original-worker-active",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-owner",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-database",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-limits",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-loopback",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "function": "verify_backend",
+      "reason": "coordinated-backend-openapi",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "9968be29a1f8799f770170fa2ee58985138977ffa93a1efeb9744a998929fa25",
+  "limits": "Copied fixtures and in-memory guard mutations. No native database, container, file root or network access."
+}

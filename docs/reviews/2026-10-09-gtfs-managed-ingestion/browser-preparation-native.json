@@ -1,0 +1,12 @@
+{
+  "database": "openplan_attempt_cli_9cb007ca9ecc4e81af6f6b5b55603391",
+  "sourceDatabase": "openplan_attempt_cli_42decc54e8fb4959b50f92d31a879ccd",
+  "migrationCount": 403,
+  "candidateLedgerMatches": true,
+  "authSchemaSha256": "c92fa28aac7acef99883299f67eaecaec5f605acce4cb98b71092c9ba67dfc2c",
+  "authLedgerWriter": "supabase_auth_admin",
+  "authHistoryRowsBefore": 0,
+  "authHistoryRowsAfter": 77,
+  "sourceUnchanged": true,
+  "boundary": "Owned browser clone of the populated official CLI candidate. Version-only Auth ledger after schema equality excludes ownership, grants, dump comments and restriction markers. Auth ledger transfer changes no user records; the clone retains predecessor fixtures. No login, browser, complete restore or installation acceptance."
+}

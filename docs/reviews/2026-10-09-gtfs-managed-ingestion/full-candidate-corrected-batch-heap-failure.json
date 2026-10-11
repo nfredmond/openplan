@@ -1,0 +1,15 @@
+{
+  "checkedAt": "2026-10-11T03:32:24.083086+00:00",
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "completedFiles": 600,
+  "completedTestsPassed": 7223,
+  "completedTestsSkipped": 989,
+  "failedBatch": "corrected-batch-11",
+  "failure": "V8 768 MiB heap exhausted. Systemd records child abnormal termination. Runner service remained active and is intentionally stopped. No failed-batch acceptance counted.",
+  "memoryObservedBeforeStop": {
+    "currentBytes": 1041125376,
+    "peakBytes": 1118257152
+  },
+  "serviceLimitBytes": 2147483648,
+  "next": "Resume manifest files from index 600 in 30-file processes, one worker, bounded 1024 MiB V8 heap. Preserve the original complete inventory and all prior records."
+}

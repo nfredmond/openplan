@@ -1,0 +1,21 @@
+{
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "nativeProducerResultChecked": true,
+  "sourceCodeUnchanged": true,
+  "exactInstalledCliRecovered": true,
+  "nativeTargetReadRepeated": true,
+  "propertiesReadRepeated": true,
+  "allRestoredBytesRetainedExceptAllowedJournals": true,
+  "changedFiles": [
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/pending.json",
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-b87fe3ef-00df-4e53-9a19-5e1e3e291470/attempt-97abc410-d9d7-40ef-b75d-0d3e5b78a4c9/commands/command-terminal/pending.json",
+    "gtfs-capacity/71753fbcb783e302029006566501405bbbd00551f9d54e73bd73a87f1116c6da/version-b87fe3ef-00df-4e53-9a19-5e1e3e291470/pending.json"
+  ],
+  "originalPayloadRetained": true,
+  "exactTerminalReceipt": true,
+  "exactOriginalAndSourceServicesStopped": true,
+  "targetServicesVerifiedRunning": true,
+  "capturedFiles": 1541,
+  "capturedBytes": 644693866,
+  "limits": "Same host and cluster; file modes checked, directory metadata excluded. Known GTFS roots, no populated SQLite or other worker-family artifacts. Auth changes follow producer sign-in. No browser or hosted acceptance."
+}

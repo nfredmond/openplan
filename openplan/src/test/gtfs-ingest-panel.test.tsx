@@ -246,6 +246,57 @@ afterEach(() => {
 /* -------------------------------------------------------------------------- */
 
 describe("GtfsIngestPanel — the lane is reachable", () => {
+  it.each(["ready", "pending"])("keeps an unadopted %s version separate from the version in use", async (status) => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: {
+        ...registryBody([feedRow({ status: "pending", current_version_id: null })], []),
+        recentVersions: [versionRow({ status })],
+      },
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("Not adopted")).toBeInTheDocument();
+    expect(feed.getByText("No version of this feed is in use. Review and adopt a completed version before using its service results.")).toBeInTheDocument();
+    expect(feed.queryByText(/derives no service levels/i)).toBeNull();
+    expect(feed.queryByText(/service-level rows derived/i)).toBeNull();
+    expect(feed.queryByText(/Ready for review/i)).toBeNull();
+  });
+
+  it("reports missing details for an adopted version as unavailable", async () => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: registryBody([feedRow({ status: "pending" })], []),
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("Service details for the version in use are unavailable. Review the feed’s version history before using its results.")).toBeInTheDocument();
+    expect(feed.queryByText("Not adopted")).toBeNull();
+    expect(feed.queryByText(/No version of this feed is in use/i)).toBeNull();
+    expect(feed.queryByText(/service-level rows derived/i)).toBeNull();
+  });
+
+  it("preserves a failed feed status when no version is in use", async () => {
+    handlers = [];
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({
+      status: 200,
+      body: registryBody([feedRow({ status: "failed", current_version_id: null })], []),
+    }));
+
+    await renderPanel();
+
+    const feed = within(screen.getByTestId("gtfs-feed-feed-1"));
+    expect(feed.getByText("failed")).toBeInTheDocument();
+    expect(feed.queryByText("Not adopted")).toBeNull();
+    expect(feed.getByText(/No version of this feed is in use/i)).toBeInTheDocument();
+  });
+
   it("reads this workspace's feeds on mount, naming the workspace", async () => {
     await renderPanel();
 
@@ -378,6 +429,47 @@ describe("GtfsIngestPanel — the lane is reachable", () => {
     const detail = requests.find((request) => /\/api\/gtfs\/feeds\/feed-1\?/.test(request.url));
     expect(detail).toBeDefined();
     expect(detail?.url).toContain(`workspaceId=${WORKSPACE_ID}`);
+  });
+
+  it("explains a malformed ZIP in the feed registry and history without library instructions", async () => {
+    const failure = versionRow({ id: "failed-zip", status: "failed", failure_code: "not_a_zip", failure_detail: "Can't find end of central directory. See https://stuk.github.io/jszip/documentation/howto/read_zip.html" });
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({ status: 200, body: registryBody([feedRow()], [failure]) }));
+    respond("GET", /\/api\/gtfs\/feeds\/[^/?]+\?/, () => ({ status: 200, body: { feed: feedRow(), currentVersion: null, versions: [failure], caveats: [] } }));
+    await renderPanel();
+    expect(screen.getByText(/Choose the agency's GTFS ZIP file and start a new import/)).toBeInTheDocument();
+    expect(screen.queryByText(/central directory|stuk.github.io/)).toBeNull();
+    await click(screen.getByRole("button", { name: /Show every ingest of this feed/i }));
+    const history = await screen.findByTestId("gtfs-feed-history-feed-1");
+    expect(within(history).getByText(/Choose the agency's GTFS ZIP file and start a new import/)).toBeInTheDocument();
+    expect(within(history).queryByText(/central directory|stuk.github.io/)).toBeNull();
+    expect(requests.every(request => request.method === "GET")).toBe(true);
+  });
+
+  it("keeps a non-ZIP failure distinct in the feed registry and history", async () => {
+    const failure = versionRow({ id: "failed-fetch", status: "failed", failure_code: "fetch_failed", failure_detail: "The agency's server closed the connection." });
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({ status: 200, body: registryBody([feedRow()], [failure]) }));
+    respond("GET", /\/api\/gtfs\/feeds\/[^/?]+\?/, () => ({ status: 200, body: { feed: feedRow(), currentVersion: null, versions: [failure], caveats: [] } }));
+    await renderPanel();
+    expect(screen.getByText(/The agency's server closed the connection/)).toBeInTheDocument();
+    expect(screen.queryByText(/Choose the agency's GTFS ZIP/)).toBeNull();
+    await click(screen.getByRole("button", { name: /Show every ingest of this feed/i }));
+    const history = await screen.findByTestId("gtfs-feed-history-feed-1");
+    expect(within(history).getByText(/The agency's server closed the connection/)).toBeInTheDocument();
+    expect(within(history).queryByText(/Choose the agency's GTFS ZIP/)).toBeNull();
+    expect(requests.every(request => request.method === "GET")).toBe(true);
+  });
+
+  it("does not classify an abandoned attempt as a processing failure", async () => {
+    const abandoned = versionRow({ id: "abandoned-version", status: "failed", failure_code: "abandoned", failure_detail: "The planner cancelled before a worker claimed this import." });
+    respond("GET", /\/api\/gtfs\/feeds\?/, () => ({ status: 200, body: { ...registryBody([feedRow()], [versionRow()]), recentVersions: [abandoned] } }));
+    respond("GET", /\/api\/gtfs\/feeds\/[^/?]+\?/, () => ({ status: 200, body: { feed: feedRow(), currentVersion: versionRow(), versions: [abandoned], caveats: [] } }));
+    await renderPanel();
+    expect(screen.getByText(/The most recent ingest did not complete \(abandoned\)/)).toHaveTextContent("The planner cancelled before a worker claimed this import.");
+    expect(screen.queryByText(/The most recent ingest attempt failed/)).toBeNull();
+    await click(screen.getByRole("button", { name: /Show every ingest of this feed/i }));
+    const history = await screen.findByTestId("gtfs-feed-history-feed-1");
+    expect(within(history).getByText(/recorded status: failed/)).toHaveTextContent("The planner cancelled before a worker claimed this import.");
+    expect(requests.every(request => request.method === "GET")).toBe(true);
   });
 
   /**

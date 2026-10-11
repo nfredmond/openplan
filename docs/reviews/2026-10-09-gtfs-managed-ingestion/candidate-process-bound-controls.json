@@ -1,0 +1,35 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "reason": null,
+      "passed": true
+    },
+    {
+      "case": "harmless-note",
+      "exitCode": 0,
+      "reason": null,
+      "passed": true
+    },
+    {
+      "case": "fatal-child",
+      "exitCode": -15,
+      "reason": "fatal-worker-error",
+      "passed": true
+    },
+    {
+      "case": "deadline-child",
+      "exitCode": -15,
+      "reason": "deadline",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "reason": null,
+      "passed": true
+    }
+  ],
+  "limits": "Private runner stops only the process group it creates. These controls establish benign completion and intended fatal/deadline interruption, not a host OOM diagnosis or application acceptance."
+}

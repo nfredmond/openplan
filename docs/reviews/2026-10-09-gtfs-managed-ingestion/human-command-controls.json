@@ -1,0 +1,260 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless-human",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless-client",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "human-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses changed installationId before another dispatch",
+        "retained human GTFS commands refuses changed target before another dispatch",
+        "retained human GTFS commands refuses changed actorId before another dispatch",
+        "retained human GTFS commands refuses changed workspaceId before another dispatch",
+        "retained human GTFS commands refuses changed versionId before another dispatch",
+        "retained human GTFS commands refuses changed reason before another dispatch",
+        "retained human GTFS commands refuses changed commandId before another dispatch",
+        "retained human GTFS commands refuses changed adoption acceptance and exact reviewed counts"
+      ]
+    },
+    {
+      "variant": "human-retention",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands retains the exact cancel command before RPC and rechecks SQL on replay",
+        "retained human GTFS commands retains the exact adopt command before RPC and rechecks SQL on replay",
+        "retained human GTFS commands recovers an unknown cancellation reply under the same command",
+        "retained human GTFS commands refuses changed installationId before another dispatch",
+        "retained human GTFS commands refuses changed target before another dispatch",
+        "retained human GTFS commands refuses changed actorId before another dispatch",
+        "retained human GTFS commands refuses changed workspaceId before another dispatch",
+        "retained human GTFS commands refuses changed versionId before another dispatch",
+        "retained human GTFS commands refuses changed reason before another dispatch",
+        "retained human GTFS commands refuses changed commandId before another dispatch",
+        "retained human GTFS commands refuses changed adoption acceptance and exact reviewed counts",
+        "retained human GTFS commands refuses a changed acknowledged receipt on replay",
+        "retained human GTFS commands refuses a tampered saved receipt before SQL replay",
+        "retained human GTFS commands serializes concurrent command dispatch under the private lock"
+      ]
+    },
+    {
+      "variant": "human-replay",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands retains the exact cancel command before RPC and rechecks SQL on replay",
+        "retained human GTFS commands retains the exact adopt command before RPC and rechecks SQL on replay",
+        "retained human GTFS commands refuses a changed acknowledged receipt on replay"
+      ]
+    },
+    {
+      "variant": "human-saved-receipt",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses a tampered saved receipt before SQL replay"
+      ]
+    },
+    {
+      "variant": "human-receipt-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses a cancellation receipt with changed command",
+        "retained human GTFS commands refuses a cancellation receipt with changed version",
+        "retained human GTFS commands refuses a tampered saved receipt before SQL replay"
+      ]
+    },
+    {
+      "variant": "human-receipt-stability",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses a changed acknowledged receipt on replay"
+      ]
+    },
+    {
+      "variant": "human-closure",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses a closure receipt that was not recorded"
+      ]
+    },
+    {
+      "variant": "human-adoption-acceptance",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses an adoption receipt whose basis or acceptance differs"
+      ]
+    },
+    {
+      "variant": "human-adoption-evidence",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands requires actual adoption evidence rather than an unrecorded success"
+      ]
+    },
+    {
+      "variant": "human-shrinkage",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands requires acceptance for material shrinkage before dispatch",
+        "retained human GTFS commands refuses missing predecessor counts before dispatch"
+      ]
+    },
+    {
+      "variant": "human-review-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands requires matching version review before dispatch"
+      ]
+    },
+    {
+      "variant": "human-predecessor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses missing predecessor counts before dispatch"
+      ]
+    },
+    {
+      "variant": "human-masked-collapse",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "completed transit adoption review refuses a masked material reduction"
+      ]
+    },
+    {
+      "variant": "human-reviewed-version",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "completed transit adoption review refuses a reviewed different version"
+      ]
+    },
+    {
+      "variant": "human-current",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "completed transit adoption review refuses a current-state claim without the same predecessor"
+      ]
+    },
+    {
+      "variant": "human-review-schema",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "completed transit adoption review refuses unknown private review fields"
+      ]
+    },
+    {
+      "variant": "human-target",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands refuses an invalid transport target http://user:password@example.invalid",
+        "retained human GTFS commands refuses an invalid transport target http://example.invalid/?secret=1",
+        "retained human GTFS commands refuses an invalid transport target file:///tmp/feed",
+        "retained human GTFS commands refuses an invalid transport target http://example.invalid/#fragment"
+      ]
+    },
+    {
+      "variant": "human-deadline",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands bounds acknowledgement from an uncooperative transport"
+      ]
+    },
+    {
+      "variant": "human-lock",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained human GTFS commands serializes concurrent command dispatch under the private lock"
+      ]
+    },
+    {
+      "variant": "client-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses tampered saved installationId binding",
+        "retained transit client requests refuses tampered saved workspaceId binding",
+        "retained transit client requests refuses tampered saved actorId binding"
+      ]
+    },
+    {
+      "variant": "client-current-workspace",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses an intent in another workspace"
+      ]
+    },
+    {
+      "variant": "client-duplicate",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses duplicate request UUIDs"
+      ]
+    },
+    {
+      "variant": "client-storage-ack",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests verifies browser storage actually kept the request bytes"
+      ]
+    },
+    {
+      "variant": "client-size",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses oversized retained records"
+      ]
+    },
+    {
+      "variant": "client-history-bound",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses too many tracked requests without evicting history"
+      ]
+    },
+    {
+      "variant": "client-request-header",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests retains exact intent and request identity before constructing a submission",
+        "retained transit client requests keeps ZIP bytes outside browser storage while resupplying the original UUID"
+      ]
+    },
+    {
+      "variant": "client-dismiss",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests dismisses one browser request without a server mutation"
+      ]
+    },
+    {
+      "variant": "client-transport-schema",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit client requests refuses retained arbitrary paths and action overrides"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": {
+    "managed-human-command.ts": "0f70c6eeb65e4331c694336444fbdf999c903993ac5c88e4742ef26ec595eb90",
+    "managed-client.ts": "74d86e4591a95b84d97e8056723b2df57ee53f69fcd522044d55af723aa44c70"
+  },
+  "testSha256": {
+    "gtfs-managed-client.test.ts": "1526a2669f24eee05c733c384abd0d7d67a89e28e0d77a0ce32274cb38690e5a",
+    "gtfs-managed-human-command.test.ts": "fbcf54c1822e0ef6fa3eb1f0afbc50dc69e4cb7688cc6976036b153cf8479f87"
+  },
+  "boundary": "Actual private file locks and journals, controlled fetch transport and browser storage. No live PostgreSQL, physical Storage custody, application authorization, rendered journey or release acceptance."
+}

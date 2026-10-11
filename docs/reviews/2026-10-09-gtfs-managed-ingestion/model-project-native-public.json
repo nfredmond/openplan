@@ -1,0 +1,19 @@
+{
+  "model": {
+    "id": "492638e4-9937-4e61-a31c-d69f7e36f49b",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "project_id": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+    "status": "draft",
+    "runs": 0
+  },
+  "project": {
+    "id": "a5b3eaad-7aa4-4693-b56a-3c77cc606abc",
+    "workspace_id": "e9df9fa9-8c14-4800-8b85-2d5a074fb513",
+    "place_label": "Oakland",
+    "place_ref": "0653000"
+  },
+  "sourceProjectUnchanged": true,
+  "nativeGeometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+  "browserGeometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+  "exactSerializedMatch": true
+}

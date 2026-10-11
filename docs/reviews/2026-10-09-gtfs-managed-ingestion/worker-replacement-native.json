@@ -1,0 +1,70 @@
+{
+  "migrationSha256": "34d5b658aa276a47cb49adf71d5aaeaaa44be76077a1524752b4ef4a2a48eb82",
+  "proofSha256": "21736063f790af8ff58edb80a2f81e88e319aa092899578f51fb4b7fcdbce636",
+  "installedFunctionHashes": {
+    "public.claim_gtfs_ingest(uuid,uuid,integer)": "71cea2168f7004bbb453773da3c4cc613427a3c4d554d575c310b8a844bafcfe",
+    "public.renew_gtfs_ingest(uuid,uuid,integer)": "bdde42222799fa0edf3716c2ed060dcf114bccfd06eb23fac03c765bccf433db",
+    "public.write_gtfs_ingest_batch(uuid,uuid,uuid,text,integer,jsonb)": "49cac45cf9093e1c7f4cb250b56830286afb3fec13a29c9b9218510b8ed924d3",
+    "public.prepare_gtfs_derived(uuid,uuid,jsonb)": "466e6fd5fc0a74cd6bcccfba2e397c0eee5ee74ae3d6bb3226e92409a52c3d06"
+  },
+  "migrationRecords": 400,
+  "cases": [
+    {
+      "order": "old-batch-first",
+      "blocking": {
+        "waitEventType": "Lock",
+        "expectedBlockerObserved": true
+      },
+      "claimAttempt": 2,
+      "oldRenewalRefused": true,
+      "oldClaimInactive": true,
+      "oldWriteCode": "55000",
+      "removedRoutes": 1,
+      "rows": [
+        {
+          "route": "replacement",
+          "trips": 1
+        }
+      ],
+      "observationControls": [
+        {
+          "name": "harmless",
+          "result": "pass"
+        },
+        {
+          "name": "stale-row",
+          "result": "intended assertion failure"
+        }
+      ]
+    },
+    {
+      "order": "replacement-claim-first",
+      "blocking": {
+        "waitEventType": "Lock",
+        "expectedBlockerObserved": true
+      },
+      "claimAttempt": 2,
+      "oldRenewalRefused": true,
+      "oldClaimInactive": true,
+      "oldWriteCode": "55000",
+      "removedRoutes": 1,
+      "rows": [
+        {
+          "route": "replacement",
+          "trips": 1
+        }
+      ],
+      "observationControls": [
+        {
+          "name": "harmless",
+          "result": "pass"
+        },
+        {
+          "name": "stale-row",
+          "result": "intended assertion failure"
+        }
+      ]
+    }
+  ],
+  "scope": "Actual service-role SQL commands and observed two-connection PostgreSQL contention. Fixture lease expiry is explicitly advanced. Synthetic archive declarations, not Storage verification, HTTP contention, full replacement worker processing or mixed legacy/managed promotion."
+}

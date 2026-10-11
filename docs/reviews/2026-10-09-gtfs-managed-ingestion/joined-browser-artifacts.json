@@ -1,0 +1,70 @@
+{
+  "head": "48648251cbdabb0b90e8f2395f3662950c284c4a",
+  "buildId": "V-81SxKhPY1f6Mv6vyN7x",
+  "images": [
+    {
+      "path": "joined-cancelled-desktop.png",
+      "bytes": 344156,
+      "sha256": "81e3c1e14c43b0bbdb60f3d2dc3ecb593d2c541f968405c8aff32044ab5fafe8",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3crb8x-acfe7257.png"
+    },
+    {
+      "path": "joined-cancelled-390.png",
+      "bytes": 141025,
+      "sha256": "a0cc6337d76c7c4f96bb02f02e0f200a914d10becde0d4f3744453ab06837bf0",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3cret0-455848e2.png"
+    },
+    {
+      "path": "joined-feed-desktop.png",
+      "bytes": 372235,
+      "sha256": "69e0366c54556245e5617968fa014c4b491b680f6bf4a41437d64ce334c9f2d0",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3csqcz-4621b399.png"
+    },
+    {
+      "path": "joined-feed-390.png",
+      "bytes": 147195,
+      "sha256": "52da22f49b40179c2decb7631a5f7b3ac29b925c43ae9139e170fe69b7108505",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3csw7a-415df7e5.png"
+    },
+    {
+      "path": "joined-study-desktop.png",
+      "bytes": 259838,
+      "sha256": "c4fd9be39538acb87e89ee1d22888a86d606326ba0b8ee9b2b02b825798f0de1",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3cvik4-bb749c8d.png"
+    },
+    {
+      "path": "joined-study-390.png",
+      "bytes": 124697,
+      "sha256": "3e40a28d52d09221a1c4af8c711182beefaae96bbe430bb9b41d41b77e884876",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3cvowc-ee980636.png"
+    },
+    {
+      "path": "joined-model-feed-desktop.png",
+      "bytes": 392073,
+      "sha256": "06b2ed412b92fd4d617ba0ea7b3d2ada8dc1011f036528e31035e83f5e6729b9",
+      "pixelWidth": 1280,
+      "pixelHeight": 800,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3cwjc8-b13fcd63.png"
+    },
+    {
+      "path": "joined-model-feed-390.png",
+      "bytes": 194030,
+      "sha256": "ffc36457d6e40dd9177064e57402e661ac93c729ab62fe6a2119f23d6b20e6ae",
+      "pixelWidth": 566,
+      "pixelHeight": 1224,
+      "sourceCapture": "browser-screenshot-127-74-9-10-mv3cwftk-32017a0e.png"
+    }
+  ]
+}

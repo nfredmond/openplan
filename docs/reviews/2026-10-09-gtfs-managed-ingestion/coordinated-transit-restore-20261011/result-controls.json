@@ -1,0 +1,123 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "reason": "result-source",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-native-image",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-file-images",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-file-census",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-native-control",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-encrypted-snapshot",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-consistency-interval",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-owned-services",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-replay-census",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-repeated-computation",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-lost-acknowledgement",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-lost-call-sequence",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-native-recovery",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-recovery-call-sequence",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-cached-native-read",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-foreign-identity",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-parser-counts",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-native-http",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-actually-dropped-reply",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-exact-restored-reply",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "reason": "result-native-commands",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "672772dc568d51f9ca3798b7be706f4184fe763d4c20d2c5d7eede8fc659d2ea",
+  "limits": "Copied retained observations only. No native service, database, application or file mutation."
+}

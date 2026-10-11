@@ -1,0 +1,20 @@
+{
+  "recordedAt": "2026-10-11T12:22:17.314889+00:00",
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "buildId": "W4maaz9jts1wco0KXcWbA",
+  "targetDatabase": "openplan_attempt_cli_fc468084c83c4a2499c60ab61d48db47",
+  "nativeHealthCommit": "bf1f6ffa710b",
+  "processCwdsVerifiedBeforeStop": true,
+  "exactOwnedPreviewStopped": true,
+  "tab": "tab_1",
+  "additionalOwnedTab": "tab_3",
+  "authenticatedDashboardNavigation": true,
+  "actualDataHubNavigationClick": true,
+  "desktopDomWidth": 1280,
+  "desktopDocumentWidth": 1280,
+  "domSource": "restored-data-hub-desktop-dom-private.json",
+  "captureOutcome": "Repeated T3 snapshot calls failed on existing and new owned tabs. Recording start timed out after15000ms, then T3 reported no preview automation host. No screenshot or video accepted.",
+  "mobileOutcome": "No new390px restored-point evidence. Earlier bf1 visual proof retains its original fixture identity.",
+  "consoleOutcome": "Snapshot diagnostics unavailable. Complete new console review not established.",
+  "limits": "Partial identified-build desktop DOM read only; no restored visual/mobile/pointer/keyboard/practitioner acceptance. T3-only preference preserved; no alternate browser. Target fixture API stays bounded and owned."
+}

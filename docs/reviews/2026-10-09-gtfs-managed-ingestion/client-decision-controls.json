@@ -1,0 +1,126 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions isolates another installationId and refuses a tampered binding",
+        "browser-retained transit decisions isolates another workspaceId and refuses a tampered binding",
+        "browser-retained transit decisions isolates another actorId and refuses a tampered binding"
+      ]
+    },
+    {
+      "variant": "duplicate-history",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions refuses duplicate command IDs in saved history"
+      ]
+    },
+    {
+      "variant": "saved-command",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions replays an exact command and refuses changed reason or reviewed counts under its UUID"
+      ]
+    },
+    {
+      "variant": "storage-ack",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions refuses unavailable and silent browser storage"
+      ]
+    },
+    {
+      "variant": "read-size",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions bounds history without evicting earlier decisions"
+      ]
+    },
+    {
+      "variant": "write-size",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions refuses oversized serialized decisions before replacing browser history"
+      ]
+    },
+    {
+      "variant": "history-limit",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions bounds history without evicting earlier decisions"
+      ]
+    },
+    {
+      "variant": "preserve-earlier",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions retains exact cancellation and adoption before deriving transport",
+        "browser-retained transit decisions replays an exact command and refuses changed reason or reviewed counts under its UUID",
+        "browser-retained transit decisions keeps a new explicit review command beside its earlier unknown command",
+        "browser-retained transit decisions bounds history without evicting earlier decisions",
+        "browser-retained transit decisions refuses oversized serialized decisions before replacing browser history"
+      ]
+    },
+    {
+      "variant": "basis-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions refuses a different version or partial predecessor basis"
+      ]
+    },
+    {
+      "variant": "predecessor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions refuses a different version or partial predecessor basis"
+      ]
+    },
+    {
+      "variant": "dismiss",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions dismisses browser history without retracting the server command"
+      ]
+    },
+    {
+      "variant": "transport-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions derives exact routes without caller actor, arbitrary paths or approval overrides"
+      ]
+    },
+    {
+      "variant": "transport-path",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions derives exact routes without caller actor, arbitrary paths or approval overrides"
+      ]
+    },
+    {
+      "variant": "transport-schema",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "browser-retained transit decisions derives exact routes without caller actor, arbitrary paths or approval overrides"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "f8662efeba19b9619ad06dadf5b15337ecc1062665d1a1cc2b649f1437522d20",
+  "testSha256": "4f4d3a4fb047c859ccac57bd488ede84266537228256e0f7de05f802f87ef586",
+  "boundary": "Controlled browser storage and pure transport construction. No component order, real HTTP, SQL, rendered interaction or browser storage durability acceptance."
+}

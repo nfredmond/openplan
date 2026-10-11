@@ -1,0 +1,25 @@
+{
+  "head": "2caefd6a9a41f2a8b5ab4769607798ccb99abfa2",
+  "afterReview": "Bay Area Rapid Transit (BART)\n\nVersion f3bc2095-3618-413c-bcc9-f3799ec7a4e1\n\nIn use\n\nCompleted schedule: 14 routes and 287 stops. These are parser counts, not derived service rows or measured coverage.\n\nReviewed predecessor: 14 routes and 287 stops. Version f3bc2095-3618-413c-bcc9-f3799ec7a4e1.\n\nThis version is currently in use.\n\nA changed predecessor requires a new review. A recorded historical command does not prove which version is in use now.\n\nRead version again",
+  "at": "2026-10-11T02:09:10.543Z",
+  "beforeRequests": [
+    "gtfs-managed-request-e5da8f06-b5af-474f-a208-fa07a64ff34d",
+    "gtfs-managed-request-1f365fef-53d1-4687-bbf9-7c1939d3b787",
+    "gtfs-managed-request-989a4da7-304a-4b24-a577-e3fe4b2d1dd7",
+    "gtfs-managed-request-666867ef-e4c4-44dc-9145-95984a99b188",
+    "gtfs-managed-request-9ea2a22f-9280-40da-a673-ab9f3a8b1574",
+    "gtfs-managed-request-905b72f9-056d-4501-9ea7-2038af52a770",
+    "gtfs-managed-request-6dfcec6f-5439-4d96-9812-5891a6c35440"
+  ],
+  "catalog": "18 feeds publish a service area covering this area.\n\nSmallest published service area first, because a feed drawn tightly around your area is more likely to be the local operator than a statewide one. Only you know which agency is yours.\n\nEmery Go-Round\n\nEmeryville, California, US\n\nPublished service area spans 0.00 square degrees.\n\nIngest this feed\n\nTideline Water Taxi\n\nSan Francisco, California, US\n\nPublished service area spans 0.01 square degrees.\n\nIngest this feed\n\nBlue & Gold Fleet\n\nSan Francisco, California, US\n\nPublished service area spans 0.07 square degrees.\n\nIngest this feed\n\nSan Francisco Bay Area Water Emergency Transportation Authority (WETA)\n\nSan Francisco, California, US\n\nPublished service area spans 0.07 square degrees.\n\nIngest this feed\n\nWestCAT\n\nPinole, California, US\n\nPublished service area spans 0.08 square degrees.\n\nIngest this feed\n\nCommute.org San Mateo County Shuttles\n\nSan Mateo, California, US\n\nPublished service area spans 0.10 square degrees.\n\nIngest this feed\n\nSolTrans\n\nFairfield, California, US\n\nPublished service area spans 0.16 square degrees.\n\nIngest this feed\n\nGolden Gate Transit\n\nSan Francisco, California, US\n\nPublished service area spans 0.33 square degrees.\n\nIngest this feed\n\nBay Area Rapid Transit (BART)\n\nSan Francisco, California, US\n\nPublished service area spans 0.45 square degrees.\n\nIngest this feed\n\nSonoma County Airport Express\n\nSan Mateo, California, US\n\nPublished service area spans 0.53 square degrees.\n\nIngest this feed\n\nCaltrain\n\nSan Francisco, California, US\n\nPublished service area spans 0.65 square degrees.\n\nIngest this feed\n\nStanislaus Regional Transit Authority\n\nModesto, California, US\n\nPublished service area spans 0.87 square degrees.\n\nIngest this feed\n\nCapitol Corridor Joint Powers Authority (Capitol Corridor)\n\nOakland, California, US\n\nPublished service area spans 2.58 square degrees.\n\nIngest this feed\n\nMOVE Stanislaus\n\nStanislaus County, California, US\n\nPublished service area spans 4.28 square degrees.\n\nIngest this feed\n\nAmtrak San Joaquins\n\nCalifornia, US\n\nPublished service area spans 17.64 square degrees.\n\nIngest this feed\n\nGroome Transportation\n\nUS\n\nPublished service area spans 777.17 square degrees.\n\nIngest this feed\n\nAmtrak\n\nUS\n\nPublished service area spans 1269.68 square degrees.\n\nIngest this feed\n\nRursee-Schifffahrt KG\n\nDE\n\nPublished service area spans 55883.48 square degrees.\n\nIngest this feed\nWhat this search did not show you",
+  "decision": [
+    "Adoption. Exact command receipt confirmed in this session.\n\nCommand 69a0fcdd-55b3-4c2b-bae4-8da09bcb196e\n\nVersion f3bc2095-3618-413c-bcc9-f3799ec7a4e1. Reviewed 14 routes and 287 stops.\n\nReplay exact command\nRemove browser decision record"
+  ],
+  "errors": [],
+  "capture": "/home/nathaniel/.t3/userdata/browser-artifacts/browser-screenshot-127-74-9-10-mv36rd6v-490415ec.png",
+  "limits": [
+    "First mobile review capture failed visually; subsequent in-use capture inspected.",
+    "Future-only console observer; no historical clean-console claim.",
+    "Catalog archive differs from the original direct BART URL archive; native bytes and hash verified independently."
+  ]
+}

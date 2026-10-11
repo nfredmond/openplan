@@ -1,0 +1,63 @@
+{
+  "head": "295e34edc61d9fbd892aaed50daf9653dc5c0791",
+  "checks": [
+    {
+      "check": "direction",
+      "exitCode": 0,
+      "seconds": 0.324
+    },
+    {
+      "check": "equity",
+      "exitCode": 0,
+      "seconds": 46.429
+    },
+    {
+      "check": "client",
+      "exitCode": 0,
+      "seconds": 127.335
+    },
+    {
+      "check": "lint",
+      "exitCode": 0,
+      "seconds": 5.436
+    },
+    {
+      "check": "types",
+      "exitCode": 0,
+      "seconds": 11.141
+    },
+    {
+      "check": "regression",
+      "exitCode": 0,
+      "seconds": 168.113
+    }
+  ],
+  "testFiles": 107,
+  "regression": {
+    "numTotalTests": 2288,
+    "numPassedTests": 2271,
+    "numPendingTests": 17,
+    "numFailedTests": 0
+  },
+  "sourceSha256": {
+    "src/app/(app)/data-hub/page.tsx": "4c5d0cccee94aba30e3c681ccb2c154cf2efe3e6f35a37a49bfefca250fecbd7",
+    "src/components/data-hub/managed-gtfs-imports.tsx": "768ddfaec3b67a9ed796c9794435644a3ec9b81053cd5d61ac3a67ea32644899",
+    "src/components/data-hub/title-vi-service-equity-panel.tsx": "3b86526a37f583fec23446a4a84754cf2ce4fc9af0c2f9002603556c2438ecc6",
+    "src/test/gtfs-managed-panel-mount.test.ts": "37aa1188daa76e708175dcb9a32528649983176361717b2ed8cdd7053a2508f9",
+    "src/test/gtfs-managed-panel.test.tsx": "e01fd942f6f9c5248112caaa2f591b409c7fa2bf7bfee5a14b99aea5c33d85cc",
+    "src/components/data-hub/gtfs-ingest-panel.tsx": "6e70d4ebecbe50bfac808aba9e776bdee486dd4394f68f497d4a8e8b8f600f36",
+    "src/test/gtfs-ingest-panel.test.tsx": "b867f9303f3177098cdcfb9947181d33f33ab54bb527e2a95fd9daac59857a5e",
+    "src/test/gtfs-equity-refresh.test.tsx": "8af3bb97d249ba6f9291298f81a82e5273caa270f8bc10e079586546c26a0b68"
+  },
+  "boundary": "Owned integration controls, scoped TypeScript, strict selected-file lint and GTFS plus merged UI regressions. No new browser, live database, full restore, capacity or GitHub CI acceptance.",
+  "resource": {
+    "unit": "openplan-gtfs-map-ui-main-join-20261010-01",
+    "memoryMaxBytes": 1073741824,
+    "swapMaxBytes": 0,
+    "observedMemoryPeakBytes": 831963136,
+    "journalPeakRounded": "793.4M",
+    "wallSeconds": 358.855,
+    "cpuSeconds": 346.414,
+    "vitestWorkers": 1
+  }
+}

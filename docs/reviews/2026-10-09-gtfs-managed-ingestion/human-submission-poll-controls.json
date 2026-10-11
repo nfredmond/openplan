@@ -1,0 +1,213 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "harmless-relative-check",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "directory-normalization",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses relative directories before reading"
+      ]
+    },
+    {
+      "variant": "authorization",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling authorizes the original actor and hands off exact retained intent without resupplying bytes",
+        "retained transit submission polling skips proven handoff history and keeps a queued handoff distinct from processing completion",
+        "retained transit submission polling rotates persistent refusals so later requests are recovered in bounded passes",
+        "retained transit submission polling does not resolve or admit when original authorization is unavailable",
+        "retained transit submission polling refuses a mismatched existing handoff without declaring it settled",
+        "retained transit submission polling stops after authorization loses ownership and releases its lock",
+        "retained transit submission polling serializes concurrent recovery passes and propagates a live combined signal"
+      ]
+    },
+    {
+      "variant": "actor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling retains early cancellation and skips its history without resolving or admitting",
+        "retained transit submission polling authorizes the original actor and hands off exact retained intent without resupplying bytes"
+      ]
+    },
+    {
+      "variant": "workspace",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling retains early cancellation and skips its history without resolving or admitting",
+        "retained transit submission polling authorizes the original actor and hands off exact retained intent without resupplying bytes",
+        "retained transit submission polling skips proven handoff history and keeps a queued handoff distinct from processing completion",
+        "retained transit submission polling rotates persistent refusals so later requests are recovered in bounded passes",
+        "retained transit submission polling refuses a mismatched existing handoff without declaring it settled",
+        "retained transit submission polling stops after authorization loses ownership and releases its lock"
+      ]
+    },
+    {
+      "variant": "intent",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling authorizes the original actor and hands off exact retained intent without resupplying bytes"
+      ]
+    },
+    {
+      "variant": "skip-history",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling skips proven handoff history and keeps a queued handoff distinct from processing completion"
+      ]
+    },
+    {
+      "variant": "handoff-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses a mismatched existing handoff without declaring it settled"
+      ]
+    },
+    {
+      "variant": "root-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses private installation rebinding"
+      ]
+    },
+    {
+      "variant": "request-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses retained installationId scope before authorization or admission",
+        "retained transit submission polling refuses retained target scope before authorization or admission",
+        "retained transit submission polling refuses retained requestId scope before authorization or admission"
+      ]
+    },
+    {
+      "variant": "directory-private",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses a public request directory before authorization"
+      ]
+    },
+    {
+      "variant": "harmless-directory-redundancy",
+      "result": "pass",
+      "failedAssertions": []
+    },
+    {
+      "variant": "directory-symlink",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses a public request directory before authorization",
+        "retained transit submission polling refuses request symlinks before reading their private record"
+      ]
+    },
+    {
+      "variant": "inventory",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses oversized inventory before any request processing"
+      ]
+    },
+    {
+      "variant": "bound",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses invalid per-pass limit 0",
+        "retained transit submission polling refuses invalid per-pass limit 1.5"
+      ]
+    },
+    {
+      "variant": "pass-cap",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling rotates persistent refusals so later requests are recovered in bounded passes"
+      ]
+    },
+    {
+      "variant": "cursor",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling rotates persistent refusals so later requests are recovered in bounded passes"
+      ]
+    },
+    {
+      "variant": "archive-confirmation",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling does not hand off an archive that remains unconfirmed"
+      ]
+    },
+    {
+      "variant": "reply-scope",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses a recovered response with changed requestId",
+        "retained transit submission polling refuses a recovered response with changed workspaceId",
+        "retained transit submission polling refuses a recovered response with changed feedId",
+        "retained transit submission polling refuses a recovered response with changed versionId"
+      ]
+    },
+    {
+      "variant": "local-receipt",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses an admission whose saved receipt does not match its reply"
+      ]
+    },
+    {
+      "variant": "local-binding",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling refuses an admission whose saved actor changes during recovery"
+      ]
+    },
+    {
+      "variant": "marker-write",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling authorizes the original actor and hands off exact retained intent without resupplying bytes",
+        "retained transit submission polling skips proven handoff history and keeps a queued handoff distinct from processing completion",
+        "retained transit submission polling refuses a mismatched existing handoff without declaring it settled"
+      ]
+    },
+    {
+      "variant": "pre-cancel",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling stops before processing a pre-cancelled request"
+      ]
+    },
+    {
+      "variant": "authorization-cancel",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling stops after authorization loses ownership and releases its lock"
+      ]
+    },
+    {
+      "variant": "installation-lock",
+      "result": "expected assertion failure",
+      "failedAssertions": [
+        "retained transit submission polling serializes concurrent recovery passes and propagates a live combined signal"
+      ]
+    },
+    {
+      "variant": "restored",
+      "result": "pass",
+      "failedAssertions": []
+    }
+  ],
+  "sourceSha256": "fe39c53830ec32b7a8c830294673c2db368a35a90c510cd959d9715bf0c6ee54",
+  "testSha256": "1f72218fa7f0e81e2690b0a3563a8f7d11c768c0cb47294090507db487738298"
+}

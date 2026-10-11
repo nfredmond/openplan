@@ -1,0 +1,13 @@
+{
+  "head": "f6394f05ef03011679ee34e1c11dd9f0a242cb6e",
+  "buildId": "OtS1dhNAWFSbvpN5eAXRv",
+  "mainPid": 548737,
+  "cwd": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-20261009/openplan",
+  "children": " 548775 sh\n",
+  "unit": "openplan-gtfs-recovered-app-20261010-02",
+  "runtimeUrl": "http://127.74.9.10:3564",
+  "limits": [
+    "Production webpack build and owned process directory. Health database check is not enabled.",
+    "Native isolated SQL/Auth/Storage observations are separate. No hosted deployment acceptance."
+  ]
+}

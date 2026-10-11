@@ -1,0 +1,9 @@
+{
+  "baselineActualCopyPassed": true,
+  "actualOneByteCorruptionRefused": true,
+  "restoredActualCopyPassed": true,
+  "exactTargetArchiveUnchanged": true,
+  "wrongCurrentSnapshotPasswordRefused": true,
+  "wrongPasswordExitCode": 12,
+  "limits": "Only a separate archive copy mutates; restored in finally. Original, captured and target roots remain unchanged. Wrong password uses read-only repository operation. Pure omitted-guard checks are retained separately."
+}

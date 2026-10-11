@@ -1,0 +1,44 @@
+{
+  "records": [
+    {
+      "variant": "baseline",
+      "result": "pass"
+    },
+    {
+      "variant": "harmless",
+      "result": "pass"
+    },
+    {
+      "variant": "early-membership",
+      "result": "expected assertion failure",
+      "assertion": "unauthorized missing request bypasses membership"
+    },
+    {
+      "variant": "workspace",
+      "result": "expected assertion failure",
+      "assertion": "cross-workspace request is disclosed"
+    },
+    {
+      "variant": "request",
+      "result": "expected assertion failure",
+      "assertion": "uncommitted request does not remain unconfirmed"
+    },
+    {
+      "variant": "private-source",
+      "result": "expected assertion failure",
+      "assertion": "private status fields exposed"
+    },
+    {
+      "variant": "role",
+      "result": "expected assertion failure",
+      "assertion": "untrusted role can impersonate status actor"
+    },
+    {
+      "variant": "restored",
+      "result": "pass"
+    }
+  ],
+  "migrationSha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645",
+  "runnerSha256": "b2e452c5133732f5717dd376aa94caa1ef841b1d7cbfe61e6063706a06f39aa2",
+  "boundary": "Actual PostgreSQL/PostgREST member, viewer, outsider, anon and authenticated roles on a retained main-derived clone plus candidate status DDL. No application route, full CLI installation/restore, browser or release acceptance."
+}

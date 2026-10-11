@@ -1,0 +1,7 @@
+{
+  "case": "wrong-proof-directory",
+  "script": "verify_model_project_browser.py",
+  "expectedInput": "fresh-services-private.json",
+  "actualFirstMissingInput": "model-project-browser-public.json",
+  "outcome": "Initial harness expectation was wrong. No control acceptance. Corrected check names the first required input read by the observer."
+}
