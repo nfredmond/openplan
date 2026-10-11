@@ -300,23 +300,11 @@ describe("PublicEngagementPortal", () => {
    * screen with nothing said about it, which is the defect this whole change is
    * about.
    */
-  it("tells a resident where the map opens, and admits when nothing framed it", () => {
+  it("admits when nothing framed the map, and says nothing when a place did", () => {
     const { unmount } = renderPortal();
 
-    /*
-      THE SENTENCE IS THE CATALOG'S, NOT THE RESOLVER'S ENGLISH PROSE — changed
-      2026-08-14 and the reason this assertion moved. `mapFraming.summary` is
-      composed server-side in an administrator's vocabulary and in English only;
-      the map-first surface stopped printing it in August, and this form went on
-      printing it to Spanish readers for as long as it was the second
-      implementation of this form. Both now call
-      `portalMapFramingSentence`.
-
-      Read out of the catalog rather than typed, so this cannot assert copy the
-      product does not carry.
-    */
+    // The map opens wide: one sentence, from the catalog, saying so.
     expect(screen.getByText(EN.messages.messages["portal.mapFramingNoArea"])).toBeInTheDocument();
-    expect(screen.getByText(EN.messages.messages["portal.mapZoomHint"])).toBeInTheDocument();
     unmount();
 
     const framed = resolvePortalMapFraming({
@@ -329,14 +317,9 @@ describe("PublicEngagementPortal", () => {
 
     renderPortal({ mapFraming: framed });
 
-    // The agency's own name for the area is NEVER translated; the frame around
-    // it always is.
-    expect(screen.getByText(/Franklin County, Ohio/)).toBeInTheDocument();
-    expect(
-      screen.getByText(new RegExp(EN.messages.messages["portal.mapFramingSourceProject"]))
-    ).toBeInTheDocument();
-    // The continental instruction belongs only to the unframed case.
-    expect(screen.queryByText(EN.messages.messages["portal.mapZoomHint"])).toBeNull();
+    // A framed map shows its place; narrating it was cut on 2026-10-10.
+    expect(screen.queryByText(new RegExp(EN.messages.messages["portal.mapFramingSourceProject"]))).toBeNull();
+    expect(screen.queryByText(EN.messages.messages["portal.mapFramingNoArea"])).toBeNull();
     // And the resolver's English prose is not printed to a resident at all.
     expect(screen.queryByText(framed.summary)).toBeNull();
   });
@@ -354,33 +337,21 @@ describe("PublicEngagementPortal", () => {
       ],
     });
 
-    expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
-    expect(screen.getAllByText("What you want to tell us (we need this part)").length).toBeGreaterThan(0);
-    expect(
-      screen.getAllByText(/Someone on the project team reads what you send before it is shown on this page or used in a report\./i).length
-    ).toBeGreaterThan(0);
+    expect(screen.getByRole("button", { name: EN.messages.messages["portal.tab.submit"] })).toBeInTheDocument();
 
     /*
-      THE OPTIONALITY CUES MOVED WITH THE FIELDS THEY QUALIFY. They used to be
-      two section headings above a wall of inputs; the form now says the same
-      thing on the step that holds those inputs, which is where a resident is
-      when the question of whether they have to answer arises.
-
-      `portal.optionalFields` ("Only if you want to") lost its call site in that
-      move and its exact words survive inside `portal.stepExtrasHelp` — reported
-      rather than quietly dropped. `portal.followUp` did NOT: it is the heading
-      above the name field, on the step that field lives on.
+      THE OPTIONALITY CUES ARE ON THE FIELDS THEY QUALIFY. Each optional field
+      says so on its own label; the step-level sentences that repeated "only if
+      you want to" were cut on 2026-10-10.
     */
     // The only required field carries a programmatic label, which a resident on
     // a screen reader needs and a visible heading alone does not provide.
     writeComment("The crossing at Main and First is too short.");
     expect(screen.getByLabelText("What you want to tell us (we need this part)")).toBeInTheDocument();
 
-    openStep("extras");
-    expect(screen.getByText(EN.messages.messages["portal.stepExtrasHelp"])).toBeInTheDocument();
-    expect(EN.messages.messages["portal.stepExtrasHelp"]).toContain(
-      EN.messages.messages["portal.optionalFields"]
-    );
+    openStep("send");
+    // The review promise is said where the resident sends.
+    expect(screen.getByText(EN.messages.messages["portal.reviewNotice"])).toBeInTheDocument();
 
     openStep("you");
     expect(screen.getByText("Hearing back (only if you want to)")).toBeInTheDocument();
@@ -402,17 +373,15 @@ describe("PublicEngagementPortal", () => {
     fireEvent.click(screen.getByRole("button", { name: /send what I wrote/i }));
 
     await waitFor(() => {
-      expect(screen.getByText("Thank you. We have what you sent.")).toBeInTheDocument();
+      expect(screen.getByText(EN.messages.messages["portal.received"])).toBeInTheDocument();
     });
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/api/engage/share-token-123/submit",
       expect.objectContaining({ method: "POST" })
     );
-    expect(screen.getByText("What you wrote has gone to the project team.")).toBeInTheDocument();
-    expect(
-      screen.getByText(/The team may not be able to write back to you personally\./i)
-    ).toBeInTheDocument();
+    expect(screen.getByText(EN.messages.messages["portal.reviewNotice"])).toBeInTheDocument();
+    expect(screen.getByText(EN.messages.messages["portal.followUpHint"])).toBeInTheDocument();
   });
 
   it("offers point, line, and area drawing plus a photo input on the submit form", () => {
@@ -425,7 +394,7 @@ describe("PublicEngagementPortal", () => {
       around it. Asserted through the catalog's own words so this cannot go stale
       or assert copy the product does not carry.
     */
-    expect(screen.getByText(/Tap the map to place your answer\./i)).toBeInTheDocument();
+    expect(screen.getByText(EN.messages.messages["portal.stepWhereHelp"])).toBeInTheDocument();
     expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModePoint"] })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModeLine"] })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: EN.messages.messages["portal.drawModeArea"] })).toBeInTheDocument();
@@ -569,7 +538,7 @@ describe("the portal in the participant's language", () => {
   it("asks its own question in Spanish when the participant's language is Spanish", () => {
     const { unmount } = renderPortal({ ...localeFor("es") });
 
-    expect(screen.getByRole("heading", { name: "Comparta su opinión" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Agregar un comentario" })).toBeInTheDocument();
     // The five steps a resident is walked through, in Spanish.
     expect(screen.getAllByText("Muéstrenos dónde").length).toBeGreaterThan(0);
 
@@ -580,14 +549,14 @@ describe("the portal in the participant's language", () => {
     expect(screen.getByRole("button", { name: /enviar lo que escribí/i })).toBeInTheDocument();
 
     // The English wording of the same strings is GONE, not merely accompanied.
-    expect(screen.queryByRole("heading", { name: "Share your input" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Add a comment" })).toBeNull();
     expect(screen.queryByText("Send what I wrote")).toBeNull();
     unmount();
 
     // The same render in English proves the assertion above is about the bundle
     // and not about a string that happens to appear either way.
     renderPortal();
-    expect(screen.getByRole("heading", { name: "Share your input" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Add a comment" })).toBeInTheDocument();
     expect(screen.queryAllByText("Muéstrenos dónde")).toHaveLength(0);
   });
 
@@ -763,7 +732,7 @@ describe("the portal in the participant's language", () => {
     // BEFORE the content, not after it. A disclosure a resident meets at the
     // bottom of the feed is one they meet after the page has already misled
     // them.
-    const firstHeading = screen.getByRole("heading", { name: "Share your input" });
+    const firstHeading = screen.getByRole("heading", { name: new RegExp(EN.messages.messages["portal.stepWhereTitle"]) });
     expect(notice.compareDocumentPosition(firstHeading) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
 
     // And the way out sits with it rather than a scroll away.

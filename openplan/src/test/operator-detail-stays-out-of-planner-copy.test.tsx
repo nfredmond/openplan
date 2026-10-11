@@ -85,6 +85,7 @@ vi.mock("mapbox-gl", () => {
     default: {
       Map,
       NavigationControl: ctl,
+      GeolocateControl: ctl,
       FullscreenControl: ctl,
       ScaleControl: ctl,
       Popup: ctl,
@@ -94,6 +95,7 @@ vi.mock("mapbox-gl", () => {
     },
     Map,
     NavigationControl: ctl,
+    GeolocateControl: ctl,
     FullscreenControl: ctl,
     ScaleControl: ctl,
     Popup: ctl,

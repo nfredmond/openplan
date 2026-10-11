@@ -1,5 +1,5 @@
 import { render, screen } from "@testing-library/react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 const loadPublicPortalBundle = vi.fn();
 const notFoundMock = vi.fn(() => {
@@ -28,15 +28,24 @@ vi.mock("@/lib/engagement/public-portal-data", async (importOriginal) => {
  * swallowed the prop would let the exact defect this file now guards go back in
  * while every assertion still passed.
  */
-vi.mock("@/components/engagement/public-engagement-portal", () => ({
-  PublicEngagementPortal: (props: { shareToken: string; renderLanguagePicker?: boolean }) => (
-    <div
-      data-testid="portal"
-      data-share-token={props.shareToken}
-      data-language-chrome={props.renderLanguagePicker ? "yes" : "no"}
-    />
-  ),
-}));
+// The widget renders the real map-first shell; only Mapbox itself is a double.
+vi.mock("mapbox-gl", async () => {
+  const { createMapboxGlModuleFake } = await import("@/test/helpers/mapbox-gl-fake");
+  return createMapboxGlModuleFake();
+});
+vi.mock("mapbox-gl/dist/mapbox-gl.css", () => ({}));
+// Hoisted with the mocks: the map module reads its token when it is imported,
+// and imports run before any ordinary statement in this file.
+const originalToken = vi.hoisted(() => {
+  const previous = process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = "pk.test-token-for-the-embed";
+  return previous;
+});
+// Restored, or the next file in this worker inherits a map key it never set.
+afterAll(() => {
+  if (originalToken === undefined) delete process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN;
+  else process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN = originalToken;
+});
 
 import EmbedEngagementPage from "@/app/(embed)/embed/[shareToken]/page";
 import { PortalReadUnavailableError } from "@/lib/engagement/public-portal-data";
@@ -44,6 +53,7 @@ import { resolvePortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import { buildPortalMessageBundle } from "@/lib/engagement/portal-i18n/messages";
 import type { PortalLocale } from "@/lib/engagement/portal-i18n/locales";
 import type { PortalText } from "@/lib/engagement/portal-i18n/operator-text";
+import { resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
 
 /**
  * Operator text as the LOADER would hand it over: the string plus how it came
@@ -114,6 +124,10 @@ function bundle(locale: PortalLocale = "en") {
       projectContext: null,
       surveyQuestions: [],
       closeLoopEntries: [],
+      readFailures: { comments: false, categories: false, closeLoop: false, project: false },
+      mapFraming: resolvePortalMapFraming({}),
+      contextLayers: null,
+      configurationVersionId: null,
     },
   };
 }
@@ -129,19 +143,25 @@ const renderEmbed = async (search?: Record<string, string | string[]>) => {
 describe("EmbedEngagementPage", () => {
   beforeEach(() => vi.clearAllMocks());
 
-  it("renders the minimal-chrome portal for an active campaign", async () => {
+  it("serves the same map-first surface as the full page, with an honest attribution", async () => {
     loadPublicPortalBundle.mockResolvedValue(bundle());
     await renderEmbed();
 
     expect(screen.getByText("Downtown listening campaign")).toBeInTheDocument();
     expect(screen.getByText("Tell us about downtown.")).toBeInTheDocument();
-    expect(screen.getByTestId("portal")).toBeInTheDocument();
-    // Minimal chrome carries an honest attribution + a link back to the full page.
+    expect(screen.getByTestId("portal-shell-map-first")).toBeInTheDocument();
+    expect(screen.getByTestId("portal-feed-open")).toBeInTheDocument();
     expect(screen.getByText(/Powered by OpenPlan/i)).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: /Open the full engagement page/i })).toHaveAttribute(
-      "href",
-      "/engage/share-token-12345"
-    );
+  });
+
+  it("opens the one door in a new tab, because the page behind it refuses to be framed", async () => {
+    loadPublicPortalBundle.mockResolvedValue(bundle("es"));
+    await renderEmbed({ lang: "es" });
+
+    const door = screen.getByTestId("portal-details-link");
+    expect(door).toHaveAttribute("href", "/engage/share-token-12345/about?lang=es");
+    expect(door).toHaveAttribute("target", "_blank");
+    expect(door).toHaveAttribute("rel", "noopener noreferrer");
   });
 
   it("404s when there is no active campaign for the token", async () => {
@@ -232,8 +252,10 @@ describe("EmbedEngagementPage", () => {
     await renderEmbed({ lang: "es" });
 
     // Without this an iframe participant is held in whichever language the
-    // request resolved to, with no picker and no coverage notice anywhere.
-    expect(screen.getByTestId("portal").getAttribute("data-language-chrome")).toBe("yes");
+    // request resolved to, with no picker and no coverage notice anywhere. The
+    // picker's links stay inside the widget.
+    const english = screen.getAllByRole("link").find((link) => link.getAttribute("href")?.includes("lang=en"));
+    expect(english?.getAttribute("href")).toMatch(/^\/embed\/share-token-12345\?/);
   });
 
   it("offers the same way out as the full page, not a lesser one", async () => {
