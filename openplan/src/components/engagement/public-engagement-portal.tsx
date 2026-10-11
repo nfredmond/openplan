@@ -9,6 +9,7 @@ import {
 import { usePublicCommentTranslations } from "./use-public-comment-translations";
 import { ClipboardCheck, ClipboardList, Loader2, MapPinned, MessageSquare, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { participantDeviceHeaders } from "@/lib/engagement/participant-device";
 import { readStoredEngagementGeometry } from "@/lib/engagement/geometry";
 import {
   TRANSLATION_LANGUAGES,
@@ -519,7 +520,10 @@ export function PublicEngagementPortal({
     setVoteCounts((previous) => ({ ...previous, [itemId]: baseCount + 1 }));
 
     try {
-      const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/vote`, { method: "POST" });
+      const response = await fetch(`/api/engage/${shareToken}/items/${itemId}/vote`, {
+          method: "POST",
+          headers: participantDeviceHeaders(),
+        });
       const payload = (await response.json()) as { error?: string; votesCount?: number };
       if (!response.ok) {
         throw new Error(payload.error || t("portal.supportFailed"));
