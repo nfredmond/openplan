@@ -1,0 +1,17 @@
+{
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "unit": "openplan-gtfs-coordinated-restore-20261011-02.service",
+  "execMainStatus": 1,
+  "unitResult": "exit-code",
+  "templateReadOnlyCapturePassed": true,
+  "sourceRestorePassed": true,
+  "sourceAll374Tables6SequencesAndSchemaEqual": true,
+  "workerReplays": 0,
+  "coordinatedSnapshotCaptured": false,
+  "backendExitCode": 137,
+  "backendOomKilled": true,
+  "backendMemoryLimit": 134217728,
+  "readinessMethod": "GET full generated API description",
+  "cause": "Retained container native state confirms OOM during repeated root readiness queries; logs show successful DB connection and full-schema cache before death.",
+  "limits": "No worker recovery acceptance. Original proof databases/files remain unchanged; failed source and stopped container retained."
+}

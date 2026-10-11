@@ -1,0 +1,76 @@
+{
+  "images": [
+    {
+      "phase": "source-after-capture",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "source-after-reply-loss",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "source-final",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "source-initial",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "target-after-recovery",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "target-before-recovery",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "target-control-rolled-back",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "template-after",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "template-before",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    },
+    {
+      "phase": "template-final",
+      "tables": 374,
+      "sequences": 6,
+      "schemaSha256": "91bb031f7f78af41d86a4baefcc643b9def6787ca1ab1c1fa6bc0b3fc6f36120",
+      "inventorySha256": "cd52936215f15d0cd8306c792d728e6675d614caa424468f10f47a8b72a52e6d"
+    }
+  ],
+  "allExact": true,
+  "limits": "Native complete-row inventory hashes and sequence values remain protected. The schema digest includes owners, grants and definitions after excluding dump comments and random restriction tokens. No cluster-role or database-property reconstruction."
+}

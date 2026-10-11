@@ -1,0 +1,15 @@
+{
+  "sourceHead": "bf1f6ffa710b11b7f36747a676943edab667a4ae",
+  "unit": "openplan-gtfs-coordinated-restore-20261011-01.service",
+  "execMainStatus": 1,
+  "unitResult": "exit-code",
+  "templateReadOnlyCapturePassed": true,
+  "sourceRestorePassed": true,
+  "sourceAll374Tables6SequencesAndSchemaEqual": true,
+  "workerReplays": 0,
+  "coordinatedSnapshotCaptured": false,
+  "gatewayDisappearedBeforeInspection": true,
+  "startupCause": "Not established; first container auto-removal left no logs and event history no longer contains its start.",
+  "laterSeparateDiagnosticReady": true,
+  "limits": "Retain first source database, dump, private files and failed service journal. No recovery acceptance from this trial."
+}

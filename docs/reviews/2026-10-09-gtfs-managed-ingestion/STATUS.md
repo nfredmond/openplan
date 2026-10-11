@@ -634,3 +634,22 @@ same-host recovery against the original isolated recovered database. A coordinat
 database/Storage/configuration point, physical-host loss, SQLite/WAL, full worker
 computation and agency commissioning remain unproved. Hosted ownership and the
 main-merge hold remain with the relaunch agent.
+
+## Coordinated transit database and file point, October 11
+
+[The coordinated GTFS trial](COORDINATED_TRANSIT_RESTORE.md) restores an encrypted
+database and complete local worker point into a fresh isolated database. A real
+replayed completion reply is dropped after native HTTP 200; the same unresolved
+command recovers its original receipt without computation. All 374 tables, six
+sequences and schema agree across ten retained native inventories. Original files
+and captured bundle remain unchanged; only the restored terminal receipt changes.
+A rollback-only missing-receipt control refuses the incomplete native image.
+Scope, transport, mapping, image and result checks pass harmless and targeted
+broken cases with omitted-guard oracle failures. The final journal reports
+283.978 seconds and 841.9 MiB under 1 GiB, no swap and one CPU. Two startup failures
+remain retained, including a confirmed 128 MiB PostgREST OOM during full API
+description readiness. Narrow HEAD readiness passes under the same service cap.
+This remains same-host/same-cluster GTFS recovery. Full Storage/configuration,
+cluster roles, populated SQLite, all worker families, physical-host recovery and
+agency commissioning remain open. The relaunch agent retains hosted coordination
+and the main-merge hold. No application or schema changes, main merge or release.

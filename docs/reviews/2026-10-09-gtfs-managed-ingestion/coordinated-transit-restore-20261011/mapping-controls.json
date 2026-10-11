@@ -1,0 +1,92 @@
+{
+  "records": [
+    {
+      "case": "baseline",
+      "passed": true
+    },
+    {
+      "case": "harmless",
+      "passed": true
+    },
+    {
+      "case": "restored",
+      "passed": true
+    },
+    {
+      "case": "url-input",
+      "passed": true
+    },
+    {
+      "case": "request-input",
+      "passed": true
+    },
+    {
+      "case": "foreign-origin",
+      "reason": "coordinated-transport-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "foreign-rpc",
+      "reason": "coordinated-transport-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "query",
+      "reason": "coordinated-transport-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "fragment",
+      "reason": "coordinated-transport-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-host",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-protocol",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-credentials",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-query",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-fragment",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "bridge-path",
+      "reason": "coordinated-bridge-scope",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    },
+    {
+      "case": "method",
+      "reason": "coordinated-transport-method",
+      "refused": true,
+      "omittedGuardFailsOracle": true
+    }
+  ],
+  "sourceSha256": "ce55f96bf696ddaea1bb4ab2aae97575a7d6a9251e3aa117037096402cdcc1d1",
+  "limits": "Exact extracted mapping, synthetic authorization and mock fetch only. No network or native database writes. Fetch is restored in finally."
+}
