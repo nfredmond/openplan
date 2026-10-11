@@ -145,3 +145,17 @@ fresh-process and real CLI checks, and the retained child-script failure.
 All completed owned test services are stopped; containers, volumes and proof
 remain retained. Current-head GitHub CI and complete installation recovery are
 still separate unfinished boundaries.
+
+## Joined full archive and earlier exact-head CI, October 11
+
+[The joined archive record](JOINED_ARCHIVE.md) now completes the frozen
+`ba1b497f` drill: 374 tables, one private Storage object, encrypted-record
+decryption, actual sign-in, independent OWP reconstruction and 1,499 live RLS
+tests pass, with 125 skipped and none failed. The runner and all twelve fresh
+services each have a 1 GiB cap, no swap and one CPU. Exact owned containers are
+stopped after success; containers, volumes and proof remain retained. Earlier
+encryption-only `e24a8e27` GitHub QA, executed shuffle, workers, live RLS and
+full archive all pass. The later `3abcd7686` keyless-map join has separate current
+checks. Physical host, hosted and complete external-worker recovery, main
+integration and release remain unfinished. Older status paragraphs retain their
+original source and outcome boundaries.
