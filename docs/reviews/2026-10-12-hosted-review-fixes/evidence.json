@@ -1,0 +1,86 @@
+{
+  "postgisGuard": {
+    "localProbe": {
+      "postgrest": "14.15",
+      "encodedSpatialRefSysAnonWrites": "201/204/204 before, 401 after",
+      "viaLocalKong2.8.1": "normalized, old guard held"
+    },
+    "production": {
+      "before": {
+        "GET /rest/v1/rpc/%67raphql (Accept-Profile graphql_public)": 200,
+        "GET /rest/v1/rpc/graphql": 401
+      },
+      "after": {
+        "GET /rest/v1/rpc/%67raphql": 401,
+        "GET /rest/v1/rpc/gr%61phql": 401,
+        "GET /rest/v1/spatial%5Fref%5Fsys": 401,
+        "GET /rest/v1/spatial_ref_sys": 200,
+        "GET /rest/v1/projects (anon)": 200
+      },
+      "verifyScriptExit": 0,
+      "spatialRefSys": {
+        "rows": 8500,
+        "contentMd5": "77641ba11fd4490377a02ae958261342",
+        "matchesStockPostgis337": true
+      }
+    }
+  },
+  "offsiteBackup": {
+    "service": "offsite-backup",
+    "bucket": "openplan-offsite-backups",
+    "bucketRegion": "iad",
+    "schedule": "17 10 * * *",
+    "restartPolicy": "NEVER",
+    "recipientFingerprint": "A4221F59406B5F299D2DD3FE7213CBBB858160CA",
+    "firstCapture": {
+      "key": "captures/20261012T002831Z/",
+      "ciphertextBytes": 11720418,
+      "ciphertextSha256": "dfce1798b8c6b7d915ceaf4f5f73cba61d11bbf8fdd200956b62f4a706efc341",
+      "databaseBytes": 7180797,
+      "databaseSha256": "5c2b7ba834ccaabf5ac5788a9c3b4671abfa9d1de296093d87ccf9bcf52c6545",
+      "tocEntries": 7477,
+      "serverVersion": "17.11",
+      "buckets": 11,
+      "objects": 220,
+      "objectBytes": 117871050
+    },
+    "verification": {
+      "ciphertextMatchesSummary": true,
+      "databaseHashMatches": true,
+      "storageMismatches": 0,
+      "pg17IndexEntries": 7477
+    },
+    "restore": {
+      "image": "public.ecr.aws/supabase/postgres:17.11.0.004",
+      "network": "none",
+      "pgRestoreErrors": 2,
+      "errors": [
+        "event trigger ensure_rls does not exist",
+        "Superuser owned event trigger must execute a superuser owned function"
+      ],
+      "restored": {
+        "migrations": 405,
+        "public_tables": 310,
+        "public_rls": 309,
+        "policies": 769,
+        "auth_users": 5,
+        "buckets": 11,
+        "storage_objects": 220,
+        "event_triggers": 6
+      },
+      "production": {
+        "migrations": 405,
+        "public_tables": 310,
+        "public_rls": 309,
+        "policies": 769,
+        "auth_users": 5,
+        "buckets": 11,
+        "storage_objects": 220,
+        "event_triggers": 7
+      },
+      "objectRowsMatchCopiedObjects": true
+    },
+    "secondCapture": "captures/20261012T003252Z/"
+  },
+  "boundary": "Counts and hashes only. No credential, object path, user record or key material."
+}
