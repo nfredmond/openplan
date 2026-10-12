@@ -1,16 +1,16 @@
 {
-  "sourceSha256": "bebf2a1cf0f8d5ace5af56250f449742264586ab14c91fef7cb4748edae79ee8",
+  "sourceSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
   "selectedMainBackupSha256": "7b51116b5caad24649b75be76e0d8582b3421bde1c86db23c8c6aa818a432dd5",
   "controls": [
     {
       "name": "baseline",
       "result": "survived",
-      "dumpSha256": "5e87e2b71593369172a938cb451783e72075547beb84ebb573ac98ae38df02de"
+      "dumpSha256": "f068e8ceb738d13b694790affd5cef921474cbba6ab45826443b53852f55e54c"
     },
     {
       "name": "harmless",
       "result": "survived",
-      "dumpSha256": "6d5a70b28104a93ddd33dd6b79e6a70324482d9e7ee7ece1de33fc0ef4dbac0f"
+      "dumpSha256": "6997fd503326849328db58b6b0bacfd5a4bd69e09dff3d7fb2322d3b5c929ef9"
     },
     {
       "name": "wrong-generated-hash",
@@ -19,7 +19,7 @@
     {
       "name": "restored",
       "result": "survived",
-      "dumpSha256": "e1e7d8a7e6a2a0f8db3eb277c9c471036151c17368bfc7b5aa5d82f56665dbc9"
+      "dumpSha256": "fba721474ddac25e4f904b81cc2ba9b6ed2f88a49b4ed4aa45371278f175f92d"
     }
   ],
   "scope": "Complete candidate SQL application and pg_dump/pg_restore within one isolated capped cluster. UTF-8 originals, private rows, schema and ACL replay. Manual history records; no CLI, encrypted installation point, Storage/worker alignment, offsite/physical-host, hosted or browser acceptance."

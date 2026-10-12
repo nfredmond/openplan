@@ -2,6 +2,70 @@
 
 ## Latest checkpoint
 
+The membership concurrency check reproduces an actual owner-floor deadlock in
+the preceding candidate. The revised migration uses `FOR SHARE NOWAIT` for
+membership admission. Four actual cases now pass: baseline, harmless and restored
+admission refuse the held row, owner-role removal finishes, and no original is
+captured. Removing `NOWAIT` reproduces the deadlock. The revised SQL now passes
+73 native observations and 32 controls, four project-lock controls, four complete
+SQL restore controls and [25 actual CLI/RPC cases](evidence/rpc-cli-controls.json). All five follow-through stages
+finish and their owned containers stop. Source hashes match the revised migration
+across each report. Its rollout still needs coordination, fresh database/Storage
+capture and confirmation before dependent code.
+
+The revised RPC set includes actual owner-role removal. The original text remains
+readable to the service with `authorizedNow: false`; another record call refuses.
+Forcing a true observation in the compiled helper fails the intended current-scope
+assertion. Removing either RPC abort produces its intended stalled-command failure.
+Baseline, harmless and restored cases pass. The 25 cases include 22 survivors
+and three deliberate faults. [Thirteen oracle/network controls](evidence/rpc-oracle-controls.json) also pass.
+
+The revised candidate and a fresh baseline have the same [security advisor
+inventory](evidence/security-advisors.json). Seven inherited warnings and the
+PostGIS `spatial_ref_sys` error remain. This comparison is not a clean-installation
+claim; separate native tests protect the private schema and service-only roles.
+
+The [deadline test correction](../2026-10-12-odm-deadline-test-clock/STATUS.md)
+resolves the preceding checkpoint's GitHub failure. It passes 20 tests, 32 control
+cases and eight oracle cases under each of Python 3.14 and 3.11. It observes the
+pipeline's actual clock and removes the earlier test allowance. Production code
+and its deadline stay unchanged. Exact-commit GitHub checks remain separate.
+
+## Earlier CLI and RPC checkpoint
+
+[Earlier CLI upgrade and RPC transport](evidence/preceding-rpc-cli-controls.json) passed
+20 cases. Eighteen ordinary, harmless and restored cases survive. Two versions
+without the helper's abort signal fail the intended stalled-command assertion.
+The installed CLI 2.111.0 applies migration 03 to four fresh copies of the
+selected 405-version main-schema fixture and records its SQL statements. A
+second CLI run reports that the database is up to date. The fixture's migration source matches fetched
+main `44dceca1cc11e00b2f2736364e1c4b134a55e821`; its data remains synthetic and
+historical. This is no claim about the hosted database's current records.
+
+The installed PostgREST client calls the actual service-only functions. Exact
+Unicode text, original scope, identical replay and false engine permission
+survive. Actual anonymous and authenticated callers receive permission refusals;
+even the service caller cannot select the unexposed private schema. Deliberately
+stalled admission and read commands refuse at the ten-second client deadline.
+Original readback passes afterward. The proof does not establish an atomic
+external engine fence or recovery of a dropped first-insert reply.
+
+The [earlier RPC oracle and network guards](evidence/preceding-rpc-oracle-controls.json) passed 12
+control cases against eight failure diagnostics and six fixture network cases.
+They reject unrelated failures and overlapping or oversized fixture networks.
+The [five owned containers](evidence/preceding-rpc-stopped-services.json) and control unit
+stop. The control unit peaks at 220,512,256 bytes under its one-GiB limit.
+Database and PostgREST limits are one GiB and 128 MiB, with no published ports.
+
+Six failed fixture trials remain retained. They expose exhausted default Docker
+pools, unavailable port publication on an internal bridge, missing local TLS,
+missing host-access entries, an unsuitable disabled-OpenAPI readiness probe and
+an eight-second server timeout masking the client abort. The corrected fixture
+uses a verified private subnet, direct private addresses, explicit local TLS
+disablement, narrow password-authenticated access and a real table readiness
+probe. Only its fresh authenticator role receives 30-second stall limits.
+Production configuration and the inherited fixture roles remain unchanged.
+
 The helper now passes 34 tests and 43 control cases, including complete v1.1
 photo manifests, nullable projects and static refusals for thrown transport
 errors. The route controller passes 25 tests and 16 control cases, including
@@ -35,7 +99,8 @@ SHA-256 check. The first restore trial uses a role that cannot set the Auth
 schema owner. It fails and remains retained; the corrected runner uses the
 captured cluster's bootstrap administrator. All native containers and controlling
 services stop. This is one local cluster, not CLI, offsite, Storage/worker,
-physical-host, hosted or full installation recovery acceptance.
+physical-host, hosted or full installation recovery acceptance. The later CLI
+and private RPC cases above establish their narrower boundaries separately.
 
 PR #205 now has all seven required exact-head GitHub checks passing. The shared
 file records later autonomous merge and migration directions. This owner takes
@@ -101,8 +166,9 @@ and [verify_native_controls.py](verify_native_controls.py), as recorded above.
 
 ## Remaining work
 
-Complete remaining snapshot/parent paths, actual RPC transport and CLI upgrade
-verification. Combined tests, scoped TypeScript and changed-file lint pass.
+Complete remaining snapshot/parent paths and actual current-revocation RPC
+paths. CLI upgrade and installed RPC interruption now pass within the fixture.
+Combined tests, scoped TypeScript and changed-file lint pass.
 Documentation checks pass for the candidate; exact-commit CI remains separate.
 Connect an independently verified private worker
 reader before enabling the managed aerial pipeline.

@@ -77,8 +77,10 @@ BEGIN
   END IF;
   SELECT * INTO mission FROM public.aerial_missions WHERE id = original.mission_id FOR SHARE;
   IF NOT FOUND THEN RAISE EXCEPTION 'Original aerial mission is unavailable' USING ERRCODE = 'P0002'; END IF;
+  -- Owner-floor revocation locks its membership before its workspace. Refuse
+  -- an already locked member row instead of deadlocking against that trigger.
   SELECT role INTO member_role FROM public.workspace_members
-    WHERE workspace_id = original.workspace_id AND user_id = p_actor FOR SHARE;
+    WHERE workspace_id = original.workspace_id AND user_id = p_actor FOR SHARE NOWAIT;
   IF NOT FOUND OR member_role IS NULL OR member_role NOT IN ('owner', 'admin', 'member') THEN
     RAISE EXCEPTION 'Original aerial actor cannot process this workspace' USING ERRCODE = '42501';
   END IF;

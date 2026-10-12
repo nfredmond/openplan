@@ -89,6 +89,69 @@
       "memorySwapMaxBytes": 0,
       "cpuQuota": "1s",
       "stoppedAfterMetrics": true
+    },
+    {
+      "check": "rpc-cli-07",
+      "invocationId": "c37e7ec478f04a408c67388018695da8",
+      "memoryPeakBytes": 220512256,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "advisors-01",
+      "invocationId": "d0fc2b6d17e24989ab22a1d585c5e099",
+      "memoryPeakBytes": 159322112,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "membership-historical-01",
+      "invocationId": "b4cb0d826b274a32aabbf9b8e5ece5ed",
+      "memoryPeakBytes": 41361408,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "membership-locks-02",
+      "invocationId": "8304145e3c5848cca2596db4e9440a7e",
+      "memoryPeakBytes": 49328128,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "membership-followup-01",
+      "invocationId": "da6b6abadbad470b94534fbaff1fcb75",
+      "memoryPeakBytes": 295342080,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "advisors-02",
+      "invocationId": "430fad5430fd479eb38396fd867e8831",
+      "memoryPeakBytes": 162697216,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "docs-03",
+      "invocationId": "d725c3a171b647639099bbf1dcc96da4",
+      "memoryPeakBytes": 290082816,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
     }
   ],
   "nativeDatabase": {
@@ -98,5 +161,14 @@
     "containersStopped": true,
     "observedOomKilled": false
   },
-  "scope": "Owned service metrics and capped native fixture. No spare/full-installation capacity or physical-host acceptance."
+  "scope": "Owned service metrics and capped native fixture. No spare/full-installation capacity or physical-host acceptance.",
+  "rpcFixture": {
+    "databaseMemoryMaxBytes": 1073741824,
+    "restMemoryMaxBytes": 134217728,
+    "networkInternal": true,
+    "subnet": "10.212.250.0/28",
+    "publishedPorts": false,
+    "allContainersStopped": true,
+    "observedOomKilled": false
+  }
 }
