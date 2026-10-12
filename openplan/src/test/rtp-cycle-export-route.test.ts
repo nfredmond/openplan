@@ -163,6 +163,12 @@ function chainable(table: string) {
   for (const method of ["eq", "in", "order", "limit", "not", "is"]) node[method] = self;
   const result = () => ({ data: rows[table] ?? [], error: errors[table] ?? null });
   node.maybeSingle = async () => ({ data: (rows[table] ?? [])[0] ?? null, error: errors[table] ?? null });
+  // The engagement comment read pages. A range answers its slice, held to the
+  // server's 1,000-row cap, so an empty slice past the end ends the read.
+  node.range = async (from: number, toInclusive: number) =>
+    errors[table]
+      ? { data: null, error: errors[table] }
+      : { data: (rows[table] ?? []).slice(from, Math.min(toInclusive + 1, from + 1000)), error: null };
   node.then = (resolve: (value: unknown) => unknown) => Promise.resolve(result()).then(resolve);
   return node;
 }
