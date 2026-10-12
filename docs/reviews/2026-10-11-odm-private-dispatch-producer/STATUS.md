@@ -2,6 +2,41 @@
 
 ## Latest checkpoint
 
+The revised `4b0814b6` candidate refuses held mission and job rows with `NOWAIT`,
+beside membership. The expanded mission baseline first reproduces an actual
+deadlock with the project's evidence-revision trigger. Removing either new
+`NOWAIT` protection reproduces that lock cycle. [Twenty parent/child cases](evidence/parent-lock-controls.json)
+now pass across actor, workspace, project, mission and job paths. Fifteen
+baseline, harmless and restored cases survive; five intended faults deadlock.
+The account fixture retires its personal workspace first and retains another
+workspace owner. This does not establish general account-deletion usability.
+
+[Forty concurrent snapshot cases](evidence/snapshot-lock-controls.json) pass for
+the eight job fields, active status and deletion after admission's first read.
+Thirty baseline, harmless and restored cases survive. Removing the snapshot
+guard fails ten selected assertions. Nine faults reach the later payload
+refusal; the accepted-status fault permits admission. Those distinct outcomes
+remain visible. [Six oracle controls](evidence/snapshot-oracle-controls.json)
+against eight diagnostics reject unrelated SQL failures. No original is retained
+by these rolled-back admission probes. Other interleavings remain unproved.
+
+All six [revised follow-through stages](evidence/child-lock-followup-results.json)
+pass: actual native application, 73 observations and 32 mutation controls,
+four membership cases, four complete SQL restore cases, 25 actual CLI/RPC cases
+and advisor comparison. The revised advisor inventory retains seven warnings
+and one inherited PostGIS error. Current reports bind the revised SQL and 20
+source files. The controlling unit peaks at 285,421,568 bytes under one GiB;
+its memory events show no OOM. The snapshot unit peaks at 55,959,552 bytes under
+512 MiB. All owning units and containers stop.
+
+Two startup trials reach their readiness deadline before any parent probe.
+A third expanded trial exposes the mission deadlock. Their private logs and
+partial observations remain retained. The retained cluster finishes startup
+recovery with the longer fixture allowance. Application and worker deadlines
+stay unchanged. No hosted apply, main merge or default activation occurs.
+
+## Preceding membership checkpoint
+
 The membership concurrency check reproduces an actual owner-floor deadlock in
 the preceding candidate. The revised migration uses `FOR SHARE NOWAIT` for
 membership admission. Four actual cases now pass: baseline, harmless and restored
@@ -166,8 +201,8 @@ and [verify_native_controls.py](verify_native_controls.py), as recorded above.
 
 ## Remaining work
 
-Complete remaining snapshot/parent paths and actual current-revocation RPC
-paths. CLI upgrade and installed RPC interruption now pass within the fixture.
+The selected snapshot/parent and current-revocation RPC paths now pass.
+CLI upgrade and installed RPC interruption pass within the fixture.
 Combined tests, scoped TypeScript and changed-file lint pass.
 Documentation checks pass for the candidate; exact-commit CI remains separate.
 Connect an independently verified private worker

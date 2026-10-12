@@ -8,9 +8,9 @@
     "ERROR": 1
   },
   "inheritedNames": [
+    "extension_in_public",
     "function_search_path_mutable",
-    "rls_disabled_in_public",
-    "extension_in_public"
+    "rls_disabled_in_public"
   ],
   "inheritedErrorMetadata": [
     {
@@ -19,7 +19,7 @@
       "schema": "public"
     }
   ],
-  "runnerSha256": "07270f9df0195ef72cd0edcd817695400c7b292acde4810773a15150b24ba501",
-  "migrationSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
-  "scope": "Installed CLI security advisor comparison in an isolated restored cluster. Eight inherited findings remain: seven warnings and one spatial_ref_sys error. Private-schema role and RLS enforcement come from separate native tests. No hosted or whole-installation acceptance."
+  "runnerSha256": "21c098d041ffb927fc237a60c5c8d6530c17c301b47c1d80d7259e97b47adeee",
+  "migrationSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "scope": "Installed CLI security advisor comparison in an isolated restored cluster. Seven inherited warnings and one spatial_ref_sys error remain. No hosted or whole-installation acceptance."
 }

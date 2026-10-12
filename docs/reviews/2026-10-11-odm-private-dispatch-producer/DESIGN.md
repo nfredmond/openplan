@@ -28,6 +28,12 @@ Do not expose this schema through the Data API.
 Admission locks the actor, workspace, project, mission and membership before
 the job. It requires a current owner, administrator or member, the original
 requesting actor, a requested job and matching workspace/project/mission scope.
+Membership admission uses `NOWAIT` because owner-floor revocation locks the
+member before its workspace. Mission and job admission also use `NOWAIT`:
+their writes update the project's evidence revision after locking that child.
+An already held row produces a contention refusal instead of a lock cycle.
+After acquiring these rows, admission compares the current eight-field job
+snapshot with its initial read. A changed or missing job refuses before custody.
 The database checks wire version and scope; the TypeScript producer validates
 the complete existing request contract. The worker still independently validates
 its incoming contract. No new fields enter that public contract.

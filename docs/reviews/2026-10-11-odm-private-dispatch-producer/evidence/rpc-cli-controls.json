@@ -14,7 +14,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 91,
+      "wallMilliseconds": 97,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -30,7 +30,7 @@
         "immutable-original-readback",
         "revoked-record-refused"
       ],
-      "wallMilliseconds": 74,
+      "wallMilliseconds": 85,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -51,7 +51,7 @@
         "static-refusal",
         "ten-second-client-abort"
       ],
-      "wallMilliseconds": 10010,
+      "wallMilliseconds": 10008,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -71,7 +71,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 94,
+      "wallMilliseconds": 106,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -87,7 +87,7 @@
         "static-refusal",
         "ten-second-client-abort"
       ],
-      "wallMilliseconds": 10050,
+      "wallMilliseconds": 10008,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -107,7 +107,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 92,
+      "wallMilliseconds": 124,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -127,7 +127,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 103,
+      "wallMilliseconds": 101,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -143,7 +143,7 @@
         "immutable-original-readback",
         "revoked-record-refused"
       ],
-      "wallMilliseconds": 83,
+      "wallMilliseconds": 73,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -159,7 +159,7 @@
         "static-refusal",
         "ten-second-client-abort"
       ],
-      "wallMilliseconds": 10006,
+      "wallMilliseconds": 10007,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -179,7 +179,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 81,
+      "wallMilliseconds": 50,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -195,7 +195,7 @@
         "static-refusal",
         "ten-second-client-abort"
       ],
-      "wallMilliseconds": 10006,
+      "wallMilliseconds": 10008,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -215,7 +215,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 102,
+      "wallMilliseconds": 98,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -235,7 +235,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 92,
+      "wallMilliseconds": 105,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -251,7 +251,7 @@
         "immutable-original-readback",
         "revoked-record-refused"
       ],
-      "wallMilliseconds": 84,
+      "wallMilliseconds": 86,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -276,7 +276,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 88,
+      "wallMilliseconds": 98,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -301,7 +301,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 92,
+      "wallMilliseconds": 123,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -321,7 +321,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 90,
+      "wallMilliseconds": 102,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -337,7 +337,7 @@
         "immutable-original-readback",
         "revoked-record-refused"
       ],
-      "wallMilliseconds": 62,
+      "wallMilliseconds": 87,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -353,7 +353,7 @@
         "static-refusal",
         "ten-second-client-abort"
       ],
-      "wallMilliseconds": 10006,
+      "wallMilliseconds": 10008,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -373,7 +373,7 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 95,
+      "wallMilliseconds": 88,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
@@ -409,16 +409,16 @@
         "authenticated-refused",
         "private-schema-unexposed"
       ],
-      "wallMilliseconds": 104,
+      "wallMilliseconds": 115,
       "sourceSha256": {
         "src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
         "src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5"
       }
     }
   ],
-  "selectedMain": "44dceca1cc11e00b2f2736364e1c4b134a55e821",
+  "selectedMain": "941988c2219202db5febfca3c1739c85663bcfee",
   "selectedMainDumpSha256": "7b51116b5caad24649b75be76e0d8582b3421bde1c86db23c8c6aa818a432dd5",
-  "migrationSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "migrationSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
   "clientSha256": "a56b7721c50cacbb909734e7b941caf0178dd198a0eaa1a25d233429581a5625",
   "cliVersion": "2.111.0",
   "scope": "Actual CLI application and idempotence, installed PostgREST client with real private RPCs and ten-second client abort under isolated stalled SQL. Current-scope observation and private schema role boundaries only. No complete Supabase stack, atomic engine fence, hosted, offsite, browser, practitioner or scientific acceptance."

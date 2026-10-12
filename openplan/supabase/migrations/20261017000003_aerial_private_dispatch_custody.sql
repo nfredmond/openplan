@@ -75,7 +75,9 @@ BEGIN
     PERFORM 1 FROM public.projects WHERE id = original.project_id AND workspace_id = original.workspace_id FOR SHARE;
     IF NOT FOUND THEN RAISE EXCEPTION 'Original aerial project scope differs' USING ERRCODE = '42501'; END IF;
   END IF;
-  SELECT * INTO mission FROM public.aerial_missions WHERE id = original.mission_id FOR SHARE;
+  -- Mission and job writes also update their project's evidence revision.
+  -- Refuse a held child instead of waiting while holding that project row.
+  SELECT * INTO mission FROM public.aerial_missions WHERE id = original.mission_id FOR SHARE NOWAIT;
   IF NOT FOUND THEN RAISE EXCEPTION 'Original aerial mission is unavailable' USING ERRCODE = 'P0002'; END IF;
   -- Owner-floor revocation locks its membership before its workspace. Refuse
   -- an already locked member row instead of deadlocking against that trigger.
@@ -84,7 +86,7 @@ BEGIN
   IF NOT FOUND OR member_role IS NULL OR member_role NOT IN ('owner', 'admin', 'member') THEN
     RAISE EXCEPTION 'Original aerial actor cannot process this workspace' USING ERRCODE = '42501';
   END IF;
-  SELECT * INTO current_job FROM public.aerial_processing_jobs WHERE id = p_job FOR UPDATE;
+  SELECT * INTO current_job FROM public.aerial_processing_jobs WHERE id = p_job FOR UPDATE NOWAIT;
   IF NOT FOUND OR current_job.workspace_id IS DISTINCT FROM original.workspace_id
     OR current_job.project_id IS DISTINCT FROM original.project_id
     OR current_job.mission_id IS DISTINCT FROM original.mission_id
