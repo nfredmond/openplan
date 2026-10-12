@@ -243,6 +243,7 @@ describe("map package files", () => {
     mocks.userFrom.mockReturnValue(query(fileRow("synthetic_maps_20261010.zip", "package_zip")));
     const zip = await fileRoute.GET(browserRequest(`/api/map-packages/${pkg}/files/synthetic_maps_20261010.zip`, undefined, "GET"), context("synthetic_maps_20261010.zip"));
     expect(zip.status).toBe(307);
+    expect(zip.headers.get("cache-control")).toBe("private, no-store");
     expect(mocks.sign).toHaveBeenCalledWith(`${workspace}/${project}/${pkg}/synthetic_maps_20261010.zip`, 300, { download: "synthetic_maps_20261010.zip" });
     mocks.userFrom.mockReturnValue(query(fileRow("fig01.png", "figure_preview")));
     mocks.fetch.mockResolvedValue(new Response("png-bytes"));
