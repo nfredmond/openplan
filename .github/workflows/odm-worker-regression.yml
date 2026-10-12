@@ -126,3 +126,7 @@ jobs:
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-controls"
           python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_transport_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-transport-controls"
+      - name: Original dispatch custody harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-original-dispatch-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-dispatch-controls"

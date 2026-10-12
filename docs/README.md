@@ -89,6 +89,8 @@ The [October 11 original aerial URL intake candidate](reviews/2026-10-11-odm-run
 
 The [October 11 original URL-to-draft candidate](reviews/2026-10-11-odm-url-draft-pipeline/STATUS.md) advances one original command from frozen URL settings and bytes. Twenty composition tests/32 controls and actual composed HTTP body cancellation pass. Native source intake and pinned engine drafts retain uncertain intents and hold commit. Supplied authority, processing/results/callbacks and full worker recovery remain unassessed. Main merges stay held.
 
+The [original dispatch custody candidate](reviews/2026-10-11-odm-original-dispatch-custody/STATUS.md) preserves exact supplied request bytes, original actor and nullable project before URL intake. It compares frozen settings and engine context with the private receipt and refuses recapture after input work. Supplied authorship and current authority remain unassessed. The coordinator lifts the merge hold at 2026-10-12T02:46:46Z, subject to serial merges and production health verification.
+
 
 The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 
