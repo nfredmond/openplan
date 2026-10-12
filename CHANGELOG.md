@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
+production build no longer lets workspaces without their own key spend the
+deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
+a deployment with public signup, leave it unset; each workspace adds its own key.
+Development runs keep the old behavior. Sign-in and sign-up now refuse redirect
+values that only look local, the sign-up confirmation notice says to check spam
+and can resend the link, and the pages no longer promise a workspace before the
+email is confirmed.
+
 The aerial private-dispatch candidate adds
 `20261017000003_aerial_private_dispatch_custody.sql`. It retains exact original
 application request text and its actor, workspace, project, mission and job scope.
