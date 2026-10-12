@@ -497,6 +497,8 @@ export async function fetchCcrsCrashes(params: CrashFetchParams): Promise<CrashF
     yearsCovered: Array.from(
       new Set(records.map((r) => r.collisionYear).filter((y): y is number => typeof y === "number"))
     ).sort((a, b) => a - b),
+    // Every year in the loop above was queried; a failed query throws instead.
+    yearsQueried: [...years].sort((a, b) => a - b),
     truncated,
     unmappedByDimension,
     resourceUpdates: {

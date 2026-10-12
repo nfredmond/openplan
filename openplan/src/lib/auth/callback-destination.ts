@@ -45,3 +45,24 @@ export function resolveCallbackDestination(rawNext: string | null, origin: strin
     return fallback;
   }
 }
+
+/**
+ * Where /auth/confirm sends a person. The email template passes
+ * `{{ .RedirectTo }}`, the full URL the page asked for, which is usually the
+ * old callback (https://host/auth/callback?next=/reset-password). Keep only a
+ * same-origin app path, unwrapping the callback's own `next`.
+ */
+export function confirmDestination(rawNext: string | null, origin: string): URL {
+  if (!rawNext) return resolveCallbackDestination(null, origin);
+  let parsed: URL;
+  try {
+    parsed = new URL(rawNext, origin);
+  } catch {
+    return resolveCallbackDestination(null, origin);
+  }
+  if (parsed.origin !== origin) return resolveCallbackDestination(null, origin);
+  if (parsed.pathname === "/auth/callback" || parsed.pathname === "/auth/confirm") {
+    return resolveCallbackDestination(parsed.searchParams.get("next"), origin);
+  }
+  return resolveCallbackDestination(`${parsed.pathname}${parsed.search}${parsed.hash}`, origin);
+}
