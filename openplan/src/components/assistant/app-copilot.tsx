@@ -1416,22 +1416,22 @@ function QuickLinkGrid({
                               type="button"
                               onClick={() => onRunOperation?.(link)}
                               disabled={isRunningOperation}
+                              aria-label={`${isRunningOperation ? "Running" : link.executeAction ? "Run now" : "Run in panel"}: ${link.label}`}
                               className="inline-flex items-center gap-1 rounded-full border border-violet-300/20 bg-violet-400/12 px-2.5 py-1 text-violet-100 transition hover:border-violet-300/35 hover:bg-violet-400/16 hover:text-white"
                             >
                               {isRunningOperation ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                               {isRunningOperation
-                                ? `Running · ${link.id}`
+                                ? "Running…"
                                 : link.executeAction
-                                  ? `Execute now · ${link.id}`
-                                  : `Run in panel · ${link.id}`}
+                                  ? "Run now"
+                                  : "Run in panel"}
                             </button>
                           ) : null}
-                          <Link href={link.href} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
+                          <Link href={link.href} aria-label={`Open: ${link.label}`} className="inline-flex items-center gap-1 rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-emerald-100 transition hover:border-emerald-300/35 hover:bg-emerald-400/16 hover:text-white">
                             <ArrowUpRight className="h-3.5 w-3.5" />
-                            Open surface · {link.id}
+                            Open
                           </Link>
                         </div>
-                        {link.auditEvent ? <span className="max-w-full break-all text-slate-400/82">{link.auditEvent}</span> : null}
                       </div>
                     </div>
                   );
@@ -2326,16 +2326,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                         : operationStatus.error ?? "This grounded workflow failed before a response could be posted."}
                   </p>
                   <div className="mt-3 flex flex-wrap gap-2">
-                    {operationStatus.workflowId ? (
-                      <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                        Workflow · {operationStatus.workflowId}
-                      </StatusBadge>
-                    ) : null}
-                    {operationStatus.auditEvent ? (
-                      <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
-                        Audit · {operationStatus.auditEvent}
-                      </StatusBadge>
-                    ) : null}
                     {formatOperationTimestamp(operationStatus.startedAt) ? (
                       <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
                         Started · {formatOperationTimestamp(operationStatus.startedAt)}
@@ -2410,16 +2400,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </div>
                         </div>
                         <div className="mt-2 flex flex-wrap gap-2">
-                          {entry.workflowId ? (
-                            <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                              Workflow · {entry.workflowId}
-                            </StatusBadge>
-                          ) : null}
-                          {entry.auditEvent ? (
-                            <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-200/85">
-                              Audit · {entry.auditEvent}
-                            </StatusBadge>
-                          ) : null}
                           {formatOperationTimestamp(entry.startedAt) ? (
                             <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
                               Started · {formatOperationTimestamp(entry.startedAt)}
@@ -2453,20 +2433,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                               <User className="h-3.5 w-3.5" />
                             </div>
                             <p>{message.text}</p>
-                            {message.operation ? (
-                              <div className="mt-3 flex flex-wrap justify-end gap-2">
-                                {message.operation.workflowId ? (
-                                  <StatusBadge tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-100">
-                                    Workflow · {message.operation.workflowId}
-                                  </StatusBadge>
-                                ) : null}
-                                {message.operation.auditEvent ? (
-                                  <StatusBadge tone="neutral" className="max-w-full whitespace-normal break-all border-white/10 bg-white/[0.05] text-slate-100">
-                                    Audit · {message.operation.auditEvent}
-                                  </StatusBadge>
-                                ) : null}
-                              </div>
-                            ) : null}
                           </div>
                         </div>
                       );
