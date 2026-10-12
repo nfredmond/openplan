@@ -130,3 +130,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-original-dispatch-custody/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-dispatch-controls"
+      - name: Private application dispatch reader and HTTP controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-private-dispatch-reader/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-dispatch-reader-controls"

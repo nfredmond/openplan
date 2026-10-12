@@ -72,6 +72,24 @@ class Checks(unittest.TestCase):
         self.intake.fetch = inspect;self.advance()
         self.assertEqual(self.read()['applicationJob']['created_by'], 'synthetic-original-actor')
 
+    def test_network_capture_receives_the_actual_shared_deadline(self):
+        readings, deadlines = [], []
+        original_clock = time.monotonic
+        def clock():
+            value = original_clock();readings.append(value);return value
+        def capture(entry, *, deadline=None):
+            deadlines.append(deadline);return self.payload, self.row
+        self.pipeline = Pipeline(self.original, self.custody, capture, capture_with_deadline=True)
+        self.original.timeout = 1
+        with patch.object(module, 'time', SimpleNamespace(monotonic=clock)):
+            self.advance()
+        self.assertEqual(deadlines, [readings[0] + 1], 'Network capture must receive the actual shared pipeline deadline')
+
+    def test_capture_deadline_selection_requires_a_boolean(self):
+        for value in (None, 0, 1, 'yes'):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, '^Original dispatch capture deadline selection must be boolean$'):
+                Pipeline(self.original, self.custody, self.pipeline.capture, capture_with_deadline=value)
+
     def test_original_capture_never_requeries_on_complete_or_uncertain_replay(self):
         self.advance()
         self.pipeline.capture = lambda entry: (_ for _ in ()).throw(AssertionError('Original dispatch was recaptured'))

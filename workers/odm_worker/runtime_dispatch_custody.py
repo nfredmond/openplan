@@ -122,10 +122,13 @@ class Custody:
 
 
 class Pipeline:
-    def __init__(self, pipeline, dispatch, capture):
+    def __init__(self, pipeline, dispatch, capture, *, capture_with_deadline=False):
         if not isinstance(pipeline, UrlDraft) or not isinstance(dispatch, Custody) or pipeline.intake.runtime is not dispatch.runtime or pipeline.intake.target != dispatch.target or not callable(capture):
             raise ValueError('Original dispatch pipeline adapters differ')
+        if type(capture_with_deadline) is not bool:
+            raise ValueError('Original dispatch capture deadline selection must be boolean')
         self.pipeline = pipeline;self.dispatch = dispatch;self.capture = capture
+        self.capture_with_deadline = capture_with_deadline
 
     def _advance(self, request_id, job=None):
         deadline = time.monotonic()+min(self.pipeline.timeout, self.dispatch.timeout)
@@ -136,7 +139,7 @@ class Pipeline:
             name = hashlib.sha256(request_id.encode()).hexdigest()
             if any((self.dispatch.runtime.root/(prefix+name)).exists() or (self.dispatch.runtime.root/(prefix+name)).is_symlink() for prefix in ('url-intake-', 'preparation-')):
                 raise ValueError('Started input work requires its original dispatch receipt')
-            captured = self.capture(copy.deepcopy(entry))
+            captured = self.capture(copy.deepcopy(entry), deadline=deadline) if self.capture_with_deadline else self.capture(copy.deepcopy(entry))
             if type(captured) is not tuple or len(captured) != 2:
                 raise ValueError('Exact original dispatch capture is required')
             receipt = self.dispatch.save(request_id, *captured, deadline=deadline)
