@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+The aerial private-dispatch candidate adds
+`20261017000003_aerial_private_dispatch_custody.sql`. It retains exact original
+application request text and its actor, workspace, project, mission and job scope.
+The worker-only read reports current access separately from saved custody and
+does not grant engine permission. Apply this additive migration before enabling
+dependent reader code. It remains a candidate, with hosted rollout and default
+worker activation pending. See the [producer evidence](docs/reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md).
+
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
 retains exact private bytes, recovers interrupted attempts and leaves completed
