@@ -285,6 +285,28 @@ describe("nothing in the contract asks the model to compute", () => {
     }
   });
 
+  it("tells the model a figure may be quoted in any written form", () => {
+    /*
+      The verifier reduces "$24 million", "$24M" and "24,000,000" to one core,
+      24000000 (`numericCoresIn`). The prompt used to say "the SAME digits must
+      appear in your quote" and "never convert units", which is stricter than
+      the verifier. Live on 2026-10-11, Opus 5.5 left estimatedCost off every
+      programmed project in five runs, and when asked why it quoted those two
+      rules: it dropped the optional cost rather than risk losing the whole
+      candidate. The required revenue amount came through because it could not
+      be left out. The prompt has to describe the rule the verifier enforces.
+    */
+    for (const spec of Object.values(RTP_EXTRACTION_TARGETS)) {
+      const { system, prompt } = buildExtractionPrompt({ targetKind: spec.kind, passages: PASSAGES });
+      expect(prompt, spec.kind).not.toMatch(/SAME digits/i);
+      expect(prompt, spec.kind).toMatch(/must appear inside your own `quote`, in any written form \(\$24 million in the quote licenses 24000000\)/);
+      expect(system).toMatch(/Writing \$24 million as 24000000 is the same figure/);
+      if (spec.fields.some((field) => field.kind === "numeric")) {
+        expect(prompt, spec.kind).toContain("$24 million, $24M and 24,000,000 are all 24000000");
+      }
+    }
+  });
+
   it("declares no field that scores the model", () => {
     for (const spec of Object.values(RTP_EXTRACTION_TARGETS)) {
       for (const field of spec.fields) {

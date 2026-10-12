@@ -20,6 +20,7 @@ import {
 } from "./key-crypto";
 import { loadWorkspaceIntegrationKeys, runWithWorkspaceIntegrationKeys } from "./context";
 import { integrationProvider, type IntegrationProviderId } from "./providers";
+import { sharedAnthropicApiKey } from "./shared-ai-key";
 
 export type WorkspaceIntegrationKeyMetadata = {
   provider: IntegrationProviderId;
@@ -155,7 +156,7 @@ async function selectedTranslationKey(workspaceId: string, client: ServiceClient
     apiKey = decryptIntegrationKey(row.key_ciphertext);
     selectedKeyCiphertextHash = createHash("sha256").update(row.key_ciphertext).digest("hex");
   } else {
-    apiKey = process.env.ANTHROPIC_API_KEY?.trim() || null;
+    apiKey = sharedAnthropicApiKey();
   }
   if (!apiKey) throw new Error();
   return { apiKey, source, selectedKeyCiphertextHash };

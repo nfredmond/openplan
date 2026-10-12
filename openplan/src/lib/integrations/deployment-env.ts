@@ -15,6 +15,7 @@
 
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import type { IntegrationProviderDescriptor } from "./providers";
+import { sharedAnthropicApiKey } from "./shared-ai-key";
 
 /** The effective deployment-env key for a provider, or null when unset. */
 export function deploymentEnvKey(provider: IntegrationProviderDescriptor): string | null {
@@ -26,5 +27,8 @@ export function deploymentEnvKey(provider: IntegrationProviderDescriptor): strin
       ) || null
     );
   }
+  // A production deployment that does not share its Anthropic key has no
+  // deployment key to offer a workspace.
+  if (provider.id === "anthropic") return sharedAnthropicApiKey();
   return process.env[provider.envVar]?.trim() || null;
 }
