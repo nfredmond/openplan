@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Native engine observer, candidate:** add an explicit Linux NodeODM observer
+for the configured original container, image, process-mounted configuration and
+private endpoint. It requires the same host PID namespace and permission to read
+that process root. Keep shared deadlines, ownership and parent lifetime. Defaults
+and processing commit remain held. See the
+[dated evidence](docs/reviews/2026-10-12-odm-native-engine-attestation/STATUS.md).
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On

@@ -138,3 +138,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-12-odm-private-draft-authority/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-draft-authority-controls"
+      - name: Native engine observation controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-native-engine-attestation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-native-engine-controls"

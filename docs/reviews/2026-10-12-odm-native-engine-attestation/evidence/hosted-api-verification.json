@@ -1,0 +1,104 @@
+{
+  "checkedAt": "2026-10-12T08:27:02.089267+00:00",
+  "cases": [
+    {
+      "role": "anon",
+      "path": "/original_dispatches?select=job_id&limit=0",
+      "status": 406,
+      "code": "PGRST106"
+    },
+    {
+      "role": "anon",
+      "path": "/rpc/record_aerial_original_dispatch",
+      "status": 401,
+      "code": "42501"
+    },
+    {
+      "role": "anon",
+      "path": "/rpc/read_aerial_original_dispatch",
+      "status": 401,
+      "code": "42501"
+    },
+    {
+      "role": "service_role",
+      "path": "/original_dispatches?select=job_id&limit=0",
+      "status": 406,
+      "code": "PGRST106"
+    },
+    {
+      "role": "service_role",
+      "path": "/rpc/record_aerial_original_dispatch",
+      "status": 400,
+      "code": "22023"
+    },
+    {
+      "role": "service_role",
+      "path": "/rpc/read_aerial_original_dispatch",
+      "status": 500,
+      "code": "P0002"
+    }
+  ],
+  "controls": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless-note",
+      "outcome": "survived"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived"
+    },
+    {
+      "case": "wrong-status-0",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-status-1",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-status-2",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-status-3",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-status-4",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-status-5",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-0",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-1",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-2",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-3",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-4",
+      "outcome": "intended_refusal"
+    },
+    {
+      "case": "wrong-code-5",
+      "outcome": "intended_refusal"
+    }
+  ],
+  "boundary": "Read-only private-schema request, anonymous function refusals and service null-identity/missing-original refusals. No real user fixtures, dispatch writes or worker activation."
+}
