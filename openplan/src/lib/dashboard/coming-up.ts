@@ -24,7 +24,9 @@ export type ComingUpKind =
   | "plan-review"
   | "public-review"
   | "adoption"
-  | "comment-period";
+  | "comment-period"
+  | "contract-task"
+  | "work-program-review";
 
 export type ComingUpItem = {
   key: string;
@@ -60,6 +62,8 @@ const KIND_BY_SOURCE: Partial<Record<MyWorkSourceId, ComingUpKind>> = {
   grant_decisions: "grant",
   award_obligations: "award",
   invoice_windows: "invoice",
+  contract_tasks: "contract-task",
+  work_program_reviews: "work-program-review",
 };
 
 /** The word shown beside each date. */
@@ -75,6 +79,8 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   "public-review": "Public review closes",
   adoption: "Adoption target",
   "comment-period": "Comment period ends",
+  "contract-task": "Contract task",
+  "work-program-review": "Work program review",
 };
 
 const DATED_BLOCKS = new Set(["deadlines", "workspace_deadlines"]);

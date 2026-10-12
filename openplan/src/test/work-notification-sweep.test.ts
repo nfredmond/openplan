@@ -639,7 +639,8 @@ describe("the daily deadline sweep", () => {
     // Bob's invoice is overdue by `invoicePriority`, not by a second date test
     // written here: unsettled AND past due.
     const bob = db.outbox.find((row) => row.to_email === "bob@example.gov");
-    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 5 due in the next 7 days");
+    // The closed award (fa-spent) is a review item, not one of the deadlines due.
+    expect(bob?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days, 1 closed award to review");
     expect(String(bob?.body)).toContain("Invoice 2026-014");
 
     const overdueRow = db.notifications.find((row) => row.subject_id === "d-overdue");
@@ -663,6 +664,52 @@ describe("the daily deadline sweep", () => {
     expect(reminder?.body).toContain("Obligation timing is not established");
     expect(reminder?.body).not.toContain("must be obligated");
     expect(WORK_SWEEP_SOURCES.find(source => source.kind === "award_obligation_due")?.select.split(",").map(x => x.trim())).toContain("closure_basis");
+  });
+
+  describe("a closed award's obligation deadline (KI-2026-10-12-015)", () => {
+    const bobDigest = (db: FakeWorkDb) => db.outbox.find((row) => row.to_email === "bob@example.gov");
+    const section = (body: string, heading: string) => {
+      const start = body.indexOf(heading);
+      if (start === -1) return "";
+      const end = body.indexOf("\n\n", start);
+      return body.slice(start, end === -1 ? undefined : end);
+    };
+
+    it("is listed for review and not counted or worded as overdue when the date has passed", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      tables.funding_awards.find((row) => row.id === "fa-spent")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      await run(db);
+
+      const digest = bobDigest(db);
+      expect(digest?.subject).toBe("OpenPlan: 1 overdue, 4 due in the next 7 days, 1 closed award to review");
+      const body = String(digest?.body);
+      expect(section(body, "Overdue (1):")).not.toContain("Closed-out award");
+      expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 1, 2026");
+      expect(body).toContain("Closing an award does not show whether this deadline was met.");
+      expect((digest?.payload_json as { overdue: number; toReview: number })).toMatchObject({ overdue: 1, toReview: 1 });
+
+      const reminder = db.notifications.find((row) => row.subject_id === "fa-spent");
+      expect(String(reminder?.body)).not.toContain("overdue");
+    });
+
+    it("is listed for review, not as due, when the date is ahead", async () => {
+      const { db } = makeDbWithFixtures();
+      await run(db);
+
+      const body = String(bobDigest(db)?.body);
+      expect(section(body, "Due in the next 7 days (4):")).not.toContain("Closed-out award");
+      expect(section(body, "Closed awards to review (1):")).toContain("Closed-out award, obligation deadline Aug 16, 2026");
+    });
+
+    it("leaves an open award with a passed date overdue", async () => {
+      const { db, tables } = makeDbWithFixtures();
+      tables.funding_awards.find((row) => row.id === "fa-1")!.obligation_due_at = "2026-08-01T00:00:00.000Z";
+      await run(db);
+
+      const digest = bobDigest(db);
+      expect(digest?.subject).toBe("OpenPlan: 2 overdue, 3 due in the next 7 days, 1 closed award to review");
+      expect(section(String(digest?.body), "Overdue (2):")).toContain("Safety implementation award");
+    });
   });
 
   it("leaves out records that are closed, settled, already decided, unassigned or beyond the week", async () => {
