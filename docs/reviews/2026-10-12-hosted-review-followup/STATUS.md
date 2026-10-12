@@ -18,6 +18,14 @@ the two here show none.
 | 02:57:59 | First confirmation email | Gmail Inbox, Updates tab. SPF, DKIM (`natfordplanning.com`, selector `resend`) and DMARC pass. Sender `openplan@natfordplanning.com` through Amazon SES. |
 | 02:59:07 | "Send the link again" after 65 seconds | `POST /auth/v1/resend` 200, then "A new link is on its way." The Auth record's `confirmation_sent_at` moved to 02:59:06. |
 | 03:01:16 | Open the first link in the same browser | 303 from Supabase, 307 from `/auth/callback`, 200 on sign-in with "Email link is invalid or has expired." |
+| 06:55:06 | PR 246 live (`4635b8d`) | `/auth/confirm` without a token returns 307 to `sign-in?auth_error=incomplete`. The served CSP names only the project host. |
+| 06:55:15 | Hosted email templates switched | Confirmation and recovery templates link to `/auth/confirm?token_hash=...` (Management API, HTTP 200; no other Auth setting changed). |
+| 06:55:29 | Reset requested at 390px | Supabase logs `user_recovery_requested` and a 0.93-second send. |
+| 06:56:08 | M-2 probe | Second request for the real account inside 60 seconds: HTTP 429 `over_email_send_rate_limit`. Unknown address, twice: HTTP 200. The page shows the same "Check your email" notice for all four. |
+| 06:57:31 | Recovery link opened in a second browser profile that never requested it, at 1440px | 307 from `/auth/confirm`, 200 on `/reset-password`. New password saved, then the dashboard. The account became confirmed at this step. No console errors, no overflow. |
+| 06:58:02 | Sign out at 1440px | Lands on `/`; `/dashboard` then redirects to sign-in. |
+| 06:58:07 | Sign in with the new password at 390px, first browser | Dashboard, no overflow. Sign-out through the More menu works. |
+| 07:00 | Cleanup | Account and its empty workspace deleted (Nathaniel approved); the user lookup returns 404. Browser profiles removed. |
 
 Findings from the journey:
 
@@ -26,34 +34,45 @@ Findings from the journey:
   only the newest link works (PR 246).
 - **L-1 is real.** The sign-in page printed the provider's text from the URL
   (screenshot `05-first-link-after-resend-390.png`). Fixed in PR 246.
-- **The second email was not observed.** Gmail counts two messages in the
-  thread, but the connector returned only the first, and a search outside
-  Trash found nothing. Delivery of the resent message is therefore unconfirmed.
-- `[PENDING: confirmation through /auth/confirm, first dashboard, sign-out,
-  password recovery with a submitted new password, M-2 probe, cross-device
-  check, account deletion]`
+- **Only the first email was seen in the inbox.** Supabase logs show the resent
+  confirmation (02:59) and the reset (06:55) handed to the mail server, each in
+  under a second. The Gmail connector returned neither, and Nathaniel was not
+  available to look. Their delivery and Inbox or Spam placement are
+  unconfirmed.
+- **How the recovery link was made.** Because the emailed reset could not be
+  read, the recovery link came from the Auth admin API (`generate_link`, type
+  `recovery`), which sends no email and returns the same token hash the
+  template uses. Opening it in a browser that never asked for it proves the
+  route and `verifyOtp` work across devices. It does not prove the email
+  template renders the link; that rests on the template text read back after
+  the change.
+- **The API still answers differently.** The page no longer reveals whether an
+  address has an account, but a script calling Supabase's `/auth/v1/recover`
+  directly still sees 429 for a real account and 200 for an unknown one inside
+  the 60-second interval. CAPTCHA (M-3) would raise the cost of that probe.
+- Screenshots that show the address stay in private custody.
 
 ## Findings
 
 | Finding | Status | Where |
 |---|---|---|
-| M-1 links work in one browser only | Fixed in code, PR 246. `[PENDING: hosted template switch and live check]` | `openplan/src/app/auth/confirm/route.ts` |
-| M-2 reset reveals accounts | Fixed in code, PR 246. `[PENDING: live probe]` | `openplan/src/lib/auth/recovery-reply.ts` |
+| M-1 links work in one browser only | Fixed. PR 246 live; templates switched; cross-browser recovery passed on production | `openplan/src/app/auth/confirm/route.ts` |
+| M-2 reset reveals accounts | Fixed on the page, PR 246, probed live. A direct API call still differs (see above). | `openplan/src/lib/auth/recovery-reply.ts` |
 | M-3 auth email allowance | Open: Nathaniel's decision. See below. | |
 | M-4 readiness flag set before review | Marked superseded in place | packet `SUPERSEDED_2026-10-12.md` |
-| M-5 "fresh" items on older builds | Open: needs an authenticated hosted run. See below. | |
+| M-5 "fresh" items on older builds | Date-labeled: the OCR evidence ran on `8e721db` and the worker delivery evidence in the a873b era. No current-build rerun. | packet `SUPERSEDED_2026-10-12.md` |
 | M-6 generated URLs reachable | Confirmed, open: needs Vercel dashboard. See below. | |
 | M-7 cost limit unproved | Partly recorded, open: needs dashboards. See below. | |
-| M-8 rate limiter fails open | `[PENDING: server PR]` | |
-| M-9 "today" is UTC | `[PENDING: server PR]` | |
-| M-10 one-character edit accepts draft | `[PENDING: server PR]` | |
+| M-8 rate limiter fails open | Fixed in code, PR 248: chat reserves usage before dispatch; fails closed when the shared key pays. The check and insert are not atomic. | `openplan/src/lib/runtime/ai-rate-limit.ts` |
+| M-9 "today" is UTC | Fixed in code, PR 248: the browser's validated IANA zone, else UTC with that stated. Workspaces store no zone. | `openplan/src/lib/work/deadlines.ts` |
+| M-10 one-character edit accepts draft | Fixed in code, PR 248: each flagged sentence must be reworded or removed (422 otherwise) | narrative-draft route |
 | M-11 rollback target predates schema | Fixed in docs | [hosted recovery](../../../openplan/docs/ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app) |
 | L-1 provider text on sign-in | Fixed in code, PR 246 | `openplan/src/lib/auth/link-errors.ts` |
 | L-2 loose CSP | `connect-src` and `img-src` pinned, PR 246. `'unsafe-inline' 'unsafe-eval'` in `script-src` remain; a nonce-based policy is separate work. | `openplan/next.config.ts` |
 | L-3 subscribe leak | Fixed in code, PR 246 | subscribe route |
-| L-4 signed-link redirects cacheable | `[PENDING: server PR]` | |
-| L-5 key ciphertext not bound | `[PENDING: server PR]` | |
-| L-6 worker shutdown signal | `[PENDING: server PR]` | |
+| L-4 signed-link redirects cacheable | Fixed in code, PR 248: seven routes use `signedStorageRedirect` (`private, no-store`), with a guard | `openplan/src/lib/http/signed-redirect.ts` |
+| L-5 key ciphertext not bound | Fixed in code, PR 248: new saves write `v3` with the workspace ID as AAD; `v1` and `v2` still read; an old `v2` row stays unbound until re-saved | `openplan/src/lib/integrations/key-crypto.ts` |
+| L-6 worker shutdown signal | Fixed in code, PR 249: `setpriv` keeps the supervisor as PID 1; local Docker showed `runuser` killing it after about 2 seconds | `workers/hosted-node/Dockerfile` |
 | L-7 Railway gaps | Watch paths recorded below; stale services await Nathaniel | |
 | L-8 narrow equivalence proofs | No change. The review's full-tree diff found nothing escaped. | |
 | L-9 route checker absent | Located and hashed; stays private because it reads QA credentials | packet `SUPERSEDED_2026-10-12.md` |
@@ -61,7 +80,7 @@ Findings from the journey:
 | L-11 stale packet records | Marked superseded in place | packet `SUPERSEDED_2026-10-12.md` |
 | L-12 stale figures in HOSTED_LIVE | Correction block added; `docs/README.md` routes newest first | `docs/ops/HOSTED_LIVE_2026-10-11.md` |
 | L-13 "zero users" | Closed. AGENTS.md now says public signup opened October 11 and accounts are real user data. | `AGENTS.md` |
-| L-14 comparison badge | `[PENDING: server PR]` | |
+| L-14 comparison badge | Fixed in code, PR 248: each method header shows the weaker recorded tier, or "Claim tier not recorded" | guided comparison panel |
 | L-15 comparison IDs | Both exist and are ready; note added | `docs/ops/HOSTED_RELAUNCH_2026-10-10.md` |
 
 ## Read-only platform checks, October 12
@@ -124,9 +143,9 @@ These need his accounts. None was attempted.
    private channel, not chat. Enabling it needs a code change on sign-up,
    sign-in, resend and forgot-password, and the Supabase setting
    `security_captcha_provider: turnstile`. Also confirm the Resend plan.
-7. **M-5, current-build acceptance.** Either run one OCR job and one report
-   export on the current build with a signed-in account, or approve labeling
-   the older evidence with its build date (`8e721db` and the a873b era).
+7. **M-5, current-build acceptance (optional).** The older evidence is now
+   labeled with its build date. If a current-build receipt is wanted, run one
+   OCR job and one report export with a signed-in account.
 8. **Offsite key.** Store the offsite decryption key and passphrase somewhere
    other than this workstation (carried over from the review fixes).
 
@@ -135,3 +154,4 @@ These need his accounts. None was attempted.
 - No Vercel, Supabase billing, Railway billing or Resend dashboard was opened.
 - No CAPTCHA, protection or spend setting was changed.
 - No hosted migration was applied.
+- No current-build OCR job or report export was run (M-5).
