@@ -91,6 +91,7 @@ const CREATE_FUNDING_OPPORTUNITY: ActionRecord<"create_funding_opportunity"> = {
         programId: action.programId,
         projectId: action.projectId,
         title: action.title,
+        closesAt: action.closesAt,
       },
       "Failed to create funding opportunity",
       context

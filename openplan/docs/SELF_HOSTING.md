@@ -62,6 +62,7 @@ configuration.
 | `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
 | `OPENPLAN_INTEGRATION_KEY_SECRET` | High-entropy secret for stored per-workspace integration keys. Generate securely, preserve with recovery configuration, and restrict access. Changing it invalidates existing encrypted keys. |
 | `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |
+| `OPENPLAN_SHARED_AI_KEY` | Set to `allow` so a production build lets workspaces without their own key use `ANTHROPIC_API_KEY`. Set it for a single-agency installation. Leave it unset on any deployment with public signup; each workspace then adds its own key. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional outbound application email. Without these, teammate invitations use a copyable link. Supabase Auth email delivery is configured separately. Test invitation and password-reset flows independently. |
 | `CHROME_EXECUTABLE_PATH` | Local Chrome/Chromium used for report PDF typesetting. If unavailable, the app uses its disclosed built-in writer tier; inspect the exported document. |
 | `CRON_SECRET` | Shared secret for the authenticated maintenance requests listed below. Configure the scheduler's protected environment as well as the app. |

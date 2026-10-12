@@ -425,3 +425,59 @@ describe("/api/funding-opportunities/[opportunityId]/narrative-draft — proposa
     expect(promptsSent().join("\n")).not.toContain("RFP-2026-014");
   });
 });
+
+describe("/api/funding-opportunities/[opportunityId]/narrative-draft — today's date", () => {
+  // A live draft on 2026-10-11 called a call that closed on 2026-09-30
+  // "currently open". Two clocks must give two different close-date facts,
+  // so a route that drops or hardcodes the date fails here.
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.stubEnv("ANTHROPIC_API_KEY", "sk-test");
+    vi.stubEnv("OPENPLAN_GRANTS_AI_MODEL", "");
+    createApiAuditLoggerMock.mockReturnValue(mockAudit);
+    checkAiUsageRateLimitMock.mockResolvedValue({ allowed: true, count: 0, retryAfterSeconds: 0 });
+    recordAiUsageEventMock.mockResolvedValue(undefined);
+    authGetUserMock.mockResolvedValue({ data: { user: { id: USER_ID } } });
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: { ...opportunityRow, closes_at: "2026-09-30" },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    generateTextMock.mockResolvedValue({
+      text: "Drafted narrative paragraphs.",
+      usage: { inputTokens: 1200, outputTokens: 800, totalTokens: 2000 },
+    });
+    draftSingleMock.mockResolvedValue({
+      data: {
+        id: DRAFT_ID,
+        opportunity_id: OPPORTUNITY_ID,
+        draft_markdown: "Drafted narrative paragraphs.",
+        model: "claude-opus-5-5",
+        source: "ai",
+        created_at: "2026-10-11T00:00:00.000Z",
+      },
+      error: null,
+    });
+    createClientMock.mockResolvedValue(clientWith());
+  });
+
+  it("tells the model whether the close date has passed, from the clock when the request arrives", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-11T18:00:00Z"));
+      expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+      expect(promptsSent()[0]).toContain("2026-09-30, before today's date (2026-10-11, UTC), so the close date has passed");
+
+      generateTextMock.mockClear();
+      vi.setSystemTime(new Date("2026-09-01T18:00:00Z"));
+      expect((await postNarrativeDraft(jsonRequest(), routeContext())).status).toBe(201);
+      const earlier = promptsSent()[0];
+      expect(earlier).toContain("The recorded close date for this opportunity is 2026-09-30; today's date is 2026-09-01 (UTC).");
+      expect(earlier).not.toContain("so the close date has passed");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});

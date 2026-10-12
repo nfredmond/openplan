@@ -51,6 +51,22 @@ function SignUpForm() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [awaitingConfirmation, setAwaitingConfirmation] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "failed">("idle");
+
+  // Confirmation mail can land in spam or arrive late, so the notice offers a
+  // second copy without leaving the page. Supabase limits how often it sends.
+  async function resendConfirmation() {
+    setResendState("sending");
+    const supabase = createClient();
+    const { error: resendError } = await supabase.auth.resend({
+      type: "signup",
+      email: email.trim(),
+      options: {
+        emailRedirectTo: `${window.location.origin}/auth/callback?next=${encodeURIComponent(safeNextPath(redirectTarget))}`,
+      },
+    });
+    setResendState(resendError ? "failed" : "sent");
+  }
 
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
@@ -107,8 +123,8 @@ function SignUpForm() {
         <p className="text-label font-semibold text-muted-foreground">Create account</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Create your OpenPlan account.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Free and open source. Sign up and your workspace is ready immediately — that is where
-          projects, maps, engagement, and reporting come together. No payment, no access queue.
+          Free and open source. Your workspace is where projects, maps, engagement, and reporting
+          come together. No payment, no access queue.
         </p>
       </header>
 
@@ -117,12 +133,24 @@ function SignUpForm() {
           <article className={noticeClass("success")} role="status">
             <p className="font-semibold">Confirm your email to finish.</p>
             <p className="mt-1.5">
-              This deployment requires email confirmation. We sent a link to{" "}
-              <span className="font-medium">{email}</span> — click it to activate your account, then{" "}
+              We sent a link to <span className="font-medium">{email}</span>. Open it to activate your
+              account, then{" "}
               <Link href={signInHref} className="font-semibold underline underline-offset-4">
                 sign in
               </Link>
-              . Your workspace is created for you as soon as you confirm.
+              . Not in your inbox after a few minutes? Check your spam folder.
+            </p>
+            <p className="mt-1.5">
+              <button
+                type="button"
+                onClick={resendConfirmation}
+                disabled={resendState === "sending" || resendState === "sent"}
+                className="font-semibold underline underline-offset-4"
+              >
+                Send the link again
+              </button>
+              {resendState === "sent" ? " · A new link is on its way. Only the newest link works." : null}
+              {resendState === "failed" ? " · It could not be sent. Try again in a few minutes." : null}
             </p>
           </article>
         ) : null}
