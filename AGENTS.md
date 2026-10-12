@@ -182,11 +182,12 @@ or DNS to change OpenPlan. Public signup requires confirmation email.
   private Storage. It belongs to the Pro organization and uses Micro compute.
   The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
   separate. The dated catch-up records 405 migrations. Git deploys do not apply
-  migrations. The agent that owns a schema change applies it to the hosted project
-  only after Nathaniel approves that rollout in the coordination file, in this
-  order: fresh database and Storage capture, apply the additive migration, confirm
-  it, merge the code that depends on it, then check the route that uses it.
-  Merging code before its migration breaks production.
+  migrations. The agent that owns a schema change coordinates its rollout with
+  the other agents through the coordination file below; no separate approval
+  from Nathaniel is needed. Record the planned migration there first, then work
+  in this order: fresh database and Storage capture, apply the additive
+  migration, confirm it, merge the code that depends on it, then check the
+  route that uses it. Merging code before its migration breaks production.
 - **Railway:** project `9d7fbdc3-c370-41b5-8471-34dc128e718e` runs application queues,
   separate AequilibraE/ActivitySim processing, and OCR. Main deployment triggers
   respect CI and service watch paths. An unchanged service can retain an older
@@ -207,10 +208,12 @@ Read the [demo AI and schema catch-up](docs/ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2
 [hosted recovery](openplan/docs/ops/HOSTED_RECOVERY.md),
 [self-hosting](openplan/docs/SELF_HOSTING.md) and
 [runbook](openplan/docs/ops/RUNBOOK.md) before operating this installation.
-Consult `$HOME/.local/state/openplan/COORDINATION.md` before any merge or push to
-`main`, and honor its current hold or explicit exception. That file is the only
-place a hold is posted; the untracked `COORDINATION.md` in the canonical checkout
-is an older log. Verify live platform state rather than treating
+Agents coordinate merges, holds and migration rollouts with each other through
+`$HOME/.local/state/openplan/COORDINATION.md`. Consult it before any merge or push
+to `main` and honor any hold posted there. Keep your own lane's section current:
+write it, amend it and delete stale lines rather than only appending. That file
+is the only place a hold is posted; the untracked `COORDINATION.md` in the
+canonical checkout is an older log. Verify live platform state rather than treating
 these dated settings or a prior agent's report as current acceptance evidence.
 The hosted relaunch does not establish complete v1 or scientific validation.
 A daily encrypted offsite capture of the database and Storage runs on Railway
