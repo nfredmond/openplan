@@ -77,7 +77,8 @@ Findings from the journey:
 - **Supabase plan (M-7).** Organization "Nat Ford Planning & Analysis" is on
   Pro. The Pro start date is not in the Management API response.
 - **Hosted migrations.** 405 applied, ending at `20261017000001`, matching the
-  repository at `c03788c`.
+  repository at `c03788c`. Another lane applied `20261017000002` at 03:56 UTC
+  (406), ahead of its code in PR 232.
 - **Railway (L-7).** `ocr` watches `/workers/ocr_worker/**` and `/.dockerignore`
   (last deploy `8e721db`). `aequilibrae` watches `/workers/hosted-models/**`,
   `/workers/aequilibrae_worker/**`, `/workers/activitysim_worker/**`,

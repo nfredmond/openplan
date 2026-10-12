@@ -122,9 +122,10 @@ whose code works with the schema the hosted project has now.
 **Dated target, October 12, 2026.** Production `dpl_7CTf3ojNmvkxJqiPK7gkcw33qxNs`
 serves `c03788c`. The previous production deployment,
 `dpl_9VqupkuiPeYiPJicoA5qktkFb1sP`, serves `6730997`. No migration file changed
-between those commits and the hosted project records the same 405 migrations,
-so it is schema-compatible today. Every later merge replaces this target;
-repeat step 2 before using it.
+between those commits. At 03:56 UTC the hosted project added migration 406,
+`20261017000002`, which only creates one function, so that build still reads
+nothing that was dropped or renamed. Every later merge or migration replaces
+this target; repeat step 2 before using it.
 
 **One operator.** Recovery depends on Nathaniel: the Vercel, Supabase,
 Railway and Resend accounts are under his login, and the only copy of the

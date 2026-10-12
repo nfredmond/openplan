@@ -10,7 +10,8 @@ statements in it are superseded:
 - "401 migrations" and "transit candidate migrations 28 through 31 remain
   unapplied": the hosted project records 405 migrations, ending at
   `20261017000001`, matching the repository at `c03788c` (Management API read,
-  October 12). See the catch-up record above.
+  October 12). Later migrations follow the order in AGENTS.md. See the
+  catch-up record above.
 - "The final verified-TLS database archive contains 7,030,743 bytes": a later
   capture of 7,179,228 bytes exists, and a daily encrypted offsite capture has
   run since October 12 (`workers/hosted-backup/DEPLOY.md`).
