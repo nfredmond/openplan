@@ -2,7 +2,8 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, writeFile, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { dirname, join } from "node:path";
+import { fileURLToPath } from "node:url";
 import { selectedWorkers, superviseWorkers } from "./supervise.mjs";
 
 test("selection rejects unknown or duplicate queues", () => {
@@ -35,4 +36,17 @@ test("operator shutdown stops workers without reporting a queue failure", { time
     setTimeout(() => controller.abort(), 900);
     assert.equal(await pending, 0);
   } finally { controller.abort(); await rm(root, { recursive: true, force: true }); }
+});
+
+// util-linux runuser stays as the parent and SIGKILLs its child about 2
+// seconds after SIGTERM, so the supervisor never got its 20-second grace
+// (independent review L-6). The image must exec the supervisor directly as
+// the node user. Blind category: this reads the Dockerfile text; it does not
+// build the image or send a signal.
+test("the image execs the supervisor as PID 1 instead of under runuser or su", async () => {
+  const dockerfile = await readFile(join(dirname(fileURLToPath(import.meta.url)), "Dockerfile"), "utf8");
+  const cmd = dockerfile.split("\n").find(line => line.startsWith("CMD "));
+  assert.ok(cmd, "Dockerfile has a CMD");
+  assert.doesNotMatch(cmd, /\b(runuser|su|sudo|gosu)\b/);
+  assert.match(cmd, /exec setpriv --reuid=node --regid=node --init-groups env HOME=\/home\/node USER=node LOGNAME=node node \/app\/supervise\.mjs"\]$/);
 });

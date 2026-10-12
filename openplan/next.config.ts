@@ -6,9 +6,19 @@ const LOCAL_DEV_CONNECT_SRC =
     ? []
     : ["http://localhost:*", "http://127.0.0.1:*", "ws://localhost:*", "ws://127.0.0.1:*"];
 
-// The configured Supabase instance must always be reachable from the browser —
-// a production build serving a local/self-hosted stack (demo laptops,
-// air-gapped deploys) is otherwise blocked by the *.supabase.co-only rule.
+// The browser may reach the configured Supabase project and no other. A
+// wildcard such as *.supabase.co would let injected script send data to any
+// project on that platform. Local and self-hosted stacks work the same way.
+const SUPABASE_ORIGIN = (() => {
+  const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
+  if (!raw) return [];
+  try {
+    return [new URL(raw).origin];
+  } catch {
+    return [];
+  }
+})();
+
 const SUPABASE_CONNECT_SRC = (() => {
   const raw = process.env.NEXT_PUBLIC_SUPABASE_URL?.trim();
   if (!raw) return [];
@@ -52,11 +62,9 @@ function buildCsp(frameAncestors: string): string {
     "default-src 'self'",
     "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
     "style-src 'self' 'unsafe-inline'",
-    ["img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com https://*.supabase.co", ...OPEN_MAP_SRC].join(" "),
+    ["img-src 'self' data: blob: https://*.mapbox.com https://*.tiles.mapbox.com", ...SUPABASE_ORIGIN, ...OPEN_MAP_SRC].join(" "),
     [
       "connect-src 'self'",
-      "https://*.supabase.co",
-      "wss://*.supabase.co",
       ...SUPABASE_CONNECT_SRC,
       ...LOCAL_DEV_CONNECT_SRC,
       "https://api.mapbox.com",

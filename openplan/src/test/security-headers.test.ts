@@ -1,5 +1,5 @@
 import nextConfig from "../../next.config";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 async function headerBlocks() {
   const headers = (await nextConfig.headers?.()) ?? [];
@@ -45,5 +45,30 @@ describe("security headers", () => {
     const { general, embed } = await headerBlocks();
     const strip = (csp: string) => csp.replace(/frame-ancestors [^;]+;?\s*/, "");
     expect(strip(general.get("Content-Security-Policy") ?? "")).toBe(strip(embed.get("Content-Security-Policy") ?? ""));
+  });
+});
+
+/**
+ * L-2 of the hosted review: connect-src and img-src allowed every
+ * *.supabase.co project, so injected script could post data to an attacker's
+ * own project. Only the configured project may be reached.
+ */
+describe("Supabase sources in the CSP", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.resetModules();
+  });
+
+  it("name the configured project and no wildcard", async () => {
+    vi.stubEnv("NEXT_PUBLIC_SUPABASE_URL", "https://abcdefghijklmnopqrst.supabase.co");
+    vi.resetModules();
+    const config = (await import("../../next.config")).default;
+    const headers = (await config.headers?.()) ?? [];
+    const policy = headers.flatMap((block) => block.headers).find((h) => h.key === "Content-Security-Policy")?.value ?? "";
+    const directive = (name: string) => policy.split(";").map((part) => part.trim()).find((part) => part.startsWith(`${name} `)) ?? "";
+    expect(policy).not.toContain("*.supabase.co");
+    expect(directive("connect-src")).toContain("https://abcdefghijklmnopqrst.supabase.co");
+    expect(directive("connect-src")).toContain("wss://abcdefghijklmnopqrst.supabase.co");
+    expect(directive("img-src")).toContain("https://abcdefghijklmnopqrst.supabase.co");
   });
 });
