@@ -6,6 +6,7 @@ import {
   buildCountyRunModelingEvidenceBundle,
   modelingClaimAllowsOutwardPlanningLanguage,
   modelingClaimReportLanguage,
+  modelingClaimStatusLabel,
   refreshCountyRunModelingEvidence,
   resolveModelingClaimDecision,
   type ModelingValidationResultLike,
@@ -361,7 +362,7 @@ describe("every tier states its own basis", () => {
 });
 
 describe("buildCountyRunModelingEvidenceBundle", () => {
-  it("builds public source manifests, validation rows, and a screening-grade decision for the NCTC-style failure", () => {
+  it("builds public source manifests, validation rows, and a prototype-only decision for the NCTC-style failure", () => {
     const bundle = buildCountyRunModelingEvidenceBundle({
       workspaceId: "11111111-1111-4111-8111-111111111111",
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -382,8 +383,125 @@ describe("buildCountyRunModelingEvidenceBundle", () => {
       "critical_absolute_percent_error",
       "facility_ranking_spearman_rho",
     ]);
-    expect(bundle.claimDecision.claimStatus).toBe("screening_grade");
-    expect(bundle.claimDecision.statusReason).toContain("237.62%");
+    expect(bundle.claimDecision.claimStatus).toBe("prototype_only");
+    // The diagnostic failure still travels with the decision.
+    expect(bundle.claimDecision.reasons).toContain(
+      "Worst matched facility APE 237.62% exceeds the 50% diagnostic threshold."
+    );
+  });
+});
+
+/**
+ * THE COUNTY TIER ANSWERS TO THE RULES-V4 SCIENTIFIC OUTCOME (KI-2026-10-12-001).
+ *
+ * The county lane used to take its tier from the retired 30 percent median-APE
+ * gate with a three-station minimum. A run whose rules-v4 outcome was fail or
+ * inconclusive could still read "Screening-grade". The worker lane already
+ * refuses that (build_model_run_modeling_evidence in
+ * workers/aequilibrae_worker/main.py); these pin the county lane to the same
+ * answer. The fixture's old-gate numbers all pass, so only the scientific
+ * outcome can hold the tier down.
+ */
+describe("a county run's claim tier comes from its rules-v4 scientific outcome", () => {
+  function countyManifest(validationExtras: Record<string, unknown>, gateReasons: string[] = []) {
+    return {
+      ...manifest,
+      summary: {
+        ...manifest.summary,
+        validation: {
+          counts_source_csv: "/data/counts.csv",
+          stations_total: 5,
+          stations_matched: 5,
+          screening_gate: {
+            status_label: "bounded screening-ready",
+            required_matches: 3,
+            ready_median_ape_threshold: 30,
+            ready_critical_ape_threshold: 50,
+            reasons: gateReasons,
+          },
+          metrics: {
+            median_absolute_percent_error: 16.01,
+            max_absolute_percent_error: 41.2,
+            spearman_rho_facility_ranking: 0.9,
+          },
+          ...validationExtras,
+        },
+      },
+    } as unknown as CountyOnrampManifest;
+  }
+
+  function decide(validationExtras: Record<string, unknown>, gateReasons: string[] = []) {
+    return buildCountyRunModelingEvidenceBundle({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      geographyLabel: "Any County",
+      manifest: countyManifest(validationExtras, gateReasons),
+    }).claimDecision;
+  }
+
+  const oldGatePassReason =
+    "Matched stations >= 3, median absolute percent error <= 30.00%, and no matched facility exceeds 50.00% absolute percent error.";
+
+  it("holds a failing rules-v4 outcome at prototype-only", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      scientific_outcome: "fail",
+      model_validation_assessment: {
+        scientific_outcome: "fail",
+        validation_evidence_write: "recorded",
+        reasons: ["Decisive median raw APE 41.00% exceeds the frozen 25.00% limit."],
+      },
+    }, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimStatusLabel(decision.claimStatus)).toBe("Prototype-only");
+    expect(decision.statusReason).toBe(
+      "The rules-v4 scientific outcome is fail. Decisive median raw APE 41.00% exceeds the frozen 25.00% limit."
+    );
+  });
+
+  it("holds an inconclusive rules-v4 outcome at prototype-only even when the old 30% gate passed", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      scientific_outcome: "inconclusive",
+      model_validation_assessment: {
+        scientific_outcome: "inconclusive",
+        // Recorded on purpose: the outcome alone must hold the tier down.
+        validation_evidence_write: "recorded",
+        reasons: ["The available point-count rows do not satisfy the observed-traffic-observation.v1 contract."],
+      },
+    }, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.statusReason).toMatch(/^The rules-v4 scientific outcome is inconclusive\./);
+  });
+
+  it("reads a stored manifest without a rules-v4 outcome as prototype-only and not assessed", () => {
+    const decision = decide({}, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(decision.statusReason).toMatch(/^Not assessed: this run has no rules-v4 scientific outcome\./);
+  });
+
+  it("does not let a pass whose evidence write is unconfirmed rise above prototype-only", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "pending" },
+    });
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(decision.statusReason).toMatch(/^Validation evidence storage is not confirmed\./);
+  });
+
+  it("caps an explicit rules-v4 pass at screening grade, as the worker lane does", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "recorded" },
+    });
+
+    expect(decision.claimStatus).toBe("screening_grade");
+    expect(decision.statusReason).toMatch(/^The rules-v4 assessment passed its exact frozen, use-specific acceptance rule\./);
   });
 });
 
@@ -457,7 +575,7 @@ describe("refreshCountyRunModelingEvidence", () => {
       "delete-claim:county_run_id:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa:track:assignment",
       "upsert-source:4",
       "insert-validation:5",
-      "insert-claim:screening_grade",
+      "insert-claim:prototype_only",
     ]);
   });
 });

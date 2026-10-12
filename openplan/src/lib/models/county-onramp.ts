@@ -277,11 +277,23 @@ export function getCountyRunStageLabel(stage: CountyRunStage): string {
       return "Runtime Complete";
     case "validation-scaffolded":
       return "Validation In Progress";
+    // Retired stage, still on rows stored before rules v4. It names what
+    // happened, not a validation: the old count gate is a diagnostic.
     case "validated-screening":
-      return "Validated Screening";
+      return "Count Check Complete";
     default:
       return stage;
   }
+}
+
+/**
+ * A stored stage in the app's words, or null when the value is not a known
+ * stage. Reports and drafts use this rather than title-casing the raw value,
+ * which turned the retired `validated-screening` into "Validated Screening".
+ */
+export function countyRunStageLabelFor(stage: string | null | undefined): string | null {
+  const parsed = countyRunStageSchema.safeParse(stage);
+  return parsed.success ? getCountyRunStageLabel(parsed.data) : null;
 }
 
 export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info" | "warning" | "success" {
@@ -293,7 +305,7 @@ export function getCountyRunStageTone(stage: CountyRunStage): "neutral" | "info"
     case "validation-scaffolded":
       return "warning";
     case "validated-screening":
-      return "success";
+      return "info";
     default:
       return "neutral";
   }
@@ -308,7 +320,7 @@ export function getCountyRunAllowedClaim(stage: CountyRunStage): string {
     case "validation-scaffolded":
       return "County has entered the validation workflow, but is not yet bounded screening-ready.";
     case "validated-screening":
-      return "County has a bounded screening-ready result on the documented validated slice, with explicit caveats.";
+      return "Count check complete. Not assessed under current validation rules, so prototype-only.";
     default:
       return "County state available.";
   }
@@ -338,11 +350,10 @@ export function getCountyRunCaveats(
 ): string[] {
   if (stage === "validated-screening") {
     return [
-      "Screening-grade only",
+      "Prototype-only",
       calibrationCaveat(manifest),
       populationCaveat(manifest),
       "Not client-ready forecasting",
-      "Validated slice only",
     ];
   }
   if (stage === "validation-scaffolded") {

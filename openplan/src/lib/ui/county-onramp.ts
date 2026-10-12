@@ -87,7 +87,7 @@ export function getCountyRunNextAction(stage: CountyRunStage): string {
     case "validation-scaffolded":
       return "Tighten station definitions or complete count ingestion, then rerun validation.";
     case "validated-screening":
-      return "Review the validation report and preserve all screening-grade caveats in any downstream use.";
+      return "Review the validation report. Treat results as prototype-only.";
     default:
       return "Review county state.";
   }

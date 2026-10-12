@@ -1613,7 +1613,11 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(htmlContent).toContain("f".repeat(64));
     // The cited county run carries its name, stage, and validation posture.
     expect(htmlContent).toContain("County screening baseline");
-    expect(htmlContent).toContain("Validated Screening");
+    // The retired validated-screening stage renders as a count check and
+    // never as a pass pill (KI-2026-10-12-001).
+    expect(htmlContent).toContain("Count Check Complete");
+    expect(htmlContent).not.toContain("Validated Screening");
+    expect(htmlContent).toMatch(/<span class="pill pill-hold">Count Check Complete<\/span>/);
     expect(htmlContent).toContain("3 pass");
     expect(htmlContent).toContain("1 warning");
     expectProvenanceLanguageOnly(htmlContent);
