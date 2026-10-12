@@ -95,19 +95,26 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const confirmationNeedsRetry = !result.alreadyConfirmed && (!confirmation?.outboxId || confirmation.status === "failed");
 
-    // Honest response: never promise an email that cannot be sent.
+    // Honest response: never promise an email that cannot be sent. An address
+    // that already confirmed gets the same reply a new address would, so this
+    // public form cannot be used to learn who follows a campaign.
+    const CHECK_EMAIL = "Check your email to confirm your subscription. If you confirmed before, nothing more is needed.";
+    const NOT_ENABLED =
+      "Your interest is recorded. Email updates are not enabled for this campaign yet, so no confirmation email will be sent.";
     const message = result.alreadyConfirmed
-      ? "You're already subscribed to updates for this campaign."
+      ? transportConfigured
+        ? CHECK_EMAIL
+        : NOT_ENABLED
       : !confirmation?.outboxId
         ? "Your interest is saved, but the confirmation email could not be prepared. Try subscribing again."
         : confirmation.status === "failed"
           ? "Your interest is saved, but the confirmation email could not be sent. Try subscribing again."
           : confirmation.status === "sent"
-            ? "Almost there — check your email to confirm your subscription."
-            : "Your interest is recorded. Email updates are not enabled for this campaign yet, so no confirmation email will be sent.";
+            ? CHECK_EMAIL
+            : NOT_ENABLED;
 
     audit.info("subscription_recorded", { campaignId: campaign.id, alreadyConfirmed: result.alreadyConfirmed, transportConfigured });
-    return NextResponse.json({ success: true, message, transportConfigured, alreadyConfirmed: result.alreadyConfirmed, confirmationNeedsRetry }, { status: 201 });
+    return NextResponse.json({ success: true, message, transportConfigured, confirmationNeedsRetry }, { status: 201 });
   } catch (error) {
     audit.error("unhandled_error", { error: error instanceof Error ? error.message : String(error) });
     return NextResponse.json({ error: "Unexpected error while subscribing" }, { status: 500 });

@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { safeNextPath } from "@/lib/auth/callback-destination";
+import { authLinkErrorMessage } from "@/lib/auth/link-errors";
 import { invitationPath } from "@/lib/workspaces/invitation-path";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,11 +29,11 @@ function SignInForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const redirectTarget = searchParams.get("redirect") ?? "/dashboard";
-  // Set by /auth/callback when an emailed link could not be redeemed (expired,
-  // already used). Without this the user is bounced here with no explanation.
-  // The callback does not say WHICH kind of link failed, a confirmation link or
-  // a password reset link, so the notice below covers both.
-  const authError = searchParams.get("auth_error");
+  // Set by /auth/callback or /auth/confirm when an emailed link could not be
+  // redeemed. Only fixed codes are shown, never text from the URL. The route
+  // does not say WHICH kind of link failed, a confirmation link or a password
+  // reset link, so the notice below covers both.
+  const authError = authLinkErrorMessage(searchParams.get("auth_error"));
   const inviteToken = searchParams.get("invite");
   const signUpHref = useMemo(() => {
     const params = new URLSearchParams();
@@ -123,7 +124,7 @@ function SignInForm() {
           <article className={noticeClass("warning")} role="alert">
             <p className="font-semibold">The link from your email did not work.</p>
             <p className="mt-1.5">
-              An emailed link works once and expires after a while. The sign-in service reported: {authError}
+              {authError}
             </p>
             <ul className="mt-2 list-disc space-y-1.5 pl-5">
               <li>
