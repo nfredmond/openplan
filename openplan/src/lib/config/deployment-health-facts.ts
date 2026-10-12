@@ -30,6 +30,7 @@ import {
   isPushDispatchConfigured,
 } from "@/lib/models/run-dispatch";
 import { detectPdfEngineAvailability } from "@/lib/reports/pdf";
+import { sharedAnthropicApiKey } from "@/lib/integrations/shared-ai-key";
 
 /** Minimal structural view of the client, so this is testable with a stub. */
 type RunsQueryClient = {
@@ -65,7 +66,7 @@ export function readDeploymentEnvFacts(): Omit<DeploymentHealthFacts, "modelingW
       hasInvalidToken: validToken.length === 0 && hasInvalidPublicMapboxToken(accessToken, legacyToken),
     },
     censusApiKeyPresent: Boolean(process.env.CENSUS_API_KEY?.trim()),
-    anthropicApiKeyPresent: Boolean(process.env.ANTHROPIC_API_KEY?.trim()),
+    anthropicApiKeyPresent: sharedAnthropicApiKey() !== null,
     // Sourced from the renderer itself so the panel and the actual export can
     // never disagree about which engine will be used.
     pdfRendering: { browserEngineAvailable: detectPdfEngineAvailability().chromeAvailable },
