@@ -125,6 +125,10 @@ describe("the recurring product-direction review", () => {
     expect(packet).toContain("Direction gate at generation:");
     expect(packet).toContain("## Binding v1 contract");
     expect(packet).toContain("## Current roadmap");
+    // The roadmap is a status page; definitions moved to MILESTONES.md and a
+    // fresh reviewer still needs them in the packet.
+    expect(packet).toContain("## Milestone definitions");
+    expect(packet).toContain("## M0. Trustworthy candidate, review and documentation");
     expect(packet).toContain("## Current capability matrix");
   });
 });

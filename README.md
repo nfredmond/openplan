@@ -167,7 +167,8 @@ need the evidence named in the roadmap.
 - [Documentation index](docs/README.md): current authorities and dated records.
 - [Technical review](docs/reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md): consolidated findings and evidence limits.
 - [Architecture](docs/ARCHITECTURE.md): app, database, workers and data flows.
-- [Roadmap](docs/ROADMAP.md): prioritized outcomes and definitions of done.
+- [Roadmap](docs/ROADMAP.md): milestone status and the next work.
+- [Milestone definitions](docs/product/MILESTONES.md): outcomes and definitions of done.
 - [Team commissioning](openplan/docs/FIRST_DEPLOYMENT.md) and
   [operations runbook](openplan/docs/ops/RUNBOOK.md).
 - [Reading an adopted plan](openplan/docs/READING_AN_ADOPTED_PLAN.md): existing

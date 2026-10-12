@@ -19,7 +19,9 @@ strengthen or amend it, but a release plan may not quietly narrow it.
 Interim releases follow the [development release policy](DEVELOPMENT_RELEASE_POLICY.md),
 accepted by Nathaniel on September 7, 2026. The complete v1 destination remains
 binding; known partial v1 outcomes do not freeze unrelated development releases.
-Hosted deployment is deferred and Vercel is inactive.
+Since October 11, 2026, OpenPlan also runs as a public hosted installation under
+the [cutover record](../ops/HOSTED_LIVE_2026-10-11.md). That installation does
+not establish complete v1 or scientific validation.
 
 ## Mission
 
@@ -246,8 +248,8 @@ Engagement reports export as polished PDF and usable XLSX with portable supporti
 
 ## OWP, appearance and forecasting decisions retained at handoff
 
-Complete OWP/UPWP administration is an explicit high priority. It includes prior-program intake, work elements and products, staff/contracts, authorization and amendments, delivery, progress and claims, expenditure certification, closeout and next-cycle carryover. CORE-OWP-01 and roadmap M2d define its connected outcome; a work-plan template is insufficient.
+Complete OWP/UPWP administration is an explicit high priority. It includes prior-program intake, work elements and products, staff/contracts, authorization and amendments, delivery, progress and claims, expenditure certification, closeout and next-cycle carryover. CORE-OWP-01 and milestone M2d in [MILESTONES.md](MILESTONES.md) define its connected outcome; a work-plan template is insufficient.
 
 Retain the requested Signal palette with yellow, two grays and black alongside existing palettes, and an independent default-rounded or square-corner preference. These are queued UI changes, not implemented by documentation.
 
-TimesFM evaluation targets 3.0 only; Nathaniel rejected 2.5. Roadmap S2a preserves the actual license, scientific and deployment conditions. Optional forecasting does not replace either demand model or the full geographic validation obligation.
+TimesFM evaluation targets 3.0 only; Nathaniel rejected 2.5. Milestone S2a in [MILESTONES.md](MILESTONES.md) preserves the actual license, scientific and deployment conditions. Optional forecasting does not replace either demand model or the full geographic validation obligation.

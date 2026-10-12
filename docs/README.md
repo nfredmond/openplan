@@ -1,36 +1,21 @@
 # OpenPlan documentation
 
-[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
-The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
-The [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) records the scoped demo key, actual AI requests, 405-migration hosted state, and the disabled GTFS commissioning boundary.
+Start here:
 
+- [Roadmap](ROADMAP.md): status of every milestone and the next three tasks.
+- [V1 product contract](product/V1_PRODUCT_CONTRACT.md): what v1 must deliver.
+- [Known issues](ops/KNOWN_ISSUES.md): open defects and limits, including the October 12 review findings.
+- [Hosted cutover record](ops/HOSTED_LIVE_2026-10-11.md): the public installation at openplan-zeta.vercel.app since October 11, 2026.
+- [Two-month review](reviews/2026-10-12-two-month-review/README.md): findings from August 11 to October 11 and the staged plan to v1.
 
 Use this index to distinguish current instructions and priorities from historical
 evidence. The application is in `openplan/` beneath the repository root.
-
-The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
-
-- [Land-use restore cascade correction](reviews/2026-10-07-land-use-authority/RESTORE_CASCADE_FAILURE.md): reproduced restore failures, additive migration and remaining full-drill boundary.
-
-## Current authorities
-
-The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
-
-The October 8 model recovery checkpoints cover [stage preparation and artifact delivery](reviews/2026-10-08-model-custody-metadata/STAGE_RECOVERY.md), [KPI receipt recovery](reviews/2026-10-08-model-custody-metadata/KPI_RECOVERY.md) and [retained agreement computation](reviews/2026-10-08-model-custody-metadata/AGREEMENT_COMPUTATION.md). They preserve interrupted-work boundaries and do not establish full stage replay or scientific acceptance.
-
-The [October 11 model journal snapshot candidate](reviews/2026-10-11-worker-journal-snapshot/STATUS.md) implements a private SQLite backup-API command with populated WAL, retained-start and publication controls. It covers one journal after declared quiescence; installation-wide recovery and scientific acceptance remain open.
-
-The [October 11 coordinated known-root recovery point](reviews/2026-10-11-coordinated-worker-point/STATUS.md) joins populated model journals, the complete known synthetic worker root and the full database/transit point. Separate local-cluster recovery retains the original native command bytes without computation. Same-host storage, legacy command scope and the remaining M3 limits stay explicit.
-
-The [manual engagement case](reviews/2026-10-07-engagement-manual-case/VERIFICATION.md) records source-to-response-to-decision custody and downloaded review files. The [approval-label follow-up](reviews/2026-10-07-engagement-manual-case/STATUS_LABELS.md) distinguishes review approval from public release. The [source-label follow-up](reviews/2026-10-07-engagement-manual-case/SOURCE_LABELS.md) verifies source authorship in newly downloaded PDF and workbook files. Its [handoff target follow-up](reviews/2026-10-07-engagement-manual-case/TARGET_BROWSER.md) verifies the project-link refresh correction in T3.
-
-The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10-07-land-use-authority/FROZEN_WORKBENCH.md), [plan-kind connections](reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md), [reconciliation backend](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_BACKEND.md) and the remaining [older-draft reconciliation design](reviews/2026-10-07-land-use-authority/DRAFT_RULE_RECONCILIATION_DESIGN.md). These remain M1 work with explicit native and rendered acceptance limits. The [checklist recovery acceptance](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md) now records identified HTTP concurrency and a bounded desktop/390px T3 recovery journey, including the downloaded copy and mobile layout correction. The [creation and context acceptance](reviews/2026-10-07-land-use-authority/CREATION_CONTEXT_ACCEPTANCE.md) adds specific-plan creation, retained area and authority, older-draft review, and interrupted stop recovery in T3. The [frozen history and public context check](reviews/2026-10-07-land-use-authority/FROZEN_PUBLIC_CONTEXT_ACCEPTANCE.md) adds identified public context and downloaded-byte checks, with omissions and their later [public content correction](reviews/2026-10-07-land-use-authority/PUBLIC_CONTENT_FOLLOWUP.md) recorded separately. The [synthetic publication and report check](reviews/2026-10-07-land-use-authority/PUBLICATION_REPORT_CUSTODY.md) adds populated adopted context, verified report identity, mobile correction and an explicit request-observer limitation. The [retained report decision check](reviews/2026-10-07-land-use-authority/REPORT_ADOPTION.md) adds native-bound adoption details and frozen related-plan references, with desktop/390px decision and empty-reference evidence. The [report-map follow-up](reviews/2026-10-07-land-use-authority/REPORT_MAPS.md) adds edition-bound authenticated map reads, 390px provider-unavailable evidence and native empty-layer checks. Actual map drawing and nonempty geography remain unproved. The [implementation-report check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_CUSTODY.md) verifies retained identity and statuses, including a native later-status change and a matching downloaded report. The [direct source-download correction](reviews/2026-10-07-land-use-authority/REPORT_EXPORT_CUSTODY.md) applies the retained-record checks to downloads, with matching T3 files and scoped refusal controls. The [transaction backend checkpoint](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_TRANSACTION.md) adds native atomic writes and exact receipts. The [report-request recovery check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md) connects that reader, route and form, with native exact replay, T3 desktop/390px lost-response recovery, matching downloads and a mobile wrapping correction. Exact-head GitHub checks and merge remain pending; native date entry, the OS file chooser and practitioner acceptance are not established.
 
 | Question | Read |
 |---|---|
 | How should contributors and agents work? | [Repository AGENTS.md](../AGENTS.md), then [Contributing](../CONTRIBUTING.md). CLAUDE.md is a pointer to the same entry point |
 | What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
-| What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue |
+| What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue, and [milestone definitions](product/MILESTONES.md) |
 | What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
 | Why this direction? | [October 6 integration and v1 review](reviews/product-direction/2026-10-06-integration-review.md), [historical September OWP review](reviews/product-direction/2026-09-07-work-program-review.md), and preserved independent reports linked there |
 | How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
@@ -42,9 +27,11 @@ evidence bindings; it cannot certify professional usefulness or scientific truth
 The old [shared manual](product/AGENT_OPERATING_RULES.md) is a compatibility
 pointer to AGENTS.md, not a second rulebook.
 
-The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
+## Hosted installation
 
-The [October 11 complete selected worker-root snapshot candidate](reviews/2026-10-11-worker-root-snapshot/STATUS.md) adds a supported private-root package command, native SQLite/WAL controls and five known-root checks. Fresh package copies recover original managed receipts without computation; installation-wide recovery and the remaining M3 floor stay open.
+[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
+The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
+The [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) records the scoped demo key, actual AI requests, 405-migration hosted state, and the disabled GTFS commissioning boundary.
 
 ## Evaluate and operate
 
@@ -98,9 +85,33 @@ Workers have different environments and contracts. Start with their current
 instructions under `workers/`, linked from the self-hosting guide. A successful
 one-family suite is not all-worker or full scientific acceptance.
 
+## Recent engineering checkpoints
+
+These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 to 11. They are not current authority; the documents under "Start here" are.
+
+The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
+
+- [Land-use restore cascade correction](reviews/2026-10-07-land-use-authority/RESTORE_CASCADE_FAILURE.md): reproduced restore failures, additive migration and remaining full-drill boundary.
+
+The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
+
+The October 8 model recovery checkpoints cover [stage preparation and artifact delivery](reviews/2026-10-08-model-custody-metadata/STAGE_RECOVERY.md), [KPI receipt recovery](reviews/2026-10-08-model-custody-metadata/KPI_RECOVERY.md) and [retained agreement computation](reviews/2026-10-08-model-custody-metadata/AGREEMENT_COMPUTATION.md). They preserve interrupted-work boundaries and do not establish full stage replay or scientific acceptance.
+
+The [October 11 model journal snapshot candidate](reviews/2026-10-11-worker-journal-snapshot/STATUS.md) implements a private SQLite backup-API command with populated WAL, retained-start and publication controls. It covers one journal after declared quiescence; installation-wide recovery and scientific acceptance remain open.
+
+The [October 11 coordinated known-root recovery point](reviews/2026-10-11-coordinated-worker-point/STATUS.md) joins populated model journals, the complete known synthetic worker root and the full database/transit point. Separate local-cluster recovery retains the original native command bytes without computation. Same-host storage, legacy command scope and the remaining M3 limits stay explicit.
+
+The [manual engagement case](reviews/2026-10-07-engagement-manual-case/VERIFICATION.md) records source-to-response-to-decision custody and downloaded review files. The [approval-label follow-up](reviews/2026-10-07-engagement-manual-case/STATUS_LABELS.md) distinguishes review approval from public release. The [source-label follow-up](reviews/2026-10-07-engagement-manual-case/SOURCE_LABELS.md) verifies source authorship in newly downloaded PDF and workbook files. Its [handoff target follow-up](reviews/2026-10-07-engagement-manual-case/TARGET_BROWSER.md) verifies the project-link refresh correction in T3.
+
+The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10-07-land-use-authority/FROZEN_WORKBENCH.md), [plan-kind connections](reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md), [reconciliation backend](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_BACKEND.md) and the remaining [older-draft reconciliation design](reviews/2026-10-07-land-use-authority/DRAFT_RULE_RECONCILIATION_DESIGN.md). These remain M1 work with explicit native and rendered acceptance limits. The [checklist recovery acceptance](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md) now records identified HTTP concurrency and a bounded desktop/390px T3 recovery journey, including the downloaded copy and mobile layout correction. The [creation and context acceptance](reviews/2026-10-07-land-use-authority/CREATION_CONTEXT_ACCEPTANCE.md) adds specific-plan creation, retained area and authority, older-draft review, and interrupted stop recovery in T3. The [frozen history and public context check](reviews/2026-10-07-land-use-authority/FROZEN_PUBLIC_CONTEXT_ACCEPTANCE.md) adds identified public context and downloaded-byte checks, with omissions and their later [public content correction](reviews/2026-10-07-land-use-authority/PUBLIC_CONTENT_FOLLOWUP.md) recorded separately. The [synthetic publication and report check](reviews/2026-10-07-land-use-authority/PUBLICATION_REPORT_CUSTODY.md) adds populated adopted context, verified report identity, mobile correction and an explicit request-observer limitation. The [retained report decision check](reviews/2026-10-07-land-use-authority/REPORT_ADOPTION.md) adds native-bound adoption details and frozen related-plan references, with desktop/390px decision and empty-reference evidence. The [report-map follow-up](reviews/2026-10-07-land-use-authority/REPORT_MAPS.md) adds edition-bound authenticated map reads, 390px provider-unavailable evidence and native empty-layer checks. Actual map drawing and nonempty geography remain unproved. The [implementation-report check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_CUSTODY.md) verifies retained identity and statuses, including a native later-status change and a matching downloaded report. The [direct source-download correction](reviews/2026-10-07-land-use-authority/REPORT_EXPORT_CUSTODY.md) applies the retained-record checks to downloads, with matching T3 files and scoped refusal controls. The [transaction backend checkpoint](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_TRANSACTION.md) adds native atomic writes and exact receipts. The [report-request recovery check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md) connects that reader, route and form, with native exact replay, T3 desktop/390px lost-response recovery, matching downloads and a mobile wrapping correction. Exact-head GitHub checks and merge remain pending; native date entry, the OS file chooser and practitioner acceptance are not established.
+
+The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
+
+The [October 11 complete selected worker-root snapshot candidate](reviews/2026-10-11-worker-root-snapshot/STATUS.md) adds a supported private-root package command, native SQLite/WAL controls and five known-root checks. Fresh package copies recover original managed receipts without computation; installation-wide recovery and the remaining M3 floor stay open.
+
 ## Historical evidence
 
-[Archived plans](archive/plans/) preserve superseded queues. The [September 6 archive](archive/2026-09-06-consolidation/INDEX.md) retains replaced instructions and guides with original-byte hashes.
+[Archived plans](archive/plans/) preserve superseded queues. The [roadmap evidence log](archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md) keeps the dated checkpoints the roadmap carried from August 24 to October 12, 2026. The [September 6 archive](archive/2026-09-06-consolidation/INDEX.md) retains replaced instructions and guides with original-byte hashes.
 [Dated reviews](reviews/), [modeling studies and research](modeling/)
 and [ADRs](ADRs/) retain what was known and decided at the time. A later review
 may supersede a recommendation without changing the old finding or frozen bytes.
