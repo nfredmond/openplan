@@ -301,6 +301,41 @@ describe("/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft"
     );
   });
 
+  it("tells the model whether the close date has passed, from the clock when the request arrives", async () => {
+    // A live draft on 2026-10-11 called a call that closed on 2026-09-30
+    // "currently open". Two clocks must give two different close-date facts.
+    loadFundingOpportunityAccessMock.mockResolvedValue({
+      supabase: null,
+      opportunity: { ...baseOpportunity, closes_at: "2026-09-30" },
+      membership: { workspace_id: WORKSPACE_ID, role: "member" },
+      error: null,
+      allowed: true,
+    });
+    const draftOnce = async () => {
+      installTables({
+        funding_opportunity_application_sections: tableSequence(
+          makeQuery({ data: baseSectionRow, error: null }),
+          makeQuery({ data: null, error: null })
+        ),
+        funding_opportunity_section_drafts: () => makeQuery({ data: storedDraft, error: null }),
+      });
+      expect((await postSectionDraft(jsonRequest(), routeContext())).status).toBe(201);
+      const calls = generateTextMock.mock.calls;
+      return (calls[calls.length - 1][0] as { prompt: string }).prompt;
+    };
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-11T18:00:00Z"));
+      expect(await draftOnce()).toContain("2026-09-30, before today's date (2026-10-11, UTC), so the close date has passed");
+      vi.setSystemTime(new Date("2026-09-01T18:00:00Z"));
+      const earlier = await draftOnce();
+      expect(earlier).toContain("The recorded close date for this opportunity is 2026-09-30; today's date is 2026-09-01 (UTC).");
+      expect(earlier).not.toContain("so the close date has passed");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("rejects a revision base that is not a stored draft of this section", async () => {
     installTables({
       funding_opportunity_application_sections: () => makeQuery({ data: baseSectionRow, error: null }),

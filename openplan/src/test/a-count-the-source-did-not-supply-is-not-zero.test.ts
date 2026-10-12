@@ -202,6 +202,20 @@ describe("the corridor summary accounts for what it could not classify", () => {
     expect(line).toContain("not classified by severity");
   });
 
+  it("states the injury count, and says when serious injuries cannot be separated", () => {
+    // The Planner Agent reads this line. Without the count it told a planner
+    // on 2026-10-11 that the run recorded no injury crashes; the run held 24.
+    const line = describeCrashSafety(
+      summarize([
+        record({ externalId: "a", severity: "fatal", killedCount: 1, injuredCount: 0 }),
+        record({ externalId: "b", severity: "injury", killedCount: 0, injuredCount: 2 }),
+        record({ externalId: "c", severity: "injury", killedCount: 0, injuredCount: 1 }),
+      ])
+    );
+    expect(line).toContain("2 non-fatal injury crashes");
+    expect(line).toMatch(/of 3 crashes reported/);
+  });
+
   it("says nothing about unclassified crashes when there are none", () => {
     // A disclosure that fires unconditionally is noise, and noise gets skimmed
     // past on the run where it matters.

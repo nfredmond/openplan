@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import {
 
   countyOnrampRunSnapshotSchema,
+  countyRunRowSupportsScreeningClaim,
   countyRunZoneResolutionCaveat,
   isPassingCountyRunGateStatus,
 } from "@/lib/models/county-onramp";
@@ -178,7 +179,54 @@ describe("the county manifest carries the share the qualification needs", () => 
     expect(projection, "could not find the county_runs .select() literal").toBeTypeOf("string");
     const columns = projection!.split(",").map((column) => column.trim());
     expect(columns).toContain("run_summary_json");
-    expect(columns).toContain("status_label");
-    expect(columns).toContain("stage");
+    // Since KI-2026-10-12-001 the stage and old gate label decide nothing on
+    // this page; the rules-v4 basis does, so the page must read it.
+    expect(columns).toEqual(
+      expect.arrayContaining([
+        "basis_rules_version:validation_summary_json->validation_rules_version",
+        "basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome",
+        "basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write",
+      ])
+    );
+    expect(source).toMatch(/countyRunRows\.some\(countyRunRowSupportsScreeningClaim\)/);
+  });
+});
+
+/**
+ * THE MODEL PAGE'S "NO VALIDATED SCREENING RUN ON FILE" WARNING.
+ *
+ * KI-2026-10-12-001: a legacy row at the retired validated-screening stage with
+ * a "bounded screening-ready" label used to hide the warning. Only a confirmed
+ * rules-v4 pass can now, and the zone system can still withhold it.
+ */
+describe("which stored county run hides the model page's warning", () => {
+  const pass = { basis_rules_version: 4, basis_outcome: "pass", basis_evidence_write: "recorded", basis_reasons: [] };
+
+  it("does not let a legacy old-gate pass hide the warning", () => {
+    const legacy = {
+      stage: "validated-screening",
+      status_label: "bounded screening-ready",
+      run_summary_json: { intrazonal_trip_share: WORKABLE },
+      basis_rules_version: null,
+      basis_outcome: null,
+      basis_evidence_write: null,
+      basis_reasons: null,
+    };
+    expect(countyRunRowSupportsScreeningClaim(legacy)).toBe(false);
+  });
+
+  it("does not let an inconclusive or unconfirmed outcome hide it", () => {
+    expect(
+      countyRunRowSupportsScreeningClaim({ ...pass, basis_outcome: "inconclusive", run_summary_json: null })
+    ).toBe(false);
+    expect(
+      countyRunRowSupportsScreeningClaim({ ...pass, basis_evidence_write: "pending", run_summary_json: null })
+    ).toBe(false);
+  });
+
+  it("lets a confirmed pass hide it unless the zone system withholds it", () => {
+    expect(countyRunRowSupportsScreeningClaim({ ...pass, run_summary_json: { intrazonal_trip_share: WORKABLE } })).toBe(true);
+    expect(countyRunRowSupportsScreeningClaim({ ...pass, run_summary_json: null })).toBe(true);
+    expect(countyRunRowSupportsScreeningClaim({ ...pass, run_summary_json: { intrazonal_trip_share: COARSE } })).toBe(false);
   });
 });

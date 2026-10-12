@@ -36,7 +36,7 @@ from typing import Any
 
 import requests
 from dotenv import load_dotenv
-from worker_heartbeat import WorkerHeartbeat
+from worker_heartbeat import OutputGrowth, WorkerHeartbeat
 
 _WORKER_DIR = Path(__file__).resolve().parent
 _REPO_ROOT = _WORKER_DIR.parents[1]
@@ -47,6 +47,7 @@ _SHARED_WORKER_DIR = str(_WORKER_DIR.parent / "aequilibrae_worker")
 if _SHARED_WORKER_DIR not in sys.path:
     sys.path.append(_SHARED_WORKER_DIR)
 from model_receipt_values import same_json_value
+import model_stage_lease
 
 # Locally load .env (worker dir) then the app's .env.local; in a container these
 # come from the environment. override=False so real env vars always win.
@@ -91,6 +92,12 @@ EVIDENCE_SCHEMA_VERSION = "openplan.behavioral_demand_preflight_evidence.v0"
 EXECUTED_RUNTIME_MODES = {"activitysim_cli", "activitysim_container_cli"}
 
 _WORKER_HEARTBEAT: WorkerHeartbeat | None = None
+
+# The stage this process holds, renewed through the heartbeat, and what a
+# poll-mode shutdown records about it. See model_stage_lease.py.
+_CUSTODY = model_stage_lease.PollCustody(
+    base_url=SUPABASE_URL, headers=HEADERS, heartbeat=lambda: _WORKER_HEARTBEAT, worker_label="ActivitySim worker",
+)
 
 
 def _activitysim_exec_config() -> dict:
@@ -222,10 +229,12 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
     this exception into a contradictory failed-stage update.
     """
     try:
-        response = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
-            headers=HEADERS, json=payload, timeout=30,
-        )
+        # A recorded shutdown holds this gate until the process exits.
+        with model_stage_lease.STATE_WRITE_GATE:
+            response = requests.patch(
+                f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+                headers=HEADERS, json=payload, timeout=30,
+            )
         if response.status_code != 200:
             raise WorkerStateWriteUnconfirmed(
                 f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
@@ -997,19 +1006,23 @@ def process_stage(stage: dict) -> None:
     stage_name = stage["stage_name"]
 
     validate_run_identity(run_id)
+    claimed_at = _utc_now()
     claimed = sb_claim_stage(
         stage_id,
-        {"status": "running", "started_at": _utc_now(), "log_tail": f"Starting {stage_name}..."},
+        {"status": "running", "started_at": claimed_at, "log_tail": f"Starting {stage_name}..."},
     )
     if not claimed:
         print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…)")
         return
-    sb_patch_run(run_id, {"status": "running"})
-
-    if _WORKER_HEARTBEAT is not None:
-        _WORKER_HEARTBEAT.set_current_work(
-            {"runId": run_id, "stageId": stage_id, "stageName": stage_name}
-        )
+    try:
+        # Only a confirmed claim is leased. The heartbeat renews it and reports
+        # file growth under this run's directory separately from liveness, so
+        # a long ActivitySim step that writes nothing is visible, never killed.
+        _CUSTODY.hold(stage, claimed_at, progress=OutputGrowth(os.path.join(ACTIVITYSIM_WORK_DIR, run_id)))
+        sb_patch_run(run_id, {"status": "running"})
+    except BaseException:
+        _CUSTODY.release()
+        raise
 
     try:
         run = sb_get_run(run_id)
@@ -1034,8 +1047,9 @@ def process_stage(stage: dict) -> None:
         )
         sb_patch_run(run_id, {"status": "failed"})
     finally:
-        if _WORKER_HEARTBEAT is not None:
-            _WORKER_HEARTBEAT.set_current_work(None)
+        # Releasing the lease is not a status write. A stage left running
+        # without a held lease is marked interrupted once the lease lapses.
+        _CUSTODY.release()
 
 
 def poll_for_jobs() -> None:
@@ -1057,8 +1071,28 @@ def poll_for_jobs() -> None:
     print(f"ActivitySim behavioral-preflight worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(OWNED_STAGE_NAMES)})...")
 
-    while True:
+    # SIGTERM stops new claims; a held stage is recorded as interrupted by
+    # shutdown and the process exits inside the supervisor's grace period.
+    restore_signals = _CUSTODY.install_signal_handlers()
+    try:
+        _poll_until_stopped()
+    finally:
+        restore_signals()
+
+
+def _poll_until_stopped() -> None:
+    next_reconcile = 0.0
+    while not _CUSTODY.stop_requested():
+        stage = None
         try:
+            # At start, then periodically: an owner that died after this
+            # process started is noticed once its lease lapses.
+            if time.monotonic() >= next_reconcile:
+                model_stage_lease.reconcile_lapsed_stages(
+                    base_url=SUPABASE_URL, headers=HEADERS, stage_filter=_STAGE_FILTER,
+                    worker_label="ActivitySim worker",
+                )
+                next_reconcile = time.monotonic() + model_stage_lease.RECONCILE_INTERVAL_SECONDS
             url = (
                 f"{SUPABASE_URL}/rest/v1/model_run_stages"
                 f"?status=eq.queued&{_STAGE_FILTER}"
@@ -1075,6 +1109,8 @@ def poll_for_jobs() -> None:
             if not stages:
                 time.sleep(POLL_INTERVAL_SECONDS)
                 continue
+            if _CUSTODY.stop_requested():
+                break
 
             processed = False
             for stage in stages:
@@ -1091,9 +1127,15 @@ def poll_for_jobs() -> None:
             if not processed:
                 time.sleep(POLL_INTERVAL_SECONDS)
 
+        except (WorkerStateWriteUnconfirmed, WorkerStateReadUnconfirmed) as error:
+            if stage is not None:
+                model_stage_lease.attach_stage_identity(error, stage)
+            model_stage_lease.report_unconfirmed_state(error, "ActivitySim worker")
+            time.sleep(POLL_INTERVAL_SECONDS)
         except Exception as exc:  # noqa: BLE001 — keep the poll loop alive
             print(f"Poll loop error: {exc}")
             time.sleep(POLL_INTERVAL_SECONDS)
+    print(f"[{time.strftime('%X')}] ActivitySim worker stopped claiming stages and is exiting.")
 
 
 if __name__ == "__main__":

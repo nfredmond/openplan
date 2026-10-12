@@ -4,8 +4,11 @@ import { describe, expect, it, vi } from "vitest";
 import {
   MODELING_CLAIM_STATUSES,
   buildCountyRunModelingEvidenceBundle,
+  countyRunDisplayableClaim,
+  loadCountyRunModelingEvidence,
   modelingClaimAllowsOutwardPlanningLanguage,
   modelingClaimReportLanguage,
+  modelingClaimStatusLabel,
   refreshCountyRunModelingEvidence,
   resolveModelingClaimDecision,
   type ModelingValidationResultLike,
@@ -361,7 +364,7 @@ describe("every tier states its own basis", () => {
 });
 
 describe("buildCountyRunModelingEvidenceBundle", () => {
-  it("builds public source manifests, validation rows, and a screening-grade decision for the NCTC-style failure", () => {
+  it("builds public source manifests, validation rows, and a prototype-only decision for the NCTC-style failure", () => {
     const bundle = buildCountyRunModelingEvidenceBundle({
       workspaceId: "11111111-1111-4111-8111-111111111111",
       countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
@@ -382,8 +385,125 @@ describe("buildCountyRunModelingEvidenceBundle", () => {
       "critical_absolute_percent_error",
       "facility_ranking_spearman_rho",
     ]);
-    expect(bundle.claimDecision.claimStatus).toBe("screening_grade");
-    expect(bundle.claimDecision.statusReason).toContain("237.62%");
+    expect(bundle.claimDecision.claimStatus).toBe("prototype_only");
+    // The diagnostic failure still travels with the decision.
+    expect(bundle.claimDecision.reasons).toContain(
+      "Worst matched facility APE 237.62% exceeds the 50% diagnostic threshold."
+    );
+  });
+});
+
+/**
+ * THE COUNTY TIER ANSWERS TO THE RULES-V4 SCIENTIFIC OUTCOME (KI-2026-10-12-001).
+ *
+ * The county lane used to take its tier from the retired 30 percent median-APE
+ * gate with a three-station minimum. A run whose rules-v4 outcome was fail or
+ * inconclusive could still read "Screening-grade". The worker lane already
+ * refuses that (build_model_run_modeling_evidence in
+ * workers/aequilibrae_worker/main.py); these pin the county lane to the same
+ * answer. The fixture's old-gate numbers all pass, so only the scientific
+ * outcome can hold the tier down.
+ */
+describe("a county run's claim tier comes from its rules-v4 scientific outcome", () => {
+  function countyManifest(validationExtras: Record<string, unknown>, gateReasons: string[] = []) {
+    return {
+      ...manifest,
+      summary: {
+        ...manifest.summary,
+        validation: {
+          counts_source_csv: "/data/counts.csv",
+          stations_total: 5,
+          stations_matched: 5,
+          screening_gate: {
+            status_label: "bounded screening-ready",
+            required_matches: 3,
+            ready_median_ape_threshold: 30,
+            ready_critical_ape_threshold: 50,
+            reasons: gateReasons,
+          },
+          metrics: {
+            median_absolute_percent_error: 16.01,
+            max_absolute_percent_error: 41.2,
+            spearman_rho_facility_ranking: 0.9,
+          },
+          ...validationExtras,
+        },
+      },
+    } as unknown as CountyOnrampManifest;
+  }
+
+  function decide(validationExtras: Record<string, unknown>, gateReasons: string[] = []) {
+    return buildCountyRunModelingEvidenceBundle({
+      workspaceId: "11111111-1111-4111-8111-111111111111",
+      countyRunId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+      geographyLabel: "Any County",
+      manifest: countyManifest(validationExtras, gateReasons),
+    }).claimDecision;
+  }
+
+  const oldGatePassReason =
+    "Matched stations >= 3, median absolute percent error <= 30.00%, and no matched facility exceeds 50.00% absolute percent error.";
+
+  it("holds a failing rules-v4 outcome at prototype-only", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      scientific_outcome: "fail",
+      model_validation_assessment: {
+        scientific_outcome: "fail",
+        validation_evidence_write: "recorded",
+        reasons: ["Decisive median raw APE 41.00% exceeds the frozen 25.00% limit."],
+      },
+    }, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimStatusLabel(decision.claimStatus)).toBe("Prototype-only");
+    expect(decision.statusReason).toBe(
+      "The rules-v4 scientific outcome is fail. Decisive median raw APE 41.00% exceeds the frozen 25.00% limit."
+    );
+  });
+
+  it("holds an inconclusive rules-v4 outcome at prototype-only even when the old 30% gate passed", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      scientific_outcome: "inconclusive",
+      model_validation_assessment: {
+        scientific_outcome: "inconclusive",
+        // Recorded on purpose: the outcome alone must hold the tier down.
+        validation_evidence_write: "recorded",
+        reasons: ["The available point-count rows do not satisfy the observed-traffic-observation.v1 contract."],
+      },
+    }, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(modelingClaimAllowsOutwardPlanningLanguage(decision)).toBe(false);
+    expect(decision.statusReason).toMatch(/^The rules-v4 scientific outcome is inconclusive\./);
+  });
+
+  it("reads a stored manifest without a rules-v4 outcome as prototype-only and not assessed", () => {
+    const decision = decide({}, [oldGatePassReason]);
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(decision.statusReason).toMatch(/^Not assessed: this run has no rules-v4 scientific outcome\./);
+  });
+
+  it("does not let a pass whose evidence write is unconfirmed rise above prototype-only", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "pending" },
+    });
+
+    expect(decision.claimStatus).toBe("prototype_only");
+    expect(decision.statusReason).toMatch(/^Validation evidence storage is not confirmed\./);
+  });
+
+  it("caps an explicit rules-v4 pass at screening grade, as the worker lane does", () => {
+    const decision = decide({
+      validation_rules_version: 4,
+      model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "recorded" },
+    });
+
+    expect(decision.claimStatus).toBe("screening_grade");
+    expect(decision.statusReason).toMatch(/^The rules-v4 assessment passed its exact frozen, use-specific acceptance rule\./);
   });
 });
 
@@ -457,7 +577,124 @@ describe("refreshCountyRunModelingEvidence", () => {
       "delete-claim:county_run_id:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa:track:assignment",
       "upsert-source:4",
       "insert-validation:5",
-      "insert-claim:screening_grade",
+      "insert-claim:prototype_only",
     ]);
+  });
+});
+
+/**
+ * STORED COUNTY TIERS ARE SHOWN ONLY AS FAR AS THE RULES-V4 BASIS SUPPORTS.
+ *
+ * Claim rows written before KI-2026-10-12-001 was fixed carry tiers the retired
+ * 30 percent gate awarded. Stored data is not rewritten; every reader lowers
+ * at read time, and nothing is ever raised.
+ */
+describe("countyRunDisplayableClaim", () => {
+  const stored = (claimStatus: "prototype_only" | "screening_grade" | "claim_grade_passed") => ({
+    claimStatus,
+    statusReason: "Stored reason.",
+    reasons: ["Stored reason."],
+  });
+  const confirmedPass = {
+    validation_rules_version: 4,
+    model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "recorded" },
+  };
+
+  it("lowers a stored screening tier with no rules-v4 outcome to prototype-only, not assessed", () => {
+    const shown = countyRunDisplayableClaim(stored("screening_grade"), null);
+    expect(shown.claimStatus).toBe("prototype_only");
+    expect(shown.statusReason).toMatch(/^Not assessed: this run has no rules-v4 scientific outcome\./);
+    expect(shown.reasons).toContain("Stored reason.");
+  });
+
+  it("caps a stored claim-grade tier at screening grade on a confirmed pass", () => {
+    expect(countyRunDisplayableClaim(stored("claim_grade_passed"), confirmedPass).claimStatus).toBe("screening_grade");
+  });
+
+  it("leaves a supported stored tier exactly as stored", () => {
+    expect(countyRunDisplayableClaim(stored("screening_grade"), confirmedPass)).toEqual(stored("screening_grade"));
+  });
+
+  it("never raises a stored tier, even on a confirmed pass", () => {
+    expect(countyRunDisplayableClaim(stored("prototype_only"), confirmedPass).claimStatus).toBe("prototype_only");
+  });
+});
+
+describe("loadCountyRunModelingEvidence lowers stored county tiers", () => {
+  const BASIS_PROJECTION =
+    "basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons";
+  const COUNTY_RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+
+  function client(storedStatus: string, basis: { data: unknown; error: unknown }) {
+    const countyRunSelect = vi.fn((_projection: string) => ({
+      eq: vi.fn((_column: string, _value: string) => ({ maybeSingle: vi.fn(async () => basis) })),
+    }));
+    const claimRow = {
+      track: "assignment",
+      claim_status: storedStatus,
+      status_reason: "Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold.",
+      reasons_json: ["Worst matched facility APE 237.62% exceeds the 50% claim-grade threshold."],
+      validation_summary_json: { passed: 3, warned: 0, failed: 1, missingRequiredMetricKeys: [], requiredMetricKeys: [] },
+      decided_at: "2026-03-24T23:00:00Z",
+    };
+    const ordered = { order: vi.fn(async () => ({ data: [], error: null })) };
+    const from = vi.fn((table: string) => {
+      if (table === "modeling_claim_decisions") {
+        return { select: () => ({ eq: () => ({ eq: () => ({ maybeSingle: async () => ({ data: claimRow, error: null }) }) }) }) };
+      }
+      if (table === "county_runs") return { select: countyRunSelect };
+      if (table === "modeling_source_manifests") return { select: () => ({ eq: () => ordered }) };
+      if (table === "modeling_validation_results") return { select: () => ({ eq: () => ({ eq: () => ordered }) }) };
+      throw new Error(`Unexpected table: ${table}`);
+    });
+    return { supabase: { from } as unknown as Parameters<typeof loadCountyRunModelingEvidence>[0]["supabase"], countyRunSelect };
+  }
+
+  it("shows a stored screening tier with an inconclusive outcome as prototype-only, in one bounded read", async () => {
+    const { supabase, countyRunSelect } = client("screening_grade", {
+      data: {
+        basis_rules_version: 4,
+        basis_outcome: "inconclusive",
+        basis_evidence_write: "pending",
+        basis_reasons: ["The available point-count rows do not satisfy the observed-traffic-observation.v1 contract."],
+      },
+      error: null,
+    });
+
+    const { evidence, error } = await loadCountyRunModelingEvidence({ supabase, countyRunId: COUNTY_RUN_ID });
+
+    expect(error).toBeNull();
+    expect(evidence?.claimDecision?.claimStatus).toBe("prototype_only");
+    expect(evidence?.claimDecision?.statusReason).toMatch(/^The rules-v4 scientific outcome is inconclusive\./);
+    expect(evidence?.reportLanguage).toMatch(/^Prototype-only modeling result/);
+    expect(countyRunSelect).toHaveBeenCalledTimes(1);
+    expect(countyRunSelect).toHaveBeenCalledWith(BASIS_PROJECTION);
+    expect(countyRunSelect.mock.results[0]?.value.eq).toHaveBeenCalledWith("id", COUNTY_RUN_ID);
+  });
+
+  it("keeps a stored screening tier when the run recorded a confirmed pass", async () => {
+    const { supabase } = client("screening_grade", {
+      data: { basis_rules_version: 4, basis_outcome: "pass", basis_evidence_write: "recorded", basis_reasons: [] },
+      error: null,
+    });
+
+    const { evidence } = await loadCountyRunModelingEvidence({ supabase, countyRunId: COUNTY_RUN_ID });
+    expect(evidence?.claimDecision?.claimStatus).toBe("screening_grade");
+  });
+
+  it("makes no extra read for a stored prototype-only tier", async () => {
+    const { supabase, countyRunSelect } = client("prototype_only", { data: null, error: null });
+
+    const { evidence } = await loadCountyRunModelingEvidence({ supabase, countyRunId: COUNTY_RUN_ID });
+    expect(evidence?.claimDecision?.claimStatus).toBe("prototype_only");
+    expect(countyRunSelect).not.toHaveBeenCalled();
+  });
+
+  it("reports a failed basis read instead of showing the stored tier", async () => {
+    const { supabase } = client("screening_grade", { data: null, error: { message: "permission denied for table county_runs" } });
+
+    const { evidence, error } = await loadCountyRunModelingEvidence({ supabase, countyRunId: COUNTY_RUN_ID });
+    expect(evidence).toBeNull();
+    expect(error?.message).toBe("permission denied for table county_runs");
   });
 });

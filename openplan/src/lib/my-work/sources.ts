@@ -113,6 +113,12 @@ export type MyWorkSource = {
   assigneeColumn: string | null;
   orderColumn: string;
   orderAscending: boolean;
+  /**
+   * The due-date column of a source whose rows may or may not have one. A
+   * dated row is a deadline and an undated row is not, so date bounds apply to
+   * this column and still keep the undated rows (see `loadMyWork`).
+   */
+  dueColumn?: string;
   staticFilters: readonly MyWorkStaticFilter[];
   /**
    * How deep to read. Only the stage-gate source overrides it: the board keeps
@@ -736,6 +742,7 @@ const landUsePlanActionsSource: MyWorkSource = {
   assigneeColumn: "assignee_user_id",
   orderColumn: "due_on",
   orderAscending: true,
+  dueColumn: "due_on",
   staticFilters: [
     { kind: "notIn", column: "status", values: ["completed", "deferred"] },
   ],
@@ -783,7 +790,7 @@ const contractPendingReviewsSource: MyWorkSource = {
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
   table: "contract_active_tasks_my_work", select: "id, engagement_id, workspace_id, assignee_user_id, project_id, title, deadline",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true, dueColumn: "deadline",
   staticFilters: [],
   toItems: (rows,{now}) => rows.map(row => { const task=row,dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
 };
@@ -799,7 +806,7 @@ const workProgramPeriodsSource: MyWorkSource = {
 const workProgramReviewsSource: MyWorkSource = {
   id: "work_program_reviews", label: "Work program reviews", readLabel: "work program reviews", block: "undated",
   table: "program_work_program_reviews", select: "id, program_id, revision_id, assignee_user_id, due_on, status, programs!inner(title, workspace_id)",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true, dueColumn: "due_on",
   staticFilters: [{ kind: "in", column: "status", values: ["pending", "returned"] }],
   toItems: (rows, { now }) => rows.map(row => {
     const program = embedded(row.programs), dueOn = asString(row.due_on), overdue = isDeadlinePast(dueOn, now);

@@ -10,6 +10,7 @@ import {
   listFlaggedNarrativeSentences,
   parseStoredNarrativeGrounding,
   stripFactCitationTokens,
+  unverifiedSentencesKeptVerbatim,
 } from "@/lib/grants/narrative-grounding";
 import { parseStoredDraft } from "@/lib/reports/narrative-drafts";
 
@@ -24,7 +25,9 @@ import { parseStoredDraft } from "@/lib/reports/narrative-drafts";
  *   into a generated packet.
  * - Otherwise the operator MUST have edited: an `acceptedMarkdown` that
  *   genuinely differs from the draft becomes operator-authored text and is
- *   accepted on the operator's authority, like any prose they typed.
+ *   accepted on the operator's authority, like any prose they typed. Every
+ *   flagged sentence must be reworded or removed first; a one-character edit
+ *   elsewhere does not make a flagged sentence the operator's own.
  * - `dismissed` is terminal for the row (and any non-draft status is final) —
  *   regenerate a new draft instead of resurrecting an old one.
  *
@@ -155,6 +158,25 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
         acceptedMarkdown !== stripFactCitationTokens(draft.draft_markdown);
 
       if (operatorEdited) {
+        const keptVerbatim = unverifiedSentencesKeptVerbatim({
+          draftMarkdown: draft.draft_markdown,
+          grounding: parseStoredNarrativeGrounding(draft.grounding_json),
+          editedMarkdown: acceptedMarkdown,
+        });
+        if (keptVerbatim.length > 0) {
+          audit.warn("draft_accept_blocked_flagged_unchanged", {
+            draftId: draft.id,
+            userId: user.id,
+            unchangedCount: keptVerbatim.length,
+          });
+          return NextResponse.json(
+            {
+              error: `${keptVerbatim.length} flagged sentence${keptVerbatim.length === 1 ? " is" : "s are"} unchanged. Reword or remove ${keptVerbatim.length === 1 ? "it" : "each one"}, or regenerate.`,
+              unchangedFlaggedSentences: keptVerbatim,
+            },
+            { status: 422 }
+          );
+        }
         // Operator-authored text: accepted on the operator's authority, like
         // any prose they typed into the packet.
         updates = {

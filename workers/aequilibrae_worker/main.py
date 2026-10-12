@@ -121,6 +121,7 @@ import equity
 import model_credibility
 from worker_heartbeat import WorkerHeartbeat
 from model_receipt_values import same_json_value
+import model_stage_lease
 
 SUPABASE_URL = os.getenv("SUPABASE_URL") or os.getenv("NEXT_PUBLIC_SUPABASE_URL")
 SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY")
@@ -459,6 +460,12 @@ HEADERS = {
     "Prefer": "return=representation",
 }
 
+# The stage this process holds, renewed through the heartbeat, and what a
+# poll-mode shutdown records about it. See model_stage_lease.py.
+_CUSTODY = model_stage_lease.PollCustody(
+    base_url=SUPABASE_URL, headers=HEADERS, heartbeat=lambda: _WORKER_HEARTBEAT, worker_label="AequilibraE worker",
+)
+
 SPATIALITE_PATH = os.getenv("SPATIALITE_LIBRARY_PATH", "/usr/lib/x86_64-linux-gnu/mod_spatialite.so")
 os.environ["SPATIALITE_LIBRARY_PATH"] = SPATIALITE_PATH
 
@@ -588,10 +595,12 @@ def _confirmed_state_patch(table: str, record_id: str, payload: dict, *, queued_
     this exception into a contradictory failed-stage update.
     """
     try:
-        response = requests.patch(
-            f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
-            headers=HEADERS, json=payload, timeout=30,
-        )
+        # A recorded shutdown holds this gate until the process exits.
+        with model_stage_lease.STATE_WRITE_GATE:
+            response = requests.patch(
+                f"{SUPABASE_URL}/rest/v1/{table}?id=eq.{record_id}" + ("&status=eq.queued" if queued_claim else ""),
+                headers=HEADERS, json=payload, timeout=30,
+            )
         if response.status_code != 200:
             raise WorkerStateWriteUnconfirmed(
                 f"Worker state write unconfirmed for {table} (HTTP {response.status_code})"
@@ -7008,15 +7017,12 @@ def process_stage(stage: dict) -> bool:
     reported as a lost claim instead of being executed twice.
     """
     with _STAGE_EXECUTION_LOCK:
-        if _WORKER_HEARTBEAT is not None:
-            _WORKER_HEARTBEAT.set_current_work(
-                {"runId": stage["run_id"], "stageId": stage["id"], "stageName": stage["stage_name"]}
-            )
         try:
             return _claim_and_run_stage(stage)
         finally:
-            if _WORKER_HEARTBEAT is not None:
-                _WORKER_HEARTBEAT.set_current_work(None)
+            # Releasing the lease is not a status write. A stage left running
+            # without a held lease is marked interrupted once the lease lapses.
+            _CUSTODY.release()
 
 
 def write_run_state(work_dir: str, state: dict) -> None:
@@ -7136,6 +7142,8 @@ def _claim_and_run_stage(stage: dict) -> bool:
     if not claimed:
         print(f"[{time.strftime('%X')}] ⏭️ Lost claim race for {stage_name} (run={run_id[:8]}…); another worker owns it.")
         return False
+    # Only a confirmed claim is leased; the heartbeat renews it from here on.
+    _CUSTODY.hold(stage, now_iso)
     sb_patch_run(run_id, {"status": "running"})
 
     # Each run gets its own working directory
@@ -7838,12 +7846,16 @@ def process_first_actionable_stage(stages: list[dict]) -> str:
       "idle"      — nothing here is actionable yet (a prior stage is still running)
     """
     for stage in stages:
-        readiness, reason = classify_stage_readiness(stage)
-        if readiness == "ready":
-            return "processed" if process_stage(stage) else "lost"
-        if readiness == "blocked_terminal":
-            print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
-            return "skipped" if mark_stage_skipped(stage, reason or "Skipped due to failed prior stage") else "lost"
+        try:
+            readiness, reason = classify_stage_readiness(stage)
+            if readiness == "ready":
+                return "processed" if process_stage(stage) else "lost"
+            if readiness == "blocked_terminal":
+                print(f"[{time.strftime('%X')}] Checking blocked stage {stage['stage_name']} (run={stage['run_id'][:8]}…): {reason}")
+                return "skipped" if mark_stage_skipped(stage, reason or "Skipped due to failed prior stage") else "lost"
+        except WorkerStateWriteUnconfirmed as error:
+            model_stage_lease.attach_stage_identity(error, stage)
+            raise
     return "idle"
 
 
@@ -7851,20 +7863,41 @@ def poll_for_jobs():
     print(f"AequilibraE Worker started at {time.strftime('%c')}")
     print(f"Polling {SUPABASE_URL} for queued stages (owned: {', '.join(AEQ_STAGE_NAMES)})...")
 
-    while True:
-        try:
-            stages = fetch_queued_stages()
-            if not stages:
-                time.sleep(POLL_INTERVAL_SECONDS)
-                continue
+    # SIGTERM stops new claims; a held stage is recorded as interrupted by
+    # shutdown and the process exits inside the supervisor's grace period.
+    restore_signals = _CUSTODY.install_signal_handlers()
+    next_reconcile = 0.0
+    try:
+        while not _CUSTODY.stop_requested():
+            try:
+                # At start, then periodically: an owner that died after this
+                # process started is noticed once its lease lapses.
+                if time.monotonic() >= next_reconcile:
+                    model_stage_lease.reconcile_lapsed_stages(
+                        base_url=SUPABASE_URL, headers=HEADERS, stage_filter=_AEQ_STAGE_FILTER,
+                        worker_label="AequilibraE worker",
+                    )
+                    next_reconcile = time.monotonic() + model_stage_lease.RECONCILE_INTERVAL_SECONDS
+                stages = fetch_queued_stages()
+                if not stages:
+                    time.sleep(POLL_INTERVAL_SECONDS)
+                    continue
+                if _CUSTODY.stop_requested():
+                    break
 
-            # Anything but "idle" means work moved; go straight back for more.
-            if process_first_actionable_stage(stages) == "idle":
-                time.sleep(POLL_INTERVAL_SECONDS)
+                # Anything but "idle" means work moved; go straight back for more.
+                if process_first_actionable_stage(stages) == "idle":
+                    time.sleep(POLL_INTERVAL_SECONDS)
 
-        except Exception as e:
-            print(f"Poll loop error: {e}")
-            time.sleep(POLL_INTERVAL_SECONDS)
+            except WorkerStateWriteUnconfirmed as error:
+                model_stage_lease.report_unconfirmed_state(error, "AequilibraE worker")
+                time.sleep(POLL_INTERVAL_SECONDS)
+            except Exception as e:
+                print(f"Poll loop error: {e}")
+                time.sleep(POLL_INTERVAL_SECONDS)
+        print(f"[{time.strftime('%X')}] AequilibraE worker stopped claiming stages and is exiting.")
+    finally:
+        restore_signals()
 
 
 # ─── Push trigger ───────────────────────────────────────────────────────
@@ -8340,10 +8373,10 @@ def _serve_until_drained(server, dispatcher: "RunTriggerExecutor"):
         if unfinished:
             print(
                 f"[{time.strftime('%X')}] Shutting down with {len(unfinished)} accepted run(s) "
-                f"unfinished: {', '.join(unfinished)}. Their stages stay as this worker left them — "
-                "an unclaimed run is still queued and any worker can take it; one stopped mid-stage "
-                "reports no further progress and OpenPlan's staleness sweep will fail it. Neither is "
-                "lost, and neither will finish here."
+                f"unfinished: {', '.join(unfinished)}. Their stages stay as this worker left them. "
+                "An unclaimed run is still queued and any worker can take it. A stage stopped mid-run "
+                "stays running until a polling worker marks it interrupted after its lease lapses, or "
+                "an owner closes it under execution recovery. Neither will finish here."
             )
         else:
             print(f"[{time.strftime('%X')}] Drained cleanly; nothing accepted was left unfinished.")
