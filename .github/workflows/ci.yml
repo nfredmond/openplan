@@ -222,6 +222,11 @@ jobs:
       - name: Hosted model supervisor
         run: python ../hosted-models/test_supervise.py
 
+      # Uses the runner's gpg for the encryption round trip; no network.
+      - name: Hosted offsite backup
+        working-directory: ./workers/hosted-backup
+        run: python -m unittest test_backup -v
+
       - name: Syntax check
         run: python -m py_compile *.py
 

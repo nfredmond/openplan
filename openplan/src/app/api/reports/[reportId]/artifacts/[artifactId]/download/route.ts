@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { signedStorageRedirect } from "@/lib/http/signed-redirect";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadReportAccess } from "@/lib/reports/api";
 import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
@@ -165,7 +166,7 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
       artifactId: artifact.id,
       artifactKind: artifact.artifact_kind,
     });
-    return NextResponse.redirect(data.signedUrl);
+    return signedStorageRedirect(data.signedUrl);
   }
 
   // HTML artifacts are stored inline rather than in the bucket. Serving them is

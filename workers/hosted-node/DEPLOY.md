@@ -4,7 +4,9 @@ Build from the repository root with `docker build -f workers/hosted-node/Dockerf
 The image runs seven existing Node queue workers under one supervisor. If any
 queue process exits unexpectedly, including exit zero, the supervisor stops its
 siblings and fails the service so the host can restart it. An operator signal
-stops the service normally. Restart does not authorize replaying an uncertain write.
+stops the service normally. The container starts the supervisor as process 1
+under the node user with `setpriv`, so SIGTERM reaches it directly and workers
+get up to 20 seconds to stop; the host's own stop timeout still caps that. Restart does not authorize replaying an uncertain write.
 
 Provide the Supabase URL, publishable key, service role, canonical site URL,
 integration encryption secret, and approved Resend sending key as private host

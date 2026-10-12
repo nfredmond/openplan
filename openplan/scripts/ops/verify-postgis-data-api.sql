@@ -42,6 +42,53 @@ do $$ begin
     if sqlerrm <> 'This PostGIS administration API is restricted.' then raise; end if;
   end;
 end $$;
+set local role anon;
+do $$
+declare
+  path text;
+  verb text;
+  denied boolean;
+begin
+  -- PostgREST sets request.path before percent-decoding, so encoded and
+  -- non-canonical spellings must be refused, including on GET.
+  foreach path in array array[
+    '/spatial%5Fref%5Fsys', '/spatial%5fref%5fsys', '/%73patial_ref_sys',
+    '/rpc/%67raphql', '/%72pc/graphql', '/rpc/st%5Festimatedextent',
+    '//spatial_ref_sys', '/rpc//graphql', '/spatial_ref_sys/', '/rpc/graphql/',
+    '/./spatial_ref_sys', '/x/../spatial_ref_sys', '/projects%2Fx'
+  ] loop
+    foreach verb in array array['GET', 'POST', 'PATCH', 'DELETE'] loop
+      perform set_config('request.path', path, true);
+      perform set_config('request.method', verb, true);
+      denied := false;
+      begin
+        perform public.openplan_check_data_api_request();
+      exception when insufficient_privilege then
+        if sqlerrm <> 'This Data API path is not in canonical form.' then raise; end if;
+        denied := true;
+      end;
+      if not denied then raise exception 'Data API guard allowed non-canonical % % as %', verb, path, current_user; end if;
+    end loop;
+  end loop;
+  -- Case variants still hit the catalog rule.
+  perform set_config('request.path', '/SPATIAL_REF_SYS', true);
+  perform set_config('request.method', 'POST', true);
+  begin
+    perform public.openplan_check_data_api_request();
+    raise exception 'Catalog API guard allowed POST /SPATIAL_REF_SYS';
+  exception when insufficient_privilege then
+    if sqlerrm <> 'This PostGIS administration API is restricted.' then raise; end if;
+  end;
+  -- Ordinary client traffic stays allowed.
+  foreach path in array array['/', '', '/projects', '/rpc/get_project_summary'] loop
+    foreach verb in array array['GET', 'POST', 'PATCH', 'DELETE'] loop
+      perform set_config('request.path', path, true);
+      perform set_config('request.method', verb, true);
+      perform public.openplan_check_data_api_request();
+    end loop;
+  end loop;
+end $$;
 set local role service_role;
+select set_config('request.path', '/spatial%5Fref%5Fsys', true), set_config('request.method', 'POST', true);
 select public.openplan_check_data_api_request();
 rollback;
