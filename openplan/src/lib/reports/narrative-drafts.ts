@@ -16,6 +16,7 @@
 
 import { createHash } from "node:crypto";
 import { getManagedRunModeDefinition } from "@/lib/models/run-modes";
+import { countyRunStageLabelFor } from "@/lib/models/county-onramp";
 import { type ProjectFundingSnapshot } from "@/lib/projects/funding";
 import { formatDateTime, titleize } from "@/lib/reports/catalog";
 import {
@@ -235,9 +236,9 @@ function citedCountyRunClaims(citedCountyRuns: ReportCitedCountyRun[]): string[]
       typeof validation?.warned === "number" ? `${validation.warned} warning` : null,
       typeof validation?.failed === "number" ? `${validation.failed} fail` : null,
     ].filter((part): part is string => Boolean(part));
-    return `County validation run "${run.run_name?.trim() || "County run"}" is at stage "${titleize(
-      run.stage || "unknown"
-    )}"${parts.length > 0 ? ` with validation checks: ${parts.join(", ")}` : " with no recorded validation summary"}.`;
+    return `County validation run "${run.run_name?.trim() || "County run"}" is at stage "${
+      countyRunStageLabelFor(run.stage) ?? titleize(run.stage || "unknown")
+    }"${parts.length > 0 ? ` with validation checks: ${parts.join(", ")}` : " with no recorded validation summary"}.`;
   });
 }
 

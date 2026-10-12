@@ -189,6 +189,7 @@ describe("/api/models/[modelId]/runs/[modelRunId]/artifacts/[artifactId]/downloa
     expect(res.status).toBeGreaterThanOrEqual(300);
     expect(res.status).toBeLessThan(400);
     expect(res.headers.get("location")).toContain("/object/sign/run-artifacts/");
+    expect(res.headers.get("cache-control")).toBe("private, no-store");
   });
 
   it.each(["model_validation_assessment.json", "model_comparison_basis.json", "validation_input_bundle.json"])(

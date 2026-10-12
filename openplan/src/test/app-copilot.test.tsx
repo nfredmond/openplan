@@ -222,9 +222,15 @@ describe("AppCopilot", () => {
 
     const chatCall = fetchMock.mock.calls.find((call) => String(call[0]).startsWith("/api/assistant/chat"));
     expect(chatCall).toBeDefined();
-    const chatBody = JSON.parse(String((chatCall![1] as RequestInit).body)) as { question: string; kind: string };
+    const chatBody = JSON.parse(String((chatCall![1] as RequestInit).body)) as {
+      question: string;
+      kind: string;
+      timeZone: string;
+    };
     expect(chatBody.question).toBe("Where should I focus this week?");
     expect(chatBody.kind).toBe("workspace");
+    // The server dates the agent's "today" in this zone, not in UTC.
+    expect(chatBody.timeZone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     expect(screen.queryByText(/no AI key is set up/)).not.toBeInTheDocument();
   });
 

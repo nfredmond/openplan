@@ -306,6 +306,13 @@ only; the synthetic minus-five-percent build parameter is a transmission check,
 not a project-effect prediction. The older outputs remain retained. No scientific
 validation claim is promoted by these execution checks.
 
+*Note, October 12, 2026:* the hosted project holds two ready four-output
+comparisons. `a939cf65-f8f0-4ec4-b8f5-8e3c948a2289`, cited above, was created
+at 05:03 UTC on October 11 and is the one the page checker opened.
+`1c097639-d635-4c83-960a-2e4c7e9e4454`, created at 05:33 UTC, is the snapshot
+recorded in the packet's `compatible-comparison-custody.json`. Both are
+prototype-only execution checks.
+
 Staged production build `84f3674` also reaches Ready. Its registry timestamp
 renders UTC correctly, but a direct browser reload still reports hydration error
 418 in the initial notification list. The inbox now uses the same UTC formatter.

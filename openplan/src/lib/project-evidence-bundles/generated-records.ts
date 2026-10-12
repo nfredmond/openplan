@@ -7,6 +7,7 @@ import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { loadSafetyCrashEvidence, readSafetyCrashEvidenceIngest, SAFETY_CRASH_EVIDENCE_INGEST_PROJECTION } from "@/lib/safety/crash-evidence";
 import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/project-corridor-record";
 import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
+import { countyRunDisplayableClaim, isModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { buildJurisdictionReadinessEvidenceFile } from "@/lib/jurisdiction-readiness/evidence-bundle";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import {
@@ -416,26 +417,47 @@ export async function loadProjectEvidenceGeneratedFiles(
       claim,
     ]),
   );
-  const claimDecisions = modelingEvidence.claims.map((claim) => ({
-    ...withoutPersonalIdentifiers(claim) as Record<string, unknown>,
-    evidenceDescriptor: buildEvidenceDescriptor({
-      identity: { table: "modeling_claim_decisions", id: claim.id },
-      source: {
-        kind: "modeling_claim_decision",
-        label: `Modeling claim decision: ${String(claim.track ?? "unknown track")}`,
-        citation: typeof claim.status_reason === "string" ? claim.status_reason : null,
-      },
-      asOfDate: typeof claim.decided_at === "string" ? claim.decided_at : null,
-      retrievedAt: generatedAt.toISOString(),
-      evidenceStatus: "modeled",
-      claimTier: typeof claim.claim_status === "string" ? claim.claim_status : null,
-      uncertainty: Array.isArray(claim.reasons_json) ? claim.reasons_json.map(String) : [],
-      limits: ["The recorded tier applies only to this exact run and track."],
-      revisionToken: typeof claim.updated_at === "string" ? claim.updated_at : typeof claim.decided_at === "string" ? claim.decided_at : null,
-      checksumSha256: null,
-      numericClaim: true,
-    }),
-  }));
+  const countyValidationById = new Map(
+    countyRuns.map((run) => [String(run.id), (run.validation_summary_json ?? null) as Record<string, unknown> | null]),
+  );
+  // The row is exported as stored. The descriptor's tier is what a reader acts
+  // on, so a county tier the run's rules-v4 basis does not support is lowered
+  // there (countyRunDisplayableClaim), never raised.
+  const describedClaim = (claim: Record<string, unknown>) => {
+    const reasons = Array.isArray(claim.reasons_json) ? claim.reasons_json.map(String) : [];
+    const stored = typeof claim.claim_status === "string" ? claim.claim_status : null;
+    if (claim.county_run_id == null || !isModelingClaimStatus(stored)) {
+      return { claimTier: stored, uncertainty: reasons };
+    }
+    const displayable = countyRunDisplayableClaim(
+      { claimStatus: stored, statusReason: typeof claim.status_reason === "string" ? claim.status_reason : null, reasons },
+      countyValidationById.get(String(claim.county_run_id)) ?? null,
+    );
+    return { claimTier: displayable.claimStatus, uncertainty: displayable.reasons };
+  };
+  const claimDecisions = modelingEvidence.claims.map((claim) => {
+    const described = describedClaim(claim);
+    return {
+      ...withoutPersonalIdentifiers(claim) as Record<string, unknown>,
+      evidenceDescriptor: buildEvidenceDescriptor({
+        identity: { table: "modeling_claim_decisions", id: claim.id },
+        source: {
+          kind: "modeling_claim_decision",
+          label: `Modeling claim decision: ${String(claim.track ?? "unknown track")}`,
+          citation: typeof claim.status_reason === "string" ? claim.status_reason : null,
+        },
+        asOfDate: typeof claim.decided_at === "string" ? claim.decided_at : null,
+        retrievedAt: generatedAt.toISOString(),
+        evidenceStatus: "modeled",
+        claimTier: described.claimTier,
+        uncertainty: described.uncertainty,
+        limits: ["The recorded tier applies only to this exact run and track."],
+        revisionToken: typeof claim.updated_at === "string" ? claim.updated_at : typeof claim.decided_at === "string" ? claim.decided_at : null,
+        checksumSha256: null,
+        numericClaim: true,
+      }),
+    };
+  });
   const validationResults = modelingEvidence.validation.map((validation) => {
     const claim = claimsByTarget.get(
       `${String(validation.model_run_id ?? "")}:${String(validation.county_run_id ?? "")}:${String(validation.track ?? "")}`,
@@ -452,7 +474,7 @@ export async function loadProjectEvidenceGeneratedFiles(
         asOfDate: typeof validation.evaluated_at === "string" ? validation.evaluated_at : null,
         retrievedAt: generatedAt.toISOString(),
         evidenceStatus: "modeled",
-        claimTier: typeof claim?.claim_status === "string" ? claim.claim_status : null,
+        claimTier: claim ? describedClaim(claim).claimTier : null,
         uncertainty: [],
         limits: typeof validation.detail === "string" ? [validation.detail] : [],
         revisionToken: typeof validation.created_at === "string" ? validation.created_at : null,

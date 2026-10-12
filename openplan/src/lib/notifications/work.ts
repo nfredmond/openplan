@@ -187,8 +187,12 @@ export type WorkNotificationRow = {
   body: string;
 };
 
-/** A candidate before the roster has been consulted. */
-type Candidate = WorkNotificationRow & { isOverdue: boolean };
+/**
+ * A candidate before the roster has been consulted. `needsReview` marks a
+ * closed award whose obligation deadline a person must check: it is listed for
+ * review, never counted as overdue or as due.
+ */
+type Candidate = WorkNotificationRow & { isOverdue: boolean; needsReview?: boolean };
 
 export type WorkSweepSourceOutcome = {
   /** Rows the database returned. */
@@ -578,8 +582,9 @@ const awardObligationsSource: SweepSource = {
       const dueOn = workDeadlineDueOn(asString(row.obligation_due_at));
       const recipient = asString(row.created_by);
       if (!workspaceId || !dueOn || !recipient) return [];
-      const isOverdue = isDeadlinePast(asString(row.obligation_due_at), now);
       const review = fundingAwardObligationReview(asString(row.spending_status), asString(row.closure_basis));
+      // A closed award may have met its deadline; the closure record cannot say.
+      const isOverdue = review ? false : isDeadlinePast(asString(row.obligation_due_at), now);
       return [
         {
           workspace_id: workspaceId,
@@ -594,6 +599,7 @@ const awardObligationsSource: SweepSource = {
             ? `Review recorded obligation deadline ${dueOn}. ${review}`
             : `${deadlineSentence("Award funds must be obligated", null, dueOn, isOverdue)} You recorded this award; obligation deadlines carry no assignee.`,
           isOverdue,
+          needsReview: Boolean(review),
         },
       ];
     }),
@@ -1230,14 +1236,17 @@ async function rosterForWorkspace(
   return null;
 }
 
-function digestSubject(overdue: number, upcoming: number, horizonDays: number): string {
+function digestSubject(overdue: number, upcoming: number, toReview: number, horizonDays: number): string {
+  const review = toReview > 0 ? `${toReview} closed ${toReview === 1 ? "award" : "awards"} to review` : null;
+  let due: string | null = null;
   if (overdue > 0 && upcoming > 0) {
-    return `OpenPlan: ${overdue} overdue, ${upcoming} due in the next ${horizonDays} days`;
+    due = `${overdue} overdue, ${upcoming} due in the next ${horizonDays} days`;
+  } else if (overdue > 0) {
+    due = `${overdue} overdue ${overdue === 1 ? "deadline" : "deadlines"}`;
+  } else if (upcoming > 0 || !review) {
+    due = `${upcoming} due in the next ${horizonDays} days`;
   }
-  if (overdue > 0) {
-    return `OpenPlan: ${overdue} overdue ${overdue === 1 ? "deadline" : "deadlines"}`;
-  }
-  return `OpenPlan: ${upcoming} due in the next ${horizonDays} days`;
+  return `OpenPlan: ${[due, review].filter(Boolean).join(", ")}`;
 }
 
 function digestBody(
@@ -1246,10 +1255,13 @@ function digestBody(
   horizonDays: number,
   appOrigin: string | null
 ): string {
+  const toReview = items.filter((item) => item.needsReview);
   const overdue = items.filter((item) => item.isOverdue);
-  const upcoming = items.filter((item) => !item.isOverdue);
+  const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview);
   const line = (item: Candidate) =>
     `  - ${item.title} — ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
+  const reviewLine = (item: Candidate) =>
+    `  - ${item.title}, obligation deadline ${formatWorkDeadlineDate(item.due_on) ?? item.due_on}`;
 
   const parts: string[] = [
     workspaceName
@@ -1263,10 +1275,18 @@ function digestBody(
   if (upcoming.length > 0) {
     parts.push(`Due in the next ${horizonDays} days (${upcoming.length}):`, ...upcoming.map(line), "");
   }
+  if (toReview.length > 0) {
+    parts.push(
+      `Closed awards to review (${toReview.length}):`,
+      ...toReview.map(reviewLine),
+      "Closing an award does not show whether this deadline was met. Check the award terms and obligation records.",
+      ""
+    );
+  }
   parts.push(
     appOrigin ? `See everything: ${appOrigin}/my-work` : "See everything on the My Work page in OpenPlan.",
     "",
-    `This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the next ${horizonDays} ${horizonDays === 1 ? "day" : "days"} or already overdue.`
+    `This is a once-a-day summary of deadlines recorded in OpenPlan. It is sent only when something is due within the next ${horizonDays} ${horizonDays === 1 ? "day" : "days"}, is overdue, or needs review.`
   );
   return parts.join("\n");
 }
@@ -1392,7 +1412,7 @@ export async function sweepWorkDeadlines(
     const write = await client
       .from("work_notifications")
       .upsert(
-        eligible.map(({ isOverdue: _isOverdue, ...row }) => row),
+        eligible.map(({ isOverdue: _isOverdue, needsReview: _needsReview, ...row }) => row),
         { onConflict: WORK_NOTIFICATION_IDEMPOTENCY_COLUMNS.join(","), ignoreDuplicates: true }
       )
       .select("subject_table, subject_id, recipient_user_id, due_on, workspace_id");
@@ -1456,17 +1476,19 @@ export async function sweepWorkDeadlines(
       continue;
     }
 
+    const toReview = items.filter((item) => item.needsReview).length;
     const overdue = items.filter((item) => item.isOverdue).length;
+    const upcoming = items.filter((item) => !item.isOverdue && !item.needsReview).length;
     // The cast is the repo's untyped-client convention (`service as
     // RosterServiceClient`): every Supabase client here is structural, and the
     // outbox helper declares the slice it needs rather than the whole client.
     const outcome = await enqueueEmail(client as unknown as Parameters<typeof enqueueEmail>[0], {
       campaignId: null,
       to: email,
-      subject: digestSubject(overdue, items.length - overdue, preference.advanceDays),
+      subject: digestSubject(overdue, upcoming, toReview, preference.advanceDays),
       text: digestBody(items, workspaceNames.names.get(workspaceId) ?? null, preference.advanceDays, appOrigin),
       template: "work_deadline_digest",
-      payload: { workspaceId, recipientUserId: recipientId, itemCount: items.length, overdue },
+      payload: { workspaceId, recipientUserId: recipientId, itemCount: items.length, overdue, toReview },
     });
     if (outcome.status === "sent") result.emailsDelivered += 1;
     else if (outcome.status === "skipped") result.emailsSkipped += 1;

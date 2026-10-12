@@ -32,6 +32,16 @@ including exit zero, and stops its sibling before returning. Operator signals
 stop both pollers normally. Existing stage ownership and reconciliation rules
 continue to govern interruption; restart is not permission to repeat a write.
 
+Each poller leases the stage it claimed through its heartbeat row, which renews
+every 30 seconds. On `SIGTERM` a poller stops claiming, records a held stage as
+interrupted by shutdown and exits within the supervisor's 20-second grace. At
+start and every five minutes, each poller marks its own running stages
+interrupted when no live worker has held them for 15 minutes. Interrupted stages
+stay `running` so the owner recovery decision applies; nothing is retried,
+failed or completed automatically. A deploy of this service interrupts any
+in-flight model run. ActivitySim heartbeats also report file growth under the
+run directory, separately from process liveness; a quiet run is never stopped.
+
 The October 10 installation reserves one replica in Railway us-west2, with at
 most two CPUs and 8 GB RAM. The workspace alerts at $25 and stops workloads at
 $40 monthly compute usage. That stop can interrupt a legitimate long run. It

@@ -86,10 +86,10 @@ def read_json_if_exists(path: Path) -> dict | None:
 
 
 def derive_stage(run_summary: dict | None, validation_summary: dict | None) -> str:
+    # "validated-screening" is retired and never produced. The old median-APE
+    # gate awarded it, and that gate is a diagnostic: what a run may claim is
+    # decided from its rules-v4 scientific outcome, not from its stage.
     if validation_summary:
-        status = ((validation_summary.get("screening_gate") or {}).get("status_label") or "").strip().lower()
-        if status == "bounded screening-ready":
-            return "validated-screening"
         return "validation-scaffolded"
     if run_summary:
         return "runtime-complete"

@@ -20,6 +20,7 @@ import {
 } from "./key-crypto";
 import { loadWorkspaceIntegrationKeys, runWithWorkspaceIntegrationKeys } from "./context";
 import { integrationProvider, type IntegrationProviderId } from "./providers";
+import { sharedAnthropicApiKey } from "./shared-ai-key";
 
 export type WorkspaceIntegrationKeyMetadata = {
   provider: IntegrationProviderId;
@@ -85,7 +86,7 @@ export async function storeWorkspaceIntegrationKey(args: {
       {
         workspace_id: args.workspaceId,
         provider: args.provider,
-        key_ciphertext: encryptIntegrationKey(trimmed),
+        key_ciphertext: encryptIntegrationKey(trimmed, { workspaceId: args.workspaceId }),
         key_last4: integrationKeyLast4(trimmed),
         configured_by: args.configuredBy,
         updated_at: new Date().toISOString(),
@@ -152,10 +153,10 @@ async function selectedTranslationKey(workspaceId: string, client: ServiceClient
     const row = data[0] as Record<string, unknown> | null;
     if (!row || row.workspace_id !== workspaceId || row.provider !== "anthropic" ||
       typeof row.key_ciphertext !== "string") throw new Error();
-    apiKey = decryptIntegrationKey(row.key_ciphertext);
+    apiKey = decryptIntegrationKey(row.key_ciphertext, { workspaceId });
     selectedKeyCiphertextHash = createHash("sha256").update(row.key_ciphertext).digest("hex");
   } else {
-    apiKey = process.env.ANTHROPIC_API_KEY?.trim() || null;
+    apiKey = sharedAnthropicApiKey();
   }
   if (!apiKey) throw new Error();
   return { apiKey, source, selectedKeyCiphertextHash };

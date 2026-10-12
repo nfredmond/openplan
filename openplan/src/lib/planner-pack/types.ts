@@ -136,11 +136,12 @@ export type AtpProjectApplication = {
   name: string;
   agency: string;
   cycle: string;
-  total_score: number;
-  safety_score: number;
-  equity_score: number;
-  climate_score: number;
-  feasibility_score: number;
+  /** Screening scores are null when project_scores.csv did not record them, never 0. */
+  total_score: number | null;
+  safety_score: number | null;
+  equity_score: number | null;
+  climate_score: number | null;
+  feasibility_score: number | null;
   sensitivity_flag: string;
   location_note: string;
   description: string;
@@ -163,7 +164,10 @@ export type AtpPortfolioSummary = {
   low_income_application_count: number;
   tribal_application_count: number;
   dac_share: number;
-  mean_total_score: number;
+  /** Applications with a recorded total score; the mean covers only these. */
+  scored_application_count: number;
+  /** Null when no application has a recorded total score. */
+  mean_total_score: number | null;
 };
 
 export type AtpGrantResult = {

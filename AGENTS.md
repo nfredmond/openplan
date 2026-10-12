@@ -154,8 +154,9 @@ Self-service recovery must not depend on Nathaniel. Verify documented restore
 procedures separately from representative database fixtures.
 
 Follow the [development release policy](docs/product/DEVELOPMENT_RELEASE_POLICY.md).
-OpenPlan has zero users as of September 7, 2026. Ship useful, honestly limited
-increments. The full twelve-journey assessment does not block every pre-v1 release;
+OpenPlan had zero users as of September 7, 2026. Public signup opened on the hosted
+installation on October 11, 2026; treat its accounts and workspaces as real user
+data. Ship useful, honestly limited increments. The full twelve-journey assessment does not block every pre-v1 release;
 retain its partial outcomes and require relevant evidence for each shipped claim.
 Nathaniel authorizes hosted operation on October 10, 2026. The
 [public cutover record](docs/ops/HOSTED_LIVE_2026-10-11.md) governs that installation's
@@ -169,15 +170,24 @@ OpenPlan is live at **https://openplan-zeta.vercel.app**. The Nat Ford website's
 That website has a separate repository and deployment; do not replace its homepage
 or DNS to change OpenPlan. Public signup requires confirmation email.
 
+- **Main is production.** Any commit that reaches `main` deploys: Vercel promotes
+  it once the seven required checks pass, and Railway rebuilds each service whose
+  watch paths it touches. A merge is a production deploy. Never merge or push to
+  `main` while the coordination file below shows a hold.
 - **Vercel:** the `openplan` project in the `natford` scope serves the web app.
-  GitHub `nfredmond/openplan` main feeds production, gated by CI. Check the actual
-  Git source, production alias, `/api/health` and bounded runtime logs before
-  declaring a deployment ready. A successful build can still be staged.
+  Check the actual Git source, production alias, `/api/health` and bounded
+  runtime logs before declaring a deployment ready. A successful build can still
+  be staged.
 - **Supabase:** OpenPlan uses project `lolckycpdjsgeejsmuzl` for database, Auth and
   private Storage. It belongs to the Pro organization and uses Micro compute.
   The Nat Ford website uses a different project, `bymadqabjvtwrfbkcded`; keep them
-  separate. The dated catch-up records 405 migrations. New schema changes need a
-  controlled, additive rollout; Vercel and Railway Git deploys do not apply them.
+  separate. The dated catch-up records 405 migrations. Git deploys do not apply
+  migrations. The agent that owns a schema change coordinates its rollout with
+  the other agents through the coordination file below; no separate approval
+  from Nathaniel is needed. Record the planned migration there first, then work
+  in this order: fresh database and Storage capture, apply the additive
+  migration, confirm it, merge the code that depends on it, then check the
+  route that uses it. Merging code before its migration breaks production.
 - **Railway:** project `9d7fbdc3-c370-41b5-8471-34dc128e718e` runs application queues,
   separate AequilibraE/ActivitySim processing, and OCR. Main deployment triggers
   respect CI and service watch paths. An unchanged service can retain an older
@@ -188,7 +198,9 @@ or DNS to change OpenPlan. Public signup requires confirmation email.
   Spam despite passing SPF, DKIM and DMARC; do not promise inbox placement.
 - **AI and cost:** only Nathaniel's synthetic hosted demo workspace has the
   encrypted Anthropic key and $5 monthly provider cap. Other workspaces supply
-  their own keys. The additional operating authorization is $50/month beyond
+  their own keys. Never set `ANTHROPIC_API_KEY` or `OPENPLAN_SHARED_AI_KEY` on a
+  hosted service: with public signup, a shared key bills every workspace. The
+  additional operating authorization is $50/month beyond
   existing Vercel and Supabase subscriptions. Promotional credits do not change
   that budget or authorize shared paid AI. Managed GTFS admission remains disabled.
 
@@ -196,15 +208,24 @@ Read the [demo AI and schema catch-up](docs/ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2
 [hosted recovery](openplan/docs/ops/HOSTED_RECOVERY.md),
 [self-hosting](openplan/docs/SELF_HOSTING.md) and
 [runbook](openplan/docs/ops/RUNBOOK.md) before operating this installation.
-Consult `$HOME/.local/state/openplan/COORDINATION.md` before any merge, and honor its
-current hold or explicit exception. Verify live platform state rather than treating
+Nathaniel's October 12, 2026 direction: merge every verified pull request to `main`
+autonomously, without waiting for his approval. Agents coordinate merges, holds
+and migration rollouts with each other through
+`$HOME/.local/state/openplan/COORDINATION.md`. Consult it before any merge or push
+to `main` and honor any hold posted there. Keep your own lane's section current:
+write it, amend it and delete stale lines rather than only appending. That file
+is the only place a hold is posted; the untracked `COORDINATION.md` in the
+canonical checkout is an older log. Verify live platform state rather than treating
 these dated settings or a prior agent's report as current acceptance evidence.
 The hosted relaunch does not establish complete v1 or scientific validation.
-The final multi-service backup has not itself been restored atomically; preserve
-the documented recovery limits and protected local custody.
+A daily encrypted offsite capture of the database and Storage runs on Railway
+(`workers/hosted-backup/DEPLOY.md`); its first capture restores into a disposable
+database. Captures are not atomic and do not include worker volumes; preserve the
+documented recovery limits and protected key custody.
 
-Keep one dependable main. Commit and push verified checkpoints, inspect GitHub
-CI separately, and preserve unrelated work. A push is not a passing release.
+Keep one dependable main. Commit and push verified checkpoints to branches, land
+them on `main` through pull requests, inspect GitHub CI separately, and preserve
+unrelated work. A push is not a passing release.
 Literal semver applies; user-visible capability generally bumps minor before v1.
 Release commits align changelog, package version, migrations and release-ordering
 checks; tag only when the declared evidence is satisfied. Documentation review

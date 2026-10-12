@@ -219,6 +219,10 @@ describe("module lane loaders", () => {
       { id: "opp-2", title: "Closing outside the window", opportunity_status: "open", decision_state: "pursue", closes_at: iso(20), decision_due_at: null, program_id: null, updated_at: iso(-2) },
       { id: "opp-3", title: "Overdue monitored decision", opportunity_status: "open", decision_state: "monitor", closes_at: iso(60), decision_due_at: iso(-3), program_id: null, updated_at: iso(-3) },
       { id: "opp-4", title: "Archived skip", opportunity_status: "archived", decision_state: "skip", closes_at: iso(2), decision_due_at: iso(-30), program_id: null, updated_at: iso(-4) },
+      // Closed eleven days ago with the status never updated: not closing soon
+      // on either surface (a live agent test on 2026-10-11 caught both
+      // counting it). It is still a monitored, undecided opportunity.
+      { id: "opp-5", title: "Close date passed, status still open", opportunity_status: "open", decision_state: "monitor", closes_at: iso(-11), decision_due_at: null, program_id: null, updated_at: iso(-5) },
     ];
 
     const supabase = createRecordingSupabase({
@@ -247,7 +251,7 @@ describe("module lane loaders", () => {
     // And both surfaces see the real pressure — agreement on zero proves nothing.
     expect(lane?.overdueDecision).toBe(1);
     expect(lane?.closingSoon).toBe(1);
-    expect(lane?.awaitingDecision).toBe(1);
+    expect(lane?.awaitingDecision).toBe(2);
   });
 
   it("invoicing: separates funder reimbursements from client receivables", async () => {
