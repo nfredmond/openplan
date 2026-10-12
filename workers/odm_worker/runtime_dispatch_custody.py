@@ -116,7 +116,7 @@ class Custody:
         private(root, True)
         with writer(root, deadline):
             self._check(request_id, deadline)
-            publish(root, 'receipt.json', json_bytes(value))
+            publish(root, 'receipt.json', json_bytes(value), json_limit=6*MAX_BYTES+1024*1024)
             self._check(request_id, deadline)
             return self.load(request_id, deadline=deadline)
 

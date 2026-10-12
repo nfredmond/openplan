@@ -72,6 +72,16 @@ class Checks(unittest.TestCase):
         self.intake.fetch = inspect;self.advance()
         self.assertEqual(self.read()['applicationJob']['created_by'], 'synthetic-original-actor')
 
+    def test_original_publication_uses_its_expanded_receipt_bound(self):
+        original = module.publish
+        def publication(*args, **kwargs):
+            with patch('retained_source.JSON_LIMIT', 1):
+                return original(*args, **kwargs)
+        with patch.object(module, 'publish', side_effect=publication):
+            with self.runtime.owner():
+                self.start();saved = self.custody.save(self.request['requestId'], self.payload, self.row)
+        self.assertEqual(saved['payloadText'].encode(), self.payload, 'Original publication must use its expanded receipt bound')
+
     def test_network_capture_receives_the_actual_shared_deadline(self):
         readings, deadlines = [], []
         original_clock = time.monotonic

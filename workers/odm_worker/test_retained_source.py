@@ -407,6 +407,22 @@ class Checks(unittest.TestCase):
             with self.assertRaisesRegex(ValueError,'Source custody metadata exceeds the supported size'):
                 retained_source.publish(self.destination,'another.json',b'{}\n')
 
+    def test_explicit_publication_limit_preserves_the_default(self):
+        self.prepare()
+        with patch('retained_source.JSON_LIMIT', 2):
+            with self.assertRaisesRegex(ValueError, '^Source custody metadata exceeds the supported size$'):
+                retained_source.publish(self.destination, 'default-limit.json', b'{}\n')
+            retained_source.publish(self.destination, 'explicit-limit.json', b'{}\n', json_limit=3)
+        self.assertEqual((self.destination/'explicit-limit.json').read_bytes(), b'{}\n', 'Explicit publication must use its declared bound')
+        self.assertFalse((self.destination/'default-limit.json').exists(), 'Explicit publication cannot widen the default')
+
+    def test_publication_limit_requires_a_positive_bounded_integer(self):
+        self.prepare()
+        for value in (False, 0, -1, retained_source.PUBLICATION_LIMIT+1, '3', float('inf'), 2.5):
+            with self.assertRaisesRegex(ValueError, '^Source custody publication limit must be a positive bounded integer$'):
+                retained_source.publish(self.destination, 'invalid-limit.json', b'', json_limit=value)
+        self.assertFalse((self.destination/'invalid-limit.json').exists())
+
     def test_missing_plan_in_complete_pack_refuses(self):
         self.prepare();(self.destination/'plan.json').rename(self.destination/'retained-original-plan')
         with self.assertRaisesRegex(ValueError,'Completed source custody has no preparation plan'):

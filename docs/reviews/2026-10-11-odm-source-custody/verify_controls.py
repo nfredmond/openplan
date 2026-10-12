@@ -104,6 +104,8 @@ def run(repo,out):
     add('numeric-float-metadata-equality','test_json_type_changes_do_not_rebind_plan',lambda v:replace(v,"encoded(row['imageryMetadata'], canonical=True) != encoded(metadata[index], canonical=True)","row['imageryMetadata'] != metadata[index]"),'ValueError not raised')
     add('unbounded-metadata-read-diagnostic','test_metadata_read_and_publication_size_bounds',lambda v:scoped(v,'read_json',guard('Source custody metadata exceeds the supported size')),'does not match','diagnostic_refusal')
     add('unbounded-metadata-publication','test_metadata_read_and_publication_size_bounds',lambda v:scoped(v,'publish',guard('Source custody metadata exceeds the supported size')),'ValueError not raised')
+    add('explicit-publication-bound-ignored','test_explicit_publication_limit_preserves_the_default',lambda v:replace(v,'bound = JSON_LIMIT if json_limit is None else json_limit','bound = JSON_LIMIT'),'Source custody metadata exceeds the supported size','diagnostic_refusal')
+    add('invalid-publication-bound-accepted','test_publication_limit_requires_a_positive_bounded_integer',lambda v:scoped(v,'publish',guard('Source custody publication limit must be a positive bounded integer')),'ValueError not raised')
     add('missing-completed-plan','test_missing_plan_in_complete_pack_refuses',guard('Completed source custody has no preparation plan'),'ValueError not raised')
     add('corrupt-slot-late-refusal','test_corrupt_slot_and_extra_object_refuse',guard('Retained source slot differs'),'does not match','diagnostic_refusal')
     add('extra-source-object','test_corrupt_slot_and_extra_object_refuse',guard('Retained source object mapping differs'),'ValueError not raised')

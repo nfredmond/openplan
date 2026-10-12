@@ -24,6 +24,7 @@ PLAN = 'openplan.odm-source-plan.v1'
 MANIFEST = 'openplan.odm-source-set.v1'
 CHUNK = 1024 * 1024
 JSON_LIMIT = 64 * 1024 * 1024
+PUBLICATION_LIMIT = 193 * 1024 * 1024
 
 
 def identity(info):
@@ -109,8 +110,11 @@ def read_json(root, name):
     return value
 
 
-def publish(root, name, payload):
-    if len(payload) > JSON_LIMIT:
+def publish(root, name, payload, *, json_limit=None):
+    bound = JSON_LIMIT if json_limit is None else json_limit
+    if type(bound) is not int or not 0 < bound <= PUBLICATION_LIMIT:
+        raise ValueError('Source custody publication limit must be a positive bounded integer')
+    if len(payload) > bound:
         raise ValueError('Source custody metadata exceeds the supported size')
     target = root/name
     if target.exists() or target.is_symlink():
