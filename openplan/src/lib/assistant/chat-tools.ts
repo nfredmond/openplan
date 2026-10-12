@@ -11,6 +11,7 @@ import { excerptPageLabel, retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge
 import {
   GRANT_PROGRAM_BUNDLES,
   listGrantProgramsWithBundle,
+  listStateAdministrationFor,
 } from "@/lib/grants/program-catalog";
 import { getReportPacketFreshness } from "@/lib/reports/catalog";
 import {
@@ -1687,6 +1688,8 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
           status: "ok",
           programCount: entries.length,
           note: "Static reference data. Cycle timing shifts — always tell the planner to verify against the official program page. The catalog is not filtered to this workspace's geography: name each program's jurisdiction when you cite it, and say plainly when a program is scoped somewhere the workspace does not work.",
+          stateAdministrationNote:
+            "A federal program's stateAdministration entries apply only to a workspace in that state. Elsewhere, the federal text applies.",
           programs: entries.map(({ program, bundle }) => ({
             key: program.key,
             name: program.name,
@@ -1701,6 +1704,17 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
             cycleNote: program.cycleNote,
             matchRequirement: program.matchRequirement,
             url: program.url,
+            // A federal entry names no state. Where a registered state runs the
+            // program, its own agency, cycle, match and page come with it, each
+            // labeled with that state, so they are never read as national.
+            stateAdministration: listStateAdministrationFor(program.key).map(({ jurisdiction, administration }) => ({
+              jurisdiction: jurisdiction.label,
+              jurisdictionSubdivision: jurisdiction.subdivision ?? null,
+              administeringAgency: administration.administeringAgency ?? null,
+              cycleNote: administration.cycleNote ?? null,
+              matchRequirement: administration.matchRequirement ?? null,
+              url: administration.url ?? null,
+            })),
           })),
         };
       },

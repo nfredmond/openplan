@@ -507,6 +507,31 @@ describe("buildAssistantChatTools", () => {
     expect(statePrograms[0].url).toMatch(/^https?:\/\//);
   });
 
+  it("get_grant_program_catalog gives federal programs in federal text, with each state's administration labeled", async () => {
+    const { tools } = buildTools();
+
+    const federal = await toolExecute(tools, "get_grant_program_catalog")({ level: "federal" }, CALL_OPTIONS);
+    const programs = federal.programs as Array<{
+      key: string;
+      administeringAgency: string;
+      cycleNote: string;
+      stateAdministration: Array<{ jurisdiction: string; jurisdictionSubdivision: string | null; administeringAgency: string | null }>;
+    }>;
+    const hsip = programs.find((program) => program.key === "hsip");
+
+    // The program itself is what any state's planner reads, so it names no state.
+    expect(hsip?.administeringAgency).not.toContain("Caltrans");
+    expect(hsip?.cycleNote).not.toContain("Caltrans");
+    // California's administration travels with it, labeled as California's.
+    expect(hsip?.stateAdministration).toEqual([
+      expect.objectContaining({
+        jurisdiction: "California",
+        jurisdictionSubdivision: "CA",
+        administeringAgency: "FHWA, administered by Caltrans Division of Local Assistance",
+      }),
+    ]);
+  });
+
   it("never issues a mutating supabase call from any read tool", async () => {
     const supabase = createSupabaseMock({ projects: [], reports: [], funding_opportunities: [] });
     const { tools } = buildTools({ supabase });

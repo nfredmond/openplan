@@ -21,6 +21,7 @@
  */
 
 import { GRANT_PROGRAM_BUNDLES } from "./registry";
+import { resolveGrantProgramForJurisdiction } from "./state-administration";
 import type {
   GrantProgramBundle,
   GrantProgramCatalogEntry,
@@ -128,8 +129,13 @@ export function describeGrantProgramCoverage(
     } satisfies GrantProgramBundleCoverage;
   });
 
+  // A federal program reads as the workspace's own state runs it, when that
+  // state is registered; otherwise in the federal text, which names no state.
   const programs = bundles.flatMap((bundle, index) =>
-    bundle.programs.map((program) => ({ program, bundle: bundleCoverage[index] }))
+    bundle.programs.map((program) => ({
+      program: resolveGrantProgramForJurisdiction(program, query, bundles),
+      bundle: bundleCoverage[index],
+    }))
   );
 
   const anyUnknown = bundleCoverage.some((bundle) => bundle.scope === "unknown_jurisdiction");
