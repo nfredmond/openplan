@@ -210,7 +210,10 @@ describe("county onramp primitives", () => {
     expect(proof.validationRows).toEqual(
       expect.arrayContaining([
         { label: "Recorded stage", value: "Count Check Complete" },
-        { label: "Screening gate", value: "bounded screening-ready" },
+        {
+          label: "Old count gate (diagnostic)",
+          value: "bounded screening-ready. Diagnostic only, not a validation result.",
+        },
         { label: "Median APE", value: "16.01%" },
       ])
     );

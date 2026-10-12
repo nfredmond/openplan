@@ -590,6 +590,19 @@ const LINKED_COUNTY_RUN_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
  * that names no run states the absence instead. So a test that wants evidence
  * must NAME the run, which is also the only way the product produces it.
  */
+/**
+ * Queue the loader's rules-v4 basis read for a county run that recorded a
+ * confirmed pass. Without it the stored screening tier is lowered to
+ * prototype-only (KI-2026-10-12-001); call it after the route's own
+ * county run read is queued.
+ */
+function countyRunBasisConfirmsPass() {
+  countyRunsMaybeSingleMock.mockResolvedValueOnce({
+    data: { basis_rules_version: 4, basis_outcome: "pass", basis_evidence_write: "recorded", basis_reasons: [] },
+    error: null,
+  });
+}
+
 function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
   reportMaybeSingleMock.mockResolvedValueOnce({
     data: {
@@ -1777,6 +1790,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",
@@ -1907,6 +1921,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",
@@ -1945,12 +1960,14 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedArtifact?.metadata_json?.sourceContext).toEqual(
       expect.objectContaining({
         modelingEvidenceCount: 1,
-        modelingEvidenceClaimStatuses: ["claim_grade_passed"],
+        // The stored row says claim_grade_passed; a confirmed rules-v4 pass
+        // supports screening grade at most, so that is what is shown.
+        modelingEvidenceClaimStatuses: ["screening_grade"],
         modelingEvidence: [
           expect.objectContaining({
             countyRunId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
             geographyLabel: "Nevada County explicit run",
-            claimStatus: "claim_grade_passed",
+            claimStatus: "screening_grade",
           }),
         ],
       })
@@ -2212,6 +2229,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       },
       error: null,
     });
+    countyRunBasisConfirmsPass();
     modelingClaimMaybeSingleMock.mockResolvedValueOnce({
       data: {
         track: "assignment",

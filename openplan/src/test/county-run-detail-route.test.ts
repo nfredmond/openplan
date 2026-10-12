@@ -293,7 +293,15 @@ describe("GET /api/county-runs/[countyRunId]", () => {
       { artifactType: "validation_scaffold_csv", path: "/tmp/scaffold.csv" },
       { artifactType: "validation_review_packet_md", path: "/tmp/review.md" },
     ]);
-    expect(payload.modelingEvidence.claimDecision.claimStatus).toBe("screening_grade");
+    // The stored row says screening_grade, but the run records no rules-v4
+    // outcome, so the tier is shown as prototype-only (KI-2026-10-12-001).
+    expect(payload.modelingEvidence.claimDecision.claimStatus).toBe("prototype_only");
+    expect(payload.modelingEvidence.claimDecision.statusReason).toMatch(
+      /^Not assessed: this run has no rules-v4 scientific outcome\./
+    );
+    expect(countyRunSelectMock).toHaveBeenCalledWith(
+      "basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+    );
     expect(payload.modelingEvidence.validationResults).toHaveLength(1);
     expect(payload.modelingEvidence.sourceManifests).toHaveLength(1);
   });

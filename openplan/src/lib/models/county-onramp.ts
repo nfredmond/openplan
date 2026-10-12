@@ -1,6 +1,11 @@
 import { z } from "zod";
 
 import {
+  countyRunScientificClaimBasis,
+  countyRunValidationFromBasisRow,
+  type CountyRunScientificBasisRow,
+} from "@/lib/models/evidence-backbone";
+import {
   LINK_VALIDATION_NOT_SUPPORTED_CAVEAT,
   bandIntrazonalShare,
 } from "@/lib/models/zone-resolution";
@@ -243,13 +248,38 @@ export function isPassingCountyRunGateStatus(
   if (!normalized) return false;
   // Fails CLOSED: an unrecognised status is not evidence.
   if (!COUNTY_RUN_PASSING_GATE_STATUSES.includes(normalized)) return false;
+  return countyRunZoneSupportsLinkComparison(intrazonalTripShare);
+}
+
+/**
+ * Whether a run's zone system lets a link-level count comparison settle
+ * anything. An unmeasured share (null, undefined, non-finite) leaves the
+ * question to the other checks; a measured coarse share refuses.
+ */
+function countyRunZoneSupportsLinkComparison(intrazonalTripShare: number | null | undefined): boolean {
   if (typeof intrazonalTripShare === "number" && Number.isFinite(intrazonalTripShare)) {
     // The share is stored as a fraction; the banding works in percent.
-    if (!bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation) {
-      return false;
-    }
+    return bandIntrazonalShare(intrazonalTripShare * 100, null).supportsLinkLevelValidation;
   }
   return true;
+}
+
+/**
+ * Whether a stored county run counts as passing modeling evidence for the
+ * model detail page's "No validated screening run on file" warning.
+ *
+ * Only a run whose rules-v4 scientific outcome is a confirmed pass can
+ * (`countyRunScientificClaimBasis`), and its zone system must still support a
+ * link comparison. The retired `validated-screening` stage and the old
+ * "bounded screening-ready" gate label are diagnostics and decide nothing
+ * here (KI-2026-10-12-001).
+ */
+export function countyRunRowSupportsScreeningClaim(
+  row: CountyRunScientificBasisRow & { run_summary_json?: { intrazonal_trip_share?: unknown } | null }
+): boolean {
+  if (!countyRunScientificClaimBasis(countyRunValidationFromBasisRow(row)).passed) return false;
+  const share = row.run_summary_json?.intrazonal_trip_share;
+  return countyRunZoneSupportsLinkComparison(typeof share === "number" ? share : null);
 }
 
 /**

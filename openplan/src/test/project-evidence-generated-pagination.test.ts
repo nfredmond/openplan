@@ -77,6 +77,27 @@ describe("generated project evidence complete reads", () => {
   const changed = await loadProjectEvidenceGeneratedFiles(client, project, new Date(project.updated_at));
   expect(changed.files.find(file => file.sourceId === "modeling_evidence")!.revisionToken).not.toBe(file.revisionToken);
  });
+ it("lowers a stored county tier its rules-v4 basis does not support, and keeps the row as stored", async () => {
+  // KI-2026-10-12-001: the descriptor tier is what a reader acts on, so it may
+  // not repeat a tier the retired 30 percent gate awarded. The exported row
+  // stays the stored record. The model lane is untouched.
+  const { client, tables } = fixture();
+  Object.assign(tables.county_runs[1], { validation_summary_json: { validation_rules_version: 4, model_validation_assessment: { scientific_outcome: "pass", validation_evidence_write: "recorded" } } });
+  Object.assign(tables.modeling_claim_decisions[0], { county_run_id: "county_runs-0", model_run_id: null, track: "assignment", claim_status: "screening_grade", reasons_json: ["Stored reason."] });
+  Object.assign(tables.modeling_claim_decisions[1], { county_run_id: "county_runs-1", model_run_id: null, track: "assignment", claim_status: "claim_grade_passed", reasons_json: [] });
+  Object.assign(tables.modeling_claim_decisions[2], { county_run_id: null, model_run_id: "model_runs-0", track: "assignment", claim_status: "screening_grade", reasons_json: [] });
+  Object.assign(tables.modeling_validation_results[0], { county_run_id: "county_runs-0", model_run_id: null, track: "assignment" });
+  const result = await loadProjectEvidenceGeneratedFiles(client, project, new Date(project.updated_at));
+  const modeling = JSON.parse(result.files.find(file => file.sourceId === "modeling_evidence")!.bytes.toString("utf8"));
+  const claims = modeling.claimDecisions;
+  expect(modeling.validationResults.find((row: { id: string }) => row.id === "modeling_validation_results-0").evidenceDescriptor.claimTier).toBe("prototype_only");
+  const byId = (id: string) => claims.find((claim: { id: string }) => claim.id === id);
+  expect(byId("modeling_claim_decisions-0").claim_status).toBe("screening_grade");
+  expect(byId("modeling_claim_decisions-0").evidenceDescriptor.claimTier).toBe("prototype_only");
+  expect(byId("modeling_claim_decisions-0").evidenceDescriptor.uncertainty[0]).toMatch(/^Not assessed: this run has no rules-v4 scientific outcome\./);
+  expect(byId("modeling_claim_decisions-1").evidenceDescriptor.claimTier).toBe("screening_grade");
+  expect(byId("modeling_claim_decisions-2").evidenceDescriptor.claimTier).toBe("screening_grade");
+ });
  it("refuses an export when an attempt custody page is unavailable", async () => {
   const { client } = fixture("model_attempt_instrument_custody");
   await expect(loadProjectEvidenceGeneratedFiles(client, project, new Date(project.updated_at))).rejects.toThrow("Project-linked attempt instrument custody could not be read");

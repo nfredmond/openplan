@@ -395,6 +395,66 @@ export function countyRunScientificClaimBasis(
   };
 }
 
+/**
+ * The four facts `countyRunScientificClaimBasis` reads, projected straight out
+ * of `county_runs.validation_summary_json` as `basis_rules_version`,
+ * `basis_outcome`, `basis_evidence_write` and `basis_reasons`. JSON paths keep
+ * the read bounded: the assessment also carries every observation row, and none
+ * of that is needed to decide a tier. Each reader writes the projection as a
+ * literal so the projection guards can check it.
+ */
+export type CountyRunScientificBasisRow = {
+  basis_rules_version?: unknown;
+  basis_outcome?: unknown;
+  basis_evidence_write?: unknown;
+  basis_reasons?: unknown;
+};
+
+/** Rebuilds the validation-summary shape `countyRunScientificClaimBasis` reads from the projected row. */
+export function countyRunValidationFromBasisRow(
+  row: CountyRunScientificBasisRow | null | undefined
+): Record<string, unknown> | null {
+  if (!row) return null;
+  const hasAssessment = row.basis_outcome != null || row.basis_evidence_write != null;
+  return {
+    validation_rules_version: row.basis_rules_version ?? null,
+    ...(hasAssessment
+      ? {
+          model_validation_assessment: {
+            scientific_outcome: row.basis_outcome ?? null,
+            validation_evidence_write: row.basis_evidence_write ?? null,
+            reasons: Array.isArray(row.basis_reasons) ? row.basis_reasons : [],
+          },
+        }
+      : {}),
+  };
+}
+
+/**
+ * The tier a reader may show for a STORED county-run claim decision.
+ *
+ * Rows written before KI-2026-10-12-001 was fixed carry tiers the retired
+ * 30 percent gate awarded. Stored data is not rewritten, so every reader passes
+ * the stored tier through here. A tier above what the run's rules-v4 basis
+ * supports (screening grade on a confirmed pass, prototype-only otherwise) is
+ * lowered, with the basis reason first. A tier is never raised.
+ */
+export function countyRunDisplayableClaim(
+  stored: { claimStatus: ModelingClaimStatus; statusReason: string | null; reasons: string[] },
+  validation: Record<string, unknown> | null | undefined
+): { claimStatus: ModelingClaimStatus; statusReason: string | null; reasons: string[] } {
+  const basis = countyRunScientificClaimBasis(validation);
+  const ceiling: ModelingClaimStatus = basis.passed ? "screening_grade" : "prototype_only";
+  if (MODELING_CLAIM_STATUS_RANK[stored.claimStatus] <= MODELING_CLAIM_STATUS_RANK[ceiling]) {
+    return stored;
+  }
+  return {
+    claimStatus: ceiling,
+    statusReason: basis.reason,
+    reasons: uniqueStrings([basis.reason, ...stored.reasons]),
+  };
+}
+
 function validationResult({
   metricKey,
   metricLabel,
@@ -868,18 +928,44 @@ export async function loadCountyRunModelingEvidence({
         decided_at: string | null;
       }
     | null;
-  const claimDecision: ModelingEvidenceSnapshot["claimDecision"] = claimRow
-    ? {
-        track: claimRow.track,
-        claimStatus: claimRow.claim_status,
-        statusReason: claimRow.status_reason,
-        reasons: Array.isArray(claimRow.reasons_json)
-          ? claimRow.reasons_json.filter((reason): reason is string => typeof reason === "string")
-          : [],
-        validationSummary: claimRow.validation_summary_json,
-        decidedAt: claimRow.decided_at,
-      }
+  // A stored tier above prototype-only is shown only as far as the run's
+  // rules-v4 basis supports it (countyRunDisplayableClaim). One bounded read,
+  // made only when there is a tier to check.
+  let basisValidation: Record<string, unknown> | null = null;
+  if (claimRow && claimRow.claim_status !== "prototype_only") {
+    const basisResult = await supabase
+      .from("county_runs")
+      .select(
+        "basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+      )
+      .eq("id", countyRunId)
+      .maybeSingle();
+    if (basisResult.error) {
+      return { evidence: null, error: evidenceLoadError(basisResult.error) };
+    }
+    basisValidation = countyRunValidationFromBasisRow(basisResult.data as CountyRunScientificBasisRow | null);
+  }
+
+  const storedReasons = Array.isArray(claimRow?.reasons_json)
+    ? claimRow.reasons_json.filter((reason): reason is string => typeof reason === "string")
+    : [];
+  const displayable = claimRow
+    ? countyRunDisplayableClaim(
+        { claimStatus: claimRow.claim_status, statusReason: claimRow.status_reason, reasons: storedReasons },
+        basisValidation
+      )
     : null;
+  const claimDecision: ModelingEvidenceSnapshot["claimDecision"] =
+    claimRow && displayable
+      ? {
+          track: claimRow.track,
+          claimStatus: displayable.claimStatus,
+          statusReason: displayable.statusReason ?? claimRow.status_reason,
+          reasons: displayable.reasons,
+          validationSummary: claimRow.validation_summary_json,
+          decidedAt: claimRow.decided_at,
+        }
+      : null;
 
   const sourceManifests = ((sourcesResult.data ?? []) as Array<{
     id: string;

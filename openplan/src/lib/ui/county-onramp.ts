@@ -186,7 +186,14 @@ export function buildCountyRunManifestProofSummary(input: {
 
   const validationRows: CountyRunManifestProofRow[] = [
     { label: "Recorded stage", value: stageLabel },
-    { label: "Screening gate", value: validationStatusLabel ?? "No screening-gate status recorded yet." },
+    // The old count gate is a diagnostic (KI-2026-10-12-001); its verdict is
+    // shown as one, never as a pass.
+    {
+      label: "Old count gate (diagnostic)",
+      value: validationStatusLabel
+        ? `${validationStatusLabel}. Diagnostic only, not a validation result.`
+        : "No count-gate result recorded yet.",
+    },
     ...(formatKnownNumber(metrics.medianApe)
       ? [{ label: "Median APE", value: `${formatKnownNumber(metrics.medianApe)}%` }]
       : []),
