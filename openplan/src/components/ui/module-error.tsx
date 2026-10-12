@@ -74,7 +74,7 @@ export function ModuleError({
 
   return (
     <Container className={Container === "main" ? "mx-auto max-w-2xl px-6 py-16" : "px-6 py-8"}>
-      <div role="alert" className="max-w-2xl space-y-3" data-testid="module-error">
+      <div role="alert" className="max-w-2xl space-y-3" data-testid="page-load-error">
         <h1
           ref={headingRef}
           tabIndex={-1}
