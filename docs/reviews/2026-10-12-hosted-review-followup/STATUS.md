@@ -63,16 +63,16 @@ Findings from the journey:
 | M-5 "fresh" items on older builds | Date-labeled: the OCR evidence ran on `8e721db` and the worker delivery evidence in the a873b era. No current-build rerun. | packet `SUPERSEDED_2026-10-12.md` |
 | M-6 generated URLs reachable | Confirmed, open: needs Vercel dashboard. See below. | |
 | M-7 cost limit unproved | Partly recorded, open: needs dashboards. See below. | |
-| M-8 rate limiter fails open | Fixed in code, PR 248: chat reserves usage before dispatch; fails closed when the shared key pays. The check and insert are not atomic. | `openplan/src/lib/runtime/ai-rate-limit.ts` |
-| M-9 "today" is UTC | Fixed in code, PR 248: the browser's validated IANA zone, else UTC with that stated. Workspaces store no zone. | `openplan/src/lib/work/deadlines.ts` |
-| M-10 one-character edit accepts draft | Fixed in code, PR 248: each flagged sentence must be reworded or removed (422 otherwise) | narrative-draft route |
+| M-8 rate limiter fails open | Fixed, PR 248 (merged as `76af0b4`): chat reserves usage before dispatch; fails closed when the shared key pays. The check and insert are not atomic. | `openplan/src/lib/runtime/ai-rate-limit.ts` |
+| M-9 "today" is UTC | Fixed, PR 248 (merged as `76af0b4`): the browser's validated IANA zone, else UTC with that stated. Workspaces store no zone. | `openplan/src/lib/work/deadlines.ts` |
+| M-10 one-character edit accepts draft | Fixed, PR 248 (merged as `76af0b4`): each flagged sentence must be reworded or removed (422 otherwise) | narrative-draft route |
 | M-11 rollback target predates schema | Fixed in docs | [hosted recovery](../../../openplan/docs/ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app) |
-| L-1 provider text on sign-in | Fixed in code, PR 246 | `openplan/src/lib/auth/link-errors.ts` |
+| L-1 provider text on sign-in | Fixed, PR 246 (merged as `4635b8d`) | `openplan/src/lib/auth/link-errors.ts` |
 | L-2 loose CSP | `connect-src` and `img-src` pinned, PR 246. `'unsafe-inline' 'unsafe-eval'` in `script-src` remain; a nonce-based policy is separate work. | `openplan/next.config.ts` |
-| L-3 subscribe leak | Fixed in code, PR 246 | subscribe route |
-| L-4 signed-link redirects cacheable | Fixed in code, PR 248: seven routes use `signedStorageRedirect` (`private, no-store`), with a guard | `openplan/src/lib/http/signed-redirect.ts` |
-| L-5 key ciphertext not bound | Fixed in code, PR 248: new saves write `v3` with the workspace ID as AAD; `v1` and `v2` still read; an old `v2` row stays unbound until re-saved | `openplan/src/lib/integrations/key-crypto.ts` |
-| L-6 worker shutdown signal | Fixed in code, PR 249: `setpriv` keeps the supervisor as PID 1; local Docker showed `runuser` killing it after about 2 seconds | `workers/hosted-node/Dockerfile` |
+| L-3 subscribe leak | Fixed, PR 246 (merged as `4635b8d`) | subscribe route |
+| L-4 signed-link redirects cacheable | Fixed, PR 248 (merged as `76af0b4`): seven routes use `signedStorageRedirect` (`private, no-store`), with a guard | `openplan/src/lib/http/signed-redirect.ts` |
+| L-5 key ciphertext not bound | Fixed, PR 248 (merged as `76af0b4`): new saves write `v3` with the workspace ID as AAD; `v1` and `v2` still read; an old `v2` row stays unbound until re-saved | `openplan/src/lib/integrations/key-crypto.ts` |
+| L-6 worker shutdown signal | Fixed, PR 249 (merged as `eed8580`; the Railway application-workers image on `7fe78d3` started all seven pollers): `setpriv` keeps the supervisor as PID 1; local Docker showed `runuser` killing it after about 2 seconds | `workers/hosted-node/Dockerfile` |
 | L-7 Railway gaps | Watch paths recorded below; stale services await Nathaniel | |
 | L-8 narrow equivalence proofs | No change. The review's full-tree diff found nothing escaped. | |
 | L-9 route checker absent | Located and hashed; stays private because it reads QA credentials | packet `SUPERSEDED_2026-10-12.md` |
@@ -80,7 +80,7 @@ Findings from the journey:
 | L-11 stale packet records | Marked superseded in place | packet `SUPERSEDED_2026-10-12.md` |
 | L-12 stale figures in HOSTED_LIVE | Correction block added; `docs/README.md` routes newest first | `docs/ops/HOSTED_LIVE_2026-10-11.md` |
 | L-13 "zero users" | Closed. AGENTS.md now says public signup opened October 11 and accounts are real user data. | `AGENTS.md` |
-| L-14 comparison badge | Fixed in code, PR 248: each method header shows the weaker recorded tier, or "Claim tier not recorded" | guided comparison panel |
+| L-14 comparison badge | Fixed, PR 248 (merged as `76af0b4`): each method header shows the weaker recorded tier, or "Claim tier not recorded" | guided comparison panel |
 | L-15 comparison IDs | Both exist and are ready; note added | `docs/ops/HOSTED_RELAUNCH_2026-10-10.md` |
 
 ## Read-only platform checks, October 12
