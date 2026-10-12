@@ -190,7 +190,7 @@ describe("/api/reports/[reportId]/narrative-draft/[draftId]", () => {
     expect(updateMock).not.toHaveBeenCalled();
   });
 
-  it("accepts operator-EDITED text regardless of grounding — it becomes operator-authored", async () => {
+  it("accepts operator-EDITED text once the flagged sentence is removed; it becomes operator-authored", async () => {
     installClient(draftRow({ grounding_json: groundingJson({ fullyGrounded: false }) }));
 
     const edited = "The project is in design. Funding details are being finalized with the board.";
@@ -207,6 +207,60 @@ describe("/api/reports/[reportId]/narrative-draft/[draftId]", () => {
         accepted_by: USER_ID,
       })
     );
+  });
+
+  describe("each flagged sentence must be reworded or removed", () => {
+    // Independent review M-10 (2026-10-11): any change to the text counted as
+    // an operator edit, so one changed character anywhere accepted a draft
+    // whose flagged sentence still stood word for word.
+    async function acceptEdited(edited: string, grounding = groundingJson({ fullyGrounded: false })) {
+      installClient(draftRow({ grounding_json: grounding }));
+      return patchDraft(patchRequest({ action: "accept", acceptedMarkdown: edited }), routeContext());
+    }
+
+    it.each([
+      ["a one-character edit to another sentence", "The project is in design! The committed total is $200,000."],
+      ["a change of case, spacing and punctuation only", "The project is in design.\n\nthe committed  total is $200,000"],
+      ["the flagged sentence joined to another", "The project is in design and the committed total is $200,000, per the board."],
+    ])("refuses %s, naming the unchanged sentence", async (_label, edited) => {
+      const response = await acceptEdited(edited);
+
+      expect(response.status).toBe(422);
+      const payload = (await response.json()) as { error: string; unchangedFlaggedSentences: string[] };
+      expect(payload.error).toContain("1 flagged sentence is unchanged");
+      expect(payload.unchangedFlaggedSentences).toEqual(["The committed total is $200,000."]);
+      expect(updateMock).not.toHaveBeenCalled();
+    });
+
+    it("accepts the edit once the flagged sentence is reworded", async () => {
+      const edited = "The project is in design. The committed total awaits board action.";
+      const response = await acceptEdited(edited);
+
+      expect(response.status).toBe(200);
+      expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "accepted", accepted_markdown: edited }));
+    });
+
+    it("leaves an edit to a fully grounded draft alone", async () => {
+      const edited = "The project is in final design. The committed total is $200,000.";
+      const response = await acceptEdited(edited, groundingJson({ fullyGrounded: true }));
+
+      expect(response.status).toBe(200);
+      expect(updateMock).toHaveBeenCalledWith(expect.objectContaining({ accepted_markdown: edited }));
+    });
+
+    it("treats every sentence as unverified when the faithfulness check never ran", async () => {
+      const unchecked = groundingJson({ fullyGrounded: true, faithfulnessChecked: false });
+
+      const partly = await acceptEdited("The project is in final design. The committed total is $200,000.", unchecked);
+      expect(partly.status).toBe(422);
+      expect(((await partly.json()) as { unchangedFlaggedSentences: string[] }).unchangedFlaggedSentences).toEqual([
+        "The committed total is $200,000.",
+      ]);
+
+      updateMock.mockClear();
+      const rewritten = await acceptEdited("The project is in final design. Funding is still being assembled.", unchecked);
+      expect(rewritten.status).toBe(200);
+    });
   });
 
   it("dismisses a draft without touching the accepted fields", async () => {

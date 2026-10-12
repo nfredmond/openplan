@@ -90,6 +90,7 @@ export type AssistantQuickLinkExecuteAction =
       programId?: string;
       projectId?: string;
       title: string;
+      closesAt?: string;
       postActionWorkflowId?: string;
       postActionPrompt?: string;
       postActionPromptLabel?: string;

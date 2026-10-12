@@ -193,6 +193,24 @@ Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
+The Planner Agent can now set a funding opportunity's closing date when it
+proposes the record. Before, a planner who gave it a due date had to enter the
+date again on the record. The date is part of what the planner approves; a
+request carrying a different date is refused.
+
+Corridor crash density now divides by every year the crash source answered,
+including years with no crash in the study area. It divided by the years that
+returned a crash, so an empty year raised the annual rate: a downtown test area
+read a third too high, and one crash in four years read as one a year. The run
+summary also states the non-fatal injury crash count, which the Planner Agent
+reads; without it the agent said injury crashes were not recorded.
+
+RTP document extraction now returns project costs. The prompt told the model
+that a figure's exact digits must appear in its quote, so it left out costs a
+plan prints as "$24 million" rather than risk losing the project row. The
+prompt now states the rule the checker applies: "$24 million", "$24M" and
+"24,000,000" are the same figure.
+
 ## 0.68.0 (2026-10-09)
 
 This development version includes land-use and engagement workflows, model

@@ -9,6 +9,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { loadAssistantContext } from "@/lib/assistant/context";
 import {
   ASSISTANT_CHAT_MAX_KB_EXCERPTS,
+  assistantToday,
   buildAssistantChatSystemPrompt,
 } from "@/lib/assistant/chat-context";
 import { buildAssistantChatTools, createChatToolBudget } from "@/lib/assistant/chat-tools";
@@ -17,7 +18,7 @@ import {
   estimateAnthropicCostUsd,
 } from "@/lib/ai/cost-threshold";
 import { retrieveKnowledgeBaseExcerpts } from "@/lib/knowledge-base/retrieval";
-import { checkAiUsageRateLimit, recordAiUsageEvent } from "@/lib/runtime/ai-rate-limit";
+import { reserveAiUsage } from "@/lib/runtime/ai-rate-limit";
 import { defaultClaudeModelId } from "@/lib/ai/model-policy";
 
 const ASSISTANT_CHAT_MAX_BODY_BYTES = BODY_LIMITS.normalJson;
@@ -53,6 +54,8 @@ const requestSchema = z.object({
   baselineRunId: z.string().uuid().nullable().optional(),
   question: z.string().trim().min(1).max(2000),
   history: z.array(historyEntrySchema).max(ASSISTANT_CHAT_MAX_HISTORY_ENTRIES).nullable().optional(),
+  // The browser's IANA zone; validated by Intl before use, never quoted raw.
+  timeZone: z.string().max(100).nullable().optional(),
 });
 
 function resolveAssistantChatModelId(): string {
@@ -121,7 +124,15 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: "ai_offline" }, { status: 503 });
       }
       if (context.workspace.id) {
-        const rateLimit = await checkAiUsageRateLimit(context.workspace.id);
+        // Counted before dispatch: the provider bills a stream the planner
+        // closes mid-reply, so counting on finish missed those calls.
+        const rateLimit = await reserveAiUsage({
+          workspaceId: context.workspace.id,
+          bucketKey: "assistant_chat",
+          eventKey: "assistant_chat_reply",
+          sourceRoute: "/api/assistant/chat",
+          metadataJson: { model: resolveAssistantChatModelId() },
+        });
         if (!rateLimit.allowed) {
           audit.warn("assistant_chat_rate_limited", {
             workspaceId: context.workspace.id,
@@ -145,7 +156,7 @@ export async function POST(request: NextRequest) {
         limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
       });
       const systemPrompt = buildAssistantChatSystemPrompt(context, {
-        today: new Date().toISOString().slice(0, 10),
+        ...assistantToday(new Date(), parsed.data.timeZone),
         knowledgeBaseExcerpts,
       });
       // Drop any leading assistant turns so the forwarded conversation always
@@ -205,17 +216,6 @@ export async function POST(request: NextRequest) {
             toolCallsUsed: budget.usedCalls,
             durationMs: Date.now() - startedAt,
           });
-          // Fire-and-forget spend metering: the stream finished, so the model
-          // call succeeded — count it against the workspace's AI allowance.
-          if (context.workspace.id) {
-            void recordAiUsageEvent({
-              workspaceId: context.workspace.id,
-              bucketKey: "assistant_chat",
-              eventKey: "assistant_chat_reply",
-              sourceRoute: "/api/assistant/chat",
-              metadataJson: { model: modelId },
-            });
-          }
         },
       });
 

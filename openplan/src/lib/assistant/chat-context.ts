@@ -8,6 +8,7 @@ import { excerptPageLabel, type KnowledgeBaseExcerpt } from "@/lib/knowledge-bas
 import { KB_OCR_PROVENANCE_NOTICE } from "@/lib/knowledge-base/ocr-availability";
 import { FUNDING_CLOSING_SOON_WINDOW_DAYS } from "@/lib/operations/funding-decision-status";
 import { formatMoney } from "@/lib/money/format";
+import { calendarDateInTimeZone, validTimeZone } from "@/lib/work/deadlines";
 
 /**
  * Pure serialization of an RLS-scoped AssistantContext into a compact,
@@ -532,17 +533,41 @@ export function renderKnowledgeBaseExcerptLines(excerpts: KnowledgeBaseExcerpt[]
 }
 
 /**
+ * Today's date for the planner asking. Workspaces record no time zone, so the
+ * browser's reported zone is used when `Intl` accepts it; otherwise the UTC
+ * date. The UTC date runs a day ahead of the Americas every evening, which is
+ * how a planner was told at 5 p.m. that a deadline due that day had passed.
+ */
+export function assistantToday(now: Date, requestedTimeZone?: string | null): { today: string; timeZone: string | null } {
+  const timeZone = validTimeZone(requestedTimeZone);
+  return timeZone
+    ? { today: calendarDateInTimeZone(now, timeZone), timeZone }
+    : { today: now.toISOString().slice(0, 10), timeZone: null };
+}
+
+/**
  * The line that tells the model what day it is. Without it the model dates
  * itself from training and called a funding call that closed eleven days
  * earlier "still open for about three more weeks" (live test, 2026-10-11).
+ * A deadline dated today stays open: most records carry a date, not a close
+ * time.
  */
-export function assistantTodayLine(today: string): string {
-  return `TODAY: ${today} (UTC calendar date). Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming.`;
+export function assistantTodayLine(today: string, timeZone: string | null = null): string {
+  const sameDay = "A deadline dated today is still open unless its recorded close time has passed.";
+  if (timeZone) {
+    return `TODAY: ${today} (calendar date in ${timeZone}, the planner's time zone). Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming. ${sameDay}`;
+  }
+  return `TODAY: ${today} (UTC calendar date). The planner's time zone is not known. Compare every date you report with today: a deadline, close date or due date before today has passed, so say it has passed and never call it upcoming, except that one dated the day before today may still be open where the planner is, so say it may have passed. ${sameDay}`;
 }
 
 export function buildAssistantChatSystemPrompt(
   context: AssistantContext,
-  options: { today: string; maxContextChars?: number; knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[] }
+  options: {
+    today: string;
+    timeZone?: string | null;
+    maxContextChars?: number;
+    knowledgeBaseExcerpts?: KnowledgeBaseExcerpt[];
+  }
 ): string {
   const maxContextChars = options.maxContextChars ?? ASSISTANT_CHAT_CONTEXT_MAX_CHARS;
   const lines = buildAssistantChatContextLines(context);
@@ -567,7 +592,7 @@ export function buildAssistantChatSystemPrompt(
 
   const sections = [
     ASSISTANT_CHAT_INSTRUCTIONS,
-    assistantTodayLine(options.today),
+    assistantTodayLine(options.today, options.timeZone ?? null),
     "",
     "WORKSPACE CONTEXT (RLS-scoped, current surface):",
     ...kept.map((line) => `- ${line}`),
