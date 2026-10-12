@@ -112,3 +112,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-url-transport/native_recovery.py \
             --out "$RUNNER_TEMP/odm-url-transport-native"
+      - name: Original URL intake settings harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-url-intake-controls"
+      - name: Interrupted owned URL intake and original settings recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-runtime-url-intake-native"

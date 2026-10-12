@@ -85,6 +85,8 @@ The [October 11 retained aerial URL source candidate](reviews/2026-10-11-odm-url
 
 The [October 11 supervised aerial URL source candidate](reviews/2026-10-11-odm-url-transport/STATUS.md) stops original network intake on deadline, cancellation or abrupt owner exit. Available loopback redirect targets, local TLS, 33 tests/59 controls and actual interrupted two-root recovery pass. Original source receipts prevent refetch. Public network, live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Preserve the main merge hold.
 
+The [October 11 original aerial URL intake candidate](reviews/2026-10-11-odm-runtime-url-intake/STATUS.md) saves supplied original settings before fetch and source mapping before preparation. All 39 tests/56 controls and actual interrupted HTTP recovery pass. Recovery keeps original actor/engine/options and can replay completed preparation without the download root. Missing original records or bytes hold without replacement or refetch. Live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Main merges stay held.
+
 
 The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 

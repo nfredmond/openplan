@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Original URL intake settings harmless and targeted controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-url-intake-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "a3d799ff5241b105921041641cba1c834d17d09039d7825c573248c602e9f9a6"
+  },
+  {
+    "name": "Interrupted owned URL intake and original settings recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-runtime-url-intake-native\"\n",
+    "exit": 0,
+    "workflowSha256": "a3d799ff5241b105921041641cba1c834d17d09039d7825c573248c602e9f9a6"
+  }
+]
