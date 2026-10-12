@@ -96,3 +96,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-draft-http/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-draft-http-controls"
+      - name: Original URL source harmless and targeted fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-source-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-source-controls"
+      - name: Interrupted URL source and two stopped-root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-source-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-url-source-native"

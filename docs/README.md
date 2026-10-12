@@ -81,6 +81,8 @@ The [October 11 owned aerial draft candidate](reviews/2026-10-11-odm-runtime-dra
 
 The [October 11 supervised aerial HTTP candidate](reviews/2026-10-11-odm-draft-http/STATUS.md) adds one original init/upload transport with streaming, deadline, cancellation and parent-lifetime ownership. It preserves unresolved effects and holds commit. Native proof caught and corrected initialization metadata loss. All 31 tests/47 controls, 18 actual-CI suites and pinned-engine capture/restore checks pass. Fourteen nested documentation tests and the direction check pass; live authority, URL intake, processing and full worker recovery remain open. Main merges remain held.
 
+The [October 11 retained aerial URL source candidate](reviews/2026-10-11-odm-url-source-custody/STATUS.md) saves original complete source bytes before owned preparation, with immutable context, slot receipts and bounded orphan attempts. Forty tests/48 controls and actual interrupted two-root recovery pass. Completed receipts prevent refetch and corrupt completed bytes refuse. Supervised network transport, live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Preserve the main merge hold.
+
 
 The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 
