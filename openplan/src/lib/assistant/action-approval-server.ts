@@ -34,6 +34,15 @@ export const assistantApprovalActionSchema = z.discriminatedUnion("kind", [
     programId: z.string().optional(),
     projectId: z.string().optional(),
     title: z.string().min(1),
+    // The route's own closesAt format. Without it a planner who gave the agent
+    // a due date had to type it again on the record (2026-10-11 live test).
+    closesAt: z
+      .string()
+      .datetime()
+      .optional()
+      .describe(
+        "When applications close, as an ISO 8601 UTC timestamp. Only a date the planner or a cited source gave. If only a date is known, write that date at 12:00:00Z so it shows as the same calendar day in every US time zone, and tell the planner the closing time still needs confirming."
+      ),
     postActionWorkflowId: z.string().optional(),
     postActionPrompt: z.string().optional(),
     postActionPromptLabel: z.string().optional(),

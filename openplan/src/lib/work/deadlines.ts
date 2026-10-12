@@ -99,6 +99,32 @@ export function isDeadlinePast(dateInput: string | null | undefined, now: Date):
 }
 
 /**
+ * A browser-reported IANA time zone in its canonical spelling, or null when the
+ * value is missing or `Intl` rejects it. Only the canonical name leaves this
+ * function, so a caller can quote it without quoting what the client sent.
+ */
+export function validTimeZone(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    return new Intl.DateTimeFormat("en-US", { timeZone: value }).resolvedOptions().timeZone;
+  } catch {
+    return null;
+  }
+}
+
+/** The calendar date, `YYYY-MM-DD`, in a time zone {@link validTimeZone} accepted. */
+export function calendarDateInTimeZone(now: Date, timeZone: string): string {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(now);
+  const part = (type: Intl.DateTimeFormatPartTypes) => parts.find((entry) => entry.type === type)?.value ?? "";
+  return `${part("year")}-${part("month")}-${part("day")}`;
+}
+
+/**
  * Soonest first, across the two date columns the project record types use
  * (`target_date` on milestones, `due_date` on submittals, invoices and
  * deliverables). Undated records sort last via the far-future sentinel.

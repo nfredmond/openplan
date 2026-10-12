@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { signedStorageRedirect } from "@/lib/http/signed-redirect";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { resolveTenantScopedStorageTarget } from "@/lib/files/tenant-scoped-storage";
 import {
@@ -146,5 +147,5 @@ export async function GET(request: NextRequest, context: RouteContext): Promise<
     opportunityId: opportunity.id,
     exportId: exportRow.id,
   });
-  return NextResponse.redirect(data.signedUrl);
+  return signedStorageRedirect(data.signedUrl);
 }
