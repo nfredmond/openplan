@@ -984,10 +984,13 @@ export default async function ReportsPage({
                       <span className="module-record-chip">
                         {report.fundingSnapshot.label}
                       </span>
-                      {report.fundingSnapshot.unfundedAfterLikelyAmount > 0 ? (
+                      {(report.fundingSnapshot.unfundedAfterLikelyAmount ?? 0) > 0 ? (
                         <span className="module-record-chip">
                           Uncovered {formatMoney(report.fundingSnapshot.unfundedAfterLikelyAmount, { precision: "whole" })}
                         </span>
+                      ) : report.fundingSnapshot.hasTargetNeed &&
+                        report.fundingSnapshot.unfundedAfterLikelyAmount === null ? (
+                        <span className="module-record-chip">Funding gap unknown</span>
                       ) : null}
                     </>
                   ) : null}

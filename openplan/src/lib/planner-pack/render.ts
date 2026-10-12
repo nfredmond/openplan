@@ -219,6 +219,11 @@ ${
   return out;
 }
 
+/** A score the run did not record reads "Not recorded", never 0.0. */
+function formatPacketScore(value: number | null): string {
+  return value === null ? "Not recorded" : formatPythonFloat(value);
+}
+
 function renderAtpApplication(app: AtpProjectApplication): string {
   const costLine =
     app.estimated_cost_usd !== null
@@ -244,11 +249,11 @@ ${app.description}
 
 | Dimension | Score |
 |---|---:|
-| Safety | ${formatPythonFloat(app.safety_score)} |
-| Equity | ${formatPythonFloat(app.equity_score)} |
-| Climate | ${formatPythonFloat(app.climate_score)} |
-| Feasibility | ${formatPythonFloat(app.feasibility_score)} |
-| **Total (weighted 30/25/25/20)** | **${formatPythonFloat(app.total_score)}** |
+| Safety | ${formatPacketScore(app.safety_score)} |
+| Equity | ${formatPacketScore(app.equity_score)} |
+| Climate | ${formatPacketScore(app.climate_score)} |
+| Feasibility | ${formatPacketScore(app.feasibility_score)} |
+| **Total (weighted 30/25/25/20)** | **${formatPacketScore(app.total_score)}** |
 | Sensitivity flag | ${app.sensitivity_flag} |
 
 - CEQA §15064.3 VMT screening: ${app.ceqa_determination}
@@ -340,7 +345,12 @@ determination, final schedule).
 
   if (summary !== null) {
     out += `- Application drafts: **${summary.application_count}**
-- Mean screening total score: **${formatPythonFloat(summary.mean_total_score)}**
+- Mean screening total score: **${formatPacketScore(summary.mean_total_score)}**${
+      summary.mean_total_score !== null &&
+      summary.scored_application_count < summary.application_count
+        ? ` (partial: ${summary.scored_application_count} of ${summary.application_count} applications scored)`
+        : ""
+    }
 - SB 535 DAC applications: **${summary.dac_application_count}** (${formatFixedPython(summary.dac_share * 100, 1)}%)
 - AB 1550 low-income (not DAC) applications: **${summary.low_income_application_count}**
 - Tribal-area applications: **${summary.tribal_application_count}** (AB 52 consultation trigger if any)
