@@ -66,12 +66,14 @@ function check(body:string){
  SELECT id INTO cost_rate FROM public.contract_actual_versions WHERE entry_id=ow_entry;
  c:=jsonb_build_object('kind','received_review','requestId',gen_random_uuid(),'expectedVersion',1,'invoiceId',entry,'state','approved','note','Synthetic finance reconciliation','matches',jsonb_build_array(jsonb_build_object('entryId',ow_entry,'versionId',cost_rate,'amount','25.00')));
  BEGIN PERFORM public.record_contract_command(engagement,member_id,c);RAISE EXCEPTION 'PM financially approved received invoice';EXCEPTION WHEN insufficient_privilege THEN NULL;END;
+ PERFORM public.record_contract_command(engagement,member_id,jsonb_build_object('kind','received_review','requestId',gen_random_uuid(),'expectedVersion',1,'invoiceId',entry,'state','reviewed','note','Synthetic PM review','matches','[]'::jsonb));
+ c:=c||jsonb_build_object('requestId',gen_random_uuid(),'expectedVersion',2);
  PERFORM public.record_contract_command(engagement,owner_id,c);
  IF (SELECT count(*) FROM public.contract_actual_versions WHERE engagement_id=engagement)<>1 OR (SELECT sum(amount) FROM public.contract_actual_versions WHERE engagement_id=engagement)<>25 THEN RAISE EXCEPTION 'Received invoice duplicated incurred cost';END IF;
- IF (SELECT matches->0->'allocations'->0->>'amount' FROM public.contract_received_invoices WHERE invoice_id=entry AND version=2)<>'25.00' THEN RAISE EXCEPTION 'Invoice lost source allocation';END IF;
+ IF (SELECT matches->0->'allocations'->0->>'amount' FROM public.contract_received_invoices WHERE invoice_id=entry AND version=3)<>'25.00' THEN RAISE EXCEPTION 'Invoice lost source allocation';END IF;
  state:=public.read_contract_management(engagement,outsider);IF state::text LIKE '%synthetic-vendor-cost%' OR state::text LIKE '%allocations%' THEN RAISE EXCEPTION 'Consultant saw internal source matching';END IF;
- INSERT INTO public.contract_received_invoices(invoice_id,engagement_id,workspace_id,version,state,content,submitted_by,created_by) SELECT p,engagement_id,workspace_id,1,'submitted',content,submitted_by,created_by FROM public.contract_received_invoices WHERE invoice_id=entry AND version=1;
- BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'invoiceId',p));RAISE EXCEPTION 'Cost matched twice';EXCEPTION WHEN check_violation THEN NULL;END;
+ INSERT INTO public.contract_received_invoices(invoice_id,engagement_id,workspace_id,version,state,content,submitted_by,created_by) SELECT p,engagement_id,workspace_id,1,'reviewed',content,submitted_by,created_by FROM public.contract_received_invoices WHERE invoice_id=entry AND version=1;
+ BEGIN PERFORM public.record_contract_command(engagement,owner_id,c||jsonb_build_object('requestId',gen_random_uuid(),'invoiceId',p,'expectedVersion',1));RAISE EXCEPTION 'Cost matched twice';EXCEPTION WHEN check_violation THEN NULL;END;
  `));
  it("shows finance-imported own hours without private notes, values, foreign staff or correction authority",()=>check(`${baseline}
  c:=jsonb_build_object('kind','actual','requestId',gen_random_uuid(),'entryId',entry,'expectedVersion',0,'sourceKey','SYNTHETIC-PAYROLL-OWN','sourceReference','PRIVATE-PAYROLL-FILE 73.19','entryDate','2026-09-01','category','labor','status','draft','description','PRIVATE-FINANCE-NOTE','staffId',staff,'hours','2.00','amount','146.38','valuationBasis','recorded','rateId',NULL,'billable',true,'allocations',jsonb_build_array(jsonb_build_object('taskId',task,'deliverableId',deliverable,'share',10000)));

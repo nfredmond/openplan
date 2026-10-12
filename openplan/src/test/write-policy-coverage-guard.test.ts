@@ -243,7 +243,10 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/funding-opportunities/[opportunityId]/application/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/route.ts": 1,
-  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 4,
+  // 4 -> 1: line replacement moved into replace_client_invoice_lines, one
+  // transaction that refuses a short stamp count itself. The void release of
+  // time entries is the one write left here.
+  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 1,
   "src/app/api/invoicing/rate-tables/[rateTableId]/route.ts": 1,
   "src/app/api/invoicing/time-entries/[timeEntryId]/route.ts": 1,
   // 4 -> 3: the relaunch re-queue now chains `.select("id").maybeSingle()` and
