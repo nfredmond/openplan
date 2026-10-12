@@ -18,6 +18,8 @@ class Authority:
 
     def __call__(self, plan, operation, command, *, deadline):
         """Verify saved scope before querying current access and engine identity."""
+        if deadline is None:
+            raise ValueError('Private draft authority requires its actual shared deadline')
         deadline = self.reader._deadline(deadline)
         plan = original_plan(plan)
         expected = commands(plan)

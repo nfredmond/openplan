@@ -209,9 +209,11 @@ class Checks(unittest.TestCase):
         self.assertLessEqual(self.calls[0]['deadline'],clocks[0]+1,'Engine transport cannot extend the pipeline deadline')
 
     def test_expired_permission_cannot_issue_intent(self):
-        def expire(*args):time.sleep(.25);return True
-        self.pipeline.authorize=expire;self.pipeline.timeout=.2
-        with self.runtime.owner():
+        expired=[False]
+        def expire(*args):expired[0]=True;return True
+        clock=SimpleNamespace(monotonic=lambda:1e12 if expired[0] else time.monotonic())
+        self.pipeline.authorize=expire;self.pipeline.timeout=30;self.f.intake.timeout=30
+        with self.runtime.owner(),patch('runtime_url_intake.time',clock):
             self.f.start()
             with self.assertRaisesRegex(TimeoutError,'^Original runtime URL intake deadline exceeded$'):self.pipeline.advance(self.request['requestId'])
         self.assertFalse((self.f.fixture.folder/'engine/command-00000.intent.json').exists(),'Expired URL draft cannot issue an intent')

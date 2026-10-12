@@ -75,3 +75,30 @@ uncertain engine-effect reconciliation, commit/results/artifact/callback custody
 useful long processing, full installation restore, hosted operation, browser
 journeys, practitioner acceptance and scientific validation remain open. These
 fixtures cannot establish those boundaries. Migration03 is not applied here.
+
+## Integrated correction and final deadline check
+
+The final combined branch includes the PR #239 deterministic permission-expiry
+fixture and PR #256 migration changelog entry. The single controller conflict
+preserves both the forwarded deadline and the intended pre-intent assertion.
+All 29 [combined workflow steps](evidence/combined-workflow-results.json) pass,
+including 528 cases in 20 unittest suites and seven scenario programs.
+Twenty nested release/documentation tests and product direction pass. This
+replay takes 322.64 seconds; its [peak](evidence/combined-workflow-resources.json)
+is 950,616,064 bytes under one GiB, with no max or OOM events. The unit stops.
+
+After that replay, the adapter gains an explicit missing-deadline refusal.
+Passing `None` must not select the reader's independent default timeout.
+The final authority checks pass 14 tests and 19 controls in both
+[Python 3.14](evidence/final-authority314-controls.json) and
+[Python 3.11](evidence/final-authority311-controls.json). Four controls survive;
+15 selected faults fail, including removal of the missing-deadline guard.
+Each classifier retains eight controls. Their final source bindings match.
+The earlier full-workflow binding describes the preceding adapter, not this
+additional guard. No full 529-case replay is claimed from that record.
+
+The [final installed RPC regression](evidence/final-native-controls.json) also
+passes 14 cases and eight classifier controls at the final adapter hash.
+Both fixture services stop. The serial final service peaks at 53.7 MiB under
+512 MiB, with no extra swap. Updated-head GitHub acceptance remains pending.
+This change does not promote engine, processing, browser or scientific claims.

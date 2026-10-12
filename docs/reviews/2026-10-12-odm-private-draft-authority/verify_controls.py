@@ -44,6 +44,8 @@ def run(repo, out):
         guard('Private draft original binding is required'), 'does not match', 'diagnostic_refusal')
     add('constructor-adapters-unchecked', 'constructor_requires_reader_attestor_and_engine',
         guard('Private reader and explicit engine attestation are required'), 'ValueError not raised')
+    add('missing-shared-deadline-accepted', 'missing_or_invalid_shared_deadline_refuses_before_read',
+        guard('Private draft authority requires its actual shared deadline'), 'ValueError not raised')
     add('deadline-replaced', 'attestation_receives_detached_engine_and_actual_deadline',
         swap('deadline = self.reader._deadline(deadline)', 'deadline = self.reader._deadline(None)'), 'Attestation must receive the exact shared deadline and original engine')
     add('attestation-engine-alias', 'attestation_receives_detached_engine_and_actual_deadline',

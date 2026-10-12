@@ -148,6 +148,13 @@ class Checks(unittest.TestCase):
             (self.f.reader, {}, self.attest)]:
             with self.assertRaises(ValueError):Authority(reader, engine, attest)
 
+    def test_missing_or_invalid_shared_deadline_refuses_before_read(self):
+        self.advance();plan = self.plan();before = len(self.f.calls)
+        for deadline in (None, False, float('nan'), float('inf')):
+            with self.runtime.owner(), self.assertRaises(ValueError):
+                self.authority(plan, 'init', commands(plan)['init'], deadline=deadline)
+        self.assertEqual(len(self.f.calls), before)
+
     def test_attestation_receives_detached_engine_and_actual_deadline(self):
         self.advance();plan = self.plan();deadline = time.monotonic()+0.5;observed = []
         def attest(engine, given, *, owned):
