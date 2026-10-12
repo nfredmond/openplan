@@ -3,9 +3,11 @@
 import Link from "next/link";
 import { useSyncExternalStore } from "react";
 import {
+  Briefcase,
   CalendarClock,
   CircleDollarSign,
   ClipboardCheck,
+  ClipboardList,
   FileCheck2,
   Flag,
   Gavel,
@@ -36,6 +38,8 @@ const KIND_ICONS: Record<ComingUpKind, LucideIcon> = {
   "public-review": MessageSquareText,
   adoption: Gavel,
   "comment-period": MessageSquareText,
+  "contract-task": Briefcase,
+  "work-program-review": ClipboardList,
 };
 
 const noSubscription = () => () => {};
