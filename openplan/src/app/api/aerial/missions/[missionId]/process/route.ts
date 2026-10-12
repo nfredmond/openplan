@@ -6,6 +6,7 @@ import { buildOdmProcessingBoundary } from "@/lib/aerial/odm-processing";
 import { AERIAL_IMAGERY_BUCKET } from "@/lib/aerial/imagery";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isReadOnlyWorkspaceRole } from "@/lib/auth/role-matrix";
+import { recordOriginalDispatch, readOriginalDispatch, resolveDispatchCustodyScope } from "@/lib/aerial/original-dispatch";
 import {
   buildProcessingRequest,
   processingCallbackSchema,
@@ -316,6 +317,14 @@ export async function POST(request: NextRequest, context: RouteContext) {
       );
     }
 
+    let custodyScope: ReturnType<typeof resolveDispatchCustodyScope>;
+    try { custodyScope = resolveDispatchCustodyScope(); }
+    catch {
+      audit.error("original_dispatch_custody_misconfigured", { missionId: mission.id });
+      return NextResponse.json({ error: "original_dispatch_custody_misconfigured",
+        detail: "The original request storage settings are incomplete. Nothing was dispatched." }, { status: 500 });
+    }
+
     const payloadBody = await readJsonOrNullWithLimit(request, BODY_LIMITS.smallJson);
     if (!payloadBody.ok) return payloadBody.response;
 
@@ -582,6 +591,25 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     };
 
+    const dispatchText = JSON.stringify(processingRequest);
+    if (custodyScope) {
+      const originalJob = {
+        id: jobRow.id, request_id: requestId, workspace_id: mission.workspace_id,
+        project_id: mission.project_id, mission_id: mission.id, created_by: user.id,
+        preset_id: processingRequest.presetId ?? "balanced", imagery_type: processingRequest.imagery.type,
+      };
+      try {
+        await recordOriginalDispatch(jobsWriter, custodyScope, originalJob, dispatchText);
+        const current = await readOriginalDispatch(jobsWriter, custodyScope, originalJob, dispatchText);
+        if (!current.authorizedNow) throw new Error("Current original request scope is unavailable");
+      } catch {
+        const detail = "The original request could not be saved and checked. Nothing was dispatched.";
+        audit.error("original_dispatch_custody_unavailable", { requestId, missionId: mission.id });
+        await markDispatchFailed(detail);
+        return NextResponse.json({ error: "original_dispatch_custody_unavailable", detail }, { status: 503 });
+      }
+    }
+
     let workerResponse: Response;
     try {
       workerResponse = await fetch(
@@ -593,7 +621,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
             accept: "application/json",
             authorization: `Bearer ${workerToken}`,
           },
-          body: JSON.stringify(processingRequest),
+          body: dispatchText,
           signal: AbortSignal.timeout(WORKER_DISPATCH_TIMEOUT_MS),
         }
       );

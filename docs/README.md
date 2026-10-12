@@ -91,6 +91,8 @@ The [October 11 original URL-to-draft candidate](reviews/2026-10-11-odm-url-draf
 
 The [original dispatch custody candidate](reviews/2026-10-11-odm-original-dispatch-custody/STATUS.md) preserves exact supplied request bytes, original actor and nullable project before URL intake. It compares frozen settings and engine context with the private receipt and refuses recapture after input work. Supplied authorship and current authority remain unassessed. The coordinator lifts the merge hold at 2026-10-12T02:46:46Z, subject to serial merges and production health verification.
 
+The [private application dispatch producer candidate](reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md) saves exact request text outside member-readable jobs before optional dispatch and checks current original scope through service-only RPCs. It retains nullable project and original actor and refuses uncertain storage replies. Focused application, native mutation, project-lock and local SQL restore checks pass. CLI upgrade, actual RPC transport and hosted integration remain open; no engine permission is established.
+
 
 The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 

@@ -1,0 +1,102 @@
+{
+  "units": [
+    {
+      "check": "direction",
+      "invocationId": "ce3a8d3d7a734c92b4d6412288ccd6e4",
+      "memoryPeakBytes": 64630784,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "controls-05",
+      "invocationId": "9cd862f7a4734edca2e79295e8cf1281",
+      "memoryPeakBytes": 260825088,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "route-controls-03",
+      "invocationId": "19847386e19244dd940d57e274dd1990",
+      "memoryPeakBytes": 260243456,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "native-controls-03",
+      "invocationId": "45eebf55c6ef4a6887157b5675906905",
+      "memoryPeakBytes": 53071872,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "parent-locks-01",
+      "invocationId": "e25db6a1ef194bf8a97c0361ddca5202",
+      "memoryPeakBytes": 42229760,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "failure-oracle-01",
+      "invocationId": "3cac4421217c48a19b2e437b63bbc52c",
+      "memoryPeakBytes": 10977280,
+      "memoryMaxBytes": 134217728,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "native-restore-02",
+      "invocationId": "4e0ec1f36eee41d38e31625866d4a9d3",
+      "memoryPeakBytes": 123080704,
+      "memoryMaxBytes": 536870912,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "final-02",
+      "invocationId": "c5604f2fe2764574acac0d5efa2da285",
+      "memoryPeakBytes": 349335552,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "docs-01",
+      "invocationId": "0bdcfba40caf4d708329c1e4005c84bc",
+      "memoryPeakBytes": 312168448,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    },
+    {
+      "check": "docs-02",
+      "invocationId": "a6b94b7ece294dba81988f72eca190d5",
+      "memoryPeakBytes": 277000192,
+      "memoryMaxBytes": 1073741824,
+      "memorySwapMaxBytes": 0,
+      "cpuQuota": "1s",
+      "stoppedAfterMetrics": true
+    }
+  ],
+  "nativeDatabase": {
+    "memoryMaxBytes": 1073741824,
+    "memorySwapMaxBytes": 1073741824,
+    "networkMode": "none",
+    "containersStopped": true,
+    "observedOomKilled": false
+  },
+  "scope": "Owned service metrics and capped native fixture. No spare/full-installation capacity or physical-host acceptance."
+}
