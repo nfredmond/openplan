@@ -3220,7 +3220,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       // across page boundaries.
       expect(engagementItemsSelectMock).toHaveBeenCalledWith(ITEM_COLUMNS);
       expect(engagementItemsEqCampaignMock).toHaveBeenCalledWith("campaign_id", CAMPAIGN_ID);
-      expect(engagementItemsChainOrderMock.mock.calls.slice(0, 2).map(([column]) => column)).toEqual([
+      expect(engagementItemsChainOrderMock.mock.calls.slice(0, 2).map((call) => (call as unknown[])[0])).toEqual([
         "updated_at",
         "id",
       ]);

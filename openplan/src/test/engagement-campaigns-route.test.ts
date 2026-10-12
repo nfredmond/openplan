@@ -317,7 +317,7 @@ describe("/api/engagement/campaigns", () => {
         "id, campaign_id, status, category_id, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
       );
       expect(itemsChainInMock).toHaveBeenCalledWith("campaign_id", [FIRST, SECOND]);
-      expect(itemsChainOrderMock.mock.calls.slice(0, 2).map(([column]) => column)).toEqual(["created_at", "id"]);
+      expect(itemsChainOrderMock.mock.calls.slice(0, 2).map((call) => (call as unknown[])[0])).toEqual(["created_at", "id"]);
     });
 
     it("refuses the counts when a later page of comments fails", async () => {
