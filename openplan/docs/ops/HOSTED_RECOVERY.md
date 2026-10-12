@@ -99,6 +99,38 @@ fresh copies and compare all byte counts and digests. Do not send the copies
 through production workers or mail providers. Stop the disposable service after
 verification; keep its evidence and protected archives.
 
+## Roll back the hosted app
+
+An app rollback does not reverse migrations. Roll back only to a deployment
+whose code works with the schema the hosted project has now.
+
+1. Find the candidate: `vercel ls openplan --scope natford --prod`, then
+   `vercel inspect <url> --scope natford` for its commit.
+2. Check schema compatibility. List the hosted migrations through the
+   Management API (`GET /v1/projects/lolckycpdjsgeejsmuzl/database/migrations`)
+   and the repository's `openplan/supabase/migrations` at the candidate commit.
+   The candidate is safe only if every migration applied since that commit is
+   additive and the candidate never reads a dropped or renamed object. When in
+   doubt, roll forward with a fix instead.
+3. Promote with `vercel rollback <url> --scope natford`, then confirm
+   `/api/health` reports the candidate's commit. Vercel then stops promoting
+   new `main` builds until someone promotes a later deployment, so record the
+   rollback in the coordination file.
+4. Railway workers deploy from `main` separately. Check that their commit
+   matches the rolled-back app, or that the worker paths did not change.
+
+**Dated target, October 12, 2026.** Production `dpl_7CTf3ojNmvkxJqiPK7gkcw33qxNs`
+serves `c03788c`. The previous production deployment,
+`dpl_9VqupkuiPeYiPJicoA5qktkFb1sP`, serves `6730997`. No migration file changed
+between those commits and the hosted project records the same 405 migrations,
+so it is schema-compatible today. Every later merge replaces this target;
+repeat step 2 before using it.
+
+**One operator.** Recovery depends on Nathaniel: the Vercel, Supabase,
+Railway and Resend accounts are under his login, and the only copy of the
+offsite decryption key is on his workstation until he stores a second one.
+If he is unavailable, no one else can restore or roll back this installation.
+
 ## Observed result and remaining boundaries
 
 The target contains 399 migrations, 308 public tables, 307 tables with RLS,
