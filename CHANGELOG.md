@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Money record corrections.** Apply `20261017000005_money_integrity_corrections.sql`
+before deploying. Work-program labor can no longer be counted twice, an issued
+report rechecks its adoption, a second amendment cannot overwrite one in
+progress, a voided contract draft releases its billed sources, finance approves
+only reviewed consultant invoices, and client invoices past draft can change only
+their status, enforced in the database for every writer. Existing records are not
+rewritten; the rules apply to new writes.
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
