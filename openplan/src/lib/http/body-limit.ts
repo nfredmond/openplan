@@ -59,6 +59,14 @@ export const BODY_LIMITS = {
   // OPENPLAN_GTFS_MAX_ARCHIVE_BYTES past 200 MiB does NOT raise this, and the
   // upload will meet a bare 413 instead of the GTFS refusal. If that limit is
   // ever raised above 200 MiB, this constant has to move with it.
+  //
+  // ON VERCEL THIS BODY NEVER ARRIVES. The platform refuses a function body
+  // over about 4.5 MB before any handler runs. So the Data Hub panel does not
+  // send the file as a body: `/api/gtfs/feeds/upload/start` checks the declared
+  // size against this number and issues a signed Storage upload URL, and
+  // `/api/gtfs/feeds/upload/complete` measures the stored object against it
+  // again before ingesting. The body route keeps this ceiling for API clients
+  // and installs without the platform limit.
   gtfsFeedRaw: 200 * 1024 * 1024,
   // Aerial mission photo upload: one source image per request, 64 MiB.
   //
