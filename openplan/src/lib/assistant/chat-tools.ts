@@ -1569,7 +1569,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
   });
 
   const listFundingOpportunities = tool({
-    description: `List the workspace's funding opportunities (most recently updated first, max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}), with status, decision state, and deadline dates.`,
+    description: `List the workspace's funding opportunities (most recently updated first, max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}), with status, decision state, deadline dates, and the id of the project each one is linked to (projectId matches the ids from list_projects; null means no project is linked).`,
     inputSchema: z.object({}),
     execute: guarded<Record<string, never>>({
       name: "list_funding_opportunities",
@@ -1579,7 +1579,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
         if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
         const { data, error } = await supabase
           .from("funding_opportunities")
-          .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
+          .select("id, title, project_id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
           .eq("workspace_id", workspaceId)
           .order("updated_at", { ascending: false })
           .limit(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
@@ -1592,6 +1592,9 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
           opportunities: rows.map((row) => ({
             id: row.id,
             title: row.title,
+            // A live test on 2026-10-11 had to guess an opportunity's project
+            // from a shared name suffix because this field was missing.
+            projectId: typeof row.project_id === "string" ? row.project_id : null,
             status: row.opportunity_status,
             decisionState: row.decision_state,
             expectedAwardAmount: typeof row.expected_award_amount === "number" ? row.expected_award_amount : null,
@@ -1599,6 +1602,57 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
             decisionDueAt: isoOrNull(row.decision_due_at),
             updatedAt: isoOrNull(row.updated_at),
           })),
+        };
+      },
+    }),
+  });
+
+  // A live test on 2026-10-11 asked for the nearest deadline; the agent said
+  // projects carried no dates it could see while the dashboard showed an
+  // Oct 15 milestone on the same project. Milestones reach the workspace
+  // through their project, the same way My Work reads them.
+  const listMilestones = tool({
+    description: `List project milestones in this workspace with their target dates, soonest first (max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}). Completed milestones are left out unless includeComplete is true. Use this for project deadlines and schedules, and compare each targetDate with TODAY.`,
+    inputSchema: z.object({
+      projectId: z.string().uuid().optional().describe("Only this project's milestones (an id from list_projects)."),
+      includeComplete: z.boolean().optional().describe("Also list completed milestones."),
+    }),
+    execute: guarded<{ projectId?: string; includeComplete?: boolean }>({
+      name: "list_milestones",
+      budget,
+      audit,
+      run: async ({ projectId, includeComplete }) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+        let query = supabase
+          .from("project_milestones")
+          .select("id, project_id, title, milestone_type, status, target_date, actual_date, owner_label, projects!inner(id, name, workspace_id)")
+          .eq("projects.workspace_id", workspaceId);
+        if (projectId) query = query.eq("project_id", projectId);
+        if (!includeComplete) query = query.neq("status", "complete");
+        const { data, error } = await query
+          .order("target_date", { ascending: true, nullsFirst: false })
+          .limit(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
+        if (error) throw new Error(error.message ?? "project_milestones query failed");
+        const rows = (data ?? []) as Array<Record<string, unknown>>;
+        return {
+          status: "ok",
+          milestoneCount: rows.length,
+          truncated: rows.length === ASSISTANT_CHAT_TOOL_LIST_LIMIT,
+          completedIncluded: Boolean(includeComplete),
+          milestones: rows.map((row) => {
+            const project = (Array.isArray(row.projects) ? row.projects[0] : row.projects) as Record<string, unknown> | null;
+            return {
+              id: row.id,
+              title: row.title,
+              projectId: row.project_id,
+              projectName: typeof project?.name === "string" ? project.name : null,
+              type: row.milestone_type,
+              status: row.status,
+              targetDate: typeof row.target_date === "string" ? row.target_date : null,
+              actualDate: typeof row.actual_date === "string" ? row.actual_date : null,
+              ownerLabel: typeof row.owner_label === "string" ? row.owner_label : null,
+            };
+          }),
         };
       },
     }),
@@ -1720,6 +1774,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
     get_surface_context: getSurfaceContext,
     list_projects: listProjects,
     list_funding_opportunities: listFundingOpportunities,
+    list_milestones: listMilestones,
     list_reports: listReports,
     list_pending_operations: listPendingOperations,
     get_grant_program_catalog: getGrantProgramCatalog,
