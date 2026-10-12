@@ -2189,9 +2189,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                       <h2 id={drawerTitleId} className="truncate text-lg font-semibold text-white">{summaryLabel}</h2>
                     </div>
                   </div>
-                  <p className="mt-3 text-sm leading-relaxed text-slate-300/82">
-                    {preview?.summary ?? `Grounding to ${workspaceName}...`}
-                  </p>
                 </div>
                 <Button
                   type="button"
@@ -2254,8 +2251,8 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           className="font-semibold underline underline-offset-2 hover:text-white"
                         >
                           Turn on your AI assistant from the dashboard checklist
-                        </Link>{" "}
-                        — a workspace owner or admin adds the key there. Suggested actions below
+                        </Link>
+                        . An owner or admin adds the key there. Suggested actions below
                         still work.
                       </p>
                     </div>
@@ -2279,14 +2276,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 </div>
               </div>
 
-              <div className="mt-4 flex flex-wrap gap-2">
-                <StatusBadge tone="info">{preview?.kind.replace(/_/g, " ") ?? "workspace"}</StatusBadge>
-                {preview?.stats.map((stat) => (
-                  <StatusBadge key={`${stat.label}-${stat.value}`} tone="neutral" className="border-white/10 bg-white/[0.05] text-slate-200/85">
-                    {stat.label} · {stat.value}
-                  </StatusBadge>
-                ))}
-              </div>
 
               {preview?.operatorCue ? (
                 <div className="mt-4 rounded-[0.5rem] border border-emerald-300/18 bg-emerald-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(16,185,129,0.08)]">
@@ -2296,11 +2285,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                 </div>
               ) : null}
 
-              {preview?.boardStateCue ? (
-                <div className="mt-4">
-                  <BoardStateCueCard cue={preview.boardStateCue} />
-                </div>
-              ) : null}
 
               {operationStatus ? (
                 <div className="mt-4 rounded-[0.5rem] border border-violet-300/16 bg-violet-400/10 px-4 py-3 shadow-[0_16px_30px_rgba(139,92,246,0.08)]">
@@ -2524,11 +2508,6 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                             Planning context
                           </div>
                           <p className="text-sm leading-relaxed text-slate-100">{introPreview.summary}</p>
-                          {introPreview.boardStateCue ? (
-                            <div className="mt-3">
-                              <BoardStateCueCard cue={introPreview.boardStateCue} />
-                            </div>
-                          ) : null}
                           <ul className="mt-3 space-y-2 text-sm text-slate-300/82">
                             {introPreview.facts.map((fact) => (
                               <li key={fact} className="rounded-[0.5rem] border border-white/8 bg-black/10 px-3.5 py-2.5">
@@ -2538,15 +2517,25 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
                           </ul>
 
                           {introPreview.quickLinks?.length ? (
-                            <div className="mt-4">
-                              <p className="mb-2 text-label font-semibold text-slate-400">Action surfaces</p>
+                            // Folded: the action board (counters, filters,
+                            // snooze controls, one card per action) buried the
+                            // conversation under several screens of text.
+                            <details className="mt-4 rounded-[0.5rem] border border-white/10 px-3.5 py-2.5">
+                              <summary className="cursor-pointer text-sm font-semibold text-slate-100">
+                                Suggested actions ({introPreview.quickLinks.length})
+                              </summary>
+                              {introPreview.boardStateCue ? (
+                                <div className="mt-3">
+                                  <BoardStateCueCard cue={introPreview.boardStateCue} />
+                                </div>
+                              ) : null}
                               <QuickLinkGrid
                                 links={introPreview.quickLinks}
                                 onConsoleStateChange={setLiveConsoleState}
                                 onRunOperation={runOperation}
                                 runningOperationId={runningOperationId}
                               />
-                            </div>
+                            </details>
                           ) : null}
                         </div>
                       );

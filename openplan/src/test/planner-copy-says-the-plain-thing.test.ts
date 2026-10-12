@@ -234,7 +234,7 @@ const BASELINE: Readonly<Record<string, number>> = {
   spine: 4,
   "study area": 20,
   submission: 5,
-  surface: 11,
+  surface: 10,
   trace: 10,
   upstream: 0,
   // The cross-workspace package notice uses the real membership object three
