@@ -115,7 +115,7 @@ function SignInForm() {
         <p className="text-label font-semibold text-muted-foreground">Sign in</p>
         <h2 className="mt-2 font-display text-3xl font-semibold tracking-tight">Sign in to your workspace.</h2>
         <p className="mt-2 text-sm leading-6 text-muted-foreground">
-          Pick up project work, run history, and board-ready packets right where you left them — maps, engagement, and reporting stay connected.
+          Pick up project work, run history, and board-ready packets right where you left them. Maps, engagement, and reporting stay connected.
         </p>
       </header>
 
