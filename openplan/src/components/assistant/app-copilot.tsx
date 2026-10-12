@@ -1685,7 +1685,7 @@ export function AppCopilot({ workspaceId, workspaceName }: AppCopilotProps) {
           question,
           history,
           // So "today" is the planner's date, not the server's UTC date.
-          timeZone: Intl.DateTimeFormat().resolvedOptions().timeZone,
+          timeZone: Intl.DateTimeFormat("en-US").resolvedOptions().timeZone,
         }),
       });
 
