@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/application_draft_authority.py": "7de06f98d27733856b9726d84434d139393f0ec45d65af4e9e05d64597eca0bb",
+  "workers/odm_worker/test_application_draft_authority.py": "c922e25dcc5ff0ec54f11264dc8c9a32cd28aa8248ad4ee2dbc9bd338c56efe4",
+  "docs/reviews/2026-10-12-odm-private-draft-authority/verify_controls.py": "4912800c9b83d9bdd0377f0d54336445e3781827c31ebb264f71917e8072bc03"
+}

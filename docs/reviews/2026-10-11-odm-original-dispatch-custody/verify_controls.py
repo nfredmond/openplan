@@ -55,6 +55,9 @@ def run(repo,out):
     add('late-final-dispatch-check-omitted','late_return_cannot_report_success_after_dispatch_check',swap('        self.dispatch.load(request_id, deadline=deadline)\n        result', '        result'),'TimeoutError not raised')
     add('pre-cancel-check-omitted','pre_cancelled_pipeline_refuses_before_capture',swap('entry = self.pipeline.intake._check(request_id, deadline)','entry = self.dispatch._check(request_id, deadline)'),'Cancelled pipeline reached dispatch capture')
     add('cancellation-callback-frozen','dispatch_clone_observes_replaced_cancellation_callback',swap('cancelled=lambda: intake.cancelled()','cancelled=intake.cancelled'),'InterruptedError not raised')
+    add('current-authorization-deadline-omitted','selected_current_authorization_deadline_survives_dispatch_clone',swap("forwarded = {'deadline': min(deadline, options['deadline'])} if self.pipeline.authorize_with_deadline else {}","forwarded = {}"),'Original dispatch must forward the actual authorization deadline')
+    add('current-authorization-selection-dropped','selected_current_authorization_deadline_survives_dispatch_clone',swap('authorize_with_deadline=self.pipeline.authorize_with_deadline','authorize_with_deadline=False'),"KeyError: 'deadline'",'diagnostic_refusal')
+    add('outer-transport-deadline-extended','selected_current_authorization_deadline_survives_dispatch_clone',swap('self.pipeline.transport(engine, command, stream, min(deadline, given_deadline))','self.pipeline.transport(engine, command, stream, given_deadline)'),'Original dispatch must forward the actual authorization deadline')
     if {row[1] for row in cases}!=census:raise ValueError('Dispatch tests lack controls: '+repr(census-{row[1] for row in cases}))
     rows=[];oracle=[]
     def execute(label,test=None):

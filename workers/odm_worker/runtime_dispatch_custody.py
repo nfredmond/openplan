@@ -153,14 +153,18 @@ class Pipeline:
         if saved.exists() or saved.is_symlink():
             validate(read_json(saved.parent, saved.name).get('settings'))
         def supply(original): return validate(intake.supply(original))
-        def authorize(plan, operation, command):
+        def authorize(plan, operation, command, **options):
             current = self.dispatch.load(request_id, deadline=deadline)
             if current != receipt or plan['binding']['originalRequest'] != entry.request or plan['binding']['originalContext'] != receipt['context']:
                 raise ValueError('Original dispatch engine binding differs')
-            return self.pipeline.authorize(plan, operation, command)
+            forwarded = {'deadline': min(deadline, options['deadline'])} if self.pipeline.authorize_with_deadline else {}
+            return self.pipeline.authorize(plan, operation, command, **forwarded)
+        def transport(engine, command, stream, given_deadline):
+            return self.pipeline.transport(engine, command, stream, min(deadline, given_deadline))
         bounded = Intake(intake.runtime, intake.source_root, intake.target, supply, intake.fetch,
             timeout=min(intake.timeout, deadline-time.monotonic()), cancelled=lambda: intake.cancelled())
-        result = UrlDraft(bounded, authorize, self.pipeline.transport, timeout=deadline-time.monotonic())._advance(request_id, job)
+        result = UrlDraft(bounded, authorize, transport, timeout=deadline-time.monotonic(),
+            authorize_with_deadline=self.pipeline.authorize_with_deadline)._advance(request_id, job)
         self.dispatch.load(request_id, deadline=deadline)
         result['originalDispatchSha256'] = receipt['payloadSha256']
         result['originalProjectId'] = receipt['applicationJob']['project_id']

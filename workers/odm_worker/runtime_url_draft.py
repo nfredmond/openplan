@@ -13,11 +13,14 @@ FORMAT='openplan.odm-runtime-url-draft.v1'
 
 
 class Pipeline:
-    def __init__(self, intake, authorize, transport, *, timeout=120):
+    def __init__(self, intake, authorize, transport, *, timeout=120, authorize_with_deadline=False):
         if not isinstance(intake,Intake) or not callable(authorize) or not callable(transport):
             raise ValueError('Original URL intake and explicit draft adapters are required')
         if type(timeout) not in (int,float) or not math.isfinite(timeout) or timeout<=0:
             raise ValueError('URL draft deadline must be positive and finite')
+        if type(authorize_with_deadline) is not bool:
+            raise ValueError('URL draft authorization deadline selection must be boolean')
+        self.authorize_with_deadline=authorize_with_deadline
         self.intake=intake;self.authorize=authorize;self.transport=transport;self.timeout=timeout
 
     def _inputs(self, entry, deadline):
@@ -49,16 +52,17 @@ class Pipeline:
         if job is None:prepared=intake.resume(request_id)
         else:intake(job);prepared=job['url_intake']
         self.intake._check(request_id,deadline)
-        def authorize(plan,operation,command):
+        def authorize(plan,operation,command,**options):
             self.intake._check(request_id,deadline)
-            result=self.authorize(plan,operation,command)
+            forwarded = {'deadline': min(deadline,options['deadline'])} if self.authorize_with_deadline else {}
+            result=self.authorize(plan,operation,command,**forwarded)
             self.intake._check(request_id,deadline);return result
         def transport(engine,command,stream,given_deadline):
             self.intake._check(request_id,deadline)
             result=self.transport(engine,command,stream,min(deadline,given_deadline))
             self.intake._check(request_id,deadline);return result
         preparation=Preparation(self.intake.runtime,lambda entry:self._inputs(entry,deadline),timeout=deadline-time.monotonic())
-        draft=Draft(preparation,authorize,transport,timeout=deadline-time.monotonic())
+        draft=Draft(preparation,authorize,transport,timeout=deadline-time.monotonic(),authorize_with_deadline=self.authorize_with_deadline)
         result=draft.advance(request_id);self.intake._check(request_id,deadline)
         return {'format':FORMAT,'preparation':prepared,'draft':result,
             'authorityVerification':'unassessed','commitPermission':False}

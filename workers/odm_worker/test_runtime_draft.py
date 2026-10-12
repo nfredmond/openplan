@@ -30,6 +30,19 @@ class Checks(unittest.TestCase):
             return 200,body
         return module.Draft(self.preparation,authorize or permitted,transport or send,timeout=timeout)
 
+    def test_authorization_receives_actual_shared_deadline_when_selected(self):
+        observed=[]
+        def authorize(plan,operation,command,*,deadline=None):observed.append(deadline);return True
+        draft=self.draft(authorize=authorize)
+        draft.authorize_with_deadline=True
+        with self.runtime.owner():self.start();draft.advance(self.request['requestId'])
+        self.assertEqual(observed,[self.calls[0]['deadline']], 'Authorization must receive the exact draft deadline')
+
+    def test_authorization_deadline_selection_requires_boolean(self):
+        for value in (1,None,'yes'):
+            with self.assertRaisesRegex(ValueError,'Draft authorization deadline selection must be boolean'):
+                module.Draft(self.preparation,lambda *args:True,lambda *args:None,authorize_with_deadline=value)
+
     def test_actual_runtime_initializes_one_original_task_and_holds_next_job(self):
         draft=self.draft();self.runtime.pipeline=draft
         second=copy.deepcopy(self.request);second['requestId']='synthetic-pending-request';self.runtime.submit(second)

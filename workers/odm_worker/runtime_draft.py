@@ -17,11 +17,14 @@ FORMAT = 'openplan.odm-runtime-draft.v1'
 
 
 class Draft:
-    def __init__(self, preparation, authorize, transport, *, timeout=120):
+    def __init__(self, preparation, authorize, transport, *, timeout=120, authorize_with_deadline=False):
         if not isinstance(preparation, Preparation) or not callable(authorize) or not callable(transport):
             raise ValueError('Original preparation and explicit draft adapters are required')
         if not isinstance(timeout, (int, float)) or isinstance(timeout, bool) or not math.isfinite(timeout) or timeout <= 0:
             raise ValueError('Runtime draft timeout must be positive and finite')
+        if type(authorize_with_deadline) is not bool:
+            raise ValueError('Draft authorization deadline selection must be boolean')
+        self.authorize_with_deadline=authorize_with_deadline
         self.preparation=preparation;self.authorize=authorize;self.transport=transport;self.timeout=timeout
 
     def _effects(self, request_id, deadline):
@@ -73,7 +76,8 @@ class Draft:
             pending=next((row['operation'] for row in snapshot['commands'] if row['state']=='unissued'),None)
             if pending is None or pending=='commit':return self._result(effects,'draft_complete_commit_held')
             command=effects.command_map[pending]
-            if self.authorize(copy.deepcopy(effects.plan),pending,copy.deepcopy(command)) is not True:
+            options = {'deadline': deadline} if self.authorize_with_deadline else {}
+            if self.authorize(copy.deepcopy(effects.plan),pending,copy.deepcopy(command),**options) is not True:
                 raise PermissionError('Explicit draft permission was not confirmed')
             if time.monotonic() >= deadline:raise TimeoutError('Runtime draft deadline exceeded')
             intent,first=effects.issue(pending)

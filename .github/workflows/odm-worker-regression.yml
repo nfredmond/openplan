@@ -134,3 +134,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-12-odm-private-dispatch-reader/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-dispatch-reader-controls"
+      - name: Current private application draft authority controls
+        run: |
+          python3 -B docs/reviews/2026-10-12-odm-private-draft-authority/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-draft-authority-controls"

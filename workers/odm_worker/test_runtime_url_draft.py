@@ -37,6 +37,18 @@ class Checks(unittest.TestCase):
     def advance(self):
         with self.runtime.owner():self.f.start();return self.pipeline.advance(self.request['requestId'])
 
+    def test_current_authorization_shares_the_outer_deadline(self):
+        observed=[]
+        def authorize(plan,operation,command,*,deadline=None):observed.append(deadline);return True
+        self.pipeline.authorize=authorize;self.pipeline.authorize_with_deadline=True
+        self.advance()
+        self.assertEqual(observed,[self.calls[0]['deadline']], 'Current authorization must receive the actual shared URL deadline')
+
+    def test_authorization_deadline_selection_requires_boolean(self):
+        for value in (1,None,'yes'):
+            with self.assertRaisesRegex(ValueError,'URL draft authorization deadline selection must be boolean'):
+                Pipeline(self.f.intake,self.allow,self.send,authorize_with_deadline=value)
+
     def test_owned_queue_advances_one_original_init_and_keeps_start_held(self):
         later=copy.deepcopy(self.request);later['requestId']='synthetic-url-draft-later';self.runtime.submit(later)
         with self.runtime.owner():

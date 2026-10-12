@@ -50,6 +50,13 @@ class Checks(unittest.TestCase):
     def advance(self):
         with self.runtime.owner():self.start();return self.pipeline.advance(self.request['requestId'])
 
+    def test_selected_current_authorization_deadline_survives_dispatch_clone(self):
+        observed=[]
+        def authorize(plan,operation,command,*,deadline=None):observed.append(deadline);return True
+        self.original.authorize=authorize;self.original.authorize_with_deadline=True
+        self.advance()
+        self.assertEqual(observed,[self.fixture.calls[0]['deadline']], 'Original dispatch must forward the actual authorization deadline')
+
     def test_actual_queue_preserves_exact_bytes_actor_project_and_admission(self):
         with self.runtime.owner():
             self.assertIs(self.runtime.run_one(), True)
