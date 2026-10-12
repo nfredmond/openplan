@@ -50,13 +50,14 @@ type ReadOutcome = { rows: Row[]; failed: boolean; capped: boolean };
 async function boundedRead(
   query: DatedRead,
   column: string,
-  bounds: { from: string; before?: string; until?: string }
+  bounds: { from: string; before?: string; until?: string },
+  ascending = true
 ): Promise<ReadOutcome> {
   try {
     let bounded = query.gte(column, bounds.from);
     if (bounds.before) bounded = bounded.lt(column, bounds.before);
     if (bounds.until) bounded = bounded.lte(column, `${bounds.until}T23:59:59Z`);
-    const result = await bounded.order(column, { ascending: true }).limit(WORKSPACE_DATES_CAP);
+    const result = await bounded.order(column, { ascending }).limit(WORKSPACE_DATES_CAP);
     // A deployment behind the migration simply has no such dates yet.
     if (result.error && looksLikePendingSchema(result.error.message)) {
       return { rows: [], failed: false, capped: false };
@@ -139,7 +140,8 @@ export async function loadWorkspaceDates(
     sources.map(async (source) => {
       const [ahead, missed] = await Promise.all([
         boundedRead(source.query(), source.column, { from, until }),
-        boundedRead(source.query(), source.column, { from: missedFrom, before: from }),
+        // Most recent first, so the cap drops the oldest misses, not the latest.
+        boundedRead(source.query(), source.column, { from: missedFrom, before: from }, false),
       ]);
       return { source, ahead, missed };
     })

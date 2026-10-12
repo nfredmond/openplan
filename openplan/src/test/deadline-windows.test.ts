@@ -99,6 +99,11 @@ describe("dashboard workspace dates", () => {
         { verb: "lt", args: ["adoption_target_date", BOUNDARY] },
       ])
     );
+    // The missed read is capped, so it takes the latest misses first; the
+    // window ahead takes the soonest dates first.
+    expect(missedRead?.ops).toContainEqual({ verb: "order", args: ["adoption_target_date", { ascending: false }] });
+    const aheadRead = adoptionReads.find((query) => query !== missedRead);
+    expect(aheadRead?.ops).toContainEqual({ verb: "order", args: ["adoption_target_date", { ascending: true }] });
   });
 
   it("keeps today's and future dates in the window ahead, not overdue, and lists each date once", async () => {
