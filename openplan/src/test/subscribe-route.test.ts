@@ -102,9 +102,28 @@ describe("POST /api/engage/[shareToken]/subscribe", () => {
   it("preserves an already confirmed subscription without another email", async () => {
     subscribeParticipant.mockResolvedValue({ ok: true, alreadyConfirmed: true });
     const body = await (await POST(req({ email: "a@example.invalid" }), ctx)).json();
-    expect(body.message).toMatch(/already subscribed/);
     expect(body.confirmationNeedsRetry).toBe(false);
     expect(enqueueEmail).not.toHaveBeenCalled();
+  });
+
+  /**
+   * L-3 of the hosted review: the reply used to say "You're already subscribed",
+   * so anyone could test an address against a public campaign. A confirmed
+   * address must get byte-for-byte the reply a new address gets, with the
+   * transport on and off.
+   */
+  it.each([
+    ["transport on", true, { outboxId: "o1", status: "sent", transport: "resend" }],
+    ["transport off", false, { outboxId: "o1", status: "skipped", transport: "none" }],
+  ])("does not reveal whether an address already subscribes (%s)", async (_label, configured, outcome) => {
+    isEmailTransportConfigured.mockReturnValue(configured);
+    enqueueEmail.mockResolvedValue(outcome);
+    subscribeParticipant.mockResolvedValue({ ok: true, alreadyConfirmed: false });
+    const fresh = await POST(req({ email: "new@example.invalid" }), ctx);
+    subscribeParticipant.mockResolvedValue({ ok: true, alreadyConfirmed: true });
+    const existing = await POST(req({ email: "old@example.invalid" }), ctx);
+    expect(existing.status).toBe(fresh.status);
+    expect(await existing.text()).toBe(await fresh.text());
   });
 
   it("429 when the per-connection rate limit is exceeded, and not one sign-up before", async () => {
