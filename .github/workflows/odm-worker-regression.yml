@@ -120,3 +120,9 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-11-odm-runtime-url-intake/native_recovery.py \
             --out "$RUNNER_TEMP/odm-runtime-url-intake-native"
+      - name: Original URL draft pipeline harmless and targeted controls
+        run: |
+          python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-controls"
+          python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_transport_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-url-draft-pipeline-transport-controls"
