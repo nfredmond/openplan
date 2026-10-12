@@ -209,7 +209,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // cite these with inline [fact:N] tokens; the citations are validated
       // deterministically after generation (planner-pack grounding contract).
       const hasModelingEvidence = Boolean(evidence.modelingHeadline && evidence.modelingReadinessDetail);
-      const facts = buildOpportunityFactList(evidence, { today: new Date().toISOString().slice(0, 10) });
+      const facts = buildOpportunityFactList(evidence, { now: new Date() });
       const factIds = facts.map((fact) => fact.fact_id);
 
       const promptSections = [

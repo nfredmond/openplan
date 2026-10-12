@@ -18,6 +18,7 @@
  * verbatim inside the claim text.
  */
 
+import { isDeadlinePast } from "@/lib/work/deadlines";
 import {
   GRANT_MODELING_PLANNING_CAVEAT,
   buildProjectGrantAerialOrthoEvidenceByProjectId,
@@ -747,12 +748,14 @@ function rtpProgrammingClaims(
 
 export type OpportunityFactListOptions = {
   /**
-   * Today's UTC calendar date (YYYY-MM-DD). When given, the close date and the
-   * decision due date become facts that say whether they have passed. A live
-   * draft on 2026-10-11 called a call that closed on 2026-09-30 "currently
-   * open": the recorded status still read "open" and no date was citable.
+   * The current time. When given, the close date and the decision due date
+   * become facts that say whether they have passed, by the shared calendar-day
+   * rule in `lib/work/deadlines.ts` (the same rule that decides "closing
+   * soon"). A live draft on 2026-10-11 called a call that closed on
+   * 2026-09-30 "currently open": the recorded status still read "open" and no
+   * date was citable.
    */
-  today?: string;
+  now?: Date;
   /**
    * Evidence families to scope the fact list to (a catalog section's
    * suggestedEvidence). Omitted or empty means the FULL list — scoping only
@@ -772,28 +775,34 @@ export type OpportunityFactListOptions = {
  * contract). Deterministic over the bundle — same evidence in, same facts
  * out.
  */
-/** One fact per recorded deadline, saying in code whether it has passed. */
-function opportunityDateClaims(opportunity: NarrativeEvidenceOpportunity, today: string | undefined): string[] {
+/**
+ * One fact per recorded deadline, saying in code whether it has passed.
+ * "Passed" is `isDeadlinePast`: a date-only deadline counts as passed only once
+ * that calendar day has ended everywhere, so these facts never call a call
+ * closed while the workspace summary still counts it as closing soon.
+ */
+function opportunityDateClaims(opportunity: NarrativeEvidenceOpportunity, now: Date | undefined): string[] {
   const claims: string[] = [];
-  const dated = (value: string | null | undefined) => (value ? String(value).slice(0, 10) : null);
-  const closes = dated(opportunity.closes_at);
+  const day = (value: string | null | undefined) => (value ? String(value).slice(0, 10) : null);
+  const today = now ? now.toISOString().slice(0, 10) : null;
+  const closes = day(opportunity.closes_at);
   if (closes) {
-    if (!today) {
+    if (!now || !today) {
       claims.push(`The recorded close date for this opportunity is ${closes}.`);
-    } else if (closes < today) {
+    } else if (isDeadlinePast(opportunity.closes_at, now)) {
       const stale = opportunity.opportunity_status === "open" ? ` even though its recorded status still reads "open"` : "";
       claims.push(`The recorded close date for this opportunity is ${closes}, before today's date (${today}, UTC), so the close date has passed${stale}.`);
-    } else if (closes === today) {
-      claims.push(`The recorded close date for this opportunity is ${closes}, which is today (UTC).`);
+    } else if (closes <= today) {
+      claims.push(`The recorded close date for this opportunity is ${closes}, which is today.`);
     } else {
       claims.push(`The recorded close date for this opportunity is ${closes}; today's date is ${today} (UTC).`);
     }
   }
-  const decisionDue = dated(opportunity.decision_due_at);
+  const decisionDue = day(opportunity.decision_due_at);
   if (decisionDue) {
-    if (!today) {
+    if (!now || !today) {
       claims.push(`The workspace decision on this opportunity is due ${decisionDue}.`);
-    } else if (decisionDue < today) {
+    } else if (isDeadlinePast(opportunity.decision_due_at, now)) {
       claims.push(`The workspace decision on this opportunity was due ${decisionDue}, before today's date (${today}, UTC), so that due date has passed.`);
     } else {
       claims.push(`The workspace decision on this opportunity is due ${decisionDue}; today's date is ${today} (UTC).`);
@@ -830,7 +839,7 @@ export function buildOpportunityFactList(
   return buildNarrativeFactList([
     `The funding opportunity is titled "${opportunity.title}"${opportunity.agency_name ? `, administered by ${opportunity.agency_name}` : ""}.`,
     `The opportunity status is "${opportunity.opportunity_status}" and the workspace decision posture is "${opportunity.decision_state}".`,
-    ...opportunityDateClaims(opportunity, options?.today),
+    ...opportunityDateClaims(opportunity, options?.now),
     // Proposal solicitation anchors: identity facts, always included for a
     // proposal pursuit regardless of a section's evidence scope.
     isProposal && opportunity.solicitation_number

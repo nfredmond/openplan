@@ -262,7 +262,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
       const facts = buildOpportunityFactList(evidence, {
         suggestedEvidence: scopedKinds.length > 0 ? scopedKinds : undefined,
-        today: new Date().toISOString().slice(0, 10),
+        now: new Date(),
       });
       const factIds = facts.map((fact) => fact.fact_id);
 
