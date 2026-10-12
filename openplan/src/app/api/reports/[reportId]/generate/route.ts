@@ -68,7 +68,9 @@ import {
   buildReportEngagementSynthesis,
   extractEngagementHandoffProvenance,
   extractEngagementCampaignId,
+  type ReportEngagementItemRecord,
 } from "@/lib/reports/engagement";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   buildCampaignReportHtml,
   buildReportHtml,
@@ -221,6 +223,48 @@ async function safeOptionalQuery<T>(
 
     throw error;
   }
+}
+
+type EngagementItemsReadError = { message: string; code?: string | null };
+
+/**
+ * Every comment on one campaign, for a packet's engagement counts, or an error.
+ *
+ * PostgREST caps a response at `max_rows` (1,000 here) with `error = null`, so
+ * the single read this replaces counted a campaign with more than 1,000
+ * comments as 1,000 in a published packet, with nothing looking wrong. Both packet
+ * paths read through here. An unfinished read comes back as an error so the
+ * callers' existing refusal covers it: a packet that cannot count every comment
+ * is not generated. The `id` tiebreak makes the order total across pages.
+ */
+async function readEveryReportEngagementItem(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  campaignId: string
+): Promise<{ data: ReportEngagementItemRecord[] | null; error: EngagementItemsReadError | null }> {
+  const read = await readEveryPage<ReportEngagementItemRecord, EngagementItemsReadError>(
+    (from, toInclusive) =>
+      supabase
+        .from("engagement_items")
+        .select(
+          "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
+        )
+        .eq("campaign_id", campaignId)
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(from, toInclusive) as PromiseLike<{
+        data: ReportEngagementItemRecord[] | null;
+        error: EngagementItemsReadError | null;
+      }>
+  );
+
+  if (read.complete) return { data: read.rows, error: null };
+  return {
+    data: null,
+    error: read.error ?? {
+      message: "the engagement comment read could not be completed, so any count from it would understate participation",
+      code: null,
+    },
+  };
 }
 
 const paramsSchema = z.object({
@@ -961,13 +1005,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
           .eq("campaign_id", campaignRow.id)
           .order("sort_order", { ascending: true })
           .order("created_at", { ascending: true }),
-        supabase
-          .from("engagement_items")
-          .select(
-            "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-          )
-          .eq("campaign_id", campaignRow.id)
-          .order("updated_at", { ascending: false }),
+        readEveryReportEngagementItem(supabase, campaignRow.id),
       ]);
 
       if (campaignCategoriesResult.error || campaignItemsResult.error) {
@@ -1730,11 +1768,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
               .eq("campaign_id", engagementCampaignId)
               .order("sort_order", { ascending: true })
               .order("created_at", { ascending: true }),
-            supabase
-              .from("engagement_items")
-              .select("id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at")
-              .eq("campaign_id", engagementCampaignId)
-              .order("updated_at", { ascending: false }),
+            readEveryReportEngagementItem(supabase, engagementCampaignId),
           ])
         : [
             { data: null, error: null },
