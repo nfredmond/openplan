@@ -66,6 +66,10 @@ make a rehearsal pass. Retain the exact private SQL and TOC list used.
 
 Verify migrations, table inventory, RLS flags, bucket/object records, Auth rows,
 role grants, event triggers and representative access boundaries independently.
+On any restored or replacement project, rerun
+[`restrict-postgis-data-api.sql`](../../scripts/ops/restrict-postgis-data-api.sql)
+and [`verify-postgis-data-api.sql`](../../scripts/ops/verify-postgis-data-api.sql).
+That Data API guard lives in a role setting, which a database dump does not carry.
 Verify retained password hashes against the synthetic users without printing
 passwords or hashes. SQL hash checks do not establish a working Auth service.
 
