@@ -94,6 +94,8 @@ The [original dispatch custody candidate](reviews/2026-10-11-odm-original-dispat
 
 The [private application dispatch producer candidate](reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md) saves exact request text outside member-readable jobs before optional dispatch and checks current original scope through service-only RPCs. It retains nullable project and original actor and refuses uncertain storage replies. Focused application, native mutation, project-lock, local SQL restore, installed CLI upgrade and actual RPC interruption checks pass. Full worker recovery and hosted integration remain open; no engine permission is established.
 
+The [October 12 combined M3 candidate](reviews/2026-10-12-m3-owned-stack-integration/STATUS.md) joins the owned recovery and aerial stack with the separate worker-root parent and fetched main. Its worker, operations, application and installed-RPC checks pass, including a narrow native control-panel layout correction. The [private reader](reviews/2026-10-12-odm-private-dispatch-reader/STATUS.md), [receipt capacity correction](reviews/2026-10-12-odm-private-reader-capacity/STATUS.md) and [current draft authority](reviews/2026-10-12-odm-private-draft-authority/STATUS.md) retain their distinct limits. Hosted migration, current-head CI, native engine attestation and full-worker acceptance remain separate.
+
 The [October 12 deadline-test clock correction](reviews/2026-10-12-odm-deadline-test-clock/STATUS.md) measures the aerial pipeline's actual start instead of including fixture setup. It removes the earlier test allowance and passes the existing harmless and broken deadline controls under Python 3.14 and 3.11. Production code and its deadline stay unchanged; exact-commit CI remains separate.
 
 

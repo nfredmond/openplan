@@ -37,6 +37,11 @@ does not grant engine permission. Apply this additive migration before enabling
 dependent reader code. It remains a candidate, with hosted rollout and default
 worker activation pending. See the [producer evidence](docs/reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md).
 
+The local control panel keeps its update/recovery caption visible at the
+minimum window size and double display scale by reducing the summary gap.
+The [combined worker integration evidence](docs/reviews/2026-10-12-m3-owned-stack-integration/STATUS.md)
+records its layout controls and the retained worker candidate's verification limits.
+
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
 retains exact private bytes, recovers interrupted attempts and leaves completed

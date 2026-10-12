@@ -1,0 +1,48 @@
+{
+  "captures": [
+    {
+      "file": "control-820-760-scale-1.33-tab-0.png",
+      "width": 820,
+      "height": 760,
+      "scale": 1.33,
+      "tab": 0
+    },
+    {
+      "file": "control-820-760-scale-1.33-tab-1.png",
+      "width": 820,
+      "height": 760,
+      "scale": 1.33,
+      "tab": 1
+    },
+    {
+      "file": "control-820-760-scale-1.33-tab-2.png",
+      "width": 820,
+      "height": 760,
+      "scale": 1.33,
+      "tab": 2
+    },
+    {
+      "file": "control-640-700-scale-2.0-tab-0.png",
+      "width": 640,
+      "height": 700,
+      "scale": 2.0,
+      "tab": 0
+    },
+    {
+      "file": "control-640-700-scale-2.0-tab-1.png",
+      "width": 640,
+      "height": 700,
+      "scale": 2.0,
+      "tab": 1
+    },
+    {
+      "file": "control-640-700-scale-2.0-tab-2.png",
+      "width": 640,
+      "height": 700,
+      "scale": 2.0,
+      "tab": 2
+    }
+  ],
+  "sourceSha256": "aafbd87b97847363b166ec726c2373d2303ba16252672e0afa99afb0683b3c89",
+  "boundary": "Owned synthetic Xvfb rendering. All status and application commands forbidden. No T3/web/actual service acceptance."
+}
