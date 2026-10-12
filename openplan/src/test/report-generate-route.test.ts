@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
+import { pagingFake } from "./helpers/paging-fake";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { createHash } from "node:crypto";
 
@@ -226,8 +227,16 @@ const engagementCategoriesOrderSortMock = vi.fn(() => ({ order: engagementCatego
 const engagementCategoriesEqCampaignMock = vi.fn(() => ({ order: engagementCategoriesOrderSortMock }));
 const engagementCategoriesSelectMock = vi.fn(() => ({ eq: engagementCategoriesEqCampaignMock }));
 
+// The fixture behind the campaign's comment read. The read pages, so the chain
+// is a paging fake holding the server's 1,000-row cap: a read that stops after
+// one request sees at most 1,000 comments, as it would against PostgREST.
 const engagementItemsOrderMock = vi.fn();
-const engagementItemsEqCampaignMock = vi.fn(() => ({ order: engagementItemsOrderMock }));
+const engagementItemsPaging = pagingFake(() => engagementItemsOrderMock(), { serverCap: 1000 });
+const engagementItemsChainOrderMock = vi.fn(() => engagementItemsPaging.chain);
+const engagementItemsRangeMock = vi.fn(engagementItemsPaging.range);
+engagementItemsPaging.chain.order = engagementItemsChainOrderMock;
+engagementItemsPaging.chain.range = engagementItemsRangeMock;
+const engagementItemsEqCampaignMock = vi.fn(() => engagementItemsPaging.chain);
 // The RTP packet reads the cycle's items across every linked campaign at once,
 // so this table answers `.in` as well as `.eq`.
 const engagementItemsInMock = vi.fn();
@@ -614,6 +623,7 @@ function reportNamesCountyRun(overrides: Record<string, unknown> = {}) {
 describe("POST /api/reports/[reportId]/generate", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    engagementItemsPaging.reset();
     executionInsertMock.mockReset().mockResolvedValue({ error: null });
 
     modelingDiagnosisOrderMock.mockResolvedValue({ data: [], error: null });
@@ -3128,6 +3138,163 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(generatedHtml).toContain("Engagement Campaign");
     expect(generatedHtml).toContain("Auditability posture");
     expectProvenanceLanguageOnly(generatedHtml);
+  });
+
+  describe("a campaign with more comments than the server returns in one response", () => {
+    const CAMPAIGN_ID = "99999999-9999-4999-8999-999999999999";
+    const ITEM_COLUMNS =
+      "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+
+    // 1,234 comments: past PostgREST's 1,000-row cap, so a read that stops
+    // after one request counts 1,000 and reports no error.
+    function commentRows(count: number) {
+      return Array.from({ length: count }, (_, index) => ({
+        id: `item-${String(index).padStart(6, "0")}`,
+        campaign_id: CAMPAIGN_ID,
+        category_id: "category-1",
+        status: "approved",
+        source_type: "public",
+        latitude: null,
+        longitude: null,
+        moderation_notes: null,
+        created_at: "2026-03-12T00:00:00.000Z",
+        updated_at: "2026-03-14T03:00:00.000Z",
+      }));
+    }
+
+    function projectReportCitingTheCampaign() {
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [
+          {
+            id: "section-1",
+            section_key: "engagement_summary",
+            title: "Engagement campaign summary",
+            enabled: true,
+            sort_order: 0,
+            config_json: { campaignId: CAMPAIGN_ID },
+          },
+        ],
+        error: null,
+      });
+    }
+
+    function campaignTargetedReport() {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: null,
+          rtp_cycle_id: null,
+          engagement_campaign_id: CAMPAIGN_ID,
+          title: "Campaign packet",
+          summary: null,
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+        },
+        error: null,
+      });
+      sectionsOrderMock.mockResolvedValueOnce({
+        data: [
+          { id: "section-1", section_key: "engagement_summary", title: "Engagement campaign summary", enabled: true, sort_order: 0, config_json: {} },
+        ],
+        error: null,
+      });
+      reportRunsOrderMock.mockResolvedValueOnce({ data: [], error: null });
+    }
+
+    function generate() {
+      return postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format: "html" }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+    }
+
+    function expectTheFullTotalIsRead() {
+      // The projection carries the columns the counts are computed from, and the
+      // order is total (`id` breaks ties) so no comment is read twice or skipped
+      // across page boundaries.
+      expect(engagementItemsSelectMock).toHaveBeenCalledWith(ITEM_COLUMNS);
+      expect(engagementItemsEqCampaignMock).toHaveBeenCalledWith("campaign_id", CAMPAIGN_ID);
+      expect(engagementItemsChainOrderMock.mock.calls.slice(0, 2).map(([column]) => column)).toEqual([
+        "updated_at",
+        "id",
+      ]);
+    }
+
+    it("counts every comment in a project packet", async () => {
+      projectReportCitingTheCampaign();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(200);
+      const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.sourceContext;
+      expect(sourceContext).toMatchObject({ engagementCampaignId: CAMPAIGN_ID, engagementItemCount: 1234 });
+      expectTheFullTotalIsRead();
+    });
+
+    it("counts every comment in a campaign packet", async () => {
+      campaignTargetedReport();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(200);
+      const sourceContext = artifactsInsertMock.mock.calls.at(-1)?.[0]?.metadata_json?.sourceContext;
+      expect(sourceContext).toMatchObject({ engagementCampaignId: CAMPAIGN_ID, engagementItemCount: 1234 });
+      expectTheFullTotalIsRead();
+    });
+
+    it("refuses a project packet when a later page of comments fails", async () => {
+      projectReportCitingTheCampaign();
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(1234), error: null });
+      // The first page arrives; the second times out. What was read is a prefix,
+      // and a packet built on it would print a short count as the campaign's.
+      engagementItemsRangeMock
+        .mockImplementationOnce(engagementItemsPaging.range)
+        .mockImplementationOnce(async () => ({
+          data: null,
+          error: { message: "canceling statement due to statement timeout", code: "57014" },
+        }));
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to load engagement handoff context" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "report_engagement_load_failed",
+        expect.objectContaining({ message: "canceling statement due to statement timeout", code: "57014" })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a campaign packet when the comment read stops before it is finished", async () => {
+      campaignTargetedReport();
+      // More rows than the read will request before giving up (200 pages of
+      // 500). The read ends with rows still coming and no error; that is an
+      // unfinished count, never a total.
+      engagementItemsOrderMock.mockResolvedValueOnce({ data: commentRows(100_001), error: null });
+
+      const response = await generate();
+
+      expect(response.status).toBe(500);
+      expect(await response.json()).toEqual({ error: "Failed to load engagement campaign records" });
+      expect(mockAudit.error).toHaveBeenCalledWith(
+        "report_engagement_load_failed",
+        expect.objectContaining({
+          campaignId: CAMPAIGN_ID,
+          message: expect.stringContaining("could not be completed"),
+        })
+      );
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+      expect(reportUpdateMock).not.toHaveBeenCalled();
+    });
   });
 
   it("renders disclosed not-applicable blocks for project-scoped sections on a campaign packet", async () => {
