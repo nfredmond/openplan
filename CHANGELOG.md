@@ -184,6 +184,13 @@ Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
+Apply `20261017000002_engagement_survey_question_counts.sql` before deploying
+this change. It adds a function that returns a campaign's approved survey
+response count and per-question answer counts, with no answers, to members of
+the campaign's workspace. The Planner Agent reads survey counts through it; its
+survey read failed on every campaign before, because survey answers are closed
+to every client role.
+
 ## 0.68.0 (2026-10-09)
 
 This development version includes land-use and engagement workflows, model

@@ -60,7 +60,6 @@ import {
   getCachedGrantsGovResult,
   setCachedGrantsGovResult,
 } from "@/lib/grants/grants-gov-cache";
-import { aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
 
 /**
  * Read-only chat tools for the Planner Agent streaming endpoint.
@@ -1367,31 +1366,40 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
         ]);
         const moderationFailed = Boolean(pendingResult?.error) || Boolean(flaggedResult?.error);
 
-        // Survey reads go through the ONE confined reader lib. On deployments
-        // where the response records are locked to the server-side reader, this
-        // read fails under the planner's own session permissions — which is the
-        // expected, honest outcome, reported as unavailable rather than as zero.
-        const survey = await aggregateCampaignSurvey(supabase as never, input.campaignId);
-        const surveyPayload = survey.error
-          ? {
-              status: "unavailable",
-              message:
-                `Survey response counts could not be read from this chat session (${survey.error.message}). ` +
-                "On this deployment the survey response records are confined to a server-side reader, so this is expected here — " +
-                "the campaign page shows the aggregated results. A failed read is not a campaign with zero responses.",
-            }
-          : {
-              status: "ok",
-              approvedResponseCount: survey.approvedResponseCount,
-              questionCount: survey.questions.length,
-              questionRowCap: ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT,
-              questions: survey.questions.slice(0, ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT).map((question) => ({
-                prompt: question.prompt,
-                questionType: question.questionType,
-                answeredCount: question.answeredCount,
-              })),
-              note: "Counts only — individual answers never appear in chat.",
-            };
+        // Survey answers are revoked from every client role, and this module may
+        // not reach the service-role client. The counts come from a definer
+        // function that checks workspace membership itself and returns no answer
+        // (20261017000002). A failed read is reported as unavailable, never zero.
+        const surveyRead = supabase.rpc
+          ? await supabase.rpc("engagement_campaign_survey_question_counts", { p_campaign_id: input.campaignId })
+          : { data: null, error: { message: "survey counts are not available in this session" } };
+        const surveyData = surveyRead?.data as
+          | { approvedResponseCount?: unknown; questions?: unknown }
+          | null
+          | undefined;
+        const surveyQuestions = Array.isArray(surveyData?.questions)
+          ? (surveyData.questions as Array<Record<string, unknown>>)
+          : null;
+        const surveyPayload =
+          surveyRead?.error || !surveyData || typeof surveyData.approvedResponseCount !== "number" || !surveyQuestions
+            ? {
+                status: "unavailable",
+                message:
+                  `Survey response counts could not be read (${surveyRead?.error?.message ?? "unexpected response"}). ` +
+                  "The campaign page shows the aggregated results. A failed read is not a campaign with zero responses.",
+              }
+            : {
+                status: "ok",
+                approvedResponseCount: surveyData.approvedResponseCount,
+                questionCount: surveyQuestions.length,
+                questionRowCap: ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT,
+                questions: surveyQuestions.slice(0, ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT).map((question) => ({
+                  prompt: typeof question.prompt === "string" ? question.prompt : null,
+                  questionType: typeof question.questionType === "string" ? question.questionType : null,
+                  answeredCount: typeof question.answeredCount === "number" ? question.answeredCount : null,
+                })),
+                note: "Counts of approved responses only. Individual answers never appear in chat.",
+              };
 
         return {
           status: "ok",
