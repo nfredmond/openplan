@@ -20,7 +20,7 @@ describe("the Planner Agent panel follows the colour mode", () => {
   });
 
   it("uses no hard-coded dark-theme colour utilities", () => {
-    const darkOnly = /\b(?:text-(?:white|slate-(?:50|100|200|300|400|500))|(?:bg|border)-white\/|bg-black\/|(?:text|bg|border)-(?:emerald|violet|sky|amber|rose)-\d{2,3})\b/g;
+    const darkOnly = /\b(?:text-(?:white|slate-(?:50|100|200|300|400|500))|(?:bg|border)-white\/|bg-black\/|(?:text|bg|border)-(?:emerald|violet|sky|amber|rose|fuchsia|pink|purple|indigo|blue|cyan|teal|green|lime|yellow|orange|red)-\d{2,3})\b/g;
     expect(source.match(darkOnly) ?? []).toEqual([]);
     expect(source).not.toMatch(/bg-\[linear-gradient\(180deg,rgba\((?:6|9|10|8),/);
   });

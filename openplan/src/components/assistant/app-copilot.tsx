@@ -452,7 +452,7 @@ function quickLinkBadge(link: AssistantQuickLink) {
 function quickLinkPriorityBadge(link: AssistantQuickLink) {
   switch (link.priority) {
     case "primary":
-      return { label: "Primary", className: "border-fuchsia-300/22 bg-fuchsia-400/12 text-fuchsia-100" };
+      return { label: "Primary", className: "border-foreground/30 bg-foreground/[0.06] text-foreground" };
     case "secondary":
       return { label: "Secondary", className: "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]" };
     case "supporting":
@@ -1105,7 +1105,7 @@ function QuickLinkGrid({
         </div>
       </div>
       {shapedOperations.length ? (
-        <div className="rounded-[0.5rem] border border-fuchsia-300/12 bg-foreground/[0.03] px-4 py-3">
+        <div className="rounded-[0.5rem] border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-foreground/[0.03] px-4 py-3">
           <div className="flex items-start justify-between gap-3">
             <div>
               <p className="text-label font-semibold text-muted-foreground">Shaped operations</p>
@@ -1150,7 +1150,7 @@ function QuickLinkGrid({
                       </p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {isPinned ? (
-                          <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
+                          <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--primary)]">
                             Pinned
                           </span>
                         ) : null}
@@ -1188,8 +1188,8 @@ function QuickLinkGrid({
                       }
                       className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                         isPinned
-                          ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
-                          : "border-border bg-foreground/[0.04] text-foreground hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                          ? "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]"
+                          : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]"
                       }`}
                     >
                       <Pin className="h-3 w-3" />
@@ -1330,7 +1330,7 @@ function QuickLinkGrid({
                               {executionBadge.label}
                             </span>
                             {isPinned ? (
-                              <span className="inline-flex items-center rounded-full border border-fuchsia-300/22 bg-fuchsia-400/12 px-2 py-0.5 text-label font-semibold text-fuchsia-100">
+                              <span className="inline-flex items-center rounded-full border border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] px-2 py-0.5 text-label font-semibold text-[color:var(--primary)]">
                                 Pinned
                               </span>
                             ) : null}
@@ -1364,8 +1364,8 @@ function QuickLinkGrid({
                               }
                               className={`inline-flex items-center gap-1 rounded-full border px-2 py-1 text-label font-semibold transition ${
                                 isPinned
-                                  ? "border-fuchsia-300/28 bg-fuchsia-400/12 text-fuchsia-100"
-                                  : "border-border bg-foreground/[0.04] text-foreground hover:border-fuchsia-300/22 hover:bg-fuchsia-400/10"
+                                  ? "border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)] text-[color:var(--primary)]"
+                                  : "border-border bg-foreground/[0.04] text-foreground hover:border-[color:color-mix(in_srgb,var(--primary)_35%,transparent)] hover:bg-[color:color-mix(in_srgb,var(--primary)_12%,transparent)]"
                               }`}
                             >
                               <Pin className="h-3 w-3" />
