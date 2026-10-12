@@ -40,6 +40,27 @@ Use SQLite's backup API or a verified checkpoint for active journals. A file
 transfer made while workers write is insufficient for a consistent recovery
 point. Preserve `OPENPLAN_INTEGRATION_KEY_SECRET` through protected custody.
 
+## Encrypted offsite copy, October 12, 2026
+
+The Railway service `offsite-backup` writes a daily encrypted database and
+Storage capture to a Railway bucket in US East. See
+[its deployment record](../../../workers/hosted-backup/DEPLOY.md) for schedule,
+retention, variables and limits. The first capture (`20261012T002831Z`) was
+downloaded, decrypted and checked: ciphertext hash, archive hash, 7,477 index
+entries, and all 220 objects (117,871,050 bytes) by size and SHA-256. Its
+archive was then restored as `supabase_admin` into a fresh database in a
+disposable `supabase/postgres:17.11.0.004` container with no network. Two
+errors remained, both the `ensure_rls` event trigger described below. The
+restored copy matches production on 405 migrations, 310 public tables, 309
+with RLS, 769 policies, five Auth users, 11 buckets and 220 object rows, and
+those rows name exactly the 220 copied objects. Production has seven event
+triggers; the restored copy has six.
+
+That restore proves the archive and objects. It does not start replacement
+Auth or Storage services, replay worker journals, or cut production over. The
+private key that decrypts these captures must be kept in a second place
+outside this workstation.
+
 Railway's live model, application-worker and OCR volumes have daily and weekly
 backup schedules. The observed retention is six days for daily backups and
 27 days for weekly backups. Launch-baseline snapshot records also exist for

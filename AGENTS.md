@@ -213,8 +213,10 @@ place a hold is posted; the untracked `COORDINATION.md` in the canonical checkou
 is an older log. Verify live platform state rather than treating
 these dated settings or a prior agent's report as current acceptance evidence.
 The hosted relaunch does not establish complete v1 or scientific validation.
-The final multi-service backup has not itself been restored atomically; preserve
-the documented recovery limits and protected local custody.
+A daily encrypted offsite capture of the database and Storage runs on Railway
+(`workers/hosted-backup/DEPLOY.md`); its first capture restores into a disposable
+database. Captures are not atomic and do not include worker volumes; preserve the
+documented recovery limits and protected key custody.
 
 Keep one dependable main. Commit and push verified checkpoints to branches, land
 them on `main` through pull requests, inspect GitHub CI separately, and preserve
