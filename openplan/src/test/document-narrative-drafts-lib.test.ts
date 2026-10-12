@@ -135,6 +135,10 @@ describe("buildReportSectionFacts", () => {
     expect(claims).toContain('has status "Succeeded"');
     expect(claims).toContain('County validation run "County validation"');
     expect(claims).toContain("4 pass, 1 warning, 0 fail");
+    // A drafting model reads this fact. The retired validated-screening stage
+    // must reach it as a count check, never as "Validated Screening".
+    expect(claims).toContain('is at stage "Count Check Complete"');
+    expect(claims).not.toContain("Validated Screening");
   });
 
   it("carries the engine's standing screening caveat on every worker model run fact", () => {
