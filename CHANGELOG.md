@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
+production build no longer lets workspaces without their own key spend the
+deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
+a deployment with public signup, leave it unset; each workspace adds its own key.
+Development runs keep the old behavior. Sign-in and sign-up now refuse redirect
+values that only look local, the sign-up confirmation notice says to check spam
+and can resend the link, and the pages no longer promise a workspace before the
+email is confirmed.
+
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
 retains exact private bytes, recovers interrupted attempts and leaves completed
@@ -190,6 +199,12 @@ response count and per-question answer counts, with no answers, to members of
 the campaign's workspace. The Planner Agent reads survey counts through it; its
 survey read failed on every campaign before, because survey answers are closed
 to every client role.
+
+RTP document extraction now returns project costs. The prompt told the model
+that a figure's exact digits must appear in its quote, so it left out costs a
+plan prints as "$24 million" rather than risk losing the project row. The
+prompt now states the rule the checker applies: "$24 million", "$24M" and
+"24,000,000" are the same figure.
 
 ## 0.68.0 (2026-10-09)
 

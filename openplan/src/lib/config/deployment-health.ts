@@ -237,7 +237,7 @@ function anthropicCheck(facts: DeploymentHealthFacts): DeploymentCheck {
     detail:
       "No Anthropic API key is configured. AI-assisted features — grant narrative drafting, engagement comment synthesis, translation and moderation, and the in-app assistant — are unavailable. Every other module works normally.",
     remedy:
-      "AI assistance switches on once whoever operates this deployment adds an Anthropic API key. For the operator: set ANTHROPIC_API_KEY to an Anthropic API key.",
+      "AI assistance switches on once whoever operates this deployment adds an Anthropic API key. For the operator: set ANTHROPIC_API_KEY to an Anthropic API key, and in a production build also set OPENPLAN_SHARED_AI_KEY=allow. Leave that unset on a deployment with public signup; each workspace then adds its own key in workspace settings.",
   };
 }
 
