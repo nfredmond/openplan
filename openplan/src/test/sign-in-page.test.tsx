@@ -88,14 +88,14 @@ describe("SignInPage", () => {
    * an account that was not confirmed.
    */
   it("explains a failed emailed link and offers a new confirmation email, not only a reset", async () => {
-    searchParamsValue.set("auth_error", "Email link is invalid or has expired");
+    searchParamsValue.set("auth_error", "expired");
     searchParamsValue.set("redirect", "/reports");
 
     render(<SignInPage />);
 
     const notice = await screen.findByRole("alert");
     expect(notice).toHaveTextContent("The link from your email did not work.");
-    expect(notice).toHaveTextContent("Email link is invalid or has expired");
+    expect(notice).toHaveTextContent(/expired or was already used.*use the newest email/i);
     expect(notice).toHaveTextContent(/already opened the link once, your account is confirmed/i);
     // The reset link is still there for the person who was resetting.
     expect(screen.getByRole("link", { name: /request a new reset link/i })).toHaveAttribute("href", "/forgot-password");
@@ -225,5 +225,30 @@ describe("SignInPage", () => {
     await waitFor(() => {
       expect(pushMock).toHaveBeenCalledWith("/invitations/invite-token-123");
     });
+  });
+});
+
+/**
+ * L-1 of the hosted review: the notice printed whatever `auth_error` held, so a
+ * crafted OpenPlan link could show words of the sender's choosing. Only fixed
+ * codes map to copy now.
+ */
+describe("SignInPage link error copy", () => {
+  beforeEach(() => {
+    for (const key of [...searchParamsValue.keys()]) searchParamsValue.delete(key);
+  });
+
+  it("never shows text taken from the URL", async () => {
+    searchParamsValue.set("auth_error", "Your account is locked. Call 555-0100 to restore it.");
+    render(<SignInPage />);
+    const notice = await screen.findByRole("alert");
+    expect(notice).not.toHaveTextContent(/555-0100|locked/);
+    expect(notice).toHaveTextContent("This link did not work. Ask for a new one.");
+  });
+
+  it("explains a link opened in a different browser", async () => {
+    searchParamsValue.set("auth_error", "other-browser");
+    render(<SignInPage />);
+    expect(await screen.findByRole("alert")).toHaveTextContent(/browser where you asked for it/);
   });
 });
