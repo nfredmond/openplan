@@ -5,6 +5,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 const pushMock = vi.fn();
 const refreshMock = vi.fn();
 const signUpMock = vi.fn();
+const resendMock = vi.fn();
 const searchParamsValue = new URLSearchParams();
 
 vi.mock("next/navigation", () => ({
@@ -24,6 +25,7 @@ vi.mock("@/lib/supabase/client", () => ({
   createClient: () => ({
     auth: {
       signUp: signUpMock,
+      resend: resendMock,
     },
   }),
 }));
@@ -36,6 +38,8 @@ describe("SignUpPage", () => {
     refreshMock.mockReset();
     signUpMock.mockReset();
     signUpMock.mockResolvedValue({ error: null });
+    resendMock.mockReset();
+    resendMock.mockResolvedValue({ error: null });
     // Snapshot the keys before deleting any of them. `URLSearchParams.forEach`
     // walks a live list, so deleting during the walk shifts the remaining
     // entries under the cursor and silently skips every other one — clearing
@@ -129,6 +133,37 @@ describe("SignUpPage", () => {
     expect(screen.getByText(/planner@example.com/)).toBeInTheDocument();
     // It does NOT route anywhere: the account cannot sign in yet.
     expect(pushMock).not.toHaveBeenCalled();
+  });
+
+  it("tells a person waiting for confirmation to check spam and lets them resend the link", async () => {
+    // The hosted sender reaches Gmail with SPF, DKIM and DMARC passing and is
+    // still filed as spam. Without this the person waits for mail that never
+    // reaches the inbox, with no way to ask for another copy.
+    signUpMock.mockResolvedValue({ data: { user: { id: "u1" }, session: null }, error: null });
+
+    render(<SignUpPage />);
+    fireEvent.change(screen.getByLabelText(/Work email/i), { target: { value: " planner@example.com " } });
+    fireEvent.change(screen.getByLabelText(/^Password$/i), { target: { value: "OpenPlan!2026" } });
+    fireEvent.change(screen.getByLabelText(/^Organization$/i), { target: { value: "Nevada County TC" } });
+    fireEvent.click(screen.getByRole("button", { name: /Create account/i }));
+
+    expect(await screen.findByText(/check your spam folder/i)).toBeInTheDocument();
+    fireEvent.click(screen.getByRole("button", { name: /Send the link again/i }));
+
+    await waitFor(() => {
+      expect(resendMock).toHaveBeenCalledWith(
+        expect.objectContaining({ type: "signup", email: "planner@example.com" })
+      );
+    });
+    expect(await screen.findByText(/A new link is on its way/i)).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Send the link again/i })).toBeDisabled();
+  });
+
+  it("does not promise a ready workspace before the email is confirmed", async () => {
+    render(<SignUpPage />);
+
+    await screen.findByRole("heading", { name: /Create your OpenPlan account/i });
+    expect(screen.queryByText(/ready immediately/i)).not.toBeInTheDocument();
   });
 
   it("goes straight to the destination when a session is returned (confirmations off)", async () => {

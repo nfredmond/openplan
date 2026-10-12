@@ -10,13 +10,28 @@
  */
 
 const FALLBACK_PATH = "/dashboard";
+const PROBE_ORIGIN = "https://openplan.invalid";
 
-/** Only same-origin app paths, so `next` cannot be turned into an open redirect. */
+/**
+ * Only same-origin app paths, so `next` cannot be turned into an open redirect.
+ *
+ * The sign-in and sign-up pages hand this result straight to `router.push`,
+ * which resolves it as a URL. The URL parser drops tab, CR and LF and reads
+ * "\" as "/", so "/\t/evil.example" passes a prefix check and still resolves
+ * to https://evil.example/. Refuse those characters and confirm the parsed
+ * origin does not change.
+ */
 export function safeNextPath(raw: string | null): string {
   if (!raw) return FALLBACK_PATH;
   // Reject protocol-relative ("//evil.com"), backslash variants browsers treat
   // the same way, and absolute URLs outright.
   if (!raw.startsWith("/") || raw.startsWith("//") || raw.startsWith("/\\")) return FALLBACK_PATH;
+  if (/[\u0000-\u001f\u007f\\]/.test(raw)) return FALLBACK_PATH;
+  try {
+    if (new URL(raw, PROBE_ORIGIN).origin !== PROBE_ORIGIN) return FALLBACK_PATH;
+  } catch {
+    return FALLBACK_PATH;
+  }
   return raw;
 }
 

@@ -2,6 +2,7 @@
 
 [Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
 The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
+The [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) records the scoped demo key, actual AI requests, 405-migration hosted state, and the disabled GTFS commissioning boundary.
 
 
 Use this index to distinguish current instructions and priorities from historical
