@@ -193,6 +193,11 @@ Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
 
+The Planner Agent can now set a funding opportunity's closing date when it
+proposes the record. Before, a planner who gave it a due date had to enter the
+date again on the record. The date is part of what the planner approves; a
+request carrying a different date is refused.
+
 Corridor crash density now divides by every year the crash source answered,
 including years with no crash in the study area. It divided by the years that
 returned a crash, so an empty year raised the annual rate: a downtown test area
