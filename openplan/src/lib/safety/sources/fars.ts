@@ -388,6 +388,7 @@ export async function fetchFarsCrashes(params: CrashFetchParams): Promise<CrashF
     yearsCovered: Array.from(
       new Set(records.map((record) => record.collisionYear).filter((y): y is number => typeof y === "number"))
     ).sort((a, b) => a - b),
+    yearsQueried: [...yearsAnswered].sort((a, b) => a - b),
     truncated: typeof params.maxRecords === "number" && geocodedTotal > params.maxRecords,
     publishedCutoff: FARS_PUBLISHED_CUTOFF,
   };
