@@ -381,7 +381,9 @@ describe("DashboardPage", () => {
 
     expect(screen.queryByRole("heading", { name: "Set up this workspace" })).not.toBeInTheDocument();
     const summary = screen.getByText("Setup checklist").closest("summary");
-    expect(summary?.textContent).toMatch(/1 of 3 done/);
+    // Project (the summary counts one) and geography. The optional AI key is
+    // not one of the three counted steps.
+    expect(summary?.textContent).toMatch(/2 of 3 done/);
     expect(screen.getByText("Example County, Example State")).toBeInTheDocument();
   });
 
@@ -599,10 +601,12 @@ describe("DashboardPage", () => {
       hasAnthropicAccessMock.mockReturnValue(true);
       await renderFirstRun({ homeGeographyRow: SET_HOME_GEOGRAPHY_ROW });
 
-      // AI key and geography are both done; nothing outstanding is emphasized.
+      // AI key and geography are both done. A first-run workspace has no
+      // project, so that step still carries the one emphasis.
       expect(screen.getAllByText("Done")).toHaveLength(2);
       expect(screen.getByText("Set to Example County, Example State.")).toBeInTheDocument();
-      expect(screen.queryByText("Start here")).not.toBeInTheDocument();
+      expect(screen.getAllByText("Start here")).toHaveLength(1);
+      expect(screen.getByText("Create your first project").closest("li")!.textContent).toContain("Start here");
 
     });
 
@@ -617,16 +621,14 @@ describe("DashboardPage", () => {
       expect(screen.queryByText(/^Set to /)).not.toBeInTheDocument();
     });
 
-    it("leads with the AI step and links to integration setup while no key resolves", async () => {
+    it("offers the AI key as an optional step and links to integration setup while no key resolves", async () => {
       await renderFirstRun();
 
       const step = screen.getByText("Turn on your AI assistant").closest("li");
       expect(step).not.toBeNull();
-      // First incomplete step in display order carries the one emphasis.
-      expect(step!.textContent).toContain("Start here");
-      expect(step!.textContent).toMatch(
-        /Without a key, the Planner Agent, narrative drafting, and comment translation are unavailable/
-      );
+      expect(step!.textContent).toContain("Optional");
+      expect(step!.textContent).not.toContain("Start here");
+      expect(step!.textContent).toMatch(/Without a key, the Planner Agent, .* are off\. Everything else works\./);
 
       expect(screen.getByRole("link", { name: "Open integration setup" })).toHaveAttribute(
         "href",
@@ -641,9 +643,39 @@ describe("DashboardPage", () => {
       const step = screen.getByText("Turn on your AI assistant").closest("li");
       expect(step!.textContent).toContain("Done");
       expect(
-        screen.getByText("On — an AI key is available to this workspace.")
+        screen.getByText("On. An AI key is available to this workspace.")
       ).toBeInTheDocument();
 
+    });
+
+    it("starts with creating a project, counted from the workspace summary", async () => {
+      await renderFirstRun();
+
+      expect(screen.getByText("No projects yet.")).toBeInTheDocument();
+      expect(screen.getByRole("link", { name: /Create a project/ })).toHaveAttribute("href", "/projects#create-project");
+    });
+
+    it("marks the project step done when the summary counts a project", async () => {
+      // The default summary in this file counts one project.
+      await renderPage();
+
+      expect(screen.getByText("This workspace has projects.")).toBeInTheDocument();
+      expect(screen.queryByRole("link", { name: /Create a project/ })).not.toBeInTheDocument();
+    });
+
+    it("makes no project claim when the summary could not read projects", async () => {
+      const summary = emptyWorkspaceSummary();
+      loadWorkspaceOperationsSummaryForWorkspaceMock.mockResolvedValueOnce({
+        ...summary,
+        moduleObservations: {
+          engagement: { campaigns: 0, moderationActionableItems: 0 },
+          unreadable: [{ label: "projects", message: "permission denied for table projects" }],
+        },
+      });
+      await renderPage();
+
+      expect(screen.queryByText("No projects yet.")).not.toBeInTheDocument();
+      expect(screen.getByText(/Could not check whether this workspace has projects/)).toBeInTheDocument();
     });
 
     it("points the screening step at Corridor Analysis and reports that no runs exist", async () => {
@@ -664,7 +696,7 @@ describe("DashboardPage", () => {
       );
       // The page cannot read who else is in the workspace (workspace_members
       // RLS is own-row only), so the step must not carry a completion claim.
-      expect(screen.getByText("Optional")).toBeInTheDocument();
+      expect(screen.getByText("Invite your team").closest("li")!.textContent).toContain("Optional");
     });
 
     it("hides the invite step from a plain member, who cannot invite anyone", async () => {
