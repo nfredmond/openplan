@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { WORKSPACE_CALENDAR_COLUMNS } from "@/lib/time/workspace-calendar";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -118,7 +119,27 @@ const serviceFromMock = vi.fn((table: string) => {
   throw new Error(`Unexpected service table: ${table}`);
 });
 
+// workspaces: the calendar read (time zone) behind sent and paid dates.
+const workspaceCalendarMaybeSingleMock = vi.fn(
+  async (): Promise<{ data: unknown; error: { message: string } | null }> => ({
+    data: { time_zone: null, home_country_code: null },
+    error: null,
+  })
+);
+const workspaceCalendarEqMock = vi.fn((column: string, value: string) => {
+  void column;
+  void value;
+  return { maybeSingle: workspaceCalendarMaybeSingleMock };
+});
+const workspaceCalendarSelectMock = vi.fn((columns: string) => {
+  void columns;
+  return { eq: workspaceCalendarEqMock };
+});
+
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspaces") {
+    return { select: workspaceCalendarSelectMock };
+  }
   if (table === "workspace_members") {
     return { select: membersSelectMock };
   }
@@ -1048,5 +1069,66 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
       "client_invoice_update_matched_no_rows",
       expect.objectContaining({ invoiceId: INVOICE, lineItemsReplaced: true })
     );
+  });
+});
+
+/**
+ * SENT AND PAID DATES ARE THE WORKSPACE'S DAY (KI-2026-10-12-016).
+ *
+ * 01:00 UTC on Oct 13 is 6 p.m. Oct 12 in Los Angeles; the UTC date already
+ * reads Oct 13, which is what an invoice sent that evening was stamped with.
+ */
+describe("PATCH /api/invoicing/client-invoices/[invoiceId]: the date stamped", () => {
+  const context = { params: Promise.resolve({ invoiceId: INVOICE }) };
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+    // Reset, not clear: a zone queued for a case that never read it must not
+    // leak into the next case.
+    workspaceCalendarMaybeSingleMock.mockReset();
+    workspaceCalendarMaybeSingleMock.mockResolvedValue({ data: { time_zone: null, home_country_code: null }, error: null });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  function send(status: "sent" | "paid") {
+    return patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", { workspaceId: WORKSPACE, status }),
+      context
+    );
+  }
+
+  it("stamps sent_date with the workspace's calendar day", async () => {
+    workspaceCalendarMaybeSingleMock.mockResolvedValueOnce({
+      data: { time_zone: "America/Los_Angeles", home_country_code: "US" },
+      error: null,
+    });
+    const response = await send("sent");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "sent", sent_date: "2026-10-12" }));
+    expect(workspaceCalendarSelectMock).toHaveBeenCalledWith(WORKSPACE_CALENDAR_COLUMNS);
+    expect(workspaceCalendarEqMock).toHaveBeenCalledWith("id", WORKSPACE);
+  });
+
+  it("stamps paid_date with the workspace's calendar day", async () => {
+    invoiceDetailSingleMock.mockResolvedValueOnce({
+      data: { id: INVOICE, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, project_id: PROJECT, status: "sent", retention_percent: 0 },
+      error: null,
+    });
+    workspaceCalendarMaybeSingleMock.mockResolvedValueOnce({
+      data: { time_zone: "America/Los_Angeles", home_country_code: "US" },
+      error: null,
+    });
+    const response = await send("paid");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "paid", paid_date: "2026-10-12" }));
+  });
+
+  it("stamps the UTC day when no zone is recorded", async () => {
+    const response = await send("sent");
+    expect(response.status).toBe(200);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ sent_date: "2026-10-13" }));
   });
 });

@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { MEASURE_CLAIM_COLUMNS } from "@/lib/measures/claims";
+import { WORKSPACE_CALENDAR_COLUMNS } from "@/lib/time/workspace-calendar";
 
 /**
  * THE CLAIM ROUTES — eligibility, the two role gates, and the decision record.
@@ -57,6 +58,8 @@ type Scenario = {
   rules?: Array<Record<string, unknown>>;
   allocations?: Array<Record<string, unknown>>;
   claim?: Record<string, unknown> | null;
+  /** The workspace row the calendar reads; `"unreadable"` fails the read. */
+  workspace?: Record<string, unknown> | "unreadable";
 };
 
 let scenario: Scenario;
@@ -103,6 +106,18 @@ function filtersOn(table: string): Array<{ column: string; value: unknown }> {
 }
 
 const fromMock = vi.fn((table: string) => {
+  if (table === "workspaces" && scenario.workspace === "unreadable") {
+    return {
+      select: (columns: string) => {
+        capturedSelects.push(columns);
+        return {
+          eq: () => ({
+            maybeSingle: async () => ({ data: null, error: { message: "column workspaces.time_zone does not exist" } }),
+          }),
+        };
+      },
+    };
+  }
   const rowsFor = (): unknown => {
     switch (table) {
       case "measure_funds":
@@ -121,6 +136,8 @@ const fromMock = vi.fn((table: string) => {
         return scenario.allocations ?? [];
       case "measure_claims":
         return scenario.claim === undefined ? null : scenario.claim;
+      case "workspaces":
+        return scenario.workspace ?? { time_zone: null, home_country_code: null };
       default:
         throw new Error(`Unexpected table: ${table}`);
     }
@@ -582,5 +599,72 @@ describe("deciding a claim", () => {
     const response = await patchClaim(patch({ status: "approved" }), claimContext());
     expect(response.status).toBe(401);
     expect(capturedUpdates).toHaveLength(0);
+  });
+});
+
+/**
+ * THE DAY A CLAIM IS STAMPED IS THE WORKSPACE'S DAY (KI-2026-10-12-016).
+ *
+ * 01:00 UTC on Oct 13 is 6 p.m. on Oct 12 in Los Angeles. The server's UTC
+ * date already reads Oct 13, which is what a claim submitted that evening was
+ * stamped with before. Each case varies the workspace's zone so a route that
+ * ignored it would fail.
+ */
+describe("the date a claim is stamped with", () => {
+  const SIX_PM_PACIFIC = new Date("2026-10-13T01:00:00Z");
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(SIX_PM_PACIFIC);
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("dates a claim submitted without a date on the workspace's calendar day", async () => {
+    scenario.workspace = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    const response = await createClaim(post(VALID_CLAIM), claimsContext());
+    expect(response.status).toBe(201);
+    expect(capturedInserts[0].submitted_on).toBe("2026-10-12");
+    expect(capturedSelects).toContain(WORKSPACE_CALENDAR_COLUMNS);
+    expect(filtersOn("workspaces")).toEqual([{ column: "id", value: WORKSPACE_ID }]);
+  });
+
+  it("uses another workspace's zone when that is the one recorded", async () => {
+    scenario.workspace = { time_zone: "Asia/Tokyo", home_country_code: null };
+    await createClaim(post(VALID_CLAIM), claimsContext());
+    expect(capturedInserts[0].submitted_on).toBe("2026-10-13");
+  });
+
+  it("keeps the UTC day, and says so in the log, when the workspace row cannot be read", async () => {
+    scenario.workspace = "unreadable";
+    const response = await createClaim(post(VALID_CLAIM), claimsContext());
+    expect(response.status).toBe(201);
+    expect(capturedInserts[0].submitted_on).toBe("2026-10-13");
+    expect(mockAudit.warn).toHaveBeenCalledWith("workspace_calendar_unreadable", expect.any(Object));
+  });
+
+  it("keeps a date the claimant stated and does not read the calendar", async () => {
+    scenario.workspace = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    await createClaim(post({ ...VALID_CLAIM, submittedOn: "2026-10-01" }), claimsContext());
+    expect(capturedInserts[0].submitted_on).toBe("2026-10-01");
+    expect(filtersOn("workspaces")).toEqual([]);
+  });
+
+  it("dates a draft leaving draft on the workspace's calendar day", async () => {
+    scenario.workspace = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    scenario.claim = {
+      id: CLAIM_ID,
+      status: "draft",
+      amount: "100.00",
+      recipient_id: RECIPIENT_ID,
+      category_id: "transit",
+      fiscal_year_label: "FY26",
+      submitted_on: null,
+    };
+    const response = await patchClaim(patch({ status: "submitted" }), claimContext());
+    expect(response.status).toBe(200);
+    expect(capturedUpdates[0].submitted_on).toBe("2026-10-12");
+    expect(filtersOn("workspaces")).toEqual([{ column: "id", value: WORKSPACE_ID }]);
   });
 });

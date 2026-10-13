@@ -670,6 +670,33 @@ describe("GET /api/map-features/transit", () => {
     );
   });
 
+  /**
+   * "ENDED" IS JUDGED ON THE WORKSPACE'S DAY. 01:00 UTC Oct 13 is 6 p.m.
+   * Oct 12 in Los Angeles, so a schedule that runs through Oct 12 is still
+   * running there; on the UTC day it already reads as ended.
+   */
+  it("judges whether a schedule has ended on the workspace's calendar day", async () => {
+    asMember();
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+      const ended = async (timeZone: string | null) => {
+        const base = defaultResponder({ versions: [{ ...VERSION_ROW, service_end_date: "2026-10-12" }] });
+        respond = (query) =>
+          query.table === "workspaces"
+            ? { data: { time_zone: timeZone, home_country_code: null }, error: null, count: null }
+            : base(query);
+        const payload = await (await getTransit(bareRequest())).json();
+        return (payload.coverageNotes as string[]).some((note) => note.includes("already ended"));
+      };
+      expect(await ended("America/Los_Angeles")).toBe(false);
+      expect(queryFor("workspaces")?.projection).toBe("time_zone, home_country_code");
+      expect(await ended(null)).toBe(true);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("discloses the preloaded feeds it deliberately does not draw", async () => {
     asMember();
     respond = defaultResponder({ publicFeedCount: 2 });

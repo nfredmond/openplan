@@ -223,6 +223,12 @@ const workspaceSelectMaybeSingleMock = vi.fn();
 const serviceUpdateMock = vi.fn();
 const serviceUpdateMaybeSingleMock = vi.fn();
 const resolvePlaceBoundaryMock = vi.fn();
+const rpcMock = vi.fn(
+  async (fn: string, args: Record<string, unknown>): Promise<{ data: unknown; error: { message: string; code?: string } | null }> => {
+    void fn;
+    return { data: args.p_time_zone ?? null, error: null };
+  }
+);
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
@@ -231,6 +237,7 @@ vi.mock("@/lib/observability/audit", () => ({
 vi.mock("@/lib/supabase/server", () => ({
   createClient: async () => ({
     auth: { getUser: getUserMock },
+    rpc: (fn: string, args: Record<string, unknown>) => rpcMock(fn, args),
     from: (table: string) => {
       if (table === "workspace_members") {
         return {
@@ -278,7 +285,7 @@ vi.mock("next/server", async (importActual) => {
   return { ...actual, after: (cb: () => unknown) => cb() };
 });
 
-const { DELETE, GET, PATCH } = await import("@/app/api/workspaces/home-geography/route");
+const { DELETE, GET, PATCH, PUT } = await import("@/app/api/workspaces/home-geography/route");
 
 const WORKSPACE_ID = "550e8400-e29b-41d4-a716-446655440000";
 
@@ -608,5 +615,81 @@ describe("/api/workspaces/home-geography", () => {
       },
     });
     expect((await DELETE(deleteRequest({ workspaceId: WORKSPACE_ID }))).status).toBe(503);
+  });
+});
+
+/**
+ * THE WORKSPACE TIME ZONE (20261017000007). The route checks the role and the
+ * name to give a clear answer; the database function checks both again with
+ * the caller's own session, so these tests also prove each database refusal
+ * is reported as what it is.
+ */
+describe("/api/workspaces/home-geography PUT (time zone)", () => {
+  function putRequest(body: unknown) {
+    return new NextRequest("http://localhost/api/workspaces/home-geography", {
+      method: "PUT",
+      headers: { "content-type": "application/json" },
+      body: typeof body === "string" ? body : JSON.stringify(body),
+    });
+  }
+
+  beforeEach(() => {
+    vi.clearAllMocks();
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+  });
+
+  it("saves a zone through the database function with the caller's session", async () => {
+    const res = await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }));
+    expect(res.status).toBe(200);
+    expect(await res.json()).toEqual({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" });
+    expect(rpcMock).toHaveBeenCalledWith("set_workspace_time_zone", {
+      p_workspace_id: WORKSPACE_ID,
+      p_time_zone: "America/Chicago",
+    });
+    expect(serviceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("clears the zone with null", async () => {
+    const res = await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: null }));
+    expect(res.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledWith("set_workspace_time_zone", { p_workspace_id: WORKSPACE_ID, p_time_zone: null });
+  });
+
+  it("refuses a viewer and a member before calling the database", async () => {
+    for (const role of ["viewer", "member"]) {
+      membershipMaybeSingleMock.mockResolvedValue({ data: { role }, error: null });
+      const res = await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }));
+      expect(res.status, role).toBe(403);
+    }
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a name that is not a zone before calling the database", async () => {
+    const res = await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "Mars/Olympus_Mons" }));
+    expect(res.status).toBe(400);
+    expect(rpcMock).not.toHaveBeenCalled();
+  });
+
+  it("reports the database's own refusals as what they are", async () => {
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: "Not an IANA time zone name: PST", code: "22023" } });
+    expect((await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "PST" }))).status).toBe(400);
+
+    rpcMock.mockResolvedValueOnce({ data: null, error: { message: "Only workspace owners and admins", code: "42501" } });
+    expect((await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }))).status).toBe(403);
+
+    rpcMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Could not find the function public.set_workspace_time_zone in the schema cache", code: "PGRST202" },
+    });
+    expect((await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }))).status).toBe(503);
+  });
+
+  it("401s an unauthenticated caller and 404s a non-member", async () => {
+    getUserMock.mockResolvedValueOnce({ data: { user: null } });
+    expect((await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }))).status).toBe(401);
+    membershipMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
+    expect((await PUT(putRequest({ workspaceId: WORKSPACE_ID, timeZone: "America/Chicago" }))).status).toBe(404);
+    expect(rpcMock).not.toHaveBeenCalled();
   });
 });

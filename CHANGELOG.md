@@ -200,6 +200,8 @@ the campaign's workspace. The Planner Agent reads survey counts through it; its
 survey read failed on every campaign before, because survey answers are closed
 to every client role.
 
+Apply `20261017000007_workspace_time_zone.sql` so owners and admins can set a workspace time zone in Workspace setup; claims, allocations, invoices, statements, grant facts and the Planner Agent then date "today" in that zone instead of UTC (without it, dates stay UTC).
+
 AI moderation flags comments that try to instruct the screen, under a new
 "Instructions to the screen" label, and sends them to a person for review.
 Before, such a comment fit no category and came out "approve" even when the

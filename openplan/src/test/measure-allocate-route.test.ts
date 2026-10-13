@@ -1,5 +1,6 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { WORKSPACE_CALENDAR_COLUMNS } from "@/lib/time/workspace-calendar";
 
 /**
  * ALLOCATING ONE PERIOD — the write that used to be able to empty it.
@@ -165,6 +166,8 @@ type Scenario = {
   rule: Record<string, unknown>;
   recipients: Array<Record<string, unknown>>;
   basisValues: Array<Record<string, unknown>>;
+  /** The workspace row the calendar reads. */
+  workspace?: Record<string, unknown>;
 };
 
 let scenario: Scenario;
@@ -188,6 +191,8 @@ function rowsFor(table: string): unknown {
       return scenario.basisValues;
     case "measure_period_off_the_top":
       return scenario.takes;
+    case "workspaces":
+      return scenario.workspace ?? { time_zone: null, home_country_code: null };
     default:
       throw new Error(`Unexpected table: ${table}`);
   }
@@ -728,3 +733,47 @@ describe("allocate route — a blank apportionment vintage", () => {
  * then replaced both sets and returned
  * `replaced_allocation_count: 1, replaced_off_the_top_count: 1`.
  */
+
+/**
+ * THE DAY AN ALLOCATION IS STATED IS THE WORKSPACE'S DAY (KI-2026-10-12-016).
+ *
+ * 01:00 UTC on Oct 13 is 6 p.m. Oct 12 in Los Angeles; the UTC date already
+ * reads Oct 13. Both the manual path and the computed path stamp the day, and
+ * the zone is varied so a route that ignored it would fail.
+ */
+describe("allocate route: the date an allocation is stated", () => {
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    vi.setSystemTime(new Date("2026-10-13T01:00:00Z"));
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("dates a manual allocation on the workspace's calendar day", async () => {
+    scenario.workspace = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    const response = await allocate(
+      post({ mode: "manual", allocations: [{ categoryId: "streets", amount: 1000, rationale: "Board minute 4." }] }),
+      context(QUARTER_IDS[0])
+    );
+    expect(response.status).toBe(201);
+    expect(allocationRowsSent()[0].stated_on).toBe("2026-10-12");
+    expect(capturedSelects).toContainEqual({ table: "workspaces", columns: WORKSPACE_CALENDAR_COLUMNS });
+    expect(capturedFilters).toContainEqual({ table: "workspaces", column: "id", value: WORKSPACE_ID });
+  });
+
+  it("dates every computed row on the workspace's calendar day", async () => {
+    scenario.workspace = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    const response = await allocate(post({ mode: "descriptor" }), context(QUARTER_IDS[0]));
+    expect(response.status).toBe(201);
+    const stamped = [...allocationRowsSent(), ...offTheTopRowsSent()].map((row) => row.stated_on);
+    expect(stamped.length).toBeGreaterThan(0);
+    expect(new Set(stamped)).toEqual(new Set(["2026-10-12"]));
+  });
+
+  it("dates the same moment as Oct 13 for a workspace whose zone is past midnight", async () => {
+    scenario.workspace = { time_zone: "Europe/Berlin", home_country_code: null };
+    await allocate(post({ mode: "descriptor" }), context(QUARTER_IDS[0]));
+    expect(allocationRowsSent()[0].stated_on).toBe("2026-10-13");
+  });
+});
