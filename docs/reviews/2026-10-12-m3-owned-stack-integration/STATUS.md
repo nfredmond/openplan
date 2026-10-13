@@ -1,5 +1,7 @@
 # Combined worker recovery and private aerial custody candidate
 
+Current continuation: [October13 corrected join](../2026-10-13-m3-corrected-stack/STATUS.md). The checkpoints below retain their original state; hosted03 has since been applied, and264/266 now join the candidate.
+
 The isolated candidate joins all [26 owned open PR heads](evidence/owned-pr-ancestry.json)
 without rewriting their history. It includes the exact PR262 authority parent,
 the separate PR205 worker-root parent and fetched main `473785491`. This is local

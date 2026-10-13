@@ -221,3 +221,5 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 The [native engine observation candidate](reviews/2026-10-12-odm-native-engine-attestation/STATUS.md) binds one supported Linux NodeODM original to daemon and process-root observations. Its defaults and processing commit remain held.
 
 The [SQLite companion retirement correction](reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md) preserves the committed original after a transient file is unlinked, while refusing present unsafe files and aliases.
+
+The [October13 corrected combined worker candidate](reviews/2026-10-13-m3-corrected-stack/STATUS.md) joins the recorded recovery stack, native engine observer and journal retirement correction with current main. It retains separate CI, hosted and production boundaries.
