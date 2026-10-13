@@ -225,3 +225,7 @@ The [SQLite companion retirement correction](reviews/2026-10-13-odm-retired-sqli
 The [October13 corrected combined worker candidate](reviews/2026-10-13-m3-corrected-stack/STATUS.md) joins the recorded recovery stack, native engine observer and journal retirement correction with current main. It retains separate CI, hosted and production boundaries.
 
 The [GTFS deadline fixture correction](reviews/2026-10-13-gtfs-intake-deadline-fixture/STATUS.md) preserves the short ignored-upload deadline, restores the normal recovery deadline and checks cancellation before archive reconciliation. Production intake remains unchanged.
+
+The [native private-authority composition](reviews/2026-10-13-odm-native-private-authority-composition/STATUS.md) joins actual RPC access, original engine attestation and real draft init/upload transport in an owned fixture. Processing stays held; installation, physical-host recovery and scientific acceptance remain separate.
+
+The [intake clock fixture correction](reviews/2026-10-13-odm-intake-clock-fixture/STATUS.md) compares nested fetch deadlines with the actual shared intake deadline. Controlled startup delay stays outside that budget; production limits remain unchanged.

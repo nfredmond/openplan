@@ -46,7 +46,7 @@ def oracle_controls():
     return rows
 
 
-def run(fixture, out):
+def run(fixture, out, *, after_restore=None):
     os.umask(0o077);out.mkdir(mode=0o700)
     (out / 'oracle-controls.json').write_text(json.dumps(oracle_controls(), indent=2) + '\n')
     assert shutil.disk_usage(out).free > 5 * 1024**3
@@ -95,6 +95,7 @@ def run(fixture, out):
             capture_output=True, text=True, timeout=15, env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
         diagnostic = result.stdout + result.stderr
         (out / (label + '-private.log')).write_text(diagnostic)
+        (out / (label + '-process.json')).write_text(json.dumps({'returncode': result.returncode}) + '\n')
         if reason is not None:
             assert intended_failure(result.returncode, diagnostic, reason), 'Wrong native private reader fault: ' + label
             rows.append({'control': label, 'outcome': 'intended_failure', 'reason': reason})
@@ -146,6 +147,9 @@ def run(fixture, out):
         phase('revoked-observation-promoted', 'observe', root, 'Native private observation must preserve revoked access')
         READER.write_bytes(original)
         sql("UPDATE public.workspace_members SET role='owner' WHERE " + member_where + ';', 'restore-original-actor');touched_role = False
+        # An owned native engine proof can test refusal after actual access returns.
+        if after_restore is not None:
+            after_restore(phase, root)
         assert read_function.count('  SELECT * INTO saved') == 1
         touched_function = True;sql(read_function.replace('  SELECT * INTO saved', '  PERFORM pg_sleep(25);\n  SELECT * INTO saved'), 'stall-own-read')
         phase('installed-stalled-read-shared-deadline', 'deadline', root)
