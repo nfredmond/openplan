@@ -109,3 +109,14 @@ Preserve the hosted merge slot and exact health between PRs.
 No app route, default, hosted setting, database migration or release tag changes.
 Original logs, replies, roots and failed trials remain under
 `~/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-task-observation-retention-20261013/`.
+
+## Current-main join
+
+Mainef378501a joins with both the metadata and failed-task report pointers
+preserved. Every worker and aerial-recipe byte still matches the executed
+33-stage binding. No application source differs from that main except the
+parent metadata parser, which remains a separate PR. The joined 20 app/docs
+cases and product direction pass, with no failed or pending cases. The first
+direction command was mistakenly run at repository root and exits ENOENT; it
+proves nothing. The corrected command and checks run from the nested package.
+Current-head CI and the hosted production turn remain separate.
