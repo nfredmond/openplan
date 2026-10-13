@@ -324,5 +324,19 @@ class BootstrapCountyValidationOnrampTests(unittest.TestCase):
         )
 
 
+class DeriveStageTests(unittest.TestCase):
+    def test_a_passing_old_gate_is_not_a_validated_stage(self) -> None:
+        # The old median-APE gate is a diagnostic. Its pass must not stamp the
+        # retired validated-screening stage on the manifest.
+        stage = county_onramp.derive_stage(
+            {"zones": {"count": 26}},
+            {"screening_gate": {"status_label": "bounded screening-ready"}},
+        )
+        self.assertEqual(stage, "validation-scaffolded")
+
+    def test_runtime_only_stays_runtime_complete(self) -> None:
+        self.assertEqual(county_onramp.derive_stage({"zones": {"count": 26}}, None), "runtime-complete")
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -3,6 +3,7 @@ import { countyOnrampManifestSchema } from "@/lib/models/county-onramp";
 import {
   buildCountyRunArtifacts,
   buildCountyRunRecord,
+  deriveCountyRunStageFromValidation,
   deriveCountyRunStatusLabel,
 } from "@/lib/api/county-onramp-persistence";
 
@@ -70,7 +71,9 @@ describe("county onramp persistence helpers", () => {
       geography_id: "06057",
       geography_label: "Nevada County, CA",
       run_name: manifest.name,
-      stage: "validated-screening",
+      // The manifest says validated-screening; that stage is retired and is
+      // stored as a finished count check, never as a validation.
+      stage: "validation-scaffolded",
       status_label: "bounded screening-ready",
       mode: "existing-run",
     });
@@ -164,5 +167,20 @@ describe("county onramp persistence helpers", () => {
     // A run that has not been validated must never be stored as validated-screening.
     expect(record.stage).toBe("runtime-complete");
     expect(record.status_label).toBeNull();
+  });
+
+  it("never derives the retired validated-screening stage from a passing old count gate", () => {
+    // The old median-APE gate is a diagnostic (KI-2026-10-12-001). Its pass
+    // used to stamp validated-screening, which read as validated whatever the
+    // rules-v4 scientific outcome said.
+    expect(
+      deriveCountyRunStageFromValidation({
+        runSummary: { zone_count: 26 },
+        validationSummary: { screening_gate: { status_label: "bounded screening-ready" } },
+      })
+    ).toBe("validation-scaffolded");
+    expect(
+      deriveCountyRunStageFromValidation({ runSummary: { zone_count: 26 }, validationSummary: {} })
+    ).toBe("runtime-complete");
   });
 });

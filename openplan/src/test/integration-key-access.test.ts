@@ -119,8 +119,10 @@ describe("storeWorkspaceIntegrationKey encrypts at rest", () => {
     expect(upserted).not.toBeNull();
     const row = upserted as unknown as Record<string, unknown>;
     expect(String(row.key_ciphertext)).not.toContain("sk-live-example-1234");
-    expect(String(row.key_ciphertext).startsWith("v")).toBe(true);
-    expect(decryptIntegrationKey(String(row.key_ciphertext))).toBe("sk-live-example-1234");
+    // Bound to its workspace: the stored row decrypts only under ws-1.
+    expect(String(row.key_ciphertext).startsWith("v3:")).toBe(true);
+    expect(decryptIntegrationKey(String(row.key_ciphertext), { workspaceId: "ws-1" })).toBe("sk-live-example-1234");
+    expect(decryptIntegrationKey(String(row.key_ciphertext), { workspaceId: "ws-2" })).toBeNull();
     expect(row.key_last4).toBe("1234");
     expect(stored.keyLast4).toBe("1234");
   });

@@ -174,6 +174,7 @@ describe("GET /api/aerial/processing-jobs/[jobId]/artifacts/[custodyId]/download
 
     expect(response.status).toBe(307);
     expect(response.headers.get("location")).toBe(SIGNED_URL);
+    expect(response.headers.get("cache-control")).toBe("private, no-store");
 
     // The signing call is bound to the ROW's bucket and path — recorded from
     // the fake, so pointing it anywhere else fails here.

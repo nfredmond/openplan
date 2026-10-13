@@ -5,6 +5,7 @@ type ManagedRunStatusInput = {
   recovery?: ModelRecoveryStatus;
   engine_key: string;
   artifacts: Array<{ artifact_type: string }>;
+  stages?: Array<{ status: string; error_message?: string | null }> | null;
 };
 
 export type ManagedRunStatusPresentation = {
@@ -29,6 +30,13 @@ export function managedRunStatusPresentation(run: ManagedRunStatusInput): Manage
   }
 
   if (run.status === "succeeded") return { label: "Succeeded", tone: "success" };
+  // A worker records an interruption on a stage that stays `running`, so the
+  // owner recovery decision still applies (workers/aequilibrae_worker/
+  // model_stage_lease.py). Launch and relaunch clear stage errors, so a running
+  // stage that carries one was interrupted, not merely slow.
+  if (run.status === "running" && run.stages?.some((stage) => stage.status === "running" && Boolean(stage.error_message))) {
+    return { label: "Interrupted", tone: "warning" };
+  }
   if (run.status === "running") return { label: "Running", tone: "info" };
   if (run.status === "queued") return { label: "Queued", tone: "info" };
   if (run.status === "failed") return { label: "Failed", tone: "warning" };

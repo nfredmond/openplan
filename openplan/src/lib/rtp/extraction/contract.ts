@@ -396,7 +396,7 @@ export const RTP_EXTRACTION_TARGETS: Record<RtpExtractionTargetKind, RtpExtracti
         min: 0,
         max: MAX_MONEY,
         zeroMeansUnpriced: true,
-        describe: "the project's cost as the plan states it, in whole dollars",
+        describe: "the project's cost as the plan states it, in whole dollars (write 24000000 for $24 million)",
       },
       yearField(
         "costBasisYear",
@@ -600,14 +600,14 @@ function describeField(field: RtpExtractionFieldSpec): string {
     bits.push(`    one of exactly: ${field.enumValues.join(" | ")}`);
   }
   if (field.kind === "numeric") {
-    bits.push("    a JSON number, and the SAME digits must appear in your quote");
+    bits.push("    a JSON number for the same figure your quote prints, in any written form ($24 million, $24M and 24,000,000 are all 24000000)");
   }
   return bits.join("\n");
 }
 
 const SYSTEM_PROMPT = [
   "You transcribe figures and statements out of an adopted long-range transportation plan for a public planning agency.",
-  "You are a copyist, not an analyst. You never calculate, never estimate, never round, never convert units, and never fill a gap.",
+  "You are a copyist, not an analyst. You never calculate, never estimate, never round, never convert units, and never fill a gap. Writing $24 million as 24000000 is the same figure in full digits, not a conversion.",
   "Every value you return must appear, in those characters, inside the passage you quote. If it does not, you do not return it.",
 ].join(" ");
 
@@ -647,7 +647,7 @@ export function buildExtractionPrompt(params: {
     "",
     "RULES THAT DECIDE WHETHER A CANDIDATE IS KEPT AT ALL:",
     "- `quote` must be copied character for character out of ONE passage below, and `source_chunk_id` must be that passage's id. A quote that is not in the passage is discarded.",
-    "- Every number in `fields` must appear inside your own `quote`. A figure that is not in the quote is discarded — the whole candidate, not just the field.",
+    "- Every number in `fields` must appear inside your own `quote`, in any written form ($24 million in the quote licenses 24000000). A figure that is not in the quote is discarded — the whole candidate, not just the field.",
     "- Quote enough of the passage to contain every value you return, and no more than a few sentences or one table row.",
     "- Never return a total, a subtotal, a balance, a sum, an average, a year-of-expenditure figure, a period midpoint, a score or a ranking. OpenPlan computes those itself and will not accept them from you.",
     "- Never return an id, a uuid, or a database key of any kind.",

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -343,7 +343,7 @@ describe("DashboardPage", () => {
 
     runsLimitMock.mockResolvedValue({ data: [], error: null });
     loadMyWorkMock.mockImplementation(async () => myWorkResult([]));
-    loadWorkspaceDatesMock.mockResolvedValue({ items: [], failed: [], capped: [] });
+    loadWorkspaceDatesMock.mockResolvedValue({ items: [], missed: [], failed: [], capped: [] });
     homeGeographyRowMock.mockReturnValue({ data: null, error: null });
     // Default: no Anthropic key resolves — the honest state of a fresh
     // deployment with no env key and no stored workspace key.
@@ -457,6 +457,32 @@ describe("DashboardPage", () => {
     expect(coming).toHaveTextContent("Overdue traffic study");
     expect(coming).toHaveTextContent("1 item overdue");
     expect(coming).not.toHaveTextContent("Main Street held at design gate");
+  });
+
+  it("lists a missed RTP adoption date as overdue in Coming up", async () => {
+    loadWorkspaceDatesMock.mockResolvedValue({
+      items: [],
+      missed: [
+        {
+          key: "rtp-adoption:c1",
+          kind: "adoption",
+          title: "2026 RTP update",
+          dueOn: "2026-10-08",
+          href: "/rtp/c1",
+          projectName: null,
+          overdue: true,
+        },
+      ],
+      failed: [],
+      capped: [],
+    });
+    await renderPage();
+
+    // The read is given the render's clock, so its overdue answer agrees with My Work's.
+    expect(loadWorkspaceDatesMock.mock.calls[0][4]).toBeInstanceOf(Date);
+    const coming = screen.getByRole("region", { name: "Coming up" });
+    expect(coming).toHaveTextContent("1 item overdue");
+    expect(within(coming).getByRole("link", { name: "2026 RTP update" })).toHaveAttribute("href", "/rtp/c1");
   });
 
   it("names a source that could not be read instead of showing a clear list", async () => {

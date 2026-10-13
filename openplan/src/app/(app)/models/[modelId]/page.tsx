@@ -19,7 +19,7 @@ import { RecordHubHeader } from "@/components/ui/record-hub-header";
 import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { resolveModelingWorkerDeclaration } from "@/lib/config/deployment-health-facts";
-import { isPassingCountyRunGateStatus } from "@/lib/models/county-onramp";
+import { countyRunRowSupportsScreeningClaim } from "@/lib/models/county-onramp";
 import { corridorGeojsonSchema, extractModelLaunchTemplate, looksLikePendingSchema } from "@/lib/models/run-launch";
 import { resolveStudyArea } from "@/lib/models/study-area";
 import {
@@ -326,8 +326,11 @@ export default async function ModelDetailPage({
     // `run_summary_json` is projected for ONE field: `intrazonal_trip_share`.
     // A county run whose zone system cannot support a link-level comparison did
     // not establish a screening claim, whatever gate string its validator
-    // recorded offline — so the gate cannot be read without it.
-    .select("stage, status_label, run_summary_json")
+    // recorded offline, so the gate cannot be read without it. The basis
+    // columns carry the rules-v4 outcome, the only thing that can clear it.
+    .select(
+      "run_summary_json, basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+    )
     .eq("workspace_id", model.workspace_id);
 
   const countyRunsUnreadable = reads.check("county screening runs", countyRunsResult);
@@ -366,21 +369,10 @@ export default async function ModelDetailPage({
       : networkBasisVersion.package
     : null;
 
-  const countyRunRows = (workspaceCountyRuns ?? []) as Array<{
-    stage: string | null;
-    status_label: string | null;
-    run_summary_json: { intrazonal_trip_share?: unknown } | null;
-  }>;
-  const hasWorkspacePassingCountyRun = countyRunRows.some((row) => {
-    const share = row.run_summary_json?.intrazonal_trip_share;
-    return (
-      row.stage === "validated-screening" &&
-      isPassingCountyRunGateStatus(
-        row.status_label,
-        typeof share === "number" ? share : null
-      )
-    );
-  });
+  const countyRunRows = (workspaceCountyRuns ?? []) as Array<
+    Parameters<typeof countyRunRowSupportsScreeningClaim>[0]
+  >;
+  const hasWorkspacePassingCountyRun = countyRunRows.some(countyRunRowSupportsScreeningClaim);
 
   // The option lists behind the Links tab. A failed read here offers the
   // planner nothing to attach, which looks identical to a workspace that has
@@ -888,7 +880,7 @@ export default async function ModelDetailPage({
           <StateBlock
             tone="warning"
             title="No validated screening run on file"
-            description="Modeling outputs in this workspace are prototype-only until a county-run clears the screening gate. Any numbers produced here should not be used for outward modeling claims."
+            description="Modeling outputs in this workspace are prototype-only until a county run passes the current validation rules. Any numbers produced here should not be used for outward modeling claims."
             action={
               <Link
                 href="/county-runs"

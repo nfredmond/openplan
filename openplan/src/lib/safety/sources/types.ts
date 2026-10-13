@@ -192,6 +192,13 @@ export type CrashFetchResult = {
   geocodedTotal: number;
   /** Years actually represented in the returned records. */
   yearsCovered: number[];
+  /**
+   * Years the source was asked for and answered, whether or not any crash fell
+   * in them. This is the density divisor: a year with zero crashes in the study
+   * area is a year of observation, and leaving it out raises the annual rate.
+   * Absent on sources that predate it; readers fall back to `yearsCovered`.
+   */
+  yearsQueried?: number[];
   /** True when a caller-supplied cap stopped paging before the source was exhausted. */
   truncated: boolean;
   /**

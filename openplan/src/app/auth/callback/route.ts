@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { resolveCallbackDestination, safeNextPath } from "@/lib/auth/callback-destination";
+import { classifyAuthLinkError, type AuthLinkError } from "@/lib/auth/link-errors";
 
 /**
  * Supabase auth callback — the code-exchange route every emailed link lands on.
@@ -16,7 +17,20 @@ import { resolveCallbackDestination, safeNextPath } from "@/lib/auth/callback-de
  * The route is deliberately generic — it redeems the code and forwards to
  * whatever `next` path the flow asked for — so confirmation and invite flows can
  * use it without another bespoke endpoint.
+ *
+ * A code only redeems in the browser that asked for the link, because the PKCE
+ * verifier lives in that browser's cookies. Emails whose template links to
+ * /auth/confirm work on any device; this route stays for links already sent.
  */
+
+function signInWithError(url: NextRequest["nextUrl"], reason: AuthLinkError) {
+  const failed = url.clone();
+  failed.pathname = "/sign-in";
+  failed.search = "";
+  failed.hash = "";
+  failed.searchParams.set("auth_error", reason);
+  return NextResponse.redirect(failed);
+}
 
 export async function GET(request: NextRequest) {
   const audit = createApiAuditLogger("auth.callback", request);
@@ -25,38 +39,25 @@ export async function GET(request: NextRequest) {
   const next = safeNextPath(url.searchParams.get("next"));
 
   // Supabase reports link failures (expired, already used) on the redirect
-  // itself. Surface them to the user instead of bouncing to a bare sign-in page
-  // that gives no hint why the link did not work.
+  // itself. Explain them instead of bouncing to a bare sign-in page, but send
+  // only a fixed reason code: the provider's text stays in the audit log.
   const errorDescription = url.searchParams.get("error_description") ?? url.searchParams.get("error");
   if (errorDescription) {
     audit.warn("auth_callback_provider_error", { error: errorDescription });
-    const failed = url.clone();
-    failed.pathname = "/sign-in";
-    failed.search = "";
-    failed.searchParams.set("auth_error", errorDescription);
-    return NextResponse.redirect(failed);
+    return signInWithError(
+      url,
+      classifyAuthLinkError({ code: url.searchParams.get("error_code"), message: errorDescription }),
+    );
   }
 
-  if (!code) {
-    const failed = url.clone();
-    failed.pathname = "/sign-in";
-    failed.search = "";
-    failed.searchParams.set("auth_error", "This link is missing its verification code.");
-    return NextResponse.redirect(failed);
-  }
+  if (!code) return signInWithError(url, "incomplete");
 
   const supabase = await createClient();
   const { error } = await supabase.auth.exchangeCodeForSession(code);
 
   if (error) {
     audit.warn("auth_callback_exchange_failed", { message: error.message });
-    const failed = url.clone();
-    failed.pathname = "/sign-in";
-    failed.search = "";
-    // Supabase's own message distinguishes expired from already-used links,
-    // which is exactly what the user needs in order to know to request another.
-    failed.searchParams.set("auth_error", error.message);
-    return NextResponse.redirect(failed);
+    return signInWithError(url, classifyAuthLinkError({ code: error.code, message: error.message }));
   }
 
   audit.info("auth_callback_exchanged", { next });
