@@ -183,3 +183,11 @@ All gates pass for preceding ebf512657, including restore. That does not accept
 this corrected head. Current exact-head GitHub checks, fresh main/health/slot and
 read-only hosted03 metadata precede one main merge. No new schema, hosted setting,
 managed activation, browser evidence, full M3/v1 acceptance or tag is introduced.
+
+## Current-main isolated build and partial browser continuation
+
+[The dated continuation](../2026-10-13-m3-main-preview/STATUS.md) identifies
+main14ec, the passing production build and the actual saved-geography transit
+coverage request against the older isolated target. T3 capture and resize fail.
+This does not replace desktop/390px acceptance, current-main database recovery
+or separate exact public deployment verification.
