@@ -221,6 +221,8 @@ const KNOWN_UNTHEMED_POPUPS = [
   "src/components/rtp/rtp-cycle-project-map.tsx",
 ];
 
+const POPUP_BUILDER = /new\s+(?:[A-Za-z_$][\w$]*\.)+Popup\(/;
+
 function sourceFiles(dir: string): string[] {
   const out: string[] = [];
   for (const entry of readdirSync(dir)) {
@@ -240,7 +242,37 @@ describe("every map popup opts into the themed family", () => {
     // paragraph about popups is not a popup builder, and a file that names
     // `op-map-popup` in a comment has not applied it.
     .map((entry) => ({ file: entry.file, text: stripSourceComments(entry.text) }))
-    .filter((entry) => /new\s+mapboxgl\.Popup\(/.test(entry.text));
+    // Any namespace: the maps that can draw without a key build through a `gl`
+    // parameter that is either library. Until 2026-10-13 only `mapboxgl.Popup`
+    // counted, and converting Safety to `gl.Popup` hid it from this sweep.
+    .filter((entry) => POPUP_BUILDER.test(entry.text));
+
+  /** Seeded control: every namespace form counts, and a bare name does not. */
+  it("sees a popup built through any library namespace", () => {
+    expect(POPUP_BUILDER.test("new mapboxgl.Popup({ offset: 8 })")).toBe(true);
+    expect(POPUP_BUILDER.test("new gl.Popup({ offset: 8 })")).toBe(true);
+    expect(POPUP_BUILDER.test("new maplibregl.Popup({})")).toBe(true);
+    expect(POPUP_BUILDER.test("new Popup({})")).toBe(false);
+    expect(POPUP_BUILDER.test("new gl.PopupLike({})")).toBe(false);
+  });
+
+  /**
+   * THE THEME REACHES A MAPLIBRE CARD TOO. A map without a Mapbox key draws
+   * these popups with MapLibre, whose card is `.maplibregl-popup-content`,
+   * just as white. Every rule that themes a Mapbox popup part needs a twin.
+   */
+  it("themes the MapLibre popup card wherever it themes the Mapbox one", () => {
+    const css = stripSourceComments(readFileSync(path.join(root, "src/app/cartographic.css"), "utf8"));
+    const selectors = [...css.matchAll(/([^{}]+)\{/g)].flatMap((match) =>
+      match[1].split(",").map((part) => part.trim()).filter(Boolean),
+    );
+    const mapbox = selectors.filter((selector) => /\.mapboxgl-popup/.test(selector));
+    expect(mapbox.length).toBeGreaterThanOrEqual(10);
+    const missing = mapbox.filter(
+      (selector) => !selectors.includes(selector.replaceAll("mapboxgl-", "maplibregl-")),
+    );
+    expect(missing).toEqual([]);
+  });
 
   /** NEGATIVE CONTROL: the sweep has to be finding files at all. */
   it("finds the popup builders", () => {

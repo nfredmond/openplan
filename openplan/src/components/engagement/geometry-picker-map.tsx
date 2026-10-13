@@ -5,7 +5,8 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { cn } from "@/lib/utils";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
 /*
@@ -33,17 +34,15 @@ import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
 import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/** Mapbox with a public key, else MapLibre with the operator's open style. */
+const MAP_ENGINE = deploymentMapEngine();
 
 /**
  * WHETHER THIS DEPLOYMENT CAN DRAW A MAP AT ALL, readable by the form that
  * mounts this picker.
  *
- * The picker already answers the question for itself below (`if
- * (!MAPBOX_ACCESS_TOKEN)`), but a surrounding form has to answer it too, and for
+ * The picker already answers the question for itself below (`MAP_ENGINE.kind
+ * === "none"`), but a surrounding form has to answer it too, and for
  * different reasons: the sentences describing where "this map" opens must not be
  * printed above a map that is not there, and the "where" question has to be
  * asked in words instead. Exporting the one reading is what stops the form and
@@ -54,7 +53,7 @@ const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
  * `NEXT_PUBLIC_*` is inlined at build time, so this is a constant in the bundle
  * rather than a runtime lookup.
  */
-export const GEOMETRY_PICKER_CAN_DRAW = Boolean(MAPBOX_ACCESS_TOKEN);
+export const GEOMETRY_PICKER_CAN_DRAW = MAP_ENGINE.kind !== "none";
 
 const CLOSE_RING_PIXEL_TOLERANCE = 12;
 const KEYBOARD_PAN_STEP_PX = 64;
@@ -234,6 +233,8 @@ export function GeometryPickerMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  // The browser could not start the map library (no WebGL), or MapLibre never arrived.
+  const [cannotStart, setCannotStart] = useState(false);
   const [draw, setDraw] = useState<DrawState>({ mode: initialMode, vertices: [], areaClosed: false });
   const modeOptions: Array<{ id: EngagementDrawMode; label: string }> = [
     { id: "point", label: words.modePoint },
@@ -302,137 +303,140 @@ export function GeometryPickerMap({
 
   useEffect(() => {
     const container = mapContainerRef.current;
-    if (!container || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
+    if (!container || mapRef.current || MAP_ENGINE.kind === "none") return;
 
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
-
-    const map = new mapboxgl.Map({
-      container,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: initialCenter,
-      zoom: initialZoom,
-      attributionControl: false,
-    });
-
-    // This picker is mounted inside the project page's Evidence tab, which is
-    // not the landing tab: the container is `display: none` while that tab is
-    // shut, so the map measures 0x0 and would stay blank once it is opened.
-    const stopSizing = keepMapSizedToContainer(map, container);
-
-    // The wrapping <div> is the single keyboard widget; drive pan/zoom from our
-    // own handler so there is no duplicate tab stop or double-handled key.
-    map.keyboard.disable();
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    // Mapbox and OpenStreetMap require visible attribution on every map.
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-
-    map.on("load", () => {
-      setMapReady(true);
-      const canvas = map.getCanvas();
-      canvas.setAttribute("tabindex", "-1");
-      canvas.setAttribute("aria-hidden", "true");
-
-      map.addSource("engagement-draw", {
-        type: "geojson",
-        data: buildPreviewFeatureCollection(drawRef.current),
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
+        center: initialCenter,
+        zoom: initialZoom,
+        attributionControl: false,
       });
-      map.addLayer({
-        id: "engagement-draw-fill",
-        type: "fill",
-        source: "engagement-draw",
-        paint: { "fill-color": "#38bdf8", "fill-opacity": 0.2 },
-        filter: ["==", ["geometry-type"], "Polygon"],
-      });
-      map.addLayer({
-        id: "engagement-draw-line",
-        type: "line",
-        source: "engagement-draw",
-        paint: { "line-color": "#38bdf8", "line-width": 3 },
-        filter: ["!=", ["geometry-type"], "Point"],
-      });
-      map.addLayer({
-        id: "engagement-draw-points",
-        type: "circle",
-        source: "engagement-draw",
-        paint: {
-          "circle-radius": 4.5,
-          "circle-color": "#38bdf8",
-          "circle-stroke-color": "#0f172a",
-          "circle-stroke-width": 1.5,
-        },
-        filter: ["==", ["geometry-type"], "Point"],
-      });
-    });
 
-    map.on("click", (event) => {
-      const current = drawRef.current;
-      const next: [number, number] = [
-        Number(event.lngLat.lng.toFixed(6)),
-        Number(event.lngLat.lat.toFixed(6)),
-      ];
+      // This picker is mounted inside the project page's Evidence tab, which is
+      // not the landing tab: the container is `display: none` while that tab is
+      // shut, so the map measures 0x0 and would stay blank once it is opened.
+      const stopSizing = keepMapSizedToContainer(map, container);
 
-      // Area mode: clicking near the first vertex closes the ring (pointer-only
-      // shortcut; keyboard users press C).
-      if (current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
-        const firstPixel = map.project(current.vertices[0]);
-        const clickPixel = map.project(next);
-        const distance = Math.hypot(firstPixel.x - clickPixel.x, firstPixel.y - clickPixel.y);
-        if (distance <= CLOSE_RING_PIXEL_TOLERANCE) {
-          setHint(null);
+      // The wrapping <div> is the single keyboard widget; drive pan/zoom from our
+      // own handler so there is no duplicate tab stop or double-handled key.
+      map.keyboard.disable();
+      map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+      // Mapbox, OpenStreetMap and any open style's sources require visible attribution.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+
+      map.on("load", () => {
+        setMapReady(true);
+        const canvas = map.getCanvas();
+        canvas.setAttribute("tabindex", "-1");
+        canvas.setAttribute("aria-hidden", "true");
+
+        map.addSource("engagement-draw", {
+          type: "geojson",
+          data: buildPreviewFeatureCollection(drawRef.current),
+        });
+        map.addLayer({
+          id: "engagement-draw-fill",
+          type: "fill",
+          source: "engagement-draw",
+          paint: { "fill-color": "#38bdf8", "fill-opacity": 0.2 },
+          filter: ["==", ["geometry-type"], "Polygon"],
+        });
+        map.addLayer({
+          id: "engagement-draw-line",
+          type: "line",
+          source: "engagement-draw",
+          paint: { "line-color": "#38bdf8", "line-width": 3 },
+          filter: ["!=", ["geometry-type"], "Point"],
+        });
+        map.addLayer({
+          id: "engagement-draw-points",
+          type: "circle",
+          source: "engagement-draw",
+          paint: {
+            "circle-radius": 4.5,
+            "circle-color": "#38bdf8",
+            "circle-stroke-color": "#0f172a",
+            "circle-stroke-width": 1.5,
+          },
+          filter: ["==", ["geometry-type"], "Point"],
+        });
+      });
+
+      map.on("click", (event) => {
+        const current = drawRef.current;
+        const next: [number, number] = [
+          Number(event.lngLat.lng.toFixed(6)),
+          Number(event.lngLat.lat.toFixed(6)),
+        ];
+
+        // Area mode: clicking near the first vertex closes the ring (pointer-only
+        // shortcut; keyboard users press C).
+        if (current.mode === "area" && !current.areaClosed && current.vertices.length >= 3) {
+          const firstPixel = map.project(current.vertices[0]);
+          const clickPixel = map.project(next);
+          const distance = Math.hypot(firstPixel.x - clickPixel.x, firstPixel.y - clickPixel.y);
+          if (distance <= CLOSE_RING_PIXEL_TOLERANCE) {
+            setHint(null);
+            applyDraw((previous) => ({ ...previous, areaClosed: true }));
+            announce(words.hintAreaClosed(String(current.vertices.length)));
+            return;
+          }
+        }
+
+        commitVertex(next);
+      });
+
+      map.on("dblclick", (event) => {
+        event.preventDefault();
+        const current = drawRef.current;
+        if (current.mode === "area") {
+          if (current.vertices.length < 3) {
+            setHint(words.needThreePoints);
+            return;
+          }
           applyDraw((previous) => ({ ...previous, areaClosed: true }));
           announce(words.hintAreaClosed(String(current.vertices.length)));
-          return;
         }
-      }
+      });
 
-      commitVertex(next);
-    });
+      // Right-click removes the last vertex (house pattern).
+      map.on("contextmenu", (event) => {
+        event.preventDefault();
+        undo();
+      });
 
-    map.on("dblclick", (event) => {
-      event.preventDefault();
-      const current = drawRef.current;
-      if (current.mode === "area") {
-        if (current.vertices.length < 3) {
-          setHint(words.needThreePoints);
-          return;
-        }
-        applyDraw((previous) => ({ ...previous, areaClosed: true }));
-        announce(words.hintAreaClosed(String(current.vertices.length)));
-      }
-    });
+      mapRef.current = map;
 
-    // Right-click removes the last vertex (house pattern).
-    map.on("contextmenu", (event) => {
-      event.preventDefault();
-      undo();
-    });
-
-    mapRef.current = map;
-
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      setMapReady(false);
-    };
+      return () => {
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+        setMapReady(false);
+      };
+    }, () => setCannotStart(true));
     // Handlers read state via drawRef, so a single registration is safe.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Sync the preview source with draw state.
+  // Sync the preview source with draw state. It waits for the style rather
+  // than bailing: a point placed while tiles still streamed used to stay off the
+  // preview until the next change. Before `load` there is no source yet, and the
+  // load handler draws from `drawRef` instead.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    const source = map.getSource("engagement-draw") as mapboxgl.GeoJSONSource | undefined;
-    if (!source) return;
-    source.setData(buildPreviewFeatureCollection(draw));
-  }, [draw]);
+    if (!map) return;
+    return whenStyleAccepts(map, () => {
+      const source = map.getSource("engagement-draw") as mapboxgl.GeoJSONSource | undefined;
+      source?.setData(buildPreviewFeatureCollection(draw));
+    });
+  }, [draw, mapReady]);
 
   // Paint the operator's context layers UNDER the resident's own sketch.
   // `beforeId` is the first draw layer, so nothing an operator uploads can bury
-  // the geometry this map exists to collect. Deferred to `style.load` when the
-  // style is not up yet — the same shape as the cartographic backdrop, which
-  // re-runs its paint for exactly this reason.
+  // the geometry this map exists to collect. Deferred until the style can take
+  // layers (`whenStyleAccepts`), the same as the cartographic backdrop.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -449,12 +453,9 @@ export function GeometryPickerMap({
       syncContextLayers(map, layers, { beforeId });
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
-  }, [contextLayers]);
+    return whenStyleAccepts(map, paint);
+    // `mapReady` because MapLibre builds the map after this first ran.
+  }, [contextLayers, mapReady]);
 
   const setMode = (mode: EngagementDrawMode) => {
     if (mode === draw.mode) return;
@@ -557,7 +558,7 @@ export function GeometryPickerMap({
     }
   };
 
-  if (!MAPBOX_ACCESS_TOKEN) {
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
     /*
       NO MAP. What a member of the public needs here is what they can still do;
       WHY it cannot be drawn is an unset access token, which is an operator's
