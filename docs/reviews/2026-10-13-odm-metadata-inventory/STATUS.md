@@ -118,3 +118,13 @@ required. The prior control and resource records remain historical.
 [other-instance refusal](evidence/other-instance-refusal.json) retain the corrected
 case. Intermediate bound-input cohorts remain in the private proof. The final
 cohort also refuses equal root IDs, non-string IDs and an external root path.
+
+## Combined M3 evidence join
+
+Exact preview head `573c2377b8d83c972a2a80ab683e8442a662012a` joins this
+candidate. Its [transit preview report](../2026-10-13-m3-main-preview/STATUS.md)
+preserves the identified builds, actual coverage requests and failed capture/key
+attempts. This adds no visual acceptance. All six executed inventory bindings
+and 61 preceding worker/recipe bindings remain exact. Twenty app/documentation
+cases and product direction pass after the join. The preview PR stays separate
+as a historical record until checked, promoted main includes this exact source.
