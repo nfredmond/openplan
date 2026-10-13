@@ -235,3 +235,4 @@ The [aerial CI wrapper correction](reviews/2026-10-13-odm-ci-job-budget/STATUS.m
 The [native interrupted-upload proof](reviews/2026-10-13-odm-native-uncertain-interruption/STATUS.md) exits an owned process after a checked real response but before journal saving. Relocated recovery holds the uncertain upload without another authorization or transport; this does not reconcile it or grant retry permission.
 
 The [admission deadline fixture correction](reviews/2026-10-13-gtfs-admission-deadline-fixture/STATUS.md) keeps upload timing separate from durable source resolution, observes physical abort before reconciliation and refuses late replies without changing production budgets.
+The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATUS.md) matches the original UUID observed from the pinned engine, preserves exact reply bytes and refuses invalid old mock receipts without rewriting them. Processing remains held.

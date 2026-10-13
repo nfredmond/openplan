@@ -117,3 +117,32 @@ failed native harness trial and rejected documentation-count export remain
 visible. This is response-before-journal interruption, not network acknowledgment
 loss or permission to reconcile/retry/commit. No activation, hosted write, new
 migration, main merge, release tag or additional acceptance is claimed here.
+
+## Current main and two verified corrections
+
+Main `eac9cee05` joins with both changelog entries preserved. The live-RLS
+command retains all 109 paths, including the original 106 and main's additions.
+No existing test path is dropped. [PR279's admission fixture](../2026-10-13-gtfs-admission-deadline-fixture/STATUS.md)
+replaces a whole-admission clock with the actual unchanged timer and physical
+abort ordering. [PR280's reply correction](../2026-10-13-odm-commit-reply-contract/STATUS.md)
+uses the original UUID confirmed by the actual pinned engine for commit.
+Processing and commit dispatch stay held. Both report pointers survive the README
+join. History is preserved; these lower branches will not independently merge
+to main. PR278's operational contract paragraph stays separate until promotion.
+
+[The joined checks](evidence/current-main-corrections-results.json) pass
+329 application/documentation cases across 60 files, with
+0 pending cases retaining their fixture/opt-in boundaries. Scoped
+TypeScript, changed-file lint, product direction and wrapper controls pass.
+[All worker bindings](evidence/current-main-corrections-worker-bindings.json)
+match PR280's complete 31-stage/568-case replay. The [current native journey](evidence/current-main-uncertainty-results.json)
+reruns actual private RPC, attestation and interrupted-upload recovery with the
+corrected parser: all 17 predicates/cases pass, and both engine/RPC fixtures stop.
+The [owned unit](evidence/current-main-corrections-resources.json) stops with a
+460,365,824-byte peak under 1 GiB, zero max/OOM events and no extra swap.
+
+The preceding ebf GitHub gates pass, including restore, but main's new changes
+create a merge conflict. Those results do not establish acceptance of this
+new combined head. Exact-head CI/restore and exact production health remain
+required. No new hosted migration, activation, release tag, scientific or
+practitioner acceptance accompanies this join.
