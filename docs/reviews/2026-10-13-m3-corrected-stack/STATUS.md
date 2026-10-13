@@ -146,3 +146,40 @@ create a merge conflict. Those results do not establish acceptance of this
 new combined head. Exact-head CI/restore and exact production health remain
 required. No new hosted migration, activation, release tag, scientific or
 practitioner acceptance accompanies this join.
+
+## Required retained-state correction and current 34-head candidate
+
+Review4245602660 on main.py remains a real defect in the preceding candidate.
+Managed admission could inherit the container's temporary scratch default.
+[The correction](../2026-10-13-odm-managed-state-root/STATUS.md), PR283 at
+`edfe05cbc2f1fec2a113e621b1636f61835a4c3e`, now requires a declared separate
+private state directory and refuses missing retained roots before scratch creation.
+The exact preceding source fails the new declaration test. No backing-mount,
+installation-wide or physical-host acceptance is inferred from configuration.
+
+[All 34 exact PR heads](evidence/retained-state-correction-ancestry.json), the
+native interruption source and the previously joined main survive. Baseline,
+harmless and restored ancestry controls pass; ebf512657 fails because it lacks283.
+This follows the necessary review correction, rather than adding an optional
+feature to the production turn. Separate278/281/282 remain outside this candidate.
+
+The root correction's final31-stage replay passes578 worker cases across23
+suites, seven scenarios and20 app/docs cases. Ten configuration cases/17 controls,
+31 native attestation cases/68 controls and33 transport cases/59 controls pass
+on both3.14 and3.11. Actual original-receipt/held-start recovery with fresh scratch
+passes32 observations/99 controls. Rejected fixture/precondition, cancellation
+masking, cleanup-race and partial-export trials remain visible in its report.
+
+[The joined app checks](evidence/retained-state-join-results.json) pass329 cases
+across60 files without skips, scoped types, changed-file lint, direction and
+wrapper controls. [All worker bindings](evidence/retained-state-join-worker-bindings.json)
+match the verified root correction. [The fresh actual native interrupted-upload
+journey](evidence/retained-state-uncertainty-results.json) passes17 cases/predicates
+with current source, preserving the uncertain hold. [Its bindings](evidence/retained-state-uncertainty-bindings.json)
+match. The [joined unit](evidence/retained-state-join-resources.json) stops at
+480,432,128 bytes under1GiB, zero max/OOM and no swap.
+
+All gates pass for preceding ebf512657, including restore. That does not accept
+this corrected head. Current exact-head GitHub checks, fresh main/health/slot and
+read-only hosted03 metadata precede one main merge. No new schema, hosted setting,
+managed activation, browser evidence, full M3/v1 acceptance or tag is introduced.
