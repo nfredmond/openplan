@@ -55,3 +55,8 @@ adopt a new engine, deliver a callback or approve a result. It cannot establish
 actor access, image quality, complete installation recovery or useful long jobs.
 The [dated verification record](../../docs/reviews/2026-10-13-odm-task-observation-cli/STATUS.md)
 keeps the actual command and native evidence limits.
+
+The [known-root inventory check](../../docs/reviews/2026-10-13-odm-metadata-inventory/STATUS.md)
+exercises the existing installation inventory and root-set capture with both
+required roots. It preserves the distinction between a successful selected-root
+capture and complete installation recovery.
