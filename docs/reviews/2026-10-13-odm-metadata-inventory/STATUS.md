@@ -59,3 +59,13 @@ bindings do not enumerate every transitive import or attest the host.
 [direct source bindings](evidence/source-bindings.json),
 [resources](evidence/resources.json), [3.11 results](evidence/results311.json) and
 [3.11 resources](evidence/resources311.json) retain the bounded outcomes.
+
+## Fresh-record parent correction joined
+
+The command parent now includes its corrected actual creation and capture probe.
+All five direct executed inventory bindings remain unchanged. Six documentation
+cases and product direction pass after joining. This inventory check still uses
+the original retained stopped fixture and proves known-root capture and reopen;
+it does not claim to create that historical reply through the command. Fresh
+command creation has its separate corrected parent evidence. New head CI remains
+required. No production helper or scope changes during the join.
