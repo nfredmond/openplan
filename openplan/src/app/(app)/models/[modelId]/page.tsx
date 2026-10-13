@@ -1,3 +1,4 @@
+import { setupPendingSentence } from "@/lib/ui/setup-pending";
 import { loadModelRecoveryStatuses } from "@/lib/models/recovery-status-server";
 import { modelRecoveryNeedsReview, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import Link from "next/link";
@@ -52,7 +53,7 @@ import {
   formatModelStatusLabel,
   modelStatusTone,
 } from "@/lib/models/catalog";
-import { ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { OperatorDetail, ReadFailureNotice } from "@/components/ui/read-failure-notice";
 import { loadModelingWorkerHealth } from "@/lib/models/worker-health-server";
 import { isGuidedProjectComparisonModel } from "@/lib/models/project-comparison";
 import { PlanningContextStripForProject } from "@/components/projects/planning-context-strip";
@@ -1106,10 +1107,17 @@ export default async function ModelDetailPage({
                     <div className="module-record-main">
                       <p className="module-section-label">Network basis</p>
                       {networkBasisSchemaPending ? (
-                        <p className="module-record-summary">
-                          Network link schema pending — apply the latest migrations to record which network package
-                          version this model runs against.
-                        </p>
+                        <>
+                          <p className="module-record-summary">
+                            {setupPendingSentence("Which network package version this model runs against is not recorded.")}
+                          </p>
+                          <OperatorDetail>
+                            <p>
+                              The network link columns are missing. Apply the latest migrations to record which
+                              network package version this model runs against.
+                            </p>
+                          </OperatorDetail>
+                        </>
                       ) : networkBasisVersion ? (
                         <>
                           <Link href="/models#network-packages" className="module-record-title hover:text-primary">

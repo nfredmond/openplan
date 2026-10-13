@@ -111,6 +111,14 @@ describe("ExploreCurrentResultCard", () => {
     expect(screen.getByText("1 items to review")).toBeInTheDocument();
     expect(screen.getByText("Fallback summary is still reviewable.")).toBeInTheDocument();
     expect(screen.queryByText("AI interpretation")).not.toBeInTheDocument();
+    expect(screen.queryByText(/Operator-facing/)).not.toBeInTheDocument();
+  });
+
+  it("asks for a person's review when AI wrote part of the summary", () => {
+    render(<ExploreCurrentResultCard {...buildProps()} />);
+
+    expect(screen.getByText(/AI wrote part of this summary\. A person must review it before it is shared\./)).toBeInTheDocument();
+    expect(screen.queryByText(/Operator-facing/)).not.toBeInTheDocument();
   });
 
   it("shows an Estimated badge and explanation on tiles backed by fallback sources", () => {

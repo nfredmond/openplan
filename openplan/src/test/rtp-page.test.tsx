@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -286,6 +286,17 @@ describe("RtpPage", () => {
 
     const grantsLink = screen.getByRole("link", { name: /Open gap resolution/i });
     expect(grantsLink).toHaveAttribute("href", "/grants#grants-gap-resolution-lane");
+  });
+
+  it("names the first packet action in one line instead of a sidebar of queue lanes", async () => {
+    await renderPage();
+
+    const nextStep = screen.getByTestId("rtp-registry-next-step");
+    const link = within(nextStep).getByRole("link");
+    expect(link).toHaveTextContent(/\(\d+ cycles?\)/);
+    expect(link.getAttribute("href")).toMatch(/^\/rtp\?/);
+    // The removed sidebar's vocabulary stays gone from the whole page.
+    expect(document.body.textContent).not.toMatch(/\blanes?\b|Dominant share|Reset and regenerate packets/i);
   });
 
   it("does not treat the packet report self-write as stale immediately after generation", async () => {

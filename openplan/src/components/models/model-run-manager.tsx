@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { scoreValueForPresentation } from "@/lib/analysis/score-presentation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -756,9 +757,10 @@ export function ModelRunManager({
       </div>
 
       {schemaPending ? (
-        <div className="module-empty-state mt-5 text-sm">
-          This OpenPlan installation&apos;s database has not been updated for model runs yet (the `model_runs` table is missing). Whoever operates this installation applies the newest database migration; runs cannot be launched until then.
-        </div>
+        <SetupPendingNotice className="mt-5" consequence="Model runs cannot be launched until then.">
+          The database has not been updated for model runs (the `model_runs` table is missing). Apply the
+          newest database migration.
+        </SetupPendingNotice>
       ) : null}
 
       {latestBehavioralAgreementRun ? (
@@ -1886,7 +1888,7 @@ function ModelRunStagingAndArtifacts({
             <StatusBadge tone="danger">scientifically unchecked</StatusBadge>
           </div>
           <p className="mt-2 text-sm text-muted-foreground">
-            The computation may still be available, but its source material and result were not placed in immutable custody. It cannot support a validation claim.
+            The computation may still be available, but its source material and result were not saved together in a form that cannot change. It cannot support a validation claim.
           </p>
         </section>
       ) : null}
@@ -1905,9 +1907,9 @@ function ModelRunStagingAndArtifacts({
           </div>
         </section>
       ) : structuralInputAuditArtifact || structuralDemandDiagnosisArtifact ? (
-        <section aria-label="Structural demand custody failure" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
+        <section aria-label="Structural demand diagnosis not saved" className="mb-4 rounded-[0.75rem] border border-destructive/40 bg-destructive/5 p-4">
           <StatusBadge tone="danger">scientifically unchecked</StatusBadge>
-          <p className="mt-2 text-sm text-muted-foreground">The before-output check and diagnosis did not enter immutable custody together. This run cannot support a structural diagnosis claim.</p>
+          <p className="mt-2 text-sm text-muted-foreground">The before-output check and diagnosis were not saved together in a form that cannot change. This run cannot support a structural diagnosis claim.</p>
         </section>
       ) : null}
       {stages?.length > 0 && !modelRecoveryNeedsReview(run.recovery) ? <RunProgressBar stages={stages} /> : null}

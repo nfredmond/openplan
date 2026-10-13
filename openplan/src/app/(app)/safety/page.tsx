@@ -17,6 +17,8 @@ import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { StateBlock } from "@/components/ui/state-block";
+import { OperatorDetail, ReadFailureNotice } from "@/components/ui/read-failure-notice";
+import { setupPendingSentence } from "@/lib/ui/setup-pending";
 import { SafetyWorkspace } from "@/components/safety/safety-workspace";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext } from "@/lib/projects/planning-context";
@@ -181,7 +183,7 @@ export default async function SafetyPage({
   const projectAreaNotice = !requestedProjectId
     ? null
     : projectSchemaPending
-      ? "This deployment does not record project study areas yet, so nothing could be inherited from the project this page was opened for. Apply the latest migrations and it will."
+      ? setupPendingSentence("Nothing could be inherited from the project this page was opened for.")
       : projectUnreadable
         ? "This page was opened for a project whose record could not be read, so its study area could not be used. The area below is whatever this workspace had already stated, not that project's."
         : !projectRow
@@ -332,19 +334,23 @@ export default async function SafetyPage({
     */
     <section className="module-page flex h-full min-h-0 flex-col gap-4">
       <PlanningContextStrip context={planningContext} />
-      {reads.any ? (
-        <StateBlock
-          tone="danger"
-          title="Part of this page could not be read"
-          description={`${reads.describe()} ${reads.messages().join(" · ")}`}
-        />
-      ) : null}
+      <ReadFailureNotice reads={reads} title="Part of this page could not be read" />
 
       {projectAreaNotice ? (
         <StateBlock
           tone="warning"
           title="This page did not open on the project's study area"
           description={projectAreaNotice}
+          detail={
+            projectSchemaPending ? (
+              <OperatorDetail>
+                <p>
+                  The projects table has no place-of-record columns. Apply migration 20260728000009,
+                  then reload.
+                </p>
+              </OperatorDetail>
+            ) : undefined
+          }
           action={
             projectRow ? (
               <Link

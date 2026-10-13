@@ -761,7 +761,7 @@ describe("the annual statement route", () => {
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
 
     expect(response.status).toBe(503);
-    expect((await response.json()).hint).toContain("Apply the latest Supabase migrations");
+    expect((await response.json()).operatorDetail).toContain("Apply the latest Supabase migrations");
   });
 
   /**
@@ -797,7 +797,7 @@ describe("the annual statement route", () => {
     const response = await getStatement(statementGet("?fiscalYearLabel=FY%202026"), measureContext());
 
     expect(response.status).toBe(503);
-    expect((await response.json()).hint).toContain("Apply the latest Supabase migrations");
+    expect((await response.json()).operatorDetail).toContain("Apply the latest Supabase migrations");
   });
 
   /**

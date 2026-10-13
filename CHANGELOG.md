@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Money record corrections.** Apply `20261017000005_money_integrity_corrections.sql`
+before deploying. Work-program labor can no longer be counted twice, an issued
+report rechecks its adoption, a second amendment cannot overwrite one in
+progress, a voided contract draft releases its billed sources, finance approves
+only reviewed consultant invoices, and client invoices past draft can change only
+their status, enforced in the database for every writer. Existing records are not
+rewritten; the rules apply to new writes.
+
 Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
 
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a

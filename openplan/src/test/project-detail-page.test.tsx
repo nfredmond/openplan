@@ -1221,7 +1221,7 @@ describe("ProjectDetailPage", () => {
     expect(screen.getAllByText(/Blocked gate: G02/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Packet release review/i)).toBeInTheDocument();
     expect(screen.getByText(/Linked outputs across this project/i)).toBeInTheDocument();
-    expect(screen.getByText(/RTP links, project reports, scenario sets/i)).toBeInTheDocument();
+    expect(screen.getByText(/What this project feeds, and whether each one is current/i)).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: /^Linked outputs across this project/ })).toBeInTheDocument();
     expect(screen.getByText(/Regeneration needed/i)).toBeInTheDocument();
     expect(screen.getByText(/Scenario basis visible/i)).toBeInTheDocument();
@@ -1619,8 +1619,12 @@ describe("ProjectDetailPage", () => {
     await renderPage("funding");
 
     expect(
-      screen.getByText(/award records will appear after the funding award migrations are applied/i)
+      screen.getByText(/Funding awards are not shown, which does not mean this project has none/i)
     ).toBeInTheDocument();
+    // The migration is named for whoever runs the installation, behind the disclosure.
+    expect(
+      screen.getByText(/award records appear after the funding award migrations are applied/i).closest("details")
+    ).not.toBeNull();
     expect(screen.queryByText(/No funding awards are recorded for this project yet\./i)).toBeNull();
   });
 
@@ -2093,7 +2097,7 @@ describe("ProjectDetailPage", () => {
       expect(screen.getByText(/permission denied for table client_invoices/i)).toBeInTheDocument();
       // And it is NOT dressed up as a migration somebody could apply.
       expect(
-        screen.queryByText(/Billed client-invoice lines will appear after the client invoicing migration/i)
+        screen.queryByText(/Billed client-invoice lines appear after the client invoicing migration/i)
       ).toBeNull();
     });
 
@@ -2110,7 +2114,7 @@ describe("ProjectDetailPage", () => {
         screen.getByText(/could not read this project's direct spend ledger/i)
       ).toBeInTheDocument();
       expect(
-        screen.queryByText(/The project spend ledger will appear after the spend-ledger migration/i)
+        screen.queryByText(/The project spend ledger appears after the spend-ledger migration/i)
       ).toBeNull();
     });
 
@@ -2264,7 +2268,7 @@ describe("ProjectDetailPage", () => {
       await renderPage();
 
       expect(
-        screen.getByText("Document count unavailable — apply the Knowledge Base migration, then reload.")
+        screen.getByText("Document count could not be read. Reload the page to try again.")
       ).toBeInTheDocument();
     });
   });

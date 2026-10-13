@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Download, Map as MapIcon } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { ProjectMapPresence } from "@/components/projects/project-map-presence";
 import { Button } from "@/components/ui/button";
 import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
@@ -106,10 +107,10 @@ export function ProjectMapPresencePanel({
       </div>
 
       {corridorsPending ? (
-        <p className="mt-3 text-sm text-muted-foreground">
-          The project corridors table is not available on this deployment yet, so corridors cannot be
-          listed or drawn. Apply the pending migrations to enable them.
-        </p>
+        <SetupPendingNotice className="mt-3" consequence="Project corridors cannot be listed or drawn.">
+          The project corridors table is not available on this deployment yet. Apply the pending
+          migrations to enable it.
+        </SetupPendingNotice>
       ) : (
         <div className="mt-4">
           <ProjectMapPresence

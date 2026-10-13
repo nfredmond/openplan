@@ -497,7 +497,7 @@ export function DataHubRecordComposer({
               flow={flow}
               name="datasetProjectId"
               label="Linked project (optional)"
-              hint="Linking it means it shows up on that project's data lane."
+              hint="Linking it shows it on that project's page."
             >
               <select {...flow.text("datasetProjectId")} className={selectClassName}>
                 <option value="">Not linked yet</option>
