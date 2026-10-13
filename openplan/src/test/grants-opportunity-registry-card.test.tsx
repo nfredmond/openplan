@@ -174,12 +174,12 @@ describe("GrantsOpportunityRegistryCard", () => {
       />
     );
 
-    const projectLink = screen.getByRole("link", { name: /Open project funding lane/ });
+    const projectLink = screen.getByRole("link", { name: /Open project funding/ });
     expect(projectLink).toHaveAttribute(
       "href",
       "/projects/project-1#project-funding-opportunities"
     );
-    const programLink = screen.getByRole("link", { name: /Open program funding lane/ });
+    const programLink = screen.getByRole("link", { name: /Open program funding/ });
     expect(programLink).toHaveAttribute(
       "href",
       "/programs/prog-1#program-funding-opportunities"

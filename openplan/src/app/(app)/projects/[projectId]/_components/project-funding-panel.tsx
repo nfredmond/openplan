@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { CalendarClock } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
 import { ProjectFundingAwardCreator } from "@/components/projects/project-funding-award-creator";
 import { ProjectFundingProfileEditor } from "@/components/projects/project-funding-profile-editor";
@@ -257,7 +258,9 @@ export function ProjectFundingPanel({
           the database&apos;s own message for an operator.
         </div>
       ) : projectFundingProfilePending || fundingAwardsPending ? (
-        <div className="module-alert mt-5 text-sm">Funding stack and award records will appear after the funding award migrations are applied to the database.</div>
+        <SetupPendingNotice className="mt-5" consequence="Funding awards are not shown, which does not mean this project has none.">
+          Funding stack and award records appear after the funding award migrations are applied to the database.
+        </SetupPendingNotice>
       ) : (
         <>
           <div className="module-summary-grid cols-6 mt-5">
@@ -561,7 +564,9 @@ export function ProjectFundingPanel({
       )}
 
       {fundingOpportunitiesPending ? (
-        <div className="module-alert mt-5 text-sm">Funding opportunities will appear after the funding catalog migrations are applied to the database.</div>
+        <SetupPendingNotice className="mt-5" consequence="Funding opportunities are not shown.">
+          Funding opportunities appear after the funding catalog migrations are applied to the database.
+        </SetupPendingNotice>
       ) : (
         <>
           <div className="module-summary-grid cols-6 mt-5">

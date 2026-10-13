@@ -512,7 +512,9 @@ describe("reassigning an existing project record", () => {
       within(recordRow("Existing Conditions Memo")).queryByLabelText("Assignee")
     ).not.toBeInTheDocument();
     // …and the panel says why, rather than leaving a silent gap.
-    expect(screen.getByText(/behind migration\s+20260811000006/)).toBeInTheDocument();
+    expect(screen.getByText(/does not mean nobody is assigned/)).toBeInTheDocument();
+    // The migration number is for whoever runs the installation, behind the disclosure.
+    expect(screen.getByText(/behind migration\s+20260811000006/).closest("details")).not.toBeNull();
   });
 
   it("surfaces a refusal from the route instead of reporting a reassignment that did not happen", async () => {

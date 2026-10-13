@@ -306,7 +306,7 @@ export function GrantsOpportunityRegistryCard({
                 href={projectHref}
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
-                Open project funding lane
+                Open project funding
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}
@@ -324,7 +324,7 @@ export function GrantsOpportunityRegistryCard({
                 href={programHref}
                 className="inline-flex items-center gap-2 text-[color:var(--pine)] transition hover:text-[color:var(--pine-deep)]"
               >
-                Open program funding lane
+                Open program funding
                 <ArrowRight className="h-4 w-4" />
               </Link>
             ) : null}

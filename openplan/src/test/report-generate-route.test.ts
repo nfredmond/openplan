@@ -3885,7 +3885,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(503);
     const body = await response.json();
     expect(body.error).toBe("This packet's modeling evidence cannot be read yet");
-    expect(body.hint).toContain("Apply the latest Supabase migrations");
+    expect(body.hint).toContain("never established");
+    expect(body.hint).not.toMatch(/migration/i);
+    expect(body.operatorDetail).toContain("Apply the latest Supabase migrations");
     expect(artifactsInsertMock).not.toHaveBeenCalled();
   });
 

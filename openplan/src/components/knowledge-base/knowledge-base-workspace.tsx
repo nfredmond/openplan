@@ -12,6 +12,7 @@ import {
   Trash2,
   Upload,
 } from "lucide-react";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { navLabel } from "@/components/nav/nav-registry";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -1178,13 +1179,24 @@ export function KnowledgeBaseWorkspace({
           {pendingLibrarySources.length > 0 ? (
             // One template literal → one text node, so tests (and translations,
             // later) see the sentence the planner sees.
-            <p className="module-note">
-              {`${pendingLibrarySources.map((id) => librarySourceLabel(id)).join(", ")}: ${
-                pendingLibrarySources.length === 1
-                  ? "this source is behind a database migration on this deployment, so its files are"
-                  : "these sources are behind a database migration on this deployment, so their files are"
-              } not listed here yet. That lane reads as unavailable, not as empty.`}
-            </p>
+            <div className="module-note">
+              <p>
+                {`${pendingLibrarySources.map((id) => librarySourceLabel(id)).join(", ")}: ${
+                  pendingLibrarySources.length === 1
+                    ? "this source is not set up on this installation yet, so its files are"
+                    : "these sources are not set up on this installation yet, so their files are"
+                } not listed here. That means unavailable, not empty. Whoever runs this OpenPlan can turn ${
+                  pendingLibrarySources.length === 1 ? "it" : "them"
+                } on.`}
+              </p>
+              <OperatorDetail>
+                <p>
+                  {pendingLibrarySources.length === 1
+                    ? "This source is behind a database migration on this deployment."
+                    : "These sources are behind a database migration on this deployment."}
+                </p>
+              </OperatorDetail>
+            </div>
           ) : null}
 
           <div className="mt-3 flex flex-wrap items-center gap-2">

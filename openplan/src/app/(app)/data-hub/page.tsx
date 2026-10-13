@@ -877,8 +877,7 @@ export default async function DataHubPage() {
 
           {refreshJobs.length === 0 ? (
             <div className="module-empty-state mt-5 text-sm">
-              No refreshes logged yet. Use the job lane to document ingestion, validation, and backfill
-              work an operator performed or plans to perform.
+              No refreshes logged yet.
             </div>
           ) : (
             <div className="mt-5 module-record-list">

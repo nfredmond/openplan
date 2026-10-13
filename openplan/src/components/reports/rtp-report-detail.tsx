@@ -583,7 +583,7 @@ export function RtpReportDetail({
                   </p>
                   <p className="mt-2 text-sm font-semibold text-foreground">{grantsFollowThrough.title}</p>
                   <p className="mt-1 text-sm text-muted-foreground">
-                    Funding posture changed outside the packet itself, so release review should reopen the shared grants lane before this RTP artifact is treated as fully settled.
+                    Funding posture changed outside the packet itself, so release review should reopen Grants before this RTP report is treated as fully settled.
                   </p>
                   <Link
                     href={grantsFollowThrough.href}

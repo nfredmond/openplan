@@ -1,5 +1,6 @@
 import { redirect } from "next/navigation";
 import { StateBlock } from "@/components/ui/state-block";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { buildProjectFundingStackSummary } from "@/lib/projects/funding";
@@ -27,7 +28,7 @@ import {
 import { RtpCycleCreator } from "@/components/rtp/rtp-cycle-creator";
 import { RtpRegistryOverview } from "./_components/rtp-registry-overview";
 import { RtpCycleRegistryTable } from "./_components/rtp-cycle-registry-table";
-import { RtpRegistryAdvisoryPanel } from "./_components/rtp-registry-advisory-panel";
+import { RtpRegistryNextStep } from "./_components/rtp-registry-advisory-panel";
 import { RtpQueueOperationsBoard } from "./_components/rtp-queue-operations-board";
 import { buildRtpRegistryHref } from "./_components/_helpers";
 import {
@@ -721,40 +722,6 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
     0
   );
   const uninvoicedAwardTotal = typedCycles.reduce((sum, cycle) => sum + cycle.uninvoicedAwardAmount, 0);
-  const recentQueueActivityCount = typedCycles.filter((cycle) => cycle.packetQueueTrace.isRecent).length;
-  const outpacedQueueTraceCount = typedCycles.filter((cycle) => cycle.packetQueueTraceState.label === "Outpaced by source").length;
-  const outpacedQueueCycles = allCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced");
-  const outpacedQueueMix = {
-    reset: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "reset").length,
-    refresh: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
-    generate: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "generate").length,
-    current: outpacedQueueCycles.filter((cycle) => cycle.packetAttention === "current").length,
-  };
-  const unrecordedQueueCycles = allCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded");
-  const unrecordedQueueMix = {
-    missing: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "missing").length,
-    generate: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "generate").length,
-    refresh: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "refresh").length,
-    current: unrecordedQueueCycles.filter((cycle) => cycle.packetAttention === "current").length,
-  };
-  const latestQueueActionAt = typedCycles
-    .map((cycle) => cycle.packetQueueTrace.actedAt)
-    .filter((value): value is string => Boolean(value))
-    .sort((left, right) => new Date(right).getTime() - new Date(left).getTime())[0] ?? null;
-  const recentQueueActionBreakdown = {
-    createRecord: typedCycles.filter(
-      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "create_record"
-    ).length,
-    resetLayout: typedCycles.filter(
-      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "reset_layout"
-    ).length,
-    generateFirstArtifact: typedCycles.filter(
-      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "generate_first_artifact"
-    ).length,
-    refreshArtifact: typedCycles.filter(
-      (cycle) => cycle.packetQueueTrace.isRecent && cycle.packetQueueTrace.action === "refresh_artifact"
-    ).length,
-  };
   const currentViewActionCounts = {
     createPacket: typedCycles.filter((cycle) => cycle.packetAttention === "missing").length,
     resetAndRegenerate: typedCycles.filter((cycle) => cycle.packetAttention === "reset").length,
@@ -767,20 +734,17 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       (cycle) => cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned"
     ).length,
   };
-  const dominantCurrentViewAction = [
-    { key: "createPacket", label: "Create missing packet records", count: currentViewActionCounts.createPacket },
-    { key: "resetAndRegenerate", label: "Reset and regenerate packets", count: currentViewActionCounts.resetAndRegenerate },
-    { key: "generateFirstArtifact", label: "Generate first packet artifacts", count: currentViewActionCounts.generateFirstArtifact },
-    { key: "refreshArtifact", label: "Refresh stale packet artifacts", count: currentViewActionCounts.refreshArtifact },
-    { key: "releaseReview", label: "Run release review on current packets", count: currentViewActionCounts.releaseReview },
-    { key: "traceFollowUp", label: "Review trace follow-up gaps", count: currentViewActionCounts.traceFollowUp },
+  // Plain names for each packet action. "Reset and regenerate packets" told a
+  // planner what the code does, not what they get.
+  const currentViewActions = [
+    { key: "createPacket", label: "Create missing packets", count: currentViewActionCounts.createPacket },
+    { key: "resetAndRegenerate", label: "Rebuild packets with the standard layout", count: currentViewActionCounts.resetAndRegenerate },
+    { key: "generateFirstArtifact", label: "Generate first packet files", count: currentViewActionCounts.generateFirstArtifact },
+    { key: "refreshArtifact", label: "Refresh out-of-date packets", count: currentViewActionCounts.refreshArtifact },
+    { key: "releaseReview", label: "Review current packets for release", count: currentViewActionCounts.releaseReview },
+    { key: "traceFollowUp", label: "Check packets changed since their last action", count: currentViewActionCounts.traceFollowUp },
   ] satisfies Array<{ key: DominantActionKey; label: string; count: number }>;
-  const orderedCurrentViewActions = [...dominantCurrentViewAction].sort((left, right) => right.count - left.count);
-  const rankedCurrentViewActions = orderedCurrentViewActions.filter((action) => action.count > 0);
-  const dominantCurrentViewActionSelection = orderedCurrentViewActions[0];
-  const runnerUpCurrentViewActionSelection = orderedCurrentViewActions.find(
-    (action) => action.key !== dominantCurrentViewActionSelection.key && action.count > 0
-  );
+  const largestCurrentViewAction = [...currentViewActions].sort((left, right) => right.count - left.count)[0];
   const actionHrefByKey: Record<DominantActionKey, string> = {
     createPacket: buildRtpRegistryHref({
       status: filters.status ?? null,
@@ -825,29 +789,6 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       queueTraceState: selectedQueueTraceStateFilter === "all" ? "outpaced" : selectedQueueTraceStateFilter,
     }),
   };
-  const dominantActionCycles = typedCycles.filter((cycle) => {
-    switch (dominantCurrentViewActionSelection.key) {
-      case "createPacket":
-        return cycle.packetAttention === "missing";
-      case "resetAndRegenerate":
-        return cycle.packetAttention === "reset";
-      case "generateFirstArtifact":
-        return cycle.packetAttention === "generate";
-      case "refreshArtifact":
-        return cycle.packetAttention === "refresh";
-      case "releaseReview":
-        return cycle.packetAttention === "current" && cycle.packetQueueTraceState.state === "aligned";
-      case "traceFollowUp":
-        return cycle.packetAttention === "current" && cycle.packetQueueTraceState.state !== "aligned";
-      default:
-        return false;
-    }
-  });
-  const dominantActionHref = actionHrefByKey[dominantCurrentViewActionSelection.key];
-  const dominantActionCycleIds = dominantActionCycles.map((cycle) => cycle.id);
-  const dominantActionReportIds = dominantActionCycles
-    .map((cycle) => cycle.packetReport?.id ?? null)
-    .filter((value): value is string => Boolean(value));
   const currentFundingReviewCount = typedCycles.filter(
     (cycle) => cycle.packetAttention === "current" && cycle.packetFundingReview.needsAttention
   ).length;
@@ -859,21 +800,6 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
       cycle.packetAttention === "current" &&
       (cycle.uninvoicedAwardAmount > 0 || cycle.outstandingReimbursementAmount > 0 || cycle.reimbursementInFlightCount > 0)
   ).length;
-  const dominantTraceFollowUpCounts = {
-    outpaced: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "outpaced").length,
-    unrecorded: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "unrecorded").length,
-    aligned: dominantActionCycles.filter((cycle) => cycle.packetQueueTraceState.state === "aligned").length,
-  };
-  const totalActionableCurrentViewCount = orderedCurrentViewActions.reduce((sum, action) => sum + action.count, 0);
-  const dominantActionImpactPercent =
-    totalActionableCurrentViewCount > 0
-      ? Math.round((dominantCurrentViewActionSelection.count / totalActionableCurrentViewCount) * 100)
-      : 0;
-  const remainingActionableAfterDominantCount = Math.max(
-    totalActionableCurrentViewCount - dominantCurrentViewActionSelection.count,
-    0
-  );
-  const runnerUpActionHref = runnerUpCurrentViewActionSelection ? actionHrefByKey[runnerUpCurrentViewActionSelection.key] : null;
 
   return (
     <section className="module-page">
@@ -883,7 +809,7 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         cycles yet" — a claim about this workspace — so when the cycle read is
         the one that failed the notice says so in its own words rather than
         letting that sentence stand as the answer. The database's message is
-        included: this is an internal page and an operator can act on it.
+        on the page for an operator to act on, folded into OperatorDetail.
 
         WHY THIS DOES NOT USE `reads.describe()`. That sentence promises
         "anything below that depends on it is shown as unavailable rather than
@@ -906,9 +832,18 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
             rtpCyclesReadFailed
               ? "No cycle is listed below because the query failed, not because this workspace has none. "
               : ""
-          }This registry could not read ${listFailedReadLabels(reads)}. The summary counts and dollar totals below are computed only from what did load, so a zero or an empty list there is not a finding about this workspace — do not create a cycle, a link, or an invoice on the strength of this page until this notice clears. ${reads
-            .messages()
-            .join(" · ")}`}
+          }This registry could not read ${listFailedReadLabels(reads)}. The summary counts and dollar totals below are computed only from what did load, so a zero or an empty list there is not a finding about this workspace. Do not create a cycle, a link, or an invoice on the strength of this page until this notice clears. Reload the page to try again.`}
+          detail={
+            <OperatorDetail>
+              <ul className="space-y-0.5">
+                {reads.messages().map((message) => (
+                  <li key={message} className="break-words font-mono">
+                    {message}
+                  </li>
+                ))}
+              </ul>
+            </OperatorDetail>
+          }
         />
       ) : null}
 
@@ -960,36 +895,9 @@ export default async function RtpPage({ searchParams }: { searchParams: RtpPageS
         />
 
         <aside className="space-y-4">
-          <RtpRegistryAdvisoryPanel
-            typedCyclesLength={typedCycles.length}
-            dominantCurrentViewActionSelection={dominantCurrentViewActionSelection}
-            rankedCurrentViewActions={rankedCurrentViewActions}
-            actionHrefByKey={actionHrefByKey}
-            totalActionableCurrentViewCount={totalActionableCurrentViewCount}
-            dominantActionImpactPercent={dominantActionImpactPercent}
-            remainingActionableAfterDominantCount={remainingActionableAfterDominantCount}
-            runnerUpCurrentViewActionSelection={runnerUpCurrentViewActionSelection}
-            runnerUpActionHref={runnerUpActionHref}
-            dominantActionHref={dominantActionHref}
-            dominantActionCycleIds={dominantActionCycleIds}
-            dominantActionReportIds={dominantActionReportIds}
-            dominantActionCycles={dominantActionCycles}
-            dominantTraceFollowUpCounts={dominantTraceFollowUpCounts}
-            currentViewActionCounts={currentViewActionCounts}
-            unrecordedQueueCycles={unrecordedQueueCycles}
-            unrecordedQueueMix={unrecordedQueueMix}
-            outpacedQueueCycles={outpacedQueueCycles}
-            outpacedQueueMix={outpacedQueueMix}
-            recentQueueActivityCount={recentQueueActivityCount}
-            recentQueueActionBreakdown={recentQueueActionBreakdown}
-            outpacedQueueTraceCount={outpacedQueueTraceCount}
-            latestQueueActionAt={latestQueueActionAt}
-            filtersStatus={filters.status ?? null}
-            selectedPacketFilter={selectedPacketFilter}
-            recentOnly={recentOnly}
-            selectedQueueActionFilter={selectedQueueActionFilter}
-            selectedQueueTraceStateFilter={selectedQueueTraceStateFilter}
-            modelingCountyRunId={defaultModelingCountyRunId}
+          <RtpRegistryNextStep
+            action={largestCurrentViewAction}
+            href={largestCurrentViewAction ? actionHrefByKey[largestCurrentViewAction.key] : null}
           />
 
           <RtpQueueOperationsBoard
