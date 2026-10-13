@@ -319,8 +319,9 @@ describe("GET /api/rtp-cycles/[rtpCycleId]/export", () => {
     expect(response.status).toBe(503);
     const body = await response.json();
     expect(body.error).toBe("This plan's horizon periods cannot be read yet");
-    expect(body.hint).toContain("Apply the latest Supabase migrations");
-    expect(body.hint).toContain("which this deployment never established");
+    expect(body.hint).toContain("which this installation never established");
+    expect(body.hint).not.toMatch(/migration/i);
+    expect(body.operatorDetail).toContain("Apply the latest Supabase migrations");
   });
 
   it("refuses when the revenue ledger cannot be read, instead of reporting no revenue", async () => {

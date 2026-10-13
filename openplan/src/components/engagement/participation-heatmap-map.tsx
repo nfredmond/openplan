@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import type { HotspotFeatureCollection } from "@/lib/engagement/hotspots";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
@@ -241,9 +242,7 @@ export function ParticipationHeatmapMap({
 
   if (!MAPBOX_ACCESS_TOKEN) {
     return (
-      <p className="text-xs text-muted-foreground">
-        Map unavailable — set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to render the participation heatmap.
-      </p>
+      <MapUnavailableNotice title="The participation heatmap can't be drawn here" className="text-xs" />
     );
   }
   if (points.length === 0 && hotspots.features.length === 0) {

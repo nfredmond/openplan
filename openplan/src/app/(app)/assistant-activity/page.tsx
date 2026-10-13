@@ -1,4 +1,5 @@
 import { redirect } from "next/navigation";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { ApprovedHoldRecovery, ApprovedSubmittalRecovery } from "@/components/assistant/approved-hold-recovery";
 import { navLabel } from "@/components/nav/nav-registry";
 import { PageHeader } from "@/components/ui/page-header";
@@ -142,11 +143,12 @@ export default async function AssistantActivityPage() {
           This list can be incomplete if an audit write fails; check the affected record when confirming a change.
         </p>
         {authorshipAvailable ? null : (
-          <p className="max-w-3xl text-sm leading-6 text-amber-600 dark:text-amber-300">
-            This deployment has not applied the agent-principal migration, so these rows cannot say
-            whether a person or the Planner Agent composed each action. They are shown without that
-            attribution rather than defaulted to one.
-          </p>
+          <SetupPendingNotice
+            className="max-w-3xl"
+            consequence="These rows cannot say whether a person or the Planner Agent composed each action, so they are shown without that attribution rather than defaulted to one."
+          >
+            This deployment has not applied the agent-principal migration.
+          </SetupPendingNotice>
         )}
 
         <div className="module-summary-grid cols-3">

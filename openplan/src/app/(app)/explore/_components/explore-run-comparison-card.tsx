@@ -271,9 +271,6 @@ export function ExploreRunComparisonCard({
               <div className="analysis-comparison-section-header">
                 <div>
                   <p className="analysis-comparison-section-label">Headline deltas</p>
-                  <p className="analysis-comparison-section-copy">
-                    The four score lanes carry the first read. Treat them as the top-line story before moving into supporting counts and context evidence.
-                  </p>
                 </div>
                 <StatusBadge tone={comparisonChangedDeltas.length > 0 ? "info" : "neutral"}>
                   {comparisonChangedDeltas.length > 0 ? `${comparisonChangedDeltas.length} metrics moved` : "No metric movement"}

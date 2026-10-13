@@ -39,6 +39,7 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 import { Map as MapIcon } from "lucide-react";
 
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { hasInvalidPublicMapboxToken, resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
@@ -469,22 +470,16 @@ export function RtpCycleProjectMap(props: RtpCycleProjectMapProps) {
             whole story. Both facts are true at once, so both are stated.
           */}
           {!MAPBOX_ACCESS_TOKEN ? (
-            <div className="rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground">
-              <p className="font-medium text-foreground">No map key is configured on this deployment</p>
-              <p className="mt-1.5">
-                {HAS_UNUSABLE_MAPBOX_TOKEN
-                  ? "A Mapbox token is set but is not a public key. Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a token beginning with pk. — a secret sk. token is deliberately refused rather than sent to the browser."
-                  : "Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and this map will draw."}
-              </p>
+            <MapUnavailableNotice unusableToken={HAS_UNUSABLE_MAPBOX_TOKEN}>
               {drawnCount > 0 ? (
                 <p className="mt-1.5">
                   {drawnCount.toLocaleString("en-US")} of the{" "}
                   {(drawnCount + (collection?.droppedCount ?? 0)).toLocaleString("en-US")} projects loaded for this
                   plan {drawnCount === 1 ? "has" : "have"} a location recorded and would be drawn. Nothing
-                  about the plan is missing — only the basemap.
+                  about the plan is missing, only the map behind it.
                 </p>
               ) : null}
-            </div>
+            </MapUnavailableNotice>
           ) : null}
 
           {drawnCount === 0 ? (

@@ -1098,7 +1098,7 @@ describe("EngagementCampaignDetailPage", () => {
 
       await renderPage({ tab: "setup" });
 
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
       expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
       // The claim that must not be made out of a database failure.
       expect(screen.queryByText("Not translated")).not.toBeInTheDocument();
@@ -1122,7 +1122,7 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByText(/Nobody has recorded which language/)).not.toBeInTheDocument();
       expect(screen.getByText(/could not be read, so OpenPlan is falling back/)).toBeInTheDocument();
       // And it is a pending migration, not a fault to go investigating.
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
     });
 
     it("withholds coverage when part of what participants read could not be listed", async () => {

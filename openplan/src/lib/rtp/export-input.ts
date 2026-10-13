@@ -33,6 +33,7 @@
  */
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
+import { setupPendingSentence } from "@/lib/ui/setup-pending";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import type { ReportModelingEvidence } from "@/lib/reports/modeling-evidence";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
@@ -310,8 +311,10 @@ export async function loadReportModelingEvidence(input: {
 export function classifyModelingEvidenceReadFailure(read: ReportModelingEvidenceRead) {
   return classifyRouteReadFailure("the modeling evidence this packet reports on", read, {
     pendingError: "This packet's modeling evidence cannot be read yet",
-    pendingHint:
-      "Apply the latest Supabase migrations, then generate again. Generating without them would print a modeling-evidence count this deployment never established.",
+    pendingHint: setupPendingSentence(
+      "Generating now would print a modeling-evidence count this installation never established, so the packet is not generated."
+    ),
+    pendingOperatorDetail: "Apply the latest Supabase migrations, then generate again.",
   });
 }
 
@@ -825,13 +828,17 @@ export async function buildRtpCycleExportInput(input: {
   const financialReadFailure =
     classifyRouteReadFailure("this plan's horizon periods", financialElement.results.bands, {
       pendingError: "This plan's horizon periods cannot be read yet",
-      pendingHint:
-        "Apply the latest Supabase migrations, then export again. Exporting without them would state that the plan has declared no horizon periods, which this deployment never established.",
+      pendingHint: setupPendingSentence(
+        "Exporting now would state that the plan has declared no horizon periods, which this installation never established, so the export is stopped."
+      ),
+      pendingOperatorDetail: "Apply the latest Supabase migrations, then export again.",
     }) ??
     classifyRouteReadFailure("this plan's revenue and cost ledger", financialElement.results.lines, {
       pendingError: "This plan's revenue and cost ledger cannot be read yet",
-      pendingHint:
-        "Apply the latest Supabase migrations, then export again. Exporting without them would report that no revenue is recorded, which this deployment never established.",
+      pendingHint: setupPendingSentence(
+        "Exporting now would report that no revenue is recorded, which this installation never established, so the export is stopped."
+      ),
+      pendingOperatorDetail: "Apply the latest Supabase migrations, then export again.",
     });
   if (financialReadFailure) {
     return refusal("rtp_report_financial_element_load_failed", financialReadFailure);

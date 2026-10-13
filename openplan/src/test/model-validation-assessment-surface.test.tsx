@@ -170,8 +170,9 @@ describe("structural demand custody surface", () => {
 
   it("marks a partial custody pair scientifically unchecked", () => {
     renderRun(runWithArtifacts([audit]));
-    expect(screen.getByRole("region", { name: "Structural demand custody failure" })).toHaveTextContent(
-      "scientifically unchecked",
-    );
+    const region = screen.getByRole("region", { name: "Structural demand diagnosis not saved" });
+    expect(region).toHaveTextContent("scientifically unchecked");
+    // The claim boundary survives the plainer wording.
+    expect(region).toHaveTextContent("cannot support a structural diagnosis claim");
   });
 });

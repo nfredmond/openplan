@@ -1,3 +1,4 @@
+import { setupPendingSentence } from "@/lib/ui/setup-pending";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { placeOfRecordFromProject } from "@/lib/projects/project-place";
@@ -156,16 +157,23 @@ export default async function ExplorePage({
       // would sit on top of it saying less.
       null
     : projectSchemaPending
-      ? "This deployment does not record project study areas yet, so nothing could be inherited from the project this page was opened for. Apply the latest migrations and it will."
+      ? setupPendingSentence("Nothing could be inherited from the project this page was opened for.")
       : projectUnreadable
-        ? `This page was opened for a project whose record could not be read, so its study area could not be used. The area below is whatever this workspace had already stated, not that project's. ${reads
-            .messages()
-            .join(" · ")}`
+        ? "This page was opened for a project whose record could not be read, so its study area could not be used. The area below is whatever this workspace had already stated, not that project's. Reload the page to try again."
         : !projectRow
           ? "This page was opened for a project that is not in this workspace, so its study area could not be used. The area below is whatever this workspace had already stated."
           : !projectAreaUsable
             ? `${projectRow.name ?? "That project"} has no study area of its own yet, so nothing could be inherited from it. Set one on the project record and Corridor Analysis will open on it.`
             : null;
+
+  // What whoever runs the installation needs, kept out of the planner's line.
+  const projectAreaOperatorDetail = !workspaceId
+    ? null
+    : projectSchemaPending
+      ? "The projects table has no place-of-record columns. Apply migration 20260728000009, then reload."
+      : projectUnreadable
+        ? reads.messages().join(" · ")
+        : null;
 
   return (
     <>
@@ -180,6 +188,7 @@ export default async function ExplorePage({
       projectPlace={projectAreaUsable ? projectPlace : null}
       openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
       projectAreaNotice={projectAreaNotice}
+      projectAreaOperatorDetail={projectAreaOperatorDetail}
       />
     </>
   );

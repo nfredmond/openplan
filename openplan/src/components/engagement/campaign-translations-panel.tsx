@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { useTranslationGeneration } from "./translation-generation-panel";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { prepareTranslationGeneration, prepareRetainedPublication } from "@/lib/engagement/translation-generation-editor";
 import type { TranslationGenerationRead } from "@/lib/engagement/translation-generation-request";
 import { useTranslationWrites } from "./translation-write-recovery";
@@ -435,7 +436,7 @@ export function CampaignTranslationsPanel({
       {readFailures.length > 0 ? (
         <div className="mt-4 space-y-2">
           {readFailures.map((failure) => (
-            <p
+            <div
               key={failure.label}
               className="rounded-[0.5rem] border border-amber-500/40 bg-amber-500/10 px-3 py-2 text-sm text-foreground"
             >
@@ -443,14 +444,19 @@ export function CampaignTranslationsPanel({
                 The label is a whole noun phrase, so it drops into either
                 sentence unchanged. Prefixing one of them with "This campaign's"
                 produced "This campaign's this campaign's translations could not
-                be read" — which is what an operator on an unmigrated deployment
+                be read", which is what an operator on an unmigrated deployment
                 was actually shown.
               */}
-              {failure.schemaPending
-                ? `This deployment's database does not have the translation storage yet, so ${failure.label} could not be read. Applying the pending migration turns this panel on; nothing below is a finding about this campaign.`
-                : `OpenPlan could not read ${failure.label}, so what is shown below is incomplete — not a finding that there is nothing there.`}{" "}
-              <span className="text-muted-foreground">({failure.message})</span>
-            </p>
+              <p>
+                {failure.schemaPending
+                  ? `Translation storage is not set up on this installation yet, so ${failure.label} could not be read. Nothing below is a finding about this campaign. Whoever runs this OpenPlan can turn it on.`
+                  : `OpenPlan could not read ${failure.label}, so what is shown below is incomplete, not a finding that there is nothing there. Reload the page to try again.`}
+              </p>
+              <OperatorDetail>
+                {failure.schemaPending ? <p>Apply the pending migration to turn this panel on.</p> : null}
+                <p className="break-words font-mono">{failure.message}</p>
+              </OperatorDetail>
+            </div>
           ))}
         </div>
       ) : null}

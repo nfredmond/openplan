@@ -44,6 +44,26 @@ export function buildProjectControlHref(targetId: string, targetRowId?: string |
   return `#${targetRowId ?? targetId}`;
 }
 
+/**
+ * Link text for a project control target: the section it opens, by name.
+ * These links used to read "Open control lane" and "Open deadline lane",
+ * which named how the page was built rather than where the link goes.
+ */
+export function projectControlLinkLabel(targetId: string): string {
+  switch (targetId) {
+    case "project-reporting":
+      return "Open reports";
+    case "project-milestones":
+      return "Open milestones";
+    case "project-submittals":
+      return "Open submittals";
+    case "project-invoices":
+      return "Open invoices";
+    default:
+      return "Open section";
+  }
+}
+
 export function toneForStatus(status: string): Tone {
   if (status === "active") return "success";
   if (status === "draft") return "neutral";
