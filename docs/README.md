@@ -236,3 +236,5 @@ The [native interrupted-upload proof](reviews/2026-10-13-odm-native-uncertain-in
 
 The [admission deadline fixture correction](reviews/2026-10-13-gtfs-admission-deadline-fixture/STATUS.md) keeps upload timing separate from durable source resolution, observes physical abort before reconciliation and refuses late replies without changing production budgets.
 The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATUS.md) matches the original UUID observed from the pinned engine, preserves exact reply bytes and refuses invalid old mock receipts without rewriting them. Processing remains held.
+
+The [task metadata parser](reviews/2026-10-13-odm-task-observation/STATUS.md) binds supplied status replies to the original plan and preserves reported options separately from execution settings. Metadata grants no permission or quality claim; runtime polling remains unconnected.
