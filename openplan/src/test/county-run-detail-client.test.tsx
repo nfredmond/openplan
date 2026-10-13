@@ -206,7 +206,7 @@ describe("CountyRunDetailClient", () => {
     expect(screen.getByText("Validation status")).toBeInTheDocument();
     expect(screen.getAllByText("bounded screening-ready").length).toBeGreaterThan(0);
     expect(screen.getByText("Operator next action")).toBeInTheDocument();
-    expect(screen.getAllByText(/preserve all screening-grade caveats/i).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/Treat results as prototype-only/i).length).toBeGreaterThan(0);
     expect(screen.getByText("Caveat boundaries")).toBeInTheDocument();
     expect(screen.getByText(/not a validated behavioral forecast/i)).toBeInTheDocument();
   });

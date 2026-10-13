@@ -222,9 +222,15 @@ describe("AppCopilot", () => {
 
     const chatCall = fetchMock.mock.calls.find((call) => String(call[0]).startsWith("/api/assistant/chat"));
     expect(chatCall).toBeDefined();
-    const chatBody = JSON.parse(String((chatCall![1] as RequestInit).body)) as { question: string; kind: string };
+    const chatBody = JSON.parse(String((chatCall![1] as RequestInit).body)) as {
+      question: string;
+      kind: string;
+      timeZone: string;
+    };
     expect(chatBody.question).toBe("Where should I focus this week?");
     expect(chatBody.kind).toBe("workspace");
+    // The server dates the agent's "today" in this zone, not in UTC.
+    expect(chatBody.timeZone).toBe(Intl.DateTimeFormat().resolvedOptions().timeZone);
     expect(screen.queryByText(/no AI key is set up/)).not.toBeInTheDocument();
   });
 
@@ -466,10 +472,34 @@ describe("AppCopilot", () => {
     expect(approvalCall).toBeUndefined();
   });
 
+  it("shows planners the action's title, never its internal id, workflow id or audit code", async () => {
+    // A live look at the panel on 2026-10-11 found every action button ending
+    // in an internal id ("Run in panel · workspace-brief-agent") and an audit
+    // code printed under it ("assistant.operation.workspace.brief_agent").
+    const baseFetch = fetchMock.getMockImplementation()!;
+    fetchMock.mockImplementation(async (input: RequestInfo | URL, init?: RequestInit) => {
+      if (String(input).startsWith("/api/assistant/context")) {
+        return jsonResponse({ preview: { ...previewFixture, quickLinks: [{
+          ...approvalQuickLink,
+          auditEvent: "planner_agent.create_funding_opportunity",
+          workflowId: "workspace-advance-funding-opportunity",
+        }] } });
+      }
+      return baseFetch(input, init);
+    });
+    await openPanel();
+
+    expect(screen.getByRole("button", { name: "Run now: Create the SS4A opportunity record" })).toBeInTheDocument();
+    const shown = document.body.textContent ?? "";
+    expect(shown).not.toContain("create-funding-opportunity");
+    expect(shown).not.toContain("planner_agent.create_funding_opportunity");
+    expect(shown).not.toContain("workspace-advance-funding-opportunity");
+  });
+
   it("opens the in-panel approval sheet with the action description and cancels on Escape", async () => {
     await openPanel();
 
-    fireEvent.click(screen.getByRole("button", { name: /Execute now · create-funding-opportunity/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Run now: Create the SS4A opportunity record" }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).toBeInTheDocument();
@@ -662,7 +692,7 @@ describe("AppCopilot", () => {
       return baseFetch(input, init);
     });
     await openPanel();
-    fireEvent.click(screen.getByRole("button", { name: /Execute now · generate-report/ }));
+    fireEvent.click(screen.getByRole("button", { name: /^Run now: / }));
     if (failureAt === "effect") {
       await waitFor(() => expect(screen.getAllByText("Failed", { exact: true })).toHaveLength(2));
       expect(screen.queryByRole("button", { name: "Refresh context" })).not.toBeInTheDocument();
@@ -695,7 +725,7 @@ describe("AppCopilot", () => {
     });
     await openPanel();
     if (entryPoint === "quick link") {
-      fireEvent.click(screen.getByRole("button", { name: /Execute now · generate-report/ }));
+      fireEvent.click(screen.getByRole("button", { name: /^Run now: / }));
     } else {
       chatRoute = () => sseResponse([
         { type: "start" },
@@ -776,7 +806,7 @@ describe("AppCopilot", () => {
   it("cancels the approval sheet from the Cancel button", async () => {
     await openPanel();
 
-    fireEvent.click(screen.getByRole("button", { name: /Execute now · create-funding-opportunity/ }));
+    fireEvent.click(screen.getByRole("button", { name: "Run now: Create the SS4A opportunity record" }));
 
     await waitFor(() => {
       expect(screen.getByRole("dialog", { name: "Approve Planner Agent action" })).toBeInTheDocument();

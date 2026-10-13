@@ -1,8 +1,7 @@
 # OpenPlan documentation
 
 [Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
-The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
-The [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) records the scoped demo key, actual AI requests, 405-migration hosted state, and the disabled GTFS commissioning boundary.
+For the hosted installation, start with the "Live hosted installation" section of [AGENTS.md](../AGENTS.md), then read the dated records newest first: the [October 12 review follow-up](reviews/2026-10-12-hosted-review-followup/STATUS.md), the [October 12 review fixes](reviews/2026-10-12-hosted-review-fixes/STATUS.md), the [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) (405-migration hosted state, disabled GTFS commissioning), the [October 11 public cutover record](ops/HOSTED_LIVE_2026-10-11.md) (deployment identities; its migration, archive and rollback figures are superseded) and the [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) (implementation history). [Hosted recovery](../openplan/docs/ops/HOSTED_RECOVERY.md) names the current rollback procedure.
 
 
 Use this index to distinguish current instructions and priorities from historical

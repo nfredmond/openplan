@@ -16,7 +16,10 @@
  * this build does not recognize rendered as one it does.
  */
 
-export const MODERATION_CATEGORIES = ["toxicity", "pii", "off_topic", "spam"] as const;
+// `manipulation` added 2026-10-11: a live scan read a comment that told the
+// screen to mark everything safe. The model ignored it, but no category fit,
+// so the comment came out "approve" while its own rationale asked for review.
+export const MODERATION_CATEGORIES = ["toxicity", "pii", "off_topic", "spam", "manipulation"] as const;
 export type ModerationCategory = (typeof MODERATION_CATEGORIES)[number];
 
 export const MODERATION_SEVERITIES = ["none", "low", "medium", "high"] as const;
@@ -48,7 +51,7 @@ export type ModerationResult = {
 };
 
 export const MODERATION_CAVEAT =
-  "AI moderation is a screening ASSIST: it flags possible toxicity, personal information, off-topic, or spam with a rationale to help a human moderator triage. It NEVER auto-rejects — a person decides — and is not a definitive content judgment.";
+  "AI moderation is a screening ASSIST: it flags possible toxicity, personal information, off-topic, spam, or instructions aimed at the screen with a rationale to help a human moderator triage. It NEVER auto-rejects — a person decides — and is not a definitive content judgment.";
 
 /** How much of a comment the flagged list quotes back to the moderator. */
 const MODERATION_SNIPPET_CHARS = 120;

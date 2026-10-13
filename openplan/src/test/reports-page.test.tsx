@@ -189,6 +189,11 @@ describe("ReportsPage", () => {
           geography_label: "Nevada County, CA",
           stage: "validated-screening",
           updated_at: "2026-04-24T17:00:00.000Z",
+          // A confirmed rules-v4 pass, so the stored screening tier is shown.
+          basis_rules_version: 4,
+          basis_outcome: "pass",
+          basis_evidence_write: "recorded",
+          basis_reasons: [],
         },
       ],
       error: null,
@@ -406,6 +411,46 @@ describe("ReportsPage", () => {
             runName: "Nevada County assignment screening",
             claimStatus: "screening_grade",
             statusReason: "Critical APE remains screening-grade.",
+          }),
+        ],
+      })
+    );
+  });
+
+  it("shows a stored county tier the rules-v4 basis does not support as prototype-only", async () => {
+    // KI-2026-10-12-001: a row written by the retired 30 percent gate still says
+    // screening_grade. With no rules-v4 outcome on the run, the creator must
+    // be offered prototype-only, never the stored tier.
+    countyRunsLimitMock.mockResolvedValue({
+      data: [
+        {
+          id: "county-run-1",
+          workspace_id: "workspace-1",
+          run_name: "Nevada County assignment screening",
+          geography_label: "Nevada County, CA",
+          stage: "validated-screening",
+          updated_at: "2026-04-24T17:00:00.000Z",
+          basis_rules_version: null,
+          basis_outcome: null,
+          basis_evidence_write: null,
+          basis_reasons: null,
+        },
+      ],
+      error: null,
+    });
+
+    await renderPage();
+
+    expect(countyRunsSelectMock).toHaveBeenCalledWith(
+      "id, workspace_id, run_name, geography_label, stage, updated_at, basis_rules_version:validation_summary_json->validation_rules_version, basis_outcome:validation_summary_json->model_validation_assessment->>scientific_outcome, basis_evidence_write:validation_summary_json->model_validation_assessment->>validation_evidence_write, basis_reasons:validation_summary_json->model_validation_assessment->reasons"
+    );
+    expect(reportCreatorMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        modelingCountyRuns: [
+          expect.objectContaining({
+            id: "county-run-1",
+            claimStatus: "prototype_only",
+            statusReason: expect.stringMatching(/^Not assessed: this run has no rules-v4 scientific outcome\./),
           }),
         ],
       })

@@ -407,6 +407,8 @@ appropriate; verify that new guards detect a meaningful failure. Check browser
 workflows against the identified build, including console and artifact results.
 A green generic gate is not incident closure. An app rollback also does not
 reverse migrations: verify compatibility with the actual current schema first.
+For the hosted installation, follow
+[roll back the hosted app](HOSTED_RECOVERY.md#roll-back-the-hosted-app).
 
 ## Backup and recovery during an incident
 
