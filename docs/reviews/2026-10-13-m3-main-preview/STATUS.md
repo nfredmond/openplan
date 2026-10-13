@@ -79,3 +79,45 @@ this isolated partial journey.
 [passing build](evidence/passing-build.json) and
 [partial request observation](evidence/partial-browser.json) retain the bounded
 results. Private original logs and DOM text remain outside the repository.
+
+## Corrected-main retry, October 13
+
+A separate clean checkout builds exact main
+`806d084b98d0c21af97e0b492935fb48fa8e0242` after the connector fixture correction.
+Build `NpbO2XGo-f5vTmCabVQRI` serves on `127.74.9.10:3579`.
+The production build passes in 118.115 seconds, with a peak of 6,975,291,392
+bytes under the same 10 GiB cap and zero swap. Maximum and OOM counters stay
+zero. No application source or type-check bypass changes for this retry.
+The older isolated synthetic database and disabled managed admission remain.
+
+New owned T3 tab six follows dashboard, project, model list and model links.
+It starts at 1280 by 800 and successfully resizes to 390 by 844. The model
+retains Oakland, zero runs and its prototype limitations. The engine selection
+uses a DOM change. T3 reports failures for both native key calls, although the
+feed value changes afterward. Those calls cannot establish keyboard usability.
+An explicit DOM change then selects the original BART archive.
+
+The actual form issues two coverage requests. Each uses geometry SHA256
+`007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd`
+and returns HTTP 200, coverage yes and 238 scheduled rows. The first archive
+reports January 10, 2027; the selected BART archive reports August 9, 2026.
+These are retained schedule dates, not measured service or present-day validity.
+The final DOM reports client and scroll widths of 390 pixels. This single
+overflow measurement does not establish usable layout, visible controls or focus.
+
+Image and text-only snapshots still fail on the same T3 client. A return resize
+to 1280 by 800 times out; the final measured viewport remains 390 by 844.
+No screenshot or desktop/mobile visual acceptance follows. The passive error
+and rejection observer records no events after installation; earlier events and
+the complete console remain outside its scope. No run or saved edit is submitted.
+
+The owned app stops after the retry, with a peak of 359,874,560 bytes under
+1 GiB and zero swap. Borrowed services remain untouched. Main CI and exact
+public promotion are still separate and pending at this observation.
+[Build](evidence/corrected-main-build.json),
+[partial browser observations](evidence/corrected-main-partial-browser.json) and
+[app resources](evidence/corrected-main-app-resources.json) retain this retry.
+Private launch controls include three survivors and 30 typed refusals. Their
+comparator cannot discover an omitted installation root or validate the whole
+service installer. The private proof is `m3-corrected-main-preview-20261013`
+under the same proof base. Full M3 and v1 limits above remain unchanged.
