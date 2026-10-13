@@ -44,8 +44,14 @@ Source bytes restore exactly. The [controller unit](evidence/control-resources.j
 stops with a 110,960,640-byte peak under 256 MiB, zero max/OOM events and no
 extra swap. Each complete positive retains 17 RPC cases and four distinct native
 drafts: three complete drafts with six files, plus the interrupted draft with
-one file. Python 3.11 and documentation follow-up remain pending. No main merge
-or release is claimed for this candidate.
+one file. The [Python 3.11 native journey](evidence/python311-native-results.json) also
+passes all 17 predicates and 17 RPC cases. All 14 selected documentation tests
+and product direction pass from the actual nested package. The
+[follow-up unit](evidence/followup-resources.json) stops with a 308,944,896-byte
+peak under 1 GiB, zero max/OOM events and no extra swap. All
+[executed source bindings](evidence/python311-source-bindings.json) match,
+and every owned fixture stops. This joins the existing combined PR263 after its
+CI wrapper correction. No main merge or release is claimed here.
 
 ## Evidence boundaries
 
