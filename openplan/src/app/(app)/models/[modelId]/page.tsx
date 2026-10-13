@@ -662,6 +662,7 @@ export default async function ModelDetailPage({
   const reapedRunMessages = modelRunsSchemaPending
     ? new Map<string, string>()
     : await reconcileStaleModelRuns(((modelRunsResult.data ?? []) as unknown as ReaperRun[])
+        // Historical runs stay out even after a keep-or-close decision.
         .filter((run) => !modelRecoveryNeedsReview(modelRecoveryStatuses.get(run.id))));
 
   // Real claim tier per run (from modeling_claim_decisions), so the evidence

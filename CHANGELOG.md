@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
