@@ -1,0 +1,8 @@
+{
+  "baselineAcceptedIncompleteFrame": true,
+  "actualHttpStatus": 200,
+  "receivedBytes": 47,
+  "declaredBytes": 64,
+  "jsonPrefixComplete": true,
+  "scope": "Actual local HTTP response; no native engine or application authority/processing acceptance."
+}

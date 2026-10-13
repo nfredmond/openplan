@@ -53,8 +53,13 @@ class Checks(unittest.TestCase):
                     if fixture.mode == 'engine':
                         response = json.dumps({'uuid':self.headers['set-uuid']} if urlsplit(self.path).path == '/task/new/init' else {'success':True}).encode()
                     self.send_response(200)
-                    self.send_header('Content-Length', str(len(response)))
+                    if fixture.mode != 'close_delimited':
+                        self.send_header('Content-Length', str(len(response)+(17 if fixture.mode=='short_reply' else 0)))
+                    if fixture.mode in ('short_reply','close_delimited'):
+                        self.send_header('Connection','close')
                     self.end_headers();self.wfile.write(response)
+                    if fixture.mode in ('short_reply','close_delimited'):
+                        self.wfile.flush();self.close_connection=True
                 except (BrokenPipeError, ConnectionResetError):pass
         self.server = ThreadingHTTPServer(('127.0.0.1', 0), Handler)
         self.server.daemon_threads = True
@@ -87,6 +92,29 @@ class Checks(unittest.TestCase):
         child = self.original_spawn(*args, **kwargs)
         self.children.append(child)
         return child
+
+    def test_incomplete_content_length_refuses_valid_json_prefix(self):
+        self.mode='short_reply'
+        self.response=json.dumps({'uuid':self.task}).encode()
+        with self.assertRaisesRegex(RuntimeError,'Original draft HTTP child failed'):
+            self.transport()(self.engine,self.init,None,time.monotonic()+3)
+        self.assertEqual(len(self.requests),1,'Framing refusal must follow the actual original request')
+
+    def test_incomplete_content_length_refuses_empty_prefix(self):
+        self.mode='short_reply';self.response=b''
+        with self.assertRaisesRegex(RuntimeError,'Original draft HTTP child failed'):
+            self.transport()(self.engine,self.init,None,time.monotonic()+3)
+        self.assertEqual(len(self.requests),1,'Empty-prefix refusal must follow the actual original request')
+
+    def test_complete_close_delimited_reply_preserves_exact_bytes(self):
+        self.mode='close_delimited';self.response=json.dumps({'uuid':self.task}).encode()
+        self.assertEqual(self.transport()(self.engine,self.init,None,time.monotonic()+3),(200,self.response),
+            'A complete reply delimited by connection close must remain supported')
+
+    def test_complete_zero_length_reply_is_not_a_framing_error(self):
+        self.response=b''
+        self.assertEqual(self.transport()(self.engine,self.init,None,time.monotonic()+3),(200,b''),
+            'Framing completeness does not decide whether an empty body is an API acknowledgement')
 
     def test_actual_init_preserves_fields_header_and_credential(self):
         self.response = json.dumps({'uuid': self.task}).encode()
