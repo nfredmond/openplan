@@ -1,0 +1,17 @@
+{
+  "actualOriginalTaskRead": true,
+  "applicationAuthorityAccepted": false,
+  "bodySha256": "3dfdc8f87598b6ad7c096195f9dbdef7fef9ce8e4904963a2dacc7fac59ff1e3",
+  "defaultActivated": false,
+  "engineCheckChildCount": 2,
+  "longComputationAccepted": false,
+  "nativeEngineChecks": 2,
+  "ownedEngineStopped": true,
+  "processingQualityAccepted": false,
+  "readChildCount": 1,
+  "relocatedReplyExact": true,
+  "reportedImageCount": 3,
+  "reportedState": "failed",
+  "selectedRootVerified": true,
+  "workerRecoveryAccepted": false
+}

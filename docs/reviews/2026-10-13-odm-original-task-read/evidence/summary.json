@@ -1,0 +1,25 @@
+{
+  "actualWorkflowStages": 35,
+  "workerScripts": 34,
+  "unittestSuites": 27,
+  "unittestCases": 673,
+  "customCheckScripts": 7,
+  "passedAppDocs": 20,
+  "sourceBindings": 63,
+  "sourceControlsPerInterpreter": {
+    "positiveCohorts": 4,
+    "cases": 23,
+    "targetedFaults": 29,
+    "oracleControls": 174
+  },
+  "nativeControlsPerInterpreter": {
+    "positiveCohorts": 4,
+    "targetedFaults": 13,
+    "oracleControls": 13
+  },
+  "ownedProducersInspectedStopped": 52,
+  "applicationAuthorityAccepted": false,
+  "processingQualityAccepted": false,
+  "wholeWorkerRecoveryAccepted": false,
+  "defaultActivated": false
+}
