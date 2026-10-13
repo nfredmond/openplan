@@ -1,0 +1,5 @@
+{
+  "docs/reviews/2026-10-13-odm-committed-task-restore/native_restore.py": "91f38aad050c8bfdb20af762bf7b9296d35e3bf6ff7a620c5e8ed467ef860837",
+  "docs/reviews/2026-10-11-odm-draft-reconciliation/native_reconciliation.py": "ed7f5037b340a37da36632b09478419be690bda70f75cc138f6475fdd42a54df",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24"
+}
