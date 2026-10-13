@@ -229,3 +229,5 @@ The [GTFS deadline fixture correction](reviews/2026-10-13-gtfs-intake-deadline-f
 The [native private-authority composition](reviews/2026-10-13-odm-native-private-authority-composition/STATUS.md) joins actual RPC access, original engine attestation and real draft init/upload transport in an owned fixture. Processing stays held; installation, physical-host recovery and scientific acceptance remain separate.
 
 The [intake clock fixture correction](reviews/2026-10-13-odm-intake-clock-fixture/STATUS.md) compares nested fetch deadlines with the actual shared intake deadline. Controlled startup delay stays outside that budget; production limits remain unchanged.
+
+The [aerial CI wrapper correction](reviews/2026-10-13-odm-ci-job-budget/STATUS.md) preserves every execution command while extending the outer job limit after a recorded cancellation. Worker and test deadlines stay unchanged; current-head GitHub completion remains required.
