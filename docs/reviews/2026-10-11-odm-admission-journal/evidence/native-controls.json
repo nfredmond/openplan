@@ -1,0 +1,278 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-key-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "producerExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "producerExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "producerExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "captureExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verifyExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "replayExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAcceptedReceipt-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAcceptedReceipt-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAcceptedReceipt-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedReceipt-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedReceipt-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedReceipt-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "queueIdentity-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "queueIdentity-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "queueIdentity-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "startedIdentity-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "startedIdentity-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "startedIdentity-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "exactStartGrantsNoPermission-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "exactStartGrantsNoPermission-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "exactStartGrantsNoPermission-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedPayloadRefused-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedPayloadRefused-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedPayloadRefused-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedContextRefused-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedContextRefused-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changedContextRefused-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "acceptedStartGrantedOnce-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "acceptedStartGrantedOnce-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "acceptedStartGrantedOnce-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceJournalUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageOrdinaryUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "packageJournalUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedOrdinaryMatchesSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "retainedJournalMatchesSource-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackage-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackage-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeOrdinaryMatchesPackage-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "runtimeJournalMatchesPackage-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "corruptPackageVerifyExit-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "corruptPackageVerifyExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "corruptPackageVerifyExit-wrong_type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-changed",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong_type",
+    "outcome": "intended_failure"
+  }
+]

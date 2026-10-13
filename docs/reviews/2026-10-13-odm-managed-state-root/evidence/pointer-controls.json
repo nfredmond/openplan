@@ -1,0 +1,27 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "returncode": 0
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "returncode": 0
+  },
+  {
+    "control": "broken-state-pointer",
+    "outcome": "intended_failure",
+    "returncode": 1
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "returncode": 0
+  },
+  {
+    "control": "product-direction",
+    "outcome": "survived",
+    "returncode": 0
+  }
+]

@@ -1,0 +1,154 @@
+{
+  "allAerialSuitesDiscovered": true,
+  "suiteCount": 24,
+  "sharedLoopExit": 0,
+  "perSuiteExitStatusRecorded": false,
+  "workflowSha256": "5b5ea47f04e65c21b8f041035513b982e6f3ab20a9cd6804be08d7a5689525aa",
+  "loopOutputSha256": "8e1c800725afd71ca35610f0d8181b5ae5e719e3b0333fc2de0070ddea664ce3",
+  "suites": [
+    {
+      "source": "workers/odm_worker/test_admission_journal.py",
+      "sourceSha256": "2dce30e75d0112eb57ef5a1c1bf36d7287854b8ecf732006f49373db9aac4544",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_callbacks.py",
+      "sourceSha256": "da0c2159017e68dbf057ea066177e23c3b756b84aa8d87d57a9aa3ccd6144372",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_contract.py",
+      "sourceSha256": "b7ca4e34a1f0aa84506b4f87bb191d956d31e0f553d86773b77c60bebe795ea0",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_deploy_surface.py",
+      "sourceSha256": "0caf6a8b41c07979c0bee48b25e02a279bf7fb3d79c35ee4c05d563b58d614b4",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_derived_zip.py",
+      "sourceSha256": "602283e5efd8dc25ef86d0193fce8747d92b7cd73ae3e25481a2b683b2f070d6",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_draft_custody.py",
+      "sourceSha256": "36575dfc38f9b3cafa79b94732530ca4ceab85bd5700328588388edd76eea286",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_draft_http.py",
+      "sourceSha256": "7a2477af794efa25385456d6973fa99b8bee7d5735027043d1022e335eea87ce",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_engine_effects.py",
+      "sourceSha256": "258deea9ce382b73a529c23e51e8fbeb542f18c7d1d2aa42f2b67869ead94e01",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_georef.py",
+      "sourceSha256": "805309202132038df18227d36a616c65a9d3f95beb8403281277aa61a3cce528",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_intake.py",
+      "sourceSha256": "f3c5d9bef76c0218ef1d51ee85dec784aef3115f9b3f1556b1aa18068f1775d5",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_nodeodm_client.py",
+      "sourceSha256": "89971b8c5b34c970406e8d1ee165c65a680c86f36a95b51c215c114b12a06fb1",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_pipeline.py",
+      "sourceSha256": "5266db2954d1c9335f331e00a8198d7c62b2037e849bf2e75e76ce8222f5e5b8",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_retained_source.py",
+      "sourceSha256": "483d6b640b29522cfa21daa441025ba1fbcf85fbfdc282494ab226ca34afc40b",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_admission.py",
+      "sourceSha256": "a685e9e0fdc0fc9d4a639b6348aa6955c412144d899df6176207b97ab805b520",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_dispatch_custody.py",
+      "sourceSha256": "c0238d89e883b28b0db74086dc82f64034dccca39e7989f38617986d0318fb72",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_draft.py",
+      "sourceSha256": "361b51bab1d72e4e7fc1301d265acd9a47bdc0c52dbb6f8c914188a39b5ad6f7",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_preparation.py",
+      "sourceSha256": "8566ad167e4a03f0e1112e9ac239658cd669591cd18cd2932b453dd154a4dc90",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_url_draft.py",
+      "sourceSha256": "18ebdb670dc11789a1113635eaa5f63a4db7f093063e73e9a45c100128fa0570",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_url_draft_cancellation.py",
+      "sourceSha256": "b326095962fb2d0491792203cb0d26dce58980ecec0cd5c0cb1129f56f453f0f",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_runtime_url_intake.py",
+      "sourceSha256": "6abe7877d6fd3f40e4eda31e0b1bd85b36e41810c486ce3e41025d38574eaeed",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_url_source_custody.py",
+      "sourceSha256": "d20fbade3378415e9f81fbbfbf64a210be2ecf03ecf6da24303153b86fd6f7df",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_url_transport.py",
+      "sourceSha256": "86bcce59069b2bbb111de3d7ef56d08ed243be02c735bdc781b0436f1d6e962a",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_worker_http.py",
+      "sourceSha256": "d2233d36f9895a132bae7f9944bb2e3a256a7bbf2761acc255c1d5355646dc4c",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "source": "workers/odm_worker/test_zip_engine.py",
+      "sourceSha256": "6af3ebb1dbb305c381b623eca02b2513391d312eee8bf905151e7dd853e1726e",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    }
+  ]
+}

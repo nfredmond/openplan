@@ -1,0 +1,14 @@
+[
+  {
+    "name": "ZIP derived source harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-zip-derived-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "457a3bc86ebbf34345a1852b6567f4358349a4bc0cfc1fffd2c9c3a98b9a11ec"
+  },
+  {
+    "name": "Interrupted ZIP image copy and stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-zip-derived-native\"\n",
+    "exit": 0,
+    "workflowSha256": "457a3bc86ebbf34345a1852b6567f4358349a4bc0cfc1fffd2c9c3a98b9a11ec"
+  }
+]

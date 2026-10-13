@@ -1,0 +1,287 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "dispatch-whitespace-lost",
+    "test": "test_actual_queue_preserves_exact_bytes_actor_project_and_admission",
+    "outcome": "intended_failure",
+    "reason": "Original dispatch receipt differs",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "capture-permits-engine",
+    "test": "test_actual_queue_preserves_exact_bytes_actor_project_and_admission",
+    "outcome": "intended_failure",
+    "reason": "Dispatch capture cannot permit engine transport",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "capture-promotes-authority",
+    "test": "test_actual_queue_preserves_exact_bytes_actor_project_and_admission",
+    "outcome": "intended_failure",
+    "reason": "Supplied dispatch cannot promote live authority",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "capture-not-published",
+    "test": "test_receipt_precedes_source_fetch_and_detaches_supplied_aliases",
+    "outcome": "intended_failure",
+    "reason": "No such file or directory",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "completed-dispatch-recaptured",
+    "test": "test_original_capture_never_requeries_on_complete_or_uncertain_replay",
+    "outcome": "intended_failure",
+    "reason": "Started input work requires its original dispatch receipt",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "test": "test_constructor_and_pipeline_require_matching_runtime_target_adapters",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "constructor-timeout-unchecked",
+    "test": "test_constructor_and_pipeline_require_matching_runtime_target_adapters",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "pipeline-adapters-unchecked",
+    "test": "test_constructor_and_pipeline_require_matching_runtime_target_adapters",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "owner-start-check-omitted",
+    "test": "test_unowned_or_unstarted_capture_refuses_before_record_reads",
+    "outcome": "intended_failure",
+    "reason": "Unowned dispatch read",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "deadline-type-unchecked",
+    "test": "test_expired_or_nonfinite_deadline_refuses_before_capture_io",
+    "outcome": "intended_failure",
+    "reason": "Invalid deadline reached dispatch validation",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "expired-dispatch-continues",
+    "test": "test_expired_or_nonfinite_deadline_refuses_before_capture_io",
+    "outcome": "intended_failure",
+    "reason": "Invalid deadline reached dispatch validation",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "byte-bound-unchecked",
+    "test": "test_payload_requires_bounded_actual_bytes",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "duplicate-properties-accepted",
+    "test": "test_ambiguous_nonfinite_and_invalid_utf8_json_refuse",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "nonfinite-json-accepted",
+    "test": "test_ambiguous_nonfinite_and_invalid_utf8_json_refuse",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "contract-validation-omitted",
+    "test": "test_contract_invalid_even_when_admission_matches_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "admitted-payload-binding-omitted",
+    "test": "test_changed_title_callback_notes_and_imagery_cannot_rebind_admission",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "project-projection-unchecked",
+    "test": "test_project_projection_required_and_matches_full_original_request",
+    "outcome": "intended_failure",
+    "reason": [
+      "KeyError:",
+      "ValueError not raised"
+    ],
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "project-scope-unchecked",
+    "test": "test_project_projection_required_and_matches_full_original_request",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "other-system-accepted",
+    "test": "test_non_openplan_system_refuses_even_with_matching_admission",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "actor-scope-unchecked",
+    "test": "test_original_actor_and_workspace_must_match_supplied_scope",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "existing-receipt-not-compared",
+    "test": "test_existing_receipt_cannot_change_actor_or_exact_encoding",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "lost-dispatch-recaptured",
+    "test": "test_missing_receipt_after_intake_refuses_before_recapture",
+    "outcome": "intended_failure",
+    "reason": "Lost dispatch was recaptured",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "lost-dispatch-directly-recreated",
+    "test": "test_missing_receipt_after_intake_refuses_before_recapture",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "receipt-binding-unchecked",
+    "test": "test_corrupt_receipt_hash_scope_binding_and_flags_refuse",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "receipt-bound-unchecked",
+    "test": "test_receipt_bound_checked_before_open_descriptor_read",
+    "outcome": "intended_failure",
+    "reason": "Oversized receipt must refuse before allocating its bytes",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "receipt-length-unchecked",
+    "test": "test_receipt_length_change_refuses_after_same_descriptor_read",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "receipt-json-static-diagnostic-lost",
+    "test": "test_invalid_saved_json_refuses_with_static_diagnostic",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "receipt-text-shape-unchecked",
+    "test": "test_nonobject_or_missing_text_receipts_refuse",
+    "outcome": "intended_failure",
+    "reason": "TypeError:",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "aliased-receipt-read-bypassed",
+    "test": "test_aliased_receipt_refuses_without_recapture",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "settings-projection-unchecked",
+    "test": "test_changed_fresh_or_saved_input_actor_refuses_before_fetch_or_command",
+    "outcome": "intended_failure",
+    "reason": "Changed settings reached source",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "capture-shape-unchecked",
+    "test": "test_capture_shape_and_late_deadline_refuse_before_input_work",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "engine-context-unchecked",
+    "test": "test_engine_plan_binding_checked_before_permission",
+    "outcome": "intended_failure",
+    "reason": "Changed engine context reached permission",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "copied-runtime-recaptured",
+    "test": "test_copied_runtime_preserves_dispatch_without_capture_or_source_root",
+    "outcome": "intended_failure",
+    "reason": "Started input work requires its original dispatch receipt",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "linked-project-output-cleared",
+    "test": "test_linked_project_is_explicit_and_original",
+    "outcome": "intended_failure",
+    "reason": "Linked project must remain explicit",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "zip-original-url-output-replaced",
+    "test": "test_zip_dispatch_preserves_v1_exact_original_archive_request",
+    "outcome": "intended_failure",
+    "reason": "ZIP dispatch must retain its original archive metadata",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "late-final-dispatch-check-omitted",
+    "test": "test_late_return_cannot_report_success_after_dispatch_check",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "pre-cancel-check-omitted",
+    "test": "test_pre_cancelled_pipeline_refuses_before_capture",
+    "outcome": "intended_failure",
+    "reason": "Cancelled pipeline reached dispatch capture",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "cancellation-callback-frozen",
+    "test": "test_dispatch_clone_observes_replaced_cancellation_callback",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

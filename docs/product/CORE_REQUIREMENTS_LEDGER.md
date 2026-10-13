@@ -451,3 +451,69 @@ commissioning, all worker families, useful 45-minute computation, physical-host
 recovery, model continuation and separate-engine scientific acceptance remain
 open. M3 and the complete V1 floor remain incomplete; no capability grade changes.
 Hosted coordination and the main merge hold remain with the relaunch owner.
+
+## October 11 selected worker-root set, bounded M3 candidate
+
+[The set command and native checks](../reviews/2026-10-11-worker-root-set/STATUS.md)
+retain exact private selection bytes and component bindings for an explicitly
+selected set. Each component is checked against the initial source inventory;
+all sources are rechecked before final publication. Five known roots and a fresh
+relocated copy verify. Changed selection and missing component bindings refuse.
+The original point and immutable set remain unchanged.
+
+This advances recoverable private-state custody. It does not discover every
+installation root, fence writers, align a new database/Storage cut or authorize
+computation. The latest T3 host retry provides no new browser acceptance.
+Independent commissioning, all-worker coverage, useful 45-minute computation,
+physical-host recovery and separate-engine scientific acceptance remain open.
+M3 and the V1 floor stay incomplete; no capability grade changes. The relaunch
+agent retains hosted coordination and the main merge hold.
+
+## October 11 retained recovery-packet manifest, bounded M3 candidate
+
+[The packet command and encrypted transport](../reviews/2026-10-11-recovery-point-manifest/STATUS.md)
+bind already retained database/Storage artifacts, roles, database root key,
+configuration and a verified worker-root set. A fresh encrypted packet restores
+all 3,092 files with exact paths/private modes/bytes and all eight copied journal
+schemas/records. Original backend mode metadata remains private in the packet;
+the original point and worker set stay unchanged. All 242 ops tests and 41 controls
+pass, with failed native and oracle trials preserved.
+
+This advances retained-data integrity and portability. It does not establish a new
+consistent live cut, complete configuration/roles, installation-wide discovery,
+native database restoration, worker continuation, independent physical-host recovery
+or commissioning. Browser, useful 45-minute all-worker computation and separate-engine
+scientific acceptance remain open. M3 and the V1 floor stay incomplete; no capability
+grade changes. The relaunch owner retains hosted coordination and the main hold.
+
+## October 11 explicit worker installation inventory, bounded M3 candidate
+
+[The private inventory command](../reviews/2026-10-11-installation-worker-inventory/STATUS.md) requires operator declarations for 15 current worker families, records shared/historical roots and preserves exact configuration/source-catalogue bytes before selected-root publication. It addresses the known family omission gap without claiming automatic installed-service discovery. All 298 ops tests and 63 controls pass; four historical configuration files and five retained roots join the existing root-set command, preserving all four journal images and the original full point. Installation coverage remains unassessed. Full authoritative-record recovery still requires live-cut alignment, every worker family, useful long computation, separate-hardware recovery and independent commissioning under M3. No other v1 outcome is narrowed or accepted by this check.
+
+## October 11 native OCR saved-result recovery, bounded M3 proof
+
+[The synthetic native text-layer proof](../reviews/2026-10-11-ocr-worker-recovery/STATUS.md) extends selected-root recovery evidence to the unchanged OCR worker. Exact source bytes, SQLite records, callback identity and blank-page numbering survive a stopped-root package and separate runtime copy. One logical loopback result accounts for original and repeated deliveries; admission replay and changed-request refusal remain intact. Six existing OCR scripts and all 33 observation controls pass, with a separately observed native missing-result failure. This does not assess scanned OCR accuracy, live Documents/RLS, every installed worker, long computation, hardware-loss recovery or commissioning. No requirement grade or scientific claim changes; M3 and the full contract remain open.
+
+[The later inventory/root-set continuation](../reviews/2026-10-11-ocr-inventory-root-set/STATUS.md) retains exact selected synthetic configuration and restores the original result through both supported operators. Its persisted consumer ledger reports one logical result; all 53 controls pass. One synthetic fixture is configured, and the other 14 families remain unassessed. The fixed-count first trial remains superseded. Full installed-family, live-cut, long-work, physical-host, Documents/RLS and commissioning evidence is still required; no capability grade changes.
+
+## October 11 aerial queued-admission defect, M3/M5b.2
+
+[The native admission counterexample](../reviews/2026-10-11-odm-restart-reproduction/STATUS.md) shows acknowledged ODM queued work receiving a new job/callback identity after stopped-root restoration and exact replay. The complete captured pre-body root has no admission journal. All 23 counterexample controls pass; worker recovery remains false. No imagery, engine, artifact quality, live callback or scientific acceptance is inferred. Durable acceptance, source/engine/result custody and safe reconciliation remain required under the existing M3/M5b.2 queue. No requirement grade or full-v1 scope changes.
+
+[The disconnected admission journal candidate](../reviews/2026-10-11-odm-admission-journal/STATUS.md) implements immutable parsed admission and start-intent custody. All nine ODM scripts and 57 journal controls pass; actual stopped-root capture and relocated journal replay retain two original records, with 69 observation controls. Runtime recovery remains false until full source/engine/result/artifact reconciliation and worker integration pass. No requirement grade, scientific acceptance or v1 scope changes. Nathaniel holds all main merges until he confirms the relaunch and Opus review are complete.
+
+[The disconnected local source candidate](../reviews/2026-10-11-odm-source-custody/STATUS.md) retains exact complete ZIP/photo bytes, original admission/context and ordered metadata before engine use. All 42 source tests and 57 controls and actual interrupted-copy/root-capture recovery pass, with three native changed-source/slot/actor refusals and 96 observation controls. No download, decoding, engine or live authority runs; runtime recovery and all remaining M3/M5b.2 boundaries stay open. No requirement grade, scientific acceptance or v1 scope changes. Preserve the main merge hold.
+
+[The native draft retry counterexample](../reviews/2026-10-11-odm-draft-reconciliation/STATUS.md) proves repeated upload creates duplicate ordinary bytes and repeated initialization overwrites metadata in the exact cached NodeODM API. Original draft bytes survive stopped-root restoration despite absent task info. All 63 observation and six wrapper controls pass, without commit or reconstruction. Actual engine-custody reconciliation and full worker integration remain required; no requirement grade or scientific acceptance changes. Preserve the main merge hold.
+
+[The disconnected engine journal](../reviews/2026-10-11-odm-engine-effects/STATUS.md) binds original source/admission/context, engine/settings and task UUID to once-issued command records and exact checked replies. All 25 tests/42 source controls, 11 aerial scripts and stopped-root copy replay pass, with 60 observation controls. Unresolved effects do not reissue; acknowledgments remain unassessed custody. No HTTP, engine, decoded imagery or live authority runs. ZIP-derived inputs, actual backend reconciliation and complete runtime recovery remain open; no requirement grade or scientific acceptance changes. Preserve the main merge hold.
+
+[Captured original draft comparison](../reviews/2026-10-11-odm-draft-custody/STATUS.md) verifies complete root packages before/after exact original metadata and upload-byte checks. All 24 tests/36 source controls, 12 aerial scripts, native partial/complete checks and duplicate/metadata/byte refusals pass, with 90 observation and eight response controls. Results grant no transport permission; uncertain receipts remain unresolved. No commit, reconstruction or live authority runs. ZIP-derived custody, runtime dispatch, commit/results and complete worker recovery remain open. No requirement grade, scientific acceptance or v1 scope changes. Preserve the main merge hold.
+
+[Original ZIP-derived image slots](../reviews/2026-10-11-odm-zip-derived-custody/STATUS.md) retain original archive/admission/context, member paths and actual expanded bytes/hashes before engine intake. All 32 tests/49 source controls, 13 aerial scripts and actual interrupted-copy/root-capture resumption pass, with 81 observation controls and changed-archive/derived-byte/actor refusals. No download, decoding or engine request runs. Engine-journal integration, live authority and complete runtime recovery remain open. No requirement grade, scientific acceptance or v1 scope changes. Main merges remain held pending explicit dated coordinator clearance after handoff, Opus review and blocker resolution.
+
+[ZIP engine-journal integration](../reviews/2026-10-11-odm-zip-engine-integration/STATUS.md) connects actual retained ZIP slots to original private command identity and captured draft-byte inspection. All 14 new tests/26 controls, existing photo/draft controls, 14 aerial scripts and stopped-root replay pass, with 69 observation controls. Actual cached partial/complete drafts and duplicate/metadata/byte refusals pass with 102 observation and nine response controls. Photo plan format remains unchanged. No runtime dispatch, commit, decoding, reconstruction or live authority runs. Full worker recovery and acceptance remain open; no requirement grade, scientific claim or v1 scope changes. Preserve the main merge hold.
+
+[Opt-in durable aerial HTTP admission](../reviews/2026-10-11-odm-runtime-admission/STATUS.md) preserves original receipts, queued insertion order and held uncertain starts through actual stopped-root restoration. All 30 new tests/49 controls, 15 aerial scripts and 30 native observations/93 controls pass; missing original seal/database refuse startup. No imagery or engine work runs. Original actor/live authority, retained-source and engine-stage integration, outputs/callback custody and full worker recovery remain open. Default/public schemas stay unchanged. No requirement grade, scientific claim or v1 scope changes. Preserve the main merge hold.
+
+[Owned aerial runtime preparation](../reviews/2026-10-11-odm-runtime-preparation/STATUS.md) connects original started admissions to retained photos/ZIP-derived inputs and original engine plans. The explicit supplied application record preserves actor/context with authority unassessed. All 25 tests/40 controls, 16 aerial scripts and 26 native observations/81 controls pass. Interrupted local preparation resumes with the original task and bytes; completed copies need no original input directory. No engine/callback transport or imagery decoding runs. Trusted context/URL intake, live authority, external stages/results and full worker recovery remain open. No requirement grade, scientific claim or v1 scope changes. Preserve the main merge hold.

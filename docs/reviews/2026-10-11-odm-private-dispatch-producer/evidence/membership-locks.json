@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "admission refused and owner-floor revocation finished",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "harmless",
+      "result": "admission refused and owner-floor revocation finished",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "membership-wait",
+      "result": "actual owner-floor deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "restored",
+      "result": "admission refused and owner-floor revocation finished",
+      "parentExit": 0,
+      "workerExit": 3
+    }
+  ],
+  "scope": "Actual owner-floor membership revocation and concurrent service admission. Fresh retained native clones; no hosted, other parent/snapshot paths or external engine fence acceptance."
+}

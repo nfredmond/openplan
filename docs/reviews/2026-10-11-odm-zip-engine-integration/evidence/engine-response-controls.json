@@ -1,0 +1,38 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-json-space",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "empty",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-last",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-status",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-uuid",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "failed-upload",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "nonboolean-upload",
+    "outcome": "intended_refusal"
+  }
+]

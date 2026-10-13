@@ -1,0 +1,6 @@
+{
+  "workers/odm_worker/admission_journal.py": "9411ae79d2579aaf89f474eb94f29d9759e32e634cb259d5d58676621b722332",
+  "workers/odm_worker/test_retired_sqlite_companions.py": "5abe7ce55c4f63bb51fb85a69d5059d87c84e94791abd3341b4b05e7d8034cbe",
+  "workers/odm_worker/test_native_engine_attestation.py": "a1b3545eda8a618040cbf0a405d48cdc3c503c99a2470cf96b0e21c593cbc87a",
+  "docs/reviews/2026-10-13-odm-retired-sqlite-companions/verify_controls.py": "05ef77abad789c42643a9b78445977e0a303116a69fa1b7430068fccab79b3a2"
+}

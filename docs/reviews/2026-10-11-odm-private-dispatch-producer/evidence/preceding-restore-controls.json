@@ -1,0 +1,26 @@
+{
+  "sourceSha256": "bebf2a1cf0f8d5ace5af56250f449742264586ab14c91fef7cb4748edae79ee8",
+  "selectedMainBackupSha256": "7b51116b5caad24649b75be76e0d8582b3421bde1c86db23c8c6aa818a432dd5",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "dumpSha256": "5e87e2b71593369172a938cb451783e72075547beb84ebb573ac98ae38df02de"
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "dumpSha256": "6d5a70b28104a93ddd33dd6b79e6a70324482d9e7ee7ece1de33fc0ef4dbac0f"
+    },
+    {
+      "name": "wrong-generated-hash",
+      "result": "intended original hash mismatch"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "dumpSha256": "e1e7d8a7e6a2a0f8db3eb277c9c471036151c17368bfc7b5aa5d82f56665dbc9"
+    }
+  ],
+  "scope": "Complete candidate SQL application and pg_dump/pg_restore within one isolated capped cluster. UTF-8 originals, private rows, schema and ACL replay. Manual history records; no CLI, encrypted installation point, Storage/worker alignment, offsite/physical-host, hosted or browser acceptance."
+}

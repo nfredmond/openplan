@@ -1,0 +1,22 @@
+{
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_database.py": "ef4a9a986f6b29f15bb5b1756bb6b4d1011d7e9c999e793d0c98c1079e00586a",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_membership_locks.py": "56c052afc18075dfa0c999320271616dd479edbe6ad8476eba0111f2a8935810",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_parent_locks.py": "798ab7d44a683a90bec5ed857c4b1dc74d1bf185221cf4af544c3228e8106d6a",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_restore.py": "549f8146ac2777c5c3bd30ea516163d6be9f1015c7dcb7047c9eb4f8e3a8a294",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_rpc_client.cjs": "a56b7721c50cacbb909734e7b941caf0178dd198a0eaa1a25d233429581a5625",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_rpc_upgrade.py": "04e5b3e947c311dfd680e286bbc7c7703240b3d583d2e777a9c67271f01dca24",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/native_snapshot_locks.py": "0e18708a047c5a391094497b914903f1a156ffcb8a9882bba6c1185ecdb02fee",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_controls.py": "e0ab3230d0aa2b79ab147eb3057a1a64f3544a073a95a399f0fb9dd986b85fba",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_failure_oracle.py": "f6b52047f4c708aa0a71bf6ad932dc757b1f583c8645025b668838756c1b8358",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_native_controls.py": "d2a76ef7a123bed61ab629745fea4eb0d7b9a58efa6240803186d912caae2ba6",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_route_controls.py": "4832346915dbce4d318d3102361574570db714906347e704c640ee862687f116",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_rpc_oracle.py": "43b339f4ec5bbdfbaaa643478c8e830c1a81e7082bfe6c788089757fbe0defc2",
+  "docs/reviews/2026-10-11-odm-private-dispatch-producer/verify_snapshot_oracle.py": "44194753309b2b042f399df32b7c34ce91d9ae44337b71b992ad09569ef1fbfd",
+  "openplan/src/app/api/aerial/missions/[missionId]/process/route.ts": "94614a7f990b7fbcab2aaf8e6e1f067a0a84cb0161f6252cf9d97cb7f7332424",
+  "openplan/src/lib/aerial/original-dispatch.ts": "6f721d0653bafd2c7f078f2d18071423ddb7f1388e4f6a34ae672d3fa9efe2a5",
+  "openplan/src/lib/aerial/processing-contract.ts": "5d12db9ecc80897f07365f77e1901d49282be681c1b3386402327ab718fd84f6",
+  "openplan/src/test/aerial-original-dispatch.test.ts": "69e2c0b2949d1656bd9e5dd81ec9b3d5afd22210e7484d949e67343268cc2a8a",
+  "openplan/src/test/aerial-process-dispatch-route.test.ts": "0ce4fbb63f637225aa68cd4dfc62eca4b91bdac99b0675021a9201be26bbb156",
+  "openplan/supabase/migrations/20261017000003_aerial_private_dispatch_custody.sql": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "workers/odm_worker/test_runtime_url_draft.py": "96058e9552c1face85adebfd6be58c2e8ed44622106c2fb728e29893ab72c2c8"
+}

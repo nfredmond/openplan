@@ -1,0 +1,17 @@
+{
+  "baselineCount": 8,
+  "candidateCount": 8,
+  "newFindings": 0,
+  "removedFindings": 0,
+  "levels": {
+    "WARN": 7,
+    "ERROR": 1
+  },
+  "inheritedNames": [
+    "function_search_path_mutable",
+    "rls_disabled_in_public",
+    "extension_in_public"
+  ],
+  "runnerSha256": "57f15dd1bc7c5b0ae1164c77c4eda0ed6513c0ada6fac49eeb8382d0a428fdcd",
+  "scope": "Installed CLI security advisor comparison in one isolated restored cluster. Eight inherited findings remain: seven warnings and one error. Private-schema role and RLS enforcement are established by separate native tests, not this advisor inventory. No hosted or whole-installation acceptance."
+}

@@ -1,0 +1,6 @@
+{
+  "workers/odm_worker/runtime_url_intake.py": "c9b3c9705e7fccecf814a8d56abf2368eaf77bf646629768cb18d87216db4a66",
+  "workers/odm_worker/runtime_preparation.py": "7dedaab90afbf490d85f27b711936a01bebb580b10043819d920a40690ac635d",
+  "workers/odm_worker/test_runtime_url_intake.py": "6abe7877d6fd3f40e4eda31e0b1bd85b36e41810c486ce3e41025d38574eaeed",
+  "docs/reviews/2026-10-11-odm-url-transport/verify_controls.py": "28cc44da9b012a37f794f17e1ee2c9a6b4e078cee8e10f0d0a74ef59c0803b76"
+}

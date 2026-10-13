@@ -1,0 +1,18 @@
+{
+  "observations": 28,
+  "controls": 87,
+  "rootComparisonControls": 14,
+  "seconds": 1.131,
+  "allPassed": true,
+  "ownedChildStopped": true,
+  "fullWorkerRecoveryAccepted": false,
+  "liveAuthorityVerified": false,
+  "actualLoopbackURLTransportVerified": true,
+  "publicURLTransportVerified": false,
+  "processingCommitExecuted": false,
+  "claimLimits": [
+    "actual loopback HTTP and abrupt parent exit, synthetic bytes; no public DNS/TLS acceptance",
+    "two root packages; documented read-only SQLite empty WAL/transient SHM lifecycle; durable assets unchanged; no whole-installation recovery claim",
+    "no processing/result/callback or browser/practitioner acceptance"
+  ]
+}

@@ -1,0 +1,26 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "observations": 30,
+    "observationControls": 93
+  },
+  {
+    "control": "harmless-paused-writer",
+    "outcome": "survived",
+    "observations": 30,
+    "observationControls": 93
+  },
+  {
+    "control": "partial-direct-writer",
+    "outcome": "intended_failure",
+    "reason": "JSONDecodeError reading partial listener",
+    "exit": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "observations": 30,
+    "observationControls": 93
+  }
+]

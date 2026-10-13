@@ -1,0 +1,12 @@
+{
+  "broken": 60,
+  "controls": 63,
+  "elapsedSeconds": 9.949,
+  "engineMetadataProbesExecuted": true,
+  "engineReconstructionExecuted": false,
+  "outcome": "unsafe_draft_retry_counterexample_reproduced",
+  "positive": 3,
+  "uploadedBytes": 94,
+  "uploadedFiles": 2,
+  "workerRecoveryAccepted": false
+}

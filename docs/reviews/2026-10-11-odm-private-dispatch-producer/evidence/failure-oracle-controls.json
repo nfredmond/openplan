@@ -1,0 +1,71 @@
+{
+  "sourceSha256": "d2a76ef7a123bed61ab629745fea4eb0d7b9a58efa6240803186d912caae2ba6",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "name": "harmless comment",
+      "result": "survived",
+      "reason": null
+    },
+    {
+      "name": "protected wrong exit",
+      "result": "refused",
+      "reason": "Expected native test exit"
+    },
+    {
+      "name": "broken wrong exit",
+      "result": "intended oracle failure",
+      "reason": null
+    },
+    {
+      "name": "protected extra assertion",
+      "result": "refused",
+      "reason": "Exactly one native assertion required"
+    },
+    {
+      "name": "broken extra assertion",
+      "result": "intended oracle failure",
+      "reason": null
+    },
+    {
+      "name": "protected wrong test",
+      "result": "refused",
+      "reason": "Expected native assertion boundary"
+    },
+    {
+      "name": "broken wrong test",
+      "result": "intended oracle failure",
+      "reason": null
+    },
+    {
+      "name": "protected unrelated SQL error",
+      "result": "refused",
+      "reason": "Unrelated SQL refusal cannot prove the mutation"
+    },
+    {
+      "name": "broken unrelated SQL error",
+      "result": "intended oracle failure",
+      "reason": null
+    },
+    {
+      "name": "missing assertion",
+      "result": "refused",
+      "reason": "Exactly one native assertion required"
+    },
+    {
+      "name": "wrong assertion reason",
+      "result": "refused",
+      "reason": "Expected native assertion boundary"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "reason": null
+    }
+  ],
+  "scope": "Pure native failure classifier. No database or process operation."
+}

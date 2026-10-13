@@ -1,0 +1,509 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-order",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "originalZipPlanFormat-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipPlanFormat"
+  },
+  {
+    "control": "originalZipPlanFormat-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipPlanFormat"
+  },
+  {
+    "control": "originalZipPlanFormat-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipPlanFormat"
+  },
+  {
+    "control": "originalZipArchiveIdentity-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipArchiveIdentity"
+  },
+  {
+    "control": "originalZipArchiveIdentity-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipArchiveIdentity"
+  },
+  {
+    "control": "originalZipArchiveIdentity-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalZipArchiveIdentity"
+  },
+  {
+    "control": "originalDerivedPlanIdentity-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalDerivedPlanIdentity"
+  },
+  {
+    "control": "originalDerivedPlanIdentity-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalDerivedPlanIdentity"
+  },
+  {
+    "control": "originalDerivedPlanIdentity-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalDerivedPlanIdentity"
+  },
+  {
+    "control": "originalOrderedMembers-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalOrderedMembers"
+  },
+  {
+    "control": "originalOrderedMembers-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalOrderedMembers"
+  },
+  {
+    "control": "originalOrderedMembers-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalOrderedMembers"
+  },
+  {
+    "control": "partialInspectionExit-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialInspectionExit"
+  },
+  {
+    "control": "partialInspectionExit-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialInspectionExit"
+  },
+  {
+    "control": "partialInspectionExit-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialInspectionExit"
+  },
+  {
+    "control": "completeInspectionExit-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeInspectionExit"
+  },
+  {
+    "control": "completeInspectionExit-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeInspectionExit"
+  },
+  {
+    "control": "completeInspectionExit-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeInspectionExit"
+  },
+  {
+    "control": "partialOriginalUuid-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalUuid"
+  },
+  {
+    "control": "partialOriginalUuid-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalUuid"
+  },
+  {
+    "control": "partialOriginalUuid-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalUuid"
+  },
+  {
+    "control": "partialOriginalHash-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalHash"
+  },
+  {
+    "control": "partialOriginalHash-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalHash"
+  },
+  {
+    "control": "partialOriginalHash-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialOriginalHash"
+  },
+  {
+    "control": "partialExactFirstUpload-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialExactFirstUpload"
+  },
+  {
+    "control": "partialExactFirstUpload-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialExactFirstUpload"
+  },
+  {
+    "control": "partialExactFirstUpload-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialExactFirstUpload"
+  },
+  {
+    "control": "partialMissingSecond-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialMissingSecond"
+  },
+  {
+    "control": "partialMissingSecond-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialMissingSecond"
+  },
+  {
+    "control": "partialMissingSecond-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialMissingSecond"
+  },
+  {
+    "control": "partialHasNoTransportPermission-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialHasNoTransportPermission"
+  },
+  {
+    "control": "partialHasNoTransportPermission-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialHasNoTransportPermission"
+  },
+  {
+    "control": "partialHasNoTransportPermission-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-partialHasNoTransportPermission"
+  },
+  {
+    "control": "completeOriginalUuid-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalUuid"
+  },
+  {
+    "control": "completeOriginalUuid-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalUuid"
+  },
+  {
+    "control": "completeOriginalUuid-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalUuid"
+  },
+  {
+    "control": "completeOriginalHash-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalHash"
+  },
+  {
+    "control": "completeOriginalHash-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalHash"
+  },
+  {
+    "control": "completeOriginalHash-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeOriginalHash"
+  },
+  {
+    "control": "completeExactUploads-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeExactUploads"
+  },
+  {
+    "control": "completeExactUploads-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeExactUploads"
+  },
+  {
+    "control": "completeExactUploads-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeExactUploads"
+  },
+  {
+    "control": "completeHasNoTransportPermission-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeHasNoTransportPermission"
+  },
+  {
+    "control": "completeHasNoTransportPermission-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeHasNoTransportPermission"
+  },
+  {
+    "control": "completeHasNoTransportPermission-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-completeHasNoTransportPermission"
+  },
+  {
+    "control": "allPackageVerificationsPassed-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allPackageVerificationsPassed"
+  },
+  {
+    "control": "allPackageVerificationsPassed-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allPackageVerificationsPassed"
+  },
+  {
+    "control": "allPackageVerificationsPassed-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allPackageVerificationsPassed"
+  },
+  {
+    "control": "allEngineResponsesChecked-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEngineResponsesChecked"
+  },
+  {
+    "control": "allEngineResponsesChecked-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEngineResponsesChecked"
+  },
+  {
+    "control": "allEngineResponsesChecked-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEngineResponsesChecked"
+  },
+  {
+    "control": "originalUncertainUploadNotReissued-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalUncertainUploadNotReissued"
+  },
+  {
+    "control": "originalUncertainUploadNotReissued-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalUncertainUploadNotReissued"
+  },
+  {
+    "control": "originalUncertainUploadNotReissued-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-originalUncertainUploadNotReissued"
+  },
+  {
+    "control": "unissuedSecondUploadFirstIntent-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unissuedSecondUploadFirstIntent"
+  },
+  {
+    "control": "unissuedSecondUploadFirstIntent-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unissuedSecondUploadFirstIntent"
+  },
+  {
+    "control": "unissuedSecondUploadFirstIntent-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unissuedSecondUploadFirstIntent"
+  },
+  {
+    "control": "unresolvedFirstReceiptPreserved-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unresolvedFirstReceiptPreserved"
+  },
+  {
+    "control": "unresolvedFirstReceiptPreserved-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unresolvedFirstReceiptPreserved"
+  },
+  {
+    "control": "unresolvedFirstReceiptPreserved-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-unresolvedFirstReceiptPreserved"
+  },
+  {
+    "control": "commitRemainsUnissued-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-commitRemainsUnissued"
+  },
+  {
+    "control": "commitRemainsUnissued-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-commitRemainsUnissued"
+  },
+  {
+    "control": "commitRemainsUnissued-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-commitRemainsUnissued"
+  },
+  {
+    "control": "duplicateNativeUploadRefused-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-duplicateNativeUploadRefused"
+  },
+  {
+    "control": "duplicateNativeUploadRefused-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-duplicateNativeUploadRefused"
+  },
+  {
+    "control": "duplicateNativeUploadRefused-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-duplicateNativeUploadRefused"
+  },
+  {
+    "control": "overwrittenNativeMetadataRefused-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-overwrittenNativeMetadataRefused"
+  },
+  {
+    "control": "overwrittenNativeMetadataRefused-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-overwrittenNativeMetadataRefused"
+  },
+  {
+    "control": "overwrittenNativeMetadataRefused-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-overwrittenNativeMetadataRefused"
+  },
+  {
+    "control": "changedCapturedBytesRefused-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-changedCapturedBytesRefused"
+  },
+  {
+    "control": "changedCapturedBytesRefused-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-changedCapturedBytesRefused"
+  },
+  {
+    "control": "changedCapturedBytesRefused-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-changedCapturedBytesRefused"
+  },
+  {
+    "control": "allOwnedEnginesStoppedCleanly-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allOwnedEnginesStoppedCleanly"
+  },
+  {
+    "control": "allOwnedEnginesStoppedCleanly-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allOwnedEnginesStoppedCleanly"
+  },
+  {
+    "control": "allOwnedEnginesStoppedCleanly-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allOwnedEnginesStoppedCleanly"
+  },
+  {
+    "control": "allEnginesUsePinnedImage-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesUsePinnedImage"
+  },
+  {
+    "control": "allEnginesUsePinnedImage-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesUsePinnedImage"
+  },
+  {
+    "control": "allEnginesUsePinnedImage-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesUsePinnedImage"
+  },
+  {
+    "control": "allEnginesHaveNoExternalNetworkOrPorts-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveNoExternalNetworkOrPorts"
+  },
+  {
+    "control": "allEnginesHaveNoExternalNetworkOrPorts-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveNoExternalNetworkOrPorts"
+  },
+  {
+    "control": "allEnginesHaveNoExternalNetworkOrPorts-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveNoExternalNetworkOrPorts"
+  },
+  {
+    "control": "allEnginesHaveDeclaredMemoryLimit-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveDeclaredMemoryLimit"
+  },
+  {
+    "control": "allEnginesHaveDeclaredMemoryLimit-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveDeclaredMemoryLimit"
+  },
+  {
+    "control": "allEnginesHaveDeclaredMemoryLimit-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allEnginesHaveDeclaredMemoryLimit"
+  },
+  {
+    "control": "stoppedRootsMatchPackages-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-stoppedRootsMatchPackages"
+  },
+  {
+    "control": "stoppedRootsMatchPackages-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-stoppedRootsMatchPackages"
+  },
+  {
+    "control": "stoppedRootsMatchPackages-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-stoppedRootsMatchPackages"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allProtectedPackagesUnchanged"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allProtectedPackagesUnchanged"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-allProtectedPackagesUnchanged"
+  },
+  {
+    "control": "workerOrdinaryUnchangedByInspection-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerOrdinaryUnchangedByInspection"
+  },
+  {
+    "control": "workerOrdinaryUnchangedByInspection-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerOrdinaryUnchangedByInspection"
+  },
+  {
+    "control": "workerOrdinaryUnchangedByInspection-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerOrdinaryUnchangedByInspection"
+  },
+  {
+    "control": "workerJournalUnchangedByInspection-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerJournalUnchangedByInspection"
+  },
+  {
+    "control": "workerJournalUnchangedByInspection-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerJournalUnchangedByInspection"
+  },
+  {
+    "control": "workerJournalUnchangedByInspection-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-workerJournalUnchangedByInspection"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-sourceBindingsUnchanged"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-sourceBindingsUnchanged"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_failure",
+    "reason": "zip-engine-custody-native-sourceBindingsUnchanged"
+  }
+]

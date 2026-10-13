@@ -1,0 +1,445 @@
+{
+  "state": "passed-native-sql",
+  "sourceSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "observations": [
+    {
+      "name": "encoding",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "baseline",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "harmless",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "exact-replay",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "anon-record-rpc",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for function record_aerial_original_dispatch"
+    },
+    {
+      "name": "anon-read-rpc",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for function read_aerial_original_dispatch"
+    },
+    {
+      "name": "anon-private-table",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for schema openplan_odm_private"
+    },
+    {
+      "name": "authenticated-record-rpc",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for function record_aerial_original_dispatch"
+    },
+    {
+      "name": "authenticated-read-rpc",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for function read_aerial_original_dispatch"
+    },
+    {
+      "name": "authenticated-private-table",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for schema openplan_odm_private"
+    },
+    {
+      "name": "service-no-update",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for table original_dispatches"
+    },
+    {
+      "name": "service-no-delete",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "permission denied for table original_dispatches"
+    },
+    {
+      "name": "changed-exact-bytes",
+      "exit": 3,
+      "expectedState": "23505",
+      "expectedDetail": "cannot be replaced"
+    },
+    {
+      "name": "changed-original-installation",
+      "exit": 3,
+      "expectedState": "23505",
+      "expectedDetail": "cannot be replaced"
+    },
+    {
+      "name": "wrong-read-installation",
+      "exit": 3,
+      "expectedState": "P0002",
+      "expectedDetail": "is unavailable"
+    },
+    {
+      "name": "changed-original-target",
+      "exit": 3,
+      "expectedState": "23505",
+      "expectedDetail": "cannot be replaced"
+    },
+    {
+      "name": "wrong-read-target",
+      "exit": 3,
+      "expectedState": "P0002",
+      "expectedDetail": "is unavailable"
+    },
+    {
+      "name": "wrong-original-actor",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "cannot process this workspace"
+    },
+    {
+      "name": "wrong-original-project",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "project scope differs"
+    },
+    {
+      "name": "other-member-original-actor",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-accepted",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-running",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-succeeded",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-failed",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-canceled",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "refuse-admission-dispatch_failed",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "job or mission scope changed"
+    },
+    {
+      "name": "payload-requestId",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-schemaVersion",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-presetId",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-system",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-workspaceId",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-missionId",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-projectId",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "payload-imagery",
+      "exit": 3,
+      "expectedState": "22023",
+      "expectedDetail": "payload scope differs"
+    },
+    {
+      "name": "active-requested",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "active-accepted",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "active-running",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "terminal-succeeded",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "terminal-failed",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "terminal-canceled",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "terminal-dispatch_failed",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "admitted-role-owner",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "admitted-role-admin",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "admitted-role-member",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "viewer-admission",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "cannot process this workspace"
+    },
+    {
+      "name": "null-role-admission",
+      "exit": 3,
+      "expectedState": "42501",
+      "expectedDetail": "cannot process this workspace"
+    },
+    {
+      "name": "viewer-revoked",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "membership-removed",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "actor-deleted-after-private-workspace-retirement",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "private-deleted-actor",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "private-missing-actor",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "project-moved",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "project-deleted",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "mission-project-changed",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "job-changed-request_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "job-changed-created_by",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "job-changed-preset_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "job-changed-imagery_type",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-request_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-workspace_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-project_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-mission_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-created_by",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-preset_id",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "tampered-projection-imagery_type",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "deleted-aerial_missions",
+      "exit": 3,
+      "expectedState": "P0002",
+      "expectedDetail": "is unavailable"
+    },
+    {
+      "name": "deleted-workspaces",
+      "exit": 3,
+      "expectedState": "P0002",
+      "expectedDetail": "is unavailable"
+    },
+    {
+      "name": "deleted-aerial_processing_jobs",
+      "exit": 3,
+      "expectedState": "P0002",
+      "expectedDetail": "is unavailable"
+    },
+    {
+      "name": "nullable-project",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "rls-enabled",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "invoker-functions",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    },
+    {
+      "name": "all-probes-rolled-back",
+      "exit": 0,
+      "expectedState": null,
+      "expectedDetail": null
+    }
+  ],
+  "scope": "Actual PostgreSQL service/member/anonymous roles and candidate functions on isolated current-main SQL fixture. No PostgREST, hosted operation, atomic external revocation, worker attestation, full restore or browser acceptance."
+}

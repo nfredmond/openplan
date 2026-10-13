@@ -1,0 +1,121 @@
+{
+  "suites": [
+    {
+      "suite": "workers/odm_worker/test_admission_journal.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_callbacks.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_contract.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_deploy_surface.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_derived_zip.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_draft_custody.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_draft_http.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_engine_effects.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_georef.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_intake.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_nodeodm_client.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_pipeline.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_retained_source.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_admission.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_draft.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_preparation.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_url_draft.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_url_draft_cancellation.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_runtime_url_intake.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_url_source_custody.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_url_transport.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_worker_http.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    },
+    {
+      "suite": "workers/odm_worker/test_zip_engine.py",
+      "discoveredByActualYamlLoop": true,
+      "sharedLoopExit": 0
+    }
+  ],
+  "baselineLogSha256": "b0d8560aa7780640026f40238cea1b0252d2673e7d948daf034c3bca4c870ec7",
+  "workflowSha256": "adcd4ad4b1830572c77df2c25406727b78caa7aa7ed1dadf8e1cead442d2e59d"
+}
