@@ -1,0 +1,70 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-prefix",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "other-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-output",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-summary",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-failed-result",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "earlier-decoy-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "later-unrelated-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  }
+]
