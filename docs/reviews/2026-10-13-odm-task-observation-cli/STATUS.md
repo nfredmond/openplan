@@ -73,3 +73,40 @@ binding. The joined [connector suite](evidence/parent-join-provider-summary.json
 passes404 cases with four skipped. The joined
 [20 app/docs cases](evidence/parent-join-docs-summary.json) pass with no failed or
 pending cases. New head CI and corrected-main promotion remain separate.
+
+## Review correction: create the record through the actual command
+
+Review4257744340 identifies a gap in the preceding native command probe. The
+helper already creates the digest before the command records it, and the
+relocated read uses the helper's earlier package. That proves replay, rather
+than creation and recovery of a new record written by the command. The preceding
+evidence remains historical and does not establish fresh command creation.
+
+The corrected probe creates an empty private metadata root. The actual command
+writes its digest there. The existing root capture then copies that new record
+with the original engine plan, verifies the package and produces a new runtime
+copy. The read command reopens that copy and returns the exact original summary.
+The fresh record, original helper roots and both packages remain unchanged.
+
+Four additional behaviors challenge these assertions: a prepopulated root, a
+missing command-created file, different captured record bytes and a fresh record
+changed after recovery. All four reach their intended assertions. The complete
+native controller passes four positive cohorts and 26 targeted faults, with
+exact driver restoration and the existing typed diagnostic controls. A separate
+Python 3.11 actual creation/capture/read probe also passes. The owned unit peaks
+at 97,533,952 bytes under 1 GiB, with zero maximum/OOM events and zero swap,
+then stops. Read-only inspection confirms all 31 owned native producers stopped.
+No production command code changes.
+
+[Fresh native results](evidence/fresh-native-results.json),
+[26 targeted controls](evidence/fresh-native-controls.json),
+[diagnostic controls](evidence/fresh-native-oracles.json),
+[driver bindings](evidence/fresh-native-bindings.json),
+[controller bindings](evidence/fresh-native-control-bindings.json),
+[3.11 results](evidence/fresh-native311-results.json),
+[3.11 bindings](evidence/fresh-native311-bindings.json) and
+[unit results](evidence/fresh-native-resources.json) retain this correction.
+The earlier 34-stage worker recipe and parent-join results retain their original
+source boundaries. New head CI remains required. Same-host selected-root capture
+does not establish installation completeness, current authority, freshness,
+processing quality or full worker recovery. The earlier limits still apply.
