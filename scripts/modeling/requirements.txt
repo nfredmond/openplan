@@ -20,19 +20,25 @@
 # runtime's requirements. This file is the default; specialized ActivitySim
 # entry points are checked against their dedicated requirements instead.
 #
-# Versions: floors, not pins, and they have been run twice against the same
-# county on the same day (2026-08-15, CPython 3.11) with the same answer —
-# 26 zones, 11.1% intrazonal, VMT per capita 24.87 both times:
+# Versions. The engine pair (aequilibrae, numpy, pandas) is pinned to exactly
+# the lines in workers/aequilibrae_worker/requirements.txt, the hosted model
+# image's list, and workers/aequilibrae_worker/test_dependency_pins.py fails when
+# the two files differ. This file used to carry floors, and on 2026-08-15 they
+# resolved to these two stacks:
 #
 #   host venv   aequilibrae 1.6.2 / geopandas 1.1.4 / numpy 2.0.2 / pandas 3.0.3
 #   container   aequilibrae 1.7.0 / geopandas 1.1.4 / numpy 2.0.2 / pandas 3.0.5
 #
-# That is the evidence for leaving these open rather than pinning: the floors
-# admitted a minor-version change in the engine and the number did not move.
-# It is NOT evidence about any version above those — a bump that changes a
-# result is a change to what OpenPlan tells a planner, so re-run a county and
-# compare the number before widening or raising anything here.
-aequilibrae>=1.6.0
+# Both runs gave the same county answer (26 zones, 11.1% intrazonal, VMT per
+# capita 24.87), but both used pandas 3, and on 2026-10-10 AequilibraE graph
+# compression was found to break under pandas 3 Copy-on-Write (see
+# docs/ops/HOSTED_RELAUNCH_2026-10-10.md). The hosted image refuses that stack at
+# build time with workers/hosted-models/verify_graph_compatibility.py, and the
+# county image now runs the same probe. A county number under these pins has not
+# yet been compared with the 2026-08-15 runs; re-run a county and compare before
+# relying on continuity. Raising any pinned line is a model change, not a
+# dependency bump.
+aequilibrae==1.6.2
 geopandas>=1.0
 # <2.1 is a hard ceiling, not caution: newer numpy ABIs heap-corrupt
 # aequilibrae 1.6.x's compiled path engine, which aborts mid-skim with glibc
@@ -44,7 +50,8 @@ numpy>=1.26,<2.1
 # (activitysim_mtc_inputs.py). 0.3.3 (what aequilibrae brings) and 0.3.5 (the
 # worker execution image) both carry the whole API used here.
 openmatrix>=0.3
-pandas>=2.0
+# Same pin as workers/aequilibrae_worker/requirements.txt; see the header.
+pandas==2.3.3
 requests>=2.31
 scipy>=1.10
 shapely>=2.0
