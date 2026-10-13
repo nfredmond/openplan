@@ -28,9 +28,6 @@ import type { AtpGrantResult } from "@/lib/planner-pack/types";
 export const ATP_CATALOG_KEY = "atp";
 
 /** Columns the packet route reads from each table. */
-export const ATP_PACKET_SECTION_SELECT = "section_key, source";
-export const ATP_PACKET_PROJECT_SELECT = "id, name";
-export const ATP_PACKET_RUN_SELECT = "id, title, created_at, metrics";
 
 /** The run id the packet carries when the project has no analysis run. */
 export const ATP_PACKET_NO_RUN_ID = "no analysis run";

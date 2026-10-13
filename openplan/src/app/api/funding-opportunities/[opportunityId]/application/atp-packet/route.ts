@@ -8,9 +8,6 @@ import {
   looksLikePendingAssemblySchema,
 } from "@/lib/grants/application";
 import {
-  ATP_PACKET_PROJECT_SELECT,
-  ATP_PACKET_RUN_SELECT,
-  ATP_PACKET_SECTION_SELECT,
   buildAtpPacketView,
   isAtpApplication,
   type AtpPacketRun,
@@ -79,7 +76,7 @@ export async function GET(request: NextRequest, context: RouteContext) {
 
     const sectionsResult = await supabase
       .from("funding_opportunity_application_sections")
-      .select(ATP_PACKET_SECTION_SELECT)
+      .select("section_key, source")
       .eq("opportunity_id", opportunity.id);
     if (sectionsResult.error) {
       if (looksLikePendingAssemblySchema(sectionsResult.error.message)) {
@@ -106,13 +103,13 @@ export async function GET(request: NextRequest, context: RouteContext) {
     const [projectResult, runResult] = await Promise.all([
       supabase
         .from("projects")
-        .select(ATP_PACKET_PROJECT_SELECT)
+        .select("id, name")
         .eq("id", projectId)
         .eq("workspace_id", opportunity.workspace_id)
         .maybeSingle(),
       supabase
         .from("runs")
-        .select(ATP_PACKET_RUN_SELECT)
+        .select("id, title, created_at, metrics")
         .eq("workspace_id", opportunity.workspace_id)
         .eq("project_id", projectId)
         .order("created_at", { ascending: false })
