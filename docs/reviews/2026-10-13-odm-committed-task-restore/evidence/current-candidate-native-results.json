@@ -1,0 +1,15 @@
+{
+  "originalTaskUuid": "f2df9afd-66c7-419c-8f6c-5bdd5700b3bd",
+  "originalFailedStatus": {
+    "code": 30,
+    "errorMessage": "Cannot process dataset"
+  },
+  "apiTaskRestored": true,
+  "exactSourcePackageRelocation": true,
+  "originalAndPackageUnchanged": true,
+  "newEngineIdentity": true,
+  "knownRootOnly": true,
+  "decodedImageryAccepted": false,
+  "workerRecoveryAccepted": false,
+  "engineAdoptionAuthorized": false
+}
