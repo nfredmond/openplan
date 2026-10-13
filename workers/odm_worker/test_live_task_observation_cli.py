@@ -198,6 +198,27 @@ class Checks(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'credential JSON depth differs'):
                 module.credential(self.credential, self.plan['engine']['credentialReference'], time.monotonic() + 1)
 
+    def test_signal_during_handler_restoration_refuses_success(self):
+        previous = {name: signal.getsignal(name) for name in (signal.SIGINT, signal.SIGTERM)}
+        original = signal.signal
+        injected = False
+        def restore(name, handler):
+            nonlocal injected
+            if name == signal.SIGTERM and handler == previous[name] and not injected:
+                injected = True
+                signal.getsignal(name)(name, None)
+            return original(name, handler)
+        try:
+            with patch.object(module, 'execute', return_value={'bodySha256': 'a' * 64}), patch.object(module.signal, 'signal', side_effect=restore), redirect_stdout(io.StringIO()) as output, redirect_stderr(io.StringIO()):
+                code = module.main(self.argv())
+            self.assertTrue(injected, 'Final-window signal must arrive during handler restoration')
+            self.assertEqual(code, 2, 'Final-window cancellation must refuse success')
+            self.assertEqual(output.getvalue(), '', 'Final-window cancellation cannot print a success summary')
+            self.assertEqual({name: signal.getsignal(name) for name in previous}, previous)
+        finally:
+            for name, handler in previous.items():
+                original(name, handler)
+
 
 if __name__ == '__main__':
     unittest.main()

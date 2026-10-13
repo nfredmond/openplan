@@ -53,6 +53,7 @@ def run(repo, out):
     fault('credential-reader-checks-bypassed', '\n    with reader(path.parent, path.name) as (stream, info):', "\n    with path.open('rb') as stream:\n        info = path.stat()", 'test_credential_alias_and_permissions_refuse', 'Unsafe credential file reached native engine construction')
     fault('ownership-adapter-check-removed', 'or not callable(owned)):', 'or False):', 'test_fetch_inputs_and_mixed_modes_refuse_before_plan_read', "TypeError: 'NoneType' object is not callable", 'errors')
     fault('decoder-depth-error-exposed', 'except RecursionError:', 'except RuntimeWarning:', 'test_credential_decoder_depth_refuses', 'RecursionError: Synthetic decoder depth boundary', 'errors')
+    fault('final-window-cancellation-check-removed', 'if args.fetch_original and interrupted.is_set():', 'if False:', 'test_signal_during_handler_restoration_refuses_success', 'Final-window cancellation must refuse success')
     def execute(label, test=None):
         names = ['test_live_task_observation_cli' + ('.Checks.' + test if test else '')]
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', '-v', *names], cwd=module.parent,
@@ -63,9 +64,9 @@ def run(repo, out):
     def positive(label, payload):
         module.write_bytes(payload)
         code, output = execute(label)
-        if code or 'Ran 13 tests' not in output or not output.rstrip().endswith('OK'):
+        if code or 'Ran 14 tests' not in output or not output.rstrip().endswith('OK'):
             raise AssertionError(label + ' complete task-read cohort failed')
-        rows.append({'control': label, 'outcome': 'survived', 'cases': 13})
+        rows.append({'control': label, 'outcome': 'survived', 'cases': 14})
     try:
         positive('baseline', original)
         positive('harmless-comment', original + b'\n# Harmless original-task command control.\n')
@@ -97,7 +98,7 @@ def run(repo, out):
         (out / 'controls.json').write_text(json.dumps(rows, indent=2) + '\n')
         (out / 'oracle-controls.json').write_text(json.dumps(oracles, indent=2) + '\n')
         (out / 'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest() for p in [module, tests, Path(__file__)]}, indent=2) + '\n')
-        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 13, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
+        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 14, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
     finally:
         module.write_bytes(original)
 

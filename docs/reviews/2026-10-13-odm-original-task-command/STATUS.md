@@ -100,3 +100,25 @@ controls are separately inspected stopped and OOMKilled false. The [corrected 36
 peaks at 848,662,528 bytes under 1 GiB, with zero swap/max/OOM events. It stops
 successfully. Fresh GitHub checks, main integration and exact deployment remain
 separate from this local result.
+
+## Final-window cancellation review
+
+PR review identifies a signal arriving during handler restoration after the
+transport's final ownership check. The targeted baseline injects SIGTERM at
+that exact boundary and observes exit zero with a success summary; the failed
+record remains private. The command now restores handlers inside the protected
+execution block and then checks the cancellation event before reporting success.
+It returns the normal refusal if that event was set. Already retained metadata
+is preserved for inspection. The new cohort has 14 cases, 22 targeted variants
+and 132 failure-oracle controls. Final source/native/existing-mode checks pass on both Python versions.
+[The current source cohort](evidence/controls314-final-window-controls.json) and
+[current native command](evidence/native314-final-window-results.json) bind this
+correction. All 34 current native producers are inspected stopped. The serial
+unit peaks at 94,609,408 bytes under 256 MiB, with zero swap/max/OOM events, and
+stops. The [complete current recipe](evidence/final-window-workflow-results.json) passes
+all 36 stages with 687 unittest cases in 28 suites and seven custom check scripts.
+All 64 source/workflow bindings restore exactly. Twenty nested-app source/docs
+cases, direction and pointer controls pass. [The current service](evidence/final-window-workflow-resources.json)
+peaks at 940,855,296 bytes under 1 GiB, with zero swap/max/OOM events, and stops.
+Earlier recipe bindings continue to describe their earlier source. Fresh-head
+GitHub checks and main/public integration remain pending.

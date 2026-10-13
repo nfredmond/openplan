@@ -127,17 +127,20 @@ def main(argv=None):
             previous[name] = signal.getsignal(name)
             signal.signal(name, lambda signum, frame: interrupted.set())
     try:
-        result = execute(args.engine_root, args.records_root, record_file=args.record_file,
-                         response_status=args.response_status, digest=args.digest, timeout=args.timeout,
-                         fetch=args.fetch_original, daemon_socket=args.daemon_socket,
-                         daemon_uid=args.daemon_uid, credential_file=args.credential_file,
-                         owned=(lambda: not interrupted.is_set()) if args.fetch_original else None)
+        try:
+            result = execute(args.engine_root, args.records_root, record_file=args.record_file,
+                             response_status=args.response_status, digest=args.digest, timeout=args.timeout,
+                             fetch=args.fetch_original, daemon_socket=args.daemon_socket,
+                             daemon_uid=args.daemon_uid, credential_file=args.credential_file,
+                             owned=(lambda: not interrupted.is_set()) if args.fetch_original else None)
+        finally:
+            for name, handler in previous.items():
+                signal.signal(name, handler)
+        if args.fetch_original and interrupted.is_set():
+            raise InterruptedError('Original fetch interrupted before success reporting')
     except (OSError, ValueError):
         sys.stderr.write('Task observation refused. Check the private roots, original plan, reply bytes and command inputs.\n')
         return 2
-    finally:
-        for name, handler in previous.items():
-            signal.signal(name, handler)
     sys.stdout.write(json.dumps(result, sort_keys=True) + '\n')
     return 0
 
