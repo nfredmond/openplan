@@ -178,22 +178,62 @@ describe("managed GTFS admission", () => {
   });
   it("passes cancellation through the upload transport and refuses confirmation", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!; let observed: AbortSignal | null | undefined;
+    let cancelledBeforeReply = false, repliedLate = false, release!: () => void;
+    let lateTimer: ReturnType<typeof setTimeout> | undefined;
     f.transport.mockImplementation(async (input, init) => {
-      if (String(input).includes("/storage/") && init?.method === "POST") { observed = init.signal; f.controller.abort(new Error("shutdown")); return new Promise<Response>(resolve => setTimeout(() => resolve(Response.json({ Key: "late" })), 300)); }
+      if (String(input).includes("/storage/") && init?.method === "POST") {
+        observed = init.signal; f.controller.abort(new Error("shutdown"));
+        cancelledBeforeReply = observed?.aborted === true;
+        return new Promise<Response>(resolve => {
+          release = () => { repliedLate = true; resolve(Response.json({ Key: "late" })); };
+          lateTimer = setTimeout(release, 300);
+        });
+      }
       return normal(input, init);
     });
-    const started = performance.now();
-    await expect(f.run()).rejects.toThrow("shutdown"); expect(performance.now() - started).toBeLessThan(180);
+    try {
+      await expect(f.run()).rejects.toThrow("shutdown");
+      expect(cancelledBeforeReply, "Upload transport must observe cancellation before its reply").toBe(true);
+      expect(repliedLate, "Cancelled admission must stop before the late upload acknowledgement").toBe(false);
+    } finally { if (lateTimer) clearTimeout(lateTimer); release?.(); }
     expect(observed?.aborted).toBe(true); expect(f.events).not.toContain("confirm_gtfs_archive");
   });
   it("bounds a stalled upload acknowledgement and leaves custody unconfirmed", async () => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!; let observed: AbortSignal | null | undefined;
+    const resolveOriginal = f.resolve.getMockImplementation()!;
+    f.resolve.mockImplementation(async archive => { await new Promise(resolve => setTimeout(resolve, 200)); return resolveOriginal(archive); });
+    let repliedLate = false, abortedBeforeReconciliation = false;
+    let release!: () => void, lateTimer: ReturnType<typeof setTimeout> | undefined;
+    let started!: () => void;
+    let refusal: Promise<unknown> | undefined;
+    const uploadStarted = new Promise<void>(resolve => { started = resolve; });
+    const timers = vi.spyOn(globalThis, "setTimeout");
     f.transport.mockImplementation(async (input, init) => {
-      if (String(input).includes("/storage/") && init?.method === "POST") { observed = init.signal; return new Promise<Response>(resolve => setTimeout(() => resolve(Response.json({ Key: "late" })), 300)); }
+      if (String(input).includes("/storage/") && init?.method === "POST") {
+        observed = init.signal;
+        return new Promise<Response>(resolve => {
+          release = () => { repliedLate = true; resolve(Response.json({ Key: "late" })); };
+          lateTimer = setTimeout(release, 300); started();
+        });
+      }
+      if (observed && String(input).includes("/storage/") && init?.method !== "POST") {
+        abortedBeforeReconciliation = observed.aborted
+          && observed.reason instanceof Error && observed.reason.message === "GTFS admission upload acknowledgement unavailable";
+      }
       return normal(input, init);
     });
-    const started = performance.now();
-    await expect(f.run()).rejects.toThrow("upload is unconfirmed"); expect(performance.now() - started).toBeLessThan(180);
+    try {
+      refusal = expect(f.run()).rejects.toThrow("upload is unconfirmed");
+      await Promise.race([uploadStarted, refusal]);
+      expect(timers.mock.calls.filter(([, delay]) => delay === f.options.uploadTimeoutMs), "Upload must schedule its original deadline").toHaveLength(1);
+      await refusal;
+      expect(repliedLate, "Admission must stop before the late upload acknowledgement").toBe(false);
+      expect(abortedBeforeReconciliation, "Upload must abort before archive reconciliation").toBe(true);
+    } finally {
+      if (lateTimer) clearTimeout(lateTimer);
+      release?.(); timers.mockRestore();
+      await refusal;
+    }
     expect(observed?.aborted).toBe(true); expect(f.events).not.toContain("confirm_gtfs_archive");
   });
   it.each(["target", "relative", "cancelled"])("refuses %s admission before source work", async kind => {

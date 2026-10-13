@@ -1,0 +1,1 @@
+{"returncode": 1, "outcome": "intended_failure", "test": "managed GTFS admission bounds a stalled upload acknowledgement and leaves custody unconfirmed", "reason": "Whole-admission clock includes controlled200 ms source resolution before the upload deadline"}
