@@ -1,0 +1,68 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "uncertain-prefix-bypassed",
+    "outcome": "intended_failure",
+    "reason": "Held uncertainty cannot send another engine command"
+  },
+  {
+    "control": "child-receipt-saved-instead-of-exit",
+    "outcome": "intended_failure",
+    "reason": "Owned upload child must exit at the intended reply boundary"
+  },
+  {
+    "control": "original-intent-removed",
+    "outcome": "intended_failure",
+    "reason": "Interrupted upload requires a durable original intent"
+  },
+  {
+    "control": "unrecorded-reply-made-present",
+    "outcome": "intended_failure",
+    "reason": "Interrupted upload must have no saved receipt"
+  },
+  {
+    "control": "interruption-cohort-omitted",
+    "outcome": "intended_failure",
+    "reason": "native-interruption-cohort-missing"
+  },
+  {
+    "control": "interrupted-backend-bytes-changed",
+    "outcome": "intended_failure",
+    "reason": "native-composition-interruptedDraftExact"
+  },
+  {
+    "control": "interrupted-backend-form-changed",
+    "outcome": "intended_failure",
+    "reason": "native-composition-interruptedDraftExact"
+  },
+  {
+    "control": "interrupted-backend-file-added",
+    "outcome": "intended_failure",
+    "reason": "native-composition-interruptedDraftExact"
+  },
+  {
+    "control": "predicate-census-omitted",
+    "outcome": "intended_failure",
+    "reason": "Changed native composition result survived"
+  },
+  {
+    "control": "predicate-bool-type-omitted",
+    "outcome": "intended_failure",
+    "reason": "Changed native composition result survived"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

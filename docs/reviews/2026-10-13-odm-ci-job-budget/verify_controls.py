@@ -36,7 +36,7 @@ def run():
             'Aerial CI wrapper must retain its reviewed twenty-minute bound'),
         ('final-journal-controls-removed', original[:original.index('      - name: Retired SQLite companion controls')],
             'Reviewed aerial execution commands or configuration differ'),
-        ('execution-deadline-added', original.replace('set -eu', 'set -eu\n          export OPENPLAN_NEW_RUNTIME_DEADLINE=999'),
+        ('execution-deadline-added', original.replace('python3 -B "$suite"', 'timeout 1s python3 -B "$suite"'),
             'Reviewed aerial execution commands or configuration differ'),
         ('restored', WORKFLOW.read_text(), None),
     ]:

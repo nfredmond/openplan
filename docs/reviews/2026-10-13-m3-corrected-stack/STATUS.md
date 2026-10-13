@@ -87,3 +87,33 @@ The [owned unit](evidence/words-join-resources.json) stops with a 552,808,448-by
 peak under 1 GiB, zero max/OOM events and no extra swap. No schema or hosted
 write accompanies this wording join. Current-head CI and production verification
 remain separate. No new browser or practitioner acceptance is claimed.
+
+## Actual upload interruption and CI wrapper
+
+The [native interrupted upload](../2026-10-13-odm-native-uncertain-interruption/STATUS.md)
+now joins the candidate. An actual child receives and checks an engine response,
+then exits 73 before saving the journal receipt. Three relocated recovery
+attempts hold the uncertain upload without authorization or transport. The real
+backend retains one original upload, with exact metadata/inventory/size/hash.
+Four positive cohorts and ten targeted faults pass, with exact source restoration
+and 16 typed failure-oracle controls. Python 3.11 separately passes the same
+17-case native journey; all bound native and worker files match this join.
+
+GitHub cancels the preceding 26a aerial run at its outer ten-minute limit before
+the last controls run. The [wrapper correction](../2026-10-13-odm-ci-job-budget/STATUS.md)
+changes only that limit to twenty minutes. Every execution command and all worker
+and test budgets remain unchanged. Seven wrapper controls pass, including the
+old limit, removed journal check and a changed per-suite shell deadline. The
+[joined checks](evidence/wrapper-native-join-results.json) pass all 20 documentation/
+release-ordering cases and product direction. Both README report links are
+preserved. The [unit](evidence/wrapper-native-join-resources.json) stops with a
+286,535,680-byte peak under 1 GiB, zero max/OOM events and no extra swap. The
+updated wrapper control is rerun after replacing an unused environment-variable
+variant with an actual per-suite shell deadline. The preceding worker source
+bindings stay unchanged; only the workflow wrapper hash differs.
+
+Current-head GitHub completion remains required. The preceding cancelled run,
+failed native harness trial and rejected documentation-count export remain
+visible. This is response-before-journal interruption, not network acknowledgment
+loss or permission to reconcile/retry/commit. No activation, hosted write, new
+migration, main merge, release tag or additional acceptance is claimed here.
