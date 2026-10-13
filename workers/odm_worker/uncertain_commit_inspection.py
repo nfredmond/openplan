@@ -42,7 +42,7 @@ class Inspection:
         self._scope()
         draft = self.commit.draft
         effects, root = draft._effects(request_id, deadline)
-        snapshot = effects.snapshot()
+        snapshot = effects.snapshot(deadline=deadline)
         draft.preparation._entry(request_id)
         check_time(deadline)
         if any(row['state'] != 'acknowledged' for row in snapshot['commands'][:-1]):
@@ -58,7 +58,7 @@ class Inspection:
                 'originalContext': effects.plan['binding']['originalContext']}
             if not same(read_json(dispatch, 'original-plan.json'), expected):
                 raise ValueError('Commit inspection original dispatch differs')
-            current = effects.snapshot()
+            current = effects.snapshot(deadline=deadline)
             acknowledgment = current['commands'][-1]['state']
             if acknowledgment != 'unresolved':
                 return self._result(effects, acknowledgment)
@@ -72,7 +72,7 @@ class Inspection:
             task = observation['task']
             if task['originalPlanSha256'] != effects.plan_hash:
                 raise ValueError('Commit inspection original observation differs')
-            final = effects.snapshot()
+            final = effects.snapshot(deadline=deadline)
             draft.preparation._entry(request_id)
             check_time(deadline)
             return self._result(effects, final['commands'][-1]['state'], observation)

@@ -51,7 +51,7 @@ def run(repo, out):
     add('missing-option-shape-check', 'test_task_name_options_and_filename_guards', disable('Explicit ordered engine options are required'), 'ValueError not raised')
     add('unsafe-upload-name', 'test_task_name_options_and_filename_guards', disable('Exact ordered upload filenames are required'), 'ValueError not raised')
     add('zip-as-upload-image', 'test_zip_is_not_an_upload_image', disable('ZIP source requires original derived-image custody'), 'does not match', 'diagnostic_refusal')
-    add('source-not-rechecked', 'test_original_source_bytes_rechecked_before_issue', swap('        receipt = self._source_receipt()\n        if receipt[', '        receipt = {"manifestSha256": self.plan["sourceManifestSha256"]}\n        if receipt['), 'ValueError not raised')
+    add('source-not-rechecked', 'test_original_source_bytes_rechecked_before_issue', swap('        receipt = self._source_receipt(end)\n        if receipt[', '        receipt = {"manifestSha256": self.plan["sourceManifestSha256"]}\n        if receipt['), 'ValueError not raised')
     add('altered-intent-accepted', 'test_saved_plan_and_intent_corruption_refuse', disable('Saved engine command intent differs'), 'ValueError not raised')
     add('altered-plan-accepted', 'test_saved_plan_and_intent_corruption_refuse', disable('Saved engine plan differs from original identity'), 'ValueError not raised')
     add('orphan-reply-diagnostic', 'test_orphan_and_unknown_records_refuse', disable('Saved engine reply has no original intent'), 'does not match', 'diagnostic_refusal')

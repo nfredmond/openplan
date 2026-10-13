@@ -233,7 +233,7 @@ class Checks(unittest.TestCase):
     def test_expired_preparation_does_not_reach_permission(self):
         offset=[0];clock=SimpleNamespace(monotonic=lambda:time.monotonic()+offset[0]);draft=self.draft(authorize=lambda *args:(_ for _ in ()).throw(AssertionError('Expired preparation reached permission')))
         actual=self.preparation.resume
-        def late(request_id):result=actual(request_id);offset[0]=10;return result
+        def late(request_id, *, deadline=None):result=actual(request_id, deadline=deadline);offset[0]=10;return result
         with self.runtime.owner():
             self.start()
             with patch.object(module,'time',clock),patch.object(self.preparation,'resume',side_effect=late),patch.object(module,'Effects',side_effect=AssertionError('Expired preparation reached engine journal')):
