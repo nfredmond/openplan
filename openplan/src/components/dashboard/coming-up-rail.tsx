@@ -31,6 +31,7 @@ const KIND_ICONS: Record<ComingUpKind, LucideIcon> = {
   milestone: Flag,
   submittal: ClipboardCheck,
   grant: Landmark,
+  "application-due": Landmark,
   award: CircleDollarSign,
   invoice: Receipt,
   "plan-action": ScrollText,
