@@ -182,3 +182,19 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_runtime_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-commit-journal-controls"
+      - name: Original uncertain commit inspection controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-uncertain-commit-inspection/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-uncertain-commit-inspection-controls"
+      - name: Supplied output archive custody controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-output-archive-controls"
+      - name: Interrupted output archive root recovery
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/native_recovery.py \
+            --out "$RUNNER_TEMP/odm-output-archive-native"
+      - name: Output archive recovery fault controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-output-archive-custody/verify_native_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-output-archive-native-controls"

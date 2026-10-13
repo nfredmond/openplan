@@ -14,7 +14,7 @@ import uuid
 from admission_journal import encoded, private, synchronize
 import derived_zip
 from engine_effects import Effects, engine_identity
-from retained_source import absolute, finite_limit, json_bytes, prepare, publish, read_json, writer
+from retained_source import absolute, check_time, finite_limit, json_bytes, prepare, publish, read_json, writer
 from runtime_admission import Runtime
 
 FORMAT = 'openplan.odm-runtime-preparation.v1'
@@ -85,10 +85,14 @@ class Preparation:
             raise ValueError('Runtime input and retained roots must not overlap')
         return spec, context
 
-    def resume(self, request_id):
+    def resume(self, request_id, *, deadline=None):
         """Verify or finish the same original local preparation; never issue effects."""
-        deadline = time.monotonic()+self.timeout
+        if deadline is not None and (type(deadline) not in (int, float) or not math.isfinite(deadline)):
+            raise ValueError('Runtime preparation shared deadline must be finite')
+        deadline = min(time.monotonic()+self.timeout, deadline) if deadline is not None else time.monotonic()+self.timeout
+        check_time(deadline)
         entry = self._entry(request_id);spec, context = self._spec(entry)
+        check_time(deadline)
         root = self.runtime.root/('preparation-'+hashlib.sha256(request_id.encode()).hexdigest())
         try: root.mkdir(mode=0o700)
         except FileExistsError: pass
@@ -122,13 +126,14 @@ class Preparation:
             receipt = prepare(**arguments)
             derivation = None
             if spec['zipLimits'] is not None:
+                arguments = {**arguments, 'timeout': max(0, deadline-time.monotonic())}
                 derivation = {'destination': root/'derived', **spec['zipLimits']}
                 receipt = derived_zip.prepare(arguments, **derivation, timeout=max(0, deadline-time.monotonic()))
             filenames = spec['filenames'] if derivation is None else [row['filename'] for row in receipt['manifest']['sources']]
             effects = Effects(root/'engine', source_arguments=arguments, engine=spec['engine'], task_uuid=task,
                               name=entry.request['missionTitle'][:200], options=spec['options'],
                               filenames=filenames, derived_arguments=derivation,
-                              timeout=max(0, deadline-time.monotonic()))
+                              timeout=max(0, deadline-time.monotonic()), deadline=deadline)
             result = {'format': FORMAT, 'state': 'prepared_locally', 'taskUuid': task,
                       'planSha256': hashlib.sha256(json_bytes(plan)).hexdigest(),
                       'enginePlanSha256': effects.plan_hash, 'sourceManifestSha256': receipt['manifestSha256'],
