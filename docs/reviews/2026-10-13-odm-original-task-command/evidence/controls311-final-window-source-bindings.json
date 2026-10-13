@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/task_observation_cli.py": "bcefc302d80afab91048ad9c62f0bfc66030587053f6d4f2bb5d8538865fb71c",
+  "workers/odm_worker/test_live_task_observation_cli.py": "3001d3e2efbbe173e0e39e4c823d8f8d75abad5fdbac3fa27294790559537c3b",
+  "docs/reviews/2026-10-13-odm-original-task-command/verify_controls.py": "7671b02cc8b2a0f7956144c6c2e7e46ccebe603616a055300254204112981b55"
+}

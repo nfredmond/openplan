@@ -39,7 +39,7 @@ def run(repo, out):
              "SUMMARY_FIELDS = SUMMARY_FIELDS + ('bodyBase64',)\n\ndef execute(engine_root, records_root,"),
         'Command summary must exclude private detail field bodyBase64')
     add('invalid-mode-reaches-plan-read', 'test_mode_validation_precedes_any_plan_read',
-        omit('Choose exactly one task observation record or read'), 'Invalid mode reached plan read')
+        omit('Choose exactly one task observation record, read or original fetch'), 'Invalid mode reached plan read')
     add('invalid-status-reaches-plan-read', 'test_explicit_status_type_and_read_status_refuse_before_plan_read',
         omit('Supply an explicit integer response status for recording only'), 'Invalid status reached plan read')
     add('invalid-timeout-reaches-plan-read', 'test_timeout_validation_precedes_any_plan_read',

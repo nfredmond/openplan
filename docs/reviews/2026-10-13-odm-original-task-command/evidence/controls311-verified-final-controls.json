@@ -1,0 +1,169 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 13
+  },
+  {
+    "control": "fetch-mode-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_fetch_inputs_and_mixed_modes_refuse_before_plan_read",
+    "diagnostic": "Invalid fetch inputs reached plan read",
+    "kind": "failures"
+  },
+  {
+    "control": "native-input-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_fetch_inputs_and_mixed_modes_refuse_before_plan_read",
+    "diagnostic": "Invalid fetch inputs reached plan read",
+    "kind": "failures"
+  },
+  {
+    "control": "native-inputs-in-local-mode",
+    "outcome": "intended_failure",
+    "case": "test_local_modes_refuse_native_inputs_before_plan_read",
+    "diagnostic": "Native inputs reached local mode plan read",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-owner-type-removed",
+    "outcome": "intended_failure",
+    "case": "test_ended_or_nonboolean_owner_refuses_before_plan_read",
+    "diagnostic": "Ended fetch owner reached plan read",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-owner-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_ended_or_nonboolean_owner_refuses_before_plan_read",
+    "diagnostic": "Ended fetch owner reached plan read",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-format-binding-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_file_binding_and_duplicate_keys_refuse",
+    "diagnostic": "Invalid credential reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-value-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_file_binding_and_duplicate_keys_refuse",
+    "diagnostic": "Invalid credential reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "duplicate-key-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_file_binding_and_duplicate_keys_refuse",
+    "diagnostic": "Invalid credential reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-size-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_bound_precedes_body_read",
+    "diagnostic": "Oversized credential reached body read",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-parent-guard-removed",
+    "outcome": "intended_failure",
+    "case": "test_public_credential_parent_refuses",
+    "diagnostic": "Public credential directory reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-deadline-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_credential_read_does_not_restart_deadline",
+    "diagnostic": "Late credential reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "native-daemon-identity-replaced",
+    "outcome": "intended_failure",
+    "case": "test_original_fetch_routes_to_owned_read_and_retention",
+    "diagnostic": "expected call not found",
+    "kind": "failures"
+  },
+  {
+    "control": "live-read-bypassed",
+    "outcome": "intended_failure",
+    "case": "test_original_fetch_routes_to_owned_read_and_retention",
+    "diagnostic": "Task metadata required fields differ",
+    "kind": "errors"
+  },
+  {
+    "control": "live-summary-hash-replaced",
+    "outcome": "intended_failure",
+    "case": "test_original_fetch_routes_to_owned_read_and_retention",
+    "diagnostic": "Live command summary must bind actual reply bytes",
+    "kind": "failures"
+  },
+  {
+    "control": "signal-ignores-operator",
+    "outcome": "intended_failure",
+    "case": "test_signal_owner_and_original_handlers_restore",
+    "diagnostic": "Operator signal must end fetch ownership",
+    "kind": "failures"
+  },
+  {
+    "control": "signal-handlers-not-restored",
+    "outcome": "intended_failure",
+    "case": "test_signal_owner_and_original_handlers_restore",
+    "diagnostic": "Command must restore the original signal handlers",
+    "kind": "failures"
+  },
+  {
+    "control": "actual-signal-ignored",
+    "outcome": "intended_failure",
+    "case": "test_actual_operator_signal_stops_loopback_read",
+    "diagnostic": "subprocess.TimeoutExpired:",
+    "kind": "errors"
+  },
+  {
+    "control": "private-error-exposed",
+    "outcome": "intended_failure",
+    "case": "test_actual_bad_credentials_keep_private_diagnostics",
+    "diagnostic": "PRIVATE_CREDENTIAL_MARKER",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-reader-checks-bypassed",
+    "outcome": "intended_failure",
+    "case": "test_credential_alias_and_permissions_refuse",
+    "diagnostic": "Unsafe credential file reached native engine construction",
+    "kind": "failures"
+  },
+  {
+    "control": "ownership-adapter-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_fetch_inputs_and_mixed_modes_refuse_before_plan_read",
+    "diagnostic": "TypeError: 'NoneType' object is not callable",
+    "kind": "errors"
+  },
+  {
+    "control": "decoder-depth-error-exposed",
+    "outcome": "intended_failure",
+    "case": "test_credential_decoder_depth_refuses",
+    "diagnostic": "RecursionError: Synthetic decoder depth boundary",
+    "kind": "errors"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 13
+  }
+]

@@ -1,6 +1,7 @@
 # Keep a supplied aerial task reply and reopen its recorded facts
 
-Run this local command from the repository root. It does not contact NodeODM.
+Run these file and digest modes from the repository root. They do not contact
+NodeODM. The separate explicit original-fetch mode is described below.
 It stores supplied reply bytes, then prints a digest and bounded reported facts.
 It does not verify where the supplied reply came from or whether it is current.
 
@@ -60,3 +61,54 @@ The [known-root inventory check](../../docs/reviews/2026-10-13-odm-metadata-inve
 exercises the existing installation inventory and root-set capture with both
 required roots. It preserves the distinction between a successful selected-root
 capture and complete installation recovery.
+
+## Explicit original task fetch
+
+Use `--fetch-original` to request one actual task reply from the original native
+engine. This mode requires the retained original plan, an already private metadata
+root, the trusted local daemon socket and its actual daemon UID. The supported
+Linux launch profile is defined by `native_engine_attestation.py`; another engine,
+container, image, mount configuration or endpoint refuses. It does not adopt a
+replacement engine. Normal worker polling remains unconnected.
+
+Keep the engine credential in a separate owned mode-0600 JSON file inside a
+private directory. Use the exact credential reference from the original plan.
+The file has this shape; replace the placeholder before running the command:
+
+```json
+{
+  "format": "openplan.odm-task-read-credential.v1",
+  "credentialReference": "<original-plan-credential-reference>",
+  "token": null
+}
+```
+
+Use `null` only when that original engine requires no token. Otherwise place its
+actual token in this protected file. Do not pass a token on the command line,
+commit the file or print it into public logs. Include it in the installation's
+protected configuration inventory. The command refuses aliases, duplicate JSON
+keys, changed references and a file larger than 16 KiB.
+
+```sh
+python3 -B workers/odm_worker/task_observation_cli.py \
+  --engine-root /absolute/private-engine-root \
+  --records-root /absolute/private-task-metadata-root \
+  --fetch-original \
+  --daemon-socket /absolute/trusted-daemon.sock \
+  --daemon-uid <actual-daemon-uid> \
+  --credential-file /absolute/private-config/task-read-credential.json \
+  --timeout 10
+```
+
+The command checks the original engine before and after one bounded GET. It
+retains a complete reply only after original UUID, name, count and requested
+option validation. The summary retains the same bounded fields and digest as
+file recording. Use `--read-digest` to reopen that exact saved reply, including
+from restored runtime copies. That local read needs no live engine or credential.
+
+SIGINT or SIGTERM ends fetch ownership. An interrupted or refused command exits
+two and prints no success summary. A record that was already durably published
+is retained for inspection. The command does not delete records to retry, process
+imagery, issue a commit, deliver callbacks or approve publication. Saved metadata
+still carries `unassessed` claim fields and cannot establish later freshness,
+current actor permission, processing quality or whole-worker recovery.

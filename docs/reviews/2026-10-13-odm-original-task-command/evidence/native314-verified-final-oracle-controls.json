@@ -1,0 +1,54 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-prefix",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "success-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "other-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-output",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "empty-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "unrelated-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-assertion",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-traceback",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "stdout-decoy",
+    "outcome": "intended_refusal"
+  }
+]
