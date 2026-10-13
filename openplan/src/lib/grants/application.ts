@@ -19,7 +19,9 @@
 import {
   GRANT_APPLICATION_EVIDENCE_KINDS,
   GRANT_PROGRAM_CATALOG,
+  resolveGrantProgramForJurisdiction,
   type GrantApplicationEvidenceKind,
+  type GrantProgramAdministrationQuery,
   type GrantProgramCatalogEntry,
 } from "@/lib/grants/program-catalog";
 
@@ -170,13 +172,21 @@ export type ApplicationSectionDraftRow = {
 // Catalog lookup + seed builders
 // ---------------------------------------------------------------------------
 
-/** Find a catalog entry by its explicit key. Matching is never inferred. */
+/**
+ * Find a catalog entry by its explicit key. Matching is never inferred.
+ *
+ * With the workspace's jurisdiction, a federal entry comes back as that state
+ * administers it (its agency, cycle and tools) when the state is registered.
+ * Without one, it comes back in the federal text, which names no state.
+ */
 export function findGrantProgramCatalogEntry(
-  catalogKey: string
+  catalogKey: string,
+  workspaceJurisdiction?: GrantProgramAdministrationQuery | null
 ): GrantProgramCatalogEntry | null {
   const trimmed = catalogKey.trim();
   if (!trimmed) return null;
-  return GRANT_PROGRAM_CATALOG.find((entry) => entry.key === trimmed) ?? null;
+  const entry = GRANT_PROGRAM_CATALOG.find((candidate) => candidate.key === trimmed) ?? null;
+  return entry ? resolveGrantProgramForJurisdiction(entry, workspaceJurisdiction) : null;
 }
 
 /** Insert-payload shape for one seeded/custom section (ids added by the route). */

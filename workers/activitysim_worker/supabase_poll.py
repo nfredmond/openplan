@@ -343,6 +343,74 @@ def sb_post_artifact(payload: dict) -> None:
     _confirmed_record_insert("model_run_artifacts", payload)
 
 
+def stage_journal_dir(run_id: str, stage_id: str) -> str:
+    """Where this stage's KPI and artifact requests are saved before they are sent.
+
+    Beside `skip-commands` and outside every `execution-*` directory, so a later
+    execution of the same stage reads the same saved requests, and
+    `model_command_recovery.py --journal` can find them.
+    """
+    validate_run_identity(run_id)
+    if not isinstance(stage_id, str) or str(uuid.UUID(stage_id)) != stage_id:
+        raise ValueError("Model stage identity must be a canonical UUID")
+    return os.path.join(ACTIVITYSIM_WORK_DIR, run_id, "stage-journals", stage_id)
+
+
+def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str) -> dict:
+    """Save the complete KPI request, then send it; a lost reply stays recoverable.
+
+    Uses the AequilibraE worker's legacy KPI command and journal unchanged. A
+    resend of the same request returns the original receipt rather than a
+    second row; changed values under the same KPI identity are refused.
+    """
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_kpi(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no insert fallback") from error
+    import model_legacy_output_delivery
+    try:
+        return model_legacy_output_delivery.deliver_kpi(
+            payload, workspace_id=workspace_id, stage_id=stage_id,
+            journal_dir=stage_journal_dir(payload.get("run_id"), stage_id),
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("KPI delivery unconfirmed; recover the saved request before continuing") from None
+
+
+def sb_record_retained_artifact(payload: dict, *, workspace_id: str, logical_name: str) -> dict:
+    """Save the complete artifact request under a stable logical name, then send it."""
+    import model_attempt_writer
+    writer = model_attempt_writer.current()
+    if writer is not None:
+        try:
+            return writer.record_artifact(payload)
+        except Exception as error:
+            raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no insert fallback") from error
+    if os.environ.get("OPENPLAN_HOSTED_ARTIFACT_MIRROR") == "1":
+        import model_hosted_artifacts
+        try:
+            model_hosted_artifacts.mirror_registered(Path(ACTIVITYSIM_WORK_DIR).parent, payload,
+                model_hosted_artifacts.configured_upload)
+        except Exception:
+            raise WorkerStateWriteUnconfirmed("Hosted artifact mirror unconfirmed; retain original files before recovery") from None
+    import model_legacy_output_delivery
+    try:
+        return model_legacy_output_delivery.deliver_artifact(
+            payload, workspace_id=workspace_id,
+            journal_dir=stage_journal_dir(payload.get("run_id"), payload.get("stage_id")),
+            logical_name=logical_name,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
+        )
+    except Exception:
+        raise WorkerStateWriteUnconfirmed("Artifact delivery unconfirmed; recover the saved request before continuing") from None
+
+
 def sb_get_run(run_id: str) -> dict:
     import model_attempt_writer
     writer = model_attempt_writer.current()
@@ -819,7 +887,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     data = (json.dumps(evidence, indent=2) + "\n").encode("utf-8")
     storage_ref = sb_upload_evidence(run_id, "behavioral_demand_evidence_packet.json", data, "application/json", stage_id=stage_id)
     if storage_ref:
-        sb_post_artifact(
+        sb_record_retained_artifact(
             {
                 "run_id": run_id,
                 "stage_id": stage_id,
@@ -828,7 +896,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                 "file_size_bytes": len(data),
                 "content_hash": hashlib.sha256(data).hexdigest(),
                 "metadata_json": {"kind": "behavioral_demand_preflight_evidence", "is_forecast": False},
-            }
+            },
+            workspace_id=run.get("workspace_id"), logical_name="evidence_packet",
         )
 
     if demand_package:
@@ -839,7 +908,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
         )
         for artifact_type, artifact_path in artifact_specs:
             artifact_bytes = Path(artifact_path).read_bytes()
-            sb_post_artifact(
+            sb_record_retained_artifact(
                 {
                     "run_id": run_id,
                     "stage_id": stage_id,
@@ -851,7 +920,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                         "kind": "activitysim_assignment_handoff",
                         "uncalibrated": True,
                     },
-                }
+                },
+                workspace_id=run.get("workspace_id"), logical_name=artifact_type,
             )
 
     # 5. Structural, non-forecast general KPIs (bundle scaffold sizes + runtime mode).
@@ -881,7 +951,7 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
             float(bundle_stats["synthetic_persons"]), "persons", {"provenance": scaffold_provenance},
         ))
     for name, label, value, unit, breakdown in kpis:
-        sb_post_kpi(
+        sb_record_retained_kpi(
             {
                 "run_id": run_id,
                 "kpi_category": "general",
@@ -890,7 +960,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
                 "value": value,
                 "unit": unit,
                 "breakdown_json": breakdown,
-            }
+            },
+            workspace_id=run.get("workspace_id"), stage_id=stage_id,
         )
 
     # 6. ONLY when a real ActivitySim run executed AND produced supportable
@@ -898,7 +969,10 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
     #    never a forecast. On $0 preflight infra this block is skipped entirely, so
     #    no demand-shaped number is ever emitted without a real run behind it.
     real_kpis = (
-        _write_executed_behavioral_kpis(run_id, pipeline, accepted_components)
+        _write_executed_behavioral_kpis(
+            run_id, pipeline, accepted_components,
+            workspace_id=run.get("workspace_id"), stage_id=stage_id,
+        )
         if executed else 0
     )
 
@@ -914,7 +988,8 @@ def run_bundle_and_preflight_stage(run_id: str, run: dict, stage_id: str) -> dic
 
 
 def _write_executed_behavioral_kpis(
-    run_id: str, pipeline: dict, accepted_components: list[dict[str, Any]] | None = None
+    run_id: str, pipeline: dict, accepted_components: list[dict[str, Any]] | None = None,
+    *, workspace_id: str, stage_id: str,
 ) -> int:
     """Write behavioral KPIs from a REAL (uncalibrated, starter) ActivitySim run,
     reading the extractor's honest summary. Emits nothing if the run produced
@@ -950,7 +1025,7 @@ def _write_executed_behavioral_kpis(
         value = totals.get(key)
         if value is None:
             continue
-        sb_post_kpi(
+        sb_record_retained_kpi(
             {
                 "run_id": run_id,
                 "kpi_category": "general",
@@ -959,7 +1034,8 @@ def _write_executed_behavioral_kpis(
                 "value": float(value),
                 "unit": unit,
                 "breakdown_json": {"provenance": provenance, "calibration": "uncalibrated"},
-            }
+            },
+            workspace_id=workspace_id, stage_id=stage_id,
         )
         written += 1
     return written

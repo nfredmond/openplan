@@ -140,6 +140,15 @@ export function formatModelRunKpiValue(value: number | null, unit?: string | nul
   return unit ? `${formatted} ${unit}` : formatted;
 }
 
+/**
+ * The value text beside a KPI in a list. A KPI stored with no value (for
+ * example a transit share the worker could not compute because the feed failed)
+ * reads "N/A", never a blank that looks like a missing label or a 0.
+ */
+export function formatModelRunKpiListValue(value: number | null | undefined, unit?: string | null) {
+  return formatModelRunKpiValue(typeof value === "number" && Number.isFinite(value) ? value : null, unit);
+}
+
 export function formatModelRunKpiDelta(delta: number | null, unit?: string | null) {
   if (delta === null) {
     return "N/A";

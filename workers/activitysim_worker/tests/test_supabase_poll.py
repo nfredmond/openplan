@@ -27,6 +27,12 @@ if str(WORKER_DIR) not in sys.path:
 
 import supabase_poll  # noqa: E402
 
+RUN_ID = "12345678-1234-4123-8123-123456789abc"
+STAGE_ID = "dddddddd-dddd-4ddd-8ddd-dddddddddddd"
+WORKSPACE_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee"
+# The retained-command client accepts HTTPS or loopback HTTP only.
+LOOPBACK_URL = "http://127.0.0.1:54321"
+
 # AequilibraE-worker zone_attributes schema (NO worker_residents / area_share).
 _ZONE_HEADER = (
     "GEOID,NAMELSAD,zone_id,centroid_lon,centroid_lat,area_sq_mi,total_jobs,"
@@ -66,11 +72,18 @@ class FakeResponse:
     def json(self):
         return self._payload
 
+    def close(self):
+        pass
+
 
 class FakeRequests:
     def __init__(self, za_path, skim_path, setup_path):
         self.calls = []
         self.objects = {}
+        # What the two legacy RPCs committed, keyed by row id, as the database
+        # functions do: a repeated identical request returns the saved receipt.
+        self.committed = {"record_legacy_model_kpi": {}, "record_legacy_model_artifact": {}}
+        self.lose_next_acknowledgement = False
         self.claim_returns_rows = True
         self.za_path = za_path
         self.skim_path = skim_path
@@ -83,7 +96,7 @@ class FakeRequests:
             return FakeResponse(200 if key in self.objects else 404, content=self.objects.get(key, b""))
         if "/rest/v1/model_runs?id=eq" in url:
             return FakeResponse(200, [{
-                "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
+                "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": WORKSPACE_ID,
                 "corridor_geojson": {"type": "Polygon", "coordinates": [[[0, 0], [0, 1], [1, 1], [0, 0]]]},
                 "query_text": "q", "engine_key": "behavioral_demand",
                 "run_title": "Preflight", "input_snapshot_json": {},
@@ -101,11 +114,37 @@ class FakeRequests:
     def patch(self, url, headers=None, json=None, timeout=None):
         self.calls.append(("PATCH", url, json))
         if "status=eq.queued" in url:
-            return FakeResponse(200, [{"id": "stage-1", **json}] if self.claim_returns_rows else [])
-        return FakeResponse(200, [{"id": "stage-1" if "model_run_stages" in url else "12345678-1234-4123-8123-123456789abc", **json}])
+            return FakeResponse(200, [{"id": url.split("id=eq.", 1)[1].split("&", 1)[0], **json}] if self.claim_returns_rows else [])
+        return FakeResponse(200, [{"id": url.split("id=eq.", 1)[1].split("&", 1)[0], **json}])
 
-    def post(self, url, headers=None, json=None, data=None, timeout=None):
+    def rpc(self, url, json):
+        """The legacy KPI and artifact functions' idempotence, in memory."""
+        operation = url.rsplit("/rpc/", 1)[1]
+        payload = json["p_payload"]
+        saved = self.committed[operation].get(payload["id"])
+        if saved is not None:
+            if saved["request"] != json:
+                return FakeResponse(400, {"message": "request changed"})
+            receipt = saved["receipt"]
+        else:
+            row = {k: v for k, v in payload.items() if not (operation == "record_legacy_model_kpi" and k == "stage_id")}
+            receipt = {**row, "attempt_id": None}
+            self.committed[operation][payload["id"]] = {"request": json, "receipt": receipt}
+        if self.lose_next_acknowledgement:
+            self.lose_next_acknowledgement = False
+            raise TimeoutError("acknowledgement lost after commit")
+        return FakeResponse(200, receipt)
+
+    def kpi_rows(self):
+        return [saved["receipt"] for saved in self.committed["record_legacy_model_kpi"].values()]
+
+    def artifact_rows(self):
+        return [saved["receipt"] for saved in self.committed["record_legacy_model_artifact"].values()]
+
+    def post(self, url, headers=None, json=None, data=None, timeout=None, allow_redirects=None):
         self.calls.append(("POST", url, json if json is not None else data))
+        if "/rest/v1/rpc/record_legacy_model_" in url:
+            return self.rpc(url, json)
         if "/storage/v1/object/run-artifacts/" in url:
             key = url.split("/storage/v1/object/", 1)[1]
             assert headers["x-upsert"] == "false"
@@ -117,7 +156,7 @@ class FakeRequests:
 
 
 def make_stage():
-    return {"id": "stage-1", "run_id": "12345678-1234-4123-8123-123456789abc", "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
+    return {"id": STAGE_ID, "run_id": RUN_ID, "stage_name": supabase_poll.STAGE_BUNDLE_PREFLIGHT, "sort_order": 4, "status": "queued"}
 
 
 class RunWorkspaceTests(unittest.TestCase):
@@ -222,8 +261,21 @@ class SupabasePollTests(unittest.TestCase):
         self.fake = FakeRequests(za, skim, setup)
         self._patcher = mock.patch.object(supabase_poll, "requests", self.fake)
         self._patcher.start()
+        self._url = mock.patch.object(supabase_poll, "SUPABASE_URL", LOOPBACK_URL)
+        self._url.start()
+        self._deployment = mock.patch.dict(os.environ, {"OPENPLAN_DEPLOYMENT_ID": "synthetic"})
+        self._deployment.start()
+        # Saved requests live under the work directory; each test gets its own,
+        # as each installation does.
+        work = tempfile.TemporaryDirectory(prefix="astest-work-")
+        self.addCleanup(work.cleanup)
+        self._work = mock.patch.object(supabase_poll, "ACTIVITYSIM_WORK_DIR", work.name)
+        self._work.start()
 
     def tearDown(self):
+        self._work.stop()
+        self._deployment.stop()
+        self._url.stop()
         self._patcher.stop()
         self._root_env.stop()
 
@@ -233,15 +285,21 @@ class SupabasePollTests(unittest.TestCase):
             legacy = Path(root, stage["run_id"][:12]); legacy.mkdir()
             (legacy / "legacy.txt").write_text("untouched")
             supabase_poll.process_stage(stage)
-            executions = list(Path(root, stage["run_id"]).iterdir())
+            executions = list(Path(root, stage["run_id"]).glob("execution-*"))
             self.assertEqual(len(executions), 1)
             retained = executions[0] / "retained.txt"
             retained.write_text("first execution")
-            supabase_poll.process_stage(stage)
-            self.assertEqual(len(list(Path(root, stage["run_id"]).iterdir())), 2)
+            registered = (len(self.fake.kpi_rows()), len(self.fake.artifact_rows()))
+            # A second execution of the same stage writes a new evidence packet
+            # under the same artifact identity; the saved request refuses it
+            # instead of registering a second row.
+            with self.assertRaises(supabase_poll.WorkerStateWriteUnconfirmed):
+                supabase_poll.process_stage(stage)
+            self.assertEqual((len(self.fake.kpi_rows()), len(self.fake.artifact_rows())), registered)
+            self.assertEqual(len(list(Path(root, stage["run_id"]).glob("execution-*"))), 2)
             self.assertEqual(retained.read_text(), "first execution")
             self.assertEqual((legacy / "legacy.txt").read_text(), "untouched")
-            for execution in Path(root, stage["run_id"]).iterdir():
+            for execution in Path(root, stage["run_id"]).glob("execution-*"):
                 manifest = json.loads((execution / "screening/bundle_manifest.json").read_text())
                 self.assertEqual(manifest["run_name"], "behavioral-" + stage["run_id"])
                 self.assertEqual(manifest["model_run_id"], stage["run_id"])
@@ -328,7 +386,8 @@ class SupabasePollTests(unittest.TestCase):
         self.assertIsNotNone(evidence["bundle"]["zones"])
 
         # KPIs: scaffold structural counts only — NO demand/forecast metric.
-        kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
+        kpis = self.fake.kpi_rows()
+        self.assertFalse(any(url.endswith("/rest/v1/model_run_kpis") for _, url, _ in self.fake.calls))
         names = {k["kpi_name"] for k in kpis}
         self.assertIn("activitysim_bundle_zones", names)
         self.assertIn("activitysim_bundle_synthetic_households", names)
@@ -348,7 +407,7 @@ class SupabasePollTests(unittest.TestCase):
         def get_no_artifacts(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1",
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": WORKSPACE_ID,
                     "corridor_geojson": {"type": "Polygon", "coordinates": []},
                     "query_text": "q", "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
@@ -430,9 +489,9 @@ class SupabasePollTests(unittest.TestCase):
                 "availability_status": "available",
                 "totals": {"households": 100, "persons": 250, "tours": 400, "trips": 900},
             }, f)
-        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis(RUN_ID, {"kpi_summary_path": summary_path}, workspace_id=WORKSPACE_ID, stage_id=STAGE_ID)
         self.assertEqual(n, 4)
-        kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
+        kpis = self.fake.kpi_rows()
         names = {k["kpi_name"] for k in kpis}
         self.assertEqual(names, {"activitysim_households", "activitysim_persons", "activitysim_tours", "activitysim_trips"})
         for k in kpis:
@@ -444,7 +503,7 @@ class SupabasePollTests(unittest.TestCase):
         summary_path = os.path.join(self._fixdir, "kpi_summary_empty.json")
         with open(summary_path, "w") as f:
             json.dump({"availability_status": None, "totals": {"households": None, "persons": None, "tours": None, "trips": None}}, f)
-        n = supabase_poll._write_executed_behavioral_kpis("12345678-1234-4123-8123-123456789abc", {"kpi_summary_path": summary_path})
+        n = supabase_poll._write_executed_behavioral_kpis(RUN_ID, {"kpi_summary_path": summary_path}, workspace_id=WORKSPACE_ID, stage_id=STAGE_ID)
         self.assertEqual(n, 0)
 
     def test_executed_kpi_provenance_names_the_accepted_component(self):
@@ -459,16 +518,17 @@ class SupabasePollTests(unittest.TestCase):
             "12345678-1234-4123-8123-123456789abc",
             {"kpi_summary_path": summary_path},
             [{"component": "auto_ownership"}],
+            workspace_id=WORKSPACE_ID, stage_id=STAGE_ID,
         )
 
-        kpis = [b for m, url, b in self.fake.calls if m == "POST" and url.endswith("/rest/v1/model_run_kpis")]
+        kpis = self.fake.kpi_rows()
         self.assertIn("Accepted components: auto_ownership", kpis[-1]["breakdown_json"]["provenance"])
 
     def test_missing_corridor_fails_honestly(self):
         def get_no_corridor(url, headers=None, timeout=None):
             if "/rest/v1/model_runs?id=eq" in url:
                 return FakeResponse(200, [{
-                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": "ws-1", "corridor_geojson": None,
+                    "id": "12345678-1234-4123-8123-123456789abc", "workspace_id": WORKSPACE_ID, "corridor_geojson": None,
                     "query_text": None, "engine_key": "behavioral_demand",
                     "run_title": "x", "input_snapshot_json": {},
                 }])

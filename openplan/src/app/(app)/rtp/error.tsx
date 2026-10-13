@@ -1,8 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
-import Link from "next/link";
-import { ErrorState } from "@/components/ui/state-block";
+import { ModuleError } from "@/components/ui/module-error";
 
 export default function RtpError({
   error,
@@ -11,40 +9,14 @@ export default function RtpError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
-  useEffect(() => {
-    console.error("[openplan/rtp-error]", {
-      message: error.message,
-      digest: error.digest ?? null,
-    });
-  }, [error]);
-
   return (
-    <div className="px-6 py-8">
-      <ErrorState
-        title="Something went wrong in Regional Plan (RTP)."
-        description={
-          error.digest
-            ? `Reference ${error.digest}. Nothing has been deleted — this screen failed to load. Try again, or go back to Regional Plan (RTP).`
-            : "Nothing has been deleted — this screen failed to load. Try again, or go back to Regional Plan (RTP)."
-        }
-        action={
-          <div className="flex flex-wrap gap-3 text-sm">
-            <button
-              type="button"
-              onClick={reset}
-              className="inline-flex items-center rounded border border-destructive/40 px-3 py-1.5 font-medium text-destructive hover:bg-destructive/10"
-            >
-              Try again
-            </button>
-            <Link
-              href="/rtp"
-              className="inline-flex items-center rounded border border-border px-3 py-1.5 font-medium text-foreground hover:bg-muted/40"
-            >
-              Back to Regional Plan (RTP)
-            </Link>
-          </div>
-        }
-      />
-    </div>
+    <ModuleError
+      error={error}
+      reset={reset}
+      moduleName="Regional Plan (RTP)"
+      backHref="/rtp"
+      backLabel="Back to Regional Plan (RTP)"
+      logTag="rtp-error"
+    />
   );
 }

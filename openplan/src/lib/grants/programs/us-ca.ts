@@ -7,7 +7,11 @@
 // to verify the current call instead of asserting a deadline. URLs point at
 // the official program pages.
 
-import type { GrantProgramBundle, GrantProgramCatalogEntry } from "./types";
+import type {
+  GrantProgramBundle,
+  GrantProgramCatalogEntry,
+  GrantProgramStateAdministration,
+} from "./types";
 
 const programs: readonly GrantProgramCatalogEntry[] = [
   {
@@ -438,6 +442,180 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   },
 ];
 
+/**
+ * How California runs federal programs from the nationwide bundle. These facts
+ * used to sit in the federal entries themselves, so a planner in every state
+ * was told to check with Caltrans. They reach only a California workspace now,
+ * through `resolveGrantProgramForJurisdiction`.
+ */
+const federalProgramAdministration: readonly GrantProgramStateAdministration[] = [
+  {
+    programKey: "hsip",
+    administeringAgency: "FHWA, administered by Caltrans Division of Local Assistance",
+    cycleNote: "Local HSIP calls run roughly every one to two years. Verify the current call with Caltrans Local Assistance.",
+    url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/highway-safety-improvement-program",
+    summary:
+      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a Local Roadway Safety Plan or safety action plan.",
+    bcaNote:
+      "Awards are scored on benefit/cost computed with the Caltrans Local Roadway Safety Manual (LRSM) method. Countermeasure crash-reduction factors and Caltrans-published crash costs control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the LRSM B/C.",
+    sections: {
+      "project-description": {
+        guidance:
+          "Describe the location, the safety problem, and the proposed countermeasures. Verify the current call's application form and countermeasure list with Caltrans Local Assistance. Both change between calls.",
+      },
+      "crash-history-analysis": {
+        guidance:
+          "Summarize the crash history that motivates the project: pattern, severity, and time window. Verify the current call's required crash-data window and source with Caltrans Local Assistance.",
+      },
+      "countermeasure-selection": {
+        guidance:
+          "Explain why the selected countermeasures fit the documented crash pattern. Verify the current call's approved countermeasure set and crash-reduction factors with Caltrans Local Assistance.",
+      },
+      "benefit-cost-calculation": {
+        title: "Benefit/cost calculation (LRSM tool)",
+        guidance:
+          "The score-controlling B/C is computed in the Caltrans Local Roadway Safety Manual tool from your crash data and countermeasures. It is a calculation, never drafted prose, and OpenPlan's screening BCA is only an early-warning analogue. Verify the current call's B/C tool version with Caltrans Local Assistance.",
+      },
+      "implementation-schedule": {
+        guidance:
+          "Lay out design, environmental, right-of-way, and construction milestones. Verify the current call's delivery deadlines with Caltrans Local Assistance.",
+      },
+    },
+    attachments: {
+      "lrsm-bc-tool-output": {
+        title: "LRSM benefit/cost tool output",
+        guidance: "Output of the Caltrans LRSM B/C tool for the selected countermeasures. Verify the required tool version with the current call.",
+      },
+      "engineers-cost-estimate": {
+        guidance: "Itemized project cost estimate. Verify the current call's estimate format with Caltrans Local Assistance.",
+      },
+    },
+  },
+  {
+    programKey: "infra",
+    summary:
+      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with Caltrans or a regional agency on a goods-movement or corridor application.",
+    attachments: {
+      "letters-of-support": {
+        guidance: "Match commitments and partner support, often including Caltrans or the regional agency on partnership applications. Verify commitment-evidence requirements in the current NOFO.",
+      },
+    },
+  },
+  {
+    programKey: "cmaq",
+    administeringAgency: "FHWA, programmed through Caltrans and regional MPOs/RTPAs",
+    typicalApplicants: "Cities, counties, and transit agencies via their MPO/RTPA",
+    cycleNote: "Programmed through regional MPO/RTPA cycles rather than a single statewide call. Verify timing with your MPO/RTPA.",
+    matchRequirement: "Typically 88.53% federal / 11.47% local in California; some projects qualify for higher federal share. Verify.",
+  },
+  {
+    programKey: "fta-5310",
+    administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
+    cycleNote: "Statewide competitive cycles roughly every two years. Verify the current call with Caltrans DRMT.",
+    summary:
+      "Federal formula funds passed through Caltrans to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
+    sections: {
+      "need-for-service": {
+        guidance:
+          "Document the mobility gap for seniors and people with disabilities in the service area. Verify the current call's need-documentation expectations with Caltrans DRMT.",
+      },
+      "project-implementation-plan": {
+        guidance:
+          "Describe the service or capital project, staffing, and operating approach. Verify the current call's implementation-plan format with Caltrans DRMT.",
+      },
+      "coordination-narrative": {
+        guidance:
+          "Show how the project derives from the region's coordinated public transit-human services transportation plan. Verify which plan and adoption date the current call recognizes with Caltrans DRMT.",
+      },
+      "management-capacity": {
+        guidance:
+          "Document the organization's capacity to manage federal awards and maintain vehicles or services. Verify the current call's capacity questions with Caltrans DRMT.",
+      },
+      "budget-narrative": {
+        guidance:
+          "Budget figures come from vendor quotes and finance staff, never from AI drafting. Verify current capital and operating share splits and toll-credit availability with Caltrans DRMT.",
+      },
+    },
+    attachments: {
+      "authorizing-resolution": {
+        guidance: "Governing-body resolution authorizing the application. Verify the current call's resolution template with Caltrans DRMT.",
+      },
+      "vehicle-specifications": {
+        guidance: "Specifications for requested vehicles or equipment. Verify the current call's accepted vehicle categories with Caltrans DRMT.",
+      },
+    },
+  },
+  {
+    programKey: "fta-5311",
+    administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
+    cycleNote: "Annual apportionments programmed through Caltrans; periodic competitive 5311(f) intercity bus calls. Verify with Caltrans DRMT.",
+    summary:
+      "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural California operators access it through Caltrans, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
+    sections: {
+      "service-description": {
+        guidance:
+          "Describe the rural transit service: routes, span, ridership, and the communities connected. Verify the current programming cycle's service-data requirements with Caltrans DRMT.",
+      },
+      "program-of-projects": {
+        guidance:
+          "List the operating and capital items requested for the apportionment year. Verify the current cycle's program-of-projects format with Caltrans DRMT.",
+      },
+      "operating-capital-budget": {
+        guidance:
+          "Budget figures come from the operator's adopted budget, never from AI drafting. Verify current sliding-scale shares and toll-credit rules with Caltrans DRMT.",
+      },
+      "compliance-certifications": {
+        guidance:
+          "Certifications and assurances are executed legal documents, never AI-drafted. Verify the current federal fiscal year's certification package with Caltrans DRMT.",
+      },
+    },
+    attachments: {
+      "authorizing-resolution": {
+        guidance: "Governing-body resolution authorizing the application and execution. Verify the current cycle's resolution language with Caltrans DRMT.",
+      },
+      "certifications-and-assurances": {
+        guidance: "The current federal fiscal year's executed certifications. Verify the applicable package with Caltrans DRMT.",
+      },
+    },
+  },
+  {
+    programKey: "crp",
+    administeringAgency: "FHWA, administered through Caltrans Local Assistance and regional MPOs/RTPAs",
+    cycleNote: "Programmed through state and regional cycles rather than one statewide call. Verify with Caltrans Local Assistance or your MPO/RTPA.",
+    matchRequirement: "Typically 88.53% federal / 11.47% local in California. Verify with the programming agency.",
+    url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/carbon-reduction-program",
+    summary:
+      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split in California between a state-programmed share and local shares programmed regionally. Eligibility overlaps heavily with active transportation, ITS, and ZEV infrastructure work small agencies already plan.",
+    sections: {
+      "project-description": {
+        guidance:
+          "Describe the project and its eligible carbon-reduction category. Verify the current programming cycle's application format with Caltrans Local Assistance or your MPO/RTPA. CRP is programmed through state and regional cycles, not one statewide call.",
+      },
+    },
+  },
+  {
+    programKey: "protect",
+    administeringAgency: "FHWA (formula funds via Caltrans; discretionary NOFOs direct from FHWA)",
+    cycleNote: "Formula funds flow through Caltrans, and discretionary NOFOs are periodic. Verify current opportunities with FHWA and Caltrans.",
+    summary:
+      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural California agencies managing fire-country corridors and storm-damaged roads.",
+    sections: {
+      "resilience-need": {
+        guidance:
+          "Document the natural hazards threatening the asset (wildfire, flooding, storm damage, sea-level rise) and the consequence of failure, including evacuation function. Verify the current opportunity's hazard-documentation expectations with FHWA or Caltrans.",
+      },
+      "planning-consistency": {
+        guidance:
+          "Show consistency with resilience planning. A resilience improvement plan can raise the federal share. Verify the current opportunity's planning-consistency provisions with FHWA or Caltrans.",
+      },
+      "budget-narrative": {
+        guidance:
+          "Budget figures come from the engineer's estimate, never from AI drafting. Verify the current opportunity's federal share and match rules with FHWA or Caltrans.",
+      },
+    },
+  },
+];
+
 export const usCaPrograms: GrantProgramBundle = {
   key: "us-ca",
   label: "California state programs",
@@ -445,4 +623,5 @@ export const usCaPrograms: GrantProgramBundle = {
   // the catalog must say so rather than list them as if it could.
   jurisdiction: { country: "US", subdivision: "CA", label: "California" },
   programs,
+  federalProgramAdministration,
 };

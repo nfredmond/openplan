@@ -353,6 +353,73 @@ describe("POST /api/funding-opportunities/[opportunityId]/application", () => {
     expect(insertedAttachments.every((row) => row.status === "missing")).toBe(true);
   });
 
+  describe("a federal program seeds in the words of the state that runs it", () => {
+    const WORKSPACE_JURISDICTION_COLUMNS =
+      "home_geography_source, home_geography_kind, home_geography_ref, home_country_code, home_subdivision_code";
+
+    function homeIn(subdivision: string) {
+      return {
+        home_geography_source: "census_tiger",
+        home_geography_kind: "county",
+        home_geography_ref: "placeholder-ref",
+        home_country_code: "US",
+        home_subdivision_code: subdivision,
+      };
+    }
+
+    async function seedHsip(workspaceChain: QueryChain) {
+      const existingChain = makeQuery({ data: [], error: null });
+      const sectionInsertChain = makeQuery({ data: [{ id: SECTION_ID }], error: null });
+      const attachmentInsertChain = makeQuery({ data: [{ id: ATTACHMENT_ID }], error: null });
+      installTables({
+        workspaces: () => workspaceChain,
+        funding_opportunity_application_sections: tableSequence(existingChain, sectionInsertChain),
+        funding_opportunity_attachments: () => attachmentInsertChain,
+      });
+
+      const response = await initApplication(jsonRequest(url, "POST", { catalogKey: "hsip" }), context);
+      expect(response.status).toBe(201);
+
+      const sections = sectionInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+      const attachments = attachmentInsertChain.insert.mock.calls[0][0] as Array<Record<string, unknown>>;
+      return JSON.stringify([...sections, ...attachments]);
+    }
+
+    it("gives a California workspace Caltrans's call and the LRSM tool", async () => {
+      const workspaceChain = makeQuery({ data: homeIn("CA"), error: null });
+
+      const seeded = await seedHsip(workspaceChain);
+
+      expect(seeded).toContain("Caltrans Local Assistance");
+      expect(seeded).toContain("Benefit/cost calculation (LRSM tool)");
+      expect(seeded).toContain("LRSM benefit/cost tool output");
+      // The jurisdiction comes from the opportunity's own workspace, through the
+      // columns `resolveJurisdiction` reads.
+      expect(workspaceChain.select).toHaveBeenCalledWith(WORKSPACE_JURISDICTION_COLUMNS);
+      expect(workspaceChain.eq).toHaveBeenCalledWith("id", WORKSPACE_ID);
+    });
+
+    it("gives an Ohio workspace the federal text, which names no state", async () => {
+      const seeded = await seedHsip(makeQuery({ data: homeIn("OH"), error: null }));
+
+      expect(seeded).not.toContain("Caltrans");
+      expect(seeded).not.toContain("LRSM");
+      expect(seeded).toContain("your state DOT");
+    });
+
+    it("seeds the federal text and logs it when the workspace geography cannot be read", async () => {
+      const seeded = await seedHsip(
+        makeQuery({ data: null, error: { message: "permission denied for table workspaces", code: "42501" } })
+      );
+
+      expect(seeded).not.toContain("Caltrans");
+      expect(mockAudit.warn).toHaveBeenCalledWith(
+        "application_workspace_geography_failed",
+        expect.objectContaining({ message: "permission denied for table workspaces", code: "42501" })
+      );
+    });
+  });
+
   it("initializes an empty custom scaffold when no catalog key is given", async () => {
     const existingChain = makeQuery({ data: [], error: null });
     installTables({ funding_opportunity_application_sections: () => existingChain });

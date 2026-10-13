@@ -28,6 +28,7 @@ import {
   buildModelRunKpiComparisonSummary,
   formatModelRunKpiDelta,
   formatModelRunKpiPercentDelta,
+  formatModelRunKpiListValue,
   formatModelRunKpiValue,
 } from "@/lib/models/kpi-comparison";
 import type { BehavioralDemandComparison } from "@/lib/models/behavioral-kpi-comparison";
@@ -1565,7 +1566,7 @@ export function ModelRunEvidencePanel({
                               {category.topItems.map((item, index) => (
                                 <li key={`${category.category}-${item.name ?? item.label ?? index}`}>
                                   <span className="text-foreground">{item.label ?? item.name ?? "Metric"}</span>
-                                  {typeof item.value === "number" ? ` · ${formatModelRunKpiValue(item.value, item.unit)}` : ""}
+                                  {` · ${formatModelRunKpiListValue(item.value, item.unit)}`}
                                 </li>
                               ))}
                             </ul>
