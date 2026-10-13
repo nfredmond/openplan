@@ -1,0 +1,18 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "broken",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

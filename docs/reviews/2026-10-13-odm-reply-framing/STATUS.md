@@ -44,3 +44,56 @@ complete worker recipe, native compatibility and exact-head GitHub checks remain
 pending. Full M3/M5b.2, practitioner/scientific acceptance and v1 remain open.
 No hosted, database, activation or release change accompanies this checkpoint.
 Raw logs remain in the private `odm-reply-framing-20261013` proof directory.
+
+## Current-main join and complete recipe
+
+Main CLI merge `61b568d11ce2f49c335319f1d5f43d34a43e193b` joins this
+checkout. The first actual 34-stage recipe fails at stage 18. Its existing census
+requires a targeted control for each HTTP test and correctly identifies the four
+new cases. That guard stays in place. Four targeted entries are added to the
+existing controller; its 35-test census now passes four positive cohorts and
+47 targeted faults. The failed first recipe remains recorded.
+
+The corrected actual recipe passes all 34 stages, 646 cases in 26 worker suites,
+20 app/documentation cases, product direction and the existing pointer controls.
+All 61 worker/workflow bindings match after restoration. Its unit stops with a
+928,677,888-byte peak under 1 GiB, zero maximum/OOM events and zero swap.
+These checks do not establish browser, public DNS/TLS or full installation scope.
+
+Native compatibility uses the existing retained migration-03 RPC fixture and a
+real owned engine. It passes 16 RPC cases, three distinct draft tasks, six uploads,
+12 predicates and 39 classifiers. Normal init/upload replies pass the new guard;
+revocation and changed-engine refusals remain. A separate Python 3.11 native
+cohort passes. All owned engine/RPC services stop. The controllers peak at
+64,073,728 and 59,060,224 bytes under 1 GiB, with zero maximum/OOM events and
+zero swap. Their engine and database service caps remain separate. This fixture
+is not a fresh current-main or hosted database. No imagery decoding or processing
+commit occurs. Native compatibility does not establish complete recovery.
+
+[Full recipe](evidence/workflow-results.json),
+[stage names](evidence/workflow-steps.json),
+[restored bindings](evidence/workflow-bindings.json),
+[resources](evidence/workflow-resources.json),
+[35-test control summary](evidence/complete-http-control-summary.json) and
+[failed first stages](evidence/failed-workflow-stage-results.json) retain the run.
+[Native predicates](evidence/native-results.json),
+[native classifiers](evidence/native-classifiers.json),
+[native bindings](evidence/native-bindings.json),
+[native controller](evidence/native-resources.json),
+[3.11 predicates](evidence/native311-results.json) and
+[3.11 controller](evidence/native311-resources.json) retain compatibility.
+[Engine stop](evidence/native-engine-stopped.json),
+[RPC stops](evidence/native-rpc-stopped.json),
+[3.11 engine stop](evidence/native311-engine-stopped.json) and
+[3.11 RPC stops](evidence/native311-rpc-stopped.json) record cleanup.
+New-head CI and exact production verification remain separate.
+
+The new index pointer passes six documentation cases in baseline, harmless and
+restored cohorts. Its changed target fails the named link-resolution assertion.
+[Pointer controls](evidence/pointer-controls.json) and
+[pointer resources](evidence/pointer-resources.json) retain exact restoration.
+The pointer unit stops at 220,659,712 bytes under 1 GiB, with zero maximum/OOM
+events and zero swap. [Complete HTTP control bindings](evidence/complete-http-control-bindings.json)
+and [47 targeted outcomes](evidence/complete-http-controls.json) retain the
+updated census. Report link checks do not establish report semantics or a rendered
+workflow. The earlier failed recipe and initial legacy behavior remain visible.
