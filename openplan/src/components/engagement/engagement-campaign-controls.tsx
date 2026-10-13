@@ -431,7 +431,7 @@ export function EngagementCampaignControls({
                 </div>
                 <p className="text-label text-muted-foreground">
                   A corridor-wide comment window is often about several projects at once. Every
-                  checked project shows this campaign in its engagement lane and in the project
+                  checked project shows this campaign in its engagement section and in the project
                   filter on the engagement catalog. Reports and RTP comment records still follow the
                   lead project.
                 </p>

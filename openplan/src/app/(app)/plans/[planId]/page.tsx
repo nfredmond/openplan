@@ -1154,9 +1154,6 @@ export default async function PlanDetailPage({
           <div className="module-section-header">
             <div className="module-section-heading">
               <h2 className="module-section-title">Supporting model basis</h2>
-              <p className="module-section-description">
-                Models linked through the primary project or explicitly attached to this plan stay visible here so operator review can trace modeling support without leaving the planning lane.
-              </p>
             </div>
             <span className="inline-flex items-center gap-2 rounded-full border border-border/70 bg-background/80 px-3 py-1 text-xs font-semibold text-muted-foreground">
               <Database className="h-3.5 w-3.5" />

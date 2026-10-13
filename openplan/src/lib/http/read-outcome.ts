@@ -1,4 +1,5 @@
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { setupPendingSentence } from "@/lib/ui/setup-pending";
 
 /**
  * What a ROUTE could not read, turned into a status and a body — so it stops
@@ -50,7 +51,12 @@ export type RouteReadResultLike =
 
 export type RouteReadFailure = {
   status: 503 | 500;
-  body: { error: string; hint?: string };
+  /**
+   * `hint` is the planner's sentence. `operatorDetail`, on a 503 only, is the
+   * move for whoever runs the installation (which migrations to apply); it is
+   * kept out of `hint` because a planner cannot act on it.
+   */
+  body: { error: string; hint?: string; operatorDetail?: string };
   /** True when the message classified as an unapplied migration. */
   pending: boolean;
   /** The database's own message, for the route's audit call. */
@@ -65,11 +71,16 @@ export type RouteReadFailureOptions = {
    */
   pendingError?: string;
   /**
-   * Replaces the default 503 hint. Use it to name the exact migration when the
-   * route knows which one is missing; several routes already do.
+   * Replaces the default 503 hint. Several routes use it to name the exact
+   * migration; new callers should put that in `pendingOperatorDetail` and keep
+   * this for the planner's sentence.
    */
   pendingHint?: string;
+  /** Replaces the default 503 operator move. Name the exact migration here. */
+  pendingOperatorDetail?: string;
 };
+
+const defaultPendingOperatorDetail = "Apply the latest Supabase migrations, then try again.";
 
 /**
  * The 500's hint, and the whole point of the module: a client that receives
@@ -111,7 +122,8 @@ export function classifyRouteReadFailure(
       status: 503,
       body: {
         error: opts?.pendingError ?? `${leadWith(subject)} schema is not available yet`,
-        hint: opts?.pendingHint ?? "Apply the latest Supabase migrations, then try again.",
+        hint: opts?.pendingHint ?? setupPendingSentence(),
+        operatorDetail: opts?.pendingOperatorDetail ?? defaultPendingOperatorDetail,
       },
       pending: true,
       message,

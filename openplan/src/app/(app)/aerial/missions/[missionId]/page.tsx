@@ -284,7 +284,7 @@ export default async function AerialMissionDetailPage({ params, searchParams }: 
     orthoPreview = {
       status: "unreadable",
       detail:
-        "This deployment could not mint a display link for held imagery, so the map cannot draw the preview. The custody records below are unaffected, and whoever runs this OpenPlan can fix the deployment setting behind it.",
+        "This deployment could not mint a display link for held imagery, so the map cannot draw the preview. The stored imagery records below are unaffected, and whoever runs this OpenPlan can fix the deployment setting behind it.",
       operatorDetail:
         "The Supabase service-role key is not configured on this deployment, so signed display links cannot be minted.",
     };

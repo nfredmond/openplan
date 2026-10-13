@@ -139,7 +139,10 @@ describe("GET /api/engage/[shareToken] — a failed read is a status, never an e
     const body = await response.json();
 
     expect(response.status).toBe(503);
-    expect(body.hint).toMatch(/Apply the latest Supabase migrations/i);
+    // The planner's sentence says who can act; the migration move is for them.
+    expect(body.hint).toMatch(/not set up on this installation yet/i);
+    expect(body.hint).not.toMatch(/migration/i);
+    expect(body.operatorDetail).toMatch(/Apply the latest Supabase migrations/i);
   });
 
   /**

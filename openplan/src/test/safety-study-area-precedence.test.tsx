@@ -290,7 +290,7 @@ describe("Safety opens on the right study area", () => {
     expect(
       await screen.findByText(/could not read the project this page was opened for/i)
     ).toBeInTheDocument();
-    expect(screen.getByText(/permission denied for table projects/)).toBeInTheDocument();
+    expect(screen.getByText(/permission denied for table projects/).closest("details")).not.toBeNull();
     expect(
       screen.getByText(/whose record could not be read, so its study area could not be used/i)
     ).toBeInTheDocument();
@@ -308,8 +308,10 @@ describe("Safety opens on the right study area", () => {
     await renderSafety({ projectId: PROJECT_ID });
 
     expect(
-      await screen.findByText(/does not record project study areas yet/i)
+      await screen.findByText(/Nothing could be inherited from the project this page was opened for/i)
     ).toBeInTheDocument();
+    // The migration is named only behind the operator disclosure.
+    expect(screen.getByText(/Apply migration 20260728000009/).closest("details")).not.toBeNull();
     expect(screen.queryByText(/Part of this page could not be read/i)).not.toBeInTheDocument();
   });
 

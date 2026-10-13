@@ -74,3 +74,16 @@ passes all nine migration03 controls after the other lane's additive migration06
 write is performed. The [unit](evidence/final-local-resources.json) stops with a
 358,031,360-byte peak under 1 GiB, zero max/OOM events and no extra swap. Current-
 head GitHub acceptance remains separate.
+
+## Planner wording join
+
+Main `d0c9dcecd` joins without conflicts. Its changes revise planner wording and
+text checks. The [joined checks](evidence/words-join-results.json) pass
+794 application and documentation tests across 123 files, including
+all changed application tests from PR268 and the original transit/aerial checks.
+Scoped TypeScript, changed-file lint and product direction pass.
+[All worker bindings](evidence/words-join-worker-bindings.json) remain unchanged.
+The [owned unit](evidence/words-join-resources.json) stops with a 552,808,448-byte
+peak under 1 GiB, zero max/OOM events and no extra swap. No schema or hosted
+write accompanies this wording join. Current-head CI and production verification
+remain separate. No new browser or practitioner acceptance is claimed.

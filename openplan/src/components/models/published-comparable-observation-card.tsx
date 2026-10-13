@@ -1,3 +1,4 @@
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import type { PublishedComparableObservationStudy } from "@/lib/models/published-comparable-observation-study";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -8,7 +9,9 @@ function ArtifactDownload({ href, label, filename, sha256 }: {
   return <div className="min-w-0">
     <a download className="underline" href={href}>{label}</a>
     <p className="mt-1 break-all font-mono">{filename}</p>
-    <p className="mt-1 break-all font-mono text-muted-foreground">{sha256 ? `SHA-256 ${sha256}` : "SHA-256 unavailable"}</p>
+    <OperatorDetail summary="File fingerprint, for checking a download">
+      <p className="break-all font-mono text-muted-foreground">{sha256 ? `SHA-256 ${sha256}` : "SHA-256 unavailable"}</p>
+    </OperatorDetail>
   </div>;
 }
 

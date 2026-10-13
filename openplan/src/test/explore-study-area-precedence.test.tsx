@@ -40,10 +40,12 @@ vi.mock("@/app/(app)/explore/_components/explore-workbench", () => ({
     projectPlace,
     openedForProject,
     projectAreaNotice,
+    projectAreaOperatorDetail,
   }: {
     projectPlace: { label: string | null; geometry: unknown } | null;
     openedForProject: { id: string; name: string | null } | null;
     projectAreaNotice: string | null;
+    projectAreaOperatorDetail?: string | null;
   }) => (
     <div>
       <span data-testid="inherited-label">{projectPlace?.label ?? "(none)"}</span>
@@ -52,6 +54,7 @@ vi.mock("@/app/(app)/explore/_components/explore-workbench", () => ({
       </span>
       <span data-testid="opened-for">{openedForProject?.name ?? "(none)"}</span>
       <span data-testid="notice">{projectAreaNotice ?? "(none)"}</span>
+      <span data-testid="operator-detail">{projectAreaOperatorDetail ?? "(none)"}</span>
     </div>
   ),
 }));
@@ -164,8 +167,10 @@ describe("Analysis Studio opens on the right area", () => {
     await renderExplore({ projectId: PROJECT_ID });
 
     expect(screen.getByTestId("notice")).toHaveTextContent(/could not be read/i);
-    // The database's own words, so an operator has something to act on.
-    expect(screen.getByTestId("notice")).toHaveTextContent("permission denied for table projects");
+    // The database's own words, so an operator has something to act on, kept
+    // out of the planner's sentence.
+    expect(screen.getByTestId("operator-detail")).toHaveTextContent("permission denied for table projects");
+    expect(screen.getByTestId("notice")).not.toHaveTextContent("permission denied");
     expect(screen.getByTestId("inherited-label")).toHaveTextContent("(none)");
   });
 
@@ -174,8 +179,9 @@ describe("Analysis Studio opens on the right area", () => {
 
     await renderExplore({ projectId: PROJECT_ID });
 
-    expect(screen.getByTestId("notice")).toHaveTextContent(/does not record project study areas yet/i);
-    expect(screen.getByTestId("notice")).not.toHaveTextContent(/could not be read/i);
+    expect(screen.getByTestId("notice")).toHaveTextContent(/not set up on this installation yet/i);
+    expect(screen.getByTestId("notice")).not.toHaveTextContent(/could not be read|migration/i);
+    expect(screen.getByTestId("operator-detail")).toHaveTextContent("20260728000009");
   });
 
   it("says a project is not in this workspace rather than showing an empty result as an answer", async () => {

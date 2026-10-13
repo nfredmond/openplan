@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import type { PublishedStructuralDemandDiagnosis } from "@/lib/models/published-structural-demand-diagnosis";
 import { StatusBadge } from "@/components/ui/status-badge";
 
@@ -57,10 +58,12 @@ export function PublishedStructuralDemandDiagnosisCard({ study }: { study: Publi
                 <div key={key}><dt className="text-muted-foreground">{key.replace("_", " ")}</dt><dd className="font-semibold">{selected.coverage[key] ?? 0}</dd></div>
               ))}
             </dl>
-            <dl className="mt-3 min-w-0 space-y-2 text-xs">
+            <OperatorDetail summary="File fingerprints, for checking a download" className="mt-3">
+            <dl className="min-w-0 space-y-2 text-xs">
               <div className="min-w-0"><dt className="font-semibold">Before-output check SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.inputAuditSha256}</dd></div>
               <div className="min-w-0"><dt className="font-semibold">Diagnosis SHA-256</dt><dd className="break-all font-mono text-muted-foreground">{selected.diagnosisSha256}</dd></div>
             </dl>
+            </OperatorDetail>
             <div className="mt-3 flex flex-wrap gap-3 text-xs font-semibold">
               <a download className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-structural-input-audit-v1.json`}>Download selected before-output check</a>
               <a download className="underline" href={`/api/models/structural-demand-diagnosis/${selected.geographyId}/${selected.method}/model-validation-structural-diagnosis-v3.json`}>Download selected diagnosis</a>

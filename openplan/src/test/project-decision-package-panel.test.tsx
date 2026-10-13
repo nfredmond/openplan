@@ -58,7 +58,7 @@ describe("project decision package custody UI", () => {
     expect(container.querySelector(`[data-bundle-sha="${BUNDLE_HASH}"]`)).not.toBeNull();
     expect(container.querySelector(`[data-submission-bundle-sha="${BUNDLE_HASH}"] [data-decision="approved"]`)).not.toBeNull();
 
-    fireEvent.click(screen.getByRole("button", { name: "Copy receipt sha-256" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy decision record fingerprint" }));
     expect(navigator.clipboard.writeText).toHaveBeenCalledWith(RECEIPT_HASH);
     expect(screen.getByRole("link", { name: "Download receipt" })).toHaveAttribute(
       "href",

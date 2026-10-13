@@ -2,6 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { CorridorUpload } from "@/components/corridor/CorridorUpload";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -64,6 +65,8 @@ type ExploreStudyAreaPanelProps = {
    * was missing, unreadable, foreign to this workspace, or simply arealess.
    */
   projectAreaNotice: string | null;
+  /** Operator copy for the notice above, folded under it. */
+  projectAreaOperatorDetail?: string | null;
 };
 
 export function ExploreStudyAreaPanel({
@@ -73,6 +76,7 @@ export function ExploreStudyAreaPanel({
   homeGeographyLoadState,
   openedForProject,
   projectAreaNotice,
+  projectAreaOperatorDetail = null,
 }: ExploreStudyAreaPanelProps) {
   // What the picker shows is the study area itself, serialized — not a copy of
   // it that has to be kept honest.
@@ -154,6 +158,11 @@ export function ExploreStudyAreaPanel({
                   This did not open on the project&apos;s study area
                 </p>
                 <p className="analysis-sidepanel-body">{projectAreaNotice}</p>
+                {projectAreaOperatorDetail ? (
+                  <OperatorDetail>
+                    <p className="break-words">{projectAreaOperatorDetail}</p>
+                  </OperatorDetail>
+                ) : null}
               </div>
               {openedForProject ? (
                 <div className="analysis-sidepanel-actions">

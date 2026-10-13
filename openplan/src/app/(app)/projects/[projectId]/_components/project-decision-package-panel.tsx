@@ -176,7 +176,7 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
         </p>
       </div>
       {error ? <p role="alert" className="mt-3 text-sm text-destructive">{error}</p> : null}
-      {!data ? <p className="mt-3 flex items-center gap-2 text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Loading decision custody…</p> : null}
+      {!data ? <p className="mt-3 flex items-center gap-2 text-sm"><Loader2 className="h-4 w-4 animate-spin" /> Loading decisions…</p> : null}
 
       {data?.bundles.map((bundle) => {
         const bundleSubmissions = data.submissions.filter((submission) => submission.bundle_id === bundle.id);
@@ -195,8 +195,8 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
                 <Download className="h-4 w-4" /> Download
               </a>
             </div>
-            <HashValue label="Bundle SHA-256" value={bundle.bundle_sha256} />
-            {bundle.staleForCurrentUse ? <p className="mt-2 text-amber-700 dark:text-amber-200">Historical custody preserved. This bundle is stale for current use; freeze a new one. {bundle.freshnessError}</p> : null}
+            <HashValue label="Bundle fingerprint" value={bundle.bundle_sha256} />
+            {bundle.staleForCurrentUse ? <p className="mt-2 text-amber-700 dark:text-amber-200">Kept as history. This bundle is out of date for current use; freeze a new one. {bundle.freshnessError}</p> : null}
             {bundle.readinessError ? <p className="mt-2 text-amber-700 dark:text-amber-200">Not approvable: {bundle.readinessError}</p> : null}
             {!bundle.readinessError && !bundle.staleForCurrentUse && bundleSubmissions.length === 0 && returnedToReplace?.bundle_id !== bundle.id ? (
               <div className="mt-3 flex flex-wrap items-center gap-2">
@@ -226,14 +226,14 @@ export function ProjectDecisionPackagePanel({ projectId }: { projectId: string }
         return (
           <div key={submission.id} data-submission-bundle-sha={submission.bundle_sha256} className="mt-3 rounded-[0.45rem] border border-border bg-background p-3 text-sm">
             <p>Submission {submission.id.slice(0, 8)}…</p>
-            <HashValue label="Bundle SHA-256" value={submission.bundle_sha256} />
+            <HashValue label="Bundle fingerprint" value={submission.bundle_sha256} />
             {decision ? (
               <div className="mt-2" data-decision={decision.decision}>
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
                   <p><CheckCircle2 className="mr-1 inline h-4 w-4" /> {decision.decision}{decision.reason ? ` · ${decision.reason}` : ""}</p>
                   <a href={`/api/projects/${projectId}/decision-packages/${submission.id}/decision`} className="underline decoration-dotted underline-offset-2">Download receipt</a>
                 </div>
-                <HashValue label="Receipt SHA-256" value={decision.receipt_sha256} />
+                <HashValue label="Decision record fingerprint" value={decision.receipt_sha256} />
               </div>
             ) : assignedHere && data.canApprove ? (
               <div className="mt-3 space-y-2">

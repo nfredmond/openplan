@@ -572,7 +572,8 @@ describe("/api/rtp-cycles/[rtpCycleId]/chapters/[chapterId]/draft POST", () => {
       expect(response.status).toBe(503);
       expect(await response.json()).toEqual({
         error: "Funding awards schema is not available yet",
-        hint: "Apply the latest Supabase migrations, then try again.",
+        hint: "This part is not set up on this installation yet. Whoever runs this OpenPlan can turn it on.",
+        operatorDetail: "Apply the latest Supabase migrations, then try again.",
       });
       expect(generateTextMock).not.toHaveBeenCalled();
     });

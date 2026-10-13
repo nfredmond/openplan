@@ -81,13 +81,13 @@ export function ExploreCurrentResultCard({
         <div className="flex flex-wrap items-start justify-between gap-4">
           <div className="space-y-2">
             <CardTitle className="text-[1.05rem] font-semibold text-foreground">Current Result</CardTitle>
-            <CardDescription className="max-w-xl text-sm leading-6 text-muted-foreground">
-              {comparisonActive
-                ? "The active run stays paired with the pinned baseline below so the comparison stays easy to follow."
-                : analysisResult.aiInterpretationSource === "ai"
-                  ? "Operator-facing summary of the current run with AI-assisted narrative support. Human review remains mandatory before release."
-                  : "Operator-facing summary of the current run using deterministic fallback logic rather than AI narrative output."}
-            </CardDescription>
+            {comparisonActive || analysisResult.aiInterpretationSource === "ai" ? (
+              <CardDescription className="max-w-xl text-sm leading-6 text-muted-foreground">
+                {comparisonActive
+                  ? "The active run stays paired with the pinned baseline below so the comparison stays easy to follow."
+                  : "AI wrote part of this summary. A person must review it before it is shared."}
+              </CardDescription>
+            ) : null}
           </div>
           <div className="analysis-run-identity-panel is-current">
             <p className="analysis-run-identity-eyebrow">Active run</p>
