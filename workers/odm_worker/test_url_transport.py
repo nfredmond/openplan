@@ -332,10 +332,10 @@ class Checks(unittest.TestCase):
             request=copy.deepcopy(checks.request);request['requestId']='synthetic-cancelled-source'
             for row in request['imagery']['photos']:row.update(url=self.url,sizeBytes=len(self.raw),checksumSha256=hashlib.sha256(self.raw).hexdigest())
             entry,_=checks.runtime.submit(request);job={**checks.spec['applicationJob'],'request_id':request['requestId']}
-            source=UrlSources(checks.runtime,checks.base/'cancelled-http-sources','synthetic-local-target',self.transport(cancelled=cancelled.is_set),max_bytes=4096,timeout=3,cancelled=cancelled.is_set)
+            source=UrlSources(checks.runtime,checks.base/'cancelled-http-sources','synthetic-local-target',self.transport(cancelled=cancelled.is_set),max_bytes=4096,timeout=3,cancelled=lambda:False)
             with checks.runtime.owner(),patch('url_transport.subprocess.Popen',side_effect=self.spawn):
                 checks.runtime.journal.start(request['requestId'],entry.job_reference,checks.runtime.context)
-                with self.assertRaisesRegex(InterruptedError,'Source transport cancelled|Original URL source intake cancelled'):source.prepare(request['requestId'],job)
+                with self.assertRaisesRegex(InterruptedError,'Source transport cancelled'):source.prepare(request['requestId'],job)
             pack=source.root/('request-'+hashlib.sha256(request['requestId'].encode()).hexdigest())
             self.assertTrue((pack/'plan.json').exists(),'Original source plan must survive cancellation')
             self.assertFalse(list(pack.glob('*.complete.json')),'Cancelled body cannot publish a complete source receipt')

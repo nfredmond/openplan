@@ -238,3 +238,5 @@ The [admission deadline fixture correction](reviews/2026-10-13-gtfs-admission-de
 The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATUS.md) matches the original UUID observed from the pinned engine, preserves exact reply bytes and refuses invalid old mock receipts without rewriting them. Processing remains held.
 
 The [failed-task stopped-root probe](reviews/2026-10-13-odm-committed-task-restore/STATUS.md) retains one known backend task’s API identity and failed status across an exact root copy. It does not authorize a new engine identity or establish full worker recovery.
+
+The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/STATUS.md) requires a declared retained directory apart from scratch, refuses missing recovery roots and checks original receipt replay with fresh replacement scratch. The operator still verifies its backing storage and installation-wide recovery inventory.

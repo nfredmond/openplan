@@ -20,8 +20,8 @@ def run(repo, out):
     helper = importlib.util.module_from_spec(spec);spec.loader.exec_module(helper)
     census = {node.name for node in ast.walk(ast.parse(test_bytes)) if isinstance(node, ast.FunctionDef) and node.name.startswith('test_')}
     cases = []
-    def add(label, test, change, reason, kind='broken_behavior'):
-        cases.append((label, 'test_'+test, change, reason, kind))
+    def add(label, test, change, reason, kind='broken_behavior', fixture=False):
+        cases.append((label, 'test_'+test, change, reason, kind, fixture))
     swap = lambda before, after: lambda text: helper.replace(text, before, after)
     guard = lambda reason, function=None: lambda text: helper.disable(text, reason, function)
     add('mounted-byte-hash-omitted', 'valid_identity_and_exact_configuration',
@@ -115,10 +115,20 @@ def run(repo, out):
     add('final-daemon-container-read-omitted', 'supervised_three_read_only_requests',
         swap("current = daemon_get(metadata['socketPath'], metadata['daemonUid'], deadline, 'containers/' + engine['instanceId'] + '/json')", 'current = container'),
         'Only exact original read-only native observations are allowed')
+    add('unknown-path-has-error-body', 'child_network_shape_and_id_before_lookup',
+        swap("self.send_response(404);self.send_header('Content-Length', '0');self.end_headers()", 'self.send_error(404)'),
+        'Unknown daemon path must return a bodyless refusal', fixture=True)
+    add('retired-observer-cleanup-unhandled', 'observer_ends_when_parent_exits',
+        swap('                except ProcessLookupError:\n                    pass', '                except ProcessLookupError:\n                    raise'),
+        'Retired observer must not fail cleanup', fixture=True)
+    add('cleanup-swallows-permission', 'observer_ends_when_parent_exits',
+        swap('                except ProcessLookupError:\n                    pass', '                except OSError:\n                    pass'),
+        'Observer cleanup must retain permission refusal', fixture=True)
     if {row[1] for row in cases} != census:raise ValueError('Native observation tests lack selected controls')
     rows = [];oracles = []
     def restore():
         source.write_bytes(original)
+        tests.write_bytes(test_bytes)
         with source.open('rb') as stream:os.fsync(stream.fileno())
     def execute(label, test=None):
         result = subprocess.run([sys.executable, '-B', str(tests)]+(['NativeTests.'+test] if test else []),
@@ -128,15 +138,18 @@ def run(repo, out):
         return result.returncode, diagnostic
     def positive(label, harmless=False):
         restore()
-        if harmless:source.write_bytes(original+b'\n# Harmless native observation comment.\n')
+        if harmless:
+            source.write_bytes(original+b'\n# Harmless native observation comment.\n')
+            tests.write_bytes(test_bytes+b'\n# Harmless native fixture comment.\n')
         code, diagnostic = execute(label)
         assert code == 0 and 'Ran '+str(len(census))+' tests' in diagnostic, 'Native observation positive control failed: '+label
         rows.append({'control': label, 'outcome': 'survived'})
     try:
         positive('baseline');positive('harmless-comment', True);positive('restored-after-harmless')
-        for label, test, change, reason, kind in cases:
+        for label, test, change, reason, kind, fixture in cases:
             try:
-                text = change(original.decode());ast.parse(text);source.write_text(text)
+                target=tests if fixture else source
+                text = change((test_bytes if fixture else original).decode());ast.parse(text);target.write_text(text)
                 code, diagnostic = execute(label, test)
                 helper.verify_failure(test, code, diagnostic, reason)
                 if not oracles:oracles = helper.oracle_controls(test, code, diagnostic, reason)
