@@ -34,11 +34,9 @@ import type { CountyIngestResult } from "@/lib/data-sources/census-tract-ingest"
  *      outcome, and after it some tracts ARE stored. Reporting "the load failed"
  *      without saying what is now there would present a partial county as nothing.
  *
- * There is no role prop, deliberately. The ingest route's rule is "any signed-in
- * user", stated and justified in its own header because the data is public and
- * cross-tenant. A UI-only gate the server does not enforce would be a second,
- * softer authorization story — and would leave a member staring at an empty
- * layer they are in fact allowed to fill.
+ * There is no role prop. The ingest route refuses viewers and meters each
+ * person (see its header), and this control reports the server's refusal and
+ * what is stored, rather than keeping a second copy of the rule in the browser.
  */
 
 /**
