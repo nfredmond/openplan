@@ -70,7 +70,11 @@ class Daemon(socketserver.ThreadingMixIn, socketserver.UnixStreamServer):
                 elif self.path == '/v1.51/networks/' + NETWORK:
                     body = json.dumps(outer.network).encode()
                 else:
-                    self.send_error(404);return
+                    try:
+                        self.send_response(404);self.send_header('Content-Length', '0');self.end_headers()
+                    except (BrokenPipeError, ConnectionResetError):
+                        pass
+                    return
                 try:
                     self.send_response(outer.status);self.send_header('Content-Length', str(len(body)));self.end_headers();self.wfile.write(body)
                 except (BrokenPipeError, ConnectionResetError):
@@ -446,6 +450,14 @@ class NativeTests(unittest.TestCase):
 
     def test_child_network_shape_and_id_before_lookup(self):
         self.start();process_reader = native.process_configuration
+        connection = native.UnixConnection(str(self.path), os.geteuid(), time.monotonic() + 5)
+        try:
+            connection.request('GET', '/v1.51/unsupported-fixture')
+            response = connection.getresponse()
+            self.assertEqual(response.status, 404)
+            self.assertEqual(response.read(), b'', 'Unknown daemon path must return a bodyless refusal')
+        finally:
+            connection.close()
         for networks, reason in [({}, 'Native engine original network differs'),
             ({'private': {'NetworkID': 'invalid'}}, 'Native engine original network ID differs')]:
             self.daemon.container = copy.deepcopy(self.container)
@@ -474,6 +486,22 @@ class NativeTests(unittest.TestCase):
                 return fields[19], fields[0]
             except (FileNotFoundError, ProcessLookupError):
                 return None
+        def cleanup(pid, start):
+            current = identity(pid)
+            if current is not None and current[0] == start and current[1] != 'Z':
+                try:
+                    os.kill(pid, signal.SIGKILL)
+                except ProcessLookupError:
+                    pass
+        status = '123 (fixture) S ' + '0 ' * 18 + '456 0\n'
+        with patch.object(Path, 'read_text', return_value=status), patch.object(os, 'kill', side_effect=ProcessLookupError('Controlled observer exits before cleanup')):
+            try:
+                cleanup(123, '456')
+            except ProcessLookupError:
+                raise AssertionError('Retired observer must not fail cleanup') from None
+        with patch.object(Path, 'read_text', return_value=status), patch.object(os, 'kill', side_effect=PermissionError('Controlled cleanup permission refusal')):
+            with self.assertRaises(PermissionError, msg='Observer cleanup must retain permission refusal'):
+                cleanup(123, '456')
         with patch.object(Path, 'read_text', side_effect=ProcessLookupError('Controlled process exits during stat read')):
             try:
                 retired = identity(123)
@@ -499,9 +527,7 @@ class NativeTests(unittest.TestCase):
         finally:
             native.DraftTransport._stop(parent);parent.stdout.close();parent.stderr.close()
             if saved is not None:
-                current = identity(saved['pid'])
-                if current is not None and current[0] == saved['start'] and current[1] != 'Z':
-                    os.kill(saved['pid'], signal.SIGKILL)
+                cleanup(saved['pid'], saved['start'])
 
 
 if __name__ == '__main__':

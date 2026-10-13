@@ -1,7 +1,7 @@
 """Typed native admission gates, without claiming complete worker recovery."""
 import copy
 
-EXPECTED = {'missingDatabaseStartupRefused':True,'missingSealStartupRefused':True,'negativeFixturesRestored':True,'firstAdmissionStatus':202,'queuedAdmissionStatus':202,'predeathReplayStatus':200,
+EXPECTED = {'originalScratchHasNoAdmissionRegistry':True,'replacementUsesFreshScratch':True,'missingDatabaseStartupRefused':True,'missingSealStartupRefused':True,'negativeFixturesRestored':True,'firstAdmissionStatus':202,'queuedAdmissionStatus':202,'predeathReplayStatus':200,
     'predeathReceiptExact':True,'changedStatus':409,'restartAdmissionStatus':200,'restartReceiptExact':True,
     'originalStartedReceiptExact':True,'firstStartPreserved':True,'queuedAdmissionPreserved':True,
     'restoredHeldStarted':1,'restoredAccepted':1,'sourceGetsBeforeDeath':1,'sourceGetsFinal':1,
