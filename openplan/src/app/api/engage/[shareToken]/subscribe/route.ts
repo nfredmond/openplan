@@ -151,7 +151,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       : outcome.status === "failed"
         ? "Your interest is saved, but the confirmation email could not be sent. Try subscribing again."
         : outcome.status === "sent"
-          ? "Almost there. Check your email to confirm your subscription."
+          ? "Check your email to confirm your subscription. If you confirmed before, nothing more is needed."
           : "Your interest is recorded. Email updates are not enabled for this campaign yet, so no confirmation email will be sent.";
 
     audit.info("subscription_recorded", { campaignId: campaign.id, transportConfigured });

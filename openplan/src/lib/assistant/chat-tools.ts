@@ -60,7 +60,6 @@ import {
   getCachedGrantsGovResult,
   setCachedGrantsGovResult,
 } from "@/lib/grants/grants-gov-cache";
-import { aggregateCampaignSurvey } from "@/lib/engagement/survey-responses";
 
 /**
  * Read-only chat tools for the Planner Agent streaming endpoint.
@@ -1367,31 +1366,40 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
         ]);
         const moderationFailed = Boolean(pendingResult?.error) || Boolean(flaggedResult?.error);
 
-        // Survey reads go through the ONE confined reader lib. On deployments
-        // where the response records are locked to the server-side reader, this
-        // read fails under the planner's own session permissions — which is the
-        // expected, honest outcome, reported as unavailable rather than as zero.
-        const survey = await aggregateCampaignSurvey(supabase as never, input.campaignId);
-        const surveyPayload = survey.error
-          ? {
-              status: "unavailable",
-              message:
-                `Survey response counts could not be read from this chat session (${survey.error.message}). ` +
-                "On this deployment the survey response records are confined to a server-side reader, so this is expected here — " +
-                "the campaign page shows the aggregated results. A failed read is not a campaign with zero responses.",
-            }
-          : {
-              status: "ok",
-              approvedResponseCount: survey.approvedResponseCount,
-              questionCount: survey.questions.length,
-              questionRowCap: ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT,
-              questions: survey.questions.slice(0, ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT).map((question) => ({
-                prompt: question.prompt,
-                questionType: question.questionType,
-                answeredCount: question.answeredCount,
-              })),
-              note: "Counts only — individual answers never appear in chat.",
-            };
+        // Survey answers are revoked from every client role, and this module may
+        // not reach the service-role client. The counts come from a definer
+        // function that checks workspace membership itself and returns no answer
+        // (20261017000002). A failed read is reported as unavailable, never zero.
+        const surveyRead = supabase.rpc
+          ? await supabase.rpc("engagement_campaign_survey_question_counts", { p_campaign_id: input.campaignId })
+          : { data: null, error: { message: "survey counts are not available in this session" } };
+        const surveyData = surveyRead?.data as
+          | { approvedResponseCount?: unknown; questions?: unknown }
+          | null
+          | undefined;
+        const surveyQuestions = Array.isArray(surveyData?.questions)
+          ? (surveyData.questions as Array<Record<string, unknown>>)
+          : null;
+        const surveyPayload =
+          surveyRead?.error || !surveyData || typeof surveyData.approvedResponseCount !== "number" || !surveyQuestions
+            ? {
+                status: "unavailable",
+                message:
+                  `Survey response counts could not be read (${surveyRead?.error?.message ?? "unexpected response"}). ` +
+                  "The campaign page shows the aggregated results. A failed read is not a campaign with zero responses.",
+              }
+            : {
+                status: "ok",
+                approvedResponseCount: surveyData.approvedResponseCount,
+                questionCount: surveyQuestions.length,
+                questionRowCap: ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT,
+                questions: surveyQuestions.slice(0, ASSISTANT_CHAT_TOOL_SURVEY_QUESTION_LIMIT).map((question) => ({
+                  prompt: typeof question.prompt === "string" ? question.prompt : null,
+                  questionType: typeof question.questionType === "string" ? question.questionType : null,
+                  answeredCount: typeof question.answeredCount === "number" ? question.answeredCount : null,
+                })),
+                note: "Counts of approved responses only. Individual answers never appear in chat.",
+              };
 
         return {
           status: "ok",
@@ -1561,7 +1569,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
   });
 
   const listFundingOpportunities = tool({
-    description: `List the workspace's funding opportunities (most recently updated first, max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}), with status, decision state, and deadline dates.`,
+    description: `List the workspace's funding opportunities (most recently updated first, max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}), with status, decision state, deadline dates, and the id of the project each one is linked to (projectId matches the ids from list_projects; null means no project is linked).`,
     inputSchema: z.object({}),
     execute: guarded<Record<string, never>>({
       name: "list_funding_opportunities",
@@ -1571,7 +1579,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
         if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
         const { data, error } = await supabase
           .from("funding_opportunities")
-          .select("id, title, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
+          .select("id, title, project_id, opportunity_status, decision_state, expected_award_amount, closes_at, decision_due_at, updated_at")
           .eq("workspace_id", workspaceId)
           .order("updated_at", { ascending: false })
           .limit(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
@@ -1584,6 +1592,9 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
           opportunities: rows.map((row) => ({
             id: row.id,
             title: row.title,
+            // A live test on 2026-10-11 had to guess an opportunity's project
+            // from a shared name suffix because this field was missing.
+            projectId: typeof row.project_id === "string" ? row.project_id : null,
             status: row.opportunity_status,
             decisionState: row.decision_state,
             expectedAwardAmount: typeof row.expected_award_amount === "number" ? row.expected_award_amount : null,
@@ -1591,6 +1602,57 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
             decisionDueAt: isoOrNull(row.decision_due_at),
             updatedAt: isoOrNull(row.updated_at),
           })),
+        };
+      },
+    }),
+  });
+
+  // A live test on 2026-10-11 asked for the nearest deadline; the agent said
+  // projects carried no dates it could see while the dashboard showed an
+  // Oct 15 milestone on the same project. Milestones reach the workspace
+  // through their project, the same way My Work reads them.
+  const listMilestones = tool({
+    description: `List project milestones in this workspace with their target dates, soonest first (max ${ASSISTANT_CHAT_TOOL_LIST_LIMIT}). Completed milestones are left out unless includeComplete is true. Use this for project deadlines and schedules, and compare each targetDate with TODAY.`,
+    inputSchema: z.object({
+      projectId: z.string().uuid().optional().describe("Only this project's milestones (an id from list_projects)."),
+      includeComplete: z.boolean().optional().describe("Also list completed milestones."),
+    }),
+    execute: guarded<{ projectId?: string; includeComplete?: boolean }>({
+      name: "list_milestones",
+      budget,
+      audit,
+      run: async ({ projectId, includeComplete }) => {
+        if (!workspaceId) return refusal("No workspace is attached to this chat surface.");
+        let query = supabase
+          .from("project_milestones")
+          .select("id, project_id, title, milestone_type, status, target_date, actual_date, owner_label, projects!inner(id, name, workspace_id)")
+          .eq("projects.workspace_id", workspaceId);
+        if (projectId) query = query.eq("project_id", projectId);
+        if (!includeComplete) query = query.neq("status", "complete");
+        const { data, error } = await query
+          .order("target_date", { ascending: true, nullsFirst: false })
+          .limit(ASSISTANT_CHAT_TOOL_LIST_LIMIT);
+        if (error) throw new Error(error.message ?? "project_milestones query failed");
+        const rows = (data ?? []) as Array<Record<string, unknown>>;
+        return {
+          status: "ok",
+          milestoneCount: rows.length,
+          truncated: rows.length === ASSISTANT_CHAT_TOOL_LIST_LIMIT,
+          completedIncluded: Boolean(includeComplete),
+          milestones: rows.map((row) => {
+            const project = (Array.isArray(row.projects) ? row.projects[0] : row.projects) as Record<string, unknown> | null;
+            return {
+              id: row.id,
+              title: row.title,
+              projectId: row.project_id,
+              projectName: typeof project?.name === "string" ? project.name : null,
+              type: row.milestone_type,
+              status: row.status,
+              targetDate: typeof row.target_date === "string" ? row.target_date : null,
+              actualDate: typeof row.actual_date === "string" ? row.actual_date : null,
+              ownerLabel: typeof row.owner_label === "string" ? row.owner_label : null,
+            };
+          }),
         };
       },
     }),
@@ -1712,6 +1774,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
     get_surface_context: getSurfaceContext,
     list_projects: listProjects,
     list_funding_opportunities: listFundingOpportunities,
+    list_milestones: listMilestones,
     list_reports: listReports,
     list_pending_operations: listPendingOperations,
     get_grant_program_catalog: getGrantProgramCatalog,

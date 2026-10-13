@@ -60,23 +60,23 @@ export function deriveCountyBundleValidationSummary(
   return Object.keys(nextSummary).length > 0 ? nextSummary : null;
 }
 
+/**
+ * The stage a county run is stored at.
+ *
+ * `validated-screening` is retired and never produced. It was awarded by the
+ * old median-APE gate, which is a diagnostic, and a run at that stage read as
+ * validated whatever its rules-v4 scientific outcome said. A finished count
+ * check stays `validation-scaffolded`; what the run may claim is its claim
+ * tier, decided in `buildCountyRunModelingEvidenceBundle`.
+ */
+function storableCountyRunStage(stage: CountyOnrampManifest["stage"]): CountyOnrampManifest["stage"] {
+  return stage === "validated-screening" ? "validation-scaffolded" : stage;
+}
+
 export function deriveCountyRunStageFromValidation(params: {
   runSummary: Record<string, unknown> | null | undefined;
   validationSummary: Record<string, unknown> | null | undefined;
 }): CountyOnrampManifest["stage"] {
-  const screeningGate = params.validationSummary?.screening_gate;
-  const statusLabel =
-    screeningGate && typeof screeningGate === "object"
-      ? (screeningGate as Record<string, unknown>).status_label
-      : null;
-
-  if (typeof statusLabel === "string") {
-    const normalized = statusLabel.toLowerCase();
-    if (normalized.includes("bounded screening-ready") || normalized.includes("validated")) {
-      return "validated-screening";
-    }
-  }
-
   if (params.validationSummary && Object.keys(params.validationSummary).length > 0) {
     return "validation-scaffolded";
   }
@@ -101,7 +101,7 @@ export function buildCountyRunRecord(params: {
     geography_id: geographyId,
     geography_label: geographyLabel,
     run_name: manifest.name,
-    stage: manifest.stage,
+    stage: storableCountyRunStage(manifest.stage),
     status_label: deriveCountyRunStatusLabel(manifest),
     mode: manifest.mode,
     manifest_json: manifest,

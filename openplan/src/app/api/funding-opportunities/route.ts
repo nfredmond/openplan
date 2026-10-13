@@ -328,7 +328,7 @@ export async function POST(request: NextRequest) {
     const scopeRefusal = refuseOutOfScopeAgentRequest({
       executionSource,
       body: payload,
-      allowedKeys: ["programId", "projectId", "title"],
+      allowedKeys: ["programId", "projectId", "title", "closesAt"],
       actionKind: "create_funding_opportunity",
     });
     if (scopeRefusal) {
@@ -382,6 +382,7 @@ export async function POST(request: NextRequest) {
       ...(parsed.data.programId ? { programId: parsed.data.programId } : {}),
       ...(parsed.data.projectId ? { projectId: parsed.data.projectId } : {}),
       title: parsed.data.title.trim(),
+      ...(parsed.data.closesAt ? { closesAt: parsed.data.closesAt } : {}),
     };
     const serviceSupabase = createServiceRoleClient();
     let approval;

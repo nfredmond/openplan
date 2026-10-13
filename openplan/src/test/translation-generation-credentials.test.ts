@@ -65,6 +65,16 @@ describe("strict workspace translation credential selection", () => {
     expect(f.select).toHaveBeenCalledExactlyOnceWith("workspace_id, provider, key_ciphertext");
     expect(f.eq.mock.calls).toEqual([["workspace_id", scope.workspaceId], ["provider", "anthropic"]]);
   });
+  it("reads a workspace-bound key for its own workspace and refuses it under another", async () => {
+    const scope = identity();
+    const bound = encryptIntegrationKey("SYNTHETIC-WORKSPACE-KEY", { workspaceId: scope.workspaceId });
+    const own = fixture([{ workspace_id: scope.workspaceId, provider: "anthropic", key_ciphertext: bound }]);
+    expect(openTranslationCredential(await prepareWorkspaceTranslationCredential({ ...scope, client: own.client }))).toBe("SYNTHETIC-WORKSPACE-KEY");
+    // The same ciphertext copied into another workspace's row does not decrypt there.
+    const other = identity();
+    const copied = fixture([{ workspace_id: other.workspaceId, provider: "anthropic", key_ciphertext: bound }]);
+    await expect(prepareWorkspaceTranslationCredential({ ...other, client: copied.client })).rejects.toThrow("translation_credential_unavailable");
+  });
   it("selects the environment only after a successful empty workspace read", async () => {
     const f = fixture([]);
     const stored = await prepareWorkspaceTranslationCredential({ ...identity(), client: f.client });
