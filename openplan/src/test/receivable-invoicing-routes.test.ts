@@ -108,6 +108,10 @@ const lineSelectMock = vi.fn(() => ({ eq: lineSelectEqMock }));
 const lineDeleteEqMock = vi.fn();
 const lineDeleteMock = vi.fn(() => ({ eq: lineDeleteEqMock }));
 
+// replace_client_invoice_lines: rpc().select(projection) resolves the new line rows.
+const rpcSelectMock = vi.fn();
+const rpcMock = vi.fn(() => ({ select: rpcSelectMock }));
+
 // service-role client: the compensating delete of a half-created invoice.
 const serviceInvoiceDeleteEqMock = vi.fn();
 const serviceInvoiceDeleteMock = vi.fn(() => ({ eq: serviceInvoiceDeleteEqMock }));
@@ -317,9 +321,15 @@ beforeEach(() => {
 
   serviceInvoiceDeleteEqMock.mockResolvedValue({ error: null });
 
+  rpcSelectMock.mockResolvedValue({
+    data: [{ id: LINE_ITEM_2, invoice_id: INVOICE, position: 0, description: "Revised scope", amount: 250 }],
+    error: null,
+  });
+
   createClientMock.mockResolvedValue({
     auth: { getUser: authGetUserMock },
     from: fromMock,
+    rpc: rpcMock,
   });
   createServiceRoleClientMock.mockReturnValue({ from: serviceFromMock });
 });
@@ -877,6 +887,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
       error: expect.stringContaining("void it and reissue"),
     });
     expect(lineDeleteMock).not.toHaveBeenCalled();
+    expect(rpcMock).not.toHaveBeenCalled();
     expect(invoiceUpdateMock).not.toHaveBeenCalled();
   });
 
@@ -944,7 +955,7 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     expect(timeEntryUpdateInMock).toHaveBeenCalledWith("billed_line_item_id", [LINE_ITEM_1, LINE_ITEM_2]);
   });
 
-  it("replaces a draft invoice's line set and recomputes the stored totals", async () => {
+  it("replaces a draft invoice's lines, links and totals through one database function call", async () => {
     const response = await patchClientInvoice(
       jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
         workspaceId: WORKSPACE,
@@ -954,24 +965,143 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(lineDeleteEqMock).toHaveBeenCalledWith("invoice_id", INVOICE);
-    expect(lineInsertMock).toHaveBeenCalledWith([
-      expect.objectContaining({ invoice_id: INVOICE, description: "Revised scope", amount: 250 }),
-    ]);
-    expect(invoiceUpdateMock).toHaveBeenCalledWith(
-      expect.objectContaining({ subtotal_amount: 250, retention_amount: 0, total_amount: 250 })
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(rpcMock).toHaveBeenCalledWith("replace_client_invoice_lines", {
+      p_invoice_id: INVOICE,
+      p_lines: [
+        {
+          description: "Revised scope",
+          quantity: null,
+          unit_label: null,
+          unit_amount: null,
+          amount: 250,
+          deliverable_id: null,
+          milestone_id: null,
+          source_time_entry_ids: [],
+        },
+      ],
+      p_subtotal_amount: 250,
+      p_retention_amount: 0,
+      p_total_amount: 250,
+    });
+    // The response lines carry the full line projection.
+    expect(rpcSelectMock).toHaveBeenCalledWith(
+      "id, invoice_id, position, description, quantity, unit_label, unit_amount, amount, deliverable_id, milestone_id, created_at, updated_at"
     );
+    // No piecewise writes: the old delete, insert, stamp and restore sequence is gone.
+    expect(lineDeleteMock).not.toHaveBeenCalled();
+    expect(lineInsertMock).not.toHaveBeenCalled();
+    expect(timeEntryUpdateMock).not.toHaveBeenCalled();
+    // The function stored the totals, so the route only reads the invoice back.
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+    expect(invoiceSelectMock).toHaveBeenLastCalledWith(
+      expect.stringContaining("subtotal_amount, retention_percent, retention_amount, total_amount")
+    );
+    expect(await response.json()).toMatchObject({
+      lineItems: [expect.objectContaining({ id: LINE_ITEM_2, amount: 250 })],
+    });
   });
 
-  it("restores the previous line set when the replacement insert fails", async () => {
-    // The stamp snapshot: one time entry was billed on the old line.
-    timeEntrySelectInMock.mockResolvedValueOnce({
-      data: [{ id: TIME_ENTRY, billed_line_item_id: LINE_ITEM_1 }],
+  it("passes computed line amounts, time links and retention totals to the function", async () => {
+    invoiceDetailSingleMock.mockResolvedValueOnce({
+      data: {
+        id: INVOICE,
+        workspace_id: WORKSPACE,
+        engagement_id: ENGAGEMENT,
+        project_id: PROJECT,
+        status: "draft",
+        retention_percent: 10,
+      },
       error: null,
     });
-    lineInsertSelectMock.mockResolvedValueOnce({
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [
+          {
+            description: "Corridor study, August",
+            quantity: 10,
+            unitLabel: " hours ",
+            unitAmount: 150,
+            amount: 1,
+            deliverableId: DELIVERABLE,
+            sourceTimeEntryIds: [TIME_ENTRY],
+          },
+        ],
+      }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledWith("replace_client_invoice_lines", {
+      p_invoice_id: INVOICE,
+      p_lines: [
+        {
+          description: "Corridor study, August",
+          quantity: 10,
+          unit_label: "hours",
+          unit_amount: 150,
+          amount: 1500,
+          deliverable_id: DELIVERABLE,
+          milestone_id: null,
+          source_time_entry_ids: [TIME_ENTRY],
+        },
+      ],
+      p_subtotal_amount: 1500,
+      p_retention_amount: 150,
+      p_total_amount: 1350,
+    });
+  });
+
+  it("reports that nothing changed when the database function fails", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
       data: null,
       error: { message: "numeric field overflow", code: "22003" },
+    });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(500);
+    expect(await response.json()).toMatchObject({
+      error: "Failed to replace the invoice's line items; nothing was changed",
+    });
+    // A failed replacement stops the request: no compensating writes and no send.
+    expect(lineInsertMock).not.toHaveBeenCalled();
+    expect(timeEntryUpdateMock).not.toHaveBeenCalled();
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 409 with the function's refusal when a concurrent invoice billed a time entry", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "One or more time entries are already billed on another invoice", code: "PT409" },
+    });
+
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Corridor study", amount: 100, sourceTimeEntryIds: [TIME_ENTRY] }],
+      }),
+      context
+    );
+
+    expect(response.status).toBe(409);
+    expect(await response.json()).toEqual({ error: "One or more time entries are already billed on another invoice" });
+    expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("answers 403 when the function refuses the caller's role", async () => {
+    rpcSelectMock.mockResolvedValueOnce({
+      data: null,
+      error: { message: "Owner or admin role required for invoice writes", code: "42501" },
     });
 
     const response = await patchClientInvoice(
@@ -982,22 +1112,26 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
       context
     );
 
-    expect(response.status).toBe(500);
-    expect(await response.json()).toMatchObject({
-      error: expect.stringContaining("previous line items were restored"),
-    });
-    // Snapshot → delete → failed insert of the new set → compensating
-    // re-insert of the snapshot, original ids preserved.
-    expect(lineInsertMock).toHaveBeenCalledTimes(2);
-    expect(lineInsertMock).toHaveBeenLastCalledWith([
-      expect.objectContaining({ id: LINE_ITEM_1, description: "Old line", amount: 100 }),
-    ]);
-    // The billed time entry is re-stamped to the restored line: the delete's
-    // ON DELETE SET NULL cleared it, and leaving it looking unbilled would
-    // invite double-billing.
-    expect(timeEntryUpdateMock).toHaveBeenCalledWith({ billed_line_item_id: LINE_ITEM_1 });
-    expect(timeEntryUpdateInMock).toHaveBeenCalledWith("id", [TIME_ENTRY]);
+    expect(response.status).toBe(403);
     expect(invoiceUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("sends after a replacement with a status-only update, because the function stored the totals", async () => {
+    const response = await patchClientInvoice(
+      jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
+        workspaceId: WORKSPACE,
+        lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
+      }),
+      context
+    );
+
+    expect(response.status).toBe(200);
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(invoiceUpdateMock).toHaveBeenCalledWith({
+      status: "sent",
+      sent_date: expect.stringMatching(/^\d{4}-\d{2}-\d{2}$/),
+    });
   });
 
   it("names a policy refusal when the status update matches no rows, rather than 'Failed to update invoice'", async () => {
@@ -1026,23 +1160,24 @@ describe("PATCH /api/invoicing/client-invoices/[invoiceId]", () => {
     expect(mockAudit.error).not.toHaveBeenCalledWith("client_invoice_update_failed", expect.anything());
   });
 
-  it("keeps the stale-totals warning when the lines were replaced and the invoice update matched no rows", async () => {
+  it("says the lines and totals were saved when only the status change matched no rows", async () => {
     invoiceUpdateSingleMock.mockResolvedValueOnce({ data: null, error: null });
 
     const response = await patchClientInvoice(
       jsonRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}`, "PATCH", {
         workspaceId: WORKSPACE,
         lineItems: [{ description: "Revised scope", amount: 250 }],
+        status: "sent",
       }),
       context
     );
 
-    // The replacement landed, so "nothing was saved" would be a lie; what the
-    // caller has to act on is the invoice's now-stale stored totals.
+    // The replacement landed with its totals, so "nothing was saved" would be
+    // a lie; what the caller has to act on is the status change.
     expect(response.status).toBe(500);
     expect(await response.json()).toMatchObject({
-      error: "The line items were replaced, but the invoice record was not updated",
-      details: expect.stringContaining("stored totals may be stale"),
+      error: "The line items and totals were saved, but the status change was not",
+      details: expect.stringContaining("saved together"),
     });
     expect(mockAudit.error).toHaveBeenCalledWith(
       "client_invoice_update_matched_no_rows",
