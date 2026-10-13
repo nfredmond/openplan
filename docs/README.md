@@ -244,3 +244,5 @@ The [failed-task stopped-root probe](reviews/2026-10-13-odm-committed-task-resto
 The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/STATUS.md) requires a declared retained directory apart from scratch, refuses missing recovery roots and checks original receipt replay with fresh replacement scratch. The operator still verifies its backing storage and installation-wide recovery inventory.
 
 - [Separate retained aerial task metadata root](reviews/2026-10-13-odm-task-observation-retention/STATUS.md), current candidate and bounded source/native evidence.
+
+- [Local aerial task metadata command](reviews/2026-10-13-odm-task-observation-cli/STATUS.md), supplied private replies, exact digest reads and bounded operator summaries.

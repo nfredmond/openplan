@@ -154,3 +154,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-task-observation-retention/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-retention-controls"
+      - name: Local task metadata command controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation-cli/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-cli-controls"
