@@ -1,0 +1,226 @@
+[
+  {
+    "cohort": "native314-controls-02",
+    "control": "application-read-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "baseline-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "body-hash-summary-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "commit-application-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "commit-engine-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "commit-post-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "commit-quality-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "commit-replay-state-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "copied-reply-projection-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "engine-check-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "harmless-comment-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "processing-permission-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "read-child-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "reported-failure-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "restored-after-harmless-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native314-controls-02",
+    "control": "restored-final-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "application-read-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "baseline-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "body-hash-summary-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "commit-application-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "commit-engine-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "commit-post-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "commit-quality-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "commit-replay-state-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "copied-reply-projection-changed-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "engine-check-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "harmless-comment-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "processing-permission-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "read-child-census-lost-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "reported-failure-promoted-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "restored-after-harmless-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  },
+  {
+    "cohort": "native311-controls-01",
+    "control": "restored-final-private",
+    "running": false,
+    "oomKilled": false,
+    "memoryMaxBytes": 536870912
+  }
+]
