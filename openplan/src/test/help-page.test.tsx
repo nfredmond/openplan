@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { describe, expect, it, vi } from "vitest";
 
@@ -12,6 +12,7 @@ vi.mock("next/link", () => ({
 
 import HelpPage from "@/app/(app)/help/page";
 import { APP_NAV_ENTRIES } from "@/components/nav/nav-registry";
+import { AI_KEY_FEATURES } from "@/lib/help/ai-key-features";
 import { MODULE_DESCRIPTIONS } from "@/lib/help/module-descriptions";
 import { NEW_WORKSPACE_GETTING_STARTED_STEPS } from "@/lib/onboarding/getting-started";
 
@@ -59,21 +60,34 @@ describe("HelpPage", () => {
     );
   });
 
-  it("lists which features need an AI key, in the checklist's own terms", () => {
+  /**
+   * Help used to list three AI features and say everything else worked without
+   * a key. Reading figures from an earlier RTP also refuses without one, and
+   * Maps needs Claude on the planner's own computer. The key list is now the
+   * shared AI_KEY_FEATURES, which the dashboard checklist names too.
+   */
+  it("lists every feature that needs an AI key, plus the two that need AI set up another way", () => {
     render(<HelpPage />);
 
-    expect(
-      screen.getByRole("heading", { name: /Which features need an AI key/ })
-    ).toBeInTheDocument();
-    // The same four features the dashboard checklist's AI step names.
-    expect(screen.getByText(/The Planner Agent/)).toBeInTheDocument();
-    expect(screen.getByText(/Engagement source capture and staff synthesis reviews work without an AI key/)).toBeInTheDocument();
-    expect(screen.getByText(/Narrative drafting for reports and grant applications/)).toBeInTheDocument();
-    expect(screen.getByText(/Comment translation on public engagement portals/)).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Which features need AI" })).toBeInTheDocument();
+
+    const keyList = within(screen.getByRole("list", { name: "Features that need an Anthropic key" }));
+    const keyItems = keyList.getAllByRole("listitem").map((item) => item.textContent);
+    expect(keyItems).toEqual(AI_KEY_FEATURES.map((feature) => feature.help));
+    expect(keyList.getByText(/Reading figures from an earlier plan document into an RTP/)).toBeInTheDocument();
+    expect(keyList.getByText(/The Planner Agent/)).toBeInTheDocument();
+
+    const otherList = within(screen.getByRole("list", { name: "Features that need AI set up another way" }));
+    expect(otherList.getByText(/^Maps\. Claude Fable 5\.1 makes map packages on your own computer\./)).toBeInTheDocument();
+    expect(otherList.getByText(/Suggested comment themes/)).toBeInTheDocument();
+
+    // Theme generation exists (the staff Analysis tab requests it), so Help no
+    // longer says it is unavailable.
+    expect(screen.queryByText(/not yet available/)).not.toBeInTheDocument();
+    expect(screen.getByText(/Everything else works without AI, including staff review of comments\./)).toBeInTheDocument();
+
     // Who pays whom: the provider bills the workspace's own account, never OpenPlan.
-    expect(
-      screen.getByText(/usage is billed by the\s+provider, not by OpenPlan/)
-    ).toBeInTheDocument();
+    expect(screen.getByText(/usage is billed by the provider, not by OpenPlan/)).toBeInTheDocument();
     // And the path to fix it: the dedicated workspace setup page.
     const hrefs = screen.getAllByRole("link").map((link) => link.getAttribute("href"));
     expect(hrefs).toContain("/workspace#workspace-ai-key");
