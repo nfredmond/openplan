@@ -1,0 +1,34 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "missing-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "extra-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "wrong-type",
+    "outcome": "intended_refusal"
+  }
+]
