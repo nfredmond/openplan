@@ -1,0 +1,109 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "missing-state-falls-back",
+    "test": "test_managed_mode_requires_declared_state",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "nonstring-state-falls-back",
+    "test": "test_root_value_requires_nonempty_string",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "relative-root-accepted",
+    "test": "test_relative_state_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "scratch-trees-overlap",
+    "test": "test_state_and_scratch_trees_do_not_overlap",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "scratch-alias-not-resolved",
+    "test": "test_alias_and_normalized_scratch_refuse",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "default-scratch-accepted",
+    "test": "test_default_scratch_is_not_a_managed_state_root",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "declared-root-lost",
+    "test": "test_explicit_state_keeps_scratch_separate_without_creating_it",
+    "outcome": "intended_failure",
+    "reason": "Configuration must retain the declared managed state root",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "legacy-default-changed",
+    "test": "test_unmanaged_mode_keeps_existing_scratch_default",
+    "outcome": "intended_failure",
+    "reason": "Unmanaged scratch default must remain compatible",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "startup-recheck-skipped",
+    "test": "test_startup_rechecks_before_runtime_and_scratch",
+    "outcome": "intended_failure",
+    "reason": "Invalid managed state reached runtime",
+    "kind": "diagnostic_refusal"
+  },
+  {
+    "control": "config-recheck-skipped",
+    "test": "test_managed_mode_requires_declared_state",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "runtime-uses-scratch",
+    "test": "test_actual_main_attaches_runtime_and_owns_root_before_serving",
+    "outcome": "intended_failure",
+    "reason": "main must reopen the declared original state, not scratch",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "implicit-mode-restored",
+    "test": "test_managed_configuration_requires_explicit_mode",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "scratch-created-before-state-check",
+    "test": "test_missing_state_refuses_without_creating_root_or_scratch",
+    "outcome": "intended_failure",
+    "reason": "Missing retained state must refuse before scratch creation",
+    "kind": "broken_behavior"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -101,7 +101,7 @@ def run(repo, out):
         log = (out / f'{name}-worker-private.log').open('xb')
         streams.append(log)
         process = subprocess.Popen([sys.executable, '-B', str(wrapper), str(repo / 'workers/odm_worker'), str(listener), str(readiness.parent)],
-                                   cwd=out, env=dict(env, ODM_WORKER_WORK_DIR=str(work_dir)),
+                                   cwd=out, env=dict(env, ODM_WORKER_WORK_DIR=str(out/(name+'-scratch')), ODM_WORKER_MANAGED_STATE_DIR=str(work_dir)),
                                    stdin=subprocess.DEVNULL, stdout=log, stderr=subprocess.STDOUT)
         children.append(process)
         helpers.wait_for(listener.exists, process)
@@ -114,7 +114,7 @@ def run(repo, out):
         try:
             with log_path.open('xb') as log:
                 process=subprocess.Popen([sys.executable,'-B',str(wrapper),str(repo/'workers/odm_worker'),str(listener),str(readiness.parent)],
-                    cwd=out,env=dict(env,ODM_WORKER_WORK_DIR=str(copied_root)),stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT)
+                    cwd=out,env=dict(env,ODM_WORKER_WORK_DIR=str(out/(label+'-scratch')),ODM_WORKER_MANAGED_STATE_DIR=str(copied_root)),stdin=subprocess.DEVNULL,stdout=log,stderr=subprocess.STDOUT)
                 children.append(process)
                 helpers.wait_for(lambda:process.poll() is not None or listener.exists(),timeout=10)
                 helpers.stopped(process)
@@ -138,6 +138,7 @@ def run(repo, out):
                 'imagery': {'type': 'zip_url', 'url': endpoint+'/held-imagery.zip'}, 'presetId': 'balanced'}
     source, package, runtime = out/'source-root-private', out/'immutable-package-private', out/'runtime-private'
     try:
+        source.mkdir(mode=0o700)
         initial, port = start('initial', source)
         first_status, first_receipt, first_wire = post(port, json.dumps(request('synthetic-held-request-0001')).encode())
         helpers.wait_for(lambda: counters['sourceGets'] == 1, initial)
@@ -165,6 +166,7 @@ def run(repo, out):
         retained=ordinary(package/'root');retained_journal=logical(package/'root')
         package_before=root.inventory(package)
         shutil.copytree(package/'root',runtime,copy_function=shutil.copy2)
+        replacement_scratch_fresh=not (out/'replacement-scratch').exists()
         replacement,port=start('replacement',runtime)
         restart_status,restarted,restart_wire=post(port,original_request)
         started_status,started_receipt,started_wire=post(port,json.dumps(request('synthetic-held-request-0001')).encode())
@@ -179,7 +181,9 @@ def run(repo, out):
         missing_fixtures_preserved=ordinary(missing_db)==retained and ordinary(missing_seal)==retained and logical(missing_db)==journal_before and logical(missing_seal)==journal_before
         with lock:
             final_counters = dict(counters)
-        record={'missingDatabaseStartupRefused':missing_db_refused,'missingSealStartupRefused':missing_seal_refused,'negativeFixturesRestored':missing_fixtures_preserved,
+        record={'originalScratchHasNoAdmissionRegistry':not (out/'initial-scratch/admissions').exists() and (source/'admissions'/FILENAME).is_file(),
+            'replacementUsesFreshScratch':replacement_scratch_fresh and (out/'replacement-scratch').is_dir() and not (out/'replacement-scratch/admissions').exists(),
+            'missingDatabaseStartupRefused':missing_db_refused,'missingSealStartupRefused':missing_seal_refused,'negativeFixturesRestored':missing_fixtures_preserved,
             'firstAdmissionStatus':first_status,'queuedAdmissionStatus':queued_status,'predeathReplayStatus':replay_status,
             'predeathReceiptExact':replay==queued and replay_wire==queued_wire,'changedStatus':changed_status,
             'restartAdmissionStatus':restart_status,'restartReceiptExact':restarted==queued and restart_wire==queued_wire,
