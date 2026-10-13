@@ -1,7 +1,7 @@
 {
-  "candidate": "02c5b4932a50d299dd4748714d477723c33e809d",
-  "joinedMain": "68a58cfeef3ff11daf0b22093931a7c240c80b14",
-  "ownedHeads": 29,
+  "candidate": "db4eed778b2519e68cdf359712bc2affd573bf76",
+  "joinedMain": "b39f5be0446538ddd2d3adde30b81fe5268dd9aa",
+  "ownedHeads": 31,
   "pullRequests": [
     {
       "baseRefName": "work/odm-private-reader-capacity-20261012",
@@ -200,6 +200,18 @@
       "headRefName": "work/gtfs-intake-deadline-fixture-20261013",
       "headRefOid": "02c5b4932a50d299dd4748714d477723c33e809d",
       "headIncluded": true
+    },
+    {
+      "number": 270,
+      "headRefName": "work/odm-native-private-authority-composition-20261012",
+      "headRefOid": "ca4435d755a32b965ed39f87e99a92f33acf1032",
+      "headIncluded": true
+    },
+    {
+      "number": 271,
+      "headRefName": "work/odm-intake-clock-fixture-20261013",
+      "headRefOid": "886369c5531621509d35420f46d7c6a93933a317",
+      "headIncluded": true
     }
   ],
   "controls": [
@@ -216,9 +228,9 @@
       "outcome": "survived"
     },
     {
-      "case": "preceding-candidate-without269",
+      "case": "preceding-candidate-without271",
       "outcome": "intended_refusal",
-      "reason": "missing-owned-head-269"
+      "reason": "missing-owned-head-271"
     }
   ]
 }
