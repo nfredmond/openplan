@@ -1,7 +1,10 @@
+import { readFileSync } from "node:fs";
+import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 import {
   buildModelRunKpiComparisonSummary,
   formatModelRunKpiDelta,
+  formatModelRunKpiListValue,
   formatModelRunKpiPercentDelta,
   formatModelRunKpiValue,
   normalizeModelRunKpiComparisonItems,
@@ -103,5 +106,25 @@ describe("model run KPI comparison helpers", () => {
     expect(formatModelRunKpiValue(null)).toBe("N/A");
     expect(formatModelRunKpiDelta(null)).toBe("N/A");
     expect(formatModelRunKpiPercentDelta(null)).toBeNull();
+  });
+
+  it("shows a KPI stored with no value as N/A in a list, and a computed zero as zero", () => {
+    // The AequilibraE worker stores a transit KPI as null when the feed failed
+    // (KI-2026-10-12-010). The list must say so rather than leave a bare label.
+    expect(formatModelRunKpiListValue(null, "percent")).toBe("N/A");
+    expect(formatModelRunKpiListValue(undefined, "percent")).toBe("N/A");
+    expect(formatModelRunKpiListValue(Number.NaN, "percent")).toBe("N/A");
+    expect(formatModelRunKpiListValue(0, "percent")).toBe("0 percent");
+    expect(formatModelRunKpiListValue(2.5, "percent")).toBe("2.5 percent");
+  });
+
+  it("the evidence panel's KPI category list renders every value through the list formatter", () => {
+    const panel = readFileSync(
+      join(process.cwd(), "src/components/models/model-run-evidence-panel.tsx"),
+      "utf8",
+    );
+    expect(panel).toContain("formatModelRunKpiListValue(item.value, item.unit)");
+    // The old form dropped the value text entirely when it was not a number.
+    expect(panel).not.toContain('typeof item.value === "number" ? ` · ${formatModelRunKpiValue(item.value, item.unit)}` : ""');
   });
 });
