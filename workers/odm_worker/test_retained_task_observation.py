@@ -1,9 +1,12 @@
 """Private supplied metadata records, without transport or permission claims."""
 from concurrent.futures import ThreadPoolExecutor
+from contextlib import contextmanager
 import copy
 import hashlib
 import json
 import shutil
+from pathlib import Path
+import threading
 import time
 import unittest
 from unittest.mock import patch
@@ -285,6 +288,55 @@ class Checks(unittest.TestCase):
         records = [p for p in self.records_root.glob('*.json') if p.name != 'plan.json']
         self.assertEqual(len(records), 1, 'Concurrent equal replies must retain one original record')
         self.assertEqual(store.load(results[0]['bodySha256']), results[0])
+
+    def _initial_publication_contender(self, construct):
+        store = self.store(timeout=10)
+        partial_ready = threading.Event()
+        contender_ready = threading.Event()
+        release = threading.Event()
+        rename = Path.rename
+        lock = module.writer
+
+        def paused_rename(path, target):
+            if target == self.records_root / 'plan.json':
+                partial_ready.set()
+                if not release.wait(5):
+                    raise AssertionError('Initial plan publication was not released')
+            return rename(path, target)
+
+        @contextmanager
+        def observed_writer(root, deadline):
+            if partial_ready.is_set() and not release.is_set():
+                contender_ready.set()
+            with lock(root, deadline):
+                yield
+
+        def contender():
+            current = self.store(timeout=10) if construct else store
+            return current.record(200, self.body())
+
+        with patch.object(Path, 'rename', side_effect=paused_rename, autospec=True), \
+                patch.object(module, 'writer', side_effect=observed_writer), \
+                ThreadPoolExecutor(max_workers=2) as pool:
+            first = pool.submit(store.record, 200, self.body())
+            try:
+                self.assertTrue(partial_ready.wait(5), 'Actual private plan temporary file must reach publication')
+                self.assertTrue(list(self.records_root.glob('.partial-*')),
+                                'The contender must encounter actual in-progress plan bytes')
+                second = pool.submit(contender)
+                second.add_done_callback(lambda _: contender_ready.set())
+                self.assertTrue(contender_ready.wait(5), 'The contender must reach validation or its writer lock')
+            finally:
+                release.set()
+            self.assertEqual(first.result(timeout=5), second.result(timeout=5),
+                             'Initial publication contenders must retain the same exact reply')
+        self.assertEqual(store.load(hashlib.sha256(self.body()).hexdigest()), first.result())
+
+    def test_record_waits_for_initial_plan_publication(self):
+        self._initial_publication_contender(False)
+
+    def test_constructor_waits_for_initial_plan_publication(self):
+        self._initial_publication_contender(True)
 
     def test_directory_sync_failure_recovers_the_original_published_record(self):
         store = self.store()
