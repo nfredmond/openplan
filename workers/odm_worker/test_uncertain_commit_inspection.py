@@ -7,7 +7,7 @@ import unittest
 from unittest.mock import patch
 
 from engine_effects import Effects
-from retained_source import json_bytes
+from retained_source import json_bytes, writer
 from retained_task_observation import Observations
 from runtime_commit import Commit
 from runtime_draft import Draft
@@ -15,6 +15,7 @@ from runtime_observation import Observer
 from runtime_preparation import Preparation
 import uncertain_commit_inspection as module
 import test_runtime_observation as fixtures
+import retained_source
 
 
 class Checks(unittest.TestCase):
@@ -232,6 +233,77 @@ class Checks(unittest.TestCase):
                 self.read()
         self.assertGreater(seen[0], 0)
         self.assertLessEqual(seen[0], self.commit.timeout, 'Inspection cannot extend the commit budget for its task read')
+
+    @staticmethod
+    def slow_validation(original):
+        def bounded(root, name, limit, deadline, output=None):
+            while time.monotonic() < deadline:
+                time.sleep(.005)
+            return original(root, name, limit, deadline, output=output)
+        return bounded
+
+    def test_shared_budget_bounds_actual_slow_preparation_validation(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            self.preparation.timeout = .4
+            self.commit.timeout = .04
+            began = time.monotonic()
+            with patch.object(retained_source, 'digest', self.slow_validation(retained_source.digest)):
+                with self.assertRaises(TimeoutError):
+                    self.read()
+            elapsed = time.monotonic() - began
+        self.assertLess(elapsed, .25, 'Inspection budget must bound slow preparation source validation')
+        self.assertEqual(self.f.network.requests, [])
+
+    def test_shared_budget_bounds_actual_slow_snapshot_validation(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            effects, root = self.commit.draft._effects(self.f.request_id, time.monotonic() + .4)
+            self.commit.timeout = .04
+            began = time.monotonic()
+            with patch.object(self.commit.draft, '_effects', return_value=(effects, root)), patch.object(retained_source, 'digest', self.slow_validation(retained_source.digest)):
+                with self.assertRaises(TimeoutError):
+                    self.read()
+            elapsed = time.monotonic() - began
+        self.assertLess(elapsed, .25, 'Inspection budget must bound slow snapshot source validation')
+        self.assertEqual(self.f.network.requests, [])
+
+    def test_preparation_deadline_types_refuse_before_supplier(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            with patch.object(self.preparation, 'supply', side_effect=AssertionError('Invalid preparation deadline reached supplier')):
+                for deadline in (True, float('nan'), float('inf'), 'later'):
+                    with self.subTest(deadline=deadline), self.assertRaisesRegex(ValueError, 'shared deadline must be finite'):
+                        self.preparation.resume(self.f.request_id, deadline=deadline)
+
+    def test_effect_deadline_types_refuse_before_source_validation(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            effects, _root = self.commit.draft._effects(self.f.request_id, time.monotonic() + 4)
+            with patch.object(effects, '_source_receipt', side_effect=AssertionError('Invalid effect deadline reached source validation')):
+                for deadline in (True, float('nan'), float('inf'), 'later'):
+                    with self.subTest(deadline=deadline), self.assertRaisesRegex(ValueError, 'shared deadline must be finite'):
+                        effects.snapshot(deadline=deadline)
+
+    def test_effect_snapshot_shared_deadline_bounds_actual_lock_wait(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            effects, _root = self.commit.draft._effects(self.f.request_id, time.monotonic() + 4)
+            with writer(effects.root, time.monotonic() + 1):
+                began = time.monotonic()
+                with self.assertRaises(TimeoutError):
+                    effects.snapshot(deadline=began + .04)
+                elapsed = time.monotonic() - began
+        self.assertLess(elapsed, .25, 'Shared snapshot budget must bound its actual journal lock wait')
+
+    def test_source_timeout_types_are_not_normalized_by_deadline_clamping(self):
+        with self.f.runtime.owner():
+            self.prepare()
+            effects, _root = self.commit.draft._effects(self.f.request_id, time.monotonic() + 4)
+            for value in (True, 0, -1, float('nan'), 'later'):
+                effects.source_arguments['timeout'] = value
+                with self.subTest(value=value), self.assertRaisesRegex(ValueError, 'source validation timeout must be positive and finite'):
+                    effects.snapshot(deadline=time.monotonic() + .04)
 
     def test_job_hook_preserves_state_and_requires_original_request(self):
         with self.f.runtime.owner():

@@ -104,3 +104,49 @@ spare-capacity or useful long-computation acceptance.
 Fresh branch GitHub checks, then main/public integration, remain separate.
 No default activation, quality, callback, publication, current-schema recovery,
 physical-host or browser/practitioner acceptance is declared.
+
+## Shared validation deadline review correction
+
+The PR review exposes fresh timeouts inside source preparation and engine
+snapshots. Two actual slow-validation regressions fail before the fix: each
+40 ms inspection takes about 400 ms. The shared deadline now reaches runtime
+preparation, remaining source/ZIP validation, the effects constructor and each
+snapshot. Deadline type checks occur before source validation. Actual journal
+lock waits use the same bounded deadline. Original source timeout types remain
+validated before clamping.
+
+The 96 affected baseline cases pass. Both current source-control cohorts pass
+21 cases, four positive cohorts, 21 faults and 147 oracle controls. An older
+expiry mutation survives because the new journal fence also rejects it. That
+survivor remains recorded; the corrected overlapping-fence variant removes
+both final protections and fails at the intended assertion. Source edits restore
+in finally. Fresh full recipe and native composition are running next.
+
+These are cooperative validation and lock budgets. A blocking filesystem call
+or arbitrary supplier callback is not preempted by this Python deadline.
+No old-head CI, quality or full-worker acceptance substitutes for current checks.
+
+The current 44-stage recipe passes 796 unit cases across 34 suites, seven
+custom scripts, 76 restored source/workflow bindings and 20 documentation
+cases. Direction and baseline/harmless/broken/restored pointer controls pass.
+The service stops successfully at 882,700,288 bytes under 1 GiB, with no swap
+or max/OOM events. The prior recipe trials retain their stale-anchor failure
+and overlapping processing-permission mutation survivor. That permission
+probe now breaks both the local check and shared Effects fence; it fails at
+the intended no-intent assertion. No survivor counts as a killed fault.
+
+Fresh native composition on the corrected source is running serially on both
+interpreters. New-head GitHub and main/public integration remain pending.
+
+Both fresh native interpreter cohorts now pass four positive runs, 14 faults
+and 13 failure-oracle controls. All 36 current owned engines are independently
+inspected stopped, with exact image/proof labels, no published port and no
+OOM kill. Every current worker-source hash matches its saved binding. The
+parent service stops successfully at 170,356,736 bytes under 256 MiB, with
+zero swap/max/OOM events. These actual lost-reply fixtures still use invalid
+ordinary inputs and older synthetic schema. They establish no useful output,
+quality, current-main restore or physical-host acceptance.
+
+The corrected local checkpoint is ready for fresh GitHub checks. Earlier
+81809b5 checks do not establish this correction's acceptance. Main/public
+integration and the default worker path remain open.

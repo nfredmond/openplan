@@ -15,7 +15,7 @@ from pathlib import PurePosixPath
 from urllib.parse import urlsplit
 
 from admission_journal import encoded, private, synchronize
-from retained_source import absolute, json_bytes, prepare, publish, read_json, writer
+from retained_source import absolute, check_time, json_bytes, prepare, publish, read_json, writer
 import derived_zip
 
 FORMAT = 'openplan.odm-engine-plan.v1'
@@ -129,7 +129,7 @@ def parsed_reply(plan, operation, status, body):
 
 class Effects:
     """Recheck original source bytes before each private journal operation."""
-    def __init__(self, root, *, source_arguments, engine, task_uuid, name, options, filenames, timeout=2, derived_arguments=None):
+    def __init__(self, root, *, source_arguments, engine, task_uuid, name, options, filenames, timeout=2, derived_arguments=None, deadline=None):
         if type(timeout) not in (int, float) or not math.isfinite(timeout) or timeout <= 0:
             raise ValueError('Engine journal timeout must be positive and finite')
         self.root = absolute(root)
@@ -137,6 +137,8 @@ class Effects:
         if self.root == source_pack or self.root in source_pack.parents or source_pack in self.root.parents:
             raise ValueError('Engine journal and retained source roots must not overlap')
         self.timeout = timeout
+        self.deadline = deadline
+        self._end()
         self.derived_arguments = None
         if derived_arguments is not None:
             required = {'destination', 'max_expanded_bytes'}
@@ -163,27 +165,47 @@ class Effects:
         else:
             synchronize(self.root.parent)
         private(self.root, True)
-        with writer(self.root, time.monotonic()+self.timeout):
+        with writer(self.root, self._end()):
             saved = self.root/'plan.json'
             if not saved.exists() and not saved.is_symlink() and any(path.name != 'writer.lock' and not path.name.startswith('.partial-') for path in self.root.iterdir()):
                 raise ValueError('Engine effect records have no original plan')
             publish(self.root, 'plan.json', self.plan_bytes)
             self._check()
 
-    def _source_receipt(self):
-        """Revalidate actual raw and derived bytes before journal publication."""
-        if self.derived_arguments is not None:
-            return derived_zip.prepare(self.source_arguments, **self.derived_arguments, timeout=self.timeout)
-        return prepare(**self.source_arguments)
+    def _end(self, deadline=None):
+        """Clamp each validation to its caller's original finite budget."""
+        end = time.monotonic()+self.timeout
+        for supplied in (self.deadline, deadline):
+            if supplied is not None:
+                if type(supplied) not in (int, float) or not math.isfinite(supplied):
+                    raise ValueError('Engine journal shared deadline must be finite')
+                end = min(end, supplied)
+        check_time(end)
+        return end
 
-    def _check(self):
+    def _source_receipt(self, deadline=None):
+        """Revalidate actual raw and derived bytes before journal publication."""
+        end = self._end(deadline)
+        remaining = end-time.monotonic()
+        original_timeout = self.source_arguments.get('timeout', self.timeout)
+        if type(original_timeout) not in (int, float) or not math.isfinite(original_timeout) or original_timeout <= 0:
+            raise ValueError('Engine source validation timeout must be positive and finite')
+        check_time(end)
+        arguments = {**self.source_arguments, 'timeout': min(original_timeout, remaining)}
+        if self.derived_arguments is not None:
+            return derived_zip.prepare(arguments, **self.derived_arguments, timeout=remaining)
+        return prepare(**arguments)
+
+    def _check(self, deadline=None):
+        end = self._end(deadline)
         if not same(read_json(self.root, 'plan.json'), self.plan):
             raise ValueError('Saved engine plan differs from original identity')
-        receipt = self._source_receipt()
+        receipt = self._source_receipt(end)
         if receipt['manifestSha256'] != self.plan['sourceManifestSha256']:
             raise ValueError('Actual retained engine source identity differs')
         names = {'plan.json', 'writer.lock'}
         for operation, command in self.command_map.items():
+            check_time(end)
             intent_name, reply_name = self._names(operation)
             names.update((intent_name, reply_name))
             intent_path = self.root/intent_name;reply_path = self.root/reply_name
@@ -201,6 +223,7 @@ class Effects:
                     raise ValueError('Saved engine reply identity differs')
         if any(path.name not in names and not path.name.startswith('.partial-') for path in self.root.iterdir()):
             raise ValueError('Engine journal contains unknown effect records')
+        check_time(end)
 
     def _names(self, operation):
         if operation not in self.command_map:
@@ -223,7 +246,7 @@ class Effects:
 
     def issue(self, operation):
         """Record an exact command once. Existing intents never issue again."""
-        with writer(self.root, time.monotonic()+self.timeout):
+        with writer(self.root, self._end()):
             self._check()
             name, _reply_name = self._names(operation)
             existed = (self.root/name).exists() or (self.root/name).is_symlink()
@@ -233,7 +256,7 @@ class Effects:
 
     def save_reply(self, operation, status, body):
         """Save checked exact reply bytes. This does not verify engine custody."""
-        with writer(self.root, time.monotonic()+self.timeout):
+        with writer(self.root, self._end()):
             self._check()
             intent_name, reply_name = self._names(operation)
             if not (self.root/intent_name).exists():
@@ -242,10 +265,11 @@ class Effects:
             publish(self.root, reply_name, json_bytes(reply))
             return json.loads(encoded(reply, canonical=True))
 
-    def snapshot(self):
+    def snapshot(self, *, deadline=None):
         """Expose exact issued/unresolved states without treating absence as retry."""
-        with writer(self.root, time.monotonic()+self.timeout):
-            self._check()
+        end = self._end(deadline)
+        with writer(self.root, end):
+            self._check(end)
             result = []
             for operation in self.command_map:
                 intent_name, reply_name = self._names(operation)

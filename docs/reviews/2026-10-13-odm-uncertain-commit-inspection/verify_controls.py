@@ -23,7 +23,10 @@ def run(repo, out):
     out.mkdir(mode=0o700)
     module = repo / 'workers/odm_worker/uncertain_commit_inspection.py'
     observer = repo / 'workers/odm_worker/runtime_observation.py'
-    originals = {module: module.read_bytes(), observer: observer.read_bytes()}
+    draft = repo / 'workers/odm_worker/runtime_draft.py'
+    effects = repo / 'workers/odm_worker/engine_effects.py'
+    preparation = repo / 'workers/odm_worker/runtime_preparation.py'
+    originals = {path: path.read_bytes() for path in (module, observer, draft, effects, preparation)}
     original = originals[module]
     text = original.decode()
     tests = repo / 'workers/odm_worker/test_uncertain_commit_inspection.py'
@@ -55,8 +58,16 @@ def run(repo, out):
     before = '            observation = observer.observe(request_id)\n'
     tail = text[text.index(before):]
     fault('ended-owner-after-read-accepted', tail, tail.replace('            draft.preparation._entry(request_id)\n',''), 'test_ended_ownership_after_observation_refuses_return', 'ValueError not raised')
-    fault('expired-read-accepted', tail, tail.replace('            check_time(deadline)\n',''), 'test_expired_observation_refuses_return', 'TimeoutError not raised')
+    fault('expiry-checks-and-final-journal-validation-removed', tail, tail.replace('            check_time(deadline)\n','').replace('final = effects.snapshot(deadline=deadline)', 'final = current'), 'test_expired_observation_refuses_return', 'TimeoutError not raised')
     fault('observation-deadline-extended', 'timeout=min(self.observer.timeout, remaining)', 'timeout=self.observer.timeout', 'test_observer_timeout_uses_remaining_commit_budget', 'Inspection cannot extend the commit budget for its task read')
+    fault('preparation-budget-not-forwarded', 'self.preparation.resume(request_id, deadline=deadline)', 'self.preparation.resume(request_id)', 'test_shared_budget_bounds_actual_slow_preparation_validation', 'Inspection budget must bound slow preparation source validation', target=draft)
+    fault('snapshot-budget-not-forwarded', 'snapshot = effects.snapshot(deadline=deadline)', 'snapshot = effects.snapshot()', 'test_shared_budget_bounds_actual_slow_snapshot_validation', 'Inspection budget must bound slow snapshot source validation')
+    fault('preparation-deadline-bool-accepted', 'type(deadline) not in (int, float)', 'not isinstance(deadline, (int, float))', 'test_preparation_deadline_types_refuse_before_supplier', 'TimeoutError: Source custody deadline exceeded', 'errors', target=preparation)
+    fault('effect-deadline-bool-accepted', 'type(supplied) not in (int, float)', 'not isinstance(supplied, (int, float))', 'test_effect_deadline_types_refuse_before_source_validation', 'TimeoutError: Source custody deadline exceeded', 'errors', target=effects)
+    source = originals[effects].decode()
+    before = source[source.index('    def snapshot(self, *, deadline=None):'):]
+    fault('snapshot-lock-budget-not-forwarded', before, before.replace('end = self._end(deadline)', 'end = self._end()'), 'test_effect_snapshot_shared_deadline_bounds_actual_lock_wait', 'Shared snapshot budget must bound its actual journal lock wait', target=effects)
+    fault('source-timeout-bool-normalized', 'type(original_timeout) not in (int, float)', 'not isinstance(original_timeout, (int, float))', 'test_source_timeout_types_are_not_normalized_by_deadline_clamping', 'ValueError not raised', target=effects)
     census={node.name for node in ast.walk(ast.parse(tests.read_bytes())) if isinstance(node,ast.FunctionDef) and node.name.startswith('test_')}
     if {row[3] for row in cases}!=census:raise ValueError('Every processing access case requires a targeted control')
     def execute(label, test=None):
@@ -69,9 +80,9 @@ def run(repo, out):
     def positive(label, payload):
         module.write_bytes(payload)
         code, output = execute(label)
-        if code or 'Ran 15 tests' not in output or not output.rstrip().endswith('OK'):
+        if code or 'Ran 21 tests' not in output or not output.rstrip().endswith('OK'):
             raise AssertionError(label + ' complete task-read cohort failed')
-        rows.append({'control': label, 'outcome': 'survived', 'cases': 15})
+        rows.append({'control': label, 'outcome': 'survived', 'cases': 21})
     try:
         positive('baseline', original)
         positive('harmless-comment', original + b'\n# Harmless original processing access control.\n')
@@ -103,8 +114,8 @@ def run(repo, out):
             raise AssertionError('Original processing authority HTTP source did not restore')
         (out / 'controls.json').write_text(json.dumps(rows, indent=2) + '\n')
         (out / 'oracle-controls.json').write_text(json.dumps(oracles, indent=2) + '\n')
-        (out / 'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest() for p in [module, observer, tests, Path(__file__)]}, indent=2) + '\n')
-        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 15, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
+        (out / 'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest() for p in [module, observer, draft, effects, preparation, tests, Path(__file__)]}, indent=2) + '\n')
+        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 21, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
     finally:
         for path, data in originals.items(): path.write_bytes(data)
 
