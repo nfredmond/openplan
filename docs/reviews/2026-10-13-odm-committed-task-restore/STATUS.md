@@ -58,3 +58,19 @@ release tag accompanies this evidence.
 
 Private roots, actual replies, failed trials and stopped containers remain under
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-committed-task-restore-20261013/`.
+
+## Current candidate integration
+
+This separate branch joins263/b20dc2879 and preserves both report-index pointers
+through their append conflict. The restore-driver bytes remain unchanged.
+[The fresh3.11 native probe](evidence/current-candidate-native-results.json) again
+retains the original failed-task API projection across the exact known-root copy.
+[Its current bindings](evidence/current-candidate-native-bindings.json) are retained.
+No new engine adoption or managed recovery permission is inferred.
+
+[Fourteen app/docs cases and direction](evidence/current-candidate-results.json)
+pass. The [owned unit](evidence/current-candidate-resources.json) stops at
+255,913,984 bytes under1GiB, zero max/OOM and no extra swap. Both owned engines
+stop. Current-head GitHub checks remain separate. This stays outside the combined
+34-head candidate and waits for its exact production promotion before retargeting
+and a separate coordinated turn. Existing claim limits stay unchanged.
