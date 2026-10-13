@@ -37,6 +37,14 @@ def run(repo, out):
         "    recorded['reportedImageCount'] = 0\n", 'Native command must preserve reported failed-task facts')
     add('relocated-summary-changed', '    assert loaded == recorded,',
         "    loaded['reportedProgressPercent'] = None\n", 'Native relocated command must return the exact original summary')
+    add('metadata-root-already-populated', '    assert not any(records.iterdir()),',
+        "    (records / 'already-present').write_bytes(b'old record')\n", 'Native command must start with an empty metadata root')
+    add('command-record-not-created', "    assert (records / (recorded['bodySha256'] + '.json')).is_file(),",
+        "    (records / (recorded['bodySha256'] + '.json')).unlink()\n", 'Native command must create its own retained record')
+    add('old-record-captured-instead', "    assert inventory(command_package / 'root' / 'observations', time.monotonic() + 10) == fresh_before,",
+        "    (command_package / 'root' / 'observations' / 'different-record').write_bytes(b'old')\n", 'Native capture must contain the record created by the command')
+    add('fresh-record-changed-after-recovery', '    assert inventory(records, time.monotonic() + 10) == fresh_before,',
+        "    (records / 'changed-after-recovery').write_bytes(b'changed')\n", 'Native fresh command record must remain unchanged after recovery')
     for field in ('bodyBase64', 'reportedErrorDetail', 'engine', 'requestedOptions', 'reportedOptions'):
         add('private-detail-' + field, "    for field in ('bodyBase64', 'reportedErrorDetail', 'engine', 'requestedOptions', 'reportedOptions'):",
             '    loaded[' + repr(field) + "] = 'private'\n", 'Native command must exclude private detail field ' + field)
@@ -48,10 +56,10 @@ def run(repo, out):
         add('permission-promoted-' + field, "    assert loaded['transportPermission'] is False",
             '    loaded[' + repr(field) + '] = True\n', 'Native command cannot grant writes')
     # Select the final loop, after its actual command invocations and reads.
-    before = "    for name, root in [('engine', engine), ('records', records), ('package', package)]:"
+    before = "    for name, root in [('engine', engine), ('records', original_records), ('package', package)]:"
     for name in ('engine', 'records', 'package'):
         add('original-root-changed-' + name, before,
-            '    (' + name + " / 'unexpected-record').write_bytes(b'changed')\n", 'Native command must preserve original ' + name)
+            '    (' + ('original_records' if name == 'records' else name) + " / 'unexpected-record').write_bytes(b'changed')\n", 'Native command must preserve original ' + name)
     outcomes = []
     oracles = None
     def execute(label):
