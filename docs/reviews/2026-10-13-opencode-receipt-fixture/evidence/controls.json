@@ -1,0 +1,48 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "preceding-in-place-publication",
+    "test": "interrupted fixture publication preserves its last complete receipt",
+    "outcome": "intended_failure",
+    "reason": "Unexpected end of JSON input"
+  },
+  {
+    "control": "partial-published-before-data",
+    "test": "interrupted fixture publication preserves its last complete receipt",
+    "outcome": "intended_failure",
+    "reason": "Unexpected end of JSON input"
+  },
+  {
+    "control": "wrong-initial-signal",
+    "test": "shutdown escalates when the owned child ignores termination",
+    "outcome": "intended_failure",
+    "reason": "owned shutdown must deliver termination then forced kill"
+  },
+  {
+    "control": "wrong-escalation-signal",
+    "test": "shutdown escalates when the owned child ignores termination",
+    "outcome": "intended_failure",
+    "reason": "owned shutdown must deliver termination then forced kill"
+  },
+  {
+    "control": "missing-publication-barrier",
+    "test": "interrupted fixture publication preserves its last complete receipt",
+    "outcome": "intended_failure",
+    "reason": "owned fixture must reach the actual publication barrier"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

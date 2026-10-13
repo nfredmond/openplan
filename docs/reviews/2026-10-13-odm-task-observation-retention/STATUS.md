@@ -120,3 +120,12 @@ cases and product direction pass, with no failed or pending cases. The first
 direction command was mistakenly run at repository root and exits ENOENT; it
 proves nothing. The corrected command and checks run from the nested package.
 Current-head CI and the hosted production turn remain separate.
+
+## Checked connector fixture correction join
+
+Corrective286/949af7c7 joins without changing any executed aerial-worker or
+recipe byte. Both evidence-index pointers survive the append conflict. The joined
+[connector suite](evidence/correction-join-provider-summary.json) passes404 cases
+with four skipped. The joined [20 app/docs cases](evidence/correction-join-docs-summary.json)
+pass with no failed or pending cases. Main still waits on286's exact gates and
+corrected production verification; this join does not clear that hold.

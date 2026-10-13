@@ -246,3 +246,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Separate retained aerial task metadata root](reviews/2026-10-13-odm-task-observation-retention/STATUS.md), current candidate and bounded source/native evidence.
 
 - [Local aerial task metadata command](reviews/2026-10-13-odm-task-observation-cli/STATUS.md), supplied private replies, exact digest reads and bounded operator summaries.
+
+- [Complete owned OpenCode fixture receipts](reviews/2026-10-13-opencode-receipt-fixture/STATUS.md), actual process interruption, unchanged production shutdown and current main failure hold.
