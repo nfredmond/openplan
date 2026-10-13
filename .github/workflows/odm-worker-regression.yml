@@ -146,3 +146,11 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-retired-sqlite-companions/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-retired-companion-controls"
+      - name: Supplied task metadata controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-controls"
+      - name: Separate retained task metadata root controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-task-observation-retention/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-task-observation-retention-controls"
