@@ -50,6 +50,7 @@ import hmac
 import json
 import mimetypes
 import os
+from pathlib import Path
 import queue
 import secrets
 import shutil
@@ -117,13 +118,40 @@ def env_int(name, default):
         return default
 
 
+def managed_state_directory(value, work_dir):
+    """Require a declared state root outside scratch before managed startup.
+
+    The operator must retain or mount this root across replacement. A path alone
+    cannot prove the backing storage or installation-wide recovery inventory.
+    """
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError('ODM_WORKER_MANAGED_STATE_DIR is required for managed admission')
+    requested = Path(value.strip())
+    if not requested.is_absolute():
+        raise ValueError('ODM managed state directory must be absolute')
+    root = requested.resolve()
+    scratch = Path(work_dir).resolve()
+    if root == scratch or scratch in root.parents or root in scratch.parents:
+        raise ValueError('ODM managed state and scratch directories must not overlap')
+    for default in (Path(tempfile.gettempdir())/'odm_worker_jobs', Path('/tmp/odm_worker_jobs')):
+        default = default.resolve()
+        if root == default or default in root.parents or root in default.parents:
+            raise ValueError('ODM managed state cannot use the default scratch directory')
+    return str(root)
+
+
 def config():
     managed = os.environ.get('ODM_WORKER_MANAGED_ADMISSION', '').strip()
     if managed not in ('', '0', '1'):
         raise ValueError('ODM_WORKER_MANAGED_ADMISSION must be 0 or 1')
     port = env_int("ODM_WORKER_PORT", env_int("PORT", 8484))
+    work_dir = os.environ.get('ODM_WORKER_WORK_DIR', '').strip() or os.path.join(tempfile.gettempdir(), 'odm_worker_jobs')
+    state_dir = os.environ.get('ODM_WORKER_MANAGED_STATE_DIR', '').strip()
+    if managed == '1':
+        state_dir = managed_state_directory(state_dir, work_dir)
     return {
         "managed_admission": managed == '1',
+        "managed_state_dir": state_dir,
         "installation_id": os.environ.get('ODM_WORKER_INSTALLATION_ID', '').strip(),
         "worker_token": os.environ.get(
             "OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN", ""
@@ -138,8 +166,7 @@ def config():
             os.environ.get("ODM_WORKER_PUBLIC_URL", "").strip()
             or f"http://localhost:{port}"
         ).rstrip("/"),
-        "work_dir": os.environ.get("ODM_WORKER_WORK_DIR", "").strip()
-        or os.path.join(tempfile.gettempdir(), "odm_worker_jobs"),
+        "work_dir": work_dir,
         "artifact_ttl_seconds": env_int("ODM_WORKER_ARTIFACT_TTL_SECONDS", 86400),
         "sweep_interval_seconds": env_int("ODM_WORKER_SWEEP_INTERVAL_SECONDS", 600),
         "max_queued": env_int("ODM_WORKER_MAX_QUEUED", 4),
@@ -667,16 +694,17 @@ def main():
     if missing:
         print(
             "[odm-worker] REFUSING TO START: missing required environment "
-            f"variables: {', '.join(missing)}. Both bearer tokens must be set — "
+            f"variables: {', '.join(missing)}. Both bearer tokens must be set. "
             "an unauthenticated processing endpoint would let anyone start "
             "minutes of compute and read mission outputs."
         )
         sys.exit(2)
 
-    os.makedirs(CONFIG["work_dir"], mode=0o700, exist_ok=True)
+    state_dir = managed_state_directory(CONFIG['managed_state_dir'], CONFIG['work_dir']) if CONFIG['managed_admission'] else None
     if CONFIG['managed_admission']:
         from runtime_admission import Runtime
-        ADMISSIONS = Runtime(CONFIG['work_dir'], CONFIG['installation_id'], max_queued=CONFIG['max_queued'], pipeline=PIPELINE)
+        ADMISSIONS = Runtime(state_dir, CONFIG['installation_id'], max_queued=CONFIG['max_queued'], pipeline=PIPELINE)
+    os.makedirs(CONFIG["work_dir"], mode=0o700, exist_ok=True)
     with ADMISSIONS.owner() if ADMISSIONS is not None else nullcontext():
         threading.Thread(target=worker_loop, daemon=True, name="odm-pipeline").start()
         threading.Thread(target=sweep_loop, daemon=True, name="odm-artifact-sweep").start()

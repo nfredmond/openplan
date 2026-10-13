@@ -212,7 +212,7 @@ class Checks(unittest.TestCase):
 
     def test_managed_configuration_requires_explicit_mode(self):
         with patch.dict(os.environ,{'ODM_WORKER_MANAGED_ADMISSION':'0'}):self.assertIs(main.config()['managed_admission'],False)
-        with patch.dict(os.environ,{'ODM_WORKER_MANAGED_ADMISSION':'1','ODM_WORKER_INSTALLATION_ID':'synthetic-installation'}):
+        with patch.dict(os.environ,{'ODM_WORKER_MANAGED_ADMISSION':'1','ODM_WORKER_INSTALLATION_ID':'synthetic-installation','ODM_WORKER_MANAGED_STATE_DIR':str(self.root)}):
             config=main.config();self.assertIs(config['managed_admission'],True);self.assertEqual(config['installation_id'],'synthetic-installation')
         with patch.dict(os.environ,{'ODM_WORKER_MANAGED_ADMISSION':'yes'}),self.assertRaisesRegex(ValueError,'must be 0 or 1'):main.config()
 
@@ -240,6 +240,7 @@ class Checks(unittest.TestCase):
 
     def test_actual_main_attaches_runtime_and_owns_root_before_serving(self):
         runtime=self.open();runtime.submit(self.request)
+        (self.base/'scratch').mkdir(mode=0o700)
         class Stop(BaseException):pass
         class Thread:
             def __init__(self,*_args,**_kwargs):pass
@@ -247,6 +248,7 @@ class Checks(unittest.TestCase):
         original_build=main.build_server;servers=[]
         def build():
             self.assertIsNotNone(main.ADMISSIONS,'main must attach durable runtime before serving')
+            self.assertEqual(main.ADMISSIONS.root,self.root.resolve(),'main must reopen the declared original state, not scratch')
             server=original_build('127.0.0.1',0);servers.append(server)
             self.assertIs(server.admissions,main.ADMISSIONS,'server must use the actual durable runtime')
             def serve():
@@ -255,7 +257,7 @@ class Checks(unittest.TestCase):
             server.serve_forever=serve
             return server
         try:
-            with patch.dict(main.CONFIG,{'work_dir':str(self.root),'managed_admission':True,'installation_id':'synthetic-installation','callback_token':'synthetic-callback'}),patch.object(main,'PIPELINE',self.terminal),patch.object(main,'build_server',build),patch.object(main.threading,'Thread',Thread),patch.object(main.time,'sleep',side_effect=Stop),patch.object(main.JOB_QUEUE,'get',side_effect=AssertionError('Managed loop reached memory queue')):
+            with patch.dict(main.CONFIG,{'work_dir':str(self.base/'scratch'),'managed_state_dir':str(self.root),'managed_admission':True,'installation_id':'synthetic-installation','callback_token':'synthetic-callback'}),patch.object(main,'PIPELINE',self.terminal),patch.object(main,'build_server',build),patch.object(main.threading,'Thread',Thread),patch.object(main.time,'sleep',side_effect=Stop),patch.object(main.JOB_QUEUE,'get',side_effect=AssertionError('Managed loop reached memory queue')):
                 with self.assertRaises(Stop):main.main()
             self.assertEqual(self.calls,[self.request['requestId']],'actual managed loop must consume durable accepted work')
             self.assertIs(main.ADMISSIONS._owned,False,'main exit must release its lifetime owner')
