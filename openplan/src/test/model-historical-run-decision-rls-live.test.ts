@@ -28,7 +28,7 @@ function probe(mutation = "") {
   it.each([
     [`GRANT EXECUTE ON FUNCTION ${decisionSignature} TO authenticated;`, "decision executable by authenticated"],
     ["GRANT SELECT ON public.model_run_recovery_receipts TO authenticated;", "receipt exposed"],
-    ["UPDATE public.workspace_members SET role='admin' WHERE user_id=(SELECT viewer_id FROM decision_probe);", "viewer decision accepted"],
+    ["UPDATE public.workspace_members SET role='admin' WHERE workspace_id=(SELECT workspace FROM decision_probe) AND user_id=(SELECT viewer_id FROM decision_probe);", "viewer decision accepted"],
     ["UPDATE decision_probe SET owner_id=viewer_id;", "Model recovery requires an owner or administrator"],
     ["ALTER TABLE public.model_run_recovery_receipts DISABLE TRIGGER refuse_model_recovery_receipt_mutation;", "receipt mutable"],
     ["ALTER TABLE public.model_run_stages DISABLE TRIGGER guard_historical_model_execution; ALTER TABLE public.model_runs DISABLE TRIGGER guard_historical_model_execution;", "historical abandonment accepted"],
