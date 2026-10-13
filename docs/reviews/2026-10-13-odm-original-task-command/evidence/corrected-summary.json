@@ -1,0 +1,29 @@
+{
+  "workflowStages": 36,
+  "workerScripts": 35,
+  "unittestSuites": 28,
+  "unittestCases": 686,
+  "customCheckScripts": 7,
+  "sourceBindings": 64,
+  "passedAppDocs": 20,
+  "sourceControlsPerInterpreter": {
+    "cases": 13,
+    "positiveCohorts": 4,
+    "faults": 21,
+    "failureOracles": 126
+  },
+  "nativeControlsPerInterpreter": {
+    "positiveCohorts": 4,
+    "faults": 13,
+    "actualFreshCommand": true,
+    "actualRelocatedCommand": true
+  },
+  "legacyCases": 12,
+  "legacyFaults": 14,
+  "correctedNativeProducersInspectedStopped": 34,
+  "scope": "bounded_operator_original_task_metadata",
+  "applicationAuthorityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "processingQualityAccepted": false,
+  "defaultActivated": false
+}

@@ -162,3 +162,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-original-task-read/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-task-read-controls"
+      - name: Original task operator command controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-original-task-command/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-task-command-controls"

@@ -248,5 +248,6 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Local aerial task metadata command](reviews/2026-10-13-odm-task-observation-cli/STATUS.md), supplied private replies, exact digest reads and bounded operator summaries.
 - [Aerial HTTP reply framing](reviews/2026-10-13-odm-reply-framing/STATUS.md), incomplete declared replies refuse before acknowledgement publication.
 - [Original aerial task reads](reviews/2026-10-13-odm-original-task-read/STATUS.md), owned network reads and exact retained replies with separate claim limits.
+- [Explicit original task command](reviews/2026-10-13-odm-original-task-command/STATUS.md), private native fetch inputs, operator interruption and saved-digest recovery.
 
 - [Complete owned OpenCode fixture receipts](reviews/2026-10-13-opencode-receipt-fixture/STATUS.md), actual process interruption, unchanged production shutdown and current main failure hold.
