@@ -93,3 +93,26 @@ acceptance, full M3 or v1. Defaults and claim tiers stay held.
 
 Private original plans, replies, logs and fixtures remain under
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-task-observation-20261013/`.
+
+## Integration with the corrected 34-head candidate
+
+The separate metadata branch joins candidateb20dc2879 without folding metadata
+into its production turn. The shared index append conflict preserves both the
+metadata and managed-state report pointers. All new worker/source-control bytes
+from the retained-state correction survive.
+
+[Current31-stage replay](evidence/current-candidate-workflow-results.json) passes
+601 worker cases across24 suites, seven scenario programs and20 app/docs cases.
+Direction passes. All23 metadata cases/31 source controls on3.11, the fresh
+experimental native reply and eight retained-native controls on both interpreters
+pass. [Source bindings](evidence/current-candidate-worker-bindings.json) match
+after exact restoration. The [unit](evidence/current-candidate-workflow-resources.json)
+stops at959,844,352 bytes under1GiB, zero max/OOM and no swap. The workflow
+and added controls take334.790 seconds, excluding the final pointer cohorts.
+[Current pointer controls](evidence/current-candidate-pointer-controls.json) retain
+three passing six-case cohorts and one targeted broken-link failure.
+
+Earlier002d9c274 GitHub gates all pass, including live RLS. They do not accept
+this joined head. Current GitHub/main/production checks remain separate, and
+PR282 stays a separate turn after263's exact promotion. No root/hosted/default,
+processing, publication, actor-authority, quality or acceptance claim is added.
