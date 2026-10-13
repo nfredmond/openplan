@@ -547,4 +547,34 @@ describe("ProgramDetailPage", () => {
       expect(screen.queryByText(/No readiness verdict is shown for this model/)).not.toBeInTheDocument();
     });
   });
+
+  /**
+   * The measure fund lives on a child route, so this link on the default tab is
+   * its door from the program. Rendered rather than read from source, so a
+   * link that exists in the file but never reaches the screen fails here.
+   */
+  describe("the way into the measure fund", () => {
+    it("offers the measure fund on a local measure's overview", async () => {
+      const { data } = await programMaybeSingleMock();
+      programMaybeSingleMock.mockResolvedValue({
+        data: { ...data, title: "Measure A", program_type: "local_measure" },
+        error: null,
+      });
+
+      await renderPage("overview");
+
+      expect(screen.getByRole("link", { name: /Measure fund/ })).toHaveAttribute(
+        "href",
+        "/programs/program-1/measure"
+      );
+    });
+
+    it("does not offer a measure fund on an RTIP", async () => {
+      await renderPage("overview");
+
+      expect(screen.queryByRole("link", { name: /Measure fund/ })).not.toBeInTheDocument();
+      // The control: the overview's other doors did render.
+      expect(screen.getByRole("link", { name: /Work program/ })).toBeInTheDocument();
+    });
+  });
 });
