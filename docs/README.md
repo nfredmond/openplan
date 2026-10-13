@@ -240,3 +240,5 @@ The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATU
 The [task metadata parser](reviews/2026-10-13-odm-task-observation/STATUS.md) binds supplied status replies to the original plan and preserves reported options separately from execution settings. Metadata grants no permission or quality claim; runtime polling remains unconnected.
 
 The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/STATUS.md) requires a declared retained directory apart from scratch, refuses missing recovery roots and checks original receipt replay with fresh replacement scratch. The operator still verifies its backing storage and installation-wide recovery inventory.
+
+- [Separate retained aerial task metadata root](reviews/2026-10-13-odm-task-observation-retention/STATUS.md), current candidate and bounded source/native evidence.
