@@ -97,3 +97,31 @@ events and zero swap. [Complete HTTP control bindings](evidence/complete-http-co
 and [47 targeted outcomes](evidence/complete-http-controls.json) retain the
 updated census. Report link checks do not establish report semantics or a rendered
 workflow. The earlier failed recipe and initial legacy behavior remain visible.
+
+## CI correction: observe a reset as actual peer closure
+
+Exact-head aerial CI38404499525 fails in the existing composed cancellation
+fixture. Its peer `recv` raises `ConnectionResetError` after the child ends;
+the EOF-only observer throws before setting its closure event. The request is
+already at the stalled body boundary. This is an observed fixture error, not
+proof that cancellation left the connection open. The failed run remains.
+
+The test observer now accepts EOF or a connection reset. Four real TCP cases
+observe FIN, forced reset, available bytes and an idle timeout. The reset case
+records the actual socket exception through a passive wrapper. Received bytes
+do not count as closure; other I/O errors still propagate. Cancellation deadlines,
+peer-wait bounds and production transport bytes stay unchanged.
+
+The existing composed-control census adds a targeted behavior for each new case.
+Six tests pass in four positive cohorts, with six targeted faults per interpreter.
+Python 3.14 and 3.11 pass. Both fixture and runtime sources restore in `finally`.
+The unit stops at 56,606,720 bytes under 256 MiB, with zero maximum/OOM events
+and zero swap. No additional transport command or API acceptance follows.
+
+[Failed CI summary](evidence/failed-ci-peer-reset.json),
+[3.14 peer controls](evidence/peer-controls314.json),
+[3.11 peer controls](evidence/peer-controls311.json),
+[peer bindings](evidence/peer-bindings.json) and
+[peer resources](evidence/peer-resources.json) retain this correction.
+The earlier 646-case recipe keeps its original source boundary. The corrected
+complete recipe and new-head CI remain required.
