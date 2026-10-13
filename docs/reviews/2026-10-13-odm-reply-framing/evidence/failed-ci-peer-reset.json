@@ -1,0 +1,9 @@
+{
+  "run": 38404499525,
+  "head": "4505b5c48ea4f7e5baa5024e85566b37f085642b",
+  "stage": "Original URL draft pipeline harmless and targeted controls",
+  "case": "test_actual_engine_body_cancellation_retains_unresolved_original_intent",
+  "observedException": "ConnectionResetError: [Errno 104] Connection reset by peer",
+  "failedAssertion": "Cancelled composed transport must close the actual peer",
+  "scope": "Actual CI peer reset before EOF-only fixture closure event; failed run preserved."
+}

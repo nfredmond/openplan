@@ -1,0 +1,98 @@
+[
+  {
+    "control": "omitted-framing-guard-exact",
+    "accepted": true
+  },
+  {
+    "control": "omitted-framing-guard-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "omitted-framing-guard-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "omitted-framing-guard-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "admitted-unread-bytes-exact",
+    "accepted": true
+  },
+  {
+    "control": "admitted-unread-bytes-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "admitted-unread-bytes-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "admitted-unread-bytes-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "valid-close-delimiter-refused-exact",
+    "accepted": true
+  },
+  {
+    "control": "valid-close-delimiter-refused-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "valid-close-delimiter-refused-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "valid-close-delimiter-refused-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "valid-empty-frame-refused-exact",
+    "accepted": true
+  },
+  {
+    "control": "valid-empty-frame-refused-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "valid-empty-frame-refused-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "valid-empty-frame-refused-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "short-frame-fixture-lost-exact",
+    "accepted": true
+  },
+  {
+    "control": "short-frame-fixture-lost-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "short-frame-fixture-lost-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "short-frame-fixture-lost-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "request-observation-lost-exact",
+    "accepted": true
+  },
+  {
+    "control": "request-observation-lost-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "request-observation-lost-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "request-observation-lost-wrong-diagnostic",
+    "accepted": false
+  }
+]

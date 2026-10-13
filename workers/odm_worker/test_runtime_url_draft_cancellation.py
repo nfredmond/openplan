@@ -4,6 +4,8 @@ import hashlib
 import json
 import os
 import select
+import socket
+import struct
 import subprocess
 import threading
 import time
@@ -17,6 +19,12 @@ from runtime_url_intake import Intake
 from runtime_url_draft import Pipeline
 from url_transport import Transport as SourceTransport
 import test_runtime_url_intake as fixture
+
+
+def peer_closed(connection):
+    """Observe EOF or TCP reset without treating other I/O failures as closure."""
+    try:return connection.recv(1)==b''
+    except ConnectionResetError:return True
 
 
 class Checks(unittest.TestCase):
@@ -33,7 +41,7 @@ class Checks(unittest.TestCase):
                 if stall:
                     self.wfile.write(payload[:4]);self.wfile.flush();held.set();signal.set()
                     readable,_,_=select.select([self.connection],[],[],4)
-                    if readable and self.connection.recv(1)==b'':closed.set()
+                    if readable and peer_closed(self.connection):closed.set()
                 else:self.wfile.write(payload);self.wfile.flush()
             def do_GET(self):
                 calls.append(('GET',self.path));slot=0 if self.path=='/a.jpg' else 1
@@ -88,6 +96,36 @@ class Checks(unittest.TestCase):
 
     def test_actual_source_body_cancellation_stops_before_engine(self):self.exercise('source')
     def test_actual_engine_body_cancellation_retains_unresolved_original_intent(self):self.exercise('engine')
+
+    def peers(self):
+        listener=socket.socket();listener.bind(('127.0.0.1',0));listener.listen(1)
+        self.addCleanup(listener.close)
+        client=socket.create_connection(listener.getsockname(),timeout=1);peer,_=listener.accept();peer.settimeout(1)
+        self.addCleanup(client.close);self.addCleanup(peer.close)
+        return client,peer
+
+    def test_peer_observer_accepts_actual_fin(self):
+        client,peer=self.peers();client.close()
+        self.assertTrue(peer_closed(peer),'Actual TCP EOF must count as a closed peer')
+
+    def test_peer_observer_accepts_actual_reset(self):
+        client,peer=self.peers();seen=[]
+        class Observed:
+            def recv(self,count):
+                try:return peer.recv(count)
+                except ConnectionResetError:seen.append('reset');raise
+        client.setsockopt(socket.SOL_SOCKET,socket.SO_LINGER,struct.pack('ii',1,0));client.close()
+        self.assertTrue(peer_closed(Observed()),'Actual TCP reset must count as a closed peer')
+        self.assertEqual(seen,['reset'],'The reset control must observe the real socket exception')
+
+    def test_peer_observer_rejects_actual_available_bytes(self):
+        client,peer=self.peers();client.sendall(b'x')
+        self.assertFalse(peer_closed(peer),'Received bytes cannot count as peer closure')
+
+    def test_peer_observer_propagates_actual_timeout(self):
+        client,peer=self.peers();peer.settimeout(.01)
+        with self.assertRaises(TimeoutError,msg='A live idle socket timeout cannot count as closure'):
+            peer_closed(peer)
 
 
 if __name__=='__main__':unittest.main()

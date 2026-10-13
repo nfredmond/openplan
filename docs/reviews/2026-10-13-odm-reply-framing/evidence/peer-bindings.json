@@ -1,0 +1,8 @@
+{
+  "workers/odm_worker/runtime_url_draft.py": "704f24ccaed770f4feec0a09f05f6a14debd6518a83c2ace3d8a5c7b711fa82a",
+  "workers/odm_worker/test_runtime_url_draft_cancellation.py": "94d76f00cda90a3db1b65c447bd084a143d6fc72f2c383899bda82d067a551ff",
+  "docs/reviews/2026-10-11-odm-url-transport/verify_controls.py": "28cc44da9b012a37f794f17e1ee2c9a6b4e078cee8e10f0d0a74ef59c0803b76",
+  "docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_transport_controls.py": "30f24abf3ec10778dd26b3634814ee29c93b55d0472fa421242c59a597d8ef54",
+  "workers/odm_worker/draft_http.py": "921834b81231f7036c17b6b923e1d7bd42b127448b6ee6a7155604334dccba81",
+  "workers/odm_worker/url_transport.py": "6461cfac3452c833ade0614b6f2bb0e80d92630d3366d3834f3ee72f11c0650b"
+}

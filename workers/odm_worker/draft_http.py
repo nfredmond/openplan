@@ -237,6 +237,8 @@ def child(lifetime):
         body = response.read(RESPONSE_LIMIT+1)
         if len(body) > RESPONSE_LIMIT:
             raise ValueError('Original HTTP response exceeds its bound')
+        if response.length not in (None, 0):
+            raise ValueError('Original HTTP response is incomplete')
         finite_deadline(deadline)
         payload = {'status': response.status, 'bodyBase64': base64.b64encode(body).decode()}
         sys.stdout.buffer.write(json.dumps(payload, separators=(',', ':')).encode())

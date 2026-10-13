@@ -70,6 +70,10 @@ def run(repo,out):
  add('child-metadata-bound-ignored','test_child_metadata_bound_precedes_payload_read',disabled('Original HTTP metadata exceeds its bound',1),'Oversized child metadata reached payload read')
  add('child-frame-eof-ignored','test_incomplete_child_frame_refuses_at_original_eof',disabled('Original HTTP child input is incomplete'),'Incomplete child input continued after original EOF')
  add('unrelated-environment-inherited','test_child_environment_does_not_inherit_unrelated_credentials',swap("if key in {'PATH', 'LANG', 'LC_ALL', 'SSL_CERT_FILE', 'SSL_CERT_DIR'}","if True"),'HTTP child cannot inherit unrelated credentials')
+ add('incomplete-json-reply-accepted','test_incomplete_content_length_refuses_valid_json_prefix',disabled('Original HTTP response is incomplete'),'RuntimeError not raised')
+ add('incomplete-empty-reply-accepted','test_incomplete_content_length_refuses_empty_prefix',disabled('Original HTTP response is incomplete'),'RuntimeError not raised')
+ add('complete-close-delimiter-refused','test_complete_close_delimited_reply_preserves_exact_bytes',swap('        if response.length not in (None, 0):','        if response.length not in (0,):'),'Original draft HTTP child failed')
+ add('complete-empty-frame-refused','test_complete_zero_length_reply_is_not_a_framing_error',swap('        if response.length not in (None, 0):',"        if not body:\n            raise ValueError('Empty HTTP body refused')\n        if response.length not in (None, 0):"),'Original draft HTTP child failed')
  if {row[1] for row in cases}!=census:raise AssertionError('HTTP test lacks targeted control: '+repr(sorted(census-{row[1] for row in cases})))
  rows=[]
  def execute(label,test=None):
