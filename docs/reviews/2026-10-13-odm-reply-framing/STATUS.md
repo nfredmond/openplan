@@ -125,3 +125,18 @@ and zero swap. No additional transport command or API acceptance follows.
 [peer resources](evidence/peer-resources.json) retain this correction.
 The earlier 646-case recipe keeps its original source boundary. The corrected
 complete recipe and new-head CI remain required.
+
+The corrected fixture joins main evidence merge
+`af3effe22d449716951f36610d4ef9e4b2eda8d2` without changing the production
+framing guard or deadlines. The actual 34-stage recipe then passes 650 cases
+across 26 worker suites, 20 app/documentation cases, direction and pointer
+controls. All 61 worker/workflow bindings restore exactly. The unit stops at
+904,409,088 bytes under 1 GiB, with zero maximum/OOM events and zero swap.
+[Corrected summary](evidence/reset-corrected-summary.json),
+[corrected recipe](evidence/reset-corrected-workflow-results.json),
+[worker bindings](evidence/reset-corrected-workflow-bindings.json),
+[composed controls](evidence/reset-corrected-composed-controls.json),
+[composed bindings](evidence/reset-corrected-composed-bindings.json) and
+[resources](evidence/reset-corrected-workflow-resources.json) retain the run.
+This is a new local checkpoint. It does not turn the failed4505 CI run green;
+the corrected head requires its own GitHub checks.
