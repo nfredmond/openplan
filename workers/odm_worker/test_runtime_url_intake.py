@@ -371,15 +371,17 @@ class Checks(unittest.TestCase):
                 self.assertEqual(self.supplied,[]);self.assertEqual(self.calls,[])
 
     def test_shared_deadline_clamps_nested_fetch_deadline(self):
-        original=module.UrlSources;seen=[];began=time.monotonic()
+        original=module.UrlSources;seen=[];shared=[];original_check=self.intake._check
+        def check(request_id,deadline):shared.append(deadline);return original_check(request_id,deadline)
         def source(*args,**kwargs):
             time.sleep(.03);result=original(*args,**kwargs);fetch=result.fetch
             result.fetch=lambda url,output,remaining,deadline:fetch(url,output,remaining,deadline+.1)
             return result
         def fetch(url,output,remaining,deadline):seen.append(deadline);return self.fetch(url,output,remaining,deadline)
         self.intake.fetch=fetch
-        with patch('runtime_url_intake.UrlSources',side_effect=source):self.resume()
-        self.assertTrue(seen);self.assertLessEqual(max(seen),began+self.intake.timeout+.005,'Nested fetch cannot extend the original intake deadline')
+        with patch('runtime_url_intake.UrlSources',side_effect=source),patch.object(self.intake,'_check',side_effect=check):self.resume()
+        self.assertTrue(shared,'Intake must expose its actual shared deadline');self.assertTrue(seen)
+        self.assertLessEqual(max(seen),shared[0],'Nested fetch cannot extend the original intake deadline')
 
     def test_expired_plan_publication_refuses_before_source_creation(self):
         publish=module.publish;self.intake.timeout=.03
