@@ -182,3 +182,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-original-processing-commit/verify_runtime_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-processing-commit-journal-controls"
+      - name: Original uncertain commit inspection controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-uncertain-commit-inspection/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-uncertain-commit-inspection-controls"
