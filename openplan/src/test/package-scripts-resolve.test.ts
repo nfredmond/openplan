@@ -98,6 +98,27 @@ function resolvesOnDisk(baseDir: string, candidate: string): boolean {
   return existsSync(path.resolve(baseDir, parent));
 }
 
+/**
+ * Every way a test in src/test switched on the live database when measured on
+ * 2026-10-12: the describe ternary on LIVE_RLS, `skipIf` or `runIf` on describe
+ * or it with LIVE_RLS in the condition, and switches derived from LIVE_RLS
+ * (a candidate flag built as LIVE_RLS && another variable). Importing the switch,
+ * or reading its environment variable directly, covers the derived forms. Until
+ * 2026-10-12 only the ternary was recognized, and the skipIf files were invisible.
+ *
+ * Blind category: a file that reaches the live stack with no LIVE_RLS switch.
+ */
+const LIVE_GATE_FORMS = [
+  /\bLIVE_RLS\s*\?\s*(?:describe|it|test)\s*:\s*(?:describe|it|test)\.skip\b/,
+  /\b(?:describe|it|test)(?:\.\w+)*\.(?:skipIf|runIf)\([^)]*\bLIVE_RLS\b/,
+  /\bimport\s*\{[^}]*\bLIVE_RLS\b[^}]*\}\s*from\s*["'][^"']*local-supabase-env["']/,
+  /\bprocess\.env\.OPENPLAN_RLS_LIVE_TEST\b/,
+];
+
+function isLiveGated(source: string): boolean {
+  return LIVE_GATE_FORMS.some((form) => form.test(source));
+}
+
 function scriptsOf(dir: string): Record<string, string> {
   return JSON.parse(readFileSync(path.join(dir, "package.json"), "utf8")).scripts ?? {};
 }
@@ -157,15 +178,19 @@ describe("package.json scripts: every path they name resolves", () => {
     const testDir = path.join(REPO_ROOT, "openplan", "src", "test");
     const liveGated = readdirSync(testDir)
       .filter((name) => name.endsWith(".test.ts") || name.endsWith(".test.tsx"))
-      .filter((name) => /LIVE_RLS\s*\?\s*describe\s*:\s*describe\.skip/.test(readFileSync(path.join(testDir, name), "utf8")))
+      // This file quotes the gate forms as fixtures; it never touches the stack.
+      .filter((name) => name !== "package-scripts-resolve.test.ts")
+      .filter((name) => isLiveGated(readFileSync(path.join(testDir, name), "utf8")))
       .map((name) => `src/test/${name}`)
       .sort();
 
     // Non-vacuity: if the detector stops finding the live tests that certainly
     // exist, it would pass by finding nothing — the failure mode this whole file
-    // is about.
-    expect(liveGated.length).toBeGreaterThanOrEqual(4);
+    // is about. One anchor per gate form.
+    expect(liveGated.length).toBeGreaterThanOrEqual(100);
     expect(liveGated).toContain("src/test/rls-isolation.test.ts");
+    expect(liveGated).toContain("src/test/contract-completed-review-rls.test.ts");
+    expect(liveGated).toContain("src/test/land-use-plan-creation-rls.test.ts");
 
     const script = scriptsOf(path.join(REPO_ROOT, "openplan"))["test:rls-live"] ?? "";
     expect(script).not.toBe("");
@@ -176,6 +201,33 @@ describe("package.json scripts: every path they name resolves", () => {
       "live-gated test files that `npm run test:rls-live` does not name — they skip under `npm test` " +
         "and run nowhere else, so their assertions have never executed. Add them to the script."
     ).toEqual([]);
+  });
+
+  /**
+   * Seeded controls for the detector. The skipIf form went unrecognized while
+   * about sixty live files used it, so a live file could leave the script and
+   * nothing would notice. Each form below must be detected; the worker gate and
+   * the mocked switch are not live-database gates and must not be.
+   */
+  it("recognizes every live gate form, and nothing else", () => {
+    const gated = [
+      'const describeLive = LIVE_RLS ? describe : describe.skip;',
+      "const d=LIVE_RLS?describe:describe.skip;",
+      'describe.skipIf(!LIVE_RLS)("completed review", () => {});',
+      'it.skipIf(!LIVE_RLS)("refuses a stranger", () => {});',
+      'describe.skipIf(!LIVE_RLS || !DECISION_SYNTHESIS_CANDIDATE)("candidate", () => {});',
+      'describe.runIf(LIVE_RLS)("live only", () => {});',
+      'import {LIVE_RLS} from "./local-supabase-env";\nconst CANDIDATE = LIVE_RLS && x;\ndescribe.skipIf(!CANDIDATE)("c", () => {});',
+      'const live = process.env.OPENPLAN_RLS_LIVE_TEST === "1";',
+    ];
+    for (const source of gated) expect(isLiveGated(source), source).toBe(true);
+
+    const notGated = [
+      'const describeWorker = AEQUILIBRAE_INTERPRETER ? describe : describe.skip;',
+      'vi.doMock("./local-supabase-env", () => ({ LIVE_RLS: false }));',
+      'spawnSync("npx", ["vitest"], { env: { ...process.env, OPENPLAN_RLS_LIVE_TEST: "1" } });',
+    ];
+    for (const source of notGated) expect(isLiveGated(source), source).toBe(false);
   });
 
   it("reads paths but not the ones a script writes", () => {

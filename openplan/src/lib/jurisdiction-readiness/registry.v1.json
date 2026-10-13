@@ -109,12 +109,12 @@
     {
       "id": "federal-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-federal.ts",
-      "sha256": "94af56e39de1862f7285956a61486e1a5257a3b065773bf2d432d9f2c988820d"
+      "sha256": "232ab428804b141ec462d7d2bfb3f11b8406f1e3b1c3c7d790ed868958fc0a3f"
     },
     {
       "id": "california-grant-adapter",
       "path": "openplan/src/lib/grants/programs/us-ca.ts",
-      "sha256": "a65919d8448f369914db5fce14caf368bc53742bdbfae6190398c8aa97176482"
+      "sha256": "db35063a2d9be22bd4641e9db792b451d495e51efd0fe06fef370ad703c94280"
     },
     {
       "id": "comparable-observation-proof-v041",

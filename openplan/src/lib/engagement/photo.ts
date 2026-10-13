@@ -10,9 +10,13 @@
  *   the image without EXIF/XMP/IPTC/ICC metadata (photo-metadata.ts), and
  *   writes to <campaignId>/<uuid>.<ext> via the service role. The client only ever
  *   learns the resulting storage path, never a URL.
+ * - Uploads are counted in the database (photo-upload-allowance.ts): per
+ *   connection, and per campaign per day by count and bytes.
  * - The submit route re-validates that a client-provided path matches the
  *   campaign prefix pattern and that the object actually exists and was
  *   created recently before persisting it on the item.
+ * - A photo no comment or survey answer took up within a day is removed by the
+ *   scheduled sweep (photo-sweep.ts).
  * - Reads happen exclusively through short-TTL signed URLs minted
  *   server-side: the public portal only signs paths of APPROVED items; the
  *   staff moderation queue signs after an RLS-scoped campaign read proves
@@ -28,7 +32,8 @@ export const ENGAGEMENT_PHOTO_SIGNED_URL_TTL_SECONDS = 15 * 60;
 export const ENGAGEMENT_PHOTO_UPLOAD_LOOKBACK_MINUTES = 120;
 
 export const PUBLIC_PHOTO_UPLOAD_RATE_WINDOW_MINUTES = 10;
-// Per connection; raised from 5 with the comment limit so a meeting room can attach photos.
+// Per connection, across campaigns; raised from 5 with the comment limit so a
+// meeting room can attach photos. Counted in the database since 2026-10-12.
 export const PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW = 15;
 
 export const ENGAGEMENT_PHOTO_CONTENT_TYPES = {
@@ -111,33 +116,4 @@ export function splitEngagementPhotoPath(path: string): { folder: string; fileNa
   const match = PHOTO_PATH_PATTERN.exec(path);
   if (!match) return null;
   return { folder: match[1], fileName: `${match[2]}.${match[3]}` };
-}
-
-// Per-instance upload rate limiter keyed by the same client-IP fingerprint
-// as public submissions (buildPublicSubmissionClientFingerprint). Serverless caveat: this map is per-lambda-instance, so
-// it is a soft brake, not the hard guard — the hard guards are the 5 MB body
-// cap, the DB-backed submission rate limit, and the bucket's file_size_limit.
-const uploadTimestampsByFingerprint = new Map<string, number[]>();
-
-export function registerEngagementPhotoUpload(
-  fingerprint: string,
-  now: number = Date.now()
-): { allowed: boolean; recentCount: number } {
-  const windowMs = PUBLIC_PHOTO_UPLOAD_RATE_WINDOW_MINUTES * 60 * 1000;
-  const recent = (uploadTimestampsByFingerprint.get(fingerprint) ?? []).filter(
-    (timestamp) => now - timestamp <= windowMs
-  );
-
-  if (recent.length >= PUBLIC_PHOTO_UPLOAD_MAX_PER_WINDOW) {
-    uploadTimestampsByFingerprint.set(fingerprint, recent);
-    return { allowed: false, recentCount: recent.length };
-  }
-
-  recent.push(now);
-  uploadTimestampsByFingerprint.set(fingerprint, recent);
-  return { allowed: true, recentCount: recent.length };
-}
-
-export function resetEngagementPhotoUploadRateLimiter(): void {
-  uploadTimestampsByFingerprint.clear();
 }
