@@ -42,12 +42,22 @@ class Observations:
             raise ValueError('Task observation records must be separate from engine commands')
         self.plan = original_plan(copy.deepcopy(plan))
         self.timeout = timeout
-        self._check_plan(allow_empty=True)
+        try:
+            self._check_plan(allow_empty=True)
+        except ValueError as error:
+            # Wait for an existing writer without provisioning an empty ledger.
+            if str(error) != 'Retained task observation ledger plan is missing' or not (self.records_root / 'writer.lock').exists():
+                raise
+            with writer(self.records_root, time.monotonic() + self.timeout):
+                self._check_plan(allow_empty=True)
 
-    def _check_plan(self, *, allow_empty=False):
+    def _check_original(self):
         private(self.root, True)
         if not same(read_json(self.root, 'plan.json'), self.plan):
             raise ValueError('Retained task observation original plan differs')
+
+    def _check_plan(self, *, allow_empty=False):
+        self._check_original()
         private(self.records_root, True)
         ledger = self.records_root / 'plan.json'
         if ledger.exists() or ledger.is_symlink():
@@ -68,7 +78,7 @@ class Observations:
     def record(self, status, body, *, deadline=None):
         """Publish one exact checked reply; replay never overwrites older bytes."""
         deadline = self._deadline(deadline)
-        self._check_plan(allow_empty=True)
+        self._check_original()
         result = observe(self.plan, status, body)
         payload = json_bytes(result)
         if len(payload) > RECORD_LIMIT:

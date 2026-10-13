@@ -1,0 +1,6 @@
+{
+  "exitCode": 1,
+  "tests": 2,
+  "intendedError": "Retained task observation ledger plan is missing",
+  "failedBeforeFix": true
+}

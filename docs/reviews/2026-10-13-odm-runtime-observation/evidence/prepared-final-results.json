@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "prepared314-current",
+    "returncode": 0,
+    "seconds": 13.738
+  },
+  {
+    "stage": "prepared311-current",
+    "returncode": 0,
+    "seconds": 12.358
+  },
+  {
+    "stage": "prepared-native314-current",
+    "returncode": 0,
+    "seconds": 49.026
+  },
+  {
+    "stage": "prepared-native311-current",
+    "returncode": 0,
+    "seconds": 48.372
+  }
+]

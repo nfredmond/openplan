@@ -144,6 +144,14 @@ def run(repo, out):
             "publish(folder, result['bodySha256'] + '.json', payload, json_limit=RECORD_LIMIT)",
             "publish(folder, result['bodySha256'] + '-' + str(threading.get_ident()) + '.json', payload, json_limit=RECORD_LIMIT)"),
         'Concurrent equal replies must retain one original record')
+    add('record-check-before-initial-publication-lock', 'test_record_waits_for_initial_plan_publication',
+        changed('        result = observe(self.plan, status, body)',
+                '        self._check_plan(allow_empty=True)\n        result = observe(self.plan, status, body)'),
+        'ValueError: Retained task observation ledger plan is missing')
+    add('constructor-check-before-initial-publication-lock', 'test_constructor_waits_for_initial_plan_publication',
+        changed("        try:\n            self._check_plan(allow_empty=True)\n        except ValueError as error:\n            # Wait for an existing writer without provisioning an empty ledger.\n            if str(error) != 'Retained task observation ledger plan is missing' or not (self.records_root / 'writer.lock').exists():\n                raise\n            with writer(self.records_root, time.monotonic() + self.timeout):\n                self._check_plan(allow_empty=True)",
+                '        self._check_plan(allow_empty=True)'),
+        'ValueError: Retained task observation ledger plan is missing')
     add('publication-directory-sync-omitted', 'test_directory_sync_failure_recovers_the_original_published_record',
         changed('    temporary.rename(target)\n    synchronize(root)', '    temporary.rename(target)'),
         'OSError not raised', helper)
