@@ -255,3 +255,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Complete owned OpenCode fixture receipts](reviews/2026-10-13-opencode-receipt-fixture/STATUS.md), actual process interruption, unchanged production shutdown and current main failure hold.
 
 - [Original uncertain commit inspection](reviews/2026-10-13-odm-uncertain-commit-inspection/STATUS.md), current task observations with a missing acknowledgment held separately.
+
+- [Supplied output archive custody](reviews/2026-10-13-odm-output-archive-custody/STATUS.md), bounded complete private bytes, member inventory and interruption recovery without publication or quality promotion.
