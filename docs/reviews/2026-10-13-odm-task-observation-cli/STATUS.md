@@ -64,3 +64,12 @@ parse general YAML or prove GitHub execution.
 [The summary](evidence/summary.json) records the counts. Current-head CI, joined
 main correction and production acceptance remain separate. No new allowance,
 default, migration, hosted setting or scientific claim follows from this run.
+
+## Corrected parent join
+
+Parent285/d22fdfda0 joins with the connector fixture correction and both index
+pointers preserved. Every executed aerial/CLI byte still matches the34-stage
+binding. The joined [connector suite](evidence/parent-join-provider-summary.json)
+passes404 cases with four skipped. The joined
+[20 app/docs cases](evidence/parent-join-docs-summary.json) pass with no failed or
+pending cases. New head CI and corrected-main promotion remain separate.
