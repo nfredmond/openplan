@@ -37,12 +37,12 @@ function ManifestHash({ value }: { value: string }) {
   }, [copied]);
   return (
     <div className="mt-2 grid min-w-0 gap-2 text-xs text-muted-foreground sm:grid-cols-[auto_minmax(0,1fr)_auto] sm:items-start">
-      <span className="shrink-0 font-medium text-foreground">Manifest SHA-256</span>
+      <span className="shrink-0 font-medium text-foreground">Manifest fingerprint</span>
       <code className="min-w-0 break-all leading-relaxed">{value}</code>
       <button
         type="button"
         className="inline-flex shrink-0 items-center gap-1 justify-self-start rounded-[0.3rem] border border-border px-2 py-1 text-foreground hover:bg-muted sm:justify-self-auto"
-        aria-label="Copy manifest SHA-256"
+        aria-label="Copy manifest fingerprint"
         onClick={async () => {
           await navigator.clipboard.writeText(value);
           setCopied(true);

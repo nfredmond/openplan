@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
+import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StateBlock } from "@/components/ui/state-block";
@@ -404,11 +405,7 @@ export function MissionAoiEditor({
 
   if (!MAPBOX_ACCESS_TOKEN) {
     return (
-      <StateBlock
-        title="Map unavailable"
-        description="NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN is not set. AOI drawing requires a Mapbox token."
-        tone="warning"
-      />
+      <MapUnavailableNotice title="The mission area can't be drawn here" />
     );
   }
 

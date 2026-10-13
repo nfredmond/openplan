@@ -278,8 +278,9 @@ describe("RtpCycleProjectMap", () => {
 
     render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
 
-    expect(await screen.findByText(/No map key is configured on this deployment/i)).toBeTruthy();
-    expect(screen.getByText(/NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN/)).toBeTruthy();
+    expect(await screen.findByText(/has no map key set up/i)).toBeTruthy();
+    // The variable is for whoever runs the installation, folded out of the planner's line.
+    expect(screen.getByText(/NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN/).closest("details")).not.toBeNull();
     // The plan's own facts survive a missing basemap.
     expect(screen.getByText(/1 of the 3 projects loaded for this plan/i)).toBeTruthy();
     expect(mapboxMocks.Map).not.toHaveBeenCalled();
@@ -381,7 +382,7 @@ describe("RtpCycleProjectMap", () => {
 
     render(<RtpCycleProjectMap rtpCycleId={CYCLE_ID} />);
 
-    expect(await screen.findByText(/No map key is configured on this deployment/i)).toBeTruthy();
+    expect(await screen.findByText(/has no map key set up/i)).toBeTruthy();
     expect(screen.getByText(/No project in this plan has a location recorded yet/i)).toBeTruthy();
     // The "N would be drawn" line is suppressed when N is zero rather than
     // claiming "0 of 3 projects have a location recorded and would be drawn".
