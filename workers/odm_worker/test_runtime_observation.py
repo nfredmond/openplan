@@ -5,6 +5,7 @@ import json
 import shutil
 import time
 import unittest
+import uuid
 from unittest.mock import patch
 
 from application_draft_authority import Authority
@@ -69,11 +70,48 @@ class Checks(unittest.TestCase):
         plan = copy.deepcopy(self.plan)
         plan['binding']['originalContext']['originalActorId'] = 'other'
         (self.root / 'engine' / 'plan.json').write_bytes(json_bytes(plan))
+        prepared = json.loads((self.root / 'prepared.json').read_bytes())
+        prepared['enginePlanSha256'] = hashlib.sha256(json_bytes(plan)).hexdigest()
+        (self.root / 'prepared.json').write_bytes(json_bytes(prepared))
         before = len(self.application.f.calls)
         with self.assertRaisesRegex(ValueError, 'application binding differs'):
             self.call()
         self.assertEqual(len(self.application.f.calls), before)
         self.assertEqual(self.network.requests, [])
+
+    def test_changed_valid_engine_plan_refuses_before_current_access(self):
+        original = (self.root / 'engine' / 'plan.json').read_bytes()
+        before = len(self.application.f.calls)
+        variants = [('name', 'Another valid task name'), ('taskUuid', str(uuid.uuid4())),
+                    ('engine', {**self.plan['engine'], 'instanceId': 'Another valid engine'})]
+        try:
+            for field, value in variants:
+                plan = {**self.plan, field: value}
+                (self.root / 'engine' / 'plan.json').write_bytes(json_bytes(plan))
+                with self.assertRaisesRegex(ValueError, 'prepared runtime record'):
+                    self.call()
+                self.assertEqual(len(self.application.f.calls), before,
+                                 'A mixed valid plan must refuse before current application reads')
+                self.assertEqual(self.network.requests, [], 'A mixed valid plan cannot read another engine task')
+        finally:
+            (self.root / 'engine' / 'plan.json').write_bytes(original)
+
+    def test_prepared_record_must_bind_its_complete_original_preparation(self):
+        path = self.root / 'prepared.json'
+        original = path.read_bytes()
+        saved = json.loads(original)
+        before = len(self.application.f.calls)
+        try:
+            for field, value in [('enginePlanSha256', '0'*64), ('planSha256', '0'*64),
+                    ('taskUuid', str(uuid.uuid4())), ('sourceManifestSha256', '0'*64),
+                    ('state', 'unassessed')]:
+                path.write_bytes(json_bytes({**saved, field: value}))
+                with self.assertRaisesRegex(ValueError, 'prepared runtime record'):
+                    self.call()
+                self.assertEqual(len(self.application.f.calls), before,
+                                 'Invalid preparation identity must refuse before current access')
+        finally:
+            path.write_bytes(original)
 
     def test_revoked_initial_access_refuses_before_engine_read(self):
         self.application.f.receipt['authorizedNow'] = False

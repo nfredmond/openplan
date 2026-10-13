@@ -81,7 +81,7 @@ native fault cohorts bind their recorded pre-correction source, rather than
 claiming acceptance of this correction. The first failed workflow and all
 rejected attempts remain in the private proof directory.
 
-## Current complete local checkpoint
+## Complete local checkpoint before the prepared-plan review
 
 The corrected [actual workflow](evidence/workflow-current-results.json) passes
 all 37 stages. All 36 worker scripts run: 704 unittest cases across 29 suites
@@ -101,3 +101,42 @@ The branch joins main `e29f99d4095616a9a1e494e0aa015f237847a0a2` without changin
 these tested source bytes. Fresh branch GitHub checks, main integration and
 production acceptance of this candidate remain pending. This is an unreleased
 read/record bridge and concurrency correction, not full worker or V1 acceptance.
+
+## Prepared-plan review correction
+
+PR #292 review identifies an engine plan accepted under the same application
+binding without the preparation digest. Two actual cases fail on the earlier
+source. A valid changed name reaches a task GET before metadata validation
+rejects it; changing the prepared engine digest alone obtains an observation.
+Neither outcome establishes the original prepared task.
+
+The observer now checks the saved preparation's original request, admission,
+job reference and context. It checks canonical preparation and engine digests,
+the prepared state and format, task UUID, source manifest, engine and options
+before any current application query, engine attestation or task GET. These are
+local custody checks, not an adversarial same-UID fence or new authority grant.
+The independent application-binding case recomputes the corrupted preparation
+digest so a digest mismatch cannot hide a missing application-binding check.
+
+The first source controller fails because that earlier binding fault reaches
+the new digest guard instead of its intended boundary. That attempt remains
+failed. The corrected first cohort passes 17 cases, four positive controls,
+21 targeted faults and 126 failure-oracle controls. Final two-interpreter,
+fresh native, complete workflow and new-head GitHub checks remain pending.
+The preceding native and workflow reports bind their preceding source.
+The green original head is not accepted for merging with this review open.
+
+Both final source cohorts pass 17 cases, four positive controls, 21 faults and
+126 oracle controls. Both fresh native producers pass their 17-case private RPC
+composition. Both current engines are inspected stopped without an OOM kill.
+The serial service stops, peak 66,289,664 bytes under 256 MiB with no
+swap/max/OOM events. The actual 37-stage workflow is rerunning under 1 GiB.
+Fresh-head GitHub acceptance remains separate.
+
+The corrected [complete workflow](evidence/prepared-workflow-results.json) passes
+all 37 stages: 706 unittest cases across 29 suites, seven custom check scripts
+and all 36 worker scripts. All 66 source/workflow bindings and both current
+native producer bindings match after restoration. Twenty nested-app source/docs
+cases, product direction and pointer controls pass. The [service](evidence/prepared-workflow-resources.json)
+stops successfully, peak 935,092,224 bytes under 1 GiB with zero swap/max/OOM.
+Fresh GitHub checks on the corrected head and its main/public turn remain pending.

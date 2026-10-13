@@ -12,10 +12,11 @@ from application_dispatch_reader import Reader
 from draft_custody import original_plan
 from engine_effects import same
 from original_task_http import Transport
-from retained_source import check_time, read_json
+from retained_source import check_time, json_bytes, read_json
 from retained_task_observation import Observations, finite_number
 from task_observation_cli import SUMMARY_FIELDS
 from task_observation import observe
+from runtime_preparation import FORMAT as PREPARATION_FORMAT
 
 FORMAT = 'openplan.odm-runtime-observation.v1'
 
@@ -43,6 +44,23 @@ class Observer:
             'originalContext': saved['context']}
         if not same(plan['binding'], expected):
             raise ValueError('Runtime observation original application binding differs')
+        prepared = read_json(root, 'prepared.json')
+        preparation = read_json(root, 'plan.json')
+        original_scope = {'request': entry.request, 'admission': entry.admission,
+                          'jobReference': entry.job_reference, 'context': saved['context']}
+        if (not isinstance(prepared, dict) or not isinstance(preparation, dict)
+                or prepared.get('format') != PREPARATION_FORMAT
+                or prepared.get('state') != 'prepared_locally'
+                or preparation.get('format') != PREPARATION_FORMAT
+                or not same({key: preparation.get(key) for key in original_scope}, original_scope)
+                or prepared.get('planSha256') != hashlib.sha256(json_bytes(preparation)).hexdigest()
+                or prepared.get('enginePlanSha256') != hashlib.sha256(json_bytes(plan)).hexdigest()
+                or prepared.get('sourceManifestSha256') != plan['sourceManifestSha256']
+                or prepared.get('taskUuid') != plan['taskUuid']
+                or preparation.get('taskUuid') != plan['taskUuid']
+                or not same(preparation.get('engine'), plan['engine'])
+                or not same(preparation.get('options'), plan['options'])):
+            raise ValueError('Runtime observation prepared runtime record differs')
         dispatch._check(request_id, deadline)
         return root, plan
 

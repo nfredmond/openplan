@@ -1,0 +1,169 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "binding-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_changed_plan_binding_refuses_before_current_access",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "current-access-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_revoked_initial_access_refuses_before_engine_read",
+    "diagnostic": "PermissionError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-access-read-removed",
+    "outcome": "intended_failure",
+    "case": "test_revoked_initial_access_refuses_before_engine_read",
+    "diagnostic": "Revoked initial access must precede engine checks",
+    "kind": "failures"
+  },
+  {
+    "control": "post-read-access-removed",
+    "outcome": "intended_failure",
+    "case": "test_revocation_after_get_refuses_before_record",
+    "diagnostic": "Post-read revocation cannot publish metadata",
+    "kind": "failures"
+  },
+  {
+    "control": "final-access-read-removed",
+    "outcome": "intended_failure",
+    "case": "test_revocation_after_record_refuses_without_deleting_it",
+    "diagnostic": "PermissionError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "task-preflight-removed",
+    "outcome": "intended_failure",
+    "case": "test_wrong_metadata_refuses_before_record_directory",
+    "diagnostic": "Wrong task reply cannot create a metadata directory",
+    "kind": "failures"
+  },
+  {
+    "control": "record-hash-summary-altered",
+    "outcome": "intended_failure",
+    "case": "test_original_read_checks_access_and_retains_exact_reply",
+    "diagnostic": "Runtime summary must bind actual original reply bytes",
+    "kind": "failures"
+  },
+  {
+    "control": "initial-read-census-lost",
+    "outcome": "intended_failure",
+    "case": "test_original_read_checks_access_and_retains_exact_reply",
+    "diagnostic": "Runtime must check current access around read and publication",
+    "kind": "failures"
+  },
+  {
+    "control": "processing-permission-granted",
+    "outcome": "intended_failure",
+    "case": "test_original_read_checks_access_and_retains_exact_reply",
+    "diagnostic": "True is not False",
+    "kind": "failures"
+  },
+  {
+    "control": "callback-permission-granted",
+    "outcome": "intended_failure",
+    "case": "test_job_attachment_does_not_promote_state_or_callback",
+    "diagnostic": "True is not False",
+    "kind": "failures"
+  },
+  {
+    "control": "state-promoted-from-observation",
+    "outcome": "intended_failure",
+    "case": "test_job_attachment_does_not_promote_state_or_callback",
+    "diagnostic": "Task observation cannot promote the original job state",
+    "kind": "failures"
+  },
+  {
+    "control": "invalid-timeout-accepted",
+    "outcome": "intended_failure",
+    "case": "test_timeout_rejection_precedes_private_read",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "invalid-adapters-accepted",
+    "outcome": "intended_failure",
+    "case": "test_adapter_types_are_required",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "runtime-ownership-not-forwarded",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_in_engine_check_stops_network",
+    "diagnostic": "Runtime preparation requires its lifetime owner",
+    "kind": "errors"
+  },
+  {
+    "control": "engine-check-bypassed",
+    "outcome": "intended_failure",
+    "case": "test_engine_refusal_stops_before_network",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "metadata-alias-accepted",
+    "outcome": "intended_failure",
+    "case": "test_existing_metadata_alias_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "local-copy-digest-summary-altered",
+    "outcome": "intended_failure",
+    "case": "test_relocated_private_reply_reopens_without_new_fetch",
+    "diagnostic": "No such file",
+    "kind": "errors"
+  },
+  {
+    "control": "unowned-runtime-adopted",
+    "outcome": "intended_failure",
+    "case": "test_unowned_runtime_refuses_before_reads",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "job-original-check-removed",
+    "outcome": "intended_failure",
+    "case": "test_changed_job_scope_refuses_before_private_reads",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "prepared-engine-hash-ignored",
+    "outcome": "intended_failure",
+    "case": "test_changed_valid_engine_plan_refuses_before_current_access",
+    "diagnostic": "Task metadata original UUID or name differs",
+    "kind": "failures"
+  },
+  {
+    "control": "prepared-record-checks-ignored",
+    "outcome": "intended_failure",
+    "case": "test_prepared_record_must_bind_its_complete_original_preparation",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 17
+  }
+]

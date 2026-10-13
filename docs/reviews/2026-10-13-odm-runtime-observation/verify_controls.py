@@ -51,6 +51,8 @@ def run(repo, out):
     fault('local-copy-digest-summary-altered', "'task': {field: copy.deepcopy(result[field]) for field in SUMMARY_FIELDS}", "'task': {**{field: copy.deepcopy(result[field]) for field in SUMMARY_FIELDS},'bodySha256':'0'*64}", 'test_relocated_private_reply_reopens_without_new_fetch', 'No such file', 'errors')
     fault('unowned-runtime-adopted', '        entry = dispatch._check(request_id, deadline)\n', '        dispatch.runtime._owned = True\n        entry = dispatch._check(request_id, deadline)\n', 'test_unowned_runtime_refuses_before_reads', 'ValueError not raised')
     fault('job-original-check-removed', "if not same(job['request'], entry.request):", 'if False:', 'test_changed_job_scope_refuses_before_private_reads', 'ValueError not raised')
+    fault('prepared-engine-hash-ignored',"or prepared.get('enginePlanSha256') != hashlib.sha256(json_bytes(plan)).hexdigest()",'or False','test_changed_valid_engine_plan_refuses_before_current_access','Task metadata original UUID or name differs')
+    fault('prepared-record-checks-ignored',"        prepared = read_json(root, 'prepared.json')", "        return root, plan\n        prepared = read_json(root, 'prepared.json')",'test_prepared_record_must_bind_its_complete_original_preparation','ValueError not raised')
     def execute(label, test=None):
         names = ['test_runtime_observation' + ('.Checks.' + test if test else '')]
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', '-v', *names], cwd=module.parent,
@@ -61,9 +63,9 @@ def run(repo, out):
     def positive(label, payload):
         module.write_bytes(payload)
         code, output = execute(label)
-        if code or 'Ran 15 tests' not in output or not output.rstrip().endswith('OK'):
+        if code or 'Ran 17 tests' not in output or not output.rstrip().endswith('OK'):
             raise AssertionError(label + ' complete task-read cohort failed')
-        rows.append({'control': label, 'outcome': 'survived', 'cases': 15})
+        rows.append({'control': label, 'outcome': 'survived', 'cases': 17})
     try:
         positive('baseline', original)
         positive('harmless-comment', original + b'\n# Harmless original-task read control.\n')
@@ -95,7 +97,7 @@ def run(repo, out):
         (out / 'controls.json').write_text(json.dumps(rows, indent=2) + '\n')
         (out / 'oracle-controls.json').write_text(json.dumps(oracles, indent=2) + '\n')
         (out / 'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)): hashlib.sha256(p.read_bytes()).hexdigest() for p in [module, tests, Path(__file__)]}, indent=2) + '\n')
-        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 15, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
+        print(json.dumps({'positiveCohorts': 4, 'casesPerPositive': 17, 'targetedFaults': len(cases), 'oracleControls': len(oracles), 'sourceRestored': True}))
     finally:
         module.write_bytes(original)
 
