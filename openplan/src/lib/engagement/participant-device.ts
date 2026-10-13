@@ -3,10 +3,13 @@
  * meeting room's Wi-Fi, a library, a campus) are not treated as one person.
  *
  * It identifies nobody: a random value kept in the browser's own storage, sent
- * with a comment or a vote, and stored only as a hash. The per-connection
- * limits still bound what one network can send, so a script minting new tokens
- * gains a room's allowance, not an unlimited one. With storage unavailable no
- * token is sent and the connection is treated as one device, as before.
+ * with a comment or a vote, and stored only as a hash salted with the campaign,
+ * so one browser cannot be followed from one consultation to another. The
+ * per-connection limits still bound what one network can send, so a script
+ * minting new tokens gains a room's allowance, not an unlimited one; support
+ * for any one comment is capped per connection as well (`votes.ts`). With
+ * storage unavailable no token is sent and the connection is treated as one
+ * device, as before.
  */
 
 export const PARTICIPANT_DEVICE_HEADER = "x-openplan-device";

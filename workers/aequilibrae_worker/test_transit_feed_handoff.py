@@ -1258,6 +1258,87 @@ def test_a_selected_feeds_failure_keeps_its_specific_reason():
     assert "te.no_feed_reason" in src
 
 
+# --------------------------------------------------------------------------- #
+# Transit KPI values (KI-2026-10-12-010): a failed feed publishes no number     #
+# --------------------------------------------------------------------------- #
+
+_TRANSIT_KPIS = ("transit_mode_share_pct", "transit_person_trips", "transit_available_pairs")
+
+
+def _mode_split(status, *, transit_trips=0, pairs=0, transit_pct=0.0, reason=None, origin=None):
+    los = {}
+    if reason:
+        los["no_feed_reason"] = reason
+    if origin:
+        los["feed_origin"] = origin
+    return {
+        "auto_trips": 900, "transit_trips": transit_trips, "active_trips": 100,
+        "transit_available_pairs": pairs, "transit_total_pairs": 20,
+        "shares_pct": {"auto": 90.0, "transit": transit_pct, "active": 10.0},
+        "transit_status": status, "transit_los": los,
+    }
+
+
+def _kpi_values(mode_split):
+    return {name: value for _cat, name, _label, value, _unit in main.mode_split_kpis(mode_split)}
+
+
+def test_a_failed_feed_publishes_no_numeric_transit_kpi_and_says_why():
+    # Every way a feed can fail reaches the KPI stage as `feed_unavailable`. The
+    # logit's 0 there is a placeholder, so no transit KPI may carry it.
+    for reason, origin in (
+        ("feed_load_failed", "discovered_catalog"),
+        ("selected_feed_checksum_mismatch", "workspace_feed_version"),
+        ("selected_feed_has_no_stops_in_study_area", "workspace_feed_version"),
+        ("transit_skim_timed_out", "operator_url"),
+        ("feed_catalog_unavailable", "bundled_after_catalog_unavailable"),
+    ):
+        split = _mode_split("feed_unavailable", reason=reason, origin=origin)
+        values = _kpi_values(split)
+        for name in _TRANSIT_KPIS:
+            assert name in values, (reason, name, "the row stays so the planner sees transit was considered")
+            assert values[name] is None, (reason, name, values[name])
+        # The auto and active rows are untouched model output.
+        assert values["auto_mode_share_pct"] == 90.0 and values["active_person_trips"] == 100, values
+        status = main.transit_kpi_unavailable_breakdown(split)
+        assert status == {"availability": "unavailable", "transit_status": "feed_unavailable",
+                          "no_feed_reason": reason}, status
+        prov = main.build_mode_provenance(split)
+        assert "transit share is 0" not in prov, (reason, prov)
+        assert "no transit share is reported" in prov, (reason, prov)
+    # An unknown or missing status is not a computed result either.
+    for status in ("some_future_status", None):
+        values = _kpi_values(_mode_split(status))
+        assert all(values[name] is None for name in _TRANSIT_KPIS), (status, values)
+
+
+def test_a_successfully_computed_zero_still_publishes_as_zero():
+    modeled = _kpi_values(_mode_split("modeled", transit_trips=0, pairs=0, transit_pct=0.0))
+    for name in _TRANSIT_KPIS:
+        assert modeled[name] == 0 and modeled[name] is not None, (name, modeled[name])
+    # A catalog that answered and listed nothing covering the area is a checked
+    # outcome, so its zero is a result too.
+    no_local = _kpi_values(_mode_split("no_local_feed", reason="discovery_found_no_covering_feed"))
+    for name in _TRANSIT_KPIS:
+        assert no_local[name] == 0 and no_local[name] is not None, (name, no_local[name])
+    # And a real nonzero passes through unchanged.
+    served = _kpi_values(_mode_split("modeled", transit_trips=42, pairs=7, transit_pct=4.2))
+    assert (served["transit_person_trips"], served["transit_available_pairs"],
+            served["transit_mode_share_pct"]) == (42, 7, 4.2), served
+
+
+def test_the_artifact_stage_publishes_these_rows_and_their_status():
+    # The rows above are tested through `mode_split_kpis`; that proves nothing
+    # unless the stage that writes KPIs uses it and records the status beside a null.
+    src = _main_src()
+    assert "    kpis.extend(mode_split_kpis(mode_split))\n" in src, "the artifact stage must emit the tested rows"
+    assert '"Transit Mode Share", sp["transit"]' not in src, "a second, unguarded transit row is back"
+    assert ("            if name in TRANSIT_KPI_NAMES and value is None:\n"
+            "                kpi_payload[\"breakdown_json\"].update(transit_kpi_unavailable_breakdown(mode_split))\n") in src, (
+        "a withheld transit KPI must record its status and reason beside the null")
+    assert set(_TRANSIT_KPIS) == set(main.TRANSIT_KPI_NAMES), main.TRANSIT_KPI_NAMES
+
+
 if __name__ == "__main__":
     tests = [obj for name, obj in sorted(globals().items()) if name.startswith("test_")]
     try:

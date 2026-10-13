@@ -402,6 +402,7 @@ describe("POST /api/engage/[shareToken]/submit", () => {
   describe("a meeting room on one Wi-Fi", () => {
     const DEVICE_A = "11111111-2222-4333-8444-555555555555";
     const DEVICE_B = "66666666-7777-4888-9999-aaaaaaaaaaaa";
+    const CAMPAIGN = "11111111-1111-4111-8111-111111111111";
     const text = { title: "Main Street", body: "Please fix the crosswalk." };
 
     it("accepts the same sentence from a neighbour on another device", async () => {
@@ -418,7 +419,8 @@ describe("POST /api/engage/[shareToken]/submit", () => {
               body_fingerprint: buildPublicSubmissionBodyFingerprint(text),
               source_fingerprint: buildPublicSubmissionClientFingerprint(mine),
               device_fingerprint: buildPublicParticipantDeviceFingerprint(
-                jsonRequest("test-share-token-12345", text, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A })
+                jsonRequest("test-share-token-12345", text, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A }),
+                CAMPAIGN
               ),
             },
           },
@@ -442,7 +444,7 @@ describe("POST /api/engage/[shareToken]/submit", () => {
             metadata_json: {
               body_fingerprint: buildPublicSubmissionBodyFingerprint(text),
               source_fingerprint: buildPublicSubmissionClientFingerprint(mine),
-              device_fingerprint: buildPublicParticipantDeviceFingerprint(mine),
+              device_fingerprint: buildPublicParticipantDeviceFingerprint(mine, CAMPAIGN),
             },
           },
         ],
@@ -454,7 +456,7 @@ describe("POST /api/engage/[shareToken]/submit", () => {
       // And the duplicate query asked about this device, not the whole room.
       expect(itemRecentEqFingerprintMock).toHaveBeenCalledWith(
         "metadata_json->>device_fingerprint",
-        buildPublicParticipantDeviceFingerprint(mine)
+        buildPublicParticipantDeviceFingerprint(mine, CAMPAIGN)
       );
     });
 
@@ -466,10 +468,15 @@ describe("POST /api/engage/[shareToken]/submit", () => {
       expect(response.status).toBe(201);
       const inserted = JSON.stringify(itemInsertMock.mock.calls[0]);
       expect(inserted).not.toContain(DEVICE_A);
-      expect(inserted).toContain("device_fingerprint");
+      // The hash is salted with this campaign, so it cannot be matched in another.
+      const withDevice = jsonRequest("test-share-token-12345", { body: "x" }, { [PARTICIPANT_DEVICE_HEADER]: DEVICE_A });
+      const salted = buildPublicParticipantDeviceFingerprint(withDevice, CAMPAIGN);
+      expect(inserted).toContain(`"device_fingerprint":"${salted}"`);
+      expect(buildPublicParticipantDeviceFingerprint(withDevice, "33333333-3333-4333-8333-333333333333")).not.toBe(salted);
       expect(
         buildPublicParticipantDeviceFingerprint(
-          jsonRequest("test-share-token-12345", { body: "x" }, { [PARTICIPANT_DEVICE_HEADER]: "not-a-token" })
+          jsonRequest("test-share-token-12345", { body: "x" }, { [PARTICIPANT_DEVICE_HEADER]: "not-a-token" }),
+          CAMPAIGN
         )
       ).toBeNull();
     });

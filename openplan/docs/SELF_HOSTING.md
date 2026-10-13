@@ -274,6 +274,7 @@ The schedules in [vercel.json](../vercel.json) are:
 | `/api/cron/reap-model-runs` | Every 5 minutes |
 | `/api/cron/reap-gtfs-ingests` | Every 15 minutes |
 | `/api/cron/sweep-deadlines` | Daily at 13:00 UTC |
+| `/api/cron/sweep-engagement-photos` | Daily at 10:30 UTC |
 
 On a self-hosted installation, arrange a scheduler that sends
 `Authorization: Bearer <CRON_SECRET>` using a protected environment and records

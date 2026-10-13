@@ -696,25 +696,11 @@ def sb_record_retained_artifact(payload: dict, *, workspace_id: str, journal_dir
             return writer.record_artifact(payload, workspace_id=workspace_id, logical_name=logical_name)
         except Exception as error:
             raise WorkerStateWriteUnconfirmed("Managed artifact registration requires reconciliation; no legacy fallback") from error
-    from pathlib import Path
-    import model_legacy_artifact_command
-    import model_command_client
+    import model_legacy_output_delivery
     try:
-        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
-        if not deployment.strip():
-            raise ValueError("Artifact recovery deployment identity is missing")
-        directory = Path(journal_dir)
-        if logical_name is None:
-            command = model_legacy_artifact_command.prepare(
-                directory, workspace_id, payload, base_url=SUPABASE_URL, deployment_id=deployment,
-            )
-        else:
-            command = model_legacy_artifact_command.prepare_named(
-                directory, workspace_id, payload, name=logical_name,
-                base_url=SUPABASE_URL, deployment_id=deployment,
-            )
-        return model_command_client.deliver(
-            directory, command, base_url=SUPABASE_URL, deployment_id=deployment,
+        return model_legacy_output_delivery.deliver_artifact(
+            payload, workspace_id=workspace_id, journal_dir=journal_dir, logical_name=logical_name,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
             service_key=SUPABASE_KEY, post=requests.post,
         )
     except Exception:
@@ -1600,22 +1586,13 @@ def sb_record_retained_kpi(payload: dict, *, workspace_id: str, stage_id: str, j
             return writer.record_kpi(payload, workspace_id=workspace_id, stage_id=stage_id)
         except Exception as error:
             raise WorkerStateWriteUnconfirmed("Managed kpi registration requires reconciliation; no legacy fallback") from error
-    from pathlib import Path
-    import model_legacy_kpi_command
-    import model_command_client
+    import model_legacy_output_delivery
     try:
-        if not isinstance(payload, dict) or set(payload) - (model_legacy_kpi_command.FIELDS - {"id", "stage_id"}):
-            raise ValueError("Unexpected KPI input fields")
-        normalized = {"kpi_category": "accessibility", "unit": "", "geometry_ref": None, "breakdown_json": {}, **payload, "stage_id": stage_id}
-        deployment = os.environ.get("OPENPLAN_DEPLOYMENT_ID", "")
-        directory = Path(journal_dir)
-        command = model_legacy_kpi_command.prepare(
-            directory, workspace_id, normalized,
-            name=normalized["kpi_category"] + "." + normalized["kpi_name"],
-            base_url=SUPABASE_URL, deployment_id=deployment,
+        return model_legacy_output_delivery.deliver_kpi(
+            payload, workspace_id=workspace_id, stage_id=stage_id, journal_dir=journal_dir,
+            base_url=SUPABASE_URL, deployment_id=os.environ.get("OPENPLAN_DEPLOYMENT_ID", ""),
+            service_key=SUPABASE_KEY, post=requests.post,
         )
-        return model_command_client.deliver(directory, command, base_url=SUPABASE_URL,
-            deployment_id=deployment, service_key=SUPABASE_KEY, post=requests.post)
     except Exception:
         raise WorkerStateWriteUnconfirmed("KPI delivery unconfirmed; recover the saved request before continuing") from None
 
@@ -2566,6 +2543,62 @@ def prepare_managed_transit_for_engine(out_dir: str, *, lons, lats, deadline) ->
     return {"status": "retained", "record": record}
 
 
+# Transit statuses under which a transit KPI is a computed result. "modeled"
+# skimmed a covering feed; "no_local_feed" is a catalog that answered and listed
+# nothing covering the study area, so a zero there is a checked outcome. Every
+# other status (a feed that failed to load, a chosen feed that could not be used,
+# a loaded feed with no stops here, a timeout, an unknown future status) means
+# transit was never computed, and its zero is a placeholder, not a result.
+TRANSIT_COMPUTED_STATUSES = frozenset({"modeled", "no_local_feed"})
+TRANSIT_KPI_NAMES = frozenset({"transit_mode_share_pct", "transit_person_trips", "transit_available_pairs"})
+
+
+def transit_kpis_computed(mode_split: dict | None) -> bool:
+    """True only when this run's transit KPIs are numbers the model computed."""
+    return (mode_split or {}).get("transit_status") in TRANSIT_COMPUTED_STATUSES
+
+
+def mode_split_kpis(mode_split: dict | None) -> list[tuple]:
+    """The mode-split KPI rows, as (category, name, label, value, unit).
+
+    Transit rows always appear, so a planner sees that transit was considered,
+    but when transit was not computed their value is None (stored as SQL null,
+    shown as "N/A") and never the 0 the logit falls back to. The auto and active
+    rows are unchanged; their provenance says they assume no transit trips.
+    """
+    if not (mode_split and mode_split.get("shares_pct")):
+        return []
+    sp = mode_split["shares_pct"]
+    computed = transit_kpis_computed(mode_split)
+
+    def transit(value):
+        return value if computed else None
+
+    return [
+        ("general", "auto_mode_share_pct", "Auto Mode Share", sp["auto"], "percent"),
+        ("general", "transit_mode_share_pct", "Transit Mode Share", transit(sp["transit"]), "percent"),
+        ("general", "active_mode_share_pct", "Active (Walk+Bike) Mode Share", sp["active"], "percent"),
+        ("general", "auto_person_trips", "Auto Person-Trips (assigned)", mode_split["auto_trips"], "trips/day"),
+        ("general", "transit_person_trips", "Transit Person-Trips", transit(mode_split.get("transit_trips", 0)), "trips/day"),
+        ("general", "active_person_trips", "Active (Walk+Bike) Person-Trips", mode_split["active_trips"], "trips/day"),
+        ("general", "transit_available_pairs", "Transit-Available OD Pairs", transit(mode_split.get("transit_available_pairs", 0)), "count"),
+    ]
+
+
+def transit_kpi_unavailable_breakdown(mode_split: dict | None) -> dict:
+    """What a withheld transit KPI row records in breakdown_json beside its null.
+
+    The status and reason are copied from the run, never composed, so the row
+    says which feed outcome left it empty.
+    """
+    los = (mode_split or {}).get("transit_los") or {}
+    return {
+        "availability": "unavailable",
+        "transit_status": (mode_split or {}).get("transit_status") or "not_recorded",
+        "no_feed_reason": los.get("no_feed_reason"),
+    }
+
+
 def build_mode_provenance(mode_split: dict | None) -> str:
     """The sentence a planner quotes when defending this run's transit share.
 
@@ -2635,15 +2668,31 @@ def build_mode_provenance(mode_split: dict | None) -> str:
             or str(no_feed_reason or "").startswith("selected_feed_")):
         detail = los.get("selection_reason") or los.get("error")
         return (
-            "Screening-grade auto-vs-active(walk+bike) logit; transit share is 0 because the "
-            "transit feed chosen for this run could not be used "
-            f"(transit_status={transit_status}"
+            "Screening-grade auto-vs-active(walk+bike) logit; transit was not modeled and no "
+            "transit share is reported because the transit feed chosen for this run could not "
+            f"be used (transit_status={transit_status}"
             + (f"; {no_feed_reason}" if no_feed_reason else "")
             + ")"
-            + (f" — {detail}" if detail else "")
+            + (f": {detail}" if detail else "")
             + ". No other feed was substituted, and whether any published feed covers this "
             "study area was NOT determined. This is NOT 'no transit demand' and NOT 'no "
-            "transit service here'. Not a validated mode choice model or calibrated forecast."
+            "transit service here'. The auto and active shares assume no transit trips. "
+            "Not a validated mode choice model or calibrated forecast."
+        )
+
+    # Any status but no_local_feed means a feed was tried and could not be used,
+    # or the outcome was not recorded. The transit KPIs carry null, so this
+    # sentence may not call the share 0, and it may not claim the area has no
+    # covering feed.
+    if transit_status != "no_local_feed":
+        return (
+            "Screening-grade auto-vs-active(walk+bike) logit; transit was not modeled and no "
+            "transit share is reported because the transit feed for this run could not be used "
+            f"(transit_status={transit_status}"
+            + (f"; {no_feed_reason}" if no_feed_reason else "")
+            + "). Whether a published feed covers this study area was NOT determined. This is "
+            "NOT 'no transit demand'. The auto and active shares assume no transit trips. Not a "
+            "validated mode choice model or calibrated forecast."
         )
 
     return (
@@ -6230,10 +6279,15 @@ def stage_artifacts(
             "Auto-only assignment; 3-way mode choice splits off walk/bike + GTFS-derived "
             "transit (transit 0 where no service, small where rural service exists)"
         )
-    else:
+    elif transit_kpis_computed(mode_split):
         mode_caveat = (
             "Auto-only assignment; mode choice splits off walk/bike; transit 0 "
             f"(GTFS feed {(mode_split or {}).get('transit_status', 'unavailable')})"
+        )
+    else:
+        mode_caveat = (
+            "Auto-only assignment; mode choice splits off walk/bike; transit not modeled, "
+            f"no transit share reported (GTFS feed {(mode_split or {}).get('transit_status', 'unavailable')})"
         )
 
     # ── Observed-count validation (screening-grade diagnostic, NOT calibration) ──
@@ -6769,18 +6823,10 @@ def stage_artifacts(
     # Mode-split KPIs (percentage points, 0-100), in the directly-readable
     # `general` category. Distinct, unit-explicit KPI names (the sketch lane
     # emits mode_share_auto / mode_share_transit as 0-1 "share"; these are 0-100
-    # "percent" — different names + units so a cross-engine comparison never
-    # mixes the two scales). Transit share is REAL (GTFS-derived), 0 where no
-    # service; transit_status distinguishes that from a feed-load failure.
-    if mode_split and mode_split.get("shares_pct"):
-        sp = mode_split["shares_pct"]
-        kpis.append(("general", "auto_mode_share_pct", "Auto Mode Share", sp["auto"], "percent"))
-        kpis.append(("general", "transit_mode_share_pct", "Transit Mode Share", sp["transit"], "percent"))
-        kpis.append(("general", "active_mode_share_pct", "Active (Walk+Bike) Mode Share", sp["active"], "percent"))
-        kpis.append(("general", "auto_person_trips", "Auto Person-Trips (assigned)", mode_split["auto_trips"], "trips/day"))
-        kpis.append(("general", "transit_person_trips", "Transit Person-Trips", mode_split.get("transit_trips", 0), "trips/day"))
-        kpis.append(("general", "active_person_trips", "Active (Walk+Bike) Person-Trips", mode_split["active_trips"], "trips/day"))
-        kpis.append(("general", "transit_available_pairs", "Transit-Available OD Pairs", mode_split.get("transit_available_pairs", 0), "count"))
+    # "percent", so a cross-engine comparison never mixes the two scales).
+    # Transit values are published only when transit was computed; a failed or
+    # unusable feed publishes null with its status (see mode_split_kpis).
+    kpis.extend(mode_split_kpis(mode_split))
 
     # Observed-count validation KPIs (screening-grade diagnostic). Emitted only
     # when >=1 station matched — a 0-match run is not a validation. The gate
@@ -6910,6 +6956,8 @@ def stage_artifacts(
             "transit_available_pairs",
         ):
             kpi_payload["breakdown_json"] = {"provenance": mode_provenance}
+            if name in TRANSIT_KPI_NAMES and value is None:
+                kpi_payload["breakdown_json"].update(transit_kpi_unavailable_breakdown(mode_split))
         elif name in (
             "validation_stations_matched", "validation_median_ape", "validation_percent_rmse",
             "validation_geh_mean", "validation_peak_hour_geh_mean", "validation_spearman_rho",

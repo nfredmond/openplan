@@ -36,6 +36,7 @@ import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCountyRunModelingEvidence } from "@/lib/models/evidence-backbone";
 import type { ReportModelingEvidence } from "@/lib/reports/modeling-evidence";
 import { summarizeEngagementItems } from "@/lib/engagement/summary";
+import { readEveryPage } from "@/lib/supabase/paged-read";
 import {
   buildPortfolioFundingSnapshot,
   buildProjectFundingProfileScan,
@@ -108,6 +109,25 @@ export const RTP_EXPORT_LINKED_PROJECT_COLUMNS =
 
 export const RTP_EXPORT_CAMPAIGN_COLUMNS =
   "id, title, status, engagement_type, summary, rtp_cycle_chapter_id";
+
+/** The comment columns the public-review counts are computed from. */
+export const RTP_EXPORT_ENGAGEMENT_ITEM_COLUMNS =
+  "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at";
+
+type RtpExportEngagementItemRow = {
+  id: string;
+  campaign_id: string;
+  category_id: string | null;
+  status: string | null;
+  source_type: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  moderation_notes: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+};
+
+type RtpExportEngagementReadError = { message: string; code?: string | null };
 
 /** The cycle row both routes read: the exporter's fields plus the fiscal basis. */
 export type RtpExportInputCycleRow = RtpExportCycle & {
@@ -701,43 +721,45 @@ export async function buildRtpCycleExportInput(input: {
   });
 
   const campaignIds = campaigns.map((campaign) => campaign.id);
-  const engagementItemsResult = campaignIds.length
-    ? await supabase
-        .from("engagement_items")
-        .select(
-          "id, campaign_id, category_id, status, source_type, latitude, longitude, moderation_notes, created_at, updated_at"
-        )
-        .in("campaign_id", campaignIds)
-    : { data: [], error: null };
+  // PAGED: these rows become the public-review comment counts. PostgREST caps a
+  // response at `max_rows` (1,000 here) with `error = null`, so a single read
+  // counted a cycle with more than 1,000 comments as 1,000 in the packet, with
+  // nothing looking wrong. The `id` tiebreak makes the order total across page
+  // requests. An unfinished read is refused below, never published as a count.
+  const engagementItemsRead = campaignIds.length
+    ? await readEveryPage<RtpExportEngagementItemRow, RtpExportEngagementReadError>(
+        (from, toInclusive) =>
+          supabase
+            .from("engagement_items")
+            .select(RTP_EXPORT_ENGAGEMENT_ITEM_COLUMNS)
+            .in("campaign_id", campaignIds)
+            .order("created_at", { ascending: true })
+            .order("id", { ascending: true })
+            .range(from, toInclusive) as PromiseLike<{
+            data: RtpExportEngagementItemRow[] | null;
+            error: RtpExportEngagementReadError | null;
+          }>
+      )
+    : { rows: [] as RtpExportEngagementItemRow[], complete: true, error: null };
 
-  // These rows become the public-review comment counts. A failed read carried
-  // through as `?? []` tells a board the cycle drew no comments — a sentence
-  // this product has already published twice on the strength of a query that
-  // never ran.
-  if (engagementItemsResult.error) {
+  // A failed read carried through as `?? []` tells a board the cycle drew no
+  // comments, a sentence this product has already published twice on the
+  // strength of a query that never ran. A read that stopped part way is the
+  // same falsehood with a smaller number.
+  if (!engagementItemsRead.complete) {
+    const readError = engagementItemsRead.error ?? {
+      message: "the engagement comment read could not be completed, so any count from it would understate public comment",
+      code: null,
+    };
     return refusal("rtp_report_engagement_load_failed", {
       status: 500,
       body: { error: "Failed to load RTP packet engagement records" },
       pending: false,
-      message: engagementItemsResult.error.message,
-    }, engagementItemsResult.error.code ?? null);
+      message: readError.message,
+    }, readError.code ?? null);
   }
 
-  const engagementCounts = summarizeEngagementItems(
-    [],
-    (engagementItemsResult.data ?? []) as unknown as Array<{
-      id: string;
-      campaign_id: string;
-      category_id: string | null;
-      status: string | null;
-      source_type: string | null;
-      latitude: number | null;
-      longitude: number | null;
-      moderation_notes: string | null;
-      created_at: string | null;
-      updated_at: string | null;
-    }>
-  );
+  const engagementCounts = summarizeEngagementItems([], engagementItemsRead.rows);
 
   const cycleLevelCampaignCount = campaigns.filter((campaign) => !campaign.rtp_cycle_chapter_id).length;
   const chapterLevelCampaignCount = campaigns.length - cycleLevelCampaignCount;
