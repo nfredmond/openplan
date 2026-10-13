@@ -229,3 +229,5 @@ The [GTFS deadline fixture correction](reviews/2026-10-13-gtfs-intake-deadline-f
 The [native private-authority composition](reviews/2026-10-13-odm-native-private-authority-composition/STATUS.md) joins actual RPC access, original engine attestation and real draft init/upload transport in an owned fixture. Processing stays held; installation, physical-host recovery and scientific acceptance remain separate.
 
 The [intake clock fixture correction](reviews/2026-10-13-odm-intake-clock-fixture/STATUS.md) compares nested fetch deadlines with the actual shared intake deadline. Controlled startup delay stays outside that budget; production limits remain unchanged.
+
+The [native interrupted-upload proof](reviews/2026-10-13-odm-native-uncertain-interruption/STATUS.md) exits an owned process after a checked real response but before journal saving. Relocated recovery holds the uncertain upload without another authorization or transport; this does not reconcile it or grant retry permission.
