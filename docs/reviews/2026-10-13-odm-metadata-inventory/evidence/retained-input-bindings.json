@@ -1,0 +1,8 @@
+{
+  "docs/reviews/2026-10-13-odm-metadata-inventory/fixture-binding.json": "a0cda57a8e7ca289560b65a001083d0caac28e84f22b1ca1fcc1e736e1d3d79c",
+  "docs/reviews/2026-10-13-odm-metadata-inventory/verify_integration.py": "cddbc662eaf1973ad8c4aed91c1d7b6ba9d0a9704c52ea8e3d5d529bd3b02b1a",
+  "openplan/scripts/ops/installation_worker_inventory.py": "19b9477de044e77f6b0d1e4f5da8363fb57685a03566bdeec310bb663ca14afb",
+  "openplan/scripts/ops/worker_root_set_snapshot.py": "2d963d1473da988e9c667a616615ce60582fbb83bc89db0c3da377c8fa9bb299",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "workers/odm_worker/task_observation_cli.py": "77d1b74930b32edeaa30ebfaaa4a746e46f026dbae27b9de645c703b8ac7fbfa"
+}

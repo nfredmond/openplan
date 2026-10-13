@@ -1,0 +1,16 @@
+{
+  "bodySha256": "da33c7d086bafd065dd8d9489933e756215dd59566881039fe318cea7ac569fe",
+  "bothRootsCaptured": true,
+  "defaultActivated": false,
+  "freshnessAccepted": false,
+  "installationCoverage": "unassessed",
+  "inventoryVerified": true,
+  "liveAuthorityAccepted": false,
+  "originalRootsUnchanged": true,
+  "processingQualityAccepted": false,
+  "relocatedExactSummary": true,
+  "reportedImageCount": 3,
+  "reportedState": "failed",
+  "rootSetVerified": true,
+  "wholeWorkerRecoveryAccepted": false
+}

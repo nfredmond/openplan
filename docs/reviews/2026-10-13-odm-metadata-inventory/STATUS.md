@@ -69,3 +69,52 @@ the original retained stopped fixture and proves known-root capture and reopen;
 it does not claim to create that historical reply through the command. Fresh
 command creation has its separate corrected parent evidence. New head CI remains
 required. No production helper or scope changes during the join.
+
+## Review correction: recover from retained inputs and bind the prior fixture
+
+Review identifies two gaps in the preceding controller. Its relocated command
+uses live digest/root variables rather than the captured command configuration.
+Its claimed source fixture also relies on an unbound stopped-capture flag.
+The earlier cohorts retain their known-root copy results, but do not establish
+this complete retained-input recovery path or an exact prior-fixture binding.
+
+The corrected command reads the retained configuration through the captured ODM
+assessment. It resolves that configuration's root IDs against the captured set
+and supplies its stored digest. A harmless change of both root IDs succeeds.
+A consistently captured wrong digest or swapped root mapping now refuses at the
+actual command, instead of passing through cached live arguments.
+
+The [frozen fixture binding](fixture-binding.json) links the selected private
+instance to the prior published native digest. It freezes the source receipt,
+source snapshot manifest and both root inventories. The existing snapshot
+verifier also checks its captured files. A different retained native instance
+does not match the published digest during setup; the corrected case selects the
+prior controller's restored-final point that does. A separate actual invocation
+against the other instance refuses with no success receipt. No bytes are changed
+to make a fixture match.
+
+Four positive cohorts, including the root-ID change, and 18 targeted faults pass
+on Python 3.14. Fifty-four typed diagnostic controls retain their intended
+acceptance/refusal. New behaviors challenge captured configuration, substituted
+source receipts/manifests/roots, prior evidence and original reply bindings.
+The unit peaks at 49,639,424 bytes under 256 MiB, with zero maximum/OOM events
+and zero swap, then stops. Python 3.11 passes the same cohorts and faults, peaking at 46,862,336 bytes
+under the same cap with zero maximum/OOM events and zero swap. Both units stop.
+
+These hashes identify the known retained bytes and reject different inputs.
+They do not establish a new engine observation or identity beyond the frozen
+experiment. Exact copies remain acceptable. Complete installation
+discovery, live access, freshness, useful processing and full recovery remain
+outside this check. Production helper bytes stay unchanged; new head CI remains
+required. The prior control and resource records remain historical.
+
+[Corrected results](evidence/retained-input-results.json),
+[18 controls](evidence/retained-input-controls.json),
+[54 diagnostic controls](evidence/retained-input-oracles.json),
+[six direct bindings](evidence/retained-input-bindings.json),
+[resources](evidence/retained-input-resources.json),
+[3.11 results](evidence/retained-input311-results.json),
+[3.11 resources](evidence/retained-input311-resources.json) and
+[other-instance refusal](evidence/other-instance-refusal.json) retain the corrected
+case. Intermediate bound-input cohorts remain in the private proof. The final
+cohort also refuses equal root IDs, non-string IDs and an external root path.
