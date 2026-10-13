@@ -233,3 +233,5 @@ The [intake clock fixture correction](reviews/2026-10-13-odm-intake-clock-fixtur
 The [aerial CI wrapper correction](reviews/2026-10-13-odm-ci-job-budget/STATUS.md) preserves every execution command while extending the outer job limit after a recorded cancellation. Worker and test deadlines stay unchanged; current-head GitHub completion remains required.
 
 The [native interrupted-upload proof](reviews/2026-10-13-odm-native-uncertain-interruption/STATUS.md) exits an owned process after a checked real response but before journal saving. Relocated recovery holds the uncertain upload without another authorization or transport; this does not reconcile it or grant retry permission.
+
+The [admission deadline fixture correction](reviews/2026-10-13-gtfs-admission-deadline-fixture/STATUS.md) keeps upload timing separate from durable source resolution, observes physical abort before reconciliation and refuses late replies without changing production budgets.
