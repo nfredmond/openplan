@@ -265,10 +265,18 @@ export default async function DashboardPage({
   const deadlineCounts = deadlinesByMonth(allUpcoming, boundary, DEADLINE_CHART_MONTHS);
 
   // ── Setup ──
-  const setupSteps = [aiKeyConfigured, homeGeographyIsSet, kpis.totalRuns > 0];
+  // The operations summary reads every project in the workspace, whatever its
+  // status; this page's own list keeps only open ones, so it cannot say "none".
+  const projectCountUnreadable = (operationsSummary.moduleObservations?.unreadable ?? []).some(
+    (failure) => failure.label === "projects"
+  );
+  const projectCount = projectCountUnreadable ? null : operationsSummary.counts.projects;
+  // The AI key is optional, so it is not one of the steps counted here.
+  const setupSteps = [projectCount !== null && projectCount > 0, homeGeographyIsSet, kpis.totalRuns > 0];
   const setupDone = setupSteps.filter(Boolean).length;
   const checklist = (
     <FirstRunChecklist
+      projectCount={projectCount}
       aiKeyConfigured={aiKeyConfigured}
       homeGeographyIsSet={homeGeographyIsSet}
       homeGeographyUnreadable={homeGeographyUnreadable}
