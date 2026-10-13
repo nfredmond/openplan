@@ -472,8 +472,17 @@ class NativeTests(unittest.TestCase):
             try:
                 fields = Path('/proc/' + str(pid) + '/stat').read_text().rpartition(') ')[2].split()
                 return fields[19], fields[0]
-            except FileNotFoundError:
+            except (FileNotFoundError, ProcessLookupError):
                 return None
+        with patch.object(Path, 'read_text', side_effect=ProcessLookupError('Controlled process exits during stat read')):
+            try:
+                retired = identity(123)
+            except ProcessLookupError:
+                raise AssertionError('Exited observer lookup must count as retired') from None
+            self.assertIsNone(retired, 'Exited observer lookup must count as retired')
+        with patch.object(Path, 'read_text', side_effect=PermissionError('Controlled proc permission refusal')):
+            with self.assertRaises(PermissionError, msg='Unavailable observer lookup must retain its permission refusal'):
+                identity(123)
         script.write_text('import sys,json,time\nfrom pathlib import Path\nsys.path.insert(0,' + repr(str(Path(native.__file__).parent)) + ')\nimport native_engine_attestation as n\nn.__file__=' + repr(str(self.observer)) + '\nreal=n.subprocess.Popen\ndef start(*a,**k):\n p=real(*a,**k)\n fields=Path("/proc/"+str(p.pid)+"/stat").read_text().rpartition(") ")[2].split()\n Path(' + repr(str(pidfile)) + ').write_text(json.dumps({"pid":p.pid,"start":fields[19]}))\n return p\nn.subprocess.Popen=start\nn.Attestor(' + repr(self.engine) + ',' + repr(str(self.path)) + ',' + str(os.geteuid()) + ')(' + repr(self.engine) + ',time.monotonic()+15,owned=lambda:True)\n')
         parent = subprocess.Popen([sys.executable, '-B', str(script)], stdout=subprocess.PIPE, stderr=subprocess.PIPE);saved = None
         try:

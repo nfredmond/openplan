@@ -1,0 +1,67 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "retired-zero-link-metadata-refused",
+    "test": "test_unlinked_inode_metadata_does_not_refuse_committed_original",
+    "kind": "broken_behavior",
+    "reason": "Retired companion must preserve its committed original: ValueError",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "missing-retirement-refused",
+    "test": "test_missing_companion_retirement_preserves_original",
+    "kind": "broken_behavior",
+    "reason": "Retired companion must preserve its committed original: FileNotFoundError",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "present-unsafe-companion-error-swallowed",
+    "test": "test_present_unsafe_companion_still_refuses_before_sqlite",
+    "kind": "broken_behavior",
+    "reason": "Present unsafe companion reached SQLite",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "dangling-alias-followed-for-retirement",
+    "test": "test_dangling_alias_is_not_a_missing_companion",
+    "kind": "broken_behavior",
+    "reason": "Dangling companion alias reached SQLite",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "missing-lookup-ignored-without-name-recheck",
+    "test": "test_reappeared_alias_after_missing_lookup_refuses_before_sqlite",
+    "kind": "broken_behavior",
+    "reason": "Reappeared companion alias reached SQLite",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "exited-proc-lookup-refused",
+    "test": "test_observer_ends_when_parent_exits",
+    "kind": "broken_behavior",
+    "reason": "Exited observer lookup must count as retired",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "unavailable-proc-lookup-hidden",
+    "test": "test_observer_ends_when_parent_exits",
+    "kind": "broken_behavior",
+    "reason": "Unavailable observer lookup must retain its permission refusal",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

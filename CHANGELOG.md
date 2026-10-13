@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Aerial journal correction:** tolerate a retired SQLite companion only after a
+fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
+for present files, including dangling or reappeared aliases. See the
+[dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
 **Native engine observer, candidate:** add an explicit Linux NodeODM observer
 for the configured original container, image, process-mounted configuration and
 private endpoint. It requires the same host PID namespace and permission to read

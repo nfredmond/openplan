@@ -119,10 +119,19 @@ def run(repo, out):
     add('foreign-root-owner', 'test_foreign_owner_refuses', lambda v: replace(v, 'info.st_uid != os.getuid()', 'False'), 'ValueError not raised')
     add('unsafe-sqlite-companions', 'test_private_sqlite_companions_before_database_access', lambda v: replace(v, '                private(companion, False)', '                pass # missing companion validation'), 'unsafe companion reached SQLite')
     add('transient-companion-disappearance-refuses', 'test_sqlite_companions_disappearing_before_lstat_are_allowed', lambda v: replace(v,
-        '                    # SQLite removes transient companions when another connection closes.\n                    pass',
-        '                    raise'), 'No such file or directory')
+        '                except (FileNotFoundError, ValueError):',
+        '                except (FileNotFoundError, ValueError):\n                    raise'), 'No such file or directory')
     add('unavailable-companion-reaches-sqlite', 'test_unavailable_companions_refuse_before_sqlite', lambda v: replace(v,
-        '                except FileNotFoundError:', '                except OSError:'), 'Unavailable companion reached SQLite')
+        '''                except (FileNotFoundError, ValueError):
+                    # SQLite can unlink a companion during lookup, leaving zero-link
+                    # inode metadata. Ignore retirement only when the name is gone.
+                    try:
+                        companion.lstat()
+                    except FileNotFoundError:
+                        pass
+                    else:
+                        raise''',
+        '                except (OSError, ValueError):\n                    pass'), 'Unavailable companion reached SQLite')
     add('unsupported-wal', 'test_unavailable_wal_mode_refuses', guard('ODM journal WAL mode unavailable'), 'ValueError not raised')
     add('normal-instead-of-full', 'test_full_sync_overrides_a_normal_connection_default', lambda v: replace(v, "connection.execute('PRAGMA synchronous=FULL')", "connection.execute('PRAGMA synchronous=NORMAL')"), 'journal must override NORMAL with FULL synchronization')
     add('foreign-schema-overwritten', 'test_foreign_schema_refuses_without_changing_it', guard('ODM admission journal schema differs'), 'ValueError not raised')

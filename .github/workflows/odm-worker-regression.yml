@@ -142,3 +142,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-12-odm-native-engine-attestation/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-native-engine-controls"
+      - name: Retired SQLite companion controls
+        run: |
+          python3 -B docs/reviews/2026-10-13-odm-retired-sqlite-companions/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-retired-companion-controls"

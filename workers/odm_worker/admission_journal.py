@@ -117,9 +117,15 @@ class Journal:
             if companion.exists() or companion.is_symlink():
                 try:
                     private(companion, False)
-                except FileNotFoundError:
-                    # SQLite removes transient companions when another connection closes.
-                    pass
+                except (FileNotFoundError, ValueError):
+                    # SQLite can unlink a companion during lookup, leaving zero-link
+                    # inode metadata. Ignore retirement only when the name is gone.
+                    try:
+                        companion.lstat()
+                    except FileNotFoundError:
+                        pass
+                    else:
+                        raise
         target = database.as_uri()+'?mode=rw' if self.require_existing else database
         connection = sqlite3.connect(target, uri=self.require_existing, timeout=self.timeout, isolation_level=None)
         try:

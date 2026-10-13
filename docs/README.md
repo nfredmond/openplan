@@ -220,3 +220,5 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 - [Engagement synthesis operating guide](ops/ENGAGEMENT_SYNTHESIS_REVIEW.md): retained source selection, reasoned corrections, earlier history and interrupted-save recovery.
 
 The [native engine observation candidate](reviews/2026-10-12-odm-native-engine-attestation/STATUS.md) binds one supported Linux NodeODM original to daemon and process-root observations. Its defaults and processing commit remain held.
+
+The [SQLite companion retirement correction](reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md) preserves the committed original after a transient file is unlinked, while refusing present unsafe files and aliases.
