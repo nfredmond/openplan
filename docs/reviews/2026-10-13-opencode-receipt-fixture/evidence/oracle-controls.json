@@ -1,0 +1,66 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-prefix",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "boolean-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-output",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "extra-failure",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "wrong-count",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "cancelled-test",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "stdout-decoy",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-selected",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "missing-reason-value",
+    "outcome": "intended_refusal"
+  }
+]
