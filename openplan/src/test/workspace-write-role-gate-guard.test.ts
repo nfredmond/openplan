@@ -165,6 +165,8 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   // published/accepting-submissions state, checked in the handler.
   "engage/[shareToken]/submit/route.ts": "public share-token submission; the submitter has no workspace role",
   "engage/[shareToken]/survey/submit/route.ts": "public share-token survey response; no session",
+  "engage/[shareToken]/photo-upload/route.ts":
+    "public share-token photo upload; no session. It reads the campaign's workspace_id only to file its upload-limit row in usage_events, which that column requires",
   "engage/[shareToken]/items/[itemId]/translate/route.ts":
     "public share-token translation queue; SQL checks current publication and exact source, and the anonymous caller has no workspace role",
 

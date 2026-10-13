@@ -3,6 +3,10 @@ import { createHash, randomUUID } from "node:crypto";
 import { z } from "zod";
 import { isWriteFailure, writeMatchedNoRows } from "@/lib/http/write-outcome";
 import { emailTransportName, sendEmail } from "./email";
+import {
+  PUBLIC_SUBMISSION_MAX_PER_WINDOW,
+  PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES,
+} from "@/lib/engagement/public-submit";
 import { responseEmailOutcomeSchema, type ResponseEmailOutcome } from "./response-email-outcome";
 
 // The ONLY module that touches the sensitive engagement_subscriptions and
@@ -173,16 +177,30 @@ export async function markNotificationRead(
 
 // ── Email outbox (sensitive) ──────────────────────────────────────────────────
 
-export type EnqueueEmailResult = { outboxId: string | null; status: "sent" | "skipped" | "failed"; transport: string };
+export type EnqueueEmailResult = {
+  outboxId: string | null;
+  status: "sent" | "skipped" | "failed";
+  transport: string;
+  /** True when `admit` refused the message after it was recorded; nothing was sent. */
+  limited?: boolean;
+};
+
+const LIMITED_EMAIL_NOTE = "Not sent: the daily limit for this kind of email was reached.";
 
 /**
  * Record a message in the outbox, then attempt delivery through the transport
  * seam. At $0 sendEmail() no-ops → status 'skipped' (honest, observable). The
  * row is always written first so nothing is lost even if delivery is impossible.
+ *
+ * `admit`, when given, runs after the row is written and before anything is
+ * sent. A limit counted there includes this message and every other one already
+ * recorded, so parallel requests cannot all pass it. A refused message stays in
+ * the outbox as 'skipped' with a note, and still counts toward the limit.
  */
 export async function enqueueEmail(
   client: QueryClient,
-  msg: { campaignId: string | null; to: string; subject: string; text: string; template?: string; payload?: Record<string, unknown> }
+  msg: { campaignId: string | null; to: string; subject: string; text: string; template?: string; payload?: Record<string, unknown> },
+  options: { admit?: () => Promise<boolean> } = {}
 ): Promise<EnqueueEmailResult> {
   let outboxId: string | null = null;
   try {
@@ -205,6 +223,19 @@ export async function enqueueEmail(
     outboxId = row.id;
   } catch {
     return { outboxId: null, status: "failed", transport: emailTransportName() };
+  }
+
+  if (options.admit && !(await options.admit().catch(() => false))) {
+    // Nothing is sent either way; the row is marked so the outbox says why.
+    const marked = await client
+      .from("engagement_email_outbox")
+      .update({ status: "skipped", transport: "none", error: LIMITED_EMAIL_NOTE })
+      .eq("id", outboxId)
+      .select("id");
+    if (marked.error || (marked.data ?? []).length !== 1) {
+      console.warn("[notifications] a limited email was not sent, but its outbox row still reads 'queued'");
+    }
+    return { outboxId, status: "skipped", transport: "none", limited: true };
   }
 
   const result = await sendEmail({ to: msg.to, subject: msg.subject, text: msg.text });
@@ -285,7 +316,12 @@ export async function enqueueCampaignSubscriberEmails(
 
 // ── Subscriptions (sensitive) ─────────────────────────────────────────────────
 
-export type SubscribeResult = { ok: boolean; alreadyConfirmed: boolean };
+export type SubscribeResult = {
+  ok: boolean;
+  alreadyConfirmed: boolean;
+  /** The existing row's opt-out token when `alreadyConfirmed`; otherwise null. */
+  existingUnsubscribeToken: string | null;
+};
 
 /**
  * Opt a participant in. A still-active confirmed subscription is left untouched
@@ -298,13 +334,14 @@ export async function subscribeParticipant(
 ): Promise<SubscribeResult> {
   const { data: existing } = await client
     .from("engagement_subscriptions")
-    .select("id, confirmed, unsubscribed_at")
+    .select("id, confirmed, unsubscribed_at, unsubscribe_token")
     .eq("campaign_id", params.campaignId)
     .eq("email", params.email)
     .maybeSingle();
 
-  if (existing && (existing as { confirmed: boolean }).confirmed && !(existing as { unsubscribed_at: string | null }).unsubscribed_at) {
-    return { ok: true, alreadyConfirmed: true };
+  const row = existing as { confirmed: boolean; unsubscribed_at: string | null; unsubscribe_token: string | null } | null;
+  if (row && row.confirmed && !row.unsubscribed_at) {
+    return { ok: true, alreadyConfirmed: true, existingUnsubscribeToken: row.unsubscribe_token ?? null };
   }
 
   const { error } = await client.from("engagement_subscriptions").upsert(
@@ -320,7 +357,79 @@ export async function subscribeParticipant(
     },
     { onConflict: "campaign_id,email" }
   );
-  return { ok: !error, alreadyConfirmed: false };
+  return { ok: !error, alreadyConfirmed: false, existingUnsubscribeToken: null };
+}
+
+/*
+  SIGN-UP EMAIL LIMITS (KI-2026-10-12-013). The subscribe form sends an email to
+  any address typed into it, and the hosted installation's email plan has one
+  daily quota shared with account confirmation and password reset mail. A flood
+  of sign-ups could use it up and stop those from arriving.
+
+  Every email the subscribe form causes is counted in the outbox:
+  - per connection and campaign, over 10 minutes: the public comment limit, so
+    a meeting room on one Wi-Fi can sign up. The connection is kept in the
+    row's payload_json.source_fingerprint.
+  - per address, across every campaign, over a rolling day: 3. A person who
+    mistypes, retries and asks again is served; a stranger cannot fill an inbox.
+  - per campaign, over a rolling day: 30. Two flooded campaigns use 60 a day;
+    under a daily quota of 100, 40 remain for sign-up and password mail.
+  The email to an address that is already subscribed counts the same way, so
+  every limit behaves identically whether or not the address is subscribed.
+  (The connection limit used to count new subscription rows, which an
+  already-subscribed address does not create, and a repeat request for the
+  same address did not create either.)
+*/
+export const SUBSCRIBE_EMAIL_TEMPLATES = ["subscribe_confirm", "subscribe_already"] as const;
+export const SUBSCRIBE_EMAIL_WINDOW_HOURS = 24;
+export const SUBSCRIBE_EMAILS_PER_ADDRESS_PER_DAY = 3;
+export const SUBSCRIBE_EMAILS_PER_CAMPAIGN_PER_DAY = 30;
+
+export type SubscribeEmailCounts = { fromConnection: number; toAddress: number; forCampaign: number };
+export type SubscribeEmailRefusal = "connection" | "daily";
+
+/** Recent sign-up emails from this connection, to this address and for this campaign. Null when a read failed. */
+export async function countRecentSubscribeEmails(
+  client: QueryClient,
+  params: { campaignId: string; email: string; fingerprint: string; now?: number }
+): Promise<SubscribeEmailCounts | null> {
+  const now = params.now ?? Date.now();
+  const recent = (windowMs: number) =>
+    client
+      .from("engagement_email_outbox")
+      .select("id", { count: "exact", head: true })
+      .in("template", [...SUBSCRIBE_EMAIL_TEMPLATES])
+      .gte("created_at", new Date(now - windowMs).toISOString());
+  const day = SUBSCRIBE_EMAIL_WINDOW_HOURS * 60 * 60 * 1000;
+  const [fromConnection, toAddress, forCampaign] = await Promise.all([
+    recent(PUBLIC_SUBMISSION_RATE_WINDOW_MINUTES * 60 * 1000)
+      .eq("campaign_id", params.campaignId)
+      .eq("payload_json->>source_fingerprint", params.fingerprint),
+    recent(day).eq("to_email", params.email),
+    recent(day).eq("campaign_id", params.campaignId),
+  ]);
+  if (fromConnection.error || toAddress.error || forCampaign.error) return null;
+  return {
+    fromConnection: fromConnection.count ?? 0,
+    toAddress: toAddress.count ?? 0,
+    forCampaign: forCampaign.count ?? 0,
+  };
+}
+
+/** Which limit another sign-up email would pass. Before it is recorded `>=` refuses; after, it is counted (`>`). */
+export function subscribeEmailRefusal(
+  counts: SubscribeEmailCounts,
+  options: { includesThisEmail: boolean }
+): SubscribeEmailRefusal | null {
+  const over = (value: number, max: number) => (options.includesThisEmail ? value > max : value >= max);
+  if (over(counts.fromConnection, PUBLIC_SUBMISSION_MAX_PER_WINDOW)) return "connection";
+  if (
+    over(counts.toAddress, SUBSCRIBE_EMAILS_PER_ADDRESS_PER_DAY) ||
+    over(counts.forCampaign, SUBSCRIBE_EMAILS_PER_CAMPAIGN_PER_DAY)
+  ) {
+    return "daily";
+  }
+  return null;
 }
 
 export async function confirmSubscription(
@@ -347,18 +456,4 @@ export async function unsubscribeByToken(client: QueryClient, token: string): Pr
     .maybeSingle();
   if (isWriteFailure(result.error)) return { ok: false, found: false };
   return { ok: true, found: !writeMatchedNoRows(result) };
-}
-
-/** Rows this fingerprint created for a campaign — for per-IP subscribe rate limiting. */
-export async function loadRecentSubscriptionsByFingerprint(
-  client: QueryClient,
-  campaignId: string,
-  fingerprint: string
-): Promise<{ created_at: string }[]> {
-  const { data } = await client
-    .from("engagement_subscriptions")
-    .select("created_at")
-    .eq("campaign_id", campaignId)
-    .eq("fingerprint", fingerprint);
-  return (data ?? []) as { created_at: string }[];
 }
