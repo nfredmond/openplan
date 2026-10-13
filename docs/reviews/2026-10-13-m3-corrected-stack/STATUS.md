@@ -1,9 +1,9 @@
 # Corrected worker recovery and aerial custody candidate
 
 This joins the original 26 owned heads, PR264 native engine attestation and PR266
-journal retirement correction with main `013df2d9c`. The [ancestry check](evidence/owned-head-ancestry.json)
-verifies all 28 exact recorded heads. The preceding combined candidate fails
-because it lacks PR266; harmless metadata and restored checks pass. History is
+journal retirement correction and PR269 intake fixture correction with main `68a58cfeef`. The [ancestry check](evidence/owned-head-ancestry.json)
+verifies all 29 exact recorded heads. The preceding combined candidate fails
+because it lacks PR269; harmless metadata and restored checks pass. History is
 preserved. This is the current continuation of [PR263's original report](../2026-10-12-m3-owned-stack-integration/STATUS.md).
 
 The correction [passes 31 actual aerial workflow stages](../2026-10-13-odm-retired-sqlite-companions/STATUS.md),
@@ -37,3 +37,15 @@ older owned PR states after landing; ancestry alone does not establish GitHub's
 merged state. Complete M3, scientific/practitioner acceptance, physical-host
 recovery, useful long computation, processing/results/callback custody, installed
 operation and v1 remain open. No new browser acceptance or release tag is claimed.
+
+## Intake fixture continuation
+
+[PR269](../2026-10-13-gtfs-intake-deadline-fixture/STATUS.md) resolves the inherited
+shuffled failure at the normal retry, preserving the first15 ms fault deadline.
+Controlled50 ms recovery latency reproduces the prior fixture failure; restoring
+its normal deadline passes. The external upload must abort before reconciliation,
+so final cleanup cannot mask omitted physical deadline propagation. Production
+source stays unchanged. All38 intake cases, two source/fixture faults,18 classifiers
+and58 shuffled intake/docs cases with seed745488 pass, followed by types/lint and
+direction. Main68a58c joins without conflict. Current-head GitHub gates remain
+separate from the preceding21dbd run; only the combined candidate lands.

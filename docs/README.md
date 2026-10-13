@@ -223,3 +223,5 @@ The [native engine observation candidate](reviews/2026-10-12-odm-native-engine-a
 The [SQLite companion retirement correction](reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md) preserves the committed original after a transient file is unlinked, while refusing present unsafe files and aliases.
 
 The [October13 corrected combined worker candidate](reviews/2026-10-13-m3-corrected-stack/STATUS.md) joins the recorded recovery stack, native engine observer and journal retirement correction with current main. It retains separate CI, hosted and production boundaries.
+
+The [GTFS deadline fixture correction](reviews/2026-10-13-gtfs-intake-deadline-fixture/STATUS.md) preserves the short ignored-upload deadline, restores the normal recovery deadline and checks cancellation before archive reconciliation. Production intake remains unchanged.

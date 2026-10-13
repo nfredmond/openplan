@@ -1,7 +1,7 @@
 {
-  "candidate": "acb1ab3ad5872f700afc910f081032446b0c30b1",
-  "joinedMain": "013df2d9c4aa65048ec0bb9b826fcea9b27c677f",
-  "ownedHeads": 28,
+  "candidate": "02c5b4932a50d299dd4748714d477723c33e809d",
+  "joinedMain": "68a58cfeef3ff11daf0b22093931a7c240c80b14",
+  "ownedHeads": 29,
   "pullRequests": [
     {
       "baseRefName": "work/odm-private-reader-capacity-20261012",
@@ -194,6 +194,12 @@
       "number": 266,
       "headRefOid": "b0cc393384098392188463a7018a68012e168238",
       "headIncluded": true
+    },
+    {
+      "number": 269,
+      "headRefName": "work/gtfs-intake-deadline-fixture-20261013",
+      "headRefOid": "02c5b4932a50d299dd4748714d477723c33e809d",
+      "headIncluded": true
     }
   ],
   "controls": [
@@ -206,13 +212,13 @@
       "outcome": "survived"
     },
     {
-      "case": "restored-current-candidate",
+      "case": "restored",
       "outcome": "survived"
     },
     {
-      "case": "preceding-candidate-without266",
+      "case": "preceding-candidate-without269",
       "outcome": "intended_refusal",
-      "reason": "missing-owned-head-266"
+      "reason": "missing-owned-head-269"
     }
   ]
 }
