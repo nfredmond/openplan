@@ -6,6 +6,7 @@ apply; Nathaniel's current request takes precedence.
 
 OpenPlan now has a live hosted installation on Vercel, Supabase and Railway.
 Read the dated live-installation section in AGENTS.md and its operating references
-before deployment work. Check the shared coordination file for an active merge
-hold. Keep credentials private and verify deployed source and logs before
-claiming public readiness.
+before deployment work. Coordinate merges, holds and migration rollouts with
+the other agents through the shared coordination file named in AGENTS.md. Keep
+credentials private and verify deployed source and logs before claiming public
+readiness.

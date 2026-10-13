@@ -132,3 +132,46 @@ describe("integration key crypto", () => {
     expect(decryptIntegrationKey(stored)).toBeNull();
   });
 });
+
+describe("workspace-bound (v3) integration key ciphertext", () => {
+  // Independent review L-5 (2026-10-11): v2 ciphertext carries no associated
+  // data, so a row copied into another workspace decrypted there. v3 binds
+  // the ciphertext to its workspace with AES-GCM additional authenticated data.
+  const WORKSPACE_A = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
+  const WORKSPACE_B = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb";
+
+  it("decrypts only under the workspace it was written for", () => {
+    vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", SECRET);
+    const stored = encryptIntegrationKey(PLAINTEXT, { workspaceId: WORKSPACE_A });
+
+    expect(stored.startsWith("v3:")).toBe(true);
+    expect(stored.split(":")).toHaveLength(5);
+    expect(decryptIntegrationKey(stored, { workspaceId: WORKSPACE_A })).toBe(PLAINTEXT);
+    expect(decryptIntegrationKey(stored, { workspaceId: WORKSPACE_B })).toBeNull();
+    expect(decryptIntegrationKey(stored)).toBeNull();
+  });
+
+  it("does not decrypt when relabelled as an unbound v2 row", () => {
+    vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", SECRET);
+    const stored = encryptIntegrationKey(PLAINTEXT, { workspaceId: WORKSPACE_A });
+    const relabelled = ["v2", ...stored.split(":").slice(1)].join(":");
+
+    expect(decryptIntegrationKey(relabelled)).toBeNull();
+    expect(decryptIntegrationKey(relabelled, { workspaceId: WORKSPACE_A })).toBeNull();
+  });
+
+  it("still decrypts rows stored before v3, with or without a workspace", () => {
+    vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", SECRET);
+    const v2 = encryptIntegrationKey(PLAINTEXT);
+    const v1 = legacyV1Encrypt(SECRET, PLAINTEXT);
+
+    expect(v2.startsWith("v2:")).toBe(true);
+    expect(decryptIntegrationKey(v2, { workspaceId: WORKSPACE_A })).toBe(PLAINTEXT);
+    expect(decryptIntegrationKey(v1, { workspaceId: WORKSPACE_A })).toBe(PLAINTEXT);
+  });
+
+  it("refuses to bind a key to an empty workspace ID", () => {
+    vi.stubEnv("OPENPLAN_INTEGRATION_KEY_SECRET", SECRET);
+    expect(() => encryptIntegrationKey(PLAINTEXT, { workspaceId: "" })).toThrow(/workspace ID/);
+  });
+});

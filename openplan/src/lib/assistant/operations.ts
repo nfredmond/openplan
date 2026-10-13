@@ -198,7 +198,7 @@ function describeWorkspaceNextCommandLink(context: {
     label: `Open ${nextCommand.title}`,
     statusLabel: "Workspace command",
     reason: "Your workspace queue has the clearest guidance on what to do next here.",
-    auditNote: "Use the command-board rationale before changing records or regenerating artifacts.",
+    auditNote: "Check why the workspace queue ranks this first before changing records or regenerating artifacts.",
   };
 }
 
@@ -1208,7 +1208,7 @@ function buildRtpRegistryOperations(context: RtpRegistryAssistantContext): Assis
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, report, or packet freshness.",
+              : "Check why the workspace queue ranks this first before changing cycle, report, or packet freshness.",
         })
       : null,
     quickLink("rtp-registry-surface", "Open RTP registry", "/rtp", {
@@ -1375,7 +1375,7 @@ function buildRtpOperations(context: RtpAssistantContext): AssistantQuickLink[] 
             context.operationsSummary.nextCommand.key === "review-current-report-packets" &&
             context.operationsSummary.counts.rtpFundingReviewPackets > 0
               ? nextCommandLink.auditNote
-              : "Use the command-board rationale before changing cycle, chapter, or packet freshness.",
+              : "Check why the workspace queue ranks this first before changing cycle, chapter, or packet freshness.",
         })
       : null,
     quickLink("rtp-record", "Open RTP cycle", `/rtp/${context.rtpCycle.id}`, {
