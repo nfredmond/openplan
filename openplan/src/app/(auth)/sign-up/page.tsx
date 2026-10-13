@@ -149,7 +149,7 @@ function SignUpForm() {
               >
                 Send the link again
               </button>
-              {resendState === "sent" ? " · A new link is on its way." : null}
+              {resendState === "sent" ? " · A new link is on its way. Only the newest link works." : null}
               {resendState === "failed" ? " · It could not be sent. Try again in a few minutes." : null}
             </p>
           </article>

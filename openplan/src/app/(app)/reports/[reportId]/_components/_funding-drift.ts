@@ -1,13 +1,18 @@
 import { formatCompactDateTime, formatCurrency } from "./_helpers";
 import type { DriftItem } from "./_types";
 
+/** A saved packet can lack a dollar figure; say so rather than print $0. */
+function formatRecordedAmount(value: number | null): string {
+  return value === null ? "Not recorded" : formatCurrency(value);
+}
+
 type FundingSnapshotLike = {
   awardCount: number;
   pursuedOpportunityCount: number;
   reimbursementPacketCount: number;
-  committedFundingAmount: number;
-  unfundedAfterLikelyAmount: number;
-  uninvoicedAwardAmount: number;
+  committedFundingAmount: number | null;
+  unfundedAfterLikelyAmount: number | null;
+  uninvoicedAwardAmount: number | null;
   label: string;
   pipelineLabel: string;
   reimbursementLabel: string;
@@ -67,7 +72,7 @@ export function buildFundingPostureDriftItem(
     liveFundingSnapshot.committedFundingAmount
   ) {
     fundingValueChanges.push(
-      `Committed awards: ${formatCurrency(storedFundingSnapshot.committedFundingAmount)} -> ${formatCurrency(liveFundingSnapshot.committedFundingAmount)}.`
+      `Committed awards: ${formatRecordedAmount(storedFundingSnapshot.committedFundingAmount)} -> ${formatRecordedAmount(liveFundingSnapshot.committedFundingAmount)}.`
     );
   }
   if (
@@ -75,7 +80,7 @@ export function buildFundingPostureDriftItem(
     liveFundingSnapshot.unfundedAfterLikelyAmount
   ) {
     fundingValueChanges.push(
-      `Uncovered after likely dollars: ${formatCurrency(storedFundingSnapshot.unfundedAfterLikelyAmount)} -> ${formatCurrency(liveFundingSnapshot.unfundedAfterLikelyAmount)}.`
+      `Uncovered after likely dollars: ${formatRecordedAmount(storedFundingSnapshot.unfundedAfterLikelyAmount)} -> ${formatRecordedAmount(liveFundingSnapshot.unfundedAfterLikelyAmount)}.`
     );
   }
   if (
@@ -83,7 +88,7 @@ export function buildFundingPostureDriftItem(
     liveFundingSnapshot.uninvoicedAwardAmount
   ) {
     fundingValueChanges.push(
-      `Uninvoiced awards: ${formatCurrency(storedFundingSnapshot.uninvoicedAwardAmount)} -> ${formatCurrency(liveFundingSnapshot.uninvoicedAwardAmount)}.`
+      `Uninvoiced awards: ${formatRecordedAmount(storedFundingSnapshot.uninvoicedAwardAmount)} -> ${formatRecordedAmount(liveFundingSnapshot.uninvoicedAwardAmount)}.`
     );
   }
 

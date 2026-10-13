@@ -193,6 +193,43 @@ export const MY_WORK_SOURCES_BY_ID = Object.fromEntries(
   MY_WORK_SOURCES.map((source) => [source.id, source])
 ) as Record<MyWorkSourceId, MyWorkSource>;
 
+/**
+ * The column date bounds apply to, or null for a source with no due dates.
+ * Most dated sources order by their due column; a source whose rows may be
+ * undated names it in `dueColumn`.
+ */
+function dueDateColumn(source: MyWorkSource): string | null {
+  if (source.dueColumn) return source.dueColumn;
+  return MY_WORK_DATED_BLOCKS.includes(source.block) ? source.orderColumn : null;
+}
+
+const CALENDAR_DATE = /^\d{4}-\d{2}-\d{2}$/;
+
+type DueBounds = { dueBefore?: string; dueOnOrAfter?: string; dueOnOrBefore?: string };
+
+/**
+ * Bound a read by due date. With `keepUndated`, rows with no due date pass
+ * too: an undated contract task belongs in the backlog read even though a
+ * dated one belongs only in the window its date falls in.
+ */
+function applyDueBounds(query: WorkQuery, column: string, bounds: DueBounds, keepUndated: boolean): WorkQuery {
+  const ranges: Array<["lt" | "gte" | "lte", string]> = [];
+  if (bounds.dueBefore) ranges.push(["lt", bounds.dueBefore]);
+  if (bounds.dueOnOrAfter) ranges.push(["gte", bounds.dueOnOrAfter]);
+  if (bounds.dueOnOrBefore) ranges.push(["lte", bounds.dueOnOrBefore]);
+  if (ranges.length === 0) return query;
+  // The bounds are interpolated into a filter string below, so only a plain
+  // calendar date is accepted. The throw becomes a reported failed read.
+  if (!ranges.every(([, value]) => CALENDAR_DATE.test(value))) throw new Error("due-date bound is not a calendar date");
+  const literal = (op: string, value: string) => (op === "lte" ? `${value}T23:59:59Z` : value);
+  if (!keepUndated) {
+    return ranges.reduce((next, [op, value]) => next[op](column, literal(op, value)), query);
+  }
+  const clauses = ranges.map(([op, value]) => `${column}.${op}."${literal(op, value)}"`);
+  const dated = clauses.length === 1 ? clauses[0] : `and(${clauses.join(",")})`;
+  return query.or(`${column}.is.null,${dated}`);
+}
+
 function clampLimit(requested: number | undefined): number {
   if (
     typeof requested !== "number" ||
@@ -277,6 +314,7 @@ async function readSource(
     dueBefore?: string;
     dueOnOrAfter?: string;
     dueOnOrBefore?: string;
+    datedOnly?: boolean;
   }
 ): Promise<{ result: WorkReadResult; departedIncluded: boolean }> {
   try {
@@ -286,16 +324,21 @@ async function readSource(
       .eq(source.workspaceFilterColumn, options.workspaceId);
     const scoped = applyScope(base, source, options);
     let filtered = applyStaticFilters(scoped.query, source);
-    if (MY_WORK_DATED_BLOCKS.includes(source.block)) {
-      if (options.dueBefore) filtered = filtered.lt(source.orderColumn, options.dueBefore);
-      if (options.dueOnOrAfter) filtered = filtered.gte(source.orderColumn, options.dueOnOrAfter);
-      if (options.dueOnOrBefore) filtered = filtered.lte(source.orderColumn, `${options.dueOnOrBefore}T23:59:59Z`);
+    const dueColumn = dueDateColumn(source);
+    // A source that may be undated keeps its undated rows, except in a read
+    // of dated work only, which also takes its soonest rows first.
+    const datedRead = Boolean(source.dueColumn && options.datedOnly);
+    if (dueColumn) {
+      filtered = applyDueBounds(filtered, dueColumn, options, Boolean(source.dueColumn) && !options.datedOnly);
     }
+    if (datedRead && dueColumn) filtered = filtered.not(dueColumn, "is", null);
     const readLimit = source.readLimit
       ? source.readLimit(options.limitPerSource)
       : options.limitPerSource;
     const result = await filtered
-      .order(source.orderColumn, { ascending: source.orderAscending })
+      .order(datedRead && dueColumn ? dueColumn : source.orderColumn, {
+        ascending: datedRead ? true : source.orderAscending,
+      })
       .limit(readLimit);
     return { result, departedIncluded: scoped.departedIncluded };
   } catch (error) {
@@ -369,7 +412,7 @@ export async function loadMyWork(
 
   const reads = new ReadFailureLog();
   const sources = options.datedOnly
-    ? MY_WORK_SOURCES.filter((source) => MY_WORK_DATED_BLOCKS.includes(source.block))
+    ? MY_WORK_SOURCES.filter((source) => dueDateColumn(source) !== null)
     : MY_WORK_SOURCES;
   const outcomes = await Promise.all(
     sources.map((source) =>
@@ -382,6 +425,7 @@ export async function loadMyWork(
         dueBefore: options.dueBefore,
         dueOnOrAfter: options.dueOnOrAfter,
         dueOnOrBefore: options.dueOnOrBefore,
+        datedOnly: options.datedOnly,
       })
     )
   );
