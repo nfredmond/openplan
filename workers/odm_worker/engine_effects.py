@@ -122,7 +122,7 @@ def parsed_reply(plan, operation, status, body):
     value = json.loads(body.decode('utf-8'), object_pairs_hook=pairs, parse_constant=constant)
     # Finite lexical numbers can still overflow to infinity during parsing.
     encoded(value, canonical=True)
-    if not isinstance(value, dict) or 'error' in value or (value.get('uuid') != plan['taskUuid'] if operation == 'init' else value.get('success') is not True):
+    if not isinstance(value, dict) or 'error' in value or (value.get('uuid') != plan['taskUuid'] if operation in ('init', 'commit') else value.get('success') is not True):
         raise ValueError('Engine reply does not establish original command acknowledgment')
     return value
 

@@ -1,5 +1,6 @@
 """Private local effect records. No network, decoded imagery or live authority."""
 from concurrent.futures import ThreadPoolExecutor
+import base64
 import copy
 import hashlib
 import json
@@ -174,13 +175,44 @@ class Checks(unittest.TestCase):
         self.assertEqual(state, {'operation': 'init', 'state': 'acknowledged', 'engineCustodyVerification': 'unassessed'})
         with self.assertRaisesRegex(ValueError, 'differs'): effects.save_reply('init', 200, json.dumps({'uuid': self.task}).encode())
 
-    def test_upload_commit_reply_success_is_exact_boolean(self):
+    def test_upload_reply_success_is_exact_boolean(self):
         effects = self.open()
-        for operation in ('upload:0', 'commit'):
+        for operation in ('upload:0', 'upload:1'):
             effects.issue(operation)
             for body in (b'{}', b'{"success":1}', b'{"success":false}', b'{"success":true,"error":""}'):
                 with self.assertRaisesRegex(ValueError, 'acknowledgment'): effects.save_reply(operation, 200, body)
             self.assertEqual(effects.save_reply(operation, 200, b'{"success":true}')['parsed'], {'success': True})
+
+    def test_commit_reply_requires_original_uuid(self):
+        effects = self.open();effects.issue('commit')
+        for value in ({}, {'success': True}, {'uuid': 'other', 'success': True},
+                      {'uuid': True}, {'uuid': 1}, {'uuid': self.task.upper()},
+                      {'uuid': self.task, 'error': ''}):
+            with self.assertRaisesRegex(ValueError, 'acknowledgment'):
+                effects.save_reply('commit', 200, json.dumps(value).encode())
+        self.assertFalse((self.root/'command-00003.reply.json').exists())
+
+    def test_actual_commit_uuid_reply_is_retained(self):
+        effects = self.open();effects.issue('commit')
+        body = ('{ "uuid" : "'+self.task+'" }\n').encode()
+        reply = effects.save_reply('commit', 200, body)
+        self.assertEqual(reply['parsed'], {'uuid': self.task})
+        self.assertEqual(reply['bodySha256'], hashlib.sha256(body).hexdigest(), 'Commit reply must preserve exact original bytes')
+        self.assertEqual(reply['engineCustodyVerification'], 'unassessed', 'Commit acknowledgement cannot promote engine custody')
+        before = self.image(self.root)
+        self.assertEqual(self.open().save_reply('commit', 200, body), reply)
+        self.assertEqual(self.image(self.root), before, 'Commit reply replay must not rewrite original records')
+
+    def test_invalid_legacy_commit_receipt_is_not_rewritten(self):
+        effects = self.open();effects.issue('commit')
+        effects.save_reply('commit', 200, json.dumps({'uuid': self.task}).encode())
+        body = b'{"success":true}'
+        self.edit('command-00003.reply.json', lambda value:value.update(
+            bodyBase64=base64.b64encode(body).decode(), bodySha256=hashlib.sha256(body).hexdigest(),
+            bodyBytes=len(body), parsed={'success': True}))
+        before = self.image(self.root)
+        with self.assertRaisesRegex(ValueError, 'acknowledgment'):effects.snapshot()
+        self.assertEqual(self.image(self.root), before, 'Invalid old mock commit receipt must remain unchanged')
 
     def test_response_bounds_types_json_and_uuid(self):
         effects = self.open();effects.issue('init')
