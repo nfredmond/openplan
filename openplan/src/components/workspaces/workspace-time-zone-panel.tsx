@@ -64,7 +64,7 @@ export function WorkspaceTimeZonePanel({
 
   // Read in an effect: the server renders in UTC, the browser knows better.
   useEffect(() => {
-    const browserZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const browserZone = Intl.DateTimeFormat("en-US").resolvedOptions().timeZone;
     if (!browserZone) return;
     setSuggested(browserZone);
     setChoice((current) => current || browserZone);

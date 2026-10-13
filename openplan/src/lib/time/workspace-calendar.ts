@@ -218,6 +218,6 @@ export async function todayInWorkspace(
 
 /** Today in the browser's own zone. For client code stamping a date the planner submits. */
 export function browserToday(now: Date = new Date()): string {
-  const zone = validTimeZone(Intl.DateTimeFormat().resolvedOptions().timeZone) ?? UTC_TIME_ZONE;
+  const zone = validTimeZone(Intl.DateTimeFormat("en-US").resolvedOptions().timeZone) ?? UTC_TIME_ZONE;
   return todayIn(zone, now);
 }
