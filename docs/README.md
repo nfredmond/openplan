@@ -240,3 +240,5 @@ The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATU
 The [failed-task stopped-root probe](reviews/2026-10-13-odm-committed-task-restore/STATUS.md) retains one known backend task’s API identity and failed status across an exact root copy. It does not authorize a new engine identity or establish full worker recovery.
 
 The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/STATUS.md) requires a declared retained directory apart from scratch, refuses missing recovery roots and checks original receipt replay with fresh replacement scratch. The operator still verifies its backing storage and installation-wide recovery inventory.
+
+- [Complete owned OpenCode fixture receipts](reviews/2026-10-13-opencode-receipt-fixture/STATUS.md), actual process interruption, unchanged production shutdown and current main failure hold.
