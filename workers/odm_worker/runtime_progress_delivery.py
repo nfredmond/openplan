@@ -16,6 +16,7 @@ import time
 from admission_journal import private, synchronize
 import contract
 from application_dispatch_reader import Reader
+from retained_output_archive import clear_unpublished
 from retained_source import json_bytes, publish, read_json, writer
 from runtime_dispatch_custody import strict_object
 
@@ -139,6 +140,7 @@ class Delivery:
             synchronize(root.parent)
         private(root, True)
         with writer(root, deadline):
+            clear_unpublished(root)
             if not (root/'command.json').exists() and any(path.name != 'writer.lock' for path in root.iterdir()):
                 raise ValueError('Progress delivery records require their original command')
             publish(root, 'command.json', json_bytes(command))
@@ -223,3 +225,37 @@ class Delivery:
             raise ValueError('Progress delivery receiver reply bytes differ') from None
         if len(body) > REPLY_LIMIT:
             raise ValueError('Progress delivery receiver reply exceeds its bound')
+
+    def historical_receiver_receipt(self,request_id,event_key):
+        """Read retained receiver facts without authorizing another callback."""
+        deadline=time.monotonic()+self.timeout
+        self._check(request_id,deadline)
+        root=self.folder(request_id,event_key)
+        private(root,True)
+        with writer(root,deadline):
+            command=self._load(request_id,event_key,root,deadline)
+            command_hash=checksum(json_bytes(command))
+            attempts=sorted(path.name for path in root.iterdir() if path.name.startswith('attempt-'))
+            if attempts!=[f'attempt-{index:06d}.json' for index in range(len(attempts))]:
+                raise ValueError('Progress historical attempt sequence differs')
+            replies={path.name for path in root.iterdir() if path.name.startswith('reply-')}
+            if not replies<={f'reply-{index:06d}.json' for index in range(len(attempts))}:
+                raise ValueError('Progress historical reply requires its original attempt')
+            selected=None
+            for index,name in enumerate(attempts):
+                intent=read_json(root,name)
+                if json_bytes(intent)!=json_bytes({'format':self.record_format,
+                        'commandSha256':command_hash,'attempt':index}):
+                    raise ValueError('Progress historical attempt binding differs')
+                reply_name=f'reply-{index:06d}.json'
+                if reply_name in replies:
+                    reply=read_json(root,reply_name)
+                    self._validate_reply(reply,command_hash,index)
+                    state=self._result(reply,command)
+                    if selected is None or selected['historicalReceiverOutcome']=='retry_pending':
+                        selected={'historicalReceiverOutcome':state,'attempt':index,'receiverReply':reply}
+            self._check(request_id,deadline)
+            return {**(selected or {'historicalReceiverOutcome':'no_retained_reply'}),
+                'commandSha256':command_hash,'currentAccess':'unassessed',
+                'transportPermission':False,'publicationPermission':False,
+                'applicationAcceptanceVerification':'unassessed'}

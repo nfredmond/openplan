@@ -130,8 +130,11 @@ class Pipeline:
         self.pipeline = pipeline;self.dispatch = dispatch;self.capture = capture
         self.capture_with_deadline = capture_with_deadline
 
-    def _advance(self, request_id, job=None):
-        deadline = time.monotonic()+min(self.pipeline.timeout, self.dispatch.timeout)
+    def capture_original(self, request_id, *, deadline=None):
+        """Retain dispatch before progress or input work, without an engine effect."""
+        if deadline is not None:self.dispatch._check(request_id,deadline)
+        end=time.monotonic()+min(self.pipeline.timeout,self.dispatch.timeout)
+        deadline=end if deadline is None else min(end,deadline)
         entry = self.pipeline.intake._check(request_id, deadline)
         path = self.dispatch.folder(request_id)/'receipt.json'
         if path.exists() or path.is_symlink(): receipt = self.dispatch.load(request_id, deadline=deadline)
@@ -143,6 +146,12 @@ class Pipeline:
             if type(captured) is not tuple or len(captured) != 2:
                 raise ValueError('Exact original dispatch capture is required')
             receipt = self.dispatch.save(request_id, *captured, deadline=deadline)
+        return receipt
+
+    def _advance(self, request_id, job=None):
+        deadline = time.monotonic()+min(self.pipeline.timeout, self.dispatch.timeout)
+        entry = self.pipeline.intake._check(request_id, deadline)
+        receipt = self.capture_original(request_id, deadline=deadline)
         projection = {key: receipt['applicationJob'][key] for key in JOB_FIELDS}
         def validate(settings):
             if not isinstance(settings, dict) or settings.get('targetId') != self.dispatch.target or settings.get('applicationJob') != projection:

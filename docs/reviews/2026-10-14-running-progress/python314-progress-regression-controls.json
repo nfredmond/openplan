@@ -1,0 +1,244 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 23
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 23
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 23
+  },
+  {
+    "case": "transport-reencodes-original",
+    "outcome": "intended_failure",
+    "test": "test_exact_scope_body_and_current_access_precede_one_post",
+    "diagnostic": "Transport receives the original endpoint, credential reference and exact UTF-8 bytes"
+  },
+  {
+    "case": "acknowledged-replay-posts-again",
+    "outcome": "intended_failure",
+    "test": "test_acknowledged_replay_never_posts_again",
+    "diagnostic": "Acknowledged replay cannot duplicate delivery"
+  },
+  {
+    "case": "unknown-retry-changes-body",
+    "outcome": "intended_failure",
+    "test": "test_transport_interruption_retries_original_identity_and_bytes",
+    "diagnostic": "Unknown delivery retries exactly the original callback bytes"
+  },
+  {
+    "case": "reply-publication-omitted",
+    "outcome": "intended_failure",
+    "test": "test_interruption_after_ack_before_receipt_uses_same_body",
+    "diagnostic": "InterruptedError not raised"
+  },
+  {
+    "case": "refusal-retried",
+    "outcome": "intended_failure",
+    "test": "test_refused_reply_stops_later_posts",
+    "diagnostic": "Explicit consumer refusal stops retries"
+  },
+  {
+    "case": "transient-marked-acknowledged",
+    "outcome": "intended_failure",
+    "test": "test_transient_and_unconfirmed_success_remain_retryable",
+    "diagnostic": "Unconfirmed delivery cannot become acknowledgement"
+  },
+  {
+    "case": "changed-command-accepted",
+    "outcome": "intended_failure",
+    "test": "test_changed_saved_command_cannot_reach_transport",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "foreign-reply-accepted",
+    "outcome": "intended_failure",
+    "test": "test_changed_reply_binding_cannot_suppress_delivery",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "foreign-attempt-accepted",
+    "outcome": "intended_failure",
+    "test": "test_changed_attempt_binding_refuses_replay",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "orphan-reply-accepted",
+    "outcome": "intended_failure",
+    "test": "test_reply_without_original_attempt_refuses_another_post",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "oversized-reply-retained",
+    "outcome": "intended_failure",
+    "test": "test_oversized_reply_is_not_allocated_as_a_saved_receipt",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "restart-reencodes-body",
+    "outcome": "intended_failure",
+    "test": "test_restarted_runtime_uses_saved_body_and_original_start",
+    "diagnostic": "A replacement runtime does not generate a new body"
+  },
+  {
+    "case": "new-event-replaces-original",
+    "outcome": "intended_failure",
+    "test": "test_existing_event_cannot_be_replaced_with_new_identity",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-command-recreated",
+    "outcome": "intended_failure",
+    "test": "test_missing_command_with_existing_attempt_refuses_recreation",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "revoked-access-accepted",
+    "outcome": "intended_failure",
+    "test": "test_current_actor_revocation_refuses_preparation_and_replay",
+    "diagnostic": "PermissionError not raised"
+  },
+  {
+    "case": "post-intent-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_revocation_after_intent_prevents_external_request",
+    "diagnostic": "Access is checked again after the durable intent"
+  },
+  {
+    "case": "post-response-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_revocation_after_response_retains_fact_without_claiming_current_access",
+    "diagnostic": "PermissionError not raised"
+  },
+  {
+    "case": "cancellation-ignored",
+    "outcome": "intended_failure",
+    "test": "test_unowned_and_cancelled_delivery_refuse_before_post",
+    "diagnostic": "InterruptedError not raised"
+  },
+  {
+    "case": "terminal-progress-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "attempt-limit-ignored",
+    "outcome": "intended_failure",
+    "test": "test_attempt_capacity_and_sequence_cannot_be_bypassed",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-deadline-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_bounded_explicit_adapters",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-event-key-accepted",
+    "outcome": "intended_failure",
+    "test": "test_event_identity_and_cancellation_type_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "nonboolean-cancellation-accepted",
+    "outcome": "intended_failure",
+    "test": "test_event_identity_and_cancellation_type_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "malformed-reply-status-accepted",
+    "outcome": "intended_failure",
+    "test": "test_malformed_retained_reply_cannot_become_acknowledgement",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "attempt-gap-accepted",
+    "outcome": "intended_failure",
+    "test": "test_attempt_capacity_and_sequence_cannot_be_bypassed",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-adapters-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_bounded_explicit_adapters",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-credential-reference-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_bounded_explicit_adapters",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-attempt-capacity-accepted",
+    "outcome": "intended_failure",
+    "test": "test_constructor_requires_bounded_explicit_adapters",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "foreign-callback-scope-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "artifact-projection-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-callback-id-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-progress-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-message-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "oversized-body-accepted",
+    "outcome": "intended_failure",
+    "test": "test_terminal_artifact_foreign_and_invalid_payloads_refuse",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "noncanonical-base64-accepted",
+    "outcome": "intended_failure",
+    "test": "test_malformed_retained_reply_cannot_become_acknowledgement",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "unicode-id-arbitrarily-refused",
+    "outcome": "intended_failure",
+    "test": "test_exact_scope_body_and_current_access_precede_one_post",
+    "diagnostic": "Progress delivery callback identity differs"
+  },
+  {
+    "case": "fractional-time-arbitrarily-refused",
+    "outcome": "intended_failure",
+    "test": "test_exact_scope_body_and_current_access_precede_one_post",
+    "diagnostic": "Progress delivery original occurrence time differs"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 23
+  }
+]

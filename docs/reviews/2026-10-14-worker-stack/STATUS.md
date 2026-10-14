@@ -31,3 +31,7 @@ V1 acceptance follows from this engineering candidate.
 ## Artifact URL review correction
 
 The [root URL correction](../2026-10-14-artifact-root-url/STATUS.md) joins this candidate after the original fingerprint checkpoint. It changes the artifact access validator and its fixture. Four 48-case source cohorts with 51 faults and four 34-case HTTP cohorts with 35 faults pass on each interpreter. The other inherited worker evidence remains historical at its recorded fingerprints. All 19 joined nested documentation/direction/release checks pass. Exact-head CI remains required; migrations 11 and 12 are still unapplied by this lane.
+
+## Original running progress join
+
+The [running progress adapter](../2026-10-14-running-progress/STATUS.md) joins the corrected artifact URL tree. Its source campaign passes four 36-case cohorts and 32 faults on each interpreter. Both 199-case related suites pass. Fresh joined restored-schema recovery passes four four-case cohorts and two SQL faults; all 19 joined nested checks pass. The direct-ledger callback fixture retains its application-receiver limit. Default, complete application delivery and capacity remain open. Fresh exact-head CI and coordinated hosted migration application still precede merge.

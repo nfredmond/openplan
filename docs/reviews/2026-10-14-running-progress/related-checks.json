@@ -1,0 +1,7 @@
+{
+  "python314": 199,
+  "python311": 199,
+  "nestedTests": 19,
+  "proof": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/running-progress-20261014",
+  "scope": "Related regression only; no independent scientific, practitioner, default, hosted or v1 acceptance."
+}
