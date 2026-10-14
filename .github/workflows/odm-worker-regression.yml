@@ -210,3 +210,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-14-odm-private-products/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-product-controls"
+      - name: Selected migration capture source controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-odm-output-schema-recovery/verify_migration_source_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-migration-source-controls"

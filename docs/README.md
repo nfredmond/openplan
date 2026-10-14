@@ -261,3 +261,6 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
 
 - [Private original aerial products](reviews/2026-10-14-odm-private-products/STATUS.md), exact selected member bytes and interrupted recovery under current access, without delivery or quality promotion.
+- [Protected Linux transfer preparation](reviews/2026-10-14-linux-transfer-preparation/STATUS.md), pinned source and separate retained fixtures, encrypted transport and open separate-host limits.
+- [Selected-schema original output recovery](reviews/2026-10-14-odm-output-schema-recovery/STATUS.md), populated isolated fixture upgrades, logical restores and current actor checks.
+- [Joined candidate transit and export observations](reviews/2026-10-14-m3-joined-preview/STATUS.md), identified T3 views, original geometry and native GeoPackage checks with explicit limits.

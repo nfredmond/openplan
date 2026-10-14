@@ -1,0 +1,34 @@
+[
+  {
+    "case": "baseline",
+    "accepted": true
+  },
+  {
+    "case": "harmless",
+    "accepted": true
+  },
+  {
+    "case": "restored",
+    "accepted": true
+  },
+  {
+    "case": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "wrong-kind",
+    "accepted": false
+  },
+  {
+    "case": "extra-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-error",
+    "accepted": false
+  }
+]

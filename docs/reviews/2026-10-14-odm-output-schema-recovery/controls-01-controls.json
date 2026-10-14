@@ -1,0 +1,51 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "historyBefore": 406,
+    "historyAfter": 408
+  },
+  {
+    "case": "harmless-source",
+    "outcome": "survived",
+    "historyBefore": 406,
+    "historyAfter": 408
+  },
+  {
+    "case": "harmless-sql",
+    "outcome": "survived",
+    "historyBefore": 406,
+    "historyAfter": 408
+  },
+  {
+    "case": "missing-main-migration",
+    "outcome": "intended_failure",
+    "reason": "Current schema upgrade must install the exact main migration set"
+  },
+  {
+    "case": "rest-points-to-old-database",
+    "outcome": "intended_failure",
+    "reason": "Owned schema REST must use its selected restored database"
+  },
+  {
+    "case": "revoked-actor-ignored",
+    "outcome": "intended_failure",
+    "reason": "Current schema recovery must refuse revoked actor access"
+  },
+  {
+    "case": "copied-output-corrupted",
+    "outcome": "intended_failure",
+    "reason": "Current schema physical output bytes differ"
+  },
+  {
+    "case": "publication-promoted",
+    "outcome": "intended_failure",
+    "reason": "Current schema recovery must preserve exact output custody and claim tiers"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "historyBefore": 406,
+    "historyAfter": 408
+  }
+]
