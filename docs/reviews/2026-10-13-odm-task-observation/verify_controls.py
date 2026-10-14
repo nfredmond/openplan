@@ -55,7 +55,7 @@ def run(repo, out):
     add('automatic-flags-lost','test_requested_options_are_separate_from_added_flags',swap("'automaticPostprocessingOptions':copy.deepcopy(additions)","'automaticPostprocessingOptions':[]"),'Lists differ')
     add('option-shape-omitted','test_option_shape_and_duplicate_names_refuse',swap("or type(row['value']) not in (str,int,float,bool) for row in reported):","or type(row['value']) not in (str,int,float,bool) for row in reported) and False:"),"KeyError: 'name'",'diagnostic_refusal')
     add('option-name-duplicates','test_option_shape_and_duplicate_names_refuse',disable('Task metadata reported options repeat a name'),'ValueError not raised')
-    add('requested-options-unchecked','test_requested_option_values_order_and_types_match',disable('Task metadata original requested options differ'),'ValueError not raised')
+    add('requested-options-unchecked','test_requested_option_values_names_and_types_match',disable('Task metadata original requested options differ'),'ValueError not raised')
     add('automatic-option-order-unchecked','test_automatic_option_names_values_and_order_match_profile',swap(' or order!=sorted(order)',''),'ValueError not raised')
     add('empty-supported-subset-refused','test_supported_automatic_subsets_and_explicit_false_are_preserved',swap("    additions = reported[len(requested):]","    additions = reported[len(requested):]\n    if not additions:raise ValueError('Synthetic unsupported empty subset')"),'Synthetic unsupported empty subset')
     add('reported-state-type-unchecked','test_reported_state_is_known_exact_integer',swap("type(outcome.get('code')) is not int",'False'),'ValueError not raised')
@@ -66,6 +66,7 @@ def run(repo, out):
     add('time-type-unchecked','test_reported_times_are_exact_integer_ranges',swap('type(duration) is not int','False'),'ValueError not raised')
     add('not-started-time-becomes-zero','test_not_started_processing_time_is_distinct_from_zero',swap("'reportedProcessingTimeMs':duration if duration>=0 else None","'reportedProcessingTimeMs':duration if duration>=0 else 0"),'Not-started time cannot become zero')
     add('returned-views-alias','test_inputs_and_outputs_do_not_alias',swap("'reportedOptions':copy.deepcopy(reported),\n        'automaticPostprocessingOptions':copy.deepcopy(additions)", "'reportedOptions':reported,\n        'automaticPostprocessingOptions':additions"),'Returned option views must not alias')
+    add('reported-catalogue-order-refused','test_engine_catalogue_order_preserves_exact_requested_names_and_values',swap("encoded(sorted(prefix,key=lambda row:row['name']),canonical=True) != encoded(sorted(requested,key=lambda row:row['name']),canonical=True)",'encoded(prefix,canonical=True) != encoded(requested,canonical=True)'), 'Task metadata original requested options differ','diagnostic_refusal')
     if {row[1] for row in cases} != census:
         raise ValueError('New observation tests lack targeted controls')
     outcomes = []

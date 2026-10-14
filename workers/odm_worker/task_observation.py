@@ -58,7 +58,7 @@ def observe(plan, status, body):
     names = [row['name'] for row in reported]
     if len(set(names)) != len(names):raise ValueError('Task metadata reported options repeat a name')
     requested = plan['options'];prefix = reported[:len(requested)]
-    if encoded(prefix,canonical=True) != encoded(requested,canonical=True):
+    if encoded(sorted(prefix,key=lambda row:row['name']),canonical=True) != encoded(sorted(requested,key=lambda row:row['name']),canonical=True):
         raise ValueError('Task metadata original requested options differ')
     additions = reported[len(requested):]
     order = [AUTO_OPTIONS.index(row['name']) if row['name'] in AUTO_OPTIONS else -1 for row in additions]
