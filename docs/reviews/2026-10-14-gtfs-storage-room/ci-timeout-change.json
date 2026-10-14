@@ -1,0 +1,8 @@
+{
+  "previousMinutes": 60,
+  "candidateMinutes": 90,
+  "onlyChange": "timeout-minutes value; all ordered job steps and commands unchanged",
+  "incompleteRun": 38639459232,
+  "annotation": "The job has exceeded the maximum execution time of 1h0m0s",
+  "acceptance": "Fresh complete exact-head GitHub CI required"
+}

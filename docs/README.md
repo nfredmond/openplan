@@ -86,6 +86,8 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+**October 14 retained transit storage check.** The [storage-room record](reviews/2026-10-14-gtfs-storage-room/STATUS.md) covers original workspace usage, immutable archive retry accounting and actual HTTP cancellation. Exact retained bytes still determine custody. Source and diagnostic controls, scoped types and lint pass; concurrent usage is not an atomic reservation. Managed admission stays disabled on the hosted installation.
+
 **October 14 explicit worker assembly candidate.** The [assembly record](reviews/2026-10-14-runtime-assembly/STATUS.md) links operator settings to the existing original worker graph. Guarded transports and roles remain pinned through recovery. The [hosted migration record](reviews/2026-10-14-hosted-aerial-authority/STATUS.md) separately records 11/12 application and backup/readback limits. Service/default, native composition and legacy adoption remain open.
 
 
