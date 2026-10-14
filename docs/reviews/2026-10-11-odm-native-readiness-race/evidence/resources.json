@@ -1,0 +1,46 @@
+[
+  {
+    "InvocationID": "b1fbb920c3674c64ad48e86254e7b959",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "36458496",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-readiness-controls-20261011-01.service",
+    "stopped": true
+  },
+  {
+    "InvocationID": "4ad45bf4507443e693b77e5be6f5af55",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "58384384",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-readiness-controls-20261011-02.service",
+    "stopped": true
+  },
+  {
+    "InvocationID": "046d959a423e4e38b61829142557fe03",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "268435456",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-journal-parent-ci-20261011-02.service",
+    "stopped": true,
+    "cgroupBeforeExit": {
+      "memory.events": "low 0\nhigh 0\nmax 2838\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0\n",
+      "memory.peak": "268435456\n"
+    }
+  },
+  {
+    "InvocationID": "ea4cf025f0bc488d8c2df5ad6b9efd4f",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "283545600",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-readiness-docs-20261011-01.service",
+    "stopped": true
+  }
+]

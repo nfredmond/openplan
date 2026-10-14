@@ -1,0 +1,33 @@
+{
+  "sourceSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "selectedMainBackupSha256": "7b51116b5caad24649b75be76e0d8582b3421bde1c86db23c8c6aa818a432dd5",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "database": "dispatch_restore_4736ab3e70824284b893625005abb11e",
+      "restoredDatabase": "dispatch_restored_397e9d391d37402bb043be2943679feb",
+      "dumpSha256": "caabda2368a40a076e8eb2ac62d7497b07af256ee2c8294a66a2c5b94d9aac70"
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "database": "dispatch_restore_98fc618332a94363b0106427211700e8",
+      "restoredDatabase": "dispatch_restored_e1f94a94f63640d3b54b23ceae30f089",
+      "dumpSha256": "44d0b97e95ee4a9cdae1e336be88ce325f64e5ad95bb4d4c778cb1c61a04a912"
+    },
+    {
+      "name": "wrong-generated-hash",
+      "result": "intended original hash mismatch",
+      "database": "dispatch_restore_8f962750feb549c6b4d66fbc346663eb"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "database": "dispatch_restore_3f41430e0d1e4c4c9cf39f5453691dfc",
+      "restoredDatabase": "dispatch_restored_5308667441674195a9b555ad5b465b0e",
+      "dumpSha256": "133b0bd8a812329ff8198cac1c5d7491edc8fb5959fa067488fcfffeec045bbc"
+    }
+  ],
+  "scope": "Complete candidate SQL application and pg_dump/pg_restore within one isolated capped cluster. UTF-8 originals, private rows, schema and ACL replay. Manual history records; no CLI, encrypted installation point, Storage/worker alignment, offsite/physical-host, hosted or browser acceptance."
+}

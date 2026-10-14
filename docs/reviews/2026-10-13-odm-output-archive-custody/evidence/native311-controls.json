@@ -1,0 +1,60 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "interruption-exit-not-checked",
+    "outcome": "intended_failure",
+    "reason": "Owned archive child must stop at the actual interruption point",
+    "exitCode": 1
+  },
+  {
+    "control": "interrupted-plan-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Interrupted archive must retain its frozen plan without a complete receipt",
+    "exitCode": 1
+  },
+  {
+    "control": "interrupted-link-not-observed",
+    "outcome": "intended_failure",
+    "reason": "After-link interruption must expose its actual unpublished alias",
+    "exitCode": 1
+  },
+  {
+    "control": "recovery-byte-hash-changed",
+    "outcome": "intended_failure",
+    "reason": "Recovered archive must preserve its exact original bytes and hash",
+    "exitCode": 1
+  },
+  {
+    "control": "publication-promoted",
+    "outcome": "intended_failure",
+    "reason": "Supplied archive recovery cannot grant publication, callback or quality",
+    "exitCode": 1
+  },
+  {
+    "control": "recovery-alias-left",
+    "outcome": "intended_failure",
+    "reason": "Recovered archive must reconcile the owned interrupted alias",
+    "exitCode": 1
+  },
+  {
+    "control": "copied-receipt-changed",
+    "outcome": "intended_failure",
+    "reason": "Local copied archive receipt must remain exact",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

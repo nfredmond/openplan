@@ -1,0 +1,274 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "matching-bytes-grant-permission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "captured matching bytes must not grant transport permission",
+    "source": "library",
+    "test": "test_complete_draft_reports_exact_bytes_without_permission"
+  },
+  {
+    "control": "wrong-original-plan-hash",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "draft result must bind exact original plan",
+    "source": "library",
+    "test": "test_complete_draft_reports_exact_bytes_without_permission"
+  },
+  {
+    "control": "partial-draft-promoted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "known missing upload must remain partial",
+    "source": "library",
+    "test": "test_partial_draft_accounts_for_missing_planned_upload"
+  },
+  {
+    "control": "absence-promoted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "absence cannot establish that an engine effect did not run",
+    "source": "library",
+    "test": "test_absent_draft_is_inconclusive"
+  },
+  {
+    "control": "missing-body-promoted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "missing metadata can follow an uncertain commit",
+    "source": "library",
+    "test": "test_missing_metadata_remains_inconclusive"
+  },
+  {
+    "control": "overwritten-metadata-accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_changed_native_metadata_refuses"
+  },
+  {
+    "control": "changed-source-bytes-accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_changed_upload_bytes_refuse"
+  },
+  {
+    "control": "duplicate-uploads-accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_unknown_duplicate_files_and_directories_refuse"
+  },
+  {
+    "control": "unbounded-file-census",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Draft enumeration read beyond declared bound",
+    "source": "library",
+    "test": "test_filename_enumeration_is_bounded"
+  },
+  {
+    "control": "wrong-plan-shape-diagnostic",
+    "kind": "mixed_target_failures",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "library",
+    "test": "test_original_plan_shape_and_source_hash_guards"
+  },
+  {
+    "control": "empty-mapping-diagnostic",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match",
+    "source": "library",
+    "test": "test_original_upload_mapping_and_typed_rows_refuse"
+  },
+  {
+    "control": "changed-original-slot",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_original_upload_mapping_and_typed_rows_refuse"
+  },
+  {
+    "control": "normalized-plan-rebound",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_original_engine_plan_bindings_reconstructed"
+  },
+  {
+    "control": "duplicate-native-json-key",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_metadata_duplicate_keys_and_nonfinite_values_refuse"
+  },
+  {
+    "control": "unbounded-native-json",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_metadata_bound_rejects_oversized_valid_json"
+  },
+  {
+    "control": "upload-reader-bypassed",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "not raised",
+    "source": "library",
+    "test": "test_alias_public_and_special_files_refuse"
+  },
+  {
+    "control": "public-engine-root",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_private_roots_and_aliases_refuse"
+  },
+  {
+    "control": "public-engine-tmp",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_private_roots_and_aliases_refuse"
+  },
+  {
+    "control": "public-engine-draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_private_roots_and_aliases_refuse"
+  },
+  {
+    "control": "planned-byte-budget-ignored",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Draft bytes read before planned-budget admission",
+    "source": "library",
+    "test": "test_byte_budgets_and_deadlines_refuse"
+  },
+  {
+    "control": "invalid-inspection-timeout",
+    "kind": "mixed_target_failures",
+    "outcome": "intended_failure",
+    "reason": "not raised",
+    "source": "library",
+    "test": "test_byte_budgets_and_deadlines_refuse"
+  },
+  {
+    "control": "invalid-byte-budget",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_byte_budgets_and_deadlines_refuse"
+  },
+  {
+    "control": "late-upload-filename-ignored",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "library",
+    "test": "test_late_planned_filename_refuses_partial_snapshot"
+  },
+  {
+    "control": "inspection-edits-draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "draft inspection must leave ordinary bytes and modes unchanged",
+    "source": "library",
+    "test": "test_inspection_preserves_all_ordinary_files_and_modes"
+  },
+  {
+    "control": "wrong-package-verification-grade",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "actual root package must be verified",
+    "source": "cli",
+    "test": "test_actual_cli_verifies_package_before_inspection"
+  },
+  {
+    "control": "invalid-plan-hash-before-read",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Plan bytes read before hash format admission",
+    "source": "cli",
+    "test": "test_cli_refuses_original_plan_hash_mismatch"
+  },
+  {
+    "control": "changed-plan-hash-accepted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "cli",
+    "test": "test_cli_refuses_original_plan_hash_mismatch"
+  },
+  {
+    "control": "package-verification-after-draft",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Draft parsed before package verification",
+    "source": "cli",
+    "test": "test_cli_refuses_corrupt_package_before_draft_parse"
+  },
+  {
+    "control": "late-package-change-ignored",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "cli",
+    "test": "test_cli_reverifies_package_after_inspection"
+  },
+  {
+    "control": "changed-package-manifest-ignored",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "cli",
+    "test": "test_cli_refuses_changed_manifest_after_inspection"
+  },
+  {
+    "control": "invalid-cli-timeout",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "cli",
+    "test": "test_cli_private_plan_parent_and_time_budget"
+  },
+  {
+    "control": "public-plan-parent",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised",
+    "source": "cli",
+    "test": "test_cli_private_plan_parent_and_time_budget"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

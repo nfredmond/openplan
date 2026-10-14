@@ -1,0 +1,18 @@
+[
+  {
+    "control": "pointer-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "pointer-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "pointer-broken",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "pointer-restored",
+    "outcome": "survived"
+  }
+]

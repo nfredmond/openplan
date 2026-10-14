@@ -44,6 +44,14 @@ const claimedSchema = z.object({
  * The map package endpoint for the planner's own connector. It accepts only
  * the scoped project connection bearer: no cookie session, no service key on
  * the planner's computer, and every state change is a locked database function.
+ *
+ * Action-registry exception, recorded on purpose: the agent's files are
+ * recorded and made ready here through service-role calls, not through an
+ * approved registry action. The planner approves the frozen brief when the
+ * package is requested; the run writes only that package's own state and
+ * files, each read back and checked by size and sha256, and changes no other
+ * workspace record. A ready package appears only on the Maps pages for
+ * download; no other module reads it.
  */
 export async function POST(request: NextRequest) {
   const audit = createApiAuditLogger("map_packages.connector.post", request);

@@ -1,0 +1,37 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "reason": null
+  },
+  {
+    "control": "preceding-ten-minute-wrapper",
+    "outcome": "intended_failure",
+    "reason": "Aerial CI wrapper must retain its reviewed twenty-minute bound"
+  },
+  {
+    "control": "unbounded-wrapper",
+    "outcome": "intended_failure",
+    "reason": "Aerial CI wrapper must retain its reviewed twenty-minute bound"
+  },
+  {
+    "control": "final-journal-controls-removed",
+    "outcome": "intended_failure",
+    "reason": "Reviewed aerial execution commands or configuration differ"
+  },
+  {
+    "control": "execution-deadline-added",
+    "outcome": "intended_failure",
+    "reason": "Reviewed aerial execution commands or configuration differ"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "reason": null
+  }
+]

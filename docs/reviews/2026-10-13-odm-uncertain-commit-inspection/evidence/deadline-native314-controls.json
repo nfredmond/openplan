@@ -1,0 +1,102 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "read-child-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Runtime native observation must launch the exact supervised read children",
+    "exitCode": 1
+  },
+  {
+    "control": "application-read-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Actual runtime observation must check current access and native identity",
+    "exitCode": 1
+  },
+  {
+    "control": "engine-check-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Actual runtime observation must check current access and native identity",
+    "exitCode": 1
+  },
+  {
+    "control": "body-hash-summary-changed",
+    "outcome": "intended_failure",
+    "reason": "Actual runtime metadata must bind the independent native reply",
+    "exitCode": 1
+  },
+  {
+    "control": "reported-failure-promoted",
+    "outcome": "intended_failure",
+    "reason": "Runtime reported native failure cannot become processing success",
+    "exitCode": 1
+  },
+  {
+    "control": "processing-permission-promoted",
+    "outcome": "intended_failure",
+    "reason": "Runtime observation cannot grant effects or publication",
+    "exitCode": 1
+  },
+  {
+    "control": "copied-reply-projection-changed",
+    "outcome": "intended_failure",
+    "reason": "Runtime local copied reply must remain exact without another engine read",
+    "exitCode": 1
+  },
+  {
+    "control": "commit-post-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Native uncertain commit must use two application reads, three engine checks and one supervised POST",
+    "exitCode": 1
+  },
+  {
+    "control": "commit-application-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Native uncertain commit must use two application reads, three engine checks and one supervised POST",
+    "exitCode": 1
+  },
+  {
+    "control": "commit-engine-census-lost",
+    "outcome": "intended_failure",
+    "reason": "Native uncertain commit must use two application reads, three engine checks and one supervised POST",
+    "exitCode": 1
+  },
+  {
+    "control": "commit-replay-state-changed",
+    "outcome": "intended_failure",
+    "reason": "Native lost original commit must remain held without reissue",
+    "exitCode": 1
+  },
+  {
+    "control": "commit-quality-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native uncertain commit cannot promote quality or publication",
+    "exitCode": 1
+  },
+  {
+    "control": "inspection-acknowledgment-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native inspection cannot acknowledge the lost exact commit reply",
+    "exitCode": 1
+  },
+  {
+    "control": "inspection-retry-permission-promoted",
+    "outcome": "intended_failure",
+    "reason": "Native inspection cannot grant retry or publication",
+    "exitCode": 1
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,418 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "returned-count-changed",
+    "test": "test_actual_exact_get_and_proxy_independence",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Exact source bytes and count must return"
+  },
+  {
+    "control": "stored-payload-changed",
+    "test": "test_actual_exact_get_and_proxy_independence",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Exact source bytes and count must return"
+  },
+  {
+    "control": "original-query-omitted",
+    "test": "test_actual_exact_get_and_proxy_independence",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original signed query must reach the source"
+  },
+  {
+    "control": "encoded-request-header",
+    "test": "test_actual_exact_get_and_proxy_independence",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "'gzip' != 'identity'"
+  },
+  {
+    "control": "stream-count-changed",
+    "test": "test_actual_chunked_and_unknown_length",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "AssertionError:"
+  },
+  {
+    "control": "redirect-target-changed",
+    "test": "test_approved_redirect_closes_unread_body",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "AssertionError:"
+  },
+  {
+    "control": "redirect-address-not-checked",
+    "test": "test_redirect_address_checked_before_connection",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "redirect-ceiling-refusal-omitted",
+    "test": "test_redirect_limit_and_port_checked",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Redirect child must refuse at its original ceiling"
+  },
+  {
+    "control": "url-syntax-not-checked",
+    "test": "test_invalid_urls_refuse_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid URL spawned"
+  },
+  {
+    "control": "url-authority-not-checked",
+    "test": "test_invalid_urls_refuse_before_spawn",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": [
+      "Invalid URL spawned",
+      "argument of type 'NoneType' is not"
+    ]
+  },
+  {
+    "control": "url-port-not-checked",
+    "test": "test_invalid_urls_refuse_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid URL spawned"
+  },
+  {
+    "control": "scoped-host-not-checked",
+    "test": "test_invalid_urls_refuse_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid URL spawned"
+  },
+  {
+    "control": "pre-cancel-not-checked",
+    "test": "test_pre_cancelled_refuses_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cancelled source spawned"
+  },
+  {
+    "control": "deadline-type-not-checked",
+    "test": "test_expired_or_nonfinite_deadline_refuses_before_spawn",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": [
+      "deadline must be finite",
+      "Source transport deadline exceeded"
+    ]
+  },
+  {
+    "control": "expiry-not-checked",
+    "test": "test_expired_or_nonfinite_deadline_refuses_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired source spawned"
+  },
+  {
+    "control": "cancellation-type-not-checked",
+    "test": "test_invalid_cancellation_type_refuses",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport cancelled"
+  },
+  {
+    "control": "constructor-adapter-not-checked",
+    "test": "test_invalid_constructor_policy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-policy-not-checked",
+    "test": "test_invalid_constructor_policy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-redirect-not-checked",
+    "test": "test_invalid_constructor_policy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-trust-path-not-checked",
+    "test": "test_invalid_constructor_policy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "byte-limit-not-checked",
+    "test": "test_invalid_byte_limit_or_writer_refuses_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid byte writer spawned"
+  },
+  {
+    "control": "writer-not-checked",
+    "test": "test_invalid_byte_limit_or_writer_refuses_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid byte writer spawned"
+  },
+  {
+    "control": "parent-metadata-limit-not-checked",
+    "test": "test_metadata_bound_refuses_before_spawn",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized metadata spawned"
+  },
+  {
+    "control": "public-address-filter-omitted",
+    "test": "test_address_policy_public_and_explicit_local",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": [
+      "Only public unicast is permitted by default",
+      "True is not false"
+    ]
+  },
+  {
+    "control": "unicast-filter-omitted",
+    "test": "test_address_policy_public_and_explicit_local",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": [
+      "Only public unicast is permitted by default",
+      "True is not false"
+    ]
+  },
+  {
+    "control": "translated-address-filter-omitted",
+    "test": "test_address_policy_public_and_explicit_local",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Explicit networks cannot admit translated IPv4 aliases"
+  },
+  {
+    "control": "mixed-dns-answers-not-checked",
+    "test": "test_all_dns_answers_must_pass_policy",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "pinned-socket-omitted",
+    "test": "test_pinned_connection_does_not_resolve_again",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Pinned connection resolved again"
+  },
+  {
+    "control": "response-status-not-checked",
+    "test": "test_incomplete_encoded_ambiguous_or_partial_response_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "child-length-match-not-checked",
+    "test": "test_incomplete_encoded_ambiguous_or_partial_response_refuses",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "child-overflow-not-checked",
+    "test": "test_declared_and_actual_overflow_never_write_excess",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport bytes exceed their bound"
+  },
+  {
+    "control": "active-cancellation-not-checked",
+    "test": "test_actual_cancellation_reaps_child_and_closes_headers_and_body",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport deadline exceeded"
+  },
+  {
+    "control": "active-deadline-not-checked",
+    "test": "test_actual_deadline_reaps_stalled_response",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport did not complete"
+  },
+  {
+    "control": "frame-shape-not-checked",
+    "test": "test_parent_frame_and_completion_checks",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": [
+      "frame differs",
+      "ValueError not raised"
+    ]
+  },
+  {
+    "control": "completion-hash-not-checked",
+    "test": "test_parent_frame_and_completion_checks",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-completion-accepted",
+    "test": "test_parent_frame_and_completion_checks",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "parent-byte-limit-not-checked",
+    "test": "test_parent_bounds_supplied_child_and_short_local_write",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport did not complete"
+  },
+  {
+    "control": "short-local-write-not-checked",
+    "test": "test_parent_bounds_supplied_child_and_short_local_write",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport did not complete"
+  },
+  {
+    "control": "response-shape-not-checked",
+    "test": "test_response_shape_refuses_before_body",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "response-numeric-length-not-checked",
+    "test": "test_response_shape_refuses_before_body",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "response-declared-cap-not-checked",
+    "test": "test_response_shape_refuses_before_body",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "actual-child-overflow-not-checked",
+    "test": "test_child_actual_overflow_refuses_without_parent_guard",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized child must refuse before a byte frame"
+  },
+  {
+    "control": "child-invocation-not-checked",
+    "test": "test_invalid_child_invocation_refuses_before_request",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid child invocation must refuse before input"
+  },
+  {
+    "control": "child-metadata-cap-not-checked",
+    "test": "test_child_diagnostics_and_metadata_bound",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized child metadata must refuse"
+  },
+  {
+    "control": "child-private-diagnostics-exposed",
+    "test": "test_child_diagnostics_and_metadata_bound",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Child diagnostics cannot expose a private trust path"
+  },
+  {
+    "control": "parent-diagnostic-cap-not-checked",
+    "test": "test_parent_diagnostic_bound",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Source transport did not complete"
+  },
+  {
+    "control": "unrelated-credentials-inherited",
+    "test": "test_child_environment_has_no_unrelated_credentials",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Source child cannot inherit unrelated credentials"
+  },
+  {
+    "control": "source-bridge-wrong-count",
+    "test": "test_actual_source_receipts_and_preparation_use_complete_bytes_once",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "URL source fetch count differs from delivered bytes"
+  },
+  {
+    "control": "source-cancellation-type-changed",
+    "test": "test_actual_source_cancelled_body_has_no_complete_receipt",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Broken source cancellation completion"
+  },
+  {
+    "control": "tls-trust-disabled",
+    "test": "test_actual_tls_checks_original_host_and_explicit_trust",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "tls-host-verification-disabled",
+    "test": "test_actual_tls_wrong_host_and_downgrade_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "tls-downgrade-not-checked",
+    "test": "test_actual_tls_wrong_host_and_downgrade_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "dns-child-not-awaited",
+    "test": "test_stalled_dns_cancellation_prevents_late_request",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Cancelled DNS child must be awaited before return"
+  },
+  {
+    "control": "dns-stop-signals-omitted",
+    "test": "test_stalled_dns_cancellation_prevents_late_request",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Abandoned DNS cannot start a late request"
+  },
+  {
+    "control": "parent-lifetime-watch-omitted",
+    "test": "test_abrupt_parent_exit_stops_and_reaps_owned_source_child",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Parent exit must stop the owned source child"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

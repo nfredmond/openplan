@@ -1,0 +1,20 @@
+{
+  "actualOriginalCommit": true,
+  "commitApplicationReads": 2,
+  "commitEngineChecks": 3,
+  "commitPosts": 1,
+  "commitReplayExact": true,
+  "actualRuntimeObservation": true,
+  "rpcCases": 17,
+  "applicationReads": 3,
+  "nativeEngineChecks": 2,
+  "taskGets": 1,
+  "reportedState": "failed",
+  "reportedImageCount": 2,
+  "bodySha256": "0f4e87b311107ec2e7466fa90be5edd7b5cc135c0cfab18d009775cc1ab50c5d",
+  "localCopiedReplyExact": true,
+  "applicationPermissionChecked": true,
+  "processingQualityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "defaultActivated": false
+}

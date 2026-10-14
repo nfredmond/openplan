@@ -1,0 +1,6 @@
+{
+  "workers/odm_worker/task_observation_cli.py": "84b1f6651b1e9ccf10e36f237d3be8e7d23c5e2659a6e1e746c947ee87a1f122",
+  "workers/odm_worker/retained_source.py": "dbfc565dbe917cc9029de7c9e453e10ffa4b710c08289d79c49e762b21568a0c",
+  "workers/odm_worker/test_task_observation_cli.py": "b77fe27573ddade65bfe15530b586eb414c817608a6153ea98d06c35f5b32d74",
+  "docs/reviews/2026-10-13-odm-task-observation-retention/verify_controls.py": "6d44053fe476496c94c437426df5da4f54aefe148dc8a528f18f6de6472b9620"
+}

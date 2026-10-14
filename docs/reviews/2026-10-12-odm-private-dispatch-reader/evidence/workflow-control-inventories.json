@@ -1,0 +1,147 @@
+[
+  {
+    "proof": "odm-admission-journal-controls",
+    "controls": 59,
+    "sha256": "d171584751669082fb7c2fd4cc18e27fe7cc47006b662bb70a7f30d59c22e648"
+  },
+  {
+    "proof": "odm-admission-journal-native",
+    "controls": 69,
+    "sha256": "6a92a522bef222c79c15d535acc48a69aeda3042fd758b4f9356e68ddddd5be6"
+  },
+  {
+    "proof": "odm-draft-custody-controls",
+    "controls": 36,
+    "sha256": "f7c5a83cf3e5544abe0e0fe4e99e7bf85eceba0646128a90b81386a323327b68"
+  },
+  {
+    "proof": "odm-draft-http-controls",
+    "controls": 47,
+    "sha256": "8d9c05378accb72daf0be32530f8b3f43f7f133e41d25707792a3ff766c1d8fb"
+  },
+  {
+    "proof": "odm-engine-effects-controls",
+    "controls": 44,
+    "sha256": "be59d29ac899e901dc6d96f0795c0771c646660622404d70e716e6b5d5995163"
+  },
+  {
+    "proof": "odm-engine-effects-native",
+    "controls": 60,
+    "sha256": "42a83f91950857c2ab378e1087a8700ce6e09e0494aa01f694be28487ff32668"
+  },
+  {
+    "proof": "odm-native-readiness-controls",
+    "controls": 9,
+    "sha256": "2949adfef8120571f2b60e89ea6a7d4e6991d49c6e0e5bad2376c69171148d5c"
+  },
+  {
+    "proof": "odm-native-readiness-native-controls",
+    "controls": 4,
+    "sha256": "832f2050cfd77986aa494122cd4c82c12b99117b478a694313e0f8b1703d414d"
+  },
+  {
+    "proof": "odm-original-dispatch-controls",
+    "controls": 44,
+    "sha256": "e561e280f52a06f1020f4e4cc83b465ab01046dbf3c78368c3ab14b9106a6fe8"
+  },
+  {
+    "proof": "odm-private-dispatch-reader-controls",
+    "controls": 60,
+    "sha256": "2e5917e600f155ff9504a4389ea1c93e616afe5a78af544913aaaeace843c7bb"
+  },
+  {
+    "proof": "odm-runtime-admission-controls",
+    "controls": 49,
+    "sha256": "1d0259768bd2c8509c48ff37f5b4ffe2bed5a8a9dce2b08d7941c111c5cadd90"
+  },
+  {
+    "proof": "odm-runtime-admission-native",
+    "controls": 93,
+    "sha256": "d9884bf77962398df4e981e29f6fe2014cbe16a74d42e618ba9f30ebec57634d"
+  },
+  {
+    "proof": "odm-runtime-draft-controls",
+    "controls": 31,
+    "sha256": "ab54a849a09c561fbd5e029d62cb5275136b195425e6c7dbbb879e3d6bed07e1"
+  },
+  {
+    "proof": "odm-runtime-preparation-controls",
+    "controls": 40,
+    "sha256": "16e03cfb085fb8e1c6b0c0c7187daebc07432db76553e28128a5ea9568f54d94"
+  },
+  {
+    "proof": "odm-runtime-preparation-native",
+    "controls": 81,
+    "sha256": "803218e6bbc433e7a16f1955fd2498897efb3157b2094759c87c1f4edcd80bad"
+  },
+  {
+    "proof": "odm-runtime-url-intake-controls",
+    "controls": 56,
+    "sha256": "f36d6dfe94a9ec93109cd89973743120ced5757e894f69d2b97f05cbc5f0215b"
+  },
+  {
+    "proof": "odm-runtime-url-intake-native",
+    "controls": 108,
+    "sha256": "a8afc0f05ad2d5058fdc626f79f4f6bdc4741b64f42b62e1f07f3a0739627059"
+  },
+  {
+    "proof": "odm-source-custody-controls",
+    "controls": 57,
+    "sha256": "b529874872f6ecbd50038e8052ebfaf8ee8508776a127fb47c58a7d95dc469c8"
+  },
+  {
+    "proof": "odm-source-custody-native",
+    "controls": 96,
+    "sha256": "4b848219c27752d223a6d09254c02588fff35fa8abef176db34f11e47e26cdb0"
+  },
+  {
+    "proof": "odm-url-draft-pipeline-controls",
+    "controls": 32,
+    "sha256": "79151a6ce3287705a9dd8ca932f478868dda4296e92f78c67391972b6915ceeb"
+  },
+  {
+    "proof": "odm-url-draft-pipeline-transport-controls",
+    "controls": 6,
+    "sha256": "60507f9483ad903a0546f1a941aad2305beaa07685e808bb485752861ec3ff4d"
+  },
+  {
+    "proof": "odm-url-source-controls",
+    "controls": 48,
+    "sha256": "04c53ab1b7cabfb46217e8d03c9c8810c328d9d5fad3fe2c1e22e4421a9bfd2d"
+  },
+  {
+    "proof": "odm-url-source-native",
+    "controls": 75,
+    "sha256": "0271f338c39f380604ee0023dd647bbdf9a4911599b939bae61b29c034a82ca1"
+  },
+  {
+    "proof": "odm-url-transport-controls",
+    "controls": 59,
+    "sha256": "879598262485ef226d0b2957879721735cde23576df8dfc84169b404bf6818c3"
+  },
+  {
+    "proof": "odm-url-transport-native",
+    "controls": 87,
+    "sha256": "4fcd49159dde3c3e2a84a86fbaa865a3c814df7bb3b3d3ec8e92292c77ea3e3c"
+  },
+  {
+    "proof": "odm-zip-derived-controls",
+    "controls": 49,
+    "sha256": "c199eabc9fc6344ca814ea586e2428331175bb2fdb65f006f574f08b34108e59"
+  },
+  {
+    "proof": "odm-zip-derived-native",
+    "controls": 81,
+    "sha256": "ce7c5c08217a5f3c499e3158f6458f7e4fc80f63085638a57a9e64cb574451a6"
+  },
+  {
+    "proof": "odm-zip-engine-controls",
+    "controls": 26,
+    "sha256": "b46f12d6b6cdb37573c18454ee5f7032512808d45287ed2fb97661ef188e9eda"
+  },
+  {
+    "proof": "odm-zip-engine-native",
+    "controls": 69,
+    "sha256": "ad97823cf54ee4c210bf621a194ba8469c11795e3afa8f1e70b810331a3c1ac4"
+  }
+]

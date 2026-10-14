@@ -16,6 +16,7 @@ import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
+import { reserveCensusTractIngest } from "@/lib/data-sources/census-tract-ingest-limit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { placeKindSchema } from "@/lib/api/place-geographies";
 import { resolvePlaceBoundary } from "@/lib/geographies/place-resolver";
@@ -360,7 +361,18 @@ export async function PATCH(request: NextRequest) {
       try {
         after(async () => {
           try {
-            await ingestCensusTractsForCounty(createServiceRoleClient(), {
+            // The same per-person allowance as the ingest route, so changing
+            // the home geography in a loop cannot drive unlimited loads. A
+            // refused or unchecked reservation skips the load.
+            const service = createServiceRoleClient();
+            const reservation = await reserveCensusTractIngest(service, {
+              userId: user.id,
+              workspaceId: parsed.data.workspaceId,
+              counties: [county],
+              sourceRoute: "/api/workspaces/home-geography",
+            });
+            if (reservation.status !== "reserved") return;
+            await ingestCensusTractsForCounty(service, {
               stateFips: county.stateFips,
               countyFips: county.countyFips,
             });

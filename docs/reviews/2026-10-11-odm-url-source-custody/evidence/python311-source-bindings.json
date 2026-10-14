@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/url_source_custody.py": "6afd133f4d1b51b61d273eab727b77c5d005a682ea65d1278c97db1b94ec2f30",
+  "workers/odm_worker/test_url_source_custody.py": "d20fbade3378415e9f81fbbfbf64a210be2ecf03ecf6da24303153b86fd6f7df",
+  "docs/reviews/2026-10-11-odm-url-source-custody/verify_controls.py": "521a3eb3aedb8eb3b99a275c41860b61835b3c7c330f6d2a828e589f386458d0"
+}

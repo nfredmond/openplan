@@ -1,0 +1,5 @@
+{
+  "docs/reviews/2026-10-13-odm-commit-reply-contract/native_commit.py": "72c9ae66854cee41ddaded6c28872dfbabead909602d63b2c1a54b5a2b797b1a",
+  "docs/reviews/2026-10-11-odm-draft-reconciliation/native_reconciliation.py": "ed7f5037b340a37da36632b09478419be690bda70f75cc138f6475fdd42a54df",
+  "workers/odm_worker/engine_effects.py": "df89851a49c2be4d52fe3e582a36d42026d895bc371f50e81143c8b70c145cb7"
+}

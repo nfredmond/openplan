@@ -1,0 +1,116 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "current-read-omitted",
+    "test": "test_actual_pipeline_reads_current_access_before_each_original_command",
+    "kind": "broken_behavior",
+    "reason": "Each original draft command must read current access",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "revoked-access-promoted",
+    "test": "test_revoked_access_refuses_before_upload_intent_and_preserves_original",
+    "kind": "broken_behavior",
+    "reason": "PermissionError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "unattested-engine-permitted",
+    "test": "test_engine_refusal_cannot_issue_or_send_next_command",
+    "kind": "broken_behavior",
+    "reason": "PermissionError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "attestation-type-unchecked",
+    "test": "test_attestation_requires_boolean",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "command-guard-omitted",
+    "test": "test_exact_command_and_commit_refuse_before_private_read",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "plan-shape-unchecked",
+    "test": "test_plan_shape_refuses_before_private_read",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "engine-identity-unchecked",
+    "test": "test_engine_changes_refuse_before_private_read",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "saved-scope-unchecked",
+    "test": "test_binding_changes_refuse_before_current_read",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "binding-shape-late-refusal",
+    "test": "test_binding_shape_refuses_before_saved_read",
+    "kind": "diagnostic_refusal",
+    "reason": "does not match",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "test": "test_constructor_requires_reader_attestor_and_engine",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "deadline-replaced",
+    "test": "test_attestation_receives_detached_engine_and_actual_deadline",
+    "kind": "broken_behavior",
+    "reason": "Attestation must receive the exact shared deadline and original engine",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "attestation-engine-alias",
+    "test": "test_attestation_receives_detached_engine_and_actual_deadline",
+    "kind": "broken_behavior",
+    "reason": "Attestation cannot change the configured engine",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "post-attestation-expiry-unchecked",
+    "test": "test_expiry_during_attestation_refuses_before_intent",
+    "kind": "broken_behavior",
+    "reason": "TimeoutError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "post-attestation-owner-unchecked",
+    "test": "test_owner_loss_after_attestation_refuses",
+    "kind": "broken_behavior",
+    "reason": "ValueError not raised",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

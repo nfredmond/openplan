@@ -1,0 +1,113 @@
+{
+  "configuration": [],
+  "format": "openplan-installation-worker-profile-v1",
+  "installationId": "REPLACE-WITH-INSTALLATION-LABEL",
+  "roots": [],
+  "workers": {
+    "activitysim": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "aequilibrae": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "contract-calculations": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "county-onramp": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "document-exports": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "engagement-email": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "gtfs-ingestion": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "ocr": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "odm": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "planner-agent-connector": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "provider-api": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "synthesis-execution": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "synthesis-generation": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "synthesis-preparation": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    },
+    "translation-generation": {
+      "configurationIds": [],
+      "custody": "unassessed",
+      "notes": "[OPERATOR: record deployment, retained state, configuration and dependencies.]",
+      "rootIds": [],
+      "state": "unassessed"
+    }
+  }
+}

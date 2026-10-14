@@ -1,0 +1,506 @@
+[
+  {
+    "control": "binding-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "binding-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "binding-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "binding-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "binding-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "binding-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "current-access-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "current-access-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "current-access-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "current-access-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "current-access-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "current-access-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "initial-access-read-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "initial-access-read-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "initial-access-read-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "initial-access-read-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "initial-access-read-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "initial-access-read-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "post-read-access-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "post-read-access-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-read-access-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "post-read-access-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "post-read-access-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "post-read-access-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "final-access-read-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "final-access-read-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-access-read-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "final-access-read-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "final-access-read-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "final-access-read-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "task-preflight-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "task-preflight-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "task-preflight-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "task-preflight-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "task-preflight-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "task-preflight-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "record-hash-summary-altered-exact",
+    "accepted": true
+  },
+  {
+    "control": "record-hash-summary-altered-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "record-hash-summary-altered-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "record-hash-summary-altered-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "record-hash-summary-altered-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "record-hash-summary-altered-success-output",
+    "accepted": false
+  },
+  {
+    "control": "initial-read-census-lost-exact",
+    "accepted": true
+  },
+  {
+    "control": "initial-read-census-lost-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "initial-read-census-lost-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "initial-read-census-lost-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "initial-read-census-lost-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "initial-read-census-lost-success-output",
+    "accepted": false
+  },
+  {
+    "control": "processing-permission-granted-exact",
+    "accepted": true
+  },
+  {
+    "control": "processing-permission-granted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "processing-permission-granted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "processing-permission-granted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "processing-permission-granted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "processing-permission-granted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "callback-permission-granted-exact",
+    "accepted": true
+  },
+  {
+    "control": "callback-permission-granted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "callback-permission-granted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "callback-permission-granted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "callback-permission-granted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "callback-permission-granted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "state-promoted-from-observation-exact",
+    "accepted": true
+  },
+  {
+    "control": "state-promoted-from-observation-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "state-promoted-from-observation-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "state-promoted-from-observation-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "state-promoted-from-observation-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "state-promoted-from-observation-success-output",
+    "accepted": false
+  },
+  {
+    "control": "invalid-timeout-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "invalid-timeout-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "invalid-timeout-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "invalid-timeout-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "invalid-timeout-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "invalid-timeout-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "invalid-adapters-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "invalid-adapters-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "invalid-adapters-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "invalid-adapters-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "invalid-adapters-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "invalid-adapters-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-exact",
+    "accepted": true
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "runtime-ownership-not-forwarded-success-output",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-bypassed-exact",
+    "accepted": true
+  },
+  {
+    "control": "engine-check-bypassed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-bypassed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-bypassed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-bypassed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-bypassed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "metadata-alias-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "metadata-alias-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "metadata-alias-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "metadata-alias-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "metadata-alias-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "metadata-alias-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "local-copy-digest-summary-altered-exact",
+    "accepted": true
+  },
+  {
+    "control": "local-copy-digest-summary-altered-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "local-copy-digest-summary-altered-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "local-copy-digest-summary-altered-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "local-copy-digest-summary-altered-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "local-copy-digest-summary-altered-success-output",
+    "accepted": false
+  },
+  {
+    "control": "unowned-runtime-adopted-exact",
+    "accepted": true
+  },
+  {
+    "control": "unowned-runtime-adopted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "unowned-runtime-adopted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "unowned-runtime-adopted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "unowned-runtime-adopted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "unowned-runtime-adopted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "job-original-check-removed-exact",
+    "accepted": true
+  },
+  {
+    "control": "job-original-check-removed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "job-original-check-removed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "job-original-check-removed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "job-original-check-removed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "job-original-check-removed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "prepared-engine-hash-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "prepared-engine-hash-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "prepared-engine-hash-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "prepared-engine-hash-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "prepared-engine-hash-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "prepared-engine-hash-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "prepared-record-checks-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "prepared-record-checks-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "prepared-record-checks-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "prepared-record-checks-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "prepared-record-checks-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "prepared-record-checks-ignored-success-output",
+    "accepted": false
+  }
+]

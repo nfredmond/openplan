@@ -19,7 +19,10 @@ strengthen or amend it, but a release plan may not quietly narrow it.
 Interim releases follow the [development release policy](DEVELOPMENT_RELEASE_POLICY.md),
 accepted by Nathaniel on September 7, 2026. The complete v1 destination remains
 binding; known partial v1 outcomes do not freeze unrelated development releases.
-Hosted deployment is deferred and Vercel is inactive.
+Nathaniel authorizes hosted operation on October 10, 2026. The
+[public cutover record](../ops/HOSTED_LIVE_2026-10-11.md) documents that installation's
+dated checks and limits. Hosted operation does not require paid infrastructure
+for independent installations or establish full v1 acceptance.
 
 ## Mission
 

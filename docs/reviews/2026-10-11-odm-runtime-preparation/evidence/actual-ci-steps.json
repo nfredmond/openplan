@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Owned runtime preparation harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-preparation-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "2071369a3f688ac9c9b984e6cbe5c5a3c5be818e09ba0602d99a8a06d4d6d1db"
+  },
+  {
+    "name": "Interrupted owned runtime preparation and stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-runtime-preparation-native\"\n",
+    "exit": 0,
+    "workflowSha256": "2071369a3f688ac9c9b984e6cbe5c5a3c5be818e09ba0602d99a8a06d4d6d1db"
+  }
+]

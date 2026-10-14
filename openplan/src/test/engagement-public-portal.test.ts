@@ -108,7 +108,7 @@ describe("engagement public portal helpers", () => {
       // five is complete while the other four are the real gaps.
       completeCount: 1,
       totalChecks: 5,
-      nextAction: "Generate and save a share token before sending public outreach.",
+      nextAction: "The link stays closed to residents until the last step is done.",
     });
     expect(readiness.checks.map((check) => [check.id, check.passed])).toEqual([
       ["share_token", false],

@@ -14,6 +14,7 @@ import {
 } from "@/lib/aerial/aoi-seed";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 
 const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
   process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
@@ -231,9 +232,13 @@ export function MissionAoiEditor({
       canvas.setAttribute("tabindex", "-1");
       canvas.setAttribute("aria-hidden", "true");
 
+      // The shape as it stands NOW, through the refs. An existing AOI is in
+      // state from the first render, and the update effect below cannot draw it
+      // before this source exists; drawing an empty preview here left a saved
+      // area off the map until the planner changed it.
       map.addSource("aoi-preview", {
         type: "geojson",
-        data: buildPreviewFeatureCollection([], "idle"),
+        data: buildPreviewFeatureCollection(verticesRef.current, statusRef.current),
       });
       map.addLayer({
         id: "aoi-preview-fill",
@@ -296,12 +301,16 @@ export function MissionAoiEditor({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Waits for the style rather than bailing: a vertex added while tiles still
+  // streamed used to stay off the preview until the next change. Before `load`
+  // there is no source, and the load handler draws from the refs instead.
   useEffect(() => {
     const map = mapRef.current;
-    if (!map || !map.isStyleLoaded()) return;
-    const source = map.getSource("aoi-preview") as mapboxgl.GeoJSONSource | undefined;
-    if (!source) return;
-    source.setData(buildPreviewFeatureCollection(vertices, status));
+    if (!map) return;
+    return whenStyleAccepts(map, () => {
+      const source = map.getSource("aoi-preview") as mapboxgl.GeoJSONSource | undefined;
+      source?.setData(buildPreviewFeatureCollection(vertices, status));
+    });
   }, [vertices, status]);
 
   const handleMapKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {

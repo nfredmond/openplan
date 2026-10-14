@@ -1,0 +1,17 @@
+[
+  {
+    "stage": "native311",
+    "returncode": 0,
+    "seconds": 5.875
+  },
+  {
+    "stage": "documentation",
+    "returncode": 0,
+    "seconds": 3.243
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.353
+  }
+]

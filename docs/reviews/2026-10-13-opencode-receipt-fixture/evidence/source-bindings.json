@@ -1,0 +1,6 @@
+{
+  "workers/planner_agent_connector/test/fixtures/receipt-publication.mjs": "b6735673012616ab296d6cc5f7c3beb967e645943621654739c9c1f145c8f644",
+  "workers/planner_agent_connector/test/fixtures/opencode-server.mjs": "5c45bdf6514d27e3f1b07d01e6726994b695c8f4701fcc16cfc6a6d6244c6d0a",
+  "workers/planner_agent_connector/test/opencode-process.test.mjs": "7aadf8b289a47639829b94c5b909fba2a56b101664ee4a1c1cc9702a1409720a",
+  "workers/planner_agent_connector/opencode-process.mjs": "311001782c59b3c622a1628f6c1cc5b30c7f6e2a841f415163182980b0fbc42f"
+}

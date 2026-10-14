@@ -1,0 +1,142 @@
+[
+  {
+    "stage": "ops-test_automated_checks",
+    "returncode": 0,
+    "seconds": 0.025
+  },
+  {
+    "stage": "ops-test_control_layout",
+    "returncode": 0,
+    "seconds": 0.758
+  },
+  {
+    "stage": "ops-test_control_panel",
+    "returncode": 0,
+    "seconds": 3.531
+  },
+  {
+    "stage": "ops-test_control_processes",
+    "returncode": 0,
+    "seconds": 2.564
+  },
+  {
+    "stage": "ops-test_database_key_custody",
+    "returncode": 0,
+    "seconds": 0.155
+  },
+  {
+    "stage": "ops-test_demo_database",
+    "returncode": 0,
+    "seconds": 0.086
+  },
+  {
+    "stage": "ops-test_full_restore",
+    "returncode": 0,
+    "seconds": 0.162
+  },
+  {
+    "stage": "ops-test_installation_worker_inventory",
+    "returncode": 0,
+    "seconds": 0.223
+  },
+  {
+    "stage": "ops-test_key_restore_workflow",
+    "returncode": 0,
+    "seconds": 0.049
+  },
+  {
+    "stage": "ops-test_reconstruct_owp_restore",
+    "returncode": 0,
+    "seconds": 0.503
+  },
+  {
+    "stage": "ops-test_recovery_point_manifest",
+    "returncode": 0,
+    "seconds": 0.581
+  },
+  {
+    "stage": "ops-test_restore_drill_ownership",
+    "returncode": 0,
+    "seconds": 0.152
+  },
+  {
+    "stage": "ops-test_restore_encrypted_canary",
+    "returncode": 0,
+    "seconds": 0.182
+  },
+  {
+    "stage": "ops-test_restore_ports",
+    "returncode": 0,
+    "seconds": 0.043
+  },
+  {
+    "stage": "ops-test_safe_refresh",
+    "returncode": 0,
+    "seconds": 4.957
+  },
+  {
+    "stage": "ops-test_serving_process",
+    "returncode": 0,
+    "seconds": 0.076
+  },
+  {
+    "stage": "ops-test_stacked_pr_checks",
+    "returncode": 0,
+    "seconds": 0.043
+  },
+  {
+    "stage": "ops-test_worker_journal_snapshot",
+    "returncode": 0,
+    "seconds": 0.359
+  },
+  {
+    "stage": "ops-test_worker_root_set_snapshot",
+    "returncode": 0,
+    "seconds": 0.69
+  },
+  {
+    "stage": "ops-test_worker_root_snapshot",
+    "returncode": 0,
+    "seconds": 0.647
+  },
+  {
+    "stage": "ops-controls-test_control_layout",
+    "returncode": 0,
+    "seconds": 1.903
+  },
+  {
+    "stage": "ops-controls-test_control_panel",
+    "returncode": 0,
+    "seconds": 10.096
+  },
+  {
+    "stage": "ops-controls-test_safe_refresh",
+    "returncode": 0,
+    "seconds": 11.319
+  },
+  {
+    "stage": "ops-controls-test_demo_database",
+    "returncode": 0,
+    "seconds": 0.757
+  },
+  {
+    "stage": "installed-rpc",
+    "returncode": 0,
+    "seconds": 40.276
+  },
+  {
+    "stage": "aerial-app-tests",
+    "returncode": 0,
+    "seconds": 1.777
+  },
+  {
+    "stage": "scoped-types",
+    "returncode": 0,
+    "seconds": 1.621
+  },
+  {
+    "stage": "changed-file-lint",
+    "returncode": 0,
+    "seconds": 1.709
+  }
+]

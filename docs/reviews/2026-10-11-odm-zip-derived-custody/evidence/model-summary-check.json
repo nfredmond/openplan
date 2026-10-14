@@ -1,0 +1,17 @@
+{
+  "requestedModel": "claude-haiku-5-5",
+  "requestedEffort": "high",
+  "task": "Summarize already gathered JSON counts",
+  "received": {
+    "sourceControls": 49,
+    "harmlessSourceControls": 4,
+    "brokenSourceControls": 45,
+    "nativeObservations": 26,
+    "nativeControls": 81,
+    "nativeSeconds": 0.52,
+    "aerialScripts": 13,
+    "workerRecoveryAccepted": false
+  },
+  "exactTypedCountsMatch": true,
+  "independentEngineeringReview": false
+}

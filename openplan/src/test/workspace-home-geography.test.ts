@@ -229,6 +229,7 @@ const rpcMock = vi.fn(
     return { data: args.p_time_zone ?? null, error: null };
   }
 );
+const reserveRpcMock = vi.fn();
 
 vi.mock("@/lib/observability/audit", () => ({
   createApiAuditLogger: () => ({ info: vi.fn(), warn: vi.fn(), error: vi.fn() }),
@@ -250,6 +251,7 @@ vi.mock("@/lib/supabase/server", () => ({
     },
   }),
   createServiceRoleClient: () => ({
+    rpc: (fn: string, args: Record<string, unknown>) => reserveRpcMock(fn, args),
     from: () => ({
       update: (row: unknown) => {
         serviceUpdateMock(row);
@@ -320,6 +322,7 @@ describe("/api/workspaces/home-geography", () => {
       error: null,
     });
     serviceUpdateMaybeSingleMock.mockResolvedValue({ data: { id: WORKSPACE_ID, ...geography() }, error: null });
+    reserveRpcMock.mockResolvedValue({ data: { allowed: true, recent: 1, limit: 20, retryAfterSeconds: 0 }, error: null });
     resolvePlaceBoundaryMock.mockResolvedValue({
       kind: "county",
       geoid: "39049",
@@ -358,8 +361,30 @@ describe("/api/workspaces/home-geography", () => {
     // empty for every non-seeded county. GEOID 39049 -> state 39, county 049.
     const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" }));
     expect(res.status).toBe(200);
-    expect(tractIngestMock).toHaveBeenCalledTimes(1);
+    await vi.waitFor(() => expect(tractIngestMock).toHaveBeenCalledTimes(1));
     expect(tractIngestMock.mock.calls[0]![1]).toEqual({ stateFips: "39", countyFips: "049" });
+    // Metered against the same per-person allowance as the ingest route.
+    expect(reserveRpcMock).toHaveBeenCalledWith("reserve_census_tract_ingest", {
+      p_user_id: "user-1",
+      p_workspace_id: WORKSPACE_ID,
+      p_counties: ["39049"],
+      p_source_route: "/api/workspaces/home-geography",
+    });
+  });
+
+  it("skips the background tract load when the allowance is used or cannot be checked", async () => {
+    for (const reply of [
+      { data: { allowed: false, recent: 20, limit: 20, retryAfterSeconds: 60 }, error: null },
+      { data: null, error: { message: "function does not exist" } },
+    ]) {
+      reserveRpcMock.mockResolvedValueOnce(reply);
+      const res = await PATCH(patchRequest({ workspaceId: WORKSPACE_ID, kind: "county", geoid: "39049" }));
+      // The geography itself is still saved.
+      expect(res.status).toBe(200);
+    }
+    await vi.waitFor(() => expect(reserveRpcMock).toHaveBeenCalledTimes(2));
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    expect(tractIngestMock).not.toHaveBeenCalled();
   });
 
   it("does not load tracts for a non-county geography (a city has no single county)", async () => {

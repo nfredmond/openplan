@@ -1,0 +1,6 @@
+{
+  "docs/reviews/2026-10-12-odm-native-engine-attestation/native_observation.py": "e5aa8e0f02f2951d0b7ac43a5767725e0190ec3b1b244f3996b77761385802c0",
+  "workers/odm_worker/native_engine_attestation.py": "cefa1463d2901c6e422fcc9af7040ceeda907598db7615f855a05cc344af6533",
+  "workers/odm_worker/draft_http.py": "6fc61d35a82e8b05a6b2ed13ddd7a6553bd84e434e0b387ce16feaa23dec3f86",
+  "workers/odm_worker/engine_effects.py": "df89851a49c2be4d52fe3e582a36d42026d895bc371f50e81143c8b70c145cb7"
+}

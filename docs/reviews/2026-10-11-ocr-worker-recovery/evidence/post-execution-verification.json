@@ -1,0 +1,22 @@
+{
+  "sourceBindings": 19,
+  "executedSourceUnchanged": true,
+  "disposableDatabaseBytesRestored": true,
+  "cleanup": {
+    "ownedChildren": [
+      {
+        "pid": 1210170,
+        "exit": -15
+      },
+      {
+        "pid": 1210256,
+        "exit": -15
+      },
+      {
+        "pid": 1210264,
+        "exit": -15
+      }
+    ],
+    "listenerClosed": true
+  }
+}

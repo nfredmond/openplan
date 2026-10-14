@@ -20,6 +20,18 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Aerial journal correction:** tolerate a retired SQLite companion only after a
+fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
+for present files, including dangling or reappeared aliases. See the
+[dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
+**Native engine observer, candidate:** add an explicit Linux NodeODM observer
+for the configured original container, image, process-mounted configuration and
+private endpoint. It requires the same host PID namespace and permission to read
+that process root. Keep shared deadlines, ownership and parent lifetime. Defaults
+and processing commit remain held. See the
+[dated evidence](docs/reviews/2026-10-12-odm-native-engine-attestation/STATUS.md).
+
 **Money record corrections.** Apply `20261017000005_money_integrity_corrections.sql`
 before deploying. Work-program labor can no longer be counted twice, an issued
 report rechecks its adoption, a second amendment cannot overwrite one in
@@ -36,6 +48,19 @@ Development runs keep the old behavior. Sign-in and sign-up now refuse redirect
 values that only look local, the sign-up confirmation notice says to check spam
 and can resend the link, and the pages no longer promise a workspace before the
 email is confirmed.
+
+The aerial private-dispatch candidate adds
+`20261017000003_aerial_private_dispatch_custody.sql`. It retains exact original
+application request text and its actor, workspace, project, mission and job scope.
+The worker-only read reports current access separately from saved custody and
+does not grant engine permission. Apply this additive migration before enabling
+dependent reader code. It remains a candidate, with hosted rollout and default
+worker activation pending. See the [producer evidence](docs/reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md).
+
+The local control panel keeps its update/recovery caption visible at the
+minimum window size and double display scale by reducing the summary gap.
+The [combined worker integration evidence](docs/reviews/2026-10-12-m3-owned-stack-integration/STATUS.md)
+records its layout controls and the retained worker candidate's verification limits.
 
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
@@ -90,6 +115,12 @@ configuration now sets `file_size_limit = "1GiB"`; restart a running local
 stack (`npm exec -- supabase stop`, then `start`) to pick it up. A hosted
 project needs the same limit in its storage settings.
 `OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
+
+Apply `20261017000006_permission_integrity.sql` before deploying the app. It
+stops signed-in users from asking about another person's contract access,
+requires a map package's grant application to belong to its project and refuses
+retries that change the client or practice marking, and limits census tract
+loads to workspace writers at 20 counties per person per hour.
 
 **Maps.** A new Maps page lists map packages for every project in a workspace:
 figures as PDF, PNG and SVG, map books, a web map, a Google Earth file, a QGIS

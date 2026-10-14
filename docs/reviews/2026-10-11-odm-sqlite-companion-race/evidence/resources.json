@@ -1,0 +1,60 @@
+[
+  {
+    "SubState": "exited",
+    "InvocationID": "88b63777eb074660bc6823a81ddd1e32",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "85528576",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "unit": "openplan-odm-journal-ci-concurrency-20261011-01.service",
+    "ActiveState": "failed",
+    "SubState": "failed",
+    "InvocationID": "11db5b565a164722858c990dd05ed4f6",
+    "MainPID": "0",
+    "ExecMainStatus": "1",
+    "MemoryPeak": "56020992",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0"
+  },
+  {
+    "unit": "openplan-odm-journal-ci-fixed-20261011-01.service",
+    "invocationIdAtStart": "8931fe541a074a8092529ebe454cbded",
+    "exitFromRetainedSummary": 0,
+    "mainPidObservedAfterCompletion": 0,
+    "unitUnloadedBeforeFinalPropertyCapture": true,
+    "configuredMemoryMaxBytes": 268435456,
+    "configuredMemorySwapMaxBytes": 0,
+    "configuredCpuQuota": "100%",
+    "peakObservedWhileActiveBytes": 69025792,
+    "finalPeakJournalDisplay": "65.8M",
+    "exactFinalPeakBytes": "unavailable"
+  },
+  {
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "a7b90b8eca47495b95d7b9f5930b6498",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "268435456",
+    "MemoryMax": "268435456",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-journal-parent-ci-20261011-01.service",
+    "memoryEvents": "unavailable",
+    "stopped": true
+  },
+  {
+    "ActiveState": "active",
+    "SubState": "exited",
+    "InvocationID": "672eb8c39a444a5b92c4d821a8eb3524",
+    "MainPID": "0",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "285016064",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "unit": "openplan-odm-journal-parent-docs-20261011-01.service",
+    "stopped": true
+  }
+]

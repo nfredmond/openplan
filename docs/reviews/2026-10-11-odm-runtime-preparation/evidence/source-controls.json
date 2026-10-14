@@ -1,0 +1,306 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "unowned-journal-read",
+    "test": "test_owner_required_before_journal_or_source_access",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unowned preparation accessed journal"
+  },
+  {
+    "control": "unstarted-preparation",
+    "test": "test_accepted_or_other_installation_start_cannot_prepare",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unstarted preparation accessed supplier"
+  },
+  {
+    "control": "missing-original-actor",
+    "test": "test_missing_actor_or_incomplete_original_row_refuses_before_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Missing actor accessed source"
+  },
+  {
+    "control": "changed-application-scope",
+    "test": "test_original_application_scope_refuses_before_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed scope accessed source"
+  },
+  {
+    "control": "unknown-supplier-fields",
+    "test": "test_exact_supplier_shape_and_detached_entry",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "supplier-request-alias",
+    "test": "test_exact_supplier_shape_and_detached_entry",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "supplier must not replace original entry through alias"
+  },
+  {
+    "control": "invalid-runtime-supplier",
+    "test": "test_invalid_constructor_refuses_without_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-timeout",
+    "test": "test_invalid_constructor_refuses_without_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-mapping-reaches-source",
+    "test": "test_source_mapping_and_count_refuse_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid source mapping accessed retention"
+  },
+  {
+    "control": "invalid-count-reaches-source",
+    "test": "test_source_mapping_and_count_refuse_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid source mapping accessed retention"
+  },
+  {
+    "control": "invalid-byte-limit",
+    "test": "test_limits_options_and_photo_filenames_refuse_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid settings accessed retention"
+  },
+  {
+    "control": "invalid-options",
+    "test": "test_limits_options_and_photo_filenames_refuse_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid settings accessed retention"
+  },
+  {
+    "control": "invalid-photo-names",
+    "test": "test_limits_options_and_photo_filenames_refuse_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid settings accessed retention"
+  },
+  {
+    "control": "overlap-reaches-source",
+    "test": "test_input_root_overlap_refuses_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Overlapping input accessed retention"
+  },
+  {
+    "control": "saved-uuid-regenerated",
+    "test": "test_original_uuid_and_identity_survive_repeat_preparation",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original task UUID regenerated"
+  },
+  {
+    "control": "saved-plan-check-omitted",
+    "test": "test_actor_target_engine_options_and_limits_cannot_rebind_saved_plan",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed original plan accessed source"
+  },
+  {
+    "control": "pipeline-original-identity-ignored",
+    "test": "test_pipeline_job_identity_refuses_before_supplier",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed pipeline job accessed supplier"
+  },
+  {
+    "control": "missing-plan-regenerates-uuid",
+    "test": "test_missing_preparation_plan_cannot_adopt_retained_records",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Missing plan regenerated task identity"
+  },
+  {
+    "control": "invalid-saved-task-reaches-source",
+    "test": "test_invalid_saved_task_refuses_before_retention_and_restores",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid saved task accessed retention"
+  },
+  {
+    "control": "restored-start-rebound",
+    "test": "test_complete_copy_replays_with_missing_original_input",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Existing source custody record differs"
+  },
+  {
+    "control": "source-before-original-plan",
+    "test": "test_interrupted_slot_resumes_from_original_plan_and_bytes",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original preparation plan must precede source retention"
+  },
+  {
+    "control": "zip-derivation-skipped",
+    "test": "test_zip_pipeline_derives_original_slots_before_engine_plan",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP source requires original derived-image custody"
+  },
+  {
+    "control": "zip-shape-ignored",
+    "test": "test_zip_limits_refuse_before_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "zip-ceilings-ignored",
+    "test": "test_zip_limits_refuse_before_source",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-installation-reaches-supplier",
+    "test": "test_changed_installation_refuses_before_supplier",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed installation accessed supplier"
+  },
+  {
+    "control": "engine-identity-check-skipped",
+    "test": "test_invalid_engine_identity_refuses_before_retention",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid engine accessed retention"
+  },
+  {
+    "control": "expiry-before-source-skipped",
+    "test": "test_timeout_before_source_retention_refuses",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired preparation accessed retention"
+  },
+  {
+    "control": "expiry-before-record-skipped",
+    "test": "test_timeout_before_prepared_record_refuses_publication",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "expired preparation cannot publish a completed local record"
+  },
+  {
+    "control": "expiry-after-record-skipped",
+    "test": "test_late_prepared_publication_never_reports_success",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "actor-from-reference",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "actor must come from supplied application record"
+  },
+  {
+    "control": "transport-permission-promoted",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "local preparation cannot permit engine transport"
+  },
+  {
+    "control": "preparation-issues-init",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "preparation cannot issue engine commands"
+  },
+  {
+    "control": "promoted-authorityVerification",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "preparation cannot promote authorityVerification"
+  },
+  {
+    "control": "promoted-engineCustodyVerification",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "preparation cannot promote engineCustodyVerification"
+  },
+  {
+    "control": "promoted-callbackDeliveryVerification",
+    "test": "test_actual_owned_runtime_prepares_once_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "preparation cannot promote callbackDeliveryVerification"
+  },
+  {
+    "control": "changed-retained-slot-backstop",
+    "test": "test_changed_retained_bytes_refuse_and_restore",
+    "source": "source",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Existing source custody record differs"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

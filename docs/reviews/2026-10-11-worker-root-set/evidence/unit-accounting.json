@@ -1,0 +1,45 @@
+{
+  "limitBytes": 536870912,
+  "swapLimitBytes": 0,
+  "cpuQuotaPercent": 100,
+  "units": [
+    {
+      "unit": "openplan-worker-root-set-controls-20261011-01.service",
+      "invocationId": "1af87eba4f924df4baa140bb01c2dd45",
+      "exitCode": 1,
+      "wallSeconds": 2.092,
+      "roundedMemoryPeak": "40.2M",
+      "scope": "Retained failed oracle-selection trial"
+    },
+    {
+      "unit": "openplan-worker-root-set-controls-20261011-03.service",
+      "invocationId": "8c7f363dc0d149398064b5c53a29842f",
+      "exitCode": 0,
+      "wallSeconds": 9.385,
+      "cpuSeconds": 4.414,
+      "roundedMemoryPeak": "39.9M",
+      "cases": 37,
+      "survivors": 5,
+      "brokenCases": 32
+    },
+    {
+      "unit": "openplan-worker-root-set-ops-regression-20261011-01.service",
+      "invocationId": "2c5062bfec88482f9d3a787bb6e9f4ea",
+      "exitCode": 0,
+      "tests": 208,
+      "testSeconds": 13.413,
+      "wallSeconds": 13.599,
+      "cpuSeconds": 10.204,
+      "roundedMemoryPeak": "66.3M"
+    },
+    {
+      "unit": "openplan-worker-root-set-native-20261011-01.service",
+      "invocationId": "13b0003fd4cf45758d2aba00b48f455a",
+      "exitCode": 0,
+      "wallSeconds": 32.245,
+      "cpuSeconds": 13.852,
+      "roundedMemoryPeak": "512M",
+      "capacityAcceptance": false
+    }
+  ]
+}

@@ -1,0 +1,326 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "complete-hash-replaced",
+    "test": "test_original_complete_receipts_bind_context_and_exact_bytes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "!="
+  },
+  {
+    "control": "source-permits-engine",
+    "test": "test_original_complete_receipts_bind_context_and_exact_bytes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Source receipt cannot permit engine transport"
+  },
+  {
+    "control": "complete-source-refetched",
+    "test": "test_complete_replay_never_fetches_changed_remote_bytes",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "URL source bytes differ from original declarations"
+  },
+  {
+    "control": "runtime-owner-ignored",
+    "test": "test_runtime_owner_required_before_request_records_or_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-start-ignored",
+    "test": "test_original_started_context_required_before_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "application-scope-ignored",
+    "test": "test_original_application_actor_and_scope_required_before_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid application context reached fetch"
+  },
+  {
+    "control": "constructor-adapters-ignored",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_configuration",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-target-ignored",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_configuration",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-timeout-ignored",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_configuration",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "roots-overlap",
+    "test": "test_source_runtime_overlap_refuses_before_root_or_fetch",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "root-seal-not-published",
+    "test": "test_source_seal_cannot_rebind_target_or_installation",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-seal-adopted",
+    "test": "test_missing_source_seal_cannot_adopt_existing_records",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-plan-adopted",
+    "test": "test_missing_request_plan_cannot_adopt_existing_bytes",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-plan-publication-ignored",
+    "test": "test_actor_budget_and_original_request_cannot_rebind_plan",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "declared-total-ignored",
+    "test": "test_declared_whole_job_limit_precedes_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Oversized declared set fetched"
+  },
+  {
+    "control": "declarations-ignored",
+    "test": "test_invalid_source_declarations_refuse_before_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid source declaration reached fetch"
+  },
+  {
+    "control": "downloaded-declaration-mismatch-ignored",
+    "test": "test_downloaded_size_and_hash_must_match_original_declarations",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "whole-budget-writes-excess",
+    "test": "test_actual_whole_job_limit_refuses_before_excess_write",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Budget must refuse before writing excess bytes"
+  },
+  {
+    "control": "nonbytes-accepted",
+    "test": "test_nonbyte_chunks_cannot_become_complete",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "fetch-count-ignored",
+    "test": "test_fetch_count_requires_exact_delivered_integer",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "partial-write-accepted",
+    "test": "test_partial_local_write_cannot_report_complete",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "OSError not raised"
+  },
+  {
+    "control": "expired-source-continues",
+    "test": "test_expired_operation_refuses_before_writer_or_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired source operation acquired a writer"
+  },
+  {
+    "control": "pre-cancel-ignored",
+    "test": "test_pre_cancelled_operation_refuses_before_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Precancelled URL source fetched"
+  },
+  {
+    "control": "delivery-cancel-ignored",
+    "test": "test_cancellation_during_delivery_refuses_before_source_write",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "implicit-cancellation-type",
+    "test": "test_cancellation_adapter_requires_boolean",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "complete-prefix-refetched",
+    "test": "test_interrupted_second_source_reuses_first_complete_bytes",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "URL source bytes differ from original declarations"
+  },
+  {
+    "control": "orphan-file-adopted",
+    "test": "test_orphan_object_is_not_a_complete_receipt",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "An orphan filename cannot skip original source fetching"
+  },
+  {
+    "control": "complete-hash-verification-ignored",
+    "test": "test_missing_or_corrupt_complete_bytes_refuse_without_refetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "missing-complete-receipt-refetched",
+    "test": "test_missing_completed_receipt_cannot_fetch_again",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Completed source data cannot refetch"
+  },
+  {
+    "control": "complete-set-not-published",
+    "test": "test_complete_set_rebuild_uses_only_retained_receipts",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Completed source set must be durably published"
+  },
+  {
+    "control": "receipt-shape-ignored",
+    "test": "test_receipt_shape_mapping_and_plan_hash_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "installation-identity-ignored",
+    "test": "test_changed_installation_seal_refuses_before_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "plan-not-frozen-before-fetch",
+    "test": "test_original_plan_predates_fetch_and_detaches_supplied_alias",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Original source plan must predate fetching"
+  },
+  {
+    "control": "preparation-slot-mapping-omitted",
+    "test": "test_actual_runtime_preparation_receives_exact_complete_sources",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "Original runtime source mapping differs"
+  },
+  {
+    "control": "relocated-complete-source-refetched",
+    "test": "test_relocated_source_and_runtime_copies_replay_without_fetch",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Copied complete URL bytes refetched"
+  },
+  {
+    "control": "late-return-deadline-ignored",
+    "test": "test_late_fetch_return_cannot_publish_completion",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "parent-entry-sync-omitted",
+    "test": "test_new_source_root_synchronizes_parent_entry",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Private URL source root entry must synchronize its parent"
+  },
+  {
+    "control": "stored-count-ignored",
+    "test": "test_bypassed_writer_cannot_hide_stored_byte_count",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "retained-aggregate-budget-ignored",
+    "test": "test_retained_receipt_set_cannot_exceed_original_aggregate_budget",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "zip-archive-slot-omitted",
+    "test": "test_zip_request_retains_one_exact_archive_before_preparation",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ZIP custody must retain exactly one original archive"
+  },
+  {
+    "control": "byte-limit-validation-omitted",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_configuration",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "orphan-storage-bound-ignored",
+    "test": "test_orphan_storage_bytes_refuse_without_fetch_or_removal",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "attempt-count-bound-ignored",
+    "test": "test_exhausted_attempt_count_cannot_start_another_object",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Exhausted attempt count fetched"
+  },
+  {
+    "control": "mutable-budget-used",
+    "test": "test_fetch_adapter_cannot_expand_original_whole_job_budget",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,207 @@
+{
+  "sourceSha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+  "controls": [
+    {
+      "name": "project-baseline",
+      "parentKind": "project",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial project scope differs",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_3f006081e155463cb2e69025f5f52fe7"
+    },
+    {
+      "name": "project-harmless",
+      "parentKind": "project",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial project scope differs",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_083bf3a815284500940d25260cebfb6c"
+    },
+    {
+      "name": "project-job-before-parent",
+      "parentKind": "project",
+      "result": "intended native deadlock",
+      "expectedState": "40P01",
+      "expectedDetail": "deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_6a2b6e50da364a618e8e69241d189f2b"
+    },
+    {
+      "name": "project-restored",
+      "parentKind": "project",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial project scope differs",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_74996aff19d44e0b8ab06edcecbf76d5"
+    },
+    {
+      "name": "workspace-baseline",
+      "parentKind": "workspace",
+      "result": "survived",
+      "expectedState": "P0002",
+      "expectedDetail": "Original aerial workspace is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_fb922b49ef714431bea828fb1880e8b8"
+    },
+    {
+      "name": "workspace-harmless",
+      "parentKind": "workspace",
+      "result": "survived",
+      "expectedState": "P0002",
+      "expectedDetail": "Original aerial workspace is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_b9c7409f05f844cbbbd081434a472a24"
+    },
+    {
+      "name": "workspace-job-before-parent",
+      "parentKind": "workspace",
+      "result": "intended native deadlock",
+      "expectedState": "40P01",
+      "expectedDetail": "deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_cd3ce8b49b0c463d8b1beeea8be230bb"
+    },
+    {
+      "name": "workspace-restored",
+      "parentKind": "workspace",
+      "result": "survived",
+      "expectedState": "P0002",
+      "expectedDetail": "Original aerial workspace is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_c105c1ced6894ffdb74d432acdb5ccf0"
+    },
+    {
+      "name": "mission-baseline",
+      "parentKind": "mission",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_missions\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_d434bd76b71b4708a5cddc0d9fb02bce"
+    },
+    {
+      "name": "mission-harmless",
+      "parentKind": "mission",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_missions\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_8626c9fb50f643b9a5cce7bb02982a5c"
+    },
+    {
+      "name": "mission-wait-on-child",
+      "parentKind": "mission",
+      "result": "intended native deadlock",
+      "expectedState": "40P01",
+      "expectedDetail": "deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_84f0e9506b8a483eaedad1bd6cd63762"
+    },
+    {
+      "name": "mission-restored",
+      "parentKind": "mission",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_missions\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_07a88a17f24f41a58b8b24de5e5f8651"
+    },
+    {
+      "name": "actor-baseline",
+      "parentKind": "actor",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial actor is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_26f20c044fd34f0c99e48a594ede05f6"
+    },
+    {
+      "name": "actor-harmless",
+      "parentKind": "actor",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial actor is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_24011f6ca39745fdb049ad293aa8f48c"
+    },
+    {
+      "name": "actor-job-before-parent",
+      "parentKind": "actor",
+      "result": "intended native deadlock",
+      "expectedState": "40P01",
+      "expectedDetail": "deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_5fd047f8d0b943b99f2e4c9699af93e5"
+    },
+    {
+      "name": "actor-restored",
+      "parentKind": "actor",
+      "result": "survived",
+      "expectedState": "42501",
+      "expectedDetail": "Original aerial actor is unavailable",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_e4bcbecad3e3445caba04c1f868f6fcb"
+    },
+    {
+      "name": "job-baseline",
+      "parentKind": "job",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_processing_jobs\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_53119c01b91a4759be62d7bd7d49938f"
+    },
+    {
+      "name": "job-harmless",
+      "parentKind": "job",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_processing_jobs\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_21f64e9fbd3c4fc4a6c294ea0dce8f54"
+    },
+    {
+      "name": "job-wait-on-child",
+      "parentKind": "job",
+      "result": "intended native deadlock",
+      "expectedState": "40P01",
+      "expectedDetail": "deadlock detected",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_6bb92cea2f774c67b6626f811d65cbeb"
+    },
+    {
+      "name": "job-restored",
+      "parentKind": "job",
+      "result": "survived",
+      "expectedState": "55P03",
+      "expectedDetail": "could not obtain lock on row in relation \"aerial_processing_jobs\"",
+      "parentExit": 0,
+      "workerExit": 3,
+      "database": "dispatch_lock_63f1770bbb1a45b9bde9bd7e578aaad0"
+    }
+  ],
+  "driverSha256": "798ab7d44a683a90bec5ed857c4b1dc74d1bf185221cf4af544c3228e8106d6a",
+  "scope": "Actual actor/workspace/project deletion and mission/job contention against project revision triggers on twenty fresh retained native clones. The account fixture retires its personal workspace first and retains another owner. Other operations, all interleavings, authority fences, external requests and full recovery remain unproved."
+}

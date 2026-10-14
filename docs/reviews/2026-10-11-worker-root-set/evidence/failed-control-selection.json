@@ -1,0 +1,5 @@
+{
+  "state": "failed-control-selection",
+  "case": "inventory-format",
+  "reason": "The combined malformed-input method stops on an uncaught list-type error before reaching its foreign-format acceptance assertion when the format guard is omitted. Retain the failure and select a well-shaped foreign-format case first. Production source restored in finally."
+}

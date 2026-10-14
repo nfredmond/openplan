@@ -249,8 +249,10 @@ describe("my work — the union read", () => {
     expect(decision?.isOverdue).toBe(true);
     expect(decision?.badge.label).toBe("Decision overdue");
     // decision_state 'pursue' is a decision already made; only 'monitor' on an
-    // open/upcoming opportunity is awaiting one.
-    expect(idsOf(workspace)).not.toContain("f-decided");
+    // open/upcoming opportunity is awaiting one. (A pursued call still appears,
+    // as an application due date from its own source; see
+    // my-work-grant-application-due.test.ts.)
+    expect(idsOf(workspace.filter((item) => item.sourceId === "grant_decisions"))).not.toContain("f-decided");
     // Nothing in this block claims an assignee — these tables have no such column.
     expect(workspace.every((item) => item.assigneeUserId === undefined)).toBe(true);
   });

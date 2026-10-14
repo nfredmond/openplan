@@ -1,0 +1,6 @@
+{
+  "docs/reviews/2026-10-13-odm-native-uncertain-interruption/native_rpc_recovery.py": "a26c51f8bc84dccf31f5a4eb27a1e9b2fb846c2d68ba15b82fec8a9740471bec",
+  "docs/reviews/2026-10-13-odm-native-uncertain-interruption/native_client.py": "b5789391868315c20daddfd44986a23c319de331113d8f2e16808f75de5d178d",
+  "workers/odm_worker/runtime_draft.py": "9ea25c0a6392315d13fc5a0256efb79d99f738dfb2483aa666e696461d0ae72a",
+  "docs/reviews/2026-10-13-odm-native-uncertain-interruption/verify_controls.py": "e8c4d000152f1bbf5aa811b7e89404d5f21767969720ab85f9bad53142a58dd0"
+}

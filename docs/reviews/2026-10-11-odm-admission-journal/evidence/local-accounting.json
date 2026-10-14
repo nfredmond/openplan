@@ -1,0 +1,56 @@
+{
+  "python": "3.14.4",
+  "sqlite": "3.46.1",
+  "memoryMaxBytes": 536870912,
+  "swapMaxBytes": 0,
+  "cpuQuotaPercent": 100,
+  "tasksMax": 128,
+  "units": [
+    {
+      "proof": "journalControls",
+      "InvocationID": "6ee23acdc6274486ac2acd089c486aef",
+      "ExecMainStatus": "0",
+      "Result": "success",
+      "MemoryPeak": "60547072",
+      "CPUUsageNSec": "5440300000",
+      "ExecMainStartTimestamp": "Sun 2026-10-11 13:03:03 PDT",
+      "ExecMainExitTimestamp": "Sun 2026-10-11 13:03:08 PDT"
+    },
+    {
+      "proof": "nativeJournal",
+      "InvocationID": "762ab6f7fe5e41508931e0b354517093",
+      "ExecMainStatus": "0",
+      "Result": "success",
+      "MemoryPeak": "28868608",
+      "CPUUsageNSec": "314361000",
+      "ExecMainStartTimestamp": "Sun 2026-10-11 13:08:16 PDT",
+      "ExecMainExitTimestamp": "Sun 2026-10-11 13:08:17 PDT"
+    },
+    {
+      "proof": "odmSuites",
+      "InvocationID": "49e9d2f70692430981a705a5e7616c96",
+      "ExecMainStatus": "0",
+      "Result": "success",
+      "MemoryPeak": "56311808",
+      "CPUUsageNSec": "1139193000",
+      "ExecMainStartTimestamp": "Sun 2026-10-11 13:05:48 PDT",
+      "ExecMainExitTimestamp": "Sun 2026-10-11 13:05:50 PDT"
+    },
+    {
+      "proof": "ciDiscovery",
+      "InvocationID": "6a45752560f44ffd94945f8eb5d0271f",
+      "ExecMainStatus": "0",
+      "Result": "success",
+      "MemoryPeak": "58638336",
+      "CPUUsageNSec": "4231730000",
+      "ExecMainStartTimestamp": "Sun 2026-10-11 13:07:51 PDT",
+      "ExecMainExitTimestamp": "Sun 2026-10-11 13:08:00 PDT"
+    }
+  ],
+  "GitHubAcceptance": "pending",
+  "focusedChecks": {
+    "operatorDocReferences": 6,
+    "directionAndRoadmapGuards": 8,
+    "directionCommand": "passed with existing review reminders"
+  }
+}

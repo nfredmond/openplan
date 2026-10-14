@@ -1,0 +1,18 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "missing-repository-link",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  }
+]

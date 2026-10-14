@@ -1,0 +1,6 @@
+{
+  "workflowSha256": "6b93482fda972a6199bba25d243819c4306f08063e65b6b1437d2e20654a6e23",
+  "executionSha256": "2dc44ac2c661fe960335a6a2b419471dd97791c05b636cdeedb5069cb86195cf",
+  "actualStages": 33,
+  "scope": "Current locally executed aerial recipe; preceding frozen binding remains unchanged."
+}

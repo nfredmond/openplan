@@ -1,0 +1,21 @@
+{
+  "checks": [
+    {
+      "check": "python311 controls",
+      "exit": 0
+    },
+    {
+      "check": "python314 controls",
+      "exit": 0
+    }
+  ],
+  "nativeConcurrencyRepeats": 200,
+  "testsPerRepeat": 2,
+  "seconds": 49.032,
+  "allPassed": true,
+  "sourceBindings": {
+    "workers/odm_worker/admission_journal.py": "081238187a15186eafaf25a63f36104f7b6339b89cc6fad197addb424241708a",
+    "workers/odm_worker/test_admission_journal.py": "2dce30e75d0112eb57ef5a1c1bf36d7287854b8ecf732006f49373db9aac4544",
+    "docs/reviews/2026-10-11-odm-admission-journal/verify_controls.py": "8edd0f729d507cafc0ee701a3e626a439a91f0dce07c334fe90ec8658b1cb5a5"
+  }
+}

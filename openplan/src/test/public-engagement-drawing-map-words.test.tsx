@@ -46,6 +46,8 @@ vi.mock("mapbox-gl", () => {
     addSource = vi.fn();
     addLayer = vi.fn();
     isStyleLoaded = vi.fn(() => false);
+    // A real map can take a listener off; the style wait does on unmount.
+    off = vi.fn();
     project = vi.fn(() => ({ x: 0, y: 0 }));
     panBy = vi.fn();
     zoomIn = vi.fn();

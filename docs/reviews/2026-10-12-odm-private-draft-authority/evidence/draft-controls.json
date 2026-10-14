@@ -1,0 +1,250 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comments",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "pipeline-skips-draft",
+    "test": "test_actual_runtime_initializes_one_original_task_and_holds_next_job",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "owned pipeline must send exactly one initial command"
+  },
+  {
+    "control": "image-not-rewound",
+    "test": "test_original_order_upload_bytes_and_exact_replies_before_commit_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "transport must read exact original image slots"
+  },
+  {
+    "control": "commit-guard-removed",
+    "test": "test_original_order_upload_bytes_and_exact_replies_before_commit_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unexpected commit reached transport"
+  },
+  {
+    "control": "implicit-permission",
+    "test": "test_permission_requires_exact_true_before_intent_or_transport",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "denied permission cannot issue original intent"
+  },
+  {
+    "control": "gate-plan-alias",
+    "test": "test_adapters_receive_detached_original_plan_and_command",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Saved engine plan differs from original identity"
+  },
+  {
+    "control": "gate-command-alias",
+    "test": "test_adapters_receive_detached_original_plan_and_command",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "adapter cannot replace original durable command"
+  },
+  {
+    "control": "unresolved-prefix-skipped",
+    "test": "test_lost_acknowledgment_holds_without_second_transport_or_later_issue",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Uncertain effect attempted another transport"
+  },
+  {
+    "control": "response-shape-ignored",
+    "test": "test_invalid_response_preserves_unresolved_intent",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Invalid transport response reached reply journal"
+  },
+  {
+    "control": "reply-acknowledgment-check-omitted",
+    "test": "test_invalid_engine_reply_is_not_an_acknowledgment",
+    "source": "effects",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "out-of-order-prefix-ignored",
+    "test": "test_out_of_order_acknowledged_upload_refuses_transport",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Out-of-order journal reached transport"
+  },
+  {
+    "control": "prior-commit-scope-lost",
+    "test": "test_existing_commit_intent_holds_without_draft_transport",
+    "source": "library",
+    "kind": "state_distinction",
+    "outcome": "intended_failure",
+    "reason": "prior commit requires separate processing reconciliation"
+  },
+  {
+    "control": "implicit-adapters",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_timeout",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "invalid-timeout",
+    "test": "test_constructor_requires_explicit_adapters_and_finite_timeout",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "installation-check-skipped",
+    "test": "test_changed_seal_refuses_before_permission_adapter",
+    "source": "preparation",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed installation reached permission adapter"
+  },
+  {
+    "control": "existing-first-flag-ignored",
+    "test": "test_existing_issue_flag_never_reaches_transport",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Existing issue flag reached transport"
+  },
+  {
+    "control": "intent-not-durable-before-transport",
+    "test": "test_durable_intent_precedes_transport_and_reply_precedes_next_command",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original intent must precede transport"
+  },
+  {
+    "control": "checked-reply-not-saved",
+    "test": "test_durable_intent_precedes_transport_and_reply_precedes_next_command",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "original checked reply must be saved before advancing"
+  },
+  {
+    "control": "partial-image-acknowledged",
+    "test": "test_partial_image_consumption_refuses_acknowledgment",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-image-hash-ignored",
+    "test": "test_changed_image_at_transport_boundary_refuses_before_send",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed image reached transport"
+  },
+  {
+    "control": "changed-image-size-ignored",
+    "test": "test_changed_image_size_at_transport_boundary_refuses_before_send",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Changed image size reached source reading"
+  },
+  {
+    "control": "late-response-acknowledged",
+    "test": "test_late_transport_reply_remains_unresolved",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "TimeoutError not raised"
+  },
+  {
+    "control": "expired-permission-issues",
+    "test": "test_expired_permission_does_not_issue_or_send",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired permission reached transport"
+  },
+  {
+    "control": "expired-preparation-reaches-engine",
+    "test": "test_expired_preparation_does_not_reach_permission",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired preparation reached engine journal"
+  },
+  {
+    "control": "expired-image-read-sent",
+    "test": "test_deadline_during_original_image_read_stops_before_transport",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Expired image read reached transport"
+  },
+  {
+    "control": "promoted-engineCustodyVerification",
+    "test": "test_original_order_upload_bytes_and_exact_replies_before_commit_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "draft cannot promote engineCustodyVerification"
+  },
+  {
+    "control": "promoted-callbackDeliveryVerification",
+    "test": "test_original_order_upload_bytes_and_exact_replies_before_commit_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "draft cannot promote callbackDeliveryVerification"
+  },
+  {
+    "control": "commit-permission-promoted",
+    "test": "test_original_order_upload_bytes_and_exact_replies_before_commit_hold",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "draft does not permit commit"
+  },
+  {
+    "control": "selected-authorization-deadline-omitted",
+    "test": "test_authorization_receives_actual_shared_deadline_when_selected",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Authorization must receive the exact draft deadline"
+  },
+  {
+    "control": "authorization-selection-unchecked",
+    "test": "test_authorization_deadline_selection_requires_boolean",
+    "source": "library",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

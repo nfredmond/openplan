@@ -1,0 +1,8 @@
+{
+  "imageId": "sha256:cb07d06e21fd6189cfad287c6fedfa0b72568100355635cd9035cb86eed42ee2",
+  "imagePath": "/var/www/libs/taskNew.js",
+  "sha256": "1b803713301db91dd11b8d2b54816fe3827cf5211edbc488e8f81104736f1f38",
+  "comparison": "Exact cached installed-source bytes match prior retained binding; native assignUUID regex requires version1-7 and variant8-b.",
+  "engineExecuted": false,
+  "nativeInvalidUuidApiTrial": false
+}
