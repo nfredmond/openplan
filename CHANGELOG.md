@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Original aerial delivery authority, candidate:** migration
+`20261017000012_aerial_delivery_authority.sql` adds a service-only observation
+for original artifact access and terminal delivery. Processing access stays
+limited to active jobs. Completed terminal replay must match the callback
+actually applied to the original job. The retained download adapter keeps its
+original token and expiry; default worker wiring remains pending. No hosted
+activation is declared.
+
 **RTP comment record counts every comment.** The comment-response record on
 the RTP cycle page and in the exported packet read approved comments, responses
 and consultations in one request each, so a plan with more than 1,000 comments

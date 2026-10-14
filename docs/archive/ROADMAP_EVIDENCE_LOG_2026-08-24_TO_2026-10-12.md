@@ -383,3 +383,12 @@ merged; its fresh main/deployment checks remain pending at this checkpoint. Full
 terminal/artifact delivery, default integration, source identity, browser and
 practitioner evidence, independent-host recovery and scientific quality remain
 open under M3/M5b.2. Milestone grades do not change.
+
+## October 14 retained artifact access candidate
+
+The [dated proof](../reviews/2026-10-14-artifact-access/STATUS.md) retains original
+download tokens, expiry and descriptors through interruption. Separate service
+authority supports completed downloads and exact applied terminal replay while
+processing remains active-job-only. Selected-schema SQL/HTTP and source controls
+do not establish default worker, browser, quality or full M3/M5b.2 acceptance.
+Migration12 remains tentative and unapplied. Milestone grades stay unchanged.

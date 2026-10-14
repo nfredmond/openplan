@@ -295,3 +295,5 @@ objects across interrupted row writes, reconcile actual streamed bytes, and
 carry cancellation through the installed SDK upload transport. This isolated
 candidate does not close source identity, concurrent custody, live RLS, browser
 or complete delivery acceptance.
+
+The [October 14 retained artifact access candidate](reviews/2026-10-14-artifact-access/STATUS.md) keeps original download leases and checks separate current delivery authority. Source, loopback and selected-schema SQL/HTTP fault controls pass. Both Python versions pass; intended-schema upgrade, default worker and visible delivery acceptance remain pending.

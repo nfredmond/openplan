@@ -1,0 +1,9 @@
+{
+  "database": "odm_delivery_http_771f211b55754e428b8ba8b9251711f0",
+  "restContainer": "2228960e1260f54115a2fe7364ba8e1fe38f95e77557c460e0b7f40ca922828b",
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "positiveCohorts": 4,
+  "casesPerCohort": 10,
+  "faults": 4,
+  "scope": "Actual supervised worker RPC, copied original runtime, PostgREST and signed fixture roles; no hosted Auth/login, serving HTTP, terminal POST, default worker, quality or browser acceptance."
+}

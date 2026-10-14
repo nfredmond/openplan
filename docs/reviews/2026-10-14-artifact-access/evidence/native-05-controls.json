@@ -1,0 +1,106 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 17
+  },
+  {
+    "control": "callback-unicode-count-wrong",
+    "outcome": "intended_failure",
+    "case": "terminal-emoji",
+    "diagnostic": "Valid eight UTF16-unit terminal identity remains replayable"
+  },
+  {
+    "control": "terminal-time-ignored",
+    "outcome": "intended_failure",
+    "case": "terminal-time",
+    "diagnostic": "Changed applied time refuses original terminal replay"
+  },
+  {
+    "control": "reference-ignored",
+    "outcome": "intended_failure",
+    "case": "reference",
+    "diagnostic": "Changed worker reference refuses original artifact access"
+  },
+  {
+    "control": "canceled-files-allowed",
+    "outcome": "intended_failure",
+    "case": "status",
+    "diagnostic": "Artifact scope accepts active/succeeded and refuses failed/canceled"
+  },
+  {
+    "control": "actor-check-omitted",
+    "outcome": "intended_failure",
+    "case": "actor",
+    "diagnostic": "Revoked original actor refuses artifact access"
+  },
+  {
+    "control": "viewer-granted",
+    "outcome": "intended_failure",
+    "case": "viewer",
+    "diagnostic": "Viewer cannot inherit original processing actor delivery"
+  },
+  {
+    "control": "preset-omitted",
+    "outcome": "intended_failure",
+    "case": "scope",
+    "diagnostic": "Changed original job facts refuse delivery"
+  },
+  {
+    "control": "mission-project-omitted",
+    "outcome": "intended_failure",
+    "case": "mission",
+    "diagnostic": "Changed mission parent refuses delivery"
+  },
+  {
+    "control": "callback-payload-ignored",
+    "outcome": "intended_failure",
+    "case": "terminal-replay",
+    "diagnostic": "Changed completed callback payload refuses terminal replay"
+  },
+  {
+    "control": "callback-identity-ignored",
+    "outcome": "intended_failure",
+    "case": "terminal-identity",
+    "diagnostic": "Different terminal identity refuses completed replay"
+  },
+  {
+    "control": "applied-ledger-ignored",
+    "outcome": "intended_failure",
+    "case": "terminal-missing",
+    "diagnostic": "Terminal state without its actual applied ledger refuses replay"
+  },
+  {
+    "control": "terminal-status-ignored",
+    "outcome": "intended_failure",
+    "case": "terminal-status",
+    "diagnostic": "Conflicting terminal status refuses replay"
+  },
+  {
+    "control": "operation-ignored",
+    "outcome": "intended_failure",
+    "case": "unsupported",
+    "diagnostic": "Unsupported operation is an explicit refusal"
+  },
+  {
+    "control": "member-execute-granted",
+    "outcome": "intended_failure",
+    "case": "roles",
+    "diagnostic": "Delivery function stays invoker/service-only/fixed-path"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 17
+  }
+]

@@ -24,6 +24,36 @@ METADATA_LIMIT = 128 * 1024
 RESPONSE_LIMIT = 6 * MAX_BYTES + 1024 * 1024
 ERROR_LIMIT = 4096
 PARAMETERS = {'p_request', 'p_installation', 'p_target'}
+DEFAULT_RPC = 'read_aerial_original_dispatch'
+DELIVERY_RPC = 'read_aerial_delivery_authority'
+DELIVERY_PARAMETERS = PARAMETERS | {'p_reference', 'p_operation', 'p_callback'}
+DELIVERY_BODY_LIMIT = 16 * 1024
+
+
+def rpc_name(value):
+    if not isinstance(value, str) or value not in (DEFAULT_RPC, DELIVERY_RPC):
+        raise ValueError('Private dispatch RPC selection differs')
+    return value
+
+
+def delivery_parameters(value):
+    if (not isinstance(value, dict) or set(value) != DELIVERY_PARAMETERS
+            or any(not isinstance(value[key], str) or not value[key].strip() or len(value[key]) > 4096
+                for key in DELIVERY_PARAMETERS - {'p_callback'})):
+        raise ValueError('Private delivery RPC parameters differ')
+    from application_delivery_authority import ARTIFACT, TERMINAL
+    if (value['p_operation'] not in (ARTIFACT, TERMINAL)
+            or (value['p_operation'] == ARTIFACT and value['p_callback'] is not None)
+            or (value['p_operation'] == TERMINAL and not isinstance(value['p_callback'], dict))):
+        raise ValueError('Private delivery RPC operation differs')
+    if value['p_callback'] is not None:
+        try:
+            raw = json.dumps(value['p_callback'], ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()
+        except (ValueError, UnicodeError, TypeError, RecursionError):
+            raise ValueError('Private delivery callback JSON differs') from None
+        if len(raw) > DELIVERY_BODY_LIMIT:
+            raise ValueError('Private delivery callback exceeds its bound')
+    return dict(value)
 
 
 def endpoint(value, allow_http):
@@ -64,7 +94,8 @@ def deadline_check(deadline):
 
 
 class Transport:
-    def __init__(self, url, credential_reference, resolve, *, cancelled=lambda: False, allow_http=False, max_response_bytes=RESPONSE_LIMIT):
+    def __init__(self, url, credential_reference, resolve, *, cancelled=lambda: False, allow_http=False, max_response_bytes=RESPONSE_LIMIT, rpc=DEFAULT_RPC):
+        self.rpc = rpc_name(rpc)
         endpoint(url, allow_http)
         if sys.platform != 'linux' or not isinstance(credential_reference, str) or not credential_reference.strip() or len(credential_reference) > 256 or not callable(resolve) or not callable(cancelled):
             raise ValueError('Private dispatch supervision and credential adapter are required')
@@ -91,7 +122,7 @@ class Transport:
             raise ValueError('Private dispatch ownership adapter is required')
         self._check(deadline, owned)
         endpoint(self.url, self.allow_http)
-        arguments = parameters(arguments)
+        arguments = parameters(arguments) if self.rpc == DEFAULT_RPC else delivery_parameters(arguments)
         try:
             resolved = self.resolve(self.reference)
         except Exception:
@@ -99,7 +130,8 @@ class Transport:
         tokens = credentials(resolved)
         self._check(deadline, owned)
         metadata = json.dumps({'endpoint': self.url, 'allowHttp': self.allow_http, 'credentials': tokens,
-            'parameters': arguments, 'deadline': deadline, 'maxResponseBytes': self.max_response},
+            'parameters': arguments, 'deadline': deadline, 'maxResponseBytes': self.max_response,
+            **({'rpc': self.rpc} if self.rpc != DEFAULT_RPC else {})},
             allow_nan=False, separators=(',', ':')).encode()
         if len(metadata) > METADATA_LIMIT:
             raise ValueError('Private dispatch metadata exceeds its bound')
@@ -160,10 +192,11 @@ def child(lifetime):
     if size > METADATA_LIMIT:
         raise ValueError('Private dispatch metadata exceeds its bound')
     value = json.loads(exact_input(size), object_pairs_hook=strict_object)
-    if not isinstance(value, dict) or set(value) != {'endpoint', 'allowHttp', 'credentials', 'parameters', 'deadline', 'maxResponseBytes'}:
+    if not isinstance(value, dict) or set(value) not in ({'endpoint', 'allowHttp', 'credentials', 'parameters', 'deadline', 'maxResponseBytes'}, {'endpoint', 'allowHttp', 'credentials', 'parameters', 'deadline', 'maxResponseBytes', 'rpc'}):
         raise ValueError('Private dispatch metadata differs')
+    rpc = rpc_name(value.get('rpc', DEFAULT_RPC))
     parts = endpoint(value['endpoint'], value['allowHttp'])
-    tokens = credentials(value['credentials']);arguments = parameters(value['parameters'])
+    tokens = credentials(value['credentials']);arguments = parameters(value['parameters']) if rpc == DEFAULT_RPC else delivery_parameters(value['parameters'])
     deadline = value['deadline'];bound = value['maxResponseBytes']
     if type(bound) is not int or not 1 <= bound <= RESPONSE_LIMIT:
         raise ValueError('Private dispatch response bound differs')
@@ -175,7 +208,8 @@ def child(lifetime):
         if tokens['bearerToken'] is not None:
             headers['Authorization'] = 'Bearer ' + tokens['bearerToken']
         body = json.dumps(arguments, ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()
-        connection.request('POST', parts.path + '/rpc/read_aerial_original_dispatch', body=body, headers=headers)
+        path = parts.path + '/rpc/read_aerial_original_dispatch' if rpc == DEFAULT_RPC else parts.path + '/rpc/read_aerial_delivery_authority'
+        connection.request('POST', path, body=body, headers=headers)
         response = connection.getresponse()
         if response.status != 200:
             raise ValueError('Private dispatch RPC status differs')

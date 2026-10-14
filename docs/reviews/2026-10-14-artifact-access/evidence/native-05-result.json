@@ -1,0 +1,9 @@
+{
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "database": "odm_delivery_f935f852b1af494f866c30d80dad62d6",
+  "sourceSchema": 409,
+  "positiveCohorts": 4,
+  "casesPerCohort": 17,
+  "faults": 14,
+  "scope": "Direct SQL roles and original fixture mutations on one retained clone; no REST, hosted, terminal sender, browser, default worker or scientific acceptance."
+}
