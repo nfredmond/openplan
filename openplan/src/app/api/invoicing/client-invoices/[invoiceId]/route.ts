@@ -4,6 +4,7 @@ import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { computeLineItemAmount, summarizeClientInvoiceTotals } from "@/lib/invoicing/receivables";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import {
   isWriteFailure,
@@ -406,20 +407,27 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
 
     if (parsed.data.status) {
       const requested = parsed.data.status;
-      const today = new Date().toISOString().slice(0, 10);
+      // Sent and paid dates are the workspace's calendar day, not the server's.
+      const workspaceToday = async () => {
+        const calendar = await todayInWorkspace(supabase, invoice.workspace_id);
+        if (calendar.readError) {
+          audit.warn("workspace_calendar_unreadable", { workspaceId: invoice.workspace_id, message: calendar.readError });
+        }
+        return calendar.today;
+      };
 
       if (requested === "sent") {
         if (statusAfterLines !== "draft") {
           return NextResponse.json({ error: "Only a draft invoice can be sent" }, { status: 409 });
         }
         update.status = "sent";
-        update.sent_date = today;
+        update.sent_date = await workspaceToday();
       } else if (requested === "paid") {
         if (statusAfterLines !== "sent") {
           return NextResponse.json({ error: "Only a sent invoice can be marked paid" }, { status: 409 });
         }
         update.status = "paid";
-        update.paid_date = today;
+        update.paid_date = await workspaceToday();
       } else {
         // Void is reachable from any status and is deliberately idempotent:
         // re-voiding re-runs the time-entry release below, which is the

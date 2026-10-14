@@ -7,6 +7,7 @@ import { StatusBadge } from "@/components/ui/status-badge";
 import type { MeasureMoeSummary } from "@/lib/measures/claims";
 import { formatMoney } from "@/lib/money/format";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
+import { browserToday } from "@/lib/time/workspace-calendar";
 
 /**
  * Maintenance of effort — and the "not determined" that outranks.
@@ -73,7 +74,7 @@ export function MoeEditor({
         requiredAmount,
         reportedAmount,
         basisNote,
-        statedOn: new Date().toISOString().slice(0, 10),
+        statedOn: browserToday(),
       },
     });
     if (saved) {

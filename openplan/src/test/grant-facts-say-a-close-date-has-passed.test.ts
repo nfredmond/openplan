@@ -47,8 +47,14 @@ function bundle(opportunity: Partial<OpportunityEvidenceBundle["opportunity"]> =
   };
 }
 
-function claims(opportunity: Partial<OpportunityEvidenceBundle["opportunity"]>, now?: string): string[] {
-  return buildOpportunityFactList(bundle(opportunity), now ? { now: new Date(now) } : undefined).map((fact) => fact.claim_text);
+function claims(
+  opportunity: Partial<OpportunityEvidenceBundle["opportunity"]>,
+  now?: string,
+  timeZone?: string
+): string[] {
+  return buildOpportunityFactList(bundle(opportunity), now ? { now: new Date(now), timeZone } : undefined).map(
+    (fact) => fact.claim_text
+  );
 }
 
 describe("grant facts state whether a recorded deadline has passed", () => {
@@ -66,8 +72,14 @@ describe("grant facts state whether a recorded deadline has passed", () => {
   });
 
   it("says a close date that is today is today, not passed", () => {
-    const facts = claims({ closes_at: "2026-09-30T23:59:00Z" }, "2026-09-30T18:00:00Z");
+    const facts = claims({ closes_at: "2026-09-30" }, "2026-09-30T18:00:00Z");
     expect(facts).toContain("The recorded close date for this opportunity is 2026-09-30, which is today.");
+  });
+
+  it("says a close time later today is later today, not passed", () => {
+    const facts = claims({ closes_at: "2026-09-30T23:59:00Z" }, "2026-09-30T18:00:00Z");
+    expect(facts).toContain("The recorded close time for this opportunity is 2026-09-30 at 23:59 (UTC), later today.");
+    expect(facts.join(" ")).not.toContain("has passed");
   });
 
   it("follows the shared calendar-day rule, so it agrees with closing soon", () => {
@@ -78,8 +90,45 @@ describe("grant facts state whether a recorded deadline has passed", () => {
     expect(isDeadlinePast("2026-09-30", new Date(now))).toBe(false);
     expect(isClosingSoonFundingOpportunity({ opportunityStatus: "open", closesAt: "2026-09-30" }, new Date(now))).toBe(true);
     const facts = claims({}, now);
-    expect(facts).toContain("The recorded close date for this opportunity is 2026-09-30, which is today.");
+    expect(facts).toContain(
+      "The recorded close date for this opportunity is 2026-09-30, the day before today's date (2026-10-01, UTC); that day has not ended everywhere, so the close date may have passed."
+    );
     expect(facts.join(" ")).not.toContain("has passed");
+    // In a Pacific workspace it is still Sep 30, so the date is simply today.
+    expect(claims({}, now, "America/Los_Angeles")).toContain(
+      "The recorded close date for this opportunity is 2026-09-30, which is today."
+    );
+  });
+
+  it("compares a TIMESTAMPTZ close as an instant: a 09:00 UTC close has passed at 09:30 UTC the same day", () => {
+    // The review's case: truncated to a day, this call read as "today" for
+    // fifteen more hours after it closed.
+    const closed = claims({ closes_at: "2026-10-11T09:00:00+00:00" }, "2026-10-11T09:30:00Z");
+    expect(closed).toContain(
+      'The recorded close time for this opportunity is 2026-10-11 at 09:00 (UTC); today\'s date is 2026-10-11 (UTC), so the close time has passed even though its recorded status still reads "open".'
+    );
+    const before = claims({ closes_at: "2026-10-11T09:00:00+00:00" }, "2026-10-11T08:59:00Z");
+    expect(before).toContain("The recorded close time for this opportunity is 2026-10-11 at 09:00 (UTC), later today.");
+    expect(before.join(" ")).not.toContain("has passed");
+  });
+
+  it("states a close time and today's date in the workspace's zone", () => {
+    // 06:59 UTC on Oct 1 is 11:59 p.m. Sep 30 in Los Angeles. Sliced, it read Oct 1.
+    const facts = claims({ closes_at: "2026-10-01T06:59:00Z" }, "2026-09-30T20:00:00Z", "America/Los_Angeles");
+    expect(facts).toContain(
+      "The recorded close time for this opportunity is 2026-09-30 at 23:59 (America/Los_Angeles), later today."
+    );
+    const passed = claims({ closes_at: "2026-10-01T06:59:00Z" }, "2026-10-01T07:30:00Z", "America/Los_Angeles");
+    expect(passed).toContain(
+      'The recorded close time for this opportunity is 2026-09-30 at 23:59 (America/Los_Angeles); today\'s date is 2026-10-01 (America/Los_Angeles), so the close time has passed even though its recorded status still reads "open".'
+    );
+  });
+
+  it("states a passed decision due time as an instant", () => {
+    const facts = claims({ closes_at: null, decision_due_at: "2026-10-11T09:00:00Z" }, "2026-10-11T12:00:00Z");
+    expect(facts).toContain(
+      "The workspace decision on this opportunity was due 2026-10-11 at 09:00 (UTC); today's date is 2026-10-11 (UTC), so that due time has passed."
+    );
   });
 
   it("leaves out the stale-status clause when the status is no longer open", () => {
