@@ -1,0 +1,70 @@
+{
+  "at": "2026-10-13T23:41:28.281923+00:00",
+  "fixture": "All18publicphotosfrompinned9506a9bf",
+  "imageBytes": 64898696,
+  "requestedOptions": [
+    {
+      "name": "max-concurrency",
+      "value": 1
+    },
+    {
+      "name": "feature-type",
+      "value": "sift"
+    },
+    {
+      "name": "feature-quality",
+      "value": "low"
+    },
+    {
+      "name": "fast-orthophoto",
+      "value": true
+    },
+    {
+      "name": "skip-3dmodel",
+      "value": true
+    },
+    {
+      "name": "orthophoto-resolution",
+      "value": 50
+    }
+  ],
+  "engineProcessingCompleted": true,
+  "archiveBytes": 3245368,
+  "archiveSha256": "8ffd925c402a0534a1a188a62ee881d6c20034c2eac62dc8493952f0e27efac2",
+  "members": 32,
+  "applicationAccessEvidence": "supplied_receipts_only",
+  "gdalReadable": true,
+  "rasterDimensions": [
+    221,
+    165
+  ],
+  "rasterBands": 4,
+  "hasDeclaredCrs": true,
+  "surveyAccuracyVerification": "unassessed",
+  "processingQualityVerification": "unassessed",
+  "nativeRlsCompositionVerification": "unassessed",
+  "publicationPermission": false,
+  "callbackPermission": false,
+  "parentResources": {
+    "memory.max": "536870912",
+    "memory.peak": "305356800",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "engineStopped": {
+    "id": "e521067550bff156ac616b68f714431ec6b69010cd6dc448f38e25b4df6a1bec",
+    "running": false,
+    "oomKilled": false,
+    "proof": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-useful-output-native-20261013/processing-05/engine",
+    "memory": 2147483648,
+    "swap": 2147483648
+  },
+  "environmentProfile": "readonlyroot,originalcwd,HOME=/tmp,TMPDIR=/var/www/tmp,2GiB,1CPU,noextraSwap",
+  "failedTrials": [
+    "01 inputprojection",
+    "02 reportedoptionorder",
+    "03 readonlyPoissontemporaryCWD",
+    "04 NodeODMstartuprequirespackageCWD"
+  ]
+}

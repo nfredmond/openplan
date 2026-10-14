@@ -144,6 +144,8 @@ export type BuildAssistantChatToolsParams = {
   userId: string;
   audit: ChatToolAuditLike;
   budget: ChatToolBudget;
+  /** The zone the prompt's TODAY line uses, so dates in tool results match it. Defaults to UTC. */
+  timeZone?: string | null;
 };
 
 /* The catalog's own list, not a copy of it. This file kept the second copy; the
@@ -1448,7 +1450,7 @@ function buildAssistantEvidenceReadTools(params: BuildAssistantChatToolsParams):
 }
 
 export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): ToolSet {
-  const { supabase, context, userId, audit, budget } = params;
+  const { supabase, context, userId, audit, budget, timeZone } = params;
   const workspaceId = context.workspace.id;
 
   const searchKnowledgeBase = tool({
@@ -1530,7 +1532,7 @@ export function buildAssistantChatTools(params: BuildAssistantChatToolsParams): 
         return {
           status: "ok",
           kind: other.kind,
-          contextLines: buildAssistantChatContextLines(other),
+          contextLines: buildAssistantChatContextLines(other, { timeZone }),
         };
       },
     }),

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
   MEASURE_ALLOCATION_COLUMNS,
@@ -430,6 +431,10 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
       cadenceLabel: cadenceLabel(fund.receipt_cadence),
     };
 
+    // The date printed on the statement is the agency's day, not the server's.
+    const calendar = await todayInWorkspace(supabase, fund.workspace_id);
+    if (calendar.readError) audit.warn("workspace_calendar_unreadable", { measureId: fund.id, message: calendar.readError });
+
     let html: string;
     try {
       html = buildMeasureAnnualStatementHtml({
@@ -447,7 +452,7 @@ export async function GET(request: NextRequest, context: { params: Promise<{ mea
         recipients: model.recipients.value,
         moe: model.moe,
         hasStaffEnteredAmounts: model.hasStaffEnteredAmounts,
-        generatedOnText: new Date().toISOString().slice(0, 10),
+        generatedOnText: calendar.today,
       });
     } catch (error) {
       // `assertStatementCoverage` throws when no period belongs to the year.

@@ -71,6 +71,9 @@ import {
 } from "@/lib/safety/crash-filters";
 import { CrashFilterPanel, type CrashFacetCounts } from "./crash-filter-panel";
 import { SafetyPrintableStreetContext } from "./safety-printable-street-context";
+import { HighInjuryNetworkPanel, type HighInjuryNetworkReportTarget } from "./high-injury-network-panel";
+import { highInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
+import { fitInstructionFromGeometry } from "@/lib/cartographic/geometry-bbox";
 
 function CutoffProvenanceLink({
   provenance,
@@ -309,7 +312,7 @@ type SafetyWorkspaceProps = {
   /** Recent acquisitions, newest first, with their project links. */
   ingestHistory?: SafetyIngestHistoryEntry[];
   /** Existing reports for the active project that can receive this pull. */
-  projectReports?: Array<{ id: string; title: string }>;
+  projectReports?: Array<{ id: string; title: string; safetyActionPlan?: HighInjuryNetworkReportTarget["safetyActionPlan"] }>;
   /**
    * The map backgrounds this deployment offers, resolved on the server by
    * `resolvePublicBasemapConfig` — the same registry and the same operator
@@ -503,6 +506,12 @@ export function SafetyWorkspace({
    * re-render — and this component re-renders on every filter press.
    */
   const [mapFocus, setMapFocus] = useState<FitInstruction | null>(null);
+  /** Whether the high-injury network layer is drawn. On by default. */
+  const [showHighInjuryNetwork, setShowHighInjuryNetwork] = useState(true);
+  const highInjuryNetworkLayer = useMemo(
+    () => (showHighInjuryNetwork ? highInjuryNetworkFeatureCollection(response?.highInjuryNetwork) : null),
+    [showHighInjuryNetwork, response?.highInjuryNetwork]
+  );
 
   // Whether the box still holds the area this page opened with. Everything that
   // explains where that area came from is gated on it: once the planner picks
@@ -1079,6 +1088,7 @@ export function SafetyWorkspace({
             onMapReady={handleMapReady}
             focus={mapFocus}
             onFocusApplied={() => setMapFocus(null)}
+            highInjuryNetwork={highInjuryNetworkLayer}
           />
 
           {/* The background picker, docked over the map. Top-LEFT, because
@@ -1563,6 +1573,28 @@ export function SafetyWorkspace({
               </p>
             ) : null}
             </>}
+            {response ? (
+              <HighInjuryNetworkPanel
+                // A new acquisition or report list starts a fresh selection.
+                key={`${ingest.id}:${projectId}`}
+                network={response.highInjuryNetwork}
+                sourceLabel={ingest.sourceLabel}
+                showOnMap={showHighInjuryNetwork}
+                onShowOnMapChange={setShowHighInjuryNetwork}
+                onFocusSegment={(segment) => {
+                  const instruction = fitInstructionFromGeometry(segment.geometry);
+                  if (instruction) setMapFocus(instruction);
+                }}
+                ingestId={ingest.id ?? null}
+                reports={projectId
+                  ? projectReports.map((report) => ({
+                      id: report.id,
+                      title: report.title,
+                      safetyActionPlan: report.safetyActionPlan ?? null,
+                    }))
+                  : []}
+              />
+            ) : null}
             {response ? (
               <SafetyPrintableStreetContext
                 projectName={openedForProject?.name ?? null}
