@@ -1,0 +1,24 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "shortened-job",
+    "outcome": "intended_failure",
+    "diagnostic": "Complete aerial regression job needs the declared 30-minute allowance"
+  },
+  {
+    "case": "removed-stage",
+    "outcome": "intended_failure",
+    "diagnostic": "Changing the job allowance must preserve the executable recipe"
+  }
+]

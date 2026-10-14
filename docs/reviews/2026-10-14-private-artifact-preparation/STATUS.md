@@ -56,3 +56,13 @@ under 1 GiB. Swap, max-pressure and OOM events remain zero in this recipe.
 Repeated native cohorts retain their separate cap-pressure limits. GitHub CI
 and merged-main acceptance remain pending. No migration, hosted setting, worker
 default, version or release tag changes belong to this increment.
+
+## Complete workflow runner allowance
+
+GitHub job115728317021 on head00821399288104ea6b51734488edbcffc496a39a
+starts at07:24:09Z and ends cancelled at07:44:19Z. Its annotation explicitly
+says the job exceeds20 minutes. Runtime output controls are interrupted and
+five final stages are skipped. This is not passing worker CI. The complete
+regression job now allows30 minutes. No test, assertion, stage, production
+deadline or named-fault allowance is removed or widened. Fresh CI must finish
+the entire recipe before this candidate lands.
