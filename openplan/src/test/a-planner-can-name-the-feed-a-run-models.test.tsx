@@ -230,14 +230,14 @@ describe("what a planner is told before they queue the run", () => {
     expect(screen.queryByTestId("managed-run-transit-feed-frequencies")).toBeNull();
   });
 
-  it("discloses an expired schedule without refusing it", () => {
-    // Three of four real Sacramento-area feeds measured 2026-08-05 had already
-    // expired. Refusing them would refuse most of the country.
+  it("shows archive dates without endorsing an expired source", () => {
     renderManager();
     selectEngine("aequilibrae");
     fireEvent.change(screen.getByLabelText(/Transit feed/i), { target: { value: FEED_ID } });
 
-    expect(screen.getByText(/published schedule runs through 2025-04-05/i)).toBeTruthy();
+    const notice = screen.getByText(/published schedule.*2025-04-05/i);
+    expect(notice).not.toHaveTextContent(/usually|normally|right thing|last one/i);
+    expect(notice).toHaveTextContent(/service dates match your study period/i);
     expect(screen.getByRole("button", { name: /Launch run/i })).toHaveProperty("disabled", false);
   });
 

@@ -495,4 +495,70 @@ describe("/api/assistant/chat", () => {
       }
     });
   });
+
+  describe("today's date in the workspace's time zone", () => {
+    // 00:30 UTC Oct 12 is 5:30 p.m. Oct 11 in Los Angeles and 9:30 a.m.
+    // Oct 12 in Tokyo. A workspace that recorded its zone is dated in it,
+    // whatever zone the browser reports.
+    const NOW = "2026-10-12T00:30:00Z";
+    const workspaceSelects: string[] = [];
+    const workspaceFilters: Array<[string, unknown]> = [];
+
+    function clientWithWorkspaceZone(timeZone: string | null) {
+      createClientMock.mockResolvedValue({
+        auth: { getUser: (...args: unknown[]) => authGetUserMock(...args) },
+        from: (table: string) => {
+          if (table !== "workspaces") throw new Error(`Unexpected table ${table}`);
+          return {
+            select: (columns: string) => {
+              workspaceSelects.push(columns);
+              return {
+                eq: (column: string, value: unknown) => {
+                  workspaceFilters.push([column, value]);
+                  return { maybeSingle: async () => ({ data: { time_zone: timeZone, home_country_code: "US" }, error: null }) };
+                },
+              };
+            },
+          };
+        },
+      });
+    }
+
+    async function systemPrompt(browserZone: string): Promise<string> {
+      streamTextMock.mockClear();
+      await postAssistantChat(
+        jsonRequest({ kind: "workspace", workspaceId: WORKSPACE_ID, question: "What is due today?", timeZone: browserZone })
+      );
+      const system = (streamTextMock.mock.calls[0][0] as { system: string | { content: string } }).system;
+      return typeof system === "string" ? system : system.content;
+    }
+
+    beforeEach(() => {
+      workspaceSelects.length = 0;
+      workspaceFilters.length = 0;
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(new Date(NOW));
+    });
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("dates the prompt in the workspace's zone ahead of the browser's", async () => {
+      clientWithWorkspaceZone("America/Los_Angeles");
+      expect(await systemPrompt("Asia/Tokyo")).toContain(
+        "TODAY: 2026-10-11 (calendar date in America/Los_Angeles, the workspace's time zone)."
+      );
+      expect(workspaceSelects).toEqual(["time_zone, home_country_code"]);
+      expect(workspaceFilters).toEqual([["id", WORKSPACE_ID]]);
+      const toolArgs = buildAssistantChatToolsMock.mock.calls.at(-1)?.[0] as { timeZone?: string | null } | undefined;
+      expect(toolArgs?.timeZone).toBe("America/Los_Angeles");
+    });
+
+    it("uses the browser's zone when the workspace has none", async () => {
+      clientWithWorkspaceZone(null);
+      expect(await systemPrompt("Asia/Tokyo")).toContain(
+        "TODAY: 2026-10-12 (calendar date in Asia/Tokyo, the planner's time zone)."
+      );
+    });
+  });
 });

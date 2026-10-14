@@ -55,6 +55,7 @@ import {
   type MeasureClaimStatus,
 } from "@/lib/measures/claims";
 import { authorizeMeasureWrite } from "@/lib/measures/write-authorization";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 const paramsSchema = z.object({ measureId: z.string().uuid(), claimId: z.string().uuid() });
 
@@ -225,7 +226,9 @@ export async function PATCH(
       // can act on. No `nextStatus !== "draft"` guard, because the schema does
       // not accept `draft` as a target — a claim is never un-submitted.
       if (!existing.submitted_on) {
-        updates.submitted_on = new Date().toISOString().slice(0, 10);
+        const calendar = await todayInWorkspace(supabase, authorization.workspaceId);
+        if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
+        updates.submitted_on = calendar.today;
       }
 
       if (measureClaimStatusRequiresDecider(nextStatus)) {

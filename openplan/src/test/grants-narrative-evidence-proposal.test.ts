@@ -79,7 +79,7 @@ describe("buildOpportunityFactList — proposal pursuits", () => {
         claim.includes("Submission format note on record (verify against the current solicitation): Portal upload")
       )
     ).toBe(true);
-    expect(facts).toContain("Written questions to the issuing agency are due 2026-08-15.");
+    expect(facts).toContain("Written questions to the issuing agency are due 2026-08-15 at 00:00 (UTC).");
   });
 
   it("grounds schedule and past performance on project records", () => {

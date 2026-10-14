@@ -35,6 +35,10 @@ import { SAFETY_KSI_COVERAGE_UNAVAILABLE, separatesSeriousInjuries, type SafetyC
 import type { SafetyKsiConcentration, SafetyKsiEquityTract } from "@/lib/safety/client-types";
 import type { SafetyRoadContextFeature } from "@/lib/safety/road-context";
 import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } from "@/lib/safety/street-context-svg";
+import {
+  SAFETY_ACTION_PLAN_SECTION_TITLE,
+  type SafetyActionPlanSectionDraft,
+} from "@/lib/reports/safety-action-plan";
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
@@ -237,6 +241,12 @@ export type ReportGenerationData = {
   safetyRoadContext?: readonly SafetyRoadContextFeature[] | null;
   safetyKsiEquityTracts?: readonly SafetyKsiEquityTract[] | null;
   safetyKsiEquityDemographicSource?: { label: string; vintage: string };
+  /**
+   * The safety action plan draft, when a planner saved one into this report.
+   * `stale_acquisition` means the plan was saved against a crash acquisition
+   * the report no longer cites; it renders as that notice, never as the old plan.
+   */
+  safetyActionPlan?: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null;
   /** Optional so pre-typed-evidence callers keep working; absent reads as none. */
   citedModelRuns?: ReportCitedModelRun[];
   dualDemandAgreementSnapshotsV1?: DualDemandAgreementSnapshotV1[];
@@ -1184,6 +1194,69 @@ function packetSafetyBodyMarkup(data: ReportGenerationData): string {
   return acquisitionMarkup + concentrationMarkup + streetContextMarkup + equityMarkup;
 }
 
+/**
+ * The safety action plan draft, as its own section after the report's
+ * sections. Rendered only when a planner saved a plan into this report. Every
+ * figure keeps its source line, and the uncovered components are listed so the
+ * draft cannot read as a finished plan.
+ */
+export function safetyActionPlanMarkup(plan: ReportGenerationData["safetyActionPlan"]): string {
+  if (!plan) return "";
+  const heading = `<h2 class="section-title">${esc(SAFETY_ACTION_PLAN_SECTION_TITLE)}</h2>`;
+  if ("kind" in plan && plan.kind === "stale_acquisition") {
+    return `<section id="safety_action_plan">${heading}<p>The saved action plan used a different crash acquisition than the one this report now cites, so it is not printed. Save the plan again from Safety.</p></section>`;
+  }
+  const draft = plan as SafetyActionPlanSectionDraft;
+
+  const summary = draft.crashSummary.kind === "present"
+    ? `<h3>Crash summary</h3>
+      <p>${esc(draft.crashSummary.sourceLabel)}. Years requested: ${esc(draft.crashSummary.years)}.</p>
+      <dl class="detail-grid">${draft.crashSummary.figures.map((figure) => `<div><dt>${esc(figure.label)}</dt><dd>${
+        figure.value === null
+          ? `Not available. ${esc(figure.absentBecause ?? "No reason recorded.")}`
+          : esc(figure.value.toLocaleString("en-US"))
+      }</dd></div>`).join("")}</dl>
+      ${draft.crashSummary.caveats.length > 0 ? `<ul>${draft.crashSummary.caveats.map((caveat) => `<li>${esc(caveat)}</li>`).join("")}</ul>` : ""}
+      <p class="source-line">${esc(draft.crashSummary.sourceLine)}</p>`
+    : `<h3>Crash summary</h3><p>${esc(draft.crashSummary.reason)}</p>`;
+
+  const network = draft.network;
+  const networkMarkup = network.kind === "unavailable"
+    ? `<h3>High-injury network</h3><p>${esc(network.reason)}</p>`
+    : `<h3>High-injury network</h3>
+      <p><strong>${esc(network.measureLabel)}</strong>, ${esc(network.years)}.</p>
+      ${network.rows.length > 0 ? `<table>
+        <thead><tr><th>Rank</th><th>Location</th><th>Miles</th><th>Fatal</th><th>Serious injury</th><th>Per mile</th><th>Countermeasures</th></tr></thead>
+        <tbody>${network.rows.map((row) => `<tr>
+          <td>${esc(row.tied ? `${row.rank} (tie)` : String(row.rank))}</td>
+          <td>${esc(row.label)}</td>
+          <td>${row.lengthMiles === null ? "Not a road piece" : esc(row.lengthMiles.toFixed(2))}</td>
+          <td>${esc(row.fatalCrashCount.toLocaleString("en-US"))}</td>
+          <td>${row.seriousInjuryCrashCount === null ? "Not in source (fatal crashes only)" : esc(row.seriousInjuryCrashCount.toLocaleString("en-US"))}</td>
+          <td>${row.crashesPerMile === null ? `${esc(row.crashCount.toLocaleString("en-US"))} in square` : esc(row.crashesPerMile.toFixed(1))}</td>
+          <td>${row.countermeasureNames.length > 0 ? row.countermeasureNames.map(esc).join("; ") : "None attached"}</td>
+        </tr>`).join("")}</tbody>
+      </table>` : ""}
+      <p><strong>Method:</strong> ${esc(network.method)}</p>
+      <p><strong>Coverage:</strong> ${esc(network.coverage)}</p>
+      <p class="source-line">${esc(network.sourceLine)}</p>`;
+
+  const treatments = draft.treatments.length === 0
+    ? `<h3>Countermeasures</h3><p>No countermeasure is attached to a segment yet.</p>`
+    : `<h3>Countermeasures</h3>
+      <p>Proposed by staff for review. Attaching a countermeasure is not an engineering finding, and no crash reduction is estimated here.</p>
+      <ul>${draft.treatments.map((treatment) => `<li><strong>${esc(treatment.segmentLabel)}</strong> (${treatment.rank === null ? "not among the listed segments for this report's years" : `rank ${treatment.rank}`}):
+        <ul>${treatment.countermeasures.map((item) => `<li>${esc(item.name)}. Addresses: ${esc(item.addresses)} Crash types: ${esc(item.crashTypes.join(", "))}. Source: <a href="${esc(item.sourceUrl)}">${esc(item.sourceUrl)}</a>. ${esc(item.cmfNote)}</li>`).join("")}</ul>
+      </li>`).join("")}</ul>
+      <p class="source-line">${esc(draft.countermeasureSourceLine)}</p>`;
+
+  const components = `<h3>Action plan components not yet covered</h3>
+    <ul>${draft.components.map((component) => `<li><strong>${esc(component.component)}:</strong> ${component.status === "partial" ? "Partly covered." : "Not covered."} ${esc(component.gap)}</li>`).join("")}</ul>
+    <p class="source-line">${esc(draft.componentSourceLine)}</p>`;
+
+  return `<section id="safety_action_plan">${heading}<p>${esc(draft.draftNotice)}</p>${summary}${networkMarkup}${treatments}${components}</section>`;
+}
+
 function projectGeographyMarkup(data: ReportGenerationData, sectionListCarriesIt: boolean): string {
   // `sectionListCarriesIt` counts a DISABLED section too. A report whose
   // section list names geography has already been asked the question, and an
@@ -1974,6 +2047,7 @@ export function buildReportHtml(data: ReportGenerationData): string {
           </section>`
         )
         .join("")}
+      ${safetyActionPlanMarkup(data.safetyActionPlan)}
     </main>
   </body>
 </html>`;

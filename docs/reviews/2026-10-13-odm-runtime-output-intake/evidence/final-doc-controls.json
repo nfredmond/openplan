@@ -1,0 +1,52 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "passedCases": 20
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "passedCases": 6
+  },
+  {
+    "control": "roadmap-pointer-broken",
+    "outcome": "intended_failure",
+    "passedCases": 5
+  },
+  {
+    "control": "restored",
+    "outcome": "survived",
+    "passedCases": 6
+  },
+  {
+    "control": "ledger-pointer-broken",
+    "outcome": "intended_failure",
+    "passedCases": 5
+  },
+  {
+    "control": "ledger-restored",
+    "outcome": "survived",
+    "passedCases": 6
+  },
+  {
+    "control": "review-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "review-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "native_useful_recovery.py-broken",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "verify_native_useful_controls.py-broken",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "review-restored",
+    "outcome": "survived"
+  }
+]

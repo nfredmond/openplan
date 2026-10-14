@@ -68,10 +68,23 @@ class Checks(unittest.TestCase):
     def test_option_shape_and_duplicate_names_refuse(self):
         for options in (None,[{}],[{'name':'x','value':[]}],[{'name':'x','value':True,'extra':0}],self.value['options']+[self.value['options'][-1]],self.value['options'][:-1]+[{**self.value['options'][-1],'extra':0}]):
             self.refuses(self.changed(options=options),'options shape|repeat a name')
-    def test_requested_option_values_order_and_types_match(self):
-        for options in ([*reversed(self.value['options'][:2]),*self.value['options'][2:]],
+    def test_requested_option_values_names_and_types_match(self):
+        for options in ([{**self.value['options'][0], 'name':'different-requested-name'},*self.value['options'][1:]],
                         [{'name':'synthetic-flag','value':1},*self.value['options'][1:]],self.value['options'][1:]):
             self.refuses(self.changed(options=options),'original requested options')
+    def test_engine_catalogue_order_preserves_exact_requested_names_and_values(self):
+        requested = [{'name': name, 'value': value} for name, value in [
+            ('max-concurrency', 1), ('feature-type', 'sift'), ('feature-quality', 'low'),
+            ('fast-orthophoto', True), ('skip-3dmodel', True), ('orthophoto-resolution', 50)]]
+        plan = self.fixture.open(root=self.fixture.base/'catalogue-order-effects', options=requested).plan
+        reported = [requested[index] for index in (1, 2, 0, 4, 3, 5)]+[
+            {'name': name, 'value': True} for name in ('pc-ept', 'cog', 'gltf')]
+        result = self.read(self.changed(uuid=plan['taskUuid'], name=plan['name'], options=reported), plan=plan)
+        self.assertEqual(result['requestedOptions'], requested, 'Saved original option order must remain exact')
+        self.assertEqual(result['reportedOptions'], reported, 'Actual reported catalogue order must remain exact')
+        self.assertEqual(result['processingQualityVerification'], 'unassessed')
+        self.assertIs(result['publicationPermission'], False)
+
     def test_automatic_option_names_values_and_order_match_profile(self):
         for extra in ([{'name':'unknown','value':True}],[{'name':'cog','value':1}],[{'name':'cog','value':False}],
                       [{'name':'gltf','value':True},{'name':'pc-ept','value':True}]):
