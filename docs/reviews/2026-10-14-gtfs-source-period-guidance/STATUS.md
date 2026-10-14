@@ -57,3 +57,9 @@ untouched. Main gates and public delivery remain separate.
 
 Private originals and screenshots stay under
 `gtfs-managed-ingestion-proof-20261009/gtfs-source-period-guidance-20261014/`.
+
+Twenty documentation cases pass. The new index pointer passes baseline, harmless
+and restored controls; a missing report fails the relative-link assertion. An
+initial JSON-only classifier lacks the path diagnostic, so its failed trial is
+retained. The verbose/JSON retry verifies the intended missing path. No index or
+source mutation remains.
