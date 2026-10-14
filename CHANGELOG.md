@@ -20,6 +20,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
+
 **Close comments on a live engagement page.** Staff can now close and reopen
 public comments from the campaign's Publish panel. The public page stays up as
 view only, and comment, photo and survey submissions are refused while closed.

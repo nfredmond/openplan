@@ -14,6 +14,7 @@ import {
   provisionalUploadedFeedName,
   resolveGtfsUploadContentType,
 } from "@/lib/gtfs/staged-upload";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 /**
  * A `.zip` A PLANNER WAS EMAILED, TURNED INTO SERVICE LEVELS.
@@ -198,6 +199,18 @@ export async function POST(request: NextRequest) {
       const intent = { source: "upload" as const, ...query.data };
       return managedGtfsRouteSubmission(request, { service, workspaceId, actorId: user.id, intent, upload: bodyRead.bytes,
         resolve: archive => resolveManagedGtfsSubmission(service, intent, archive) });
+    }
+
+    // The workspace's total, with the measured body, before the ingest stores it.
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, bodyRead.byteLength);
+    if (room.status !== "room") {
+      audit.warn("gtfs_upload_workspace_storage_refused", {
+        workspaceId,
+        status: room.status,
+        byteSize: bodyRead.byteLength,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
     }
 
     const result = await runGtfsIngest({

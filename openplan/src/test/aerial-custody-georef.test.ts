@@ -235,6 +235,7 @@ function engineHarness(): EngineHarness {
         eq: () => ({ select: () => Promise.resolve({ data: [{ id: JOB.processingJobId }], error: null }) }),
       }),
     }),
+    rpc: () => Promise.resolve({ data: 0, error: null }),
     storage: {
       from: () => ({
         upload: () => Promise.resolve({ error: null }),

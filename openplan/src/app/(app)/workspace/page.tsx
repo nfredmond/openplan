@@ -23,7 +23,7 @@ import {
   buildStageGateRebindChoices,
   STAGE_GATE_BINDING_WORKSPACE_COLUMNS,
 } from "@/lib/stage-gates/rebind";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 import { hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
@@ -31,10 +31,29 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { formatStorageBytes, readWorkspaceStorageUsage } from "@/lib/workspaces/storage-quota";
 import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 export const metadata = moduleMetadata("Workspace setup & health");
+
+/**
+ * One plain line: this workspace's stored bytes and its limit. The service role
+ * reads Storage's own sizes, and only for a workspace the caller has already
+ * been confirmed to belong to. Anything that stops the read, including a
+ * missing service-role key, says so instead of showing zero.
+ */
+async function readStorageLine(workspaceId: string): Promise<string> {
+  try {
+    const usage = await readWorkspaceStorageUsage(createServiceRoleClient(), workspaceId);
+    if (usage.status === "read") {
+      return `Storage: ${formatStorageBytes(usage.usedBytes)} of ${formatStorageBytes(usage.quotaBytes)} used.`;
+    }
+  } catch {
+    // Falls through to the plain refusal below.
+  }
+  return "Storage use could not be read.";
+}
 
 export default async function WorkspacePage() {
   const supabase = await createClient();
@@ -93,6 +112,7 @@ export default async function WorkspacePage() {
         ),
       }))
     : null;
+  const storageLine = await readStorageLine(workspaceId);
   const modelingWorkerHealth = canManage
     ? await loadModelingWorkerHealth(resolveModelingWorkerDeclaration())
     : null;
@@ -113,6 +133,7 @@ export default async function WorkspacePage() {
             <strong>{membership.role}</strong>
           </div>
         </div>
+        <p className="text-sm text-muted-foreground">{storageLine}</p>
       </PageHeader>
 
       {deploymentHealth ? (

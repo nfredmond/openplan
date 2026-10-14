@@ -19,6 +19,7 @@ import {
   mapPackageFileMaxBytes,
   mapPackageRpcError,
   measureStoredMapPackageObject,
+  requireMapPackageStorageRoom,
   signedMapPackageUpload,
 } from "@/lib/map-packages/server";
 
@@ -103,8 +104,10 @@ export async function POST(request: NextRequest) {
       const job = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(), state: z.literal("uploading") }).passthrough().parse(data);
       const rows = await service.from("project_map_package_files").select("id, package_id, workspace_id, project_id, role, name, object_path, bytes, sha256, verified_at, created_at").eq("package_id", job.id).is("verified_at", null);
       mapPackageRpcError(rows.error);
+      const pending = (rows.data ?? []) as MapPackageFileRow[];
+      await requireMapPackageStorageRoom(service, job.workspace_id, pending.reduce((sum, row) => sum + row.bytes, 0));
       const uploads = [];
-      for (const row of (rows.data ?? []) as MapPackageFileRow[]) uploads.push({ name: row.name, url: await signedMapPackageUpload(service, row.object_path) });
+      for (const row of pending) uploads.push({ name: row.name, url: await signedMapPackageUpload(service, row.object_path) });
       audit.info("map_package_upload_issued", { packageId: job.id, files: uploads.length });
       return providerJson({ uploads });
     }

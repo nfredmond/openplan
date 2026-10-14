@@ -10,6 +10,7 @@ import { checkWorkspaceMembership } from "@/lib/workspaces/membership";
 import { managedGtfsEnabled } from "@/lib/gtfs/managed-route";
 import { GTFS_UPLOADS_BUCKET } from "@/lib/gtfs/persist";
 import { resolveGtfsUploadContentType, stagedGtfsUploadPath } from "@/lib/gtfs/staged-upload";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 
 /**
  * Issue a signed upload URL for one GTFS ZIP, so the browser can put the file
@@ -114,6 +115,20 @@ export async function POST(request: NextRequest) {
       if (!feedResult.data) {
         return NextResponse.json({ error: "Transit feed not found" }, { status: 404 });
       }
+    }
+
+    // The workspace's total, checked with the declared size before any URL
+    // exists. The complete route removes the staged object before ingesting,
+    // so the archive is never counted twice.
+    const room = await checkWorkspaceStorageRoom(service, workspaceId, byteSize);
+    if (room.status !== "room") {
+      audit.warn("gtfs_upload_workspace_storage_refused", {
+        workspaceId,
+        status: room.status,
+        byteSize,
+        ...(room.status === "full" ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes } : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
     }
 
     const objectPath = stagedGtfsUploadPath(workspaceId, user.id, randomUUID());

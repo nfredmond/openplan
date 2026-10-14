@@ -40,6 +40,8 @@ const ERRORS: Record<string, string> = {
   map_package_access_denied: "You cannot add map packages to this project.",
   map_package_file_too_large: "That file is larger than this deployment accepts.",
   map_package_file_missing: "The file did not finish uploading. Try again.",
+  workspace_storage_full: "This file would put the workspace over its storage limit. Delete files you no longer need, or ask whoever runs this OpenPlan site to raise the limit.",
+  workspace_storage_unavailable: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
 };
 
 /**
