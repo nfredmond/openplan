@@ -6,6 +6,7 @@ import { loadProgramAccess } from "@/lib/programs/api";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { loadWorkProgramPreparation } from "@/lib/programs/work-program/server";
 import { WorkProgramEditor } from "@/components/programs/work-program/editor";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 
 export default async function WorkProgramPage({ params }: { params: Promise<{ programId: string }> }) {
   const { programId } = await params;
@@ -42,7 +43,9 @@ export default async function WorkProgramPage({ params }: { params: Promise<{ pr
     const staff = await supabase.from("invoicing_staff").select("id, name").eq("workspace_id", access.program.workspace_id).order("name");
     const contracts = await supabase.from("invoicing_engagements").select("id, title").eq("workspace_id", access.program.workspace_id).order("title");
     if (staff.error || contracts.error) throw new Error("Staff and contracts could not be read");
-    const reporting = <section aria-labelledby="reporting" className="space-y-4 min-w-0"><h2 id="reporting" className="text-2xl font-semibold">Reporting</h2><ReportingPanel programId={programId} workspaceId={access.program.workspace_id} userId={user.id} /></section>;
+    // New entries are dated today on the workspace calendar. A failed read answers UTC.
+    const calendar = await loadWorkspaceCalendar(supabase, access.program.workspace_id);
+    const reporting = <section aria-labelledby="reporting" className="space-y-4 min-w-0"><h2 id="reporting" className="text-2xl font-semibold">Reporting</h2><ReportingPanel programId={programId} workspaceId={access.program.workspace_id} userId={user.id} timeZone={calendar.timeZone} /></section>;
     const preparationSection = <section aria-labelledby="preparation" className="space-y-4 min-w-0"><h2 id="preparation" className="text-2xl font-semibold">Preparation and adoption history</h2><WorkProgramEditor programId={programId} workspaceId={access.program.workspace_id} userId={user.id} agency={access.program.sponsor_agency ?? ""} initial={preparation} documents={documents} evidenceDocuments={evidenceDocuments} projects={projects} staff={(staff.data ?? []).map((row) => ({ value: row.id, label: row.name }))} contracts={(contracts.data ?? []).map((row) => ({ value: row.id, label: row.title }))} canWrite={canAccessWorkspaceAction("programs.write", access.membership.role)} /></section>;
     return <section className="space-y-6 min-w-0">
       <Link href={`/programs/${programId}`} className="underline">Back to {access.program.title}</Link>

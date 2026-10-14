@@ -929,6 +929,154 @@ describe("the daily deadline sweep", () => {
   });
 });
 
+/**
+ * EACH WORKSPACE'S WINDOW IS ON ITS OWN CALENDAR.
+ *
+ * "Due in the next 7 days" and "waiting N days" used to be counted from the
+ * UTC day. At 6 p.m. Pacific that is already tomorrow, and in Tokyo or
+ * Auckland it is still yesterday. Each case below gives two workspaces the
+ * same deadline and expects opposite answers, so a sweep that used one
+ * calendar for both cannot pass.
+ */
+describe("the reminder window on each workspace's calendar", () => {
+  type Rows = Array<Record<string, unknown>>;
+
+  function calendarDb(
+    zones: { one: string | null; two: string | null },
+    deliverables: Array<{ id: string; workspace: "one" | "two"; due: string }>,
+    errors?: Record<string, { message: string }>
+  ) {
+    const tables = fixtures();
+    const db = new FakeWorkDb({ tables, errors });
+    db.emails.set(ALICE, "alice@example.gov");
+    db.emails.set(CAROL, "carol@example.gov");
+    const all = tables as unknown as Record<string, Rows>;
+    for (const table of [
+      "project_deliverables",
+      "project_milestones",
+      "project_submittals",
+      "funding_opportunities",
+      "funding_awards",
+      "billing_invoice_records",
+    ]) {
+      all[table].splice(0);
+    }
+    Object.assign(all.workspaces[0], { time_zone: zones.one, home_country_code: null });
+    Object.assign(all.workspaces[1], { time_zone: zones.two, home_country_code: null });
+    for (const row of deliverables) {
+      all.project_deliverables.push({
+        id: row.id,
+        project_id: row.workspace === "one" ? PROJECT_ONE : PROJECT_THREE,
+        title: row.id,
+        due_date: row.due,
+        status: "in_progress",
+        assignee_user_id: row.workspace === "one" ? ALICE : CAROL,
+        projects: row.workspace === "one" ? projectOne() : projectThree(),
+      });
+    }
+    return { db, all };
+  }
+
+  const reminded = (db: FakeWorkDb) => db.notifications.map((row) => String(row.subject_id)).sort();
+
+  it("reaches a day further for a workspace whose calendar is already tomorrow (Tokyo)", async () => {
+    // 20:00 UTC Oct 14 is 5 a.m. Oct 15 in Tokyo: its week runs to Oct 22. In UTC it runs to Oct 21.
+    const { db } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "tokyo-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "utc-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    expect(reminded(db)).toEqual(["tokyo-oct-22"]);
+    expect(result.workspaceCalendarsUnavailable).toBe(false);
+  });
+
+  it("stops a day short for a Pacific workspace at 6 p.m., when UTC is already tomorrow", async () => {
+    // 01:00 UTC Oct 15 is 6 p.m. Oct 14 in Los Angeles: its week runs to Oct 21. In UTC it runs to Oct 22.
+    const { db } = calendarDb({ one: "America/Los_Angeles", two: null }, [
+      { id: "pacific-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "pacific-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "utc-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+    expect(reminded(db)).toEqual(["pacific-oct-21", "utc-oct-22"]);
+  });
+
+  it("counts the window on the night daylight saving time ends, and in Honolulu", async () => {
+    // 07:30 UTC Nov 2 is 11:30 p.m. PST Nov 1 (Nov 1 is 25 hours long) and 9:30 p.m. Nov 1 in Honolulu.
+    // Both weeks run to Nov 8. In UTC, Nov 2 plus 7 is Nov 9.
+    const { db } = calendarDb({ one: "America/Los_Angeles", two: "Pacific/Honolulu" }, [
+      { id: "pacific-nov-8", workspace: "one", due: "2026-11-08" },
+      { id: "pacific-nov-9", workspace: "one", due: "2026-11-09" },
+      { id: "honolulu-nov-8", workspace: "two", due: "2026-11-08" },
+      { id: "honolulu-nov-9", workspace: "two", due: "2026-11-09" },
+    ]);
+    await run(db, { now: new Date("2026-11-02T07:30:00Z") });
+    expect(reminded(db)).toEqual(["honolulu-nov-8", "pacific-nov-8"]);
+  });
+
+  it("reads every calendar in one projection-checked query", async () => {
+    const { db } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "a", workspace: "one", due: "2026-10-16" },
+      { id: "b", workspace: "two", due: "2026-10-16" },
+    ]);
+    await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    const calendarReads = db.reads.filter(
+      (read) => read.table === "workspaces" && read.select === "id, time_zone, home_country_code"
+    );
+    expect(calendarReads).toHaveLength(1);
+    const inFilter = calendarReads[0].filters.find((filter) => filter.kind === "in");
+    expect(inFilter && "values" in inFilter ? [...inFilter.values].sort() : null).toEqual(
+      [WORKSPACE_ONE, WORKSPACE_TWO].sort()
+    );
+  });
+
+  it("still reminds on UTC days when the calendars cannot be read, and says so", async () => {
+    const { db } = calendarDb(
+      { one: "Asia/Tokyo", two: null },
+      [
+        { id: "tokyo-oct-22", workspace: "one", due: "2026-10-22" },
+        { id: "tokyo-oct-21", workspace: "one", due: "2026-10-21" },
+      ],
+      { workspaces: { message: "column workspaces.time_zone does not exist" } }
+    );
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["tokyo-oct-21"]);
+  });
+
+  it("counts the days a measure claim has waited on its workspace's calendar", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: "America/Los_Angeles" }, []);
+    all.measure_claims = [
+      {
+        id: "claim-tokyo",
+        workspace_id: WORKSPACE_ONE,
+        measure_fund_id: "fund-1",
+        fiscal_year_label: "FY 2027",
+        amount: "1000.00",
+        status: "submitted",
+        submitted_on: "2026-10-14",
+        created_by: ALICE,
+      },
+      {
+        id: "claim-pacific",
+        workspace_id: WORKSPACE_TWO,
+        measure_fund_id: "fund-1",
+        fiscal_year_label: "FY 2027",
+        amount: "1000.00",
+        status: "submitted",
+        submitted_on: "2026-10-14",
+        created_by: CAROL,
+      },
+    ];
+    all.measure_funds = [{ id: "fund-1", currency_code: "USD" }];
+    // 01:00 UTC Oct 15 is 10 a.m. Oct 15 in Tokyo and 6 p.m. Oct 14 in Los Angeles.
+    await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+    const body = (id: string) => String(db.notifications.find((row) => row.subject_id === id)?.body);
+    expect(body("claim-tokyo")).toContain("It has been waiting 1 day.");
+    expect(body("claim-pacific")).toContain("It arrived today.");
+  });
+});
+
 describe("the reminder inbox read", () => {
   it("asks the database for the columns the panel renders", async () => {
     const db = new FakeWorkDb({

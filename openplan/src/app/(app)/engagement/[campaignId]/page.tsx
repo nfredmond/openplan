@@ -489,7 +489,8 @@ export default async function EngagementCampaignDetailPage({
       negative: negativeItemIdSet.has(it.id),
     }));
   const intakeTrend = buildDailyIntake(
-    (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>
+    (items ?? []) as Array<{ created_at?: string | null; updated_at?: string | null }>,
+    { timeZone: workspaceCalendar.timeZone }
   );
   // E5a — k-anonymized self-reported demographics (only when the campaign opted
   // in). The SOURCE, not the summary: a failed aggregate read used to arrive here
@@ -945,6 +946,7 @@ export default async function EngagementCampaignDetailPage({
             projects={(projects ?? []) as Array<{ id: string; name: string }>}
             categories={builderCategories}
             timeZone={workspaceCalendar.timeZone}
+            calendar={{ timeZone: workspaceCalendar.timeZone, source: workspaceCalendar.source }}
           />
         </SetupAdvancedGroup>
         </div>
@@ -1294,7 +1296,11 @@ export default async function EngagementCampaignDetailPage({
       </PageTabPanel>
 
       <PageTabPanel tabKey="record" active={activeTab === "record"}>
-        <EngagementReviewFiles campaignId={campaign.id} categories={categories ?? []} />
+        <EngagementReviewFiles
+          campaignId={campaign.id}
+          categories={categories ?? []}
+          calendar={{ timeZone: workspaceCalendar.timeZone, source: workspaceCalendar.source }}
+        />
         <div className="mt-6 min-w-0 space-y-6">
         <CampaignHandoffReadinessSection
           handoffReadiness={handoffReadiness}

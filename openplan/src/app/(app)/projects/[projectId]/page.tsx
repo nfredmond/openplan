@@ -43,7 +43,8 @@ import { buildProjectTabs } from "./_components/_tabs";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { collectUnlessPending, laneOutcome, laneRows, looksLikePendingSchema } from "./_components/_read-lanes";
 import { loadEngagementCampaignsCoveringProject } from "@/lib/engagement/campaign-projects";
-import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, parseSortableDate, submittalPriority } from "./_components/_ordering";
+import { compareDateValues, invoicePriority, latestKnownDate, milestonePriority, submittalPriority } from "./_components/_ordering";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { resolveRtpPriorityFrameworkForWorkspace } from "@/lib/rtp/priority-framework-binding";
@@ -762,15 +763,15 @@ export default async function ProjectDetailPage({
   const firstBlockedMilestone = prioritizedMilestones.find((milestone) => milestone.status === "blocked") ?? null;
   const firstOverdueMilestone =
     prioritizedMilestones.find(
-      (milestone) => milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()
+      (milestone) => milestone.status !== "complete" && isDeadlinePast(milestone.target_date, now)
     ) ?? null;
   const firstOverdueSubmittal =
     prioritizedSubmittals.find(
-      (submittal) => submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()
+      (submittal) => submittal.status !== "accepted" && isDeadlinePast(submittal.due_date, now)
     ) ?? null;
   const firstOverdueInvoice =
     prioritizedProjectInvoices.find(
-      (invoice) => !["paid", "rejected"].includes(invoice.status) && parseSortableDate(invoice.due_date) < now.getTime()
+      (invoice) => !["paid", "rejected"].includes(invoice.status) && isDeadlinePast(invoice.due_date, now)
     ) ?? null;
   const awardLinkedProjectInvoices = projectInvoices.filter((invoice) => Boolean(invoice.funding_award_id));
   const fundingStackSummary = buildProjectFundingStackSummary(

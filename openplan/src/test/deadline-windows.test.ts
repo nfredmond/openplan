@@ -59,7 +59,7 @@ function workspaceDatesFixture() {
   };
   const fake = createFakeSupabase(db);
   const read = () =>
-    loadWorkspaceDates(fake.client as unknown as WorkspaceDatesSupabaseLike, WS_A, BOUNDARY, UNTIL, NOW);
+    loadWorkspaceDates(fake.client as unknown as WorkspaceDatesSupabaseLike, WS_A, BOUNDARY, UNTIL, NOW, "UTC");
   return { fake, read };
 }
 
@@ -90,7 +90,11 @@ describe("dashboard workspace dates", () => {
       (query) => query.table === "rtp_cycles" && query.ops.some((op) => op.args[0] === "adoption_target_date")
     );
     expect(adoptionReads).toHaveLength(2);
-    const missedRead = adoptionReads.find((query) => query.ops.some((op) => op.verb === "lt"));
+    // The window ahead ends with an `lt` too (before the day after its last
+    // day), so the missed read is the one that ends at the boundary.
+    const missedRead = adoptionReads.find((query) =>
+      query.ops.some((op) => op.verb === "lt" && op.args[1] === BOUNDARY)
+    );
     expect(missedRead?.ops).toEqual(
       expect.arrayContaining([
         { verb: "eq", args: ["workspace_id", WS_A] },
@@ -229,7 +233,7 @@ describe("My Work date windows for sources that may be undated", () => {
 
   it("puts dated contract tasks and reviews on the dashboard's Coming up list", async () => {
     const upcoming = (await upcomingRead()).result;
-    const coming = comingUpFromMyWork(upcoming.items);
+    const coming = comingUpFromMyWork(upcoming.items, "UTC");
     expect(coming.find((item) => item.key === "contract_tasks:task-future")).toMatchObject({
       kind: "contract-task", dueOn: "2026-11-20", overdue: false,
     });

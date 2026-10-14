@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Dates on the workspace calendar.** More planner dates now follow the
+workspace time zone instead of the server's UTC day, which turns over at 5 p.m.
+Pacific. Engagement participation open and close times are entered and shown
+in the workspace zone, and the form names it; with no zone set it says UTC.
+These also use the workspace calendar: review-file and Documents date filters,
+the daily intake chart, dashboard dates, weekly comments and runs this year,
+contract and work program form dates, a spend entry saved with no date, and
+contract and receivable invoice aging. The reminder digest counts "due in the
+next N days" and "waiting N days" on each workspace's calendar. Record lanes,
+invoice registers and grant invoice badges no longer call a record overdue the
+evening before it is due; they use the same rule as the overdue counts. No
+migration.
+
 **Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
 
 **Generated reports and exports count against the storage limit.** Report PDF and HTML files, grant application exports and engagement review files are now refused when they would put a workspace over its storage limit, with the same message uploads give. Signed-in members can no longer upload straight into the report and grant export file stores with their own sign-in, which let them pass the limit; the server now stores those files. Existing files stay readable. Apply migration `20261017000013_artifact_storage_server_writes.sql` together with this code: older code fails to store report PDFs once the migration runs, and this code works before or after it.

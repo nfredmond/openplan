@@ -86,6 +86,97 @@ export function wallClockTimeOf(value: string | null | undefined, timeZone: stri
   return `${part("hour")}:${part("minute")}`;
 }
 
+/**
+ * The zone that reaches each calendar day first (UTC+14). POSIX `Etc/` names
+ * invert the sign, so `Etc/GMT-14` is fourteen hours ahead of UTC.
+ */
+export const EARLIEST_TIME_ZONE = "Etc/GMT-14";
+
+/**
+ * The latest calendar date any zone has reached. A read that spans workspaces
+ * (the reminder sweep) bounds its window with this, then decides each
+ * workspace's own window on that workspace's calendar.
+ */
+export function latestTodayAnywhere(now: Date = new Date()): string {
+  return todayIn(EARLIEST_TIME_ZONE, now);
+}
+
+// A `datetime-local` value: wall-clock date and time, no zone.
+const WALL_CLOCK = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/;
+const DAY_MS = 86_400_000;
+
+/** How far a zone's wall clock is ahead of UTC at an instant, in milliseconds. */
+function zoneOffsetMs(instantMs: number, timeZone: string): number {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23",
+  }).formatToParts(new Date(instantMs));
+  const part = (type: Intl.DateTimeFormatPartTypes) => Number(parts.find((entry) => entry.type === type)?.value);
+  const wallAsUtc = Date.UTC(part("year"), part("month") - 1, part("day"), part("hour"), part("minute"), part("second"));
+  const wholeSecond = instantMs - (((instantMs % 1000) + 1000) % 1000);
+  return wallAsUtc - wholeSecond;
+}
+
+/**
+ * An instant as a `datetime-local` input wants it (`YYYY-MM-DDTHH:MM`), on a
+ * zone's calendar and clock. Empty for a missing, date-only, offset-less or
+ * unreadable value, so the input shows nothing rather than a guess.
+ */
+export function dateTimeInputOf(value: string | null | undefined, timeZone: string): string {
+  const time = wallClockTimeOf(value, timeZone);
+  const day = calendarDayOf(value, timeZone);
+  return day && time ? `${day}T${time}` : "";
+}
+
+/**
+ * The UTC instant (ISO 8601) of a wall-clock date and time in a zone: what a
+ * `datetime-local` input typed in the workspace's zone means.
+ *
+ * Daylight saving time is resolved the way `Temporal`'s "compatible" rule
+ * does. A time that occurs twice (the autumn hour) is the earlier one; a time
+ * that never occurs (the spring gap) moves forward by the gap, so 2:30 a.m. on
+ * the spring-forward night is 3:30 a.m. Null for a value that is not a real
+ * date and time, or a zone `Intl` rejects.
+ */
+export function instantFromWallClock(wallClock: string | null | undefined, timeZone: string): string | null {
+  const match = WALL_CLOCK.exec(String(wallClock ?? "").trim());
+  const zone = validTimeZone(timeZone);
+  if (!match || !zone) return null;
+  const [year, month, day, hour, minute, second] = match.slice(1).map((field) => Number(field ?? 0));
+  const wall = Date.UTC(year, month - 1, day, hour, minute, second);
+  const check = new Date(wall);
+  if (
+    check.getUTCFullYear() !== year ||
+    check.getUTCMonth() !== month - 1 ||
+    check.getUTCDate() !== day ||
+    check.getUTCHours() !== hour ||
+    check.getUTCMinutes() !== minute
+  ) {
+    return null;
+  }
+  const before = zoneOffsetMs(wall - DAY_MS, zone);
+  const after = zoneOffsetMs(wall + DAY_MS, zone);
+  const matching = [...new Set([wall - before, wall - after])]
+    .filter((instant) => instant + zoneOffsetMs(instant, zone) === wall)
+    .sort((left, right) => left - right);
+  return new Date(matching[0] ?? wall - before).toISOString();
+}
+
+/**
+ * How a date or time input names its zone: the zone itself, or UTC said out
+ * loud when the workspace has none.
+ */
+export function timeZoneInputLabel(calendar: WorkspaceCalendar | null | undefined): string {
+  if (!calendar || calendar.source === "utc_fallback") return "UTC, no workspace time zone set";
+  return calendar.timeZone;
+}
+
 /** Whether a value is a calendar day (`YYYY-MM-DD`) rather than an instant. */
 export function isDateOnly(value: string | null | undefined): boolean {
   return typeof value === "string" && DATE_ONLY.test(value.trim());

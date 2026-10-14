@@ -1,5 +1,6 @@
-import { addDays, calendarDate, type ComingUpItem, type ComingUpKind } from "@/lib/dashboard/coming-up";
+import { addDays, type ComingUpItem, type ComingUpKind } from "@/lib/dashboard/coming-up";
 import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { calendarDayOf, instantFromWallClock } from "@/lib/time/workspace-calendar";
 import { isDeadlinePast } from "@/lib/work/deadlines";
 
 /**
@@ -14,6 +15,13 @@ import { isDeadlinePast } from "@/lib/work/deadlines";
  *
  * Each read is capped; a capped or failed read is reported by label so the
  * dashboard can say so instead of showing a quiet calendar.
+ *
+ * Days are the workspace's. The adoption target is a DATE and is used as it
+ * is. A review close and a comment period end are TIMESTAMPTZ: each is shown
+ * on its day in the workspace's zone, and the window's day bounds become that
+ * zone's midnights, so a period ending at 8 p.m. Pacific on the 14th (03:00
+ * UTC on the 15th) is due on the 14th and is read in the window that holds
+ * the 14th.
  */
 
 type DatedRead = PromiseLike<{ data: unknown[] | null; error: { message: string } | null }> & {
@@ -47,16 +55,29 @@ export const MISSED_DATES_LOOKBACK_DAYS = 365;
 type Row = Record<string, unknown>;
 type ReadOutcome = { rows: Row[]; failed: boolean; capped: boolean };
 
+/**
+ * Calendar-day bounds as a column compares them. A DATE column takes the day
+ * itself. A TIMESTAMPTZ column takes the instant the day starts in the zone;
+ * a zone `Intl` rejects falls back to the day, which Postgres reads as UTC
+ * midnight, the bound used before zones existed.
+ */
+function dayStart(day: string, instant: boolean, timeZone: string): string {
+  return instant ? (instantFromWallClock(`${day}T00:00`, timeZone) ?? day) : day;
+}
+
 async function boundedRead(
   query: DatedRead,
   column: string,
   bounds: { from: string; before?: string; until?: string },
+  instant: boolean,
+  timeZone: string,
   ascending = true
 ): Promise<ReadOutcome> {
   try {
-    let bounded = query.gte(column, bounds.from);
-    if (bounds.before) bounded = bounded.lt(column, bounds.before);
-    if (bounds.until) bounded = bounded.lte(column, `${bounds.until}T23:59:59Z`);
+    let bounded = query.gte(column, dayStart(bounds.from, instant, timeZone));
+    if (bounds.before) bounded = bounded.lt(column, dayStart(bounds.before, instant, timeZone));
+    // Through the end of `until`: before the next day starts.
+    if (bounds.until) bounded = bounded.lt(column, dayStart(addDays(bounds.until, 1), instant, timeZone));
     const result = await bounded.order(column, { ascending }).limit(WORKSPACE_DATES_CAP);
     // A deployment behind the migration simply has no such dates yet.
     if (result.error && looksLikePendingSchema(result.error.message)) {
@@ -77,6 +98,8 @@ type DateSource = {
   kind: ComingUpKind;
   keyPrefix: string;
   column: string;
+  /** TIMESTAMPTZ rather than DATE: placed on the workspace's calendar. */
+  instant: boolean;
   fallbackTitle: string;
   href: (id: string) => string;
   query: () => DatedRead;
@@ -87,7 +110,8 @@ export async function loadWorkspaceDates(
   workspaceId: string,
   from: string,
   until: string,
-  now: Date
+  now: Date,
+  timeZone: string
 ): Promise<WorkspaceDatesResult> {
   const openCycles = ["draft", "public_review"] as const;
   const sources: DateSource[] = [
@@ -96,6 +120,7 @@ export async function loadWorkspaceDates(
       kind: "public-review",
       keyPrefix: "rtp-review",
       column: "public_review_close_at",
+      instant: true,
       fallbackTitle: "RTP cycle",
       href: (id) => `/rtp/${id}`,
       query: () =>
@@ -110,6 +135,7 @@ export async function loadWorkspaceDates(
       kind: "adoption",
       keyPrefix: "rtp-adoption",
       column: "adoption_target_date",
+      instant: false,
       fallbackTitle: "RTP cycle",
       href: (id) => `/rtp/${id}`,
       query: () =>
@@ -124,6 +150,7 @@ export async function loadWorkspaceDates(
       kind: "comment-period",
       keyPrefix: "comment-period",
       column: "participation_ends_at",
+      instant: true,
       fallbackTitle: "Engagement campaign",
       href: (id) => `/engagement/${id}`,
       query: () =>
@@ -139,9 +166,9 @@ export async function loadWorkspaceDates(
   const reads = await Promise.all(
     sources.map(async (source) => {
       const [ahead, missed] = await Promise.all([
-        boundedRead(source.query(), source.column, { from, until }),
+        boundedRead(source.query(), source.column, { from, until }, source.instant, timeZone),
         // Most recent first, so the cap drops the oldest misses, not the latest.
-        boundedRead(source.query(), source.column, { from: missedFrom, before: from }, false),
+        boundedRead(source.query(), source.column, { from: missedFrom, before: from }, source.instant, timeZone, false),
       ]);
       return { source, ahead, missed };
     })
@@ -150,7 +177,7 @@ export async function loadWorkspaceDates(
   const toItems = (source: DateSource, rows: readonly Row[]): ComingUpItem[] =>
     rows.flatMap((row) => {
       const value = text(row[source.column]);
-      const dueOn = calendarDate(value);
+      const dueOn = calendarDayOf(value, timeZone);
       if (!dueOn) return [];
       const id = String(row.id);
       return [

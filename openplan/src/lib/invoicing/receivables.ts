@@ -17,6 +17,7 @@ import {
   computeRetentionAmount,
   parseCurrencyAmount,
 } from "./invoice-records";
+import { calendarDayOf, todayIn, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 export const CLIENT_INVOICE_STATUSES = ["draft", "sent", "paid", "void"] as const;
 
@@ -194,27 +195,44 @@ export function isReceivableOutstanding(status: string | null | undefined): bool
  * overdue. Deliberately the same whole-day arithmetic as the aging bucketer
  * (daysPastDue >= 1 ⇔ the days_1_30 and later buckets), so the overdue flag
  * and the aging buckets can never disagree at the boundary.
+ *
+ * `timeZone` is the workspace's IANA zone (`loadWorkspaceCalendar`); "today"
+ * is the date there. Without it the day is the UTC day, which turns over at
+ * 5 p.m. Pacific.
  */
 export function isReceivableOverdue(
   status: string | null | undefined,
   dueDate: string | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): boolean {
   if (!isReceivableOutstanding(status) || !dueDate) {
     return false;
   }
 
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
-  const days = daysPastDue(dueDate, now);
+  const days = daysPastDue(dueDate, now, timeZone);
   return days !== null && days >= 1;
 }
 
-function daysPastDue(dueDate: string, now: Date): number | null {
-  const parsed = new Date(dueDate);
-  if (Number.isNaN(parsed.getTime())) {
+const DAY_MS = 24 * 60 * 60 * 1000;
+
+/**
+ * Whole calendar days from the due date to today in `timeZone`; 0 on the due
+ * date itself. A due date stored as an instant counts as the day it falls on
+ * in that zone. Null when the due date cannot be read as a day.
+ */
+function daysPastDue(dueDate: string, now: Date, timeZone: string): number | null {
+  const dueDay = calendarDayOf(dueDate, timeZone);
+  if (!dueDay) {
     return null;
   }
-  return Math.floor((now.getTime() - parsed.getTime()) / (24 * 60 * 60 * 1000));
+  // Both are YYYY-MM-DD, read as midnight UTC, so the difference is whole days.
+  const dueAt = new Date(dueDay).getTime();
+  if (Number.isNaN(dueAt)) {
+    return null;
+  }
+  return Math.round((new Date(todayIn(timeZone, now)).getTime() - dueAt) / DAY_MS);
 }
 
 function agingBucketForDays(days: number): ReceivableAgingBucket {
@@ -232,7 +250,8 @@ function agingBucketForDays(days: number): ReceivableAgingBucket {
  */
 export function buildReceivableAgingSummary(
   invoices: ClientInvoiceRecordLike[] | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): ReceivableAgingSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
 
@@ -249,7 +268,7 @@ export function buildReceivableAgingSummary(
     }
 
     const amount = receivableInvoiceAmount(invoice);
-    const days = invoice.due_date ? daysPastDue(invoice.due_date, now) : null;
+    const days = invoice.due_date ? daysPastDue(invoice.due_date, now, timeZone) : null;
 
     if (days === null) {
       undatedCount += 1;
@@ -267,7 +286,8 @@ export function buildReceivableAgingSummary(
 
 export function summarizeReceivables(
   invoices: ClientInvoiceRecordLike[] | null | undefined,
-  nowInput: Date | string = new Date()
+  nowInput: Date | string = new Date(),
+  timeZone: string = UTC_TIME_ZONE
 ): ClientInvoiceReceivableSummary {
   const now = nowInput instanceof Date ? nowInput : new Date(nowInput);
 
@@ -300,7 +320,7 @@ export function summarizeReceivables(
         summary.outstandingAmount = roundCurrency(summary.outstandingAmount + amount);
       }
 
-      if (isReceivableOverdue(status, record.due_date, now)) {
+      if (isReceivableOverdue(status, record.due_date, now, timeZone)) {
         summary.overdueCount += 1;
         summary.overdueAmount = roundCurrency(summary.overdueAmount + amount);
       }

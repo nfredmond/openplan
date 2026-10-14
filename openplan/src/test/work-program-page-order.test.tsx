@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { cleanup, render, screen } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -26,8 +26,12 @@ const orderedRead = () => ({
   select: () => ({ eq: () => ({ order: () => Promise.resolve(emptyPage) }) }),
 });
 
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } | null = null;
+const calendarEqMock = vi.fn(() => ({ maybeSingle: async () => ({ data: workspaceCalendarRow, error: null }) }));
+
 const fromMock = vi.fn((table: string) => {
   if (table === "program_work_program_workflow") return { select: workflowSelectMock };
+  if (table === "workspaces") return { select: () => ({ eq: calendarEqMock }) };
   if (table === "kb_documents" || table === "projects") return pagedRead();
   if (table === "invoicing_staff" || table === "invoicing_engagements") return orderedRead();
   throw new Error(`Unexpected table: ${table}`);
@@ -54,7 +58,10 @@ vi.mock("@/lib/programs/work-program/server", () => ({
 }));
 
 vi.mock("@/components/programs/work-program/reporting-panel", () => ({
-  ReportingPanel: () => <div data-testid="reporting-panel" />,
+  // The zone is exposed so the page's calendar wiring can be checked.
+  ReportingPanel: ({ timeZone }: { timeZone?: string }) => (
+    <div data-testid="reporting-panel" data-time-zone={timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/programs/work-program/editor", () => ({
@@ -99,6 +106,21 @@ function sectionHeadings() {
 describe("work program page order", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    workspaceCalendarRow = null;
+  });
+
+  it("dates new reporting entries on the workspace calendar", async () => {
+    workflowMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    for (const zone of ["Pacific/Honolulu", "Asia/Tokyo"]) {
+      workspaceCalendarRow = { time_zone: zone, home_country_code: null };
+      await renderPage();
+      expect(screen.getByTestId("reporting-panel")).toHaveAttribute("data-time-zone", zone);
+      cleanup();
+    }
+    expect(calendarEqMock).toHaveBeenCalledWith("id", "workspace-1");
+    workspaceCalendarRow = null;
+    await renderPage();
+    expect(screen.getByTestId("reporting-panel")).toHaveAttribute("data-time-zone", "UTC");
   });
 
   it("shows preparation before reporting while nothing is adopted", async () => {
