@@ -1,0 +1,242 @@
+[
+  {
+    "case": "diagonal-only",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "diagonal-only",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn-zero",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "row-shear-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "reflected-length-negative",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-scale-doubled",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "matrix-rows-used",
+    "oracle": "unrelated-error",
+    "accepted": false
+  }
+]

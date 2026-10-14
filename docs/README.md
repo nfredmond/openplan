@@ -265,3 +265,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Selected-schema original output recovery](reviews/2026-10-14-odm-output-schema-recovery/STATUS.md), populated isolated fixture upgrades, logical restores and current actor checks.
 - [Joined candidate transit and export observations](reviews/2026-10-14-m3-joined-preview/STATUS.md), identified T3 views, original geometry and native GeoPackage checks with explicit limits.
 - [Transit archive period and staff drawing guidance](reviews/2026-10-14-gtfs-source-period-guidance/STATUS.md), dates and caller wording with bounded source controls and desktop/390px T3 observations.
+
+The [October 14 rotated raster spacing correction](reviews/2026-10-14-rotated-raster-spacing/STATUS.md) retains full native column and row vector lengths. Six TIFF cases, intended source faults and independently decoded GDAL positions check the arithmetic. Survey accuracy, aerial delivery and complete M3/M5b.2/v1 acceptance remain open.

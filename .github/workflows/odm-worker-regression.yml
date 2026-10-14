@@ -214,3 +214,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-14-odm-output-schema-recovery/verify_migration_source_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-migration-source-controls"
+      - name: Rotated native raster spacing controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-rotated-raster-spacing/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-rotated-raster-spacing-controls"
