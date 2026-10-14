@@ -1,0 +1,43 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "upstream-validation",
+    "outcome": "intended_failure",
+    "reason": "Wrong exit cannot satisfy summary check"
+  },
+  {
+    "control": "unique-summary",
+    "outcome": "intended_failure",
+    "reason": "Duplicate summary cannot satisfy summary check"
+  },
+  {
+    "control": "positive-count",
+    "outcome": "intended_failure",
+    "reason": "Zero counts cannot satisfy summary check"
+  },
+  {
+    "control": "matching-counts",
+    "outcome": "intended_failure",
+    "reason": "Mismatched counts cannot satisfy summary check"
+  },
+  {
+    "control": "header-kind",
+    "outcome": "intended_failure",
+    "reason": "Wrong header kind cannot satisfy summary check"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

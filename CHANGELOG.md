@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Original recovery scheduling, candidate:** an explicit supplied worker graph
+attempts old-outcome repair, held original recovery and new admission in that
+order. Each attempted stage ends its step. Lifetime ownership and pinned
+component joins must remain unchanged. The default worker still does not select
+this scheduler. See the [scheduling proof](docs/reviews/2026-10-14-recovery-execution/STATUS.md).
+
+**Original local outcome recovery, candidate:** an explicit worker adapter preserves
+an older failure record and binds a separate recovery receipt to acknowledged
+original delivery. Saved acknowledgements repair bookkeeping without another
+callback POST. Pending sends retain original engine facts and require current
+actor access plus the saved command hash. Default worker selection remains
+pending. See the [recovery proof](docs/reviews/2026-10-14-outcome-recovery/STATUS.md).
+
 **Aerial held-file custody, candidate:** migration
 `20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
 replacing the original facts of a held file. Attempt counts and timestamps can
