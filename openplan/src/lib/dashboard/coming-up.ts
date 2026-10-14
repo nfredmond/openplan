@@ -18,6 +18,7 @@ export type ComingUpKind =
   | "milestone"
   | "submittal"
   | "grant"
+  | "application-due"
   | "award"
   | "invoice"
   | "plan-action"
@@ -60,6 +61,7 @@ const KIND_BY_SOURCE: Partial<Record<MyWorkSourceId, ComingUpKind>> = {
   land_use_plan_process: "plan-action",
   land_use_plan_review_closing: "plan-review",
   grant_decisions: "grant",
+  grant_application_due: "application-due",
   award_obligations: "award",
   invoice_windows: "invoice",
   contract_tasks: "contract-task",
@@ -72,6 +74,7 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   milestone: "Milestone",
   submittal: "Submittal",
   grant: "Grant decision",
+  "application-due": "Application due",
   award: "Award deadline",
   invoice: "Invoice window",
   "plan-action": "Plan action",
