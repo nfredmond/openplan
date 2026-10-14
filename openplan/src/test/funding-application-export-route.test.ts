@@ -34,9 +34,17 @@ const EXPORT_ID = "eeeeeeee-eeee-4eee-8eee-eeeeeeeeeeee";
 
 const mockAudit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
 
+// The export is stored with the service role (migration 20261017000013 removed
+// member INSERT on the bucket), after the workspace storage limit, which has
+// room here: this file is about the cover page, not the limit.
 vi.mock("@/lib/supabase/server", () => ({
   createClient: (...args: unknown[]) => createClientMock(...args),
-  createServiceRoleClient: vi.fn(),
+  createServiceRoleClient: () => ({ storage: { from: () => ({ upload: uploadMock }) } }),
+}));
+
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: async () => ({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
 
 vi.mock("@/lib/observability/audit", () => ({
@@ -130,7 +138,6 @@ function installClient() {
       }
       throw new Error(`Unexpected table: ${table}`);
     }),
-    storage: { from: vi.fn(() => ({ upload: uploadMock })) },
   });
 }
 
