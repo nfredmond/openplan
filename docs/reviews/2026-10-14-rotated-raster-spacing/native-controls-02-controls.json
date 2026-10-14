@@ -1,0 +1,46 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "nativeCases": 6
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "nativeCases": 6
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "nativeCases": 6
+  },
+  {
+    "case": "rotated",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "quarter-turn",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "sheared",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "reflected",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "axis-aligned",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "asymmetric",
+    "outcome": "intended_failure"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "nativeCases": 6
+  }
+]

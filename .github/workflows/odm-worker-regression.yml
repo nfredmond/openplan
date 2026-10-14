@@ -206,3 +206,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-13-odm-runtime-output-intake/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-output-intake-controls"
+      - name: Rotated native raster spacing controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-rotated-raster-spacing/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-rotated-raster-spacing-controls"

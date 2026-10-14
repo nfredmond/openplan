@@ -1,0 +1,242 @@
+[
+  {
+    "case": "rotated",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "rotated",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "rotated",
+    "oracle": "multiple-errors",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "quarter-turn",
+    "oracle": "multiple-errors",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "sheared",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "sheared",
+    "oracle": "multiple-errors",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "reflected",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "reflected",
+    "oracle": "multiple-errors",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "axis-aligned",
+    "oracle": "multiple-errors",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "wrong-case",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "additional-error",
+    "accepted": false
+  },
+  {
+    "case": "asymmetric",
+    "oracle": "multiple-errors",
+    "accepted": false
+  }
+]
