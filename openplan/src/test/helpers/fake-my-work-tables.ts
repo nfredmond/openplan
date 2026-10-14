@@ -978,6 +978,7 @@ export async function loadSeededMyWork(
     failures?: Record<string, string>;
     limitPerSource?: number;
     db?: Db;
+    timeZone?: string;
   } = {}
 ): Promise<{
   result: MyWorkResult;
@@ -992,6 +993,7 @@ export async function loadSeededMyWork(
     roster: options.roster ?? ROSTER,
     limitPerSource: options.limitPerSource,
     now: NOW,
+    timeZone: options.timeZone ?? "UTC",
   });
   return { result, selects, limits };
 }

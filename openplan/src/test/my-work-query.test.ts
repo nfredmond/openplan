@@ -372,6 +372,7 @@ describe("my work — a read that failed is not an empty queue", () => {
       userId: ME,
       roster: ROSTER,
       now: NOW,
+      timeZone: "UTC",
     });
 
     expect(result.items).toEqual([]);

@@ -65,6 +65,7 @@ async function renderBoard(
       departedIncludedInUnassigned={result.departedIncludedInUnassigned}
       isViewer={options.isViewer ?? false}
       otherWorkspaceDecisionPackageWork={options.otherWorkspaceDecisionPackageWork}
+      timeZone="UTC"
     />
   );
   return result;
