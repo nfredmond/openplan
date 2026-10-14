@@ -1,0 +1,242 @@
+[
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-product-changed",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "delivery-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "quality-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "later-error",
+    "accepted": false
+  }
+]

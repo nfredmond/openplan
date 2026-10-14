@@ -1,17 +1,96 @@
 # OpenPlan documentation
 
-[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
-For the hosted installation, start with the "Live hosted installation" section of [AGENTS.md](../AGENTS.md), then read the dated records newest first: the [October 12 review follow-up](reviews/2026-10-12-hosted-review-followup/STATUS.md), the [October 12 review fixes](reviews/2026-10-12-hosted-review-fixes/STATUS.md), the [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) (405-migration hosted state, disabled GTFS commissioning), the [October 11 public cutover record](ops/HOSTED_LIVE_2026-10-11.md) (deployment identities; its migration, archive and rollback figures are superseded) and the [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) (implementation history). [Hosted recovery](../openplan/docs/ops/HOSTED_RECOVERY.md) names the current rollback procedure.
+Start here:
 
+- [Roadmap](ROADMAP.md): status of every milestone and the next three tasks.
+- [V1 product contract](product/V1_PRODUCT_CONTRACT.md): what v1 must deliver.
+- [Known issues](ops/KNOWN_ISSUES.md): open defects and limits, including the October 12 review findings.
+- [Hosted installation](#hosted-installation): the public installation at openplan-zeta.vercel.app since October 11, 2026, and its dated records.
+- [Two-month review](reviews/2026-10-12-two-month-review/README.md): findings from August 11 to October 11 and the staged plan to v1.
 
 Use this index to distinguish current instructions and priorities from historical
 evidence. The application is in `openplan/` beneath the repository root.
 
+| Question | Read |
+|---|---|
+| How should contributors and agents work? | [Repository AGENTS.md](../AGENTS.md), then [Contributing](../CONTRIBUTING.md). CLAUDE.md is a pointer to the same entry point |
+| What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
+| What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue, and [milestone definitions](product/MILESTONES.md) |
+| What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
+| Why this direction? | [October 6 integration and v1 review](reviews/product-direction/2026-10-06-integration-review.md), [historical September OWP review](reviews/product-direction/2026-09-07-work-program-review.md), and preserved independent reports linked there |
+| How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
+| What shipped? | [Changelog](../CHANGELOG.md), Git tags and the release's actual CI/acceptance evidence |
+
+The [review protocol](product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md) requires
+periodic independent reassessment. Its check validates required records and
+evidence bindings; it cannot certify professional usefulness or scientific truth.
+The old [shared manual](product/AGENT_OPERATING_RULES.md) is a compatibility
+pointer to AGENTS.md, not a second rulebook.
+
+## Hosted installation
+
+[Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
+For the hosted installation, start with the "Live hosted installation" section of [AGENTS.md](../AGENTS.md), then read the dated records newest first: the [October 12 review follow-up](reviews/2026-10-12-hosted-review-followup/STATUS.md), the [October 12 review fixes](reviews/2026-10-12-hosted-review-fixes/STATUS.md), the [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) (405-migration hosted state, disabled GTFS commissioning), the [October 11 public cutover record](ops/HOSTED_LIVE_2026-10-11.md) (deployment identities; its migration, archive and rollback figures are superseded) and the [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) (implementation history). [Hosted recovery](../openplan/docs/ops/HOSTED_RECOVERY.md) names the current rollback procedure.
+
+## Evaluate and operate
+
+- [README](../README.md): local one-computer evaluation.
+- [Self hosting](../openplan/docs/SELF_HOSTING.md): deployment profiles,
+  configuration, external data flows and unfinished agency-operation proof.
+- [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
+  operator must establish before real team use.
+- [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
+- [v0.68 upgrade and recovery](../openplan/docs/ops/V068_UPGRADE.md): migration
+  order, stopped workers, retained model decisions and GTFS cleanup limits.
+- [Installed OpenCode project task](reviews/2026-09-10-opencode-native-spike/VERIFICATION.md): bounded native transport, exact retries, private history and release evidence.
+- [Private engagement decision links](ops/ENGAGEMENT_DECISION_LINKS.md): reviewed source connections, retained corrections and interrupted-request recovery.
+- [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.
+- [September 7 OWP review and amendments](reviews/2026-09-07-owp-review/VERIFICATION.md): exact-version decisions, retained baselines, inspected exports and bounded engineering acceptance.
+- [September 9 desktop Control repair](reviews/2026-09-09-control-main/VERIFICATION.md): visible demo/main commits and backed-up local database upgrades.
+- [September 6 workspace/control checkpoint](reviews/2026-09-06-housekeeping/VERIFICATION.md): retained local archives, native layout and isolated update/recovery evidence.
+- [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,
+  existing mechanisms, representative drills and missing full-recovery proof.
+- [Security](../SECURITY.md) and [license notice](../LICENSE-NOTICE.md).
+
+Local Supabase CLI evaluation, a developer's walkthrough instance and a supported
+agency production installation are different environments. Current docs must
+name which they describe. Do not infer free provider eligibility or production
+readiness from an old setup guide.
+
+## Practice requirements and current limitations
+
+The [core requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) prevents restored requirements from disappearing. It maps full OWP, contract budgets, prior-RTP updates, capital/tax/grant administration, procurement, engagement, aerial work, agent providers, hosted trials and appearance to the single roadmap. The [workflow handoffs](product/WORKFLOW_HANDOFFS.md) identify the owning record and receiving role. These are requirements and gap assessments, not claims that every workflow exists.
+
+Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 shared-campaign handoff](reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md) separates coverage/privacy repairs from incomplete browser file delivery. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [September 6 ODX and WaypointMap assessment](reviews/2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) supplies the current processing-trial and controller-workflow references for M5b. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
+
+## Planning and engineering references
+
+- [Benefit-cost analysis workbench](ops/BCA_WORKBENCH.md): project evidence, annual calculations, program methods, recovery and exports.
+
+- [Reading an adopted plan](../openplan/docs/READING_AN_ADOPTED_PLAN.md): sourced
+  document extraction and human-reviewed use in a plan.
+- [Architecture decisions](ADRs/): dated design rationale, including modeling,
+  crash-source acquisition and the future MCP server boundary.
+- [Operations records index](ops/README.md): source contracts, release evidence,
+  migration proof and historical handoffs.
+- [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
+- [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
+  outcome verification, evidence capture and limits.
+- [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
+  [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
+  and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
+
+Workers have different environments and contracts. Start with their current
+instructions under `workers/`, linked from the self-hosting guide. A successful
+one-family suite is not all-worker or full scientific acceptance.
+
+## Recent engineering checkpoints
+
+These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 to 12. They are not current authority; the documents under "Start here" are.
+
 The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
 
 - [Land-use restore cascade correction](reviews/2026-10-07-land-use-authority/RESTORE_CASCADE_FAILURE.md): reproduced restore failures, additive migration and remaining full-drill boundary.
-
-## Current authorities
 
 The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
 
@@ -24,22 +103,6 @@ The [October 11 coordinated known-root recovery point](reviews/2026-10-11-coordi
 The [manual engagement case](reviews/2026-10-07-engagement-manual-case/VERIFICATION.md) records source-to-response-to-decision custody and downloaded review files. The [approval-label follow-up](reviews/2026-10-07-engagement-manual-case/STATUS_LABELS.md) distinguishes review approval from public release. The [source-label follow-up](reviews/2026-10-07-engagement-manual-case/SOURCE_LABELS.md) verifies source authorship in newly downloaded PDF and workbook files. Its [handoff target follow-up](reviews/2026-10-07-engagement-manual-case/TARGET_BROWSER.md) verifies the project-link refresh correction in T3.
 
 The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10-07-land-use-authority/FROZEN_WORKBENCH.md), [plan-kind connections](reviews/2026-10-07-land-use-authority/PLAN_KIND_CONNECTIONS.md), [reconciliation backend](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_BACKEND.md) and the remaining [older-draft reconciliation design](reviews/2026-10-07-land-use-authority/DRAFT_RULE_RECONCILIATION_DESIGN.md). These remain M1 work with explicit native and rendered acceptance limits. The [checklist recovery acceptance](reviews/2026-10-07-land-use-authority/RULE_RECONCILIATION_ACCEPTANCE.md) now records identified HTTP concurrency and a bounded desktop/390px T3 recovery journey, including the downloaded copy and mobile layout correction. The [creation and context acceptance](reviews/2026-10-07-land-use-authority/CREATION_CONTEXT_ACCEPTANCE.md) adds specific-plan creation, retained area and authority, older-draft review, and interrupted stop recovery in T3. The [frozen history and public context check](reviews/2026-10-07-land-use-authority/FROZEN_PUBLIC_CONTEXT_ACCEPTANCE.md) adds identified public context and downloaded-byte checks, with omissions and their later [public content correction](reviews/2026-10-07-land-use-authority/PUBLIC_CONTENT_FOLLOWUP.md) recorded separately. The [synthetic publication and report check](reviews/2026-10-07-land-use-authority/PUBLICATION_REPORT_CUSTODY.md) adds populated adopted context, verified report identity, mobile correction and an explicit request-observer limitation. The [retained report decision check](reviews/2026-10-07-land-use-authority/REPORT_ADOPTION.md) adds native-bound adoption details and frozen related-plan references, with desktop/390px decision and empty-reference evidence. The [report-map follow-up](reviews/2026-10-07-land-use-authority/REPORT_MAPS.md) adds edition-bound authenticated map reads, 390px provider-unavailable evidence and native empty-layer checks. Actual map drawing and nonempty geography remain unproved. The [implementation-report check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_CUSTODY.md) verifies retained identity and statuses, including a native later-status change and a matching downloaded report. The [direct source-download correction](reviews/2026-10-07-land-use-authority/REPORT_EXPORT_CUSTODY.md) applies the retained-record checks to downloads, with matching T3 files and scoped refusal controls. The [transaction backend checkpoint](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_TRANSACTION.md) adds native atomic writes and exact receipts. The [report-request recovery check](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md) connects that reader, route and form, with native exact replay, T3 desktop/390px lost-response recovery, matching downloads and a mobile wrapping correction. Exact-head GitHub checks and merge remain pending; native date entry, the OS file chooser and practitioner acceptance are not established.
-
-| Question | Read |
-|---|---|
-| How should contributors and agents work? | [Repository AGENTS.md](../AGENTS.md), then [Contributing](../CONTRIBUTING.md). CLAUDE.md is a pointer to the same entry point |
-| What must v1 deliver? | [V1 product contract](product/V1_PRODUCT_CONTRACT.md) |
-| What is next, and what establishes completion? | [Roadmap](ROADMAP.md), the sole active queue |
-| What works, and what remains unproved? | [Capability matrix](product/US_PLANNING_CAPABILITY_MATRIX.md) and [known limitations](ops/KNOWN_ISSUES.md) |
-| Why this direction? | [October 6 integration and v1 review](reviews/product-direction/2026-10-06-integration-review.md), [historical September OWP review](reviews/product-direction/2026-09-07-work-program-review.md), and preserved independent reports linked there |
-| How is it implemented? | [Architecture](ARCHITECTURE.md) and current source |
-| What shipped? | [Changelog](../CHANGELOG.md), Git tags and the release's actual CI/acceptance evidence |
-
-The [review protocol](product/PRODUCT_DIRECTION_REVIEW_PROTOCOL.md) requires
-periodic independent reassessment. Its check validates required records and
-evidence bindings; it cannot certify professional usefulness or scientific truth.
-The old [shared manual](product/AGENT_OPERATING_RULES.md) is a compatibility
-pointer to AGENTS.md, not a second rulebook.
 
 The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
 
@@ -100,61 +163,9 @@ The [October 12 deadline-test clock correction](reviews/2026-10-12-odm-deadline-
 
 The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 
-## Evaluate and operate
-
-- [README](../README.md): local one-computer evaluation.
-- [Self hosting](../openplan/docs/SELF_HOSTING.md): deployment profiles,
-  configuration, external data flows and unfinished agency-operation proof.
-- [Team commissioning](../openplan/docs/FIRST_DEPLOYMENT.md): what an independent
-  operator must establish before real team use.
-- [Runbook](../openplan/docs/ops/RUNBOOK.md): diagnosis and recovery boundaries.
-- [v0.68 upgrade and recovery](../openplan/docs/ops/V068_UPGRADE.md): migration
-  order, stopped workers, retained model decisions and GTFS cleanup limits.
-- [Installed OpenCode project task](reviews/2026-09-10-opencode-native-spike/VERIFICATION.md): bounded native transport, exact retries, private history and release evidence.
-- [Private engagement decision links](ops/ENGAGEMENT_DECISION_LINKS.md): reviewed source connections, retained corrections and interrupted-request recovery.
-- [OWP reporting-period guide](ops/OWP_REPORTING.md): agency time, source costs, private valuations and corrected internal management reports.
-- [September 7 OWP review and amendments](reviews/2026-09-07-owp-review/VERIFICATION.md): exact-version decisions, retained baselines, inspected exports and bounded engineering acceptance.
-- [September 9 desktop Control repair](reviews/2026-09-09-control-main/VERIFICATION.md): visible demo/main commits and backed-up local database upgrades.
-- [September 6 workspace/control checkpoint](reviews/2026-09-06-housekeeping/VERIFICATION.md): retained local archives, native layout and isolated update/recovery evidence.
-- [Backup and restore](../openplan/docs/ops/BACKUP_AND_RESTORE.md): durable state,
-  existing mechanisms, representative drills and missing full-recovery proof.
-- [Security](../SECURITY.md) and [license notice](../LICENSE-NOTICE.md).
-
-Local Supabase CLI evaluation, a developer's walkthrough instance and a supported
-agency production installation are different environments. Current docs must
-name which they describe. Do not infer free provider eligibility or production
-readiness from an old setup guide.
-
-## Practice requirements and current limitations
-
-The [core requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) prevents restored requirements from disappearing. It maps full OWP, contract budgets, prior-RTP updates, capital/tax/grant administration, procurement, engagement, aerial work, agent providers, hosted trials and appearance to the single roadmap. The [workflow handoffs](product/WORKFLOW_HANDOFFS.md) identify the owning record and receiving role. These are requirements and gap assessments, not claims that every workflow exists.
-
-Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 shared-campaign handoff](reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md) separates coverage/privacy repairs from incomplete browser file delivery. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [September 6 ODX and WaypointMap assessment](reviews/2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) supplies the current processing-trial and controller-workflow references for M5b. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
-
-## Planning and engineering references
-
-- [Benefit-cost analysis workbench](ops/BCA_WORKBENCH.md): project evidence, annual calculations, program methods, recovery and exports.
-
-- [Reading an adopted plan](../openplan/docs/READING_AN_ADOPTED_PLAN.md): sourced
-  document extraction and human-reviewed use in a plan.
-- [Architecture decisions](ADRs/): dated design rationale, including modeling,
-  crash-source acquisition and the future MCP server boundary.
-- [Operations records index](ops/README.md): source contracts, release evidence,
-  migration proof and historical handoffs.
-- [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
-- [First-week harness](../qa-harness/FIRST-WEEK-HARNESS.md): agent discovery,
-  outcome verification, evidence capture and limits.
-- [Model observation/validation research](modeling/VALIDATION_OBSERVATION_UNCERTAINTY_RESEARCH_2026-08-25.md),
-  [frozen nationwide protocol](modeling/NATIONWIDE_VALIDATION_PREREGISTRATION_V1.json)
-  and [engine landscape](modeling/OPEN_SOURCE_MODEL_LANDSCAPE.md).
-
-Workers have different environments and contracts. Start with their current
-instructions under `workers/`, linked from the self-hosting guide. A successful
-one-family suite is not all-worker or full scientific acceptance.
-
 ## Historical evidence
 
-[Archived plans](archive/plans/) preserve superseded queues. The [September 6 archive](archive/2026-09-06-consolidation/INDEX.md) retains replaced instructions and guides with original-byte hashes.
+[Archived plans](archive/plans/) preserve superseded queues. The [roadmap evidence log](archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md) keeps the dated checkpoints the roadmap carried from August 24 to October 12, 2026. The [September 6 archive](archive/2026-09-06-consolidation/INDEX.md) retains replaced instructions and guides with original-byte hashes.
 [Dated reviews](reviews/), [modeling studies and research](modeling/)
 and [ADRs](ADRs/) retain what was known and decided at the time. A later review
 may supersede a recommendation without changing the old finding or frozen bytes.
@@ -260,4 +271,14 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Original output archive HTTP](reviews/2026-10-13-odm-original-output-http/STATUS.md), supervised fixed-task downloads with ownership, cancellation and bounded byte writing.
 - [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
 
+- [Private original aerial products](reviews/2026-10-14-odm-private-products/STATUS.md), exact selected member bytes and interrupted recovery under current access, without delivery or quality promotion.
+- [Protected Linux transfer preparation](reviews/2026-10-14-linux-transfer-preparation/STATUS.md), pinned source and separate retained fixtures, encrypted transport and open separate-host limits.
+- [Selected-schema original output recovery](reviews/2026-10-14-odm-output-schema-recovery/STATUS.md), populated isolated fixture upgrades, logical restores and current actor checks.
+- [Joined candidate transit and export observations](reviews/2026-10-14-m3-joined-preview/STATUS.md), identified T3 views, original geometry and native GeoPackage checks with explicit limits.
 - [Transit archive period and staff drawing guidance](reviews/2026-10-14-gtfs-source-period-guidance/STATUS.md), dates and caller wording with bounded source controls and desktop/390px T3 observations.
+
+The [October 14 rotated raster spacing correction](reviews/2026-10-14-rotated-raster-spacing/STATUS.md) retains full native column and row vector lengths. Six TIFF cases, intended source faults and independently decoded GDAL positions check the arithmetic. Survey accuracy, aerial delivery and complete M3/M5b.2/v1 acceptance remain open.
+
+The [October 14 private raster inspection candidate](reviews/2026-10-14-private-raster-inspection/STATUS.md) binds declared native tag readings to original product bytes and code profiles. Source and selected-schema native controls preserve failed, unsupported, absent and unassessed outcomes. Ground quality, map placement, current-main installation, public delivery and full M3/M5b.2/v1 acceptance remain open.
+
+The [October 14 private artifact preparation candidate](reviews/2026-10-14-private-artifact-preparation/STATUS.md) binds original job, actor, file bytes and native inspection receipts in one immutable private manifest. Exact interrupted replay and current access remain separate from callback delivery, map placement, processing quality and default-worker integration.

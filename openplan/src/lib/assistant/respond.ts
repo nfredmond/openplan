@@ -258,7 +258,7 @@ function buildWorkspacePreview(context: WorkspaceAssistantContext): AssistantPre
   const leadFundingDecisionDetail = context.operationsSummary.grantModelingSummary?.leadDecisionDetail ?? null;
   const summary = context.currentRun
     ? `Working from ${context.currentRun.title} inside ${context.workspace.name ?? "the current workspace"}. I can brief the run, compare it to baseline, or summarize the surrounding planning context and current queue pressure.`
-    : `Working from ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} missing a funding target${missingFundingAnchorCount === 1 ? "" : "s"}` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} funding lane${fundingSourcingCount === 1 ? " still needs" : "s still need"} sourcing` : fundingDecisionCount > 0 ? leadFundingDecisionDetail ? `, lead grant decision cue: ${leadFundingDecisionDetail}` : `, ${fundingDecisionCount} project funding lane${fundingDecisionCount === 1 ? " still needs" : "s still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project reimbursement lane${reimbursementAdvanceCount === 1 ? " is" : "s are"} active` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at what to do next.`;
+    : `Working from ${context.workspace.name ?? "the current workspace"}. I can summarize recent project and analysis activity, plus the shared workspace command queue${rtpFundingReviewCount > 0 ? `, ${rtpFundingReviewPressure}` : missingFundingAnchorCount > 0 ? `, ${missingFundingAnchorCount} project${missingFundingAnchorCount === 1 ? "" : "s"} with no funding target` : fundingSourcingCount > 0 ? `, ${fundingSourcingCount} project${fundingSourcingCount === 1 ? " that still needs" : "s that still need"} grant opportunities` : fundingDecisionCount > 0 ? leadFundingDecisionDetail ? `, lead grant decision cue: ${leadFundingDecisionDetail}` : `, ${fundingDecisionCount} project${fundingDecisionCount === 1 ? " that still needs" : "s that still need"} a pursue decision` : fundingAwardRecordCount > 0 ? `, ${fundingAwardRecordCount} awarded opportunit${fundingAwardRecordCount === 1 ? "y still needs" : "ies still need"} an award record` : invoiceRelinkCount > 0 ? `, ${invoiceRelinkCount} invoice-to-award relink${invoiceRelinkCount === 1 ? " is" : "s are"} exact and ready` : reimbursementStartCount > 0 ? `, ${reimbursementStartCount} project${reimbursementStartCount === 1 ? " still needs" : "s still need"} a first reimbursement packet` : reimbursementAdvanceCount > 0 ? `, ${reimbursementAdvanceCount} project${reimbursementAdvanceCount === 1 ? "" : "s"} with reimbursement under way` : gapProjectCount > 0 ? ` and ${gapProjectCount} visible project funding gap${gapProjectCount === 1 ? "" : "s"}` : ""}, and point you at what to do next.`;
 
   const facts = [
     context.recentProject
@@ -1109,7 +1109,7 @@ function buildWorkspaceResponse(
       title: `Funding gaps in ${context.workspace.name ?? "this workspace"}`,
         summary:
         missingFundingAnchorCount > 0
-          ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding target even though grant records already exist, so the first honest move is recording what each needs before ranking the gaps.`
+          ? `${missingFundingAnchorCount} project${missingFundingAnchorCount === 1 ? " has" : "s have"} grant records but no funding target, so the first honest move is recording what each needs before ranking the gaps.`
           : fundingSourcingCount > 0
           ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} a recorded funding target but no grants attached, so sourcing candidates comes before gap-closing choreography.`
           : fundingDecisionCount > 0
@@ -1119,7 +1119,7 @@ function buildWorkspaceResponse(
           : fundingAwardRecordCount > 0
           ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " already has" : "s already have"} an opportunity marked awarded but still no funding-award record, so committed-dollar reconciliation comes before final gap math.`
           : invoiceRelinkCount > 0
-          ? `${invoiceRelinkCount} project reimbursement lane${invoiceRelinkCount === 1 ? " has" : "s have"} an exact invoice-to-award relink ready, so reimbursement bookkeeping can move forward without inventing any billing values.`
+          ? `${invoiceRelinkCount === 1 ? "1 project has an invoice that can be linked to its funding award" : `${invoiceRelinkCount} projects have an invoice that can be linked to their funding award`}, so reimbursement bookkeeping can move forward without inventing any billing values.`
           : reimbursementStartCount > 0
           ? `${reimbursementStartCount} project funding stack${reimbursementStartCount === 1 ? " has" : "s have"} committed awards but still no reimbursement packet started, so the next honest move is opening the audited reimbursement trail before only talking about gap closure.`
           : reimbursementAdvanceCount > 0
@@ -1206,7 +1206,7 @@ function buildWorkspaceResponse(
       rtpFundingReviewCount > 0
         ? rtpFundingReviewPressure
         : missingFundingAnchorCount > 0
-        ? `${missingFundingAnchorCount} project funding lane${missingFundingAnchorCount === 1 ? " still lacks" : "s still lack"} a funding target even though grant records already exist.`
+        ? `${missingFundingAnchorCount} project${missingFundingAnchorCount === 1 ? " has" : "s have"} grant records but no funding target.`
         : fundingSourcingCount > 0
         ? `${fundingSourcingCount} project funding stack${fundingSourcingCount === 1 ? " already has" : "s already have"} need recorded but still no linked opportunities.`
         : fundingDecisionCount > 0
@@ -1216,7 +1216,7 @@ function buildWorkspaceResponse(
         : fundingAwardRecordCount > 0
         ? `${fundingAwardRecordCount} project funding stack${fundingAwardRecordCount === 1 ? " has" : "s have"} an awarded opportunity but still no committed funding-award record.`
         : invoiceRelinkCount > 0
-        ? `${invoiceRelinkCount} project reimbursement lane${invoiceRelinkCount === 1 ? " has" : "s have"} an exact invoice-to-award relink ready.`
+        ? `${invoiceRelinkCount === 1 ? "1 project has an invoice that can be linked to its funding award." : `${invoiceRelinkCount} projects have an invoice that can be linked to their funding award.`}`
         : reimbursementStartCount > 0
         ? "At least one project already has committed awards but still no reimbursement packet started."
         : reimbursementAdvanceCount > 0
@@ -2626,7 +2626,9 @@ function buildGrantsLaneResponse(context: WorkspaceAssistantContext, workflowId:
     label,
     title: `Grants in ${context.workspace.name ?? "this workspace"}`,
     summary: opportunities
-      ? `${pluralize(opportunities.total, "funding opportunity", "funding opportunities")} and ${awards ? pluralize(awards.total, "recorded award") : "an unreadable award lane"} are visible from this register.`
+      ? awards
+        ? `${pluralize(opportunities.total, "funding opportunity", "funding opportunities")} and ${pluralize(awards.total, "recorded award")} are visible from this register.`
+        : `${pluralize(opportunities.total, "funding opportunity", "funding opportunities")} ${opportunities.total === 1 ? "is" : "are"} visible from this register; the award records could not be read.`
       : "The grants register could not be fully read, so this brief reports what failed rather than inventing a quiet queue.",
     findings: [opportunityLine, deadlineLine, awardLine],
     nextSteps: [

@@ -31,6 +31,14 @@ the linked project's area, which the resident map already opens on when the
 campaign has no area of its own. It no longer tells staff a pin will land in the
 middle of the country in that case.
 
+**RTP comment record counts every comment.** The comment-response record on
+the RTP cycle page and in the exported packet read approved comments, responses
+and consultations in one request each, so a plan with more than 1,000 comments
+showed only the first 1,000. It now reads every page, and a read that stops part
+way is shown as a failed read, not a short count. The Grants queue now says how
+many projects have no funding target, or have an invoice to link to their
+award, instead of counting "funding lanes". No migration.
+
 **Safety action plan, first part:** Safety now ranks a high-injury network from
 the project's stored crashes and road lines, draws it on the map, and lists it
 with method, years, source and coverage. A source with only deaths gives a
@@ -43,6 +51,13 @@ section listing the SS4A components it does not cover. No migration.
 fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the
 [dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
+**Planner Agent funding words.** The assistant panel's funding answers, quick
+links and the prompts it sends after an action counted "project funding lanes"
+and "reimbursement lanes" and offered to "Create funding need anchor". They now
+count projects, one or many, and name the funding target, the invoice or the
+Grants page. The panel summary no longer reads "3 missing a funding targets".
+Action ids, kinds and payload fields are unchanged. No migration.
 
 **Native engine observer, candidate:** add an explicit Linux NodeODM observer
 for the configured original container, image, process-mounted configuration and
@@ -58,6 +73,8 @@ progress, a voided contract draft releases its billed sources, finance approves
 only reviewed consultant invoices, and client invoices past draft can change only
 their status, enforced in the database for every writer. Existing records are not
 rewritten; the rules apply to new writes.
+
+Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
 
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the

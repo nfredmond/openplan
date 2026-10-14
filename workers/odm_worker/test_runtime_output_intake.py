@@ -250,10 +250,21 @@ class Checks(unittest.TestCase):
         self.call()
 
     def test_download_budget_is_not_shortened_to_one_rpc_read_timeout(self):
-        self.app.f.reader.timeout = .04
-        self.delay = .12
-        result = self.call(self.new_intake(timeout=1))
-        self.assertEqual(result['archive']['archive']['sha256'], hashlib.sha256(self.raw).hexdigest(), 'Configured output budget must survive a shorter individual RPC budget')
+        self.app.f.reader.timeout = 5
+        original = module.Transport
+        forwarded = []
+        fixture = self
+        class RecordedTransport(original):
+            def __call__(self, plan, output, max_bytes, deadline, *, owned):
+                remaining = deadline-time.monotonic()
+                fixture.assertGreater(remaining, fixture.app.f.reader.timeout,
+                    'Whole archive download must retain its stage budget beyond one RPC read')
+                forwarded.append(remaining)
+                return super().__call__(plan, output, max_bytes, deadline, owned=owned)
+        with patch.object(module, 'Transport', RecordedTransport):
+            result = self.call(self.new_intake(timeout=120))
+        self.assertEqual(len(forwarded), 1, 'Budget probe must delegate one actual original transfer')
+        self.assertEqual(result['archive']['archive']['sha256'], hashlib.sha256(self.raw).hexdigest(), 'Configured output budget must preserve actual original bytes')
 
     def interrupted_child(self, boundary):
         """Exit a separate owned process after durable bytes, then release its locks."""
