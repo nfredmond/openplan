@@ -1,0 +1,67 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "retainedDatabase": "odm_held_06c92bb33cc74a40b4dbe99c721a74f2"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "retainedDatabase": "odm_held_6616a12ba7a54f629f27e852c9009ecd"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "retainedDatabase": "odm_held_c3bce438052d4f5d8909cde3a126e3c9"
+  },
+  {
+    "case": "serialization-code-used",
+    "outcome": "intended_failure",
+    "diagnostic": "Direct late failure rejects replacement of held facts"
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "outcome": "intended_failure",
+    "diagnostic": "Concurrent late upsert rejects replacement after the held commit"
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Concurrent late upsert rejects replacement after the held commit"
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: checksum_sha256"
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: storage_path"
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: byte_size"
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: held_at"
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: source_host"
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "outcome": "intended_failure",
+    "diagnostic": "Held field cannot change: crs"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "retainedDatabase": "odm_held_fec541fd2b51428cab9b90c9d56a7828"
+  }
+]

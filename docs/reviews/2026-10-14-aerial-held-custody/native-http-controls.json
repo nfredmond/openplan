@@ -1,0 +1,56 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "cases": 7,
+    "retainedDatabase": "odm_held_f533df1339e043ee8ff0bc819c136be3"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "cases": 7,
+    "retainedDatabase": "odm_held_f116c911fb054c45bb169f6352a119a5"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 7,
+    "retainedDatabase": "odm_held_20f17c7ea8f54735908e2b386cb856dd"
+  },
+  {
+    "case": "serialization-code-loop",
+    "outcome": "intended_failure",
+    "diagnostic": "Error: Native held constraint returns promptly through PostgREST"
+  },
+  {
+    "case": "conflict-recovery-disabled",
+    "outcome": "intended_failure",
+    "diagnostic": "Error: Native conflict recovery retains complete original custody"
+  },
+  {
+    "case": "missing-roster-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Error: Native bulk rollback preserves missing roster as outstanding"
+  },
+  {
+    "case": "retry-readiness-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "AssertionError: Native retry readiness repairs while human edits remain"
+  },
+  {
+    "case": "callback-readiness-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "AssertionError: Native callback readiness repairs while human edits remain"
+  },
+  {
+    "case": "human-readiness-replaced",
+    "outcome": "intended_failure",
+    "diagnostic": "AssertionError: Native human readiness repairs while human edits remain"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "cases": 7,
+    "retainedDatabase": "odm_held_bd96b6980e814ed4902c621d38982b81"
+  }
+]
