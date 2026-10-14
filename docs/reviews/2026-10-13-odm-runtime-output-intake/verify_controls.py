@@ -54,7 +54,13 @@ def run(repo, out):
     changed=text.replace('self._limits = tuple(limits.items())','self._limits = limits').replace('return dict(self._limits)','return self._limits')
     if changed==text:raise ValueError('Limits alias mutation differs')
     cases.append(('exposed-limits-alias',module,changed,'test_exposed_limits_cannot_change_the_frozen_operation_by_alias','Original output limits must not retain a mutable exposed alias','failures'))
-    fault('whole-download-budget-capped-to-rpc', 'deadline = time.monotonic()+self.timeout', 'deadline = self.observer.reader._deadline(time.monotonic()+self.timeout)', 'test_download_budget_is_not_shortened_to_one_rpc_read_timeout','deadline','errors')
+    fault('whole-download-budget-capped-to-rpc', 'deadline = time.monotonic()+self.timeout', 'deadline = self.observer.reader._deadline(time.monotonic()+self.timeout)', 'test_download_budget_is_not_shortened_to_one_rpc_read_timeout','Whole archive download must retain its stage budget beyond one RPC read','failures')
+    fault('budget-probe-transport-bypassed', 'returned = transport(plan, counted, remaining, deadline, owned=owned)',
+        "returned = counted.write(__import__('urllib.request', fromlist=['urlopen']).urlopen(plan['engine']['endpoint']+'/task/'+plan['taskUuid']+'/download/all.zip', timeout=5).read())",
+        'test_download_budget_is_not_shortened_to_one_rpc_read_timeout', 'Budget probe must delegate one actual original transfer', 'failures')
+    fault('budget-probe-returned-hash-corrupted', "            return {'format': FORMAT, 'scope': 'private_original_output_custody',",
+        "            archive['archive']['sha256'] = '0'*64\n            return {'format': FORMAT, 'scope': 'private_original_output_custody',",
+        'test_download_budget_is_not_shortened_to_one_rpc_read_timeout', 'Configured output budget must preserve actual original bytes', 'failures')
     fault('lost-byte-receipt-reply-refetched', 'receipt = self._receipt(pack, plan_hash)', 'receipt = None', 'test_lost_complete_receipt_reply_recovers_without_another_get','Existing source custody record differs','errors')
     block=text[text.index('            archive = retain('):text.index('            if not same({key: archive')]
     fault('archive-link-recovery-skipped', block, '            if "--owned-child" in __import__("sys").argv:\n'+''.join('    '+line+'\n' for line in block.splitlines())+'            else:\n                archive = {"archive": read_json(target, "plan.json")["archive"]}\n', 'test_link_interruption_recovers_without_incoming_bytes','Interrupted archive publication alias must be removed')

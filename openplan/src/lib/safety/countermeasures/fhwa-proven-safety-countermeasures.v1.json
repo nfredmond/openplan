@@ -1,0 +1,156 @@
+{
+  "schema": "openplan.safety_countermeasures.v1",
+  "version": "2026-10-13",
+  "source": {
+    "title": "Proven Safety Countermeasures",
+    "publisher": "Federal Highway Administration, U.S. Department of Transportation",
+    "url": "https://highways.dot.gov/safety/proven-safety-countermeasures",
+    "terms": "U.S. federal government work (17 U.S.C. 105). Free to use.",
+    "retrievedOn": "2026-10-13",
+    "retrievalNote": "The FHWA site refused automated download on 2026-10-13 (HTTP 403), as did the CMF Clearinghouse (certificate error). Each name and URL below was confirmed from web search results that returned that FHWA page; crash types summarize those results. [VERIFY] each entry against the live FHWA page before a plan is published."
+  },
+  "listNote": "FHWA groups its list into speed management, pedestrian and bicyclist, roadway departure, intersections, and crosscutting items. This file carries 14 of them. [VERIFY] the current FHWA count and any items added since the 2021 update.",
+  "cmfPolicy": "A crash modification factor is shown only with its CMF Clearinghouse ID, after that entry has been read. No entry was read for this version, so every value is left out and marked [VERIFY].",
+  "countermeasures": [
+    {
+      "id": "leading-pedestrian-interval",
+      "name": "Leading Pedestrian Interval",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian", "intersection_turning"],
+      "addresses": "Pedestrian crashes with turning vehicles at signalized intersections.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/leading-pedestrian-interval",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "road-diets",
+      "name": "Road Diets (Roadway Configuration)",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["rear_end", "intersection_turning", "pedestrian"],
+      "addresses": "Rear-end and left-turn crashes on four-lane undivided roads, and long pedestrian crossings.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/road-diets-roadway-configuration",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "medians-and-pedestrian-refuge-islands",
+      "name": "Medians and Pedestrian Refuge Islands in Urban and Suburban Areas",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian"],
+      "addresses": "Pedestrian crashes where people cross multilane urban and suburban roads.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/medians-and-pedestrian-refuge-islands-urban-and-suburban-areas",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "rectangular-rapid-flashing-beacons",
+      "name": "Rectangular Rapid Flashing Beacons (RRFB)",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian"],
+      "addresses": "Pedestrian crashes at uncontrolled marked crosswalks.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/rectangular-rapid-flashing-beacons-rrfb",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "pedestrian-hybrid-beacons",
+      "name": "Pedestrian Hybrid Beacons",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian"],
+      "addresses": "Pedestrian crashes at midblock and other uncontrolled crossings.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/pedestrian-hybrid-beacons",
+      "cmf": null,
+      "cmfNote": "[VERIFY] The FHWA page cites CMF Clearinghouse entries for this item, but none was read here; no value given."
+    },
+    {
+      "id": "crosswalk-visibility-enhancements",
+      "name": "Crosswalk Visibility Enhancements",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian", "nighttime"],
+      "addresses": "Pedestrian crashes at crosswalks where drivers cannot see people crossing.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/crosswalk-visibility-enhancements",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "walkways",
+      "name": "Walkways",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["pedestrian"],
+      "addresses": "Pedestrian crashes while walking along the road.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/walkways",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "bicycle-lanes",
+      "name": "Bicycle Lanes",
+      "focusArea": "pedestrian_bicyclist",
+      "crashTypes": ["bicyclist"],
+      "addresses": "Bicyclist crashes along road segments, including drivers overtaking bicyclists.",
+      "sourceUrl": "https://highways.dot.gov/media/19726",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "lighting",
+      "name": "Lighting",
+      "focusArea": "crosscutting",
+      "crashTypes": ["nighttime", "pedestrian"],
+      "addresses": "Nighttime crashes at intersections and along roads, including pedestrian crashes.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/lighting",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "enhanced-delineation-horizontal-curves",
+      "name": "Enhanced Delineation for Horizontal Curves",
+      "focusArea": "roadway_departure",
+      "crashTypes": ["roadway_departure", "nighttime"],
+      "addresses": "Roadway departure crashes at horizontal curves.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/enhanced-delineation-horizontal-curves",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "dedicated-turn-lanes",
+      "name": "Dedicated Left- and Right-Turn Lanes at Intersections",
+      "focusArea": "intersections",
+      "crashTypes": ["intersection_turning", "rear_end"],
+      "addresses": "Left-turn and rear-end crashes at intersections.",
+      "sourceUrl": "https://highways.dot.gov/safety/proven-safety-countermeasures/dedicated-left-and-right-turn-lanes-intersections",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "roundabouts",
+      "name": "Roundabouts",
+      "focusArea": "intersections",
+      "crashTypes": ["intersection_angle", "intersection_turning"],
+      "addresses": "Fatal and injury crashes at intersections, by removing high-speed angle and turning conflicts.",
+      "sourceUrl": "https://highways.dot.gov/safety/intersection-safety/nrw",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given. The source URL is FHWA's roundabouts page that names this a proven countermeasure; the countermeasure's own page was not confirmed."
+    },
+    {
+      "id": "appropriate-speed-limits",
+      "name": "Appropriate Speed Limits for All Road Users",
+      "focusArea": "speed_management",
+      "crashTypes": ["speed_related", "pedestrian", "bicyclist"],
+      "addresses": "Speed-related crashes, and crash severity for people walking and biking.",
+      "sourceUrl": "https://highways.dot.gov/sites/fhwa.dot.gov/files/2022-08/PSC_New_App%20Speed%20Limits_508.pdf",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given."
+    },
+    {
+      "id": "speed-safety-cameras",
+      "name": "Speed Safety Cameras",
+      "focusArea": "speed_management",
+      "crashTypes": ["speed_related"],
+      "addresses": "Speeding-related crashes where speeding is a demonstrated problem.",
+      "sourceUrl": "https://highways.dot.gov/safety/speed-management/speed-safety-cameras-frequently-asked-questions",
+      "cmf": null,
+      "cmfNote": "[VERIFY] No CMF Clearinghouse entry read; no value given. The source URL is FHWA's speed safety camera FAQ, which names this a proven countermeasure."
+    }
+  ]
+}

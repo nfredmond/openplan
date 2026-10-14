@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety action plan, first part:** Safety now ranks a high-injury network from
+the project's stored crashes and road lines, draws it on the map, and lists it
+with method, years, source and coverage. A source with only deaths gives a
+network labeled "fatal crashes only". Planners can attach countermeasures from a
+cited FHWA list (crash modification factors left out and marked [VERIFY]) and
+save them to a project report, which prints a "Safety action plan (draft)"
+section listing the SS4A components it does not cover. No migration.
+
 **Aerial journal correction:** tolerate a retired SQLite companion only after a
 fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the
