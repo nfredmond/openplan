@@ -1,0 +1,8 @@
+{
+  "numTotalTests": 148,
+  "numPassedTests": 148,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "files": 11,
+  "scope": "Changed-source/dependency TypeScript, changed-file lint, related unit tests and selected policy/document guards; not full program, build, browser, live RLS or acceptance."
+}

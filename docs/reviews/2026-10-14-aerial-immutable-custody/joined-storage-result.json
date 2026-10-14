@@ -1,0 +1,12 @@
+{
+  "uploads": 3,
+  "originalBytes": 3,
+  "originalSha256": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+  "afterSha256": "039058c6f2c0cb492c533b0a4d14ef77cc0f78abccced5287d84a1a2011cfb81",
+  "rowInterruption": "synthetic",
+  "matchingOriginalRecovered": true,
+  "storage": "actual isolated Storage and installed SDK",
+  "scope": "not live RLS, current-main database restore, browser, artifact provenance or full recovery",
+  "storageImage": "public.ecr.aws/supabase/storage-api:v1.67.20",
+  "retainedDatabase": "openplan_attempt_cli_11ad3644a91448049612bbd07f1a55e6"
+}

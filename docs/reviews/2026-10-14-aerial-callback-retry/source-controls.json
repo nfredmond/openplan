@@ -1,0 +1,130 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 20
+  },
+  {
+    "case": "original-replay-skipped",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Exact retained retry must apply pending effects"
+  },
+  {
+    "case": "interrupted-status-skipped",
+    "outcome": "intended_failure",
+    "test": "finishes a job update after its original ledger write survived an error",
+    "diagnostic": "Interrupted ledger replay must finish status"
+  },
+  {
+    "case": "interrupted-evidence-skipped",
+    "outcome": "intended_failure",
+    "test": "finishes evidence creation after its original job update survived an error",
+    "diagnostic": "Interrupted ledger replay must finish evidence"
+  },
+  {
+    "case": "lookup-error-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses a duplicate whose original callback cannot be read",
+    "diagnostic": "Unavailable original cannot acknowledge replay"
+  },
+  {
+    "case": "job-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "workspace-scope-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "payload-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses changed or missing duplicate payload and scope without applying it",
+    "diagnostic": "Changed callback originals cannot be applied"
+  },
+  {
+    "case": "worker-reference-refusal-ignored",
+    "outcome": "intended_failure",
+    "test": "refuses a different worker job reference before recording or applying it",
+    "diagnostic": "Different worker reference cannot be applied"
+  },
+  {
+    "case": "observed-status-not-guarded",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards observed status"
+  },
+  {
+    "case": "observed-reference-not-guarded",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards observed worker reference"
+  },
+  {
+    "case": "null-reference-not-guarded",
+    "outcome": "intended_failure",
+    "test": "guards an unset worker reference before assigning the first one",
+    "diagnostic": "Write guards original null reference"
+  },
+  {
+    "case": "affected-row-not-checked",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "foreign-affected-row-accepted",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "duplicate-affected-rows-accepted",
+    "outcome": "intended_failure",
+    "test": "retries a changed or missing job without applying downstream artifacts",
+    "diagnostic": "Changed or missing job cannot apply artifacts"
+  },
+  {
+    "case": "replay-projection-omits-original",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Replay loads both scope and payload"
+  },
+  {
+    "case": "original-job-id-not-bound",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write guards original job identity"
+  },
+  {
+    "case": "original-callback-key-not-bound",
+    "outcome": "intended_failure",
+    "test": "resumes an exact redelivery without a second evidence insert",
+    "diagnostic": "Replay loads exact original callback key"
+  },
+  {
+    "case": "affected-projection-not-bound",
+    "outcome": "intended_failure",
+    "test": "requires the observed state and worker reference in the status write",
+    "diagnostic": "Write verifies affected job projection"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 20
+  }
+]

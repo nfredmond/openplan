@@ -1,0 +1,5 @@
+{
+  "workers/odm_worker/runtime_progress_delivery.py": "1936287f60ee7e9cd637aec0d377fc3a4b91142139a02a33aefb5b48a065554e",
+  "docs/reviews/2026-10-14-progress-delivery/native_recovery.py": "124adad49baf5b4289b1bedd8c37ed804a34b854a31afa341cc38027ceabbca9",
+  "workers/odm_worker/progress_http.py": "a50095b59e2a31a9ed4de61ce2ca2672aa2a235ef4f123b881d855cdd1493c66"
+}

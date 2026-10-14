@@ -16,6 +16,11 @@ const storageFromMock = vi.fn(() => ({ createSignedUrls: storageSignedUrlsMock }
 const jobInsertSingleMock = vi.fn();
 const jobInsertMock = vi.fn();
 const jobUpdateEqMock = vi.fn();
+const jobUpdateIsMock = vi.fn();
+const jobUpdateSelectMock = vi.fn();
+const acceptedLedgerInsertMock = vi.fn();
+const acceptedLedgerReadMock = vi.fn();
+const acceptedLedgerSelectMock = vi.fn();
 const jobUpdateMock = vi.fn();
 const custodyRpcMock = vi.fn();
 const missionSelectMock = vi.fn();
@@ -80,6 +85,12 @@ const fromMock = vi.fn((table: string) => {
     };
   }
 
+  if (table === "aerial_processing_callbacks") {
+    return { insert: acceptedLedgerInsertMock, select: (columns: string) => {
+      acceptedLedgerSelectMock(columns);
+      return { eq: () => ({ maybeSingle: acceptedLedgerReadMock }) };
+    } };
+  }
   throw new Error(`Unexpected table: ${table}`);
 });
 
@@ -194,8 +205,14 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
     jobInsertMock.mockReturnValue({ select: (columns: string) => {
       jobInsertSelectMock(columns); return { single: jobInsertSingleMock };
     } });
-    jobUpdateEqMock.mockResolvedValue({ error: null });
-    jobUpdateMock.mockReturnValue({ eq: jobUpdateEqMock });
+    const updateChain = { eq: jobUpdateEqMock, is: jobUpdateIsMock, select: jobUpdateSelectMock,
+      then: (resolve: (value: { error: null }) => void) => Promise.resolve({ error: null }).then(resolve) };
+    jobUpdateEqMock.mockReturnValue(updateChain);
+    jobUpdateIsMock.mockReturnValue(updateChain);
+    jobUpdateSelectMock.mockResolvedValue({ data: [{ id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa" }], error: null });
+    jobUpdateMock.mockReturnValue(updateChain);
+    acceptedLedgerInsertMock.mockResolvedValue({ error: null });
+    acceptedLedgerReadMock.mockResolvedValue({ data: null, error: null });
     custodyRpcMock.mockReset();
   });
 
@@ -508,6 +525,75 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
         last_callback_at: "2026-07-21T12:00:00Z",
       })
     );
+  });
+
+  describe("synchronous accepted callback custody", () => {
+    function configure() {
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_URL = "https://worker.example.com";
+      process.env.OPENPLAN_AERIAL_PROCESSING_WORKER_TOKEN = "worker-secret";
+      vi.stubGlobal("fetch", vi.fn(async (_url: string, init: RequestInit) => ({ status: 202,
+        json: async () => acceptedWorkerResponse(JSON.parse(String(init.body)).requestId), text: async () => "" })));
+    }
+
+    it("retains the original accepted payload before installing its ordering pointer", async () => {
+      configure();
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status).toBe(202);
+      const row = acceptedLedgerInsertMock.mock.calls[0]?.[0];
+      expect(row, "Accepted response reaches the private ledger").toEqual({
+        processing_job_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa", workspace_id: WORKSPACE_ID,
+        callback_id: "cb-accept-01", status: "accepted", occurred_at: "2026-07-21T12:00:00Z",
+        payload: acceptedWorkerResponse(row?.payload.requestId),
+      });
+      expect(acceptedLedgerInsertMock.mock.invocationCallOrder[0], "Ledger precedes ordering pointer").toBeLessThan(jobUpdateMock.mock.invocationCallOrder[0]);
+      expect(jobUpdateEqMock, "Accepted response cannot overwrite running callback state").toHaveBeenCalledWith("status", "requested");
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("job_reference", null);
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("last_callback_id", null);
+      expect(jobUpdateIsMock).toHaveBeenCalledWith("last_callback_at", null);
+      expect(jobUpdateSelectMock).toHaveBeenCalledWith("id");
+    });
+
+    it("refuses an unavailable accepted ledger without installing an unreadable pointer", async () => {
+      configure(); acceptedLedgerInsertMock.mockResolvedValue({ error: { message: "Synthetic ledger unavailable" } });
+      const response = await postProcessMission(request(), routeContext());
+      expect(response.status, "Missing accepted custody remains visible").toBe(503);
+      expect(jobUpdateMock, "No ordering pointer without original accepted custody").not.toHaveBeenCalled();
+    });
+
+    it("accepts only an exact scoped retained accepted response after a unique conflict", async () => {
+      configure(); acceptedLedgerInsertMock.mockResolvedValue({ error: { code: "23505" } });
+      acceptedLedgerReadMock.mockImplementation(async () => {
+        const row = acceptedLedgerInsertMock.mock.calls.at(-1)?.[0];
+        return { data: { processing_job_id: row.processing_job_id, workspace_id: row.workspace_id, payload: row.payload }, error: null };
+      });
+      expect((await postProcessMission(request(), routeContext())).status).toBe(202);
+      expect(acceptedLedgerSelectMock, "Read every binding needed for accepted replay").toHaveBeenCalledWith("processing_job_id, workspace_id, payload");
+      for (const field of ["processing_job_id", "workspace_id", "payload"] as const) {
+        jobUpdateMock.mockClear();
+        acceptedLedgerReadMock.mockImplementation(async () => {
+          const row = acceptedLedgerInsertMock.mock.calls.at(-1)?.[0];
+          return { data: { processing_job_id: row.processing_job_id,
+            workspace_id: row.workspace_id, payload: row.payload, [field]: "foreign-value" }, error: null };
+        });
+        expect((await postProcessMission(request(), routeContext())).status,
+          "Foreign accepted receipt cannot supply a pointer: " + field).toBe(503);
+        expect(jobUpdateMock).not.toHaveBeenCalled();
+      }
+      for (const error of [null, { message: "Synthetic receipt read unavailable" }]) {
+        jobUpdateMock.mockClear();
+        acceptedLedgerReadMock.mockResolvedValue({ data: null, error });
+        expect((await postProcessMission(request(), routeContext())).status,
+          "Missing accepted receipt cannot supply a pointer").toBe(503);
+        expect(jobUpdateMock).not.toHaveBeenCalled();
+      }
+    });
+
+    it("refuses an accepted response for a different request", async () => {
+      configure(); vi.stubGlobal("fetch", vi.fn(async () => ({ status: 202,
+        json: async () => acceptedWorkerResponse("bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"), text: async () => "" })));
+      expect((await postProcessMission(request(), routeContext())).status, "Accepted response belongs to the original request").toBe(502);
+      expect(acceptedLedgerInsertMock).not.toHaveBeenCalled();
+    });
   });
 
   it("marks the job dispatch_failed and returns 502 on worker failure", async () => {
