@@ -243,6 +243,10 @@ jobs:
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-controls"
           python3 -B docs/reviews/2026-10-14-artifact-http/verify_cleanup.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-cleanup-controls"
+      - name: Original worker coordination and local failure controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-worker-coordination/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-worker-coordination-controls"
       - name: Exact progress callback journal controls
         run: |
           python3 -B docs/reviews/2026-10-14-progress-delivery/verify_controls.py \
