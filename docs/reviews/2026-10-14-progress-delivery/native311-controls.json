@@ -1,0 +1,48 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "body-reencoded",
+    "outcome": "intended_failure",
+    "diagnostic": "Native saved command is exactly the received body"
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native acknowledged replay makes no POST"
+  },
+  {
+    "case": "revoked-access-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Native revoked has the expected process outcome"
+  },
+  {
+    "case": "process-interruption-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Native interrupt has the expected process outcome"
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "outcome": "intended_failure",
+    "diagnostic": "Exact replay has one remote fixture effect"
+  },
+  {
+    "case": "replacement-changes-body",
+    "outcome": "intended_failure",
+    "diagnostic": "Native recover has the expected process outcome"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

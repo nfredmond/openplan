@@ -1,0 +1,14 @@
+{
+  "processInterruption": 44,
+  "replacementProcess": true,
+  "httpPosts": 2,
+  "remoteFixtureEffects": 1,
+  "dispatchReads": 13,
+  "bodySha256": "450af6dbf4b3705b05c41e91d347ceab1f799b6a12e8844a098fdec9fda9a4de",
+  "bodyBytes": 312,
+  "revokedProcess": 45,
+  "limits": [
+    "local synthetic HTTP authorization and receiver fixtures",
+    "loopback supervised POST only; not live RLS, hosted callback, public DNS/TLS or default-worker acceptance"
+  ]
+}

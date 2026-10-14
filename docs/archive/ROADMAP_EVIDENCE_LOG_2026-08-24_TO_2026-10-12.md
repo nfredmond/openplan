@@ -358,3 +358,16 @@ _Old line 317 of `docs/ROADMAP.md` at main commit `7efaff901`, from "M3"._
 _Old line 899 of `docs/ROADMAP.md` at main commit `b6f52fc22`, appended after "M9" by PR 309._
 
 **October 14 private aerial product candidate.** [Selected original member custody](../reviews/2026-10-14-odm-private-products/STATUS.md) retains private orthomosaic and point-cloud bytes, explicit optional absence, actual interrupted process recovery and current actor refusal on a populated isolated selected schema. Both interpreter cohorts retain harmless and targeted faults. Callback/Storage delivery, preview rendering, default worker integration, independent-host recovery and scientific quality remain open under existing M3/M5b.2. No milestone grade changes.
+
+**October 14 exact callback and immutable Storage candidate.**
+[Callback recovery](../reviews/2026-10-14-aerial-callback-retry/STATUS.md) retains
+the synchronous accepted response before its guarded job pointer and protects
+revised-handler package creation through a deterministic existing primary key.
+[Private progress delivery](../reviews/2026-10-14-progress-delivery/STATUS.md)
+retains exact accepted/running POST bytes with current actor access.
+[Storage custody](../reviews/2026-10-14-aerial-immutable-custody/STATUS.md) preserves
+original objects and reconciles actual streamed size/hash under cancellation.
+These are isolated candidates. Mixed-version package writes, concurrent custody,
+source-extension identity, complete terminal/artifact delivery, default-worker
+integration, browser/practitioner evidence, independent-host recovery and
+scientific quality remain open under M3/M5b.2. Milestone grades do not change.

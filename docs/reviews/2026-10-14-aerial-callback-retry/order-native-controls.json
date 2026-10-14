@@ -1,0 +1,53 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "retained-replay-skipped",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual retained retry must finish the original status write"
+  },
+  {
+    "case": "changed-payload-accepted",
+    "outcome": "intended_failure",
+    "diagnostic": "Changed original callback must refuse"
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "outcome": "intended_failure",
+    "diagnostic": "Other worker identity must refuse"
+  },
+  {
+    "case": "observed-status-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Concurrent native state change must request a fresh retry"
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual retained retry must finish the original status write"
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "outcome": "intended_failure",
+    "diagnostic": "Old native replay cannot replace a newer same-status event"
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Concurrent same-status event must fence a stale write"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

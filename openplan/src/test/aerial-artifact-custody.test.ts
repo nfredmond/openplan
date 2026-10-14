@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { Blob as ServerBlob } from "node:buffer";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { describe, expect, it, vi } from "vitest";
@@ -55,6 +56,11 @@ type Harness = {
   uploads: Array<{ path: string; body: unknown; options?: { contentType?: string; upsert?: boolean } }>;
   jobUpdates: Record<string, unknown>[];
   custodySelectColumns: string[];
+  objects: Map<string, Buffer>;
+  storageReadOverride?: Blob | null;
+  storageReadError?: { message?: string } | null;
+  uploadAcknowledgementError?: { message?: string } | null;
+  uploadAcknowledgementThrows?: boolean;
   /** Rows the roll-up re-read returns. Defaults to whatever was upserted. */
   rollupRows?: Record<string, unknown>[];
   rollupError?: { message?: string } | null;
@@ -79,6 +85,7 @@ function harness(): Harness {
     uploads: [],
     jobUpdates: [],
     custodySelectColumns: [],
+    objects: new Map(),
     uploadError: null,
     rollupError: null,
     priorError: null,
@@ -130,8 +137,20 @@ function harness(): Harness {
         upload: (path: string, body: unknown, options?: { contentType?: string; upsert?: boolean }) => {
           expect(bucket).toBe(AERIAL_ARTIFACT_BUCKET);
           state.uploads.push({ path, body, options });
-          return Promise.resolve({ error: state.uploadError ?? null });
+          if (!state.uploadError) {
+            if (state.objects.has(path) && options?.upsert !== true) {
+              return Promise.resolve({ error: { message: "Object already exists" } });
+            }
+            state.objects.set(path, Buffer.from(body as Buffer));
+          }
+          if (state.uploadAcknowledgementThrows) return Promise.reject(new Error("Synthetic lost upload acknowledgement"));
+          return Promise.resolve({ error: state.uploadError ?? state.uploadAcknowledgementError ?? null });
         },
+        download: (path: string) => ({ asStream: async () => ({
+          data: state.storageReadOverride !== undefined ? state.storageReadOverride?.stream() ?? null
+            : state.objects.has(path) ? new ServerBlob([new Uint8Array(state.objects.get(path)!)]).stream() as unknown as ReadableStream<Uint8Array> : null,
+          error: state.storageReadError ?? null,
+        }) }),
       }),
     },
   };
@@ -161,6 +180,155 @@ function readableStrings(rows: Record<string, unknown>[]): string {
 }
 
 describe("aerial artifact custody — taking the bytes", () => {
+  it("recovers an unchanged original object after its custody-row write was interrupted", async () => {
+    const h = harness();
+    const bytes = Buffer.from([1, 2, 3]);
+    h.upsertError = { message: "Synthetic row acknowledgement unavailable" };
+    const pass = () => runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB, candidates: [candidate()],
+      fetchImpl: vi.fn().mockResolvedValue(okResponse(bytes)) as unknown as typeof fetch,
+    });
+    await pass();
+    h.upsertError = null;
+    const recovered = await pass();
+    expect(recovered.records[0]?.state, "Matching retained bytes restore the missing custody row").toBe("held");
+    expect(recovered.records[0]?.checksum_sha256, "Reconciliation checks the actual original hash").toBe(createHash("sha256").update(bytes).digest("hex"));
+    expect(h.objects.size).toBe(1);
+  });
+
+  it("reconciles actual bytes when the upload acknowledgement is unavailable", async () => {
+    const h = harness();
+    h.uploadAcknowledgementError = { message: "Synthetic acknowledgement unavailable after storage" };
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB, candidates: [candidate()],
+      fetchImpl: vi.fn().mockResolvedValue(okResponse(Buffer.from([1, 2, 3]))) as unknown as typeof fetch,
+    });
+    expect(result.records[0]?.state, "An uncertain upload reply requires actual matching bytes").toBe("held");
+  });
+
+  it("reconciles retained bytes after a thrown upload acknowledgement", async () => {
+    const h = harness();
+    h.uploadAcknowledgementThrows = true;
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB, candidates: [candidate()],
+      fetchImpl: async () => okResponse(Buffer.from([1, 2, 3])),
+    });
+    expect(result.records[0]?.state, "Thrown acknowledgement requires actual byte reconciliation").toBe("held");
+  });
+
+  it("cancels reconciliation as soon as actual streamed bytes exceed the expected size", async () => {
+    const h = harness();
+    const canceled = vi.fn();
+    let reads = 0;
+    h.supabase.storage.from = () => ({
+      upload: async () => ({ error: null }),
+      download: (_path, _options, parameters) => ({ asStream: async () => {
+        expect(parameters.cache).toBe("no-store");
+        expect(parameters.signal).toBeInstanceOf(AbortSignal);
+        return { data: new ReadableStream({
+          pull(controller) {
+            reads += 1;
+            controller.enqueue(new Uint8Array([1, 2, 3, 4]));
+          },
+          cancel: canceled,
+        }, { highWaterMark: 0 }), error: null };
+      } }),
+    });
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB, candidates: [candidate()],
+      fetchImpl: async () => okResponse(Buffer.from([1, 2, 3])),
+    });
+    expect(result.records[0]?.state, "Oversized stream cannot become held").toBe("failed");
+    expect(reads, "Oversized stream stops at its first excessive chunk").toBe(1);
+    expect(canceled, "Oversized network reader is canceled").toHaveBeenCalledOnce();
+  });
+
+  it("forwards pass cancellation through the Storage transport factory", async () => {
+    const h = harness();
+    const controller = new AbortController();
+    let transport: typeof fetch | undefined;
+    h.supabase.storage.from = () => ({
+      upload: async () => {
+        controller.abort();
+        await transport!("https://storage.example.invalid/object", { method: "POST" });
+        return { error: null };
+      },
+      download: () => ({ asStream: async () => { throw new Error("Canceled pass must not read Storage"); } }),
+    });
+    const network = vi.fn();
+    vi.stubGlobal("fetch", network);
+    try {
+      const result = await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: (fetchImpl) => {
+          transport = fetchImpl;
+          return h.supabase as unknown as CustodySupabaseClient;
+        },
+        signal: controller.signal,
+        job: JOB, candidates: [candidate()],
+        fetchImpl: async () => okResponse(Buffer.from([1, 2, 3])),
+      });
+      expect(result.records[0]?.state, "Canceled transport cannot record held bytes").toBe("failed");
+      expect(network, "Canceled transport starts no network request").not.toHaveBeenCalled();
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  });
+
+  it("refuses missing, unreadable, differently sized or changed actual storage bytes", async () => {
+    for (const scenario of ["missing", "unreadable", "size", "hash"] as const) {
+      const h = harness();
+      if (scenario === "missing") h.storageReadOverride = null;
+      if (scenario === "unreadable") h.storageReadError = { message: "Synthetic read unavailable" };
+      if (scenario === "size") h.storageReadOverride = new ServerBlob([new Uint8Array([1, 2])]) as unknown as Blob;
+      if (scenario === "hash") h.storageReadOverride = new ServerBlob([new Uint8Array([9, 8, 7])]) as unknown as Blob;
+      const result = await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+        job: JOB, candidates: [candidate()],
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(Buffer.from([1, 2, 3]))) as unknown as typeof fetch,
+      });
+      expect(result.records.some((row) => row.state === "held"), "Unconfirmed actual bytes cannot become held: " + scenario).toBe(false);
+    }
+  });
+
+  it("never replaces original storage bytes after its first custody-row write fails", async () => {
+    const h = harness();
+    const original = Buffer.from([1, 2, 3]);
+    const replacement = Buffer.from([9, 8, 7]);
+    h.upsertError = { message: "Synthetic custody-row write interruption" };
+    const first = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB,
+      candidates: [candidate()],
+      fetchImpl: vi.fn().mockResolvedValue(okResponse(original)) as unknown as typeof fetch,
+    });
+    expect(first.unreadableReason).toContain("could not be recorded");
+    expect(h.upserted).toHaveLength(0);
+    const key = h.uploads[0].path;
+    expect(h.objects.get(key)?.equals(original), "The first object exists before the interrupted row write").toBe(true);
+
+    h.upsertError = null;
+    const replay = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+      job: JOB,
+      candidates: [candidate()],
+      fetchImpl: vi.fn().mockResolvedValue(okResponse(replacement)) as unknown as typeof fetch,
+    });
+    expect(h.objects.get(key)?.equals(original), "A retry never replaces the original stored bytes").toBe(true);
+    expect(replay.records.some((row) => row.state === "held"), "Different incoming bytes cannot become held at the original key").toBe(false);
+  });
+
   it("downloads the artifact, stores it on a workspace/mission/job path, and records size + sha256", async () => {
     const h = harness();
     const bytes = new Uint8Array([1, 2, 3, 4]);
@@ -170,6 +338,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate({ sizeBytes: 4 })],
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -179,7 +348,7 @@ describe("aerial artifact custody — taking the bytes", () => {
     expect(h.uploads[0].path).toBe(
       `${WORKSPACE_ID}/${MISSION_ID}/${JOB_ID}/orthomosaic.tif`
     );
-    expect(h.uploads[0].options).toMatchObject({ upsert: true, contentType: "image/tiff" });
+    expect(h.uploads[0].options).toMatchObject({ upsert: false, contentType: "image/tiff" });
     expect(Buffer.from(h.uploads[0].body as Buffer).equals(Buffer.from(bytes))).toBe(true);
 
     const row = h.upserted[0][0];
@@ -198,6 +367,7 @@ describe("aerial artifact custody — taking the bytes", () => {
     const h = harness();
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1]))) as unknown as typeof fetch,
@@ -240,6 +410,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate({ kind: "point_cloud", sizeBytes: 1024 })],
       env: { [AERIAL_ARTIFACT_MAX_BYTES_ENV]: "4096" } as unknown as NodeJS.ProcessEnv,
@@ -268,6 +439,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate({ kind: "mesh" })],
       env: { [AERIAL_ARTIFACT_MAX_BYTES_ENV]: "1024" } as unknown as NodeJS.ProcessEnv,
@@ -286,6 +458,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -303,6 +476,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate({ expiresAt: "2020-01-01T00:00:00Z" })],
       now: new Date("2026-07-30T00:00:00Z"),
@@ -320,6 +494,7 @@ describe("aerial artifact custody — taking the bytes", () => {
     const httpHarness = harness();
     await runAerialCustodyPass({
       supabase: httpHarness.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => httpHarness.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: vi.fn().mockResolvedValue(new Response("nope", { status: 502 })) as unknown as typeof fetch,
@@ -331,6 +506,7 @@ describe("aerial artifact custody — taking the bytes", () => {
     storeHarness.uploadError = { message: "bucket not found" };
     await runAerialCustodyPass({
       supabase: storeHarness.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => storeHarness.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([9]))) as unknown as typeof fetch,
@@ -348,6 +524,7 @@ describe("aerial artifact custody — taking the bytes", () => {
       h.storageUsedBytes = 1024;
       await runAerialCustodyPass({
         supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
         job: JOB,
         candidates: [candidate({ sizeBytes: 4 })],
         env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
@@ -364,6 +541,7 @@ describe("aerial artifact custody — taking the bytes", () => {
       h.storageUsedBytes = 1025;
       await runAerialCustodyPass({
         supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
         job: JOB,
         candidates: [candidate({ sizeBytes: 4 })],
         env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
@@ -381,12 +559,52 @@ describe("aerial artifact custody — taking the bytes", () => {
       h.storageUsageError = { message: "permission denied for function workspace_storage_bytes" };
       await runAerialCustodyPass({
         supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
         job: JOB,
         candidates: [candidate({ sizeBytes: 4 })],
         fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1, 2, 3, 4]))) as unknown as typeof fetch,
       });
       expect(h.uploads).toHaveLength(0);
       expect(h.upserted[0][0]).toMatchObject({ state: "failed", failure_code: "workspace_storage_unreadable", storage_path: null });
+    });
+
+    // A retry after a lost acknowledgement: the first attempt already stored
+    // this exact object, so taking custody adds no bytes. The limit may not
+    // refuse what is only reconciliation.
+    it("does not refuse a retry whose earlier attempt already stored the same bytes", async () => {
+      const h = harness();
+      const bytes = new Uint8Array([1, 2, 3, 4]);
+      const path = `${WORKSPACE_ID}/${MISSION_ID}/${JOB_ID}/orthomosaic.tif`;
+      h.objects.set(path, Buffer.from(bytes));
+      // The stored object itself is already in the total, so the workspace sits at its limit.
+      h.storageUsedBytes = 1028;
+      await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+        job: JOB,
+        candidates: [candidate({ sizeBytes: 4 })],
+        env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(bytes)) as unknown as typeof fetch,
+      });
+      expect(h.upserted[0][0]).toMatchObject({ state: "held", storage_path: path, byte_size: 4 });
+      expect(Buffer.from(h.objects.get(path)!).equals(Buffer.from(bytes))).toBe(true);
+    });
+
+    it("still refuses when the object already at that path holds different bytes", async () => {
+      const h = harness();
+      const path = `${WORKSPACE_ID}/${MISSION_ID}/${JOB_ID}/orthomosaic.tif`;
+      h.objects.set(path, Buffer.from([9, 9, 9, 9]));
+      h.storageUsedBytes = 1028;
+      await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
+        job: JOB,
+        candidates: [candidate({ sizeBytes: 4 })],
+        env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1, 2, 3, 4]))) as unknown as typeof fetch,
+      });
+      expect(h.uploads).toHaveLength(0);
+      expect(h.upserted[0][0]).toMatchObject({ state: "failed", failure_code: "workspace_storage_full", storage_path: null });
     });
   });
 
@@ -396,6 +614,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate(), candidate({ kind: "point_cloud" })],
       // The caller already burned the whole budget before custody started.
@@ -424,6 +643,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [
         candidate({ kind: "orthomosaic" }),
@@ -455,6 +675,7 @@ describe("aerial artifact custody — taking the bytes", () => {
       const h = harness();
       await runAerialCustodyPass({
         supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
         job: JOB,
         candidates: [candidate()],
         fetchImpl: vi.fn().mockImplementation(impl) as unknown as typeof fetch,
@@ -478,6 +699,7 @@ describe("aerial artifact custody — taking the bytes", () => {
     const pass = () =>
       runAerialCustodyPass({
         supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
         job: JOB,
         candidates: [candidate()],
         fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -493,7 +715,8 @@ describe("aerial artifact custody — taking the bytes", () => {
       `${WORKSPACE_ID}/${MISSION_ID}/${JOB_ID}/orthomosaic.tif`,
     ]);
     expect(fetchImpl).toHaveBeenCalledTimes(1);
-    expect(h.uploads.every((u) => u.options?.upsert === true)).toBe(true);
+    expect(h.objects.size, "Replay preserves one original object").toBe(1);
+    expect(h.objects.get(h.uploads[0].path)?.equals(Buffer.from([7])), "Replay preserves its original byte contents").toBe(true);
     // And the second pass wrote no custody row at all — the held one stands.
     expect(h.upserted).toHaveLength(1);
   });
@@ -538,6 +761,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate({ expiresAt: "2020-01-01T00:00:00Z" })],
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -556,6 +780,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -579,6 +804,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([5]))) as unknown as typeof fetch,
@@ -634,6 +860,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: fetchImpl as unknown as typeof fetch,
@@ -656,6 +883,7 @@ describe("aerial artifact custody — taking the bytes", () => {
 
     const result = await runAerialCustodyPass({
       supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient,
       job: JOB,
       candidates: [candidate()],
       fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1]))) as unknown as typeof fetch,

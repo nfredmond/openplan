@@ -1,0 +1,212 @@
+[
+  {
+    "case": "upload-signal-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "upload-signal-removed",
+    "oracle": "reference",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "cancellation-ignored",
+    "oracle": "reference",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "read-transport-signals-removed",
+    "oracle": "reference",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "buffered-object-before-ceiling",
+    "oracle": "reference",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "stream-ceiling-removed",
+    "oracle": "reference",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "thrown-ack-recovery-removed",
+    "oracle": "reference",
+    "accepted": false
+  }
+]
