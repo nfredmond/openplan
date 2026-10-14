@@ -9,6 +9,8 @@ vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
   checkWorkspaceStorageRoom: (...args: unknown[]) =>
     checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { NextRequest } from "next/server";
 
 import { AERIAL_IMAGE_MAX_BYTES_ENV, AERIAL_IMAGERY_COLUMNS } from "@/lib/aerial/imagery";

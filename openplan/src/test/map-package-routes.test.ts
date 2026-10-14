@@ -10,6 +10,8 @@ vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
   checkWorkspaceStorageRoom: (...args: unknown[]) =>
     checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { newProviderConnectionToken } from "@/lib/assistant/provider-server";
 import { MAP_PACKAGE_SKILL } from "@/lib/map-packages/skill";
 import * as collection from "@/app/api/map-packages/route";

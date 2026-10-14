@@ -9,6 +9,8 @@ vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
   checkWorkspaceStorageRoom: (...args: unknown[]) =>
     checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
 }));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 
 /**
  * THE GTFS UPLOAD THAT NEVER RIDES IN A FUNCTION BODY.
@@ -295,8 +297,6 @@ describe("POST /api/gtfs/feeds/upload/start", () => {
 });
 
 describe("POST /api/gtfs/feeds/upload/start: the workspace storage limit", () => {
-  beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
-
   it("refuses before a URL exists when the declared archive would go over the limit", async () => {
     checkWorkspaceStorageRoomMock.mockResolvedValue({
       status: "full",
