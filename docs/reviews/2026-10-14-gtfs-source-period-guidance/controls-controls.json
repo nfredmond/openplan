@@ -1,0 +1,44 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "passed": 17,
+    "failed": 0,
+    "reason": null
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived",
+    "passed": 17,
+    "failed": 0,
+    "reason": null
+  },
+  {
+    "case": "source-endorsed",
+    "outcome": "intended_failure",
+    "passed": 16,
+    "failed": 1,
+    "reason": "usually|normally|right thing|last one"
+  },
+  {
+    "case": "participant-words-return",
+    "outcome": "intended_failure",
+    "passed": 16,
+    "failed": 1,
+    "reason": "Answer the questions below"
+  },
+  {
+    "case": "existing-area-cleared",
+    "outcome": "intended_failure",
+    "passed": 16,
+    "failed": 1,
+    "reason": "to not be called at all"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "passed": 17,
+    "failed": 0,
+    "reason": null
+  }
+]
