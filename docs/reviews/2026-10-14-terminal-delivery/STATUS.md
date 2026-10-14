@@ -100,3 +100,7 @@ practitioner, separate-host or V1 acceptance is established.
 
 Private proof base:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/terminal-delivery-20261014/`.
+
+## Exact-head CI duration correction, October 14
+
+The worker check on 62319a942e58 ran for 30 minutes and 18 seconds. GitHub records that the job exceeded its 30-minute maximum. It canceled during terminal fault controls; the captured log shows intended failures through historical owner checks and no earlier failed assertion. This does not establish the unfinished controls as passing. The bounded job allowance is now 45 minutes. Every suite and control remains enabled, and fresh exact-head CI is required. Local source, native and restore evidence above retains its separate scope.
