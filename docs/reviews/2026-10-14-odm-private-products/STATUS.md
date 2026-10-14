@@ -67,3 +67,9 @@ documentation cases, product direction and four report-link controls pass.
 The serial service stops at 909,242,368 bytes under 1 GiB, with zero swap, max
 pressure and OOM events. The unchanged earlier native cohorts retain their
 separate cap-pressure limits. GitHub and merged-main acceptance remain pending.
+
+The candidate joins PR303's corrected migration-source guard. Original product
+library and native producer hashes remain unchanged. Both new CI steps and all
+report links remain present. The added migration-source controller and twenty
+joined documentation cases pass separately. Fresh CI runs the combined recipe;
+the earlier47-stage result remains identified as that earlier recipe.
