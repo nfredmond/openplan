@@ -19,6 +19,7 @@ import {
 } from "@/lib/invoicing/receivables";
 import { summarizeUnbilledTime, type TimeEntryLike } from "@/lib/invoicing/time-billing";
 import { createClient } from "@/lib/supabase/server";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import {
   insetClass,
   looksLikePendingSchema,
@@ -125,6 +126,8 @@ export async function ReceivablesLane({
   canWriteInvoices: boolean;
 }) {
   const supabase = await createClient();
+  // Days past due count on the workspace's calendar; UTC when it cannot be read.
+  const calendarRead = loadWorkspaceCalendar(supabase, workspaceId);
 
   const [clientsRead, engagementsRead, invoicesRead, staffRead, rateTablesRead, timeEntriesRead, projectsRead] =
     (await Promise.all([
@@ -207,7 +210,8 @@ export async function ReceivablesLane({
     ? []
     : ((deliverablesRead.data ?? []) as Array<{ id: string; project_id: string; title: string }>);
 
-  const receivableSummary = summarizeReceivables(invoices);
+  const calendar = await calendarRead;
+  const receivableSummary = summarizeReceivables(invoices, new Date(), calendar.timeZone);
   const unbilledSummary = summarizeUnbilledTime(timeEntries);
 
   const engagementTitleById = new Map(engagements.map((engagement) => [engagement.id, engagement.title]));

@@ -56,6 +56,8 @@ const SOURCE = WORK_SWEEP_SOURCES.find((source) => source.kind === "measure_clai
 
 /** 2026-03-10, the day the sweep is pretending to run. */
 const NOW = new Date("2026-03-10T13:00:00Z");
+/** The workspace calendar's today, as the sweep hands it to a source. */
+const TODAY = () => "2026-03-10";
 
 const AWAITING_CLAIM = {
   id: "claim-1",
@@ -136,7 +138,7 @@ describe("the measure claim review reminder", () => {
   });
 
   it("NEVER reports a waiting claim as overdue", () => {
-    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT);
+    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT, TODAY);
 
     // The whole point of the file. A claim submitted 54 days ago is waiting,
     // not late — OpenPlan holds no review deadline to have missed.
@@ -146,7 +148,7 @@ describe("the measure claim review reminder", () => {
   });
 
   it("keys the reminder on the submission date, so it fires once per claim", () => {
-    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT);
+    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT, TODAY);
 
     // `submitted_on` never changes once a claim leaves draft, and the
     // idempotency index is (subject_table, subject_id, recipient, due_on).
@@ -161,7 +163,7 @@ describe("the measure claim review reminder", () => {
   });
 
   it("states the amount, the day it arrived and how long it has waited", () => {
-    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT);
+    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, CONTEXT, TODAY);
 
     // 2026-01-15 to 2026-03-10 is 16 days of January left + 28 (2026 is not a
     // leap year) + 10 = 54 days.
@@ -173,7 +175,7 @@ describe("the measure claim review reminder", () => {
   });
 
   it("omits the amount rather than guessing a currency when the fund could not be read", () => {
-    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, NO_CONTEXT);
+    const [candidate] = SOURCE!.toCandidates([{ ...AWAITING_CLAIM }], NOW, NO_CONTEXT, TODAY);
 
     expect(candidate.body).toContain("could not read this fund's currency, so the amount is not stated here");
     // The reminder still goes out — the deadline-adjacent fact matters more
@@ -186,16 +188,36 @@ describe("the measure claim review reminder", () => {
     const [candidate] = SOURCE!.toCandidates(
       [{ ...AWAITING_CLAIM, submitted_on: "2026-03-10" }],
       NOW,
-      CONTEXT
+      CONTEXT,
+      TODAY
     );
     expect(candidate.body).toContain("It arrived today.");
     expect(candidate.body).not.toContain("waiting 0 days");
   });
 
+  it("counts the days waited on the workspace's calendar, not the UTC day", () => {
+    // 2026-10-14T01:00Z is 6 p.m. Oct 13 in Los Angeles and 10 a.m. Oct 14 in Tokyo.
+    // The sweep asks each workspace's calendar; the source must use that answer.
+    const submitted = { ...AWAITING_CLAIM, submitted_on: "2026-10-13" };
+    const evening = new Date("2026-10-14T01:00:00Z");
+    const [pacific] = SOURCE!.toCandidates([submitted], evening, CONTEXT, () => "2026-10-13");
+    expect(pacific.body).toContain("It arrived today.");
+    const [tokyo] = SOURCE!.toCandidates([submitted], evening, CONTEXT, () => "2026-10-14");
+    expect(tokyo.body).toContain("It has been waiting 1 day.");
+    // Across the autumn change (Nov 1 is 25 hours long in Los Angeles) a day is still one day.
+    const [acrossDst] = SOURCE!.toCandidates(
+      [{ ...AWAITING_CLAIM, submitted_on: "2026-10-31" }],
+      new Date("2026-11-03T07:30:00Z"),
+      CONTEXT,
+      () => "2026-11-02"
+    );
+    expect(acrossDst.body).toContain("It has been waiting 2 days.");
+  });
+
   it("drops a claim with nobody to tell, rather than inventing a recipient", () => {
-    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, created_by: null }], NOW, CONTEXT)).toEqual([]);
-    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, submitted_on: null }], NOW, CONTEXT)).toEqual([]);
-    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, workspace_id: null }], NOW, CONTEXT)).toEqual([]);
+    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, created_by: null }], NOW, CONTEXT, TODAY)).toEqual([]);
+    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, submitted_on: null }], NOW, CONTEXT, TODAY)).toEqual([]);
+    expect(SOURCE!.toCandidates([{ ...AWAITING_CLAIM, workspace_id: null }], NOW, CONTEXT, TODAY)).toEqual([]);
   });
 
   it("builds the same sentence outside the sweep, so a fixture can reach it", () => {

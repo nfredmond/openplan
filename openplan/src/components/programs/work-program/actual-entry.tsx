@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Field, SelectField } from "./fields";
 import type { ActualCommand, ActualVersion } from "@/lib/programs/work-program/reporting";
 import type { WorkProgramDraft } from "@/lib/programs/work-program/schema";
+import { todayIn, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 export type ReportingData = {
  contracts?: { id: string; title: string; project_id: string | null }[];
  deliverables?: { id: string; title: string; project_id: string }[];
@@ -14,11 +15,12 @@ export type ReportingData = {
  actuals?: ActualVersion[]; rates?: { id: string; staff_id: string; hourly_cost: string; starts_on: string; ends_on: string }[];
  ownTime?: { entryId: string; version: number; entryDate: string; hours: string; billable: boolean; description: string; sourceKey: string; sourceReference: string; staffId: string; revisionId: string; projectId: string | null; contractId: string | null; allocations: ActualCommand["allocations"] }[];
 };
-export function newActual(revisionId: string, canManage: boolean): ActualCommand {
- return { requestId: crypto.randomUUID(), entryId: crypto.randomUUID(), expectedVersion: 0, revisionId, kind: "labor", status: "draft", entryDate: new Date().toISOString().slice(0, 10), sourceKey: "", sourceReference: "", description: "", staffId: null, projectId: null, contractId: null, timeEntryId: null, spendEntryId: null, hours: null, amount: null, basis: canManage ? "recorded" : "unvalued", rateId: null, billable: false, allocations: [], openingStart: null, openingEnd: null, correctionNote: "", openingBasis: "", reconciliationNote: "", linkedRecordReference: "" };
+/** A blank entry, dated today on the workspace calendar (`timeZone`; UTC when absent). */
+export function newActual(revisionId: string, canManage: boolean, timeZone: string = UTC_TIME_ZONE): ActualCommand {
+ return { requestId: crypto.randomUUID(), entryId: crypto.randomUUID(), expectedVersion: 0, revisionId, kind: "labor", status: "draft", entryDate: todayIn(timeZone), sourceKey: "", sourceReference: "", description: "", staffId: null, projectId: null, contractId: null, timeEntryId: null, spendEntryId: null, hours: null, amount: null, basis: canManage ? "recorded" : "unvalued", rateId: null, billable: false, allocations: [], openingStart: null, openingEnd: null, correctionNote: "", openingBasis: "", reconciliationNote: "", linkedRecordReference: "" };
 }
-export function ActualEntry({ programId, data, save, disabled }: { programId: string; data: ReportingData; save: (command: ActualCommand) => Promise<boolean>; disabled: boolean }) {
- const [command, setCommand] = useState<ActualCommand>(() => newActual(data.revisions.at(-1)?.id ?? "", data.canManage));
+export function ActualEntry({ programId, data, save, disabled, timeZone }: { programId: string; data: ReportingData; save: (command: ActualCommand) => Promise<boolean>; disabled: boolean; timeZone?: string }) {
+ const [command, setCommand] = useState<ActualCommand>(() => newActual(data.revisions.at(-1)?.id ?? "", data.canManage, timeZone));
  const [csv, setCsv] = useState(""), [filename, setFilename] = useState("");
  const [mapping, setMapping] = useState<Record<string, string>>({ sourceKey: "source_key", entryDate: "date", description: "description", hours: "hours", amount: "amount" });
  const [preview, setPreview] = useState<{ row: number; duplicate: boolean; errors: string[]; command: ActualCommand | null }[]>([]), [message, setMessage] = useState("");
@@ -34,7 +36,7 @@ export function ActualEntry({ programId, data, save, disabled }: { programId: st
  }
  return <section id="actual-work" className="space-y-5 rounded-xl border p-4 min-w-0">
   <h2 className="text-xl font-semibold">Actual work</h2><p className="text-sm text-muted-foreground">Enter agency time without a client contract. Owners and administrators reconcile costs before approving them. Billing, commitments and payments are separate measures and never add to incurred costs.</p>
-  <form className="space-y-4" onSubmit={async e => { e.preventDefault(); if (await save(command)) setCommand(newActual(command.revisionId, data.canManage)); }}>
+  <form className="space-y-4" onSubmit={async e => { e.preventDefault(); if (await save(command)) setCommand(newActual(command.revisionId, data.canManage, timeZone)); }}>
    <fieldset disabled={disabled} className="space-y-4 min-w-0">
    <div className="grid gap-4 md:grid-cols-2">
     <SelectField label="Attribution revision" value={command.revisionId} onChange={v => patch({ revisionId: v, allocations: [] })}>{data.revisions.map(r => <option key={r.id} value={r.id}>Revision {r.revision}</option>)}</SelectField>

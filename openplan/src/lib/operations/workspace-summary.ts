@@ -1,6 +1,7 @@
 import { buildAerialProjectPosture, type AerialProjectPosture } from "@/lib/aerial/public";
 import { loadWorkspaceAerialPostureInputs } from "@/lib/aerial/queries";
 import { computeNetInvoiceAmount } from "@/lib/invoicing/invoice-records";
+import { isDeadlinePast } from "@/lib/work/deadlines";
 import {
   isClosingSoonFundingOpportunity,
   isOverdueFundingDecision,
@@ -1936,10 +1937,7 @@ export function buildWorkspaceOperationsSummary({
         project,
         award: awards[0],
         invoice: unlinkedInvoices[0],
-        overdue:
-          Boolean(unlinkedInvoices[0].dueDate) &&
-          !Number.isNaN(new Date(unlinkedInvoices[0].dueDate ?? "").getTime()) &&
-          new Date(unlinkedInvoices[0].dueDate ?? "").getTime() < now.getTime(),
+        overdue: isDeadlinePast(unlinkedInvoices[0].dueDate, now),
         netAmount: computeNetInvoiceAmount(
           unlinkedInvoices[0].amount,
           unlinkedInvoices[0].retentionAmount,

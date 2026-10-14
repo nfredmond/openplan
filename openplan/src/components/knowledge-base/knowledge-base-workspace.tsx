@@ -22,6 +22,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ScreeningGradeLink } from "@/components/ui/screening-grade-link";
 import type { StatusTone } from "@/lib/ui/status";
+import { calendarDayOf, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 import { KB_DOC_KINDS, type KbDocKind, type KbDocumentStatus } from "@/lib/knowledge-base/types";
 import {
   DEFAULT_KB_DOCUMENT_MAX_BYTES,
@@ -166,9 +167,9 @@ function formatBytes(bytes: number | null): string {
   return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-function formatDate(iso: string): string {
-  const parsed = new Date(iso);
-  return Number.isNaN(parsed.getTime()) ? "" : parsed.toISOString().slice(0, 10);
+/** The day a document was added, on the workspace's calendar: the calendar the date filter reads. */
+function formatDate(iso: string, timeZone: string): string {
+  return calendarDayOf(iso, timeZone) ?? "";
 }
 
 function FormError({ error }: { error: string | null }) {
@@ -232,6 +233,12 @@ type KnowledgeBaseWorkspaceProps = {
    * offering a button that answers 501.
    */
   ocrConfigured?: boolean;
+  /**
+   * The workspace's IANA zone, resolved by the page. Dates are printed on its
+   * calendar so they agree with the "Added between" filter, which the route
+   * reads on the same calendar. Absent means UTC.
+   */
+  timeZone?: string;
 };
 
 export function KnowledgeBaseWorkspace({
@@ -243,6 +250,7 @@ export function KnowledgeBaseWorkspace({
   maxUploadBytes = DEFAULT_KB_DOCUMENT_MAX_BYTES,
   library = null,
   ocrConfigured = false,
+  timeZone = UTC_TIME_ZONE,
 }: KnowledgeBaseWorkspaceProps) {
   const [documents, setDocuments] = useState<KbDocumentRow[]>(initialDocuments);
   const [documentList, setDocumentList] = useState<KbDocumentListState>(() =>
@@ -394,6 +402,7 @@ export function KnowledgeBaseWorkspace({
             sort: nextSort,
             addedFrom: nextFrom,
             addedTo: nextTo,
+            timeZone,
           }),
       });
     } catch (loadError) {
@@ -1069,7 +1078,7 @@ export function KnowledgeBaseWorkspace({
                       : ""}
                   </p>
                   <div className="module-record-meta">
-                    <span className="module-record-stamp">{formatDate(doc.created_at)}</span>
+                    <span className="module-record-stamp">{formatDate(doc.created_at, timeZone)}</span>
                     {doc.project_id ? (
                       <Link
                         href={`/projects/${doc.project_id}`}
@@ -1252,8 +1261,8 @@ export function KnowledgeBaseWorkspace({
                     ) : null}
                     <div className="module-record-meta">
                       <span className="module-record-chip">{librarySourceLabel(entry.sourceId)}</span>
-                      {formatDate(entry.createdAt) ? (
-                        <span className="module-record-stamp">{formatDate(entry.createdAt)}</span>
+                      {formatDate(entry.createdAt, timeZone) ? (
+                        <span className="module-record-stamp">{formatDate(entry.createdAt, timeZone)}</span>
                       ) : null}
                       {formatBytes(entry.byteSize) ? (
                         <span className="module-record-chip">{formatBytes(entry.byteSize)}</span>

@@ -298,14 +298,14 @@ describe("the filter helpers the list read is built from", () => {
     );
   });
 
-  it("bounds a calendar day in UTC — the same clock the list prints dates in", () => {
-    expect(kbDocumentDayBounds("2026-06-30")).toEqual({
+  it("bounds a calendar day from its midnight to the next one (a UTC workspace)", () => {
+    expect(kbDocumentDayBounds("2026-06-30", "UTC")).toEqual({
       from: "2026-06-30T00:00:00.000Z",
-      to: "2026-06-30T23:59:59.999Z",
+      before: "2026-07-01T00:00:00.000Z",
     });
     // A day that does not exist must not silently roll into the next month.
-    expect(kbDocumentDayBounds("2026-02-31")).toBeNull();
-    expect(kbDocumentDayBounds("June 30")).toBeNull();
+    expect(kbDocumentDayBounds("2026-02-31", "UTC")).toBeNull();
+    expect(kbDocumentDayBounds("June 30", "UTC")).toBeNull();
   });
 
   it("resolves each order to a column and a direction", () => {
@@ -314,11 +314,11 @@ describe("the filter helpers the list read is built from", () => {
     expect(resolveKbDocumentOrder("title")).toEqual({ column: "title", ascending: true });
     // An unknown order falls back to newest rather than to whatever the
     // database happens to return.
-    expect(resolveKbDocumentListFilters({ sort: "sideways" }).sort).toBe("newest");
+    expect(resolveKbDocumentListFilters({ sort: "sideways", timeZone: "UTC" }).sort).toBe("newest");
   });
 
   it("never calls a capped page a total, and never calls a filtered count a corpus", () => {
-    const unfiltered = resolveKbDocumentListFilters({});
+    const unfiltered = resolveKbDocumentListFilters({ timeZone: "UTC" });
     expect(
       describeKbDocumentListResult({ count: 3, filters: unfiltered, scopeLabel: null })
     ).toBe("3 documents in this workspace.");
@@ -332,7 +332,7 @@ describe("the filter helpers the list read is built from", () => {
     expect(
       describeKbDocumentListResult({
         count: 3,
-        filters: resolveKbDocumentListFilters({ q: "scour" }),
+        filters: resolveKbDocumentListFilters({ q: "scour", timeZone: "UTC" }),
         scopeLabel: "Corridor Rehab",
       })
     ).toBe("3 documents linked to Corridor Rehab match these filters.");

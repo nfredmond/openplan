@@ -18,6 +18,7 @@ import {
 } from "@/components/knowledge-base/knowledge-base-workspace";
 import { PlanningContextStrip } from "@/components/projects/planning-context-strip";
 import { resolvePlanningContext } from "@/lib/projects/planning-context";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 
 import { moduleMetadata } from "@/lib/ui/page-title";
 
@@ -112,9 +113,11 @@ export default async function KnowledgeBasePage({
   // have no workspace_id column of their own — a service-role read of them
   // would be a cross-tenant leak). Its per-source failures are its own; they
   // do not gate the Knowledge Base list, and vice versa.
-  const [documentsResult, library] = await Promise.all([
+  // Dates print on the workspace's calendar, the one the date filter reads.
+  const [documentsResult, library, calendar] = await Promise.all([
     documentsQuery,
     loadDocumentLibrary(supabase, { workspaceId, projectId: initialProjectId }),
+    loadWorkspaceCalendar(supabase, workspaceId),
   ]);
 
   // `ReadFailureLog` is a class; the client component gets its sentence and
@@ -139,6 +142,7 @@ export default async function KnowledgeBasePage({
       // Server-only env vars: resolved here and passed down, never read in the
       // client component, where they would land in a browser bundle.
       ocrConfigured={isKbOcrWorkerConfigured()}
+      timeZone={calendar.timeZone}
       library={{
         entries: library.entries,
         perSource: library.perSource,

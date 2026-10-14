@@ -2,11 +2,15 @@ import { describe, expect, it, vi } from "vitest";
 
 import {
   calendarDayOf,
+  dateTimeInputOf,
+  instantFromWallClock,
   isTimestampPast,
+  latestTodayAnywhere,
   loadWorkspaceCalendar,
   resolveWorkspaceTimeZone,
   singleTimeZoneForCountry,
   todayIn,
+  timeZoneInputLabel,
   todayInWorkspace,
   wallClockTimeOf,
   WORKSPACE_CALENDAR_COLUMNS,
@@ -76,6 +80,66 @@ describe("calendarDayOf and wallClockTimeOf", () => {
     expect(calendarDayOf("2026-10-01T06:59:00", LA)).toBeNull();
     expect(calendarDayOf("not a date", LA)).toBeNull();
     expect(calendarDayOf(null, LA)).toBeNull();
+  });
+});
+
+describe("datetime-local inputs on the workspace's clock", () => {
+  it("reads a late-evening Pacific close as that evening, not the next UTC day", () => {
+    // 01:00 UTC Oct 21 is 6 p.m. PDT Oct 20. Sliced to 16 characters it read 2026-10-21T01:00.
+    expect(dateTimeInputOf("2026-10-21T01:00:00+00:00", LA)).toBe("2026-10-20T18:00");
+    expect(instantFromWallClock("2026-10-20T18:00", LA)).toBe("2026-10-21T01:00:00.000Z");
+  });
+
+  it("works far from UTC in both directions", () => {
+    // Honolulu is UTC-10 all year; Tokyo is UTC+9 all year.
+    expect(instantFromWallClock("2026-10-20T20:00", "Pacific/Honolulu")).toBe("2026-10-21T06:00:00.000Z");
+    expect(dateTimeInputOf("2026-10-21T06:00:00Z", "Pacific/Honolulu")).toBe("2026-10-20T20:00");
+    expect(instantFromWallClock("2026-10-21T08:00", "Asia/Tokyo")).toBe("2026-10-20T23:00:00.000Z");
+    expect(dateTimeInputOf("2026-10-20T23:00:00Z", "Asia/Tokyo")).toBe("2026-10-21T08:00");
+  });
+
+  it("uses the offset in force on that date, across daylight saving time", () => {
+    // Mar 8, 2026: PST (UTC-8) until 2 a.m., PDT (UTC-7) after.
+    expect(instantFromWallClock("2026-03-08T01:59", LA)).toBe("2026-03-08T09:59:00.000Z");
+    expect(instantFromWallClock("2026-03-08T03:00", LA)).toBe("2026-03-08T10:00:00.000Z");
+    // 2:30 a.m. does not exist that night; it moves forward by the gap to 3:30 PDT.
+    expect(instantFromWallClock("2026-03-08T02:30", LA)).toBe("2026-03-08T10:30:00.000Z");
+    // Nov 1, 2026: 1:30 a.m. happens twice; the earlier (PDT) one is meant.
+    expect(instantFromWallClock("2026-11-01T01:30", LA)).toBe("2026-11-01T08:30:00.000Z");
+    expect(instantFromWallClock("2026-11-02T01:30", LA)).toBe("2026-11-02T09:30:00.000Z");
+    // Sydney springs forward on Oct 4, 2026 (UTC+10 to UTC+11).
+    expect(instantFromWallClock("2026-10-03T12:00", "Australia/Sydney")).toBe("2026-10-03T02:00:00.000Z");
+    expect(instantFromWallClock("2026-10-05T12:00", "Australia/Sydney")).toBe("2026-10-05T01:00:00.000Z");
+  });
+
+  it("is UTC when the zone is UTC", () => {
+    expect(instantFromWallClock("2026-10-20T18:00", "UTC")).toBe("2026-10-20T18:00:00.000Z");
+    expect(dateTimeInputOf("2026-10-20T18:00:00Z", "UTC")).toBe("2026-10-20T18:00");
+  });
+
+  it("refuses what is not a real date and time, and shows nothing for what it cannot read", () => {
+    expect(instantFromWallClock("2026-02-30T10:00", LA)).toBeNull();
+    expect(instantFromWallClock("2026-10-20T24:00", LA)).toBeNull();
+    expect(instantFromWallClock("2026-10-20", LA)).toBeNull();
+    expect(instantFromWallClock("", LA)).toBeNull();
+    expect(instantFromWallClock("2026-10-20T18:00", "Not/AZone")).toBeNull();
+    expect(dateTimeInputOf("2026-10-20", LA)).toBe("");
+    expect(dateTimeInputOf("2026-10-20T18:00:00", LA)).toBe("");
+    expect(dateTimeInputOf(null, LA)).toBe("");
+  });
+
+  it("names the zone, or says UTC out loud when the workspace has none", () => {
+    expect(timeZoneInputLabel({ timeZone: LA, source: "workspace_setting" })).toBe(LA);
+    expect(timeZoneInputLabel({ timeZone: "Asia/Tokyo", source: "home_country" })).toBe("Asia/Tokyo");
+    expect(timeZoneInputLabel({ timeZone: "UTC", source: "utc_fallback" })).toBe("UTC, no workspace time zone set");
+    expect(timeZoneInputLabel(undefined)).toBe("UTC, no workspace time zone set");
+  });
+});
+
+describe("latestTodayAnywhere", () => {
+  it("is the date at UTC+14, which turns over at 10:00 UTC", () => {
+    expect(latestTodayAnywhere(new Date("2026-10-14T09:59:59Z"))).toBe("2026-10-14");
+    expect(latestTodayAnywhere(new Date("2026-10-14T10:00:00Z"))).toBe("2026-10-15");
   });
 });
 

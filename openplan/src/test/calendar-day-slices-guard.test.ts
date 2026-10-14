@@ -99,22 +99,15 @@ const ALLOWED: readonly AllowedSlice[] = [
   {
     file: "src/lib/notifications/work.ts",
     snippet: "parsed.toISOString().slice(0, 10)",
-    reason: "Reminder digests key their idempotency on this UTC day; changing it would re-send digests (see the function's comment). Not converted in this change.",
-  },
-  {
-    file: "src/lib/notifications/work.ts",
-    snippet: "end.toISOString().slice(0, 10)",
-    reason: "The reminder window's upper bound, with a day of slack either side. Not converted in this change.",
+    reason:
+      "The UTC day of a timestamptz deadline, which is the reminder's idempotency key (due_on). Lapse dates are " +
+      "stored as UTC midnight by the lapse-date control, so a zone west of UTC would read them a day early and " +
+      "re-send. The window and days waited use each workspace's calendar.",
   },
   {
     file: "src/lib/assistant/context.ts",
     snippet: "today: new Date().toISOString().slice(0, 10)",
     reason: "A thirty-day transit freshness window, UTC by the design its comment states; a day cannot change its verdict.",
-  },
-  {
-    file: "src/lib/engagement/participation-dashboard.ts",
-    snippet: "date.toISOString().slice(0, 10)",
-    reason: "Daily intake chart buckets in UTC. Not converted in this change.",
   },
   { file: "src/lib/aerial/artifact-custody.ts", snippet: "parsed.toISOString().slice(0, 10)", reason: DISPLAY_ONLY },
   { file: "src/lib/workspace-gis/references.ts", snippet: "archivedAt.slice(0, 10)", reason: DISPLAY_ONLY },
