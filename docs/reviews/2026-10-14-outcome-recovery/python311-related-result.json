@@ -1,0 +1,6 @@
+{
+  "interpreter": "python311",
+  "cases": 180,
+  "outcome": "passed",
+  "scope": "Admission, terminal/progress delivery, coordinator, original pipeline and old-outcome recovery fixtures; no application receiver or default acceptance"
+}

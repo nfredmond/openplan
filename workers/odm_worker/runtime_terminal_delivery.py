@@ -171,8 +171,8 @@ class Delivery(Journal):
             self._authorize(command,deadline)
             return self._load(request_id,EVENT,root,deadline)
 
-    def advance(self,request_id,event_key=EVENT):
-        result=super().advance(request_id,event_key)
+    def advance(self,request_id,event_key=EVENT,*,expected_command_sha256=None):
+        result=super().advance(request_id,event_key,expected_command_sha256=expected_command_sha256)
         return {**result,'applicationAcceptanceVerification':'unassessed'}
 
     def historical_receiver_receipt(self,request_id):
