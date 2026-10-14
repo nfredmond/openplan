@@ -259,3 +259,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Supplied output archive custody](reviews/2026-10-13-odm-output-archive-custody/STATUS.md), bounded complete private bytes, member inventory and interruption recovery without publication or quality promotion.
 - [Original output archive HTTP](reviews/2026-10-13-odm-original-output-http/STATUS.md), supervised fixed-task downloads with ownership, cancellation and bounded byte writing.
 - [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
+
+- [Private original aerial products](reviews/2026-10-14-odm-private-products/STATUS.md), exact selected member bytes and interrupted recovery under current access, without delivery or quality promotion.
