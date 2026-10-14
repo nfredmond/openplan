@@ -2,6 +2,8 @@
 
 Source description reconciled September 6, 2026 against merge `42515335`, which includes the completed `cc6c3feb` development handoff. The [final acceptance record](ops/V044_FINAL_FIRST_WEEK_OUTCOMES_2026-09-06.md) preserves nine of twelve journeys passed and three partial, with release withheld. No complete corrected-build first-week pass or production recovery is claimed here. The [consolidated technical review](reviews/TECHNICAL_PRODUCT_REVIEW_2026-09-06.md) records findings and verification limits. The product contract defines the destination; this document describes the implemented structure and its important unfinished boundaries.
 
+On October 12, 2026, against `44dceca1c`, only the hosting, map-provider and milestone-location statements were corrected. The October 11 [hosted cutover record](ops/HOSTED_LIVE_2026-10-11.md) and the two-month review's [open findings](ops/KNOWN_ISSUES.md) postdate the rest of this description, which has not been re-reconciled since September 6.
+
 ## Runtime and repository map
 
 | Location | Responsibility |
@@ -15,7 +17,7 @@ Source description reconciled September 6, 2026 against merge `42515335`, which 
 | `data/modeling/`, `schemas/` | Versioned published scientific evidence and its contracts; frozen studies are historical records |
 | `qa-harness/` | Real-browser journeys, evidence checks, regression scripts and local-target protections |
 | `.github/workflows/` | App, worker/script, RLS, browser, upgrade, recovery and source-contract checks with different triggers |
-| `docs/` | Product contract, single roadmap, capability ledger, architecture, ADRs and dated research/reviews |
+| `docs/` | Product contract, single roadmap, milestone definitions, capability ledger, architecture, ADRs and dated research/reviews |
 
 App commands run inside the nested `openplan/` package. Python and browser commands use their own declared roots/environments. A copied runtime is not identified by port alone; compare process working directory, source commit and reported deployment identity.
 
@@ -76,7 +78,7 @@ Database custody, published files, loader checks and the actual production inges
 
 ## Data and external services
 
-The current map implementation uses Mapbox GL and Mapbox-hosted styles; GIS placement preview sends an extent in a static-image URL. Census/TIGERweb/LODES, NHTSA FARS, California crash sources, OSM, grants and other domain adapters retrieve external data. Optional AI sends selected grounding/content to its configured provider. Self-hosted records do not imply no external traffic.
+Most maps use Mapbox GL and Mapbox-hosted styles and need a Mapbox token; KI-2026-10-12-026 counts 13 of 14 map components. The public engagement map can instead load an operator-chosen MapLibre style named by `NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL` (`openplan/src/lib/cartographic/open-map-style.ts`), either served locally or from a keyless public tile host. A configured Mapbox key still takes precedence. GIS placement preview sends an extent in a static-image URL. Census/TIGERweb/LODES, NHTSA FARS, California crash sources, OSM, grants and other domain adapters retrieve external data. Optional AI sends selected grounding/content to its configured provider. Self-hosted records do not imply no external traffic.
 
 Operators need a maintained outbound-service inventory, source licenses, attribution, credentials, freshness and incomplete/outage behavior. The future local-capable renderer/data path must keep maps useful when outside services are disabled. Open-source libraries do not automatically grant rights to every source dataset or imagery tile.
 
@@ -104,7 +106,7 @@ The following proposals come from the [September 4 review collection](reviews/20
 
 These paragraphs began as September 4 designs. Later increments implement parts of them. The [v0.64 evidence](reviews/2026-09-27-synthesis-response-links/RELEASE_VERIFICATION.md) records reviewed synthesis links to staff responses and project decisions, including retained files. The [October integration](reviews/2026-10-06-integration/INTEGRATION.md) adds request discovery and joins preparation/recovery code; complete staff generation remains unfinished. Projects remains the intended capital owner through environmental, ROW/utilities, PS&E, procurement, construction and closeout; Documents, stage gates and Invoicing supply evidence and separately reconciled payments. That complete capital lifecycle is not established here. Rule applicability must follow actual authority, funding, agreement and effective date. The current land-use creation route still constrains configured rules by workspace home and needs correction under M1.
 
-Provider coverage is task-specific. Broad chat still uses the Anthropic adapter. The retained project read/draft task has installed Codex, Claude Code and OpenCode connections and selected API backends; the [requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) records each evidence boundary. This does not establish every provider's account mode or full tool parity. T3 Code remains a reuse reference for native runtime control. The CLI owns its provider login; OpenPlan controls allowed case reads, proposed actions and exact human approval. A provider process has a separate lifecycle from a browser request. Personal connections remain distinct from unattended deployment connections. Roadmap A0/M9/M10 defines the remaining work.
+Provider coverage is task-specific. Broad chat still uses the Anthropic adapter. The retained project read/draft task has installed Codex, Claude Code and OpenCode connections and selected API backends; the [requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) records each evidence boundary. This does not establish every provider's account mode or full tool parity. T3 Code remains a reuse reference for native runtime control. The CLI owns its provider login; OpenPlan controls allowed case reads, proposed actions and exact human approval. A provider process has a separate lifecycle from a browser request. Personal connections remain distinct from unattended deployment connections. Milestones A0, M9 and M10 in [MILESTONES.md](product/MILESTONES.md) define the remaining work.
 
 Changing the model transport does not transfer legal, financial or scientific authority to the model. A CLI shell permission is not approval to publish a response, certify PS&E, accept construction, spend money or submit reimbursement. Those remain recorded domain decisions by authorized people.
 
@@ -126,7 +128,9 @@ M14 extends the existing consultant proposal pursuit and introduces an agency-ow
 
 The procurement case owns method/authority, solicitation/addendum versions, criteria, deadlines, publication, response receipts, permitted opening, evaluation, negotiation, notices/protests and award. The firm's pursuit owns go/no-go reasoning, qualifications/team evidence, response work and proposed fees. Receipt binds committed bytes and authoritative time; external delivery stays unconfirmed until supported. Award, execution and notice to proceed are separate. Executed scope, staff/rates, task/deliverable budgets, funding and deadlines transfer into M11/M10 while preserving proposal-to-contract changes. The current grant/proposal discriminator and export assembly alone do not provide these outcomes.
 
-## Proposed hosted preview and customer deployment
+## Hosted installation and customer deployment
+
+OpenPlan has run as a public hosted installation since October 11, 2026. Vercel serves the web app from `main`; Supabase holds the database, Auth and private Storage; Railway runs the application queues, one shared AequilibraE/ActivitySim host and OCR. The [cutover record](ops/HOSTED_LIVE_2026-10-11.md) holds its dated evidence and limits. The design below remains the M15 target. Customer transfer to an independent installation (M15c) is not started.
 
 M15 uses the same release and capabilities as self-hosting. Commission a production Linux reference topology with HTTPS, production Supabase, private database/worker administration, app and scheduler supervision, real mail and durable model/object storage. Current county execution assumes app/worker shared files; remote workers need a verified artifact-transfer contract. Use measured queues and resource isolation so a model cannot exhaust the interactive application. Promote tested versions with schema/identity checks and a tested recovery route.
 

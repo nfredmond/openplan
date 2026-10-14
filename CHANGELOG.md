@@ -22,6 +22,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 **Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
 
+**RTP comment record counts every comment.** The comment-response record on
+the RTP cycle page and in the exported packet read approved comments, responses
+and consultations in one request each, so a plan with more than 1,000 comments
+showed only the first 1,000. It now reads every page, and a read that stops part
+way is shown as a failed read, not a short count. The Grants queue now says how
+many projects have no funding target, or have an invoice to link to their
+award, instead of counting "funding lanes". No migration.
+
 **Safety action plan, first part:** Safety now ranks a high-injury network from
 the project's stored crashes and road lines, draws it on the map, and lists it
 with method, years, source and coverage. A source with only deaths gives a
@@ -34,6 +42,13 @@ section listing the SS4A components it does not cover. No migration.
 fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the
 [dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
+**Planner Agent funding words.** The assistant panel's funding answers, quick
+links and the prompts it sends after an action counted "project funding lanes"
+and "reimbursement lanes" and offered to "Create funding need anchor". They now
+count projects, one or many, and name the funding target, the invoice or the
+Grants page. The panel summary no longer reads "3 missing a funding targets".
+Action ids, kinds and payload fields are unchanged. No migration.
 
 **Native engine observer, candidate:** add an explicit Linux NodeODM observer
 for the configured original container, image, process-mounted configuration and

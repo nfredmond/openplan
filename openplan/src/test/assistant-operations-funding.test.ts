@@ -218,12 +218,12 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open overdue grant decision lane");
+    expect(action?.label).toBe("Open overdue grant decisions");
     expect(action?.statusLabel).toBe("2 overdue decisions");
     expect(action?.href).toBe("/grants?focusOpportunityId=opp-overdue-1#funding-opportunity-opp-overdue-1");
     expect(action?.reason).toContain("past their recorded decision deadline");
     expect(action?.reason).toContain("ATP Cycle 8 is the lead overdue monitor decision to resolve first.");
-    expect(action?.auditNote).toContain("focused grants opportunity lane");
+    expect(action?.auditNote).toContain("On the Grants page, resolve the lapsed decision");
     expect(action?.auditNote).toContain("Lead overdue monitor decision: ATP Cycle 8.");
   });
 
@@ -748,7 +748,7 @@ describe("assistant funding operations", () => {
     const action = links.find((link) => link.id === "workspace-open-reimbursement-lane");
 
     expect(action).toBeDefined();
-    expect(action?.label).toBe("Open lead reimbursement lane");
+    expect(action?.label).toBe("Open lead reimbursement invoice");
     expect(action?.href).toBe("/grants#grants-reimbursement-triage");
     expect(action?.statusLabel).toBe("1 reimbursement active");
   });
@@ -912,7 +912,7 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open decision-ready grant lane");
+    expect(action?.label).toBe("Open decision-ready grants");
     expect(action?.statusLabel).toBe("1 decision-ready");
     expect(action?.reason).toContain("is rising because modeling posture appears decision-ready");
     expect(action?.reason).toContain("Advance to pursue now");
@@ -968,7 +968,7 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open lead grant decision lane");
+    expect(action?.label).toBe("Open lead grant decision");
     expect(action?.statusLabel).toBe("Modeling context available");
     expect(action?.reason).toContain("still visible in the decision queue while modeling posture reads appears thin");
     expect(action?.auditNote).toContain("modeling evidence and recommended next move");
@@ -1111,7 +1111,7 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open lead award conversion lane");
+    expect(action?.label).toBe("Open lead awarded opportunity");
     expect(action?.reason).toContain("ATP Cycle 8 is the lead awarded opportunity to convert first.");
     expect(action?.auditNote).toContain("Lead awarded opportunity: ATP Cycle 8.");
   });
@@ -1158,7 +1158,7 @@ describe("assistant funding operations", () => {
 
     const action = links.find((link) => link.id === "workspace-next-command");
 
-    expect(action?.label).toBe("Open lead grant decision lane");
+    expect(action?.label).toBe("Open lead grant decision");
     expect(action?.reason).toContain("ATP Cycle 8 is the lead opportunity decision to advance first.");
     expect(action?.auditNote).toContain("Lead opportunity decision: ATP Cycle 8.");
   });

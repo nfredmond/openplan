@@ -27,6 +27,11 @@ const OPERATOR_DOCS = [
   path.join(REPO_ROOT, "docs", "README.md"),
   path.join(REPO_ROOT, "docs", "ARCHITECTURE.md"),
   path.join(REPO_ROOT, "docs", "ROADMAP.md"),
+  // (2026-10-12) The roadmap's milestone definitions and dated evidence moved
+  // into these two files. Their links were checked while they lived in the
+  // roadmap; listing them keeps that check instead of dropping it with the move.
+  path.join(REPO_ROOT, "docs", "product", "MILESTONES.md"),
+  path.join(REPO_ROOT, "docs", "archive", "ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md"),
   path.join(REPO_ROOT, "docs", "product", "V1_PRODUCT_CONTRACT.md"),
   path.join(REPO_ROOT, "docs", "product", "CORE_REQUIREMENTS_LEDGER.md"),
   path.join(REPO_ROOT, "docs", "product", "US_PLANNING_CAPABILITY_MATRIX.md"),

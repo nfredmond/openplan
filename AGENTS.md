@@ -17,7 +17,8 @@ Before selecting a substantial lane, run `npm run product:direction:check` in
 `openplan/`, then read:
 
 1. [V1 contract](docs/product/V1_PRODUCT_CONTRACT.md): binding destination.
-2. [Roadmap](docs/ROADMAP.md): the only active queue and milestone definitions.
+2. [Roadmap](docs/ROADMAP.md): the only active queue and milestone status;
+   [milestone definitions](docs/product/MILESTONES.md) hold each Done line.
 3. [Capability matrix](docs/product/US_PLANNING_CAPABILITY_MATRIX.md), latest
    [direction review](docs/reviews/product-direction/) and
    [known limitations](docs/ops/KNOWN_ISSUES.md).

@@ -985,3 +985,170 @@ describe("a count whose read failed may not be spoken", () => {
     expect(response.caution ?? "").not.toContain("Read failure");
   });
 });
+
+/*
+  THE FUNDING ANSWERS COUNT PROJECTS (October 14, 2026). Planner Agent's
+  workspace answers counted "project funding lanes" and "project reimbursement
+  lanes", offered to "Create lead funding anchor now", and the preview said
+  "3 missing a funding targets". A planner counts projects, so each count names
+  projects, singular for one and plural otherwise. The words guard
+  (planner-pages-carry-no-build-notes.test.ts) keeps the vocabulary out of the
+  source; these pin the sentences as they are built, including the plurals the
+  guard cannot read.
+*/
+describe("the workspace funding answers count projects in plain words", () => {
+  type FundingCounts = Partial<WorkspaceAssistantContext["operationsSummary"]["counts"]>;
+  type QueueItem = WorkspaceAssistantContext["operationsSummary"]["commandQueue"][number];
+
+  function fundingWorkspace(counts: FundingCounts, commandQueue: QueueItem[] = []): WorkspaceAssistantContext {
+    return {
+      kind: "workspace",
+      workspace: { id: "11111111-1111-4111-8111-111111111111", name: "Nevada County Vision Zero", role: "owner" },
+      recentProject: null,
+      recentRuns: [],
+      currentRun: null,
+      baselineRun: null,
+      transit: { readable: true, feeds: [], staleRefetchableFeed: null },
+      operationsSummary: {
+        posture: "attention",
+        headline: "Funding follow-through",
+        detail: "Funding work is waiting.",
+        counts: {
+          projects: 3,
+          activeProjects: 3,
+          plans: 0,
+          plansNeedingSetup: 0,
+          programs: 0,
+          activePrograms: 0,
+          reports: 0,
+          reportRefreshRecommended: 0,
+          reportNoPacket: 0,
+          reportPacketCurrent: 0,
+          rtpFundingReviewPackets: 0,
+          comparisonBackedReports: 0,
+          fundingOpportunities: 3,
+          openFundingOpportunities: 3,
+          closingSoonFundingOpportunities: 0,
+          overdueDecisionFundingOpportunities: 0,
+          projectFundingNeedAnchorProjects: 0,
+          projectFundingSourcingProjects: 0,
+          projectFundingDecisionProjects: 0,
+          projectFundingAwardRecordProjects: 0,
+          projectFundingReimbursementStartProjects: 0,
+          projectFundingReimbursementActiveProjects: 0,
+          projectFundingGapProjects: 0,
+          queueDepth: commandQueue.length,
+          aerialMissions: 0,
+          aerialActiveMissions: 0,
+          aerialReadyPackages: 0,
+          ...counts,
+        },
+        nextCommand: commandQueue[0] ?? null,
+        commandQueue,
+        fullCommandQueue: commandQueue,
+      },
+    };
+  }
+
+  function relinkCommand(projectCount: number): QueueItem {
+    return {
+      key: "relink-project-invoice-awards",
+      moduleKey: "grants",
+      moduleLabel: "Grants",
+      title: "Relink invoice reimbursement records",
+      detail: "Link the invoice to its award.",
+      href: "/projects/project-relink#project-invoices",
+      targetProjectId: "project-relink",
+      tone: "warning",
+      priority: 4,
+      badges: [{ label: "Exact relinks", value: projectCount }],
+    };
+  }
+
+  /** Every sentence the panel shows for these answers, quick links included. */
+  function everythingShown(context: WorkspaceAssistantContext): string {
+    const preview = buildAssistantPreview(context);
+    const answers = ["workspace-funding", "workspace-overview"].map((id) => buildAssistantResponse(context, id));
+    const links = answers.flatMap((answer) => answer.quickLinks ?? []);
+    return [
+      preview.summary,
+      ...preview.facts,
+      ...answers.flatMap((answer) => [answer.summary, ...answer.findings, ...answer.nextSteps, ...answer.evidence]),
+      ...links.flatMap((link) => [
+        link.label,
+        link.statusLabel,
+        link.reason,
+        link.auditNote,
+        link.prompt,
+        link.promptLabel,
+        link.executeAction && "postActionPrompt" in link.executeAction ? link.executeAction.postActionPrompt : undefined,
+        link.executeAction && "notes" in link.executeAction ? link.executeAction.notes : undefined,
+      ]),
+    ]
+      .filter((text): text is string => typeof text === "string")
+      .join("\n");
+  }
+
+  it("counts projects with no funding target, one and many", () => {
+    const one = fundingWorkspace({ projectFundingNeedAnchorProjects: 1 });
+    const three = fundingWorkspace({ projectFundingNeedAnchorProjects: 3 });
+
+    expect(buildAssistantPreview(one).summary).toContain(", 1 project with no funding target,");
+    expect(buildAssistantPreview(three).summary).toContain(", 3 projects with no funding target,");
+    expect(buildAssistantResponse(one, "workspace-funding").summary).toMatch(/^1 project has grant records but no funding target, /);
+    expect(buildAssistantResponse(three, "workspace-funding").summary).toMatch(/^3 projects have grant records but no funding target, /);
+    expect(buildAssistantResponse(three, "workspace-overview").findings).toContain(
+      "3 projects have grant records but no funding target."
+    );
+  });
+
+  it("counts projects that need grant opportunities, a pursue decision, or reimbursement follow-through", () => {
+    expect(buildAssistantPreview(fundingWorkspace({ projectFundingSourcingProjects: 1 })).summary).toContain(
+      ", 1 project that still needs grant opportunities,"
+    );
+    expect(buildAssistantPreview(fundingWorkspace({ projectFundingSourcingProjects: 2 })).summary).toContain(
+      ", 2 projects that still need grant opportunities,"
+    );
+    expect(buildAssistantPreview(fundingWorkspace({ projectFundingDecisionProjects: 2 })).summary).toContain(
+      ", 2 projects that still need a pursue decision,"
+    );
+    expect(buildAssistantPreview(fundingWorkspace({ projectFundingReimbursementActiveProjects: 1 })).summary).toContain(
+      ", 1 project with reimbursement under way,"
+    );
+    expect(buildAssistantPreview(fundingWorkspace({ projectFundingReimbursementActiveProjects: 4 })).summary).toContain(
+      ", 4 projects with reimbursement under way,"
+    );
+  });
+
+  it("says which projects have an invoice to link to their award", () => {
+    const one = fundingWorkspace({}, [relinkCommand(1)]);
+    const two = fundingWorkspace({}, [relinkCommand(2)]);
+
+    expect(buildAssistantResponse(one, "workspace-funding").summary).toMatch(
+      /^1 project has an invoice that can be linked to its funding award, so /
+    );
+    expect(buildAssistantResponse(two, "workspace-funding").summary).toMatch(
+      /^2 projects have an invoice that can be linked to their funding award, so /
+    );
+    expect(buildAssistantResponse(two, "workspace-overview").findings).toContain(
+      "2 projects have an invoice that can be linked to their funding award."
+    );
+  });
+
+  it("never shows a planner a funding lane or an anchor", () => {
+    const states: WorkspaceAssistantContext[] = [
+      fundingWorkspace({ projectFundingNeedAnchorProjects: 2 }),
+      fundingWorkspace({ projectFundingSourcingProjects: 2 }),
+      fundingWorkspace({ projectFundingDecisionProjects: 2 }),
+      fundingWorkspace({ projectFundingReimbursementActiveProjects: 2 }),
+      fundingWorkspace({}, [relinkCommand(2)]),
+    ];
+    for (const context of states) {
+      const shown = everythingShown(context);
+      expect(shown.length).toBeGreaterThan(200);
+      expect(shown).not.toMatch(/\blanes?\b/i);
+      expect(shown).not.toMatch(/\banchors?\b/i);
+      expect(shown).not.toMatch(/missing a funding targets/);
+    }
+  });
+});

@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
+import { pagingFake } from "./helpers/paging-fake";
 
 const USER_ID = "22222222-2222-4222-8222-222222222222";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -160,10 +161,15 @@ function buildTableMock(table: string) {
     };
   }
 
+  // The packet awaits its campaign list and the comment-response record pages
+  // the same table, so this one answers both, held to the server's row cap.
+  if (table === "engagement_campaigns") {
+    return { select: () => pagingFake(() => ({ data: [], error: null }), { serverCap: 1000 }).chain };
+  }
+
   if (
     table === "rtp_cycle_chapters"
     || table === "project_rtp_cycle_links"
-    || table === "engagement_campaigns"
   ) {
     return {
       select: () => ({
@@ -269,6 +275,8 @@ function buildTableMock(table: string) {
     }
     empty.then = (resolve: (value: unknown) => unknown) =>
       Promise.resolve({ data: [], error: null }).then(resolve);
+    // The comment-response record pages its responses; an empty table ends on the first page.
+    empty.range = async () => ({ data: [], error: null });
     return empty;
   }
 
