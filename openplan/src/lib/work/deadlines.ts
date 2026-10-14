@@ -179,13 +179,19 @@ export function sortDeadlineItemsBy<T>(
   });
 }
 
-/** Milestone lanes: blocked, then overdue, then open, then complete. */
+/**
+ * Milestone lanes: blocked, then overdue, then open, then complete.
+ *
+ * Overdue is {@link isDeadlinePast}, the rule the overdue counts use. These
+ * three priorities once compared midnight UTC with now, which put a record due
+ * on the 14th in the overdue tier at 5 p.m. Pacific on the 13th.
+ */
 export function milestonePriority(
   milestone: { status?: string | null; target_date?: string | null },
   now: Date
 ): number {
   if (milestone.status === "blocked") return 0;
-  if (milestone.status !== "complete" && parseSortableDate(milestone.target_date) < now.getTime()) return 1;
+  if (milestone.status !== "complete" && isDeadlinePast(milestone.target_date, now)) return 1;
   if (milestone.status !== "complete") return 2;
   return 3;
 }
@@ -195,7 +201,7 @@ export function submittalPriority(
   submittal: { status?: string | null; due_date?: string | null },
   now: Date
 ): number {
-  if (submittal.status !== "accepted" && parseSortableDate(submittal.due_date) < now.getTime()) return 0;
+  if (submittal.status !== "accepted" && isDeadlinePast(submittal.due_date, now)) return 0;
   if (submittal.status !== "accepted") return 1;
   return 2;
 }
@@ -209,8 +215,7 @@ export function invoicePriority(
   now: Date
 ): number {
   const status = invoice.status ?? "";
-  const dueAt = parseSortableDate(invoice.due_date);
-  if (!["paid", "rejected"].includes(status) && dueAt < now.getTime()) return 0;
+  if (!["paid", "rejected"].includes(status) && isDeadlinePast(invoice.due_date, now)) return 0;
   if (["internal_review", "submitted", "approved_for_payment"].includes(status)) return 1;
   if (status === "draft") return 2;
   return 3;

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, render, screen, within } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { REPORT_EVIDENCE_CASES } from "./helpers/report-evidence-cases";
 
 const createClientMock = vi.fn();
@@ -2428,6 +2428,134 @@ describe("ProjectDetailPage", () => {
       ).toBeNull();
       // The record itself still renders — silence is about the assignee only.
       expect(within(milestones).getByText("LAPM authorization packet ready")).toBeInTheDocument();
+    });
+  });
+
+  /**
+   * THE FIRST OVERDUE RECORD WAITS FOR ITS DUE DAY TO END.
+   *
+   * The "Needs attention" cards name the first overdue milestone, submittal
+   * and invoice. Their counts come from `isDeadlinePast`; the names were picked
+   * by comparing midnight UTC with now, so at 6 p.m. Pacific on the 13th a
+   * record due on the 14th was named as overdue under a count that did not
+   * include it. The counts are mocked to 1 here so every card renders; only
+   * the "First:" line is the page's own pick.
+   */
+  describe("first overdue record on the delivery board", () => {
+    // 6 p.m. Pacific on October 13; nothing due on the 13th or 14th is past.
+    const EVENING_BEFORE = new Date("2026-10-14T01:00:00Z");
+    // October 13 has ended everywhere (the end of that day at UTC-12).
+    const THE_13TH_HAS_ENDED = new Date("2026-10-14T12:00:00Z");
+
+    const milestone = (id: string, title: string, targetDate: string) => ({
+      id,
+      title,
+      summary: null,
+      milestone_type: "authorization",
+      phase_code: "initiation",
+      status: "scheduled",
+      owner_label: null,
+      assignee_user_id: null,
+      target_date: targetDate,
+      actual_date: null,
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+    });
+    const submittal = (id: string, title: string, dueDate: string) => ({
+      id,
+      title,
+      submittal_type: "design",
+      status: "submitted",
+      agency_label: null,
+      assignee_user_id: null,
+      reference_number: null,
+      due_date: dueDate,
+      submitted_at: null,
+      review_cycle: 1,
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+    });
+    const invoice = (id: string, invoiceNumber: string, dueDate: string) => ({
+      id,
+      funding_award_id: null,
+      invoice_number: invoiceNumber,
+      consultant_name: null,
+      billing_basis: "time_and_materials",
+      status: "submitted",
+      invoice_date: null,
+      due_date: dueDate,
+      amount: 1000,
+      retention_percent: 0,
+      retention_amount: 0,
+      net_amount: 1000,
+      supporting_docs_status: "pending",
+      submitted_to: null,
+      caltrans_posture: "deferred_exact_forms",
+      notes: null,
+      created_at: "2026-09-01T00:00:00.000Z",
+      funding_awards: null,
+    });
+
+    beforeEach(() => {
+      milestonesLimitMock.mockResolvedValue({
+        data: [
+          milestone("milestone-14", "Kickoff memo due the 14th", "2026-10-14"),
+          milestone("milestone-13", "Network memo due the 13th", "2026-10-13"),
+        ],
+        error: null,
+      });
+      submittalsLimitMock.mockResolvedValue({
+        data: [
+          submittal("submittal-14", "Design packet due the 14th", "2026-10-14"),
+          submittal("submittal-13", "Timing sheet due the 13th", "2026-10-13"),
+        ],
+        error: null,
+      });
+      invoicesLimitMock.mockResolvedValue({
+        data: [invoice("invoice-14", "INV-DUE-14", "2026-10-14"), invoice("invoice-13", "INV-DUE-13", "2026-10-13")],
+        error: null,
+      });
+      const summary = buildProjectControlsSummaryMock() as Record<string, unknown>;
+      buildProjectControlsSummaryMock.mockClear();
+      buildProjectControlsSummaryMock.mockReturnValue({
+        ...summary,
+        attentionSummary: {
+          reportPackets: { count: 0, targetId: null, targetRowId: null },
+          blockedMilestones: { count: 0, targetId: null, targetRowId: null },
+          overdueMilestones: { count: 1, targetId: "project-milestones", targetRowId: null },
+          overdueSubmittals: { count: 1, targetId: "project-submittals", targetRowId: null },
+          overdueInvoices: { count: 1, targetId: "project-invoices", targetRowId: null },
+        },
+      });
+    });
+
+    afterEach(() => {
+      vi.useRealTimers();
+    });
+
+    it("names nothing the evening before a record is due", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(EVENING_BEFORE);
+
+      await renderPage("delivery");
+
+      // The cards render (the mocked counts), so an absent name is the pick.
+      expect(screen.getByText("Overdue milestones")).toBeInTheDocument();
+      expect(screen.getByText("Overdue submittals")).toBeInTheDocument();
+      expect(screen.getByText("Overdue invoices")).toBeInTheDocument();
+      expect(screen.queryByText(/^First: /)).toBeNull();
+    });
+
+    it("names the record due on the 13th once the 13th has ended everywhere", async () => {
+      vi.useFakeTimers({ toFake: ["Date"] });
+      vi.setSystemTime(THE_13TH_HAS_ENDED);
+
+      await renderPage("delivery");
+
+      expect(screen.getByText("First: Network memo due the 13th")).toBeInTheDocument();
+      expect(screen.getByText("First: Timing sheet due the 13th")).toBeInTheDocument();
+      expect(screen.getByText("First: INV-DUE-13")).toBeInTheDocument();
+      expect(screen.queryByText(/^First: .*14/)).toBeNull();
     });
   });
 });

@@ -5,6 +5,7 @@ import { createApiAuditLogger } from "@/lib/observability/audit";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 /**
  * Project spend ledger — direct costs (subconsultant charges, expenses)
@@ -185,13 +186,23 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
     }
 
+    // A blank entry date is today in the workspace's zone. The column default
+    // (CURRENT_DATE) is the database's UTC day, a day ahead by Pacific evening.
+    let entryDate = parsed.data.entryDate;
+    if (!entryDate) {
+      const calendar = await todayInWorkspace(supabase, project.workspace_id);
+      if (calendar.readError) {
+        audit.warn("workspace_calendar_unreadable", { workspaceId: project.workspace_id, message: calendar.readError });
+      }
+      entryDate = calendar.today;
+    }
+
     const { data, error } = await supabase
       .from("project_spend_entries")
       .insert({
         project_id: project.id,
         deliverable_id: parsed.data.deliverableId ?? null,
-        // Omitted → the column's CURRENT_DATE default applies.
-        ...(parsed.data.entryDate ? { entry_date: parsed.data.entryDate } : {}),
+        entry_date: entryDate,
         amount: parsed.data.amount,
         description: parsed.data.description,
         vendor_label: parsed.data.vendorLabel?.trim() || null,

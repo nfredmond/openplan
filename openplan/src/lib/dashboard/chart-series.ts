@@ -30,7 +30,9 @@ import {
   type InsightPoint,
   type InsightSeries,
 } from "@/lib/dashboard/insights";
+import { addDays } from "@/lib/dashboard/coming-up";
 import { formatMoney, ROUNDED_MONEY_NOTE_RECONCILES_TO_LEDGER } from "@/lib/money/format";
+import { calendarDayOf, todayIn } from "@/lib/time/workspace-calendar";
 
 /**
  * The read-outcome shape and the wording of a blocked read both moved to
@@ -73,19 +75,20 @@ export const COMMENT_WINDOW_WEEKS = 12;
 /** A running total needs a few weeks of shape before it is a line and not a pair of dots. */
 const MIN_COMMENT_WEEKS = 3;
 
-function weekStartUtc(when: Date): Date {
-  const start = new Date(
-    Date.UTC(when.getUTCFullYear(), when.getUTCMonth(), when.getUTCDate())
-  );
+/**
+ * The Monday that starts a calendar day's week, `YYYY-MM-DD`. The day is
+ * already on the workspace's calendar; reading it as UTC midnight only names
+ * its weekday, so no zone shifts it.
+ */
+function weekStartOf(day: string): string {
   // Monday-first weeks: getUTCDay() is 0 for Sunday, which belongs to the week
   // that began six days earlier, not to the one starting tomorrow.
-  const dayOffset = (start.getUTCDay() + 6) % 7;
-  start.setUTCDate(start.getUTCDate() - dayOffset);
-  return start;
+  const dayOffset = (new Date(`${day}T00:00:00Z`).getUTCDay() + 6) % 7;
+  return addDays(day, -dayOffset);
 }
 
-function dayLabel(when: Date): string {
-  return when.toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
+function dayLabel(day: string): string {
+  return new Date(`${day}T00:00:00Z`).toLocaleDateString("en-US", { month: "short", day: "numeric", timeZone: "UTC" });
 }
 
 function toAmount(value: number | string | null | undefined): number | null {
@@ -111,26 +114,29 @@ function toAmount(value: number | string | null | undefined): number | null {
  * The window is bounded, and the caption says so: the total is "since <date>",
  * never "all comments ever", because the read is capped and a lifetime total
  * from a capped read is exactly the lie rule 2 above refuses.
+ *
+ * Weeks are the workspace's: each comment counts in the Monday-to-Sunday week
+ * holding its day in `timeZone`, so a comment sent at 9 p.m. Pacific on a
+ * Sunday counts in that week, not the next.
  */
 export function commentsReceivedOverTime(
   outcome: ChartReadOutcome<EngagementCommentRow>,
-  now: Date = new Date()
+  now: Date,
+  timeZone: string
 ): InsightSeries {
   const readBlock = blockedRead(outcome, "public comments");
   if (readBlock) return readBlock;
 
-  const windowStart = weekStartUtc(now);
-  windowStart.setUTCDate(windowStart.getUTCDate() - (COMMENT_WINDOW_WEEKS - 1) * 7);
+  const windowStart = addDays(weekStartOf(todayIn(timeZone, now)), -(COMMENT_WINDOW_WEEKS - 1) * 7);
 
-  const perWeek = new Map<number, number>();
+  const perWeek = new Map<string, number>();
   let counted = 0;
   for (const row of outcome.rows) {
-    if (typeof row.created_at !== "string") continue;
-    const when = new Date(row.created_at);
-    if (Number.isNaN(when.getTime())) continue;
-    const bucket = weekStartUtc(when);
-    if (bucket.getTime() < windowStart.getTime()) continue;
-    perWeek.set(bucket.getTime(), (perWeek.get(bucket.getTime()) ?? 0) + 1);
+    const day = calendarDayOf(row.created_at, timeZone);
+    if (!day) continue;
+    const bucket = weekStartOf(day);
+    if (bucket < windowStart) continue;
+    perWeek.set(bucket, (perWeek.get(bucket) ?? 0) + 1);
     counted += 1;
   }
 
@@ -146,9 +152,8 @@ export function commentsReceivedOverTime(
   const points: InsightPoint[] = [];
   let runningTotal = 0;
   for (let index = 0; index < COMMENT_WINDOW_WEEKS; index += 1) {
-    const bucket = new Date(windowStart);
-    bucket.setUTCDate(bucket.getUTCDate() + index * 7);
-    const arrived = perWeek.get(bucket.getTime()) ?? 0;
+    const bucket = addDays(windowStart, index * 7);
+    const arrived = perWeek.get(bucket) ?? 0;
     runningTotal += arrived;
     points.push({
       label: dayLabel(bucket),

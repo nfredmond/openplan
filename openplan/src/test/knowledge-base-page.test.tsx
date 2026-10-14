@@ -68,11 +68,24 @@ function chain(result: { data: unknown; error: unknown }) {
   return builder;
 }
 
-function fakeSupabase() {
+/** Every read of the workspace row the calendar makes: the columns and the id filter. */
+const workspaceCalendarReads: Array<{ columns: string; eq: [string, unknown] }> = [];
+
+function fakeSupabase(timeZone: string | null = null) {
   return {
     auth: { getUser: async () => ({ data: { user: { id: USER_ID } } }) },
     from: (table: string) => ({
-      select: () => {
+      select: (columns: string) => {
+        if (table === "workspaces") {
+          return {
+            eq: (column: string, value: unknown) => {
+              workspaceCalendarReads.push({ columns, eq: [column, value] });
+              return {
+                maybeSingle: async () => ({ data: { time_zone: timeZone, home_country_code: null }, error: null }),
+              };
+            },
+          };
+        }
         if (table === "projects") {
           return chain({
             data: [{ id: PROJECT_ID, name: "Corridor Rehab", status: "active" }],
@@ -98,6 +111,7 @@ function libraryResult() {
 describe("/knowledge-base page wiring", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    workspaceCalendarReads.length = 0;
     createClientMock.mockResolvedValue(fakeSupabase());
     loadMembershipMock.mockResolvedValue({
       membership: { workspace_id: WORKSPACE_ID, role: "member" },
@@ -154,5 +168,21 @@ describe("/knowledge-base page wiring", () => {
       readFailureSummary: string | null;
     };
     expect(library.readFailureSummary).toMatch(/could not read report files/);
+  });
+
+  // The Documents list prints dates on the workspace's calendar, and the date
+  // filter reads the same one. The page is where the zone comes from; two
+  // workspaces in two zones must hand two zones down.
+  it("hands the workspace's own zone to the Documents list, read from the workspace row", async () => {
+    const zoneOf = async (timeZone: string | null) => {
+      createClientMock.mockResolvedValue(fakeSupabase(timeZone));
+      const element = await KnowledgeBasePage({ searchParams: Promise.resolve({}) });
+      return (knowledgeWorkspaceElement(element)?.props as Record<string, unknown>).timeZone;
+    };
+    expect(await zoneOf("America/Los_Angeles")).toBe("America/Los_Angeles");
+    expect(await zoneOf("Asia/Tokyo")).toBe("Asia/Tokyo");
+    // No zone recorded: UTC, as the route also falls back to.
+    expect(await zoneOf(null)).toBe("UTC");
+    expect(workspaceCalendarReads[0]).toEqual({ columns: "time_zone, home_country_code", eq: ["id", WORKSPACE_ID] });
   });
 });

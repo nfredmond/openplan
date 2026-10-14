@@ -1,10 +1,12 @@
 import { readDocumentedCash } from "@/lib/invoicing/contracts/cash-summary-server";
+import { createClient } from "@/lib/supabase/server";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 import { cents,decimalText } from "@/lib/programs/work-program/reporting";
 const buckets=["Not yet due","1–30 days","31–60 days","61–90 days","Over 90 days","Due date missing"];
-/** Display exact documented cash and obligations; an invoice status is not a payment event. */
+/** Display exact documented cash and obligations; an invoice status is not a payment event. Aging counts days on the workspace calendar. */
 export async function ContractCashPosition({workspaceId,clientId,details=false}:{workspaceId:string;clientId?:string;details?:boolean}){
  const data=await readDocumentedCash(workspaceId),rows=data.rows.filter(r=>!clientId||r.client_id===clientId),positions=data.positions.filter(p=>!clientId||p.clientId===clientId),unknownCurrency=positions.filter(p=>!p.currency||!/^[A-Z]{3}$/.test(p.currency)),missing=rows.length-positions.length+unknownCurrency.length;
- const today=new Date().toISOString().slice(0,10),totals=new Map<string,{open:bigint;cash:bigint;retention:bigint;disputed:bigint;refundObligation:bigint;aging:bigint[];unassessedDue:number}>();let warnings=0;
+ const {today}=await todayInWorkspace(await createClient(),workspaceId),totals=new Map<string,{open:bigint;cash:bigint;retention:bigint;disputed:bigint;refundObligation:bigint;aging:bigint[];unassessedDue:number}>();let warnings=0;
  for(const p of positions){
   if(unknownCurrency.includes(p))continue;
   const total=totals.get(p.currency)??{open:BigInt(0),cash:BigInt(0),retention:BigInt(0),disputed:BigInt(0),refundObligation:BigInt(0),aging:buckets.map(()=>BigInt(0)),unassessedDue:0};

@@ -125,6 +125,14 @@ import {
   type RosterServiceClient,
 } from "@/lib/workspaces/roster";
 
+import { addDays } from "@/lib/dashboard/coming-up";
+import {
+  latestTodayAnywhere,
+  resolveWorkspaceTimeZone,
+  todayIn,
+  WORKSPACE_CALENDAR_COLUMNS,
+} from "@/lib/time/workspace-calendar";
+
 import { enqueueEmail } from "./engagement";
 import { formatMoney } from "@/lib/money/format";
 import {
@@ -245,6 +253,12 @@ export type WorkSweepResult = {
    */
   workspaceNamesUnavailable: boolean;
   reminderPreferencesUnavailable: boolean;
+  /**
+   * Each workspace's window ("due in the next N days") and a claim's days
+   * waiting are counted on that workspace's calendar. True when the calendars
+   * could not be read, so those workspaces were counted on UTC days instead.
+   */
+  workspaceCalendarsUnavailable: boolean;
   emailDigestsDisabled: number;
 };
 
@@ -338,9 +352,13 @@ type SweepSource = {
   toCandidates: (
     rows: Array<Record<string, unknown>>,
     now: Date,
-    context: SweepSourceContext
+    context: SweepSourceContext,
+    todayFor: WorkspaceToday
   ) => Candidate[];
 };
+
+/** Today's calendar date, `YYYY-MM-DD`, on one workspace's calendar. */
+type WorkspaceToday = (workspaceId: string) => string;
 
 function asString(value: unknown): string | null {
   return typeof value === "string" && value ? value : null;
@@ -369,10 +387,17 @@ export function workDeadlineDueOn(value: string | null | undefined): string | nu
   return parsed.toISOString().slice(0, 10);
 }
 
-/** The upper bound of the reminder window, in the literal the column accepts. */
+/**
+ * The upper bound of the reminder window, in the literal the column accepts.
+ *
+ * The read spans every workspace, so it reaches the last day of the window in
+ * the zone furthest ahead (UTC+14). Each workspace's own window is decided
+ * afterwards, on its own calendar. A `timestamptz` deadline is dated by its
+ * UTC day ({@link workDeadlineDueOn}), so its bound covers that whole day.
+ */
 export function horizonBound(now: Date, horizonDays: number, kind: "date" | "timestamptz"): string {
-  const end = new Date(now.getTime() + horizonDays * 86400000);
-  return kind === "date" ? end.toISOString().slice(0, 10) : end.toISOString();
+  const lastDay = addDays(latestTodayAnywhere(now), horizonDays);
+  return kind === "date" ? lastDay : `${addDays(lastDay, 1)}T00:00:00.000Z`;
 }
 
 function projectContext(row: Record<string, unknown>): { workspaceId: string | null; projectName: string | null } {
@@ -926,12 +951,12 @@ const MEASURE_CLAIM_SETTLED_STATUSES: readonly string[] = MEASURE_CLAIM_STATUSES
   (status) => !(MEASURE_CLAIM_AWAITING_DECISION_STATUSES as readonly string[]).includes(status)
 );
 
-/** Whole days between two ISO dates, in UTC. Never negative. */
-function daysWaiting(submittedOn: string, now: Date): number {
-  const submitted = new Date(`${submittedOn}T00:00:00Z`).getTime();
-  if (Number.isNaN(submitted)) return 0;
-  const today = Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate());
-  return Math.max(0, Math.round((today - submitted) / 86400000));
+/** Whole days from the submission date to today, both calendar dates on the workspace's calendar. Never negative. */
+function daysWaiting(submittedOn: string, today: string): number {
+  const submitted = Date.parse(`${submittedOn}T00:00:00Z`);
+  const current = Date.parse(`${today}T00:00:00Z`);
+  if (Number.isNaN(submitted) || Number.isNaN(current)) return 0;
+  return Math.max(0, Math.round((current - submitted) / 86400000));
 }
 
 /**
@@ -1057,7 +1082,7 @@ const measureClaimReviewsSource: SweepSource = {
   recipientColumn: "created_by",
   staticFilters: [{ kind: "notIn", column: "status", values: MEASURE_CLAIM_SETTLED_STATUSES }],
   loadContext: loadMeasureFundCurrencies,
-  toCandidates: (rows, now, context) =>
+  toCandidates: (rows, _now, context, todayFor) =>
     rows.flatMap((row) => {
       const workspaceId = asString(row.workspace_id);
       const submittedOn = workDeadlineDueOn(asString(row.submitted_on));
@@ -1094,7 +1119,7 @@ const measureClaimReviewsSource: SweepSource = {
             amount,
             currencyCode,
             submittedOn,
-            waitedDays: daysWaiting(submittedOn, now),
+            waitedDays: daysWaiting(submittedOn, todayFor(workspaceId)),
           })} You recorded this claim; measure claims carry no assignee.`,
           // NOT A DEADLINE. See the source header — this is the one deliberate
           // constant in the file, and changing it to `isDeadlinePast(...)` would
@@ -1333,7 +1358,12 @@ export async function sweepWorkDeadlines(
     WORK_SWEEP_SOURCES.map((source) => [source.kind, emptyOutcome()])
   ) as Record<WorkNotificationKind, WorkSweepSourceOutcome>;
 
-  const candidates: Candidate[] = [];
+  const reads: Array<{
+    source: SweepSource;
+    rows: Array<Record<string, unknown>>;
+    outcome: WorkSweepSourceOutcome;
+    context: SweepSourceContext;
+  }> = [];
   for (const source of WORK_SWEEP_SOURCES) {
     const { rows, outcome } = await readSource(client, source, now, horizonDays, limit);
     // The second read, when a source declares one, and only when the first
@@ -1344,12 +1374,24 @@ export async function sweepWorkDeadlines(
         ? await source.loadContext(client, rows, limit)
         : EMPTY_SWEEP_CONTEXT;
     outcome.contextUnavailable = context.unavailable;
-    const produced = source.toCandidates(rows, now, context);
+    reads.push({ source, rows, outcome, context });
+  }
+
+  const calendars = await loadSweepCalendars(
+    client,
+    [...new Set(reads.flatMap(({ rows }) => rows.map(rowWorkspaceId)).filter((id): id is string => !!id))],
+    now
+  );
+
+  const candidates: Candidate[] = [];
+  for (const { source, rows, outcome, context } of reads) {
+    const produced = source.toCandidates(rows, now, context, calendars.todayFor);
     const filtered = produced.filter((candidate) => {
       if (candidate.isOverdue) return true;
       const preference = preferences.get(candidate.workspace_id);
       const advanceDays = options.horizonDays ?? preference?.advanceDays ?? DEFAULT_REMINDER_ADVANCE_DAYS;
-      return new Date(candidate.due_on).getTime() <= now.getTime() + advanceDays * 86400000;
+      // Calendar dates, so string order is date order.
+      return candidate.due_on <= addDays(calendars.todayFor(candidate.workspace_id), advanceDays);
     });
     outcome.candidates = filtered.length;
     perSource[source.kind] = outcome;
@@ -1371,6 +1413,7 @@ export async function sweepWorkDeadlines(
     writeError: null,
     workspaceNamesUnavailable: false,
     reminderPreferencesUnavailable: preferencesUnavailable,
+    workspaceCalendarsUnavailable: calendars.unavailable,
     emailDigestsDisabled: 0,
   };
 
@@ -1591,6 +1634,51 @@ export async function loadWorkNotifications(
     const message = error instanceof Error ? error.message : "the reminder read threw";
     return { ok: false, pending: looksLikePendingSchema(message), message };
   }
+}
+
+/** The workspace a source row belongs to: its own column, or its project's. */
+function rowWorkspaceId(row: Record<string, unknown>): string | null {
+  return asString(row.workspace_id) ?? projectContext(row).workspaceId;
+}
+
+/** Workspace ids per calendar read: well under PostgREST's row cap and a URL's length. */
+const CALENDAR_READ_BATCH = 200;
+
+/**
+ * Each workspace's calendar, for the window and the days a claim has waited.
+ *
+ * A failed read does not withhold anybody's reminders. Those workspaces are
+ * counted on UTC days, which is what the sweep did before it read calendars,
+ * and the sweep reports `workspaceCalendarsUnavailable` instead of absorbing it.
+ */
+async function loadSweepCalendars(
+  client: WorkSweepClient,
+  workspaceIds: readonly string[],
+  now: Date
+): Promise<{ todayFor: WorkspaceToday; unavailable: boolean }> {
+  const todays = new Map<string, string>();
+  let unavailable = false;
+  for (let start = 0; start < workspaceIds.length; start += CALENDAR_READ_BATCH) {
+    const batch = workspaceIds.slice(start, start + CALENDAR_READ_BATCH);
+    try {
+      const { data, error } = await client
+        .from("workspaces")
+        .select(`id, ${WORKSPACE_CALENDAR_COLUMNS}`)
+        .in("id", batch);
+      if (error) {
+        unavailable = true;
+        continue;
+      }
+      for (const row of (data ?? []) as Array<Record<string, unknown>>) {
+        const id = asString(row.id);
+        if (id) todays.set(id, todayIn(resolveWorkspaceTimeZone(row).timeZone, now));
+      }
+    } catch {
+      unavailable = true;
+    }
+  }
+  const utcToday = todayIn("UTC", now);
+  return { todayFor: (workspaceId) => todays.get(workspaceId) ?? utcToday, unavailable };
 }
 
 /**

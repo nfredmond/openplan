@@ -10,6 +10,9 @@
  * is pure so the route can be tested without a database.
  */
 
+import { addDays } from "@/lib/dashboard/coming-up";
+import { instantFromWallClock } from "@/lib/time/workspace-calendar";
+
 /**
  * How many rows one list read returns. The page and the list route share this
  * number so the sentence the planner reads about the cap and the cap itself
@@ -125,22 +128,25 @@ export function buildKbDocumentNameFilter(term: string): string {
 const ISO_DAY = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
- * A calendar day the planner typed, turned into the timestamp bounds of that
- * whole day in UTC.
+ * A calendar day the planner typed, turned into the instants that day starts
+ * and the next day starts in the workspace's zone. `from` is inclusive and
+ * `before` is exclusive, so a day with a daylight-saving change is 23 or 25
+ * hours long, as it is on the planner's clock.
  *
- * UTC on purpose: the list renders each document's date with
- * `toISOString().slice(0, 10)`, so a range interpreted in any other zone would
- * exclude a row whose printed date is inside the range the planner chose. Same
- * clock for the filter and for the date on screen.
+ * The workspace's zone on purpose: the list prints each document's date on
+ * the same calendar (`calendarDayOf`), so a document added at 8 p.m. Pacific
+ * on the 14th is listed on the 14th and found by a filter on the 14th.
  */
-export function kbDocumentDayBounds(day: string): { from: string; to: string } | null {
+export function kbDocumentDayBounds(day: string, timeZone: string): { from: string; before: string } | null {
   if (!ISO_DAY.test(day)) return null;
   const parsed = new Date(`${day}T00:00:00.000Z`);
   if (Number.isNaN(parsed.getTime())) return null;
   // Round-trip guard: `2026-02-31` parses (JS rolls it into March) and would
   // otherwise silently filter on a day the planner never asked for.
   if (parsed.toISOString().slice(0, 10) !== day) return null;
-  return { from: `${day}T00:00:00.000Z`, to: `${day}T23:59:59.999Z` };
+  const from = instantFromWallClock(`${day}T00:00`, timeZone);
+  const before = instantFromWallClock(`${addDays(day, 1)}T00:00`, timeZone);
+  return from && before ? { from, before } : null;
 }
 
 export type KbDocumentListFilters = {
@@ -149,7 +155,7 @@ export type KbDocumentListFilters = {
   sort: KbDocumentSort;
   /** Inclusive lower bound on created_at, or null. */
   addedFrom: string | null;
-  /** Inclusive upper bound on created_at, or null. */
+  /** EXCLUSIVE upper bound on created_at (the start of the day after the chosen one), or null. */
   addedTo: string | null;
 };
 
@@ -160,20 +166,23 @@ export type KbDocumentListFilters = {
  * filters were applied (see `describeAppliedKbDocumentFilters`), so a dropped
  * bound is disclosed on screen instead of quietly narrowing — or quietly
  * failing to narrow — the planner's corpus.
+ *
+ * `timeZone` is the workspace's: the days are read on its calendar.
  */
 export function resolveKbDocumentListFilters(input: {
   q?: string | null;
   sort?: string | null;
   addedFrom?: string | null;
   addedTo?: string | null;
+  timeZone: string;
 }): KbDocumentListFilters {
-  const fromBounds = input.addedFrom ? kbDocumentDayBounds(input.addedFrom) : null;
-  const toBounds = input.addedTo ? kbDocumentDayBounds(input.addedTo) : null;
+  const fromBounds = input.addedFrom ? kbDocumentDayBounds(input.addedFrom, input.timeZone) : null;
+  const toBounds = input.addedTo ? kbDocumentDayBounds(input.addedTo, input.timeZone) : null;
   return {
     nameTerm: sanitizeKbDocumentNameTerm(input.q),
     sort: isKbDocumentSort(input.sort) ? input.sort : "newest",
     addedFrom: fromBounds?.from ?? null,
-    addedTo: toBounds?.to ?? null,
+    addedTo: toBounds?.before ?? null,
   };
 }
 

@@ -1,5 +1,6 @@
 import { historical } from "./fixtures/engagement/legacy-synthesis";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import { todayIn } from "@/lib/time/workspace-calendar";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { pagingFake } from "./helpers/paging-fake";
@@ -408,7 +409,27 @@ vi.mock("@/lib/supabase/server", () => {
 });
 
 vi.mock("@/components/engagement/engagement-campaign-controls", () => ({
-  EngagementCampaignControls: () => <div data-testid="engagement-campaign-controls" />,
+  // The calendar is exposed so the participation inputs' zone wiring can be checked.
+  EngagementCampaignControls: ({ calendar }: { calendar?: { timeZone: string; source: string } }) => (
+    <div
+      data-testid="engagement-campaign-controls"
+      data-time-zone={calendar?.timeZone ?? ""}
+      data-time-zone-source={calendar?.source ?? ""}
+    />
+  ),
+}));
+
+vi.mock("@/components/engagement/spatial-hotspot-tuner", () => ({
+  // The intake trend's last day is exposed so the page's calendar wiring can be checked.
+  SpatialHotspotTuner: ({ intake }: { intake: { buckets: Array<{ date: string }> } }) => (
+    <div data-testid="spatial-hotspot-tuner" data-intake-last-day={intake.buckets.at(-1)?.date ?? ""} />
+  ),
+}));
+
+vi.mock("@/components/engagement/engagement-review-files", () => ({
+  EngagementReviewFiles: ({ calendar }: { calendar?: { timeZone: string; source: string } }) => (
+    <div data-testid="engagement-review-files" data-time-zone={calendar?.timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-report-create-button", () => ({
@@ -570,6 +591,29 @@ describe("EngagementCampaignDetailPage", () => {
       { id: "project-2", name: "Second covered project" },
     ]);
     expect(reportsInMock).toHaveBeenCalledWith("project_id", ["project-1", "project-2"]);
+  });
+
+  it("buckets daily intake on the workspace calendar", async () => {
+    // UTC+14 and UTC-11 are 25 hours apart, so their dates always differ.
+    for (const timeZone of ["Pacific/Kiritimati", "Pacific/Pago_Pago"]) {
+      workspaceCalendarRow = { time_zone: timeZone, home_country_code: null };
+      await renderPage({ tab: "analysis" });
+      expect(screen.getByTestId("spatial-hotspot-tuner")).toHaveAttribute(
+        "data-intake-last-day",
+        todayIn(timeZone, new Date())
+      );
+      cleanup();
+    }
+  });
+
+  it("hands the review-file date filters the workspace calendar", async () => {
+    workspaceCalendarRow = { time_zone: "Asia/Tokyo", home_country_code: "JP" };
+    await renderPage({ tab: "record" });
+    expect(screen.getByTestId("engagement-review-files")).toHaveAttribute("data-time-zone", "Asia/Tokyo");
+    cleanup();
+    workspaceCalendarRow = { time_zone: "Pacific/Honolulu", home_country_code: "US" };
+    await renderPage({ tab: "record" });
+    expect(screen.getByTestId("engagement-review-files")).toHaveAttribute("data-time-zone", "Pacific/Honolulu");
   });
 
   it("withholds report creation and discloses unreadable coverage", async () => {
@@ -1790,6 +1834,12 @@ describe("EngagementCampaignDetailPage", () => {
         // The header link and the share controls name dates in the same zone.
         expect(screen.getByTestId("engagement-public-link-compact")).toHaveAttribute("data-time-zone", timeZone);
         expect(screen.getByTestId("engagement-share-controls")).toHaveAttribute("data-time-zone", timeZone);
+        // The participation date inputs read and write the same zone.
+        expect(screen.getByTestId("engagement-campaign-controls")).toHaveAttribute("data-time-zone", timeZone);
+        expect(screen.getByTestId("engagement-campaign-controls")).toHaveAttribute(
+          "data-time-zone-source",
+          "workspace_setting"
+        );
         cleanup();
       }
     });

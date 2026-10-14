@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Dates on the workspace calendar.** More planner dates now follow the
+workspace time zone instead of the server's UTC day, which turns over at 5 p.m.
+Pacific. Engagement participation open and close times are entered and shown
+in the workspace zone, and the form names it; with no zone set it says UTC.
+These also use the workspace calendar: review-file and Documents date filters,
+the daily intake chart, dashboard dates, weekly comments and runs this year,
+contract and work program form dates, a spend entry saved with no date, and
+contract and receivable invoice aging. The reminder digest counts "due in the
+next N days" and "waiting N days" on each workspace's calendar. Record lanes,
+invoice registers and grant invoice badges no longer call a record overdue the
+evening before it is due; they use the same rule as the overdue counts. No
+migration.
+
 **Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
 
 **Close comments on a live engagement page.** Staff can now close and reopen

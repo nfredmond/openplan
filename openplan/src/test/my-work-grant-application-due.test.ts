@@ -127,7 +127,7 @@ describe("my work, application due dates on pursued opportunities", () => {
   });
 
   it("appears in Coming up as an application due date", async () => {
-    const coming = comingUpFromMyWork(dueItems((await load({ db: seededDb() })).result.items));
+    const coming = comingUpFromMyWork(dueItems((await load({ db: seededDb() })).result.items), "UTC");
 
     expect(coming.map((entry) => [entry.key, entry.kind, entry.dueOn, entry.overdue])).toEqual([
       ["grant_application_due:f-missed", "application-due", "2026-08-05", true],
