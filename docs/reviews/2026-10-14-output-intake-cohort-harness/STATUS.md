@@ -25,3 +25,27 @@ acceptance follows from this correction.
 
 Private proof:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-intake-cohort-timeout-20261014/`.
+
+## Separate main deadline counterexample
+
+Main 90182a0c49736527531a8caf23b5a799a34ab1df fails the ordinary worker
+suite in job 115720370306, run 38524132995. Its budget-composition test uses
+one second for all work, a 0.04-second individual RPC budget and a 0.12-second
+loopback delay. The final current-access read exhausts the overall deadline.
+That is a valid production deadline refusal and an unstable success expectation
+on a slower runner. It is distinct from the harness subprocess timeout above.
+
+The revised test observes the deadline forwarded into the actual original-output
+Transport. It requires more remaining stage time than one individual RPC budget,
+delegates the real loopback transfer once and checks the original archive hash.
+The test uses a 120-second operation and five-second individual read allowance,
+without an artificial server sleep. Production limits remain unchanged. The
+probe does not establish wall-clock expiry or stalled-transport cancellation;
+those remain separate existing transport checks.
+
+Both Python 3.11 and 3.14 pass four positive 27-case cohorts, 32 faults
+and 224 oracles per interpreter.
+Shortening the stage to one RPC budget fails the intended comparison. Bypassing
+the recorded transport and corrupting the returned hash also fail their named
+assertions. Source restores in finally. The services peak at about 66.7 MiB and 68.8 MiB under 256 MiB. New-head
+CI remains pending.

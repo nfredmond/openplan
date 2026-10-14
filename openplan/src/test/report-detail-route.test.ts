@@ -350,6 +350,65 @@ describe("/api/reports/[reportId]", () => {
     expect(reportUpdateMock).not.toHaveBeenCalled();
   });
 
+  function patchWith(body: unknown) {
+    return patchReportDetail(
+      new NextRequest("http://localhost/api/reports/1", {
+        method: "PATCH",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      }),
+      { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) },
+    );
+  }
+
+  it("PATCH saves a safety action plan against the acquisition it selects", async () => {
+    safetyIngestInMock.mockResolvedValueOnce({ data: [{ id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }], error: null });
+    const response = await patchWith({
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+      safetyActionPlan: {
+        ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+      },
+    });
+    expect(response.status).toBe(200);
+    expect(reportUpdateMock).toHaveBeenCalledTimes(1);
+    const update = (reportUpdateMock.mock.calls[0] as unknown as [{ metadata_json: Record<string, unknown> }])[0];
+    expect(update.metadata_json).toMatchObject({
+      safetyIngestSelections: [{ ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb" }],
+      safetyActionPlanVersion: "openplan.report_safety_action_plan.v1",
+      safetyActionPlan: {
+        ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+      },
+      // Unrelated selections survive the write.
+      aerialOrthoSelections: [{ custodyId: "99999999-9999-4999-8999-999999999999" }],
+    });
+  });
+
+  it("PATCH refuses a plan built on a different acquisition than the report cites", async () => {
+    const response = await patchWith({
+      safetyActionPlan: {
+        ingestId: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting"] }],
+      },
+    });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/crash acquisition selected/i) });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("PATCH refuses a countermeasure that is not on the list rather than dropping it", async () => {
+    const response = await patchWith({
+      safetyActionPlan: {
+        ingestId: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+        attachments: [{ segmentId: "road:0000abcd:0", segmentLabel: "Main Street", countermeasureIds: ["lighting", "made-up"] }],
+      },
+    });
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/not recognized/i) });
+    expect(reportUpdateMock).not.toHaveBeenCalled();
+  });
+
   it("GET resolves typed model-run and county-run citations with kind + status", async () => {
     reportRunsOrderMock.mockResolvedValueOnce({
       data: [
