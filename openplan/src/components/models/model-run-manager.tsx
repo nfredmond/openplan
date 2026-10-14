@@ -940,10 +940,8 @@ export function ModelRunManager({
                   ) : null}
                   {selectedTransitFeed?.serviceEndDate ? (
                     <p className="text-xs text-muted-foreground">
-                      Its published schedule runs through {selectedTransitFeed.serviceEndDate}. An
-                      expired schedule is usually the last one the agency published and is normally
-                      the right thing to model from — the run records that it was expired so nobody
-                      has to guess later.
+                      This archive&apos;s published schedule covers dates through {selectedTransitFeed.serviceEndDate}.
+                      Confirm that its service dates match your study period before using this feed.
                     </p>
                   ) : null}
                   {isCheckingCoverage ? (

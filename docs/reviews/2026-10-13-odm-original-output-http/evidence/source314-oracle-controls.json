@@ -1,0 +1,562 @@
+[
+  {
+    "control": "original-route-changed-exact",
+    "accepted": true
+  },
+  {
+    "control": "original-route-changed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-route-changed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-route-changed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "original-route-changed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "original-route-changed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "original-route-changed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-query-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-query-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "different-plan-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "different-plan-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "pre-cancellation-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "ended-owner-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ended-owner-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-type-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-type-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-exact",
+    "accepted": true
+  },
+  {
+    "control": "deadline-extended-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "deadline-extended-success-output",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "writer-bound-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "writer-bound-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "engine-confirmation-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "engine-confirmation-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-exact",
+    "accepted": true
+  },
+  {
+    "control": "post-transfer-engine-not-checked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "post-transfer-engine-not-checked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-exact",
+    "accepted": true
+  },
+  {
+    "control": "invalid-credentials-forwarded-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "invalid-credentials-forwarded-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-resolution-detail-leaked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-resolution-detail-leaked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-exact",
+    "accepted": true
+  },
+  {
+    "control": "stream-byte-limit-expanded-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "stream-byte-limit-expanded-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-during-body-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-during-body-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "ownership-during-body-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "ownership-during-body-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-exact",
+    "accepted": true
+  },
+  {
+    "control": "empty-body-success-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "empty-body-success-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "uncaptured-hostname-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "uncaptured-hostname-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "boolean-local-write-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "boolean-local-write-accepted-success-output",
+    "accepted": false
+  }
+]

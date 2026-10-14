@@ -41,6 +41,9 @@ const OTHER_BOUNDARY = {
 const fetchMock = vi.fn();
 
 beforeEach(() => {
+  vi.stubEnv("NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN", "");
+  vi.stubEnv("NEXT_PUBLIC_MAPBOX_TOKEN", "");
+  vi.stubEnv("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL", "");
   fetchMock.mockReset();
   fetchMock.mockImplementation(async (input: RequestInfo | URL) => {
     const url = String(input);
@@ -92,6 +95,24 @@ async function pickTheFirstResult() {
 }
 
 describe("StudyAreaPicker", () => {
+  it("offers a planner alternative when drawing is unavailable without changing the area", async () => {
+    const onCorridorChange = vi.fn();
+    render(
+      <StudyAreaPicker
+        corridorText={JSON.stringify(BOUNDARY)}
+        onCorridorChange={onCorridorChange}
+        externalLabel="Retained area"
+      />
+    );
+    fireEvent.click(screen.getByRole("button", { name: "Draw an area" }));
+    const notice = await screen.findByText(/This drawing map is unavailable|Answer the questions below/i);
+    expect(notice).not.toHaveTextContent(/Answer the questions below/i);
+    expect(notice).toHaveTextContent(/Use Search a place instead/i);
+    expect(screen.getByText("Retained area")).toBeInTheDocument();
+    expect(onCorridorChange).not.toHaveBeenCalled();
+    expect(screen.queryByText(/Answer the questions below/i)).not.toBeInTheDocument();
+  });
+
   it("names an area it chose itself", async () => {
     const onCorridorChange = vi.fn();
     const { rerender } = render(

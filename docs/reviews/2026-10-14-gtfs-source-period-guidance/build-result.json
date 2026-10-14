@@ -1,0 +1,19 @@
+{
+  "head": "406f86f97585057475880e26e8dd0a40a09a26c9",
+  "exitCode": 0,
+  "seconds": 161.58,
+  "memoryBefore": {
+    "MemAvailable": 18143019008,
+    "SwapFree": 12828672
+  },
+  "diskFreeBefore": 193034522624,
+  "resources": {
+    "memory.max": "8589934592",
+    "memory.peak": "7084384256",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "environmentSha256": "94464d17b31753cf7e52da1a8b17672125ea2744dd130f6782e956ccff7e8672",
+  "buildId": "9be5Kid-XcPUHWwdO4yMF"
+}
