@@ -951,6 +951,70 @@ const grantDecisionsSource: MyWorkSource = {
       .filter((item): item is MyWorkItem => item !== null),
 };
 
+// ── 9b. Application due dates on pursued opportunities ──────────────────────
+
+/**
+ * The decision state that means "we are applying" (20260410000042). Every later
+ * state (under_review, awarded, denied) means the application went in, and
+ * skip means it was dropped, so none of those rows is read: a call that closed
+ * after the planner recorded a submission or dropped it is never overdue.
+ */
+const PURSUED_DECISION_STATE = "pursue";
+
+/**
+ * Opportunity statuses that end the pursuit regardless of decision state
+ * (20260410000041): an archived call was set aside, an awarded one went in.
+ * A `closed` status stays readable, because a pursued call that closed with no
+ * recorded submission is exactly the missed deadline this source exists for.
+ */
+const PURSUIT_ENDED_OPPORTUNITY_STATUSES: readonly string[] = ["archived", "awarded"];
+
+const grantApplicationDueSource: MyWorkSource = {
+  id: "grant_application_due",
+  label: "Applications due",
+  readLabel: "pursued grant opportunities",
+  block: "workspace_deadlines",
+  table: "funding_opportunities",
+  select: "id, project_id, title, opportunity_status, decision_state, closes_at, agency_name, projects(id, name)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "closes_at",
+  orderAscending: true,
+  staticFilters: [
+    { kind: "notNull", column: "closes_at" },
+    { kind: "eq", column: "decision_state", value: PURSUED_DECISION_STATE },
+    { kind: "notIn", column: "opportunity_status", values: PURSUIT_ENDED_OPPORTUNITY_STATUSES },
+  ],
+  toItems: (rows, { now }) =>
+    rows.map((row) => {
+      const project = embedded(row.projects);
+      const id = String(row.id);
+      const closesAt = asString(row.closes_at);
+      // closes_at is a full timestamp entered as a local date and time, so the
+      // shared rule compares instants.
+      const overdue = isDeadlinePast(closesAt, now);
+      const closes = formatWorkDeadlineDate(closesAt);
+      return {
+        sourceId: "grant_application_due",
+        block: "workspace_deadlines",
+        id,
+        title: asString(row.title) ?? "(untitled opportunity)",
+        projectId: asString(row.project_id),
+        projectName: asString(project?.name),
+        dueOn: closesAt,
+        isOverdue: overdue,
+        // No assigneeUserId key: funding_opportunities has no assignee column.
+        ownerLabel: null,
+        badge: deadlineBadge("Application", overdue),
+        detail: overdue
+          ? `Call closed ${closes}. Set the decision to Under review if it went in, or Skip.`
+          : [asString(row.agency_name), `closes ${closes}`].filter(Boolean).join(" · "),
+        href: `/grants?focusOpportunityId=${id}#funding-opportunity-${id}`,
+        dedupKey: null,
+      } satisfies MyWorkItem;
+    }),
+};
+
 // ── 10. Award obligations — de-duplicated against mirrored milestones ────────
 
 const awardObligationsSource: MyWorkSource = {
@@ -1078,6 +1142,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,
+  grantApplicationDueSource,
   awardObligationsSource,
   invoiceWindowsSource,
 ];

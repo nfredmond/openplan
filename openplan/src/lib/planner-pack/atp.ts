@@ -177,6 +177,7 @@ export function computeAtpPacket(
     );
     const estimatedCost = parseOptionalFloat(lapm.estimated_cost_usd);
 
+    const equityRecorded = equityById.has(pid);
     const equityRow = equityById.get(pid) ?? {};
     const overlaySupplied = coerceBool(equityRow.overlay_supplied);
     const dac = coerceBool(equityRow.dac_sb535);
@@ -221,6 +222,7 @@ export function computeAtpPacket(
       estimated_cost_usd: estimatedCost,
       schedule_note: scheduleNote,
       ceqa_determination: ceqaSummary,
+      equity_recorded: equityRecorded,
       dac_sb535: dac,
       low_income_ab1550: lowIncome,
       tribal_area: tribal,
@@ -256,6 +258,7 @@ export function computeAtpPacket(
     dac_application_count: dacCount,
     low_income_application_count: lowIncomeCount,
     tribal_application_count: tribalCount,
+    equity_recorded_count: applications.filter((app) => app.equity_recorded).length,
     dac_share: pythonRound(dacShare, 3),
     scored_application_count: recordedTotals.length,
     mean_total_score: roundScore(meanScore),
@@ -289,7 +292,9 @@ function describeAtpMeanScore(summary: AtpPortfolioSummary): string {
 export function atpGrantFactBlocks(result: AtpGrantResult, sourcePath: string): FactBlock[] {
   const blocks: FactBlock[] = [];
   for (const app of result.applications) {
-    const dacPhrase = app.dac_sb535
+    const dacPhrase = !app.equity_recorded
+      ? "not recorded"
+      : app.dac_sb535
       ? "SB 535 DAC"
       : app.low_income_ab1550
         ? "AB 1550 low-income"
@@ -316,14 +321,22 @@ export function atpGrantFactBlocks(result: AtpGrantResult, sourcePath: string): 
 
   if (result.summary !== null) {
     const summary = result.summary;
+    // With no equity-lens row at all, the counts are zeros by default, not findings.
+    const communityClaim =
+      summary.equity_recorded_count === 0
+        ? "community context not recorded."
+        : `${summary.dac_application_count} SB 535 DAC ` +
+          `(${formatFixedPython(summary.dac_share * 100, 1)}%), ` +
+          `${summary.low_income_application_count} AB 1550 low-income (not DAC), ` +
+          `${summary.tribal_application_count} in a tribal area` +
+          (summary.equity_recorded_count < summary.application_count
+            ? ` (partial: ${summary.equity_recorded_count} of ${summary.application_count} applications have equity findings).`
+            : ".");
     const portfolioClaim =
       `ATP portfolio for ${result.agency} (${result.cycle}): ` +
       `${summary.application_count} application draft(s), ` +
       `${describeAtpMeanScore(summary)}; ` +
-      `${summary.dac_application_count} SB 535 DAC ` +
-      `(${formatFixedPython(summary.dac_share * 100, 1)}%), ` +
-      `${summary.low_income_application_count} AB 1550 low-income (not DAC), ` +
-      `${summary.tribal_application_count} in a tribal area.`;
+      communityClaim;
     blocks.push({
       fact_id: "atp-application-summary",
       fact_type: "atp_application_summary",

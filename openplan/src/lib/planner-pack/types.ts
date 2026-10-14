@@ -149,6 +149,12 @@ export type AtpProjectApplication = {
   estimated_cost_usd: number | null;
   schedule_note: string;
   ceqa_determination: string;
+  /**
+   * Whether the equity lens supplied a row for this project. Without one, the
+   * DAC, low-income and tribal fields below are false by default, not findings,
+   * and every surface says "not recorded" instead of "No".
+   */
+  equity_recorded: boolean;
   dac_sb535: boolean;
   low_income_ab1550: boolean;
   tribal_area: boolean;
@@ -163,6 +169,8 @@ export type AtpPortfolioSummary = {
   dac_application_count: number;
   low_income_application_count: number;
   tribal_application_count: number;
+  /** Applications with an equity-lens row; the DAC, low-income and tribal counts cover only these. */
+  equity_recorded_count: number;
   dac_share: number;
   /** Applications with a recorded total score; the mean covers only these. */
   scored_application_count: number;

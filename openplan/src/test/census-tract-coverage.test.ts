@@ -273,6 +273,28 @@ describe("census tract coverage copy", () => {
     ).toMatch(/session expired/i);
   });
 
+  it("does not call a refused load safe to repeat", () => {
+    // A viewer cannot repeat it, and a person over the hourly limit must wait.
+    const viewer = describeCoverageLoadFailure({
+      label: "Franklin County, OH",
+      message: "Viewers have read-only access to this workspace",
+      httpStatus: 403,
+      storedTractCount: 0,
+    }).join(" ");
+    expect(viewer).toMatch(/ask a workspace member to load Franklin County, OH/i);
+    expect(viewer).not.toMatch(/safe to repeat/i);
+
+    const limited = describeCoverageLoadFailure({
+      label: "Franklin County, OH",
+      message: "You have loaded 20 counties in the last hour; the limit is 20. Try again in about 12 minutes.",
+      httpStatus: 429,
+      storedTractCount: 41,
+    }).join(" ");
+    expect(limited).toContain("Try again in about 12 minutes.");
+    expect(limited).toContain("41 census tracts are stored");
+    expect(limited).not.toMatch(/safe to repeat/i);
+  });
+
   it("substitutes the place name and bakes none in", () => {
     // Place-independence as a property: the same call with two labels must
     // differ ONLY by the substituted label. That proves no place is hardcoded
