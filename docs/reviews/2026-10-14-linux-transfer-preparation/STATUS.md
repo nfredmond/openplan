@@ -59,3 +59,19 @@ worker restart, useful interrupted recovery and independent host/disk evidence
 open. Dependencies and compatibility on the receiving computer require checks.
 Desktop and 390px T3 journeys, practitioner use and scientific validity remain
 separate. M3, M5b.2 and full v1 acceptance do not change.
+
+## Revision2 retains the transport license
+
+The revised archive includes the retained Restic0.19.1 BSD2Clause license,
+source inventory, signed checksums and public release key. Its license bytes
+match the original captured SHA256. Complete bundled dependency review remains
+unassessed. The encrypted payload and separately held password do not change.
+
+`openplan-linux-transfer-20261014-r2.tar` is774830080 bytes, SHA256
+`0f958fd3d22d4cb3182d523036ff7568f91e2d3e42524eefc2de86615e49225e`.
+The first archive remains intact with its original hash. A first regeneration
+trial incorrectly includes the checksum file itself and fails. The correction
+excludes that exact root file. Baseline, actual harmless timestamp and restored
+checks pass; reintroducing the self-entry fails only that named checksum.
+The corrected finalizer stops successfully, with its retained resource record.
+The separate-host and installation limits above remain unchanged.

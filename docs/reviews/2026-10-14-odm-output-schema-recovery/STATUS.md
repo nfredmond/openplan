@@ -31,3 +31,26 @@ this proof is not acceptance of that newer schema or current hosted data.
 PR295 rejoins the new main in its separate HTTP worktree and reruns its checks.
 
 The [native producer](native_upgrade_restore.py) and [control runner](verify_native_upgrade_controls.py) retain exact arguments and failure reasons. The [transfer package report](../2026-10-14-linux-transfer-preparation/STATUS.md) records the separate prepared archive and open host checks.
+
+## Later selected main41c evidence
+
+After the concurrent main merges, a fresh source dump retains the same populated
+406-migration fixture. Its selected source is main
+`41cbd5a856c4da0824b408ac3ebabb459e205e3f`, with409 migrations. Missing02,05
+and06 install through the CLI. Native exact output recovery, current actor
+refusal and fresh logical-database restoration repeat under both interpreters.
+Each cohort passes four positives, five targeted failures and eight oracles.
+The [frozen capture](drivers/capture_main41c.py),
+[native producer](drivers/native_upgrade_restore_main41c.py) and
+[control runner](drivers/verify_native_upgrade_controls_main41c.py) preserve
+executed source. They retain original private paths and are not portable
+installation commands. Copied driver hashes match executed bindings.
+
+Both parent services stop successfully, reach the1GiB cap and use zero swap.
+They record2480 and2407 max pressure events and zero OOM. All owned database
+and RPC services stop; databases and failed attempts remain retained. This
+extends the selected migration-set and output-custody evidence. It does not
+establish whole-schema equivalence, global-role/key reconstruction, hosted data,
+Auth/Storage recovery, installation alignment, physical-host independence or
+scientific/processing quality. The prepared transfer archive is unchanged and
+continues to describe its earlier pinned contents.
