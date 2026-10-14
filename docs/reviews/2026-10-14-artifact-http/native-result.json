@@ -1,0 +1,10 @@
+{
+  "database": "odm_artifact_http_7e98232ef4ae45509eb3ee191bb650ea",
+  "restContainer": "5ea971fc23e719c637cd748ca8b39c533c56321669fc7f488f886e7735b8382a",
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "positiveCohorts": 4,
+  "casesPerCohort": 3,
+  "faults": 3,
+  "historyCandidate": 415,
+  "scope": "Actual private artifact HTTP and PostgREST on a clone of intended restored415; copied original archive, synthetic fixture terminal status transitions; no public DNS/TLS, hosted login, default worker, quality, placement, browser or V1 acceptance."
+}

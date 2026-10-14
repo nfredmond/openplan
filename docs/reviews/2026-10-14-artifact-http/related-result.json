@@ -1,0 +1,10 @@
+{
+  "passed": 19,
+  "failed": 0,
+  "cwd": "openplan/",
+  "files": [
+    "src/test/docs-mechanical-cross-references.test.ts",
+    "src/test/product-direction-review-guard.test.ts",
+    "src/test/migrations/release-ordering.test.ts"
+  ]
+}

@@ -208,13 +208,18 @@ class ArtifactAccess:
             raise ValueError('Artifact access resume requires its original lease')
         return self.prepare(request_id, observation_hash)
 
-    def serve(self, request_id, observation_hash, job_reference, token, filename, output, *, deadline=None):
+    def serve(self, request_id, observation_hash, job_reference, token, filename, output, *, deadline=None,
+              expected_lease_sha256=None):
         """Withhold the final chunk until original bytes and current access agree."""
         if deadline is not None and not finite_number(deadline):
             raise ValueError('Artifact access deadline must be finite')
         deadline = min(time.monotonic()+self.timeout, deadline) if deadline is not None else time.monotonic()+self.timeout
         root, manifest = self._plan(request_id, observation_hash, deadline)
         lease = self._load(root, manifest)
+        if expected_lease_sha256 is not None and (not isinstance(expected_lease_sha256, str)
+                or not re.fullmatch('[0-9a-f]{64}', expected_lease_sha256)
+                or checksum(lease) != expected_lease_sha256):
+            raise ValueError('Artifact access selected HTTP lease differs')
         receipt = read_json(root/'private-artifact-access', 'receipt.json')
         if json_bytes(receipt) != json_bytes({'format': FORMAT, 'scope': SCOPE, 'leaseSha256': checksum(lease), 'terminalCallbackPermission': False}):
             raise ValueError('Artifact access original completion differs')

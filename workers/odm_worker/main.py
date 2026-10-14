@@ -564,6 +564,10 @@ class WorkerHandler(BaseHTTPRequestHandler):
             return
 
         if self.path.startswith("/artifacts/"):
+            download = getattr(self.server, 'artifact_download', None)
+            if download is not None:
+                download(self)
+                return
             parts = self.path.split("/")
             # /artifacts/<job_reference>/<token>/<filename>
             if len(parts) != 5:
@@ -669,15 +673,27 @@ class WorkerHandler(BaseHTTPRequestHandler):
         self._send_json(202, job["accepted_callback"])
 
     def log_message(self, fmt, *args):  # noqa: A003 - quieter default logging
-        print(f"[odm-worker] {self.address_string()} {fmt % args}")
+        # Download URLs carry private tokens. No raw request or error is logged.
+        print('[odm-worker] HTTP request.')
+
+    def log_request(self, code='-', size='-'):
+        method = self.command if self.command in ('GET', 'POST', 'HEAD') else 'other'
+        status = str(code) if str(code).isdigit() and 100 <= int(code) <= 599 else 'unknown'
+        print(f'[odm-worker] HTTP {method} status {status}.')
 
 
-def build_server(host="0.0.0.0", port=None, admissions=None):
+def build_server(host="0.0.0.0", port=None, admissions=None, artifact_download=None):
+    resolved_admissions = ADMISSIONS if admissions is None else admissions
+    if artifact_download is not None:
+        from runtime_artifact_http import Download
+        if not isinstance(artifact_download, Download) or artifact_download.runtime is not resolved_admissions:
+            raise ValueError('Artifact HTTP server needs the same original admission runtime')
     server = ThreadingHTTPServer(
         (host, CONFIG["port"] if port is None else port),
         WorkerHandler,
     )
-    server.admissions = ADMISSIONS if admissions is None else admissions
+    server.admissions = resolved_admissions
+    server.artifact_download = artifact_download
     return server
 
 

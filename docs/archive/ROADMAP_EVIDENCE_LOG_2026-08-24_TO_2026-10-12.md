@@ -396,3 +396,7 @@ Migration12 remains tentative and unapplied. Milestone grades stay unchanged.
 ## October 14 original terminal journal candidate
 
 The [dated terminal record](../reviews/2026-10-14-terminal-delivery/STATUS.md) retains the original callback identity, occurrence time, observation and exact artifact projection. Historical receiver facts grant no new send permission. Four source cohorts and 42 intended faults pass; both-interpreter regression, corrected native supersession and intended-schema restore checks continue. The default worker stays unchanged. Complete runtime delivery, quality, browser/practitioner and separate-host evidence remain open under M3/M5b.2. Milestone grades do not change.
+
+## October 14: Explicit original artifact HTTP candidate
+
+M3 and M5b.2 gain an explicitly supplied retained-download adapter. Original-reference lookup recovers the complete private admission; the selected lease fixes response headers and original bytes. Four 34-case cohorts on each of Python 3.14 and Python 3.11 detect 35 intended faults, including the actual non-reading-client write bound. [The dated record](../reviews/2026-10-14-artifact-http/STATUS.md) preserves failed trials, the corrected EOF-drain assertion, deadline limits and pending native/default integration. No milestone or requirement grade changes.
