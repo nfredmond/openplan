@@ -172,3 +172,19 @@ protects bytes and actual transport. Its limits remain separate. Fresh exact-hea
 CI, main integration and hosted delivery remain pending. No migration, worker
 default, version or tag changes. The bounded candidates do not close the wider
 M3/M5b.2 or v1 contract.
+
+## CI fixture deadline correction
+
+Exact657 CI run38559861159 fails in the URL-draft positive controller. The
+full-delegate test gives the pipeline one second while real fixture writes and
+syncs are still running. It reaches `Source custody deadline exceeded`. This is
+not a passing CI result.
+
+The revised test uses a120-second original intake adapter and30-second outer
+pipeline. It still runs the actual delegates and inspects the forwarded stage
+and engine deadlines. The stage cannot receive the original larger budget, the
+shared adapter cannot be mutated, and transport cannot extend the outer limit.
+Production deadlines and defaults do not change. Both Python3.14 and3.11
+controllers pass four positive22-case cohorts,31 intended faults and eight
+failure-oracle controls. Earlier failed logs remain. Fresh exact-head CI is still
+required; retrying the failed head alone would not establish this correction.
