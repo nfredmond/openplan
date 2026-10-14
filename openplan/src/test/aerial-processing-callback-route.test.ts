@@ -6,6 +6,7 @@ const createApiAuditLoggerMock = vi.fn();
 const rebuildAerialProjectPostureMock = vi.fn();
 
 const jobMaybeSingleMock = vi.fn();
+const jobSelectMock = vi.fn();
 const jobUpdateEqMock = vi.fn();
 const jobUpdateMock = vi.fn();
 const jobStatusEqMock = vi.fn();
@@ -33,11 +34,7 @@ const mockAudit = {
 const fromMock = vi.fn((table: string) => {
   if (table === "aerial_processing_jobs") {
     return {
-      select: () => ({
-        eq: () => ({
-          maybeSingle: jobMaybeSingleMock,
-        }),
-      }),
+      select: jobSelectMock,
       update: jobUpdateMock,
     };
   }
@@ -101,6 +98,8 @@ const JOB_ROW = {
   request_id: "11111111-1111-4111-8111-111111111111",
   job_reference: "worker-job-9",
   status: "accepted",
+  last_callback_id: null,
+  last_callback_at: null,
 };
 
 function callbackPayload(overrides: Record<string, unknown> = {}) {
@@ -124,6 +123,15 @@ const SUCCEEDED_ARTIFACTS = [
     contentType: "image/tiff",
   },
 ];
+
+function retainedCallbacks(...payloads: ReturnType<typeof callbackPayload>[]) {
+  const records = new Map(payloads.map((payload) => [payload.callbackId, {
+    processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload,
+  }]));
+  ledgerLookupEqMock.mockImplementation((_key, id) => ({
+    maybeSingle: () => Promise.resolve({ data: records.get(id) ?? null, error: null }),
+  }));
+}
 
 function request(body: unknown, token?: string) {
   return new NextRequest("http://localhost/api/aerial/processing-callback", {
@@ -184,6 +192,7 @@ describe("POST /api/aerial/processing-callback", () => {
       error: null,
     });
 
+    jobSelectMock.mockReturnValue({ eq: () => ({ maybeSingle: jobMaybeSingleMock }) });
     jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW }, error: null });
     ledgerInsertMock.mockResolvedValue({ error: null });
     ledgerLookupMock.mockResolvedValue({ data: null, error: null });
@@ -574,6 +583,66 @@ describe("POST /api/aerial/processing-callback", () => {
     }
     expect(evidenceInsertMock).not.toHaveBeenCalled();
     expect(rebuildAerialProjectPostureMock).not.toHaveBeenCalled();
+  });
+
+  it("preserves a newer same-status event when an older original is replayed", async () => {
+    const payload = callbackPayload({ progress: 20, message: "older work" });
+    ledgerInsertMock.mockResolvedValue({ error: { code: "23505" } });
+    ledgerLookupMock.mockResolvedValue({ data: {
+      processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload,
+    }, error: null });
+    for (const occurredAt of ["2026-07-21T12:00:01Z", payload.occurredAt]) {
+      retainedCallbacks(payload, callbackPayload({ callbackId: "newer-callback", occurredAt }));
+      jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW, status: "running",
+        last_callback_id: "newer-callback", last_callback_at: occurredAt,
+      }, error: null });
+      const response = await postProcessingCallback(request(payload, CALLBACK_TOKEN));
+      expect(await response.json(), "Older replay cannot replace a newer same-status callback").toEqual({ ok: true, ignored: "superseded" });
+    }
+    expect(jobUpdateMock).not.toHaveBeenCalled();
+  });
+
+  it("allows a newer original retry and guards its observed callback identity", async () => {
+    const payload = callbackPayload({ occurredAt: "2026-07-21T12:00:02Z", progress: 70 });
+    ledgerInsertMock.mockResolvedValue({ error: { code: "23505" } });
+    ledgerLookupMock.mockResolvedValue({ data: {
+      processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload,
+    }, error: null });
+    retainedCallbacks(payload, callbackPayload({ callbackId: "older-callback", occurredAt: "2026-07-21T12:00:01Z" }));
+    jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW, status: "running",
+      last_callback_id: "older-callback", last_callback_at: "2026-07-21T12:00:01Z",
+    }, error: null });
+    const response = await postProcessingCallback(request(payload, CALLBACK_TOKEN));
+    expect(response.status, "A newer retained original can still finish").toBe(200);
+    expect(jobStatusEqMock, "Write guards observed callback identity").toHaveBeenCalledWith("last_callback_id", "older-callback");
+    expect(jobStatusEqMock, "Write guards observed callback time").toHaveBeenCalledWith("last_callback_at", "2026-07-21T12:00:01Z");
+    expect(jobSelectMock, "Replay reads callback ordering fields").toHaveBeenCalledWith("id, workspace_id, project_id, mission_id, request_id, job_reference, status, last_callback_id, last_callback_at");
+  });
+
+  it("guards empty callback identity and time on the first application", async () => {
+    expect((await postProcessingCallback(request(callbackPayload(), CALLBACK_TOKEN))).status).toBe(200);
+    expect(jobStatusIsMock, "Write guards original empty callback identity").toHaveBeenCalledWith("last_callback_id", null);
+    expect(jobStatusIsMock, "Write guards original empty callback time").toHaveBeenCalledWith("last_callback_at", null);
+  });
+
+  it("refuses unreadable callback ordering without applying it", async () => {
+    const applied = callbackPayload({ callbackId: "other-callback" });
+    jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW,
+      last_callback_id: applied.callbackId, last_callback_at: applied.occurredAt,
+    }, error: null });
+    const correct = { processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload: applied };
+    for (const value of [
+      { data: null, error: null }, { data: null, error: { message: "lookup unavailable" } },
+      { data: { ...correct, processing_job_id: "foreign-job" }, error: null },
+      { data: { ...correct, workspace_id: "foreign-workspace" }, error: null },
+      { data: { ...correct, payload: { ...applied, callbackId: "foreign-callback" } }, error: null },
+      { data: { ...correct, payload: { ...applied, occurredAt: "not a time" } }, error: null },
+    ]) {
+      ledgerLookupMock.mockResolvedValue(value);
+      const response = await postProcessingCallback(request(callbackPayload(), CALLBACK_TOKEN));
+      expect(response.status, "Unreadable callback order cannot apply effects").toBe(503);
+    }
+    expect(jobUpdateMock).not.toHaveBeenCalled();
   });
 
   it("ignores a running callback after the job reached a terminal status", async () => {

@@ -20,6 +20,7 @@ import {
   type AerialArtifactCustodyPosture,
 } from "@/lib/aerial/artifact-custody";
 import { runAerialCustodyPass } from "@/lib/aerial/artifact-custody-server";
+import { compareCallbackTimes } from "@/lib/aerial/callback-order";
 
 export const runtime = "nodejs";
 
@@ -35,6 +36,8 @@ type ProcessingJobRow = {
   request_id: string;
   job_reference: string | null;
   status: string;
+  last_callback_id: string | null;
+  last_callback_at: string | null;
 };
 
 /**
@@ -92,7 +95,7 @@ export async function POST(request: NextRequest) {
 
     const { data: jobData, error: jobError } = await supabase
       .from("aerial_processing_jobs")
-      .select("id, workspace_id, project_id, mission_id, request_id, job_reference, status")
+      .select("id, workspace_id, project_id, mission_id, request_id, job_reference, status, last_callback_id, last_callback_at")
       .eq("request_id", callback.requestId)
       .maybeSingle();
 
@@ -186,6 +189,35 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ ok: true, ignored: "terminal" }, { status: 200 });
     }
 
+    if (job.last_callback_at && job.last_callback_id !== callback.callbackId) {
+      const { data: applied, error: appliedError } = await supabase
+        .from("aerial_processing_callbacks")
+        .select("processing_job_id, workspace_id, payload")
+        .eq("callback_id", job.last_callback_id)
+        .maybeSingle();
+      const parsedApplied = processingCallbackSchema.safeParse(applied?.payload);
+      if (appliedError || !applied || applied.processing_job_id !== job.id
+        || applied.workspace_id !== job.workspace_id || !parsedApplied.success
+        || parsedApplied.data.callbackId !== job.last_callback_id) {
+        return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
+      }
+      // The retained payload keeps precision that a database timestamp or a
+      // JavaScript Date may drop. The returned column remains a write fence.
+      const order = compareCallbackTimes(parsedApplied.data.occurredAt, callback.occurredAt);
+      if (order === null) {
+        return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
+      }
+      // A replay cannot replace a different event already applied at the same
+      // time. New equal-time events still follow their arrival order.
+      if (order > 0 || (replayed && order === 0)) {
+        audit.info("callback_superseded", {
+          requestId: callback.requestId,
+          callbackId: callback.callbackId,
+        });
+        return NextResponse.json({ ok: true, ignored: "superseded" }, { status: 200 });
+      }
+    }
+
     const update: Record<string, unknown> = {
       status: callback.status,
       message: callback.message ?? null,
@@ -216,9 +248,15 @@ export async function POST(request: NextRequest) {
       .update(update)
       .eq("id", job.id)
       .eq("status", job.status);
-    const { data: appliedJobs, error: updateError } = await (job.job_reference === null
+    const referencedWrite = job.job_reference === null
       ? statusWrite.is("job_reference", null)
-      : statusWrite.eq("job_reference", job.job_reference)).select("id");
+      : statusWrite.eq("job_reference", job.job_reference);
+    const identifiedWrite = job.last_callback_id === null
+      ? referencedWrite.is("last_callback_id", null)
+      : referencedWrite.eq("last_callback_id", job.last_callback_id);
+    const { data: appliedJobs, error: updateError } = await (job.last_callback_at === null
+      ? identifiedWrite.is("last_callback_at", null)
+      : identifiedWrite.eq("last_callback_at", job.last_callback_at)).select("id");
 
     if (updateError) {
       audit.error("processing_job_update_failed", {

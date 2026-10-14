@@ -57,3 +57,37 @@ and 129 related/documentation cases pass again. The new CI source-control
 command also passes from the actual nested package: four positives, 18 targeted
 faults and 90 oracles. CI adds that command after QA without removing a check.
 No migration, hosted setting, version or release tag changes belong here.
+
+## Same-status review correction
+
+Review 4267945502 identifies a real gap: status/reference predicates alone let
+an old replay overwrite a later same-status event. The correction reads the
+last callback identity/time, checks the applied ledger's job/workspace/payload
+identity, and compares its original event time with the incoming event. Older
+events and equal-time replays of different applied identities are preserved as
+superseded. A newer original retry remains allowed. Fresh equal-time events
+retain arrival ordering. The write also conditions on the observed last callback
+id and timestamp, preventing a concurrent same-status event from being lost.
+
+The comparison uses original payload fractions rather than rounded database or
+JavaScript timestamps. It handles offsets and trailing zeros without truncating
+fractional digits. The database timestamp remains a write fence, not the source
+of event-time precision. Missing or unreadable ordering returns a retryable error.
+
+All 28 route/time cases pass in four positive cohorts. The harmless edit
+survives and 35 targeted faults plus 175 failure-oracle controls pass. Applied
+record scope, callback key, timestamp precision, unknown time and each new write
+filter are challenged. The first same-status native trial fails because its
+proxy shadows response bytes with an injected event dictionary. The corrected
+trial preserves a newer applied event and refuses a real concurrent same-status
+write. Both failed and corrected trials remain retained. Updated native controls pass four positive cohorts, seven targeted faults and
+56 failure-oracle controls, peaking at about 94.9 MiB. The new faults omit the
+stale-event refusal or both last-event write fences; each fails the intended real
+database assertion. Joined checks and fresh-head CI remain pending. The review is not yet closed.
+
+The review correction passes changed-file lint and all 137 related/documentation
+cases in 13 files. Its current source cohort has 28 cases, four positives, 35
+faults and 175 oracles. Applied job/workspace/callback-key and unreadable-record
+cases are separately challenged. Current native controls pass four positives,
+seven faults and 56 oracles. Source restores and owned services stop. Fresh
+GitHub CI follows on the pushed correction; no earlier-head result is inherited.

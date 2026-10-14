@@ -62,8 +62,8 @@ def run(repo, out):
     raw=encode({'alg':'HS256','typ':'JWT'})+b'.'+encode({'role':'service_role','exp':int(time.time())+3600})
     key=(raw+b'.'+base64.urlsafe_b64encode(hmac.new(values['PGRST_JWT_SECRET'].encode(),raw,hashlib.sha256).digest()).rstrip(b'=')).decode()
     jobs={name:{'id':str(uuid.uuid4()),'request':'callback-native-'+uuid.uuid4().hex,
-        'reference':'owned-callback-'+uuid.uuid4().hex} for name in ['interrupted','raced']}
-    fail_patch=True;race_read=True;events=[]
+        'reference':'owned-callback-'+uuid.uuid4().hex} for name in ['interrupted','raced','superseded','same_status']}
+    fail_patch=True;race_read=True;same_status_armed=False;events=[]
     try:
         subprocess.run(['docker','start',PG],check=True,stdout=subprocess.DEVNULL);started.append(PG)
         for _ in range(120):
@@ -79,7 +79,7 @@ def run(repo, out):
         class Proxy(BaseHTTPRequestHandler):
             def log_message(self,*_):pass
             def forward(self):
-                nonlocal fail_patch,race_read
+                nonlocal fail_patch,race_read,same_status_armed
                 target=self.path.removeprefix('/rest/v1')
                 parsed=urlsplit(target)
                 if parsed.path not in ['/aerial_processing_jobs','/aerial_processing_callbacks']:
@@ -102,6 +102,15 @@ def run(repo, out):
                     if self.command=='GET' and parsed.path=='/aerial_processing_jobs' and race_read and parse_qs(parsed.query).get('request_id')==['eq.'+jobs['raced']['request']]:
                         race_read=False
                         sql("UPDATE public.aerial_processing_jobs SET status='succeeded' WHERE id="+q(jobs['raced']['id'])+';')
+                    if self.command=='GET' and parsed.path=='/aerial_processing_jobs' and same_status_armed and parse_qs(parsed.query).get('request_id')==['eq.'+jobs['same_status']['request']]:
+                        same_status_armed=False
+                        newer='native-newer-'+uuid.uuid4().hex
+                        event_payload={'schemaVersion':'natford-aerial-processing.v1','requestId':jobs['same_status']['request'],
+                            'callbackId':newer,'jobReference':jobs['same_status']['reference'],'status':'running',
+                            'occurredAt':'2026-10-14T06:01:00Z','progress':70}
+                        sql('INSERT INTO public.aerial_processing_callbacks (processing_job_id,workspace_id,callback_id,status,occurred_at,payload) VALUES ('+
+                            ','.join(q(value) for value in [jobs['same_status']['id'],original['workspace_id'],newer,'running',event_payload['occurredAt'],json.dumps(event_payload)])+');')
+                        sql("UPDATE public.aerial_processing_jobs SET progress=70,last_callback_id="+q(newer)+",last_callback_at='2026-10-14T06:01:00Z' WHERE id="+q(jobs['same_status']['id'])+';')
                 self.send_response(status);self.send_header('content-type','application/json');self.send_header('content-length',str(len(payload)));self.end_headers();self.wfile.write(payload)
             do_GET=forward;do_POST=forward;do_PATCH=forward
         server=ThreadingHTTPServer(('127.0.0.1',0),Proxy)
@@ -116,9 +125,9 @@ def run(repo, out):
         logs=(out/'route-private.log').open('wb')
         child=subprocess.Popen(['node',str(Path(__file__).with_name('route_server.cjs'))],cwd=repo/'openplan',env=env,stdout=subprocess.PIPE,stderr=logs)
         port=json.loads(child.stdout.readline())['port'];address='http://127.0.0.1:'+str(port)+'/callback'
-        def post(job,callback_id,progress=40,reference=None):
+        def post(job,callback_id,progress=40,reference=None,occurred_at='2026-10-14T06:00:00Z'):
             payload={'schemaVersion':'natford-aerial-processing.v1','requestId':job['request'],'callbackId':callback_id,
-                'jobReference':reference or job['reference'],'status':'running','occurredAt':'2026-10-14T06:00:00Z','progress':progress}
+                'jobReference':reference or job['reference'],'status':'running','occurredAt':occurred_at,'progress':progress}
             request=urllib.request.Request(address,data=json.dumps(payload).encode(),method='POST',headers={'content-type':'application/json','authorization':'Bearer '+bearer})
             try:
                 with urllib.request.urlopen(request,timeout=20) as response:return response.status,json.loads(response.read())
@@ -139,9 +148,22 @@ def run(repo, out):
         assert raced[0]==503,'Concurrent native state change must request a fresh retry'
         assert sql('SELECT status FROM public.aerial_processing_jobs WHERE id='+q(jobs['raced']['id'])+';')=='succeeded','Stale callback cannot downgrade actual terminal state'
         assert post(jobs['raced'],raced_callback)==(200,{'ok':True,'ignored':'terminal'}),'Fresh native retry preserves terminal state'
+        old_id='native-older-'+uuid.uuid4().hex
+        fail_patch=True
+        assert post(jobs['superseded'],old_id,20)[0]==500, 'Old native receipt must survive its interrupted write'
+        newer_id='native-newer-'+uuid.uuid4().hex
+        assert post(jobs['superseded'],newer_id,70,occurred_at='2026-10-14T06:01:00.1234568Z')[0]==200, 'Newer native event must apply'
+        assert post(jobs['superseded'],old_id,20)==(200,{'ok':True,'ignored':'superseded'}), 'Old native replay cannot replace a newer same-status event'
+        assert sql('SELECT progress::text FROM public.aerial_processing_jobs WHERE id='+q(jobs['superseded']['id'])+';')=='70.00', 'Newer native progress must remain intact'
+        assert post(jobs['same_status'],'native-initial-'+uuid.uuid4().hex,10,occurred_at='2026-10-14T05:59:00Z')[0]==200
+        same_status_armed=True
+        pending_id='native-pending-'+uuid.uuid4().hex
+        assert post(jobs['same_status'],pending_id,40)[0]==503, 'Concurrent same-status event must fence a stale write'
+        assert post(jobs['same_status'],pending_id,40)==(200,{'ok':True,'ignored':'superseded'}), 'Same-status retry must preserve the newer applied event'
+        assert sql('SELECT progress::text FROM public.aerial_processing_jobs WHERE id='+q(jobs['same_status']['id'])+';')=='70.00'
         (out/'result.json').write_text(json.dumps({'scope':'isolated_selected409_compiled_route_sdk_http','firstWriteInterrupted':True,
             'originalLedgerRetained':True,'exactRetryApplied':True,'changedPayloadRefused':True,'foreignWorkerRefused':True,
-            'concurrentStateRefused':True,'terminalStatePreserved':True,'fullNextBuildAcceptance':False,'browserAcceptance':False,
+            'concurrentStateRefused':True,'terminalStatePreserved':True,'newerSameStatusPreserved':True,'sameStatusRaceFenced':True,'fullNextBuildAcceptance':False,'browserAcceptance':False,
             'hostedAcceptance':False,'routeSha256':hashlib.sha256((repo/'openplan/src/app/api/aerial/processing-callback/route.ts').read_bytes()).hexdigest()},indent=2)+'\n')
         (out/'transport-private.json').write_text(json.dumps(events,indent=2)+'\n')
         print(json.dumps({'exactRetryApplied':True,'concurrentStateRefused':True,'selectedSchema':409}),flush=True)

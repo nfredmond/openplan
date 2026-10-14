@@ -42,6 +42,10 @@ def run(repo, out):
     fault('affected-id-projection-omitted', module, ').select("id");', ');',
         'Actual retained retry must finish the original status write')
 
+    fault('newer-applied-event-overwritten', module, 'if (order > 0 || (replayed && order === 0))', 'if (false)',
+        'Old native replay cannot replace a newer same-status event')
+    fault('same-status-last-event-fences-omitted', module, '    const identifiedWrite = job.last_callback_id === null\n      ? referencedWrite.is("last_callback_id", null)\n      : referencedWrite.eq("last_callback_id", job.last_callback_id);\n    const { data: appliedJobs, error: updateError } = await (job.last_callback_at === null\n      ? identifiedWrite.is("last_callback_at", null)\n      : identifiedWrite.eq("last_callback_at", job.last_callback_at)).select("id");', '    const { data: appliedJobs, error: updateError } = await referencedWrite.select("id");',
+        'Concurrent same-status event must fence a stale write')
     def execute(label):
         result = subprocess.run([sys.executable, '-B', str(producer), '--repo', str(repo),
             '--out', str(out/(label+'-private'))], capture_output=True, text=True, timeout=300,
