@@ -90,6 +90,7 @@ def run(repo,out):
     add('owner-invented',test('no_owner_refuses'),changed("        deadline = time.monotonic()+self.timeout\n        root, manifest", "        self.dispatch.runtime._owned = True\n        deadline = time.monotonic()+self.timeout\n        root, manifest"),'ValueError not raised')
     add('short-write-dropped',test('partial_writes_keep_every_byte'),changed('view = view[count:]','view = view[len(view):]'),'Partial writes keep every original byte')
     add('stalled-output-accepted',test('no_progress_output_refuses'),changed("                raise OSError('Artifact access output made no progress')","                return"),'OSError not raised')
+    add('unserved-prefix-accepted',test('path_prefix_refuses_before_lease_publication'),changed("or parsed.path not in ('', '/')","or False"),'ValueError not raised')
     add('credential-base-accepted',test('invalid_base_refuses'),lambda t:t.replace(' or parsed.username','').replace('or parsed.password or','or'),'ValueError not raised')
     add('empty-query-base-accepted',test('invalid_base_refuses'),changed("or '?' in value or '#' in value","or '#' in value"),'ValueError not raised')
     add('empty-fragment-base-accepted',test('invalid_base_refuses'),changed("or '?' in value or '#' in value","or '?' in value"),'ValueError not raised')

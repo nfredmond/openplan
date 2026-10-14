@@ -1,0 +1,228 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "lookup-drops-context",
+    "test": "test_original_reference_reloads_complete_row",
+    "outcome": "intended_failure",
+    "reason": "Reference lookup preserves every original admission field"
+  },
+  {
+    "control": "lookup-selects-unrelated",
+    "test": "test_missing_reference_returns_no_admission",
+    "outcome": "intended_failure",
+    "reason": "Unknown reference cannot select another admission"
+  },
+  {
+    "control": "lookup-input-unguarded",
+    "test": "test_invalid_reference_refuses_before_connection",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lookup-corruption-inferred",
+    "test": "test_corrupted_original_admission_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lookup-started-context-dropped",
+    "test": "test_started_reference_keeps_original_context_after_reopen",
+    "outcome": "intended_failure",
+    "reason": "Reference lookup keeps the original started context after restart"
+  },
+  {
+    "control": "lookup-foreign-row-allowed",
+    "test": "test_foreign_reloaded_reference_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-drops-original-bytes",
+    "test": "test_original_bytes_headers_and_no_memory_token_registry",
+    "outcome": "intended_failure",
+    "reason": "Durable original bytes reach actual HTTP"
+  },
+  {
+    "control": "http-token-preflight-omitted",
+    "test": "test_wrong_token_refuses_before_product_bytes",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "http-falls-back-to-legacy",
+    "test": "test_missing_reference_cannot_fall_back_to_legacy_registry",
+    "outcome": "intended_failure",
+    "reason": "Explicit durable route never falls back to legacy tokens"
+  },
+  {
+    "control": "http-expiry-status-collapsed",
+    "test": "test_expired_original_is_not_renewed",
+    "outcome": "intended_failure",
+    "reason": "Original expiry reaches HTTP"
+  },
+  {
+    "control": "http-authority-refusal-collapsed",
+    "test": "test_revoked_actor_receives_no_product",
+    "outcome": "intended_failure",
+    "reason": "Current original actor refusal reaches HTTP"
+  },
+  {
+    "control": "http-query-allowed",
+    "test": "test_noncanonical_or_traversal_paths_refuse",
+    "outcome": "intended_failure",
+    "reason": "Noncanonical URL cannot reach a retained file"
+  },
+  {
+    "control": "http-absent-product-status",
+    "test": "test_absent_and_unselected_products_refuse",
+    "outcome": "intended_failure",
+    "reason": "Unavailable product remains unavailable"
+  },
+  {
+    "control": "http-owner-preflight-ignored",
+    "test": "test_unowned_runtime_refuses_before_bytes",
+    "outcome": "intended_failure",
+    "reason": "Unowned runtime cannot release retained bytes"
+  },
+  {
+    "control": "http-checksum-ignored",
+    "test": "test_checksum_refusal_withholds_complete_http_body",
+    "outcome": "intended_failure",
+    "reason": "Checksum refusal closes incomplete HTTP body"
+  },
+  {
+    "control": "http-size-preflight-omitted",
+    "test": "test_size_refusal_precedes_headers",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-missing-receipt-inferred",
+    "test": "test_missing_receipt_cannot_serve",
+    "outcome": "intended_failure",
+    "reason": "Missing original completion cannot serve bytes"
+  },
+  {
+    "control": "http-receipt-types-ignored",
+    "test": "test_changed_receipt_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-reenters-processing",
+    "test": "test_current_processing_reader_is_not_reentered",
+    "outcome": "intended_failure",
+    "reason": "Download cannot reenter active processing"
+  },
+  {
+    "control": "http-request-log-leaks-token",
+    "test": "test_logs_never_include_original_token_or_request_url",
+    "outcome": "intended_failure",
+    "reason": "HTTP logs cannot contain original token"
+  },
+  {
+    "control": "http-error-log-leaks-token",
+    "test": "test_logs_never_include_original_token_or_request_url",
+    "outcome": "intended_failure",
+    "reason": "HTTP logs cannot contain original token"
+  },
+  {
+    "control": "http-runtime-mismatch-allowed",
+    "test": "test_handler_requires_same_original_runtime",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-unbounded-constructor",
+    "test": "test_constructor_refuses_unbounded_socket_deadlines",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-copy-uses-lost-memory",
+    "test": "test_whole_copied_root_recovers_lookup_token_and_bytes",
+    "outcome": "intended_failure",
+    "reason": "Copied original root recovers durable HTTP bytes"
+  },
+  {
+    "control": "http-journal-failure-unhandled",
+    "test": "test_database_read_failure_returns_bounded_refusal",
+    "outcome": "intended_failure",
+    "reason": "Unavailable journal must return bounded HTTP refusal, not an abandoned response"
+  },
+  {
+    "control": "http-midstream-actor-ignored",
+    "test": "test_actor_revocation_after_first_chunk_withholds_complete_body",
+    "outcome": "intended_failure",
+    "reason": "Midstream actor refusal closes incomplete HTTP"
+  },
+  {
+    "control": "http-midstream-owner-ignored",
+    "test": "test_original_ownership_loss_after_first_chunk_closes_http",
+    "outcome": "intended_failure",
+    "reason": "Lost original ownership closes incomplete HTTP"
+  },
+  {
+    "control": "http-socket-timeout-omitted",
+    "test": "test_stream_write_deadline_is_applied_to_actual_socket",
+    "outcome": "intended_failure",
+    "reason": "Every actual artifact socket has a finite write bound"
+  },
+  {
+    "control": "http-selected-lease-unbound",
+    "test": "test_selected_lease_hash_binds_stream_before_headers",
+    "outcome": "intended_failure",
+    "reason": "Stream refuses a different selected HTTP lease before headers"
+  },
+  {
+    "control": "http-invalid-lease-digest-allowed",
+    "test": "test_invalid_selected_lease_digest_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-header-owner-gap",
+    "test": "test_ownership_ending_during_headers_prevents_first_body_byte",
+    "outcome": "intended_failure",
+    "reason": "Ownership loss during headers releases no product bytes"
+  },
+  {
+    "control": "http-header-actor-gap",
+    "test": "test_actor_revocation_during_headers_prevents_first_body_byte",
+    "outcome": "intended_failure",
+    "reason": "Actor revocation during headers releases no product bytes"
+  },
+  {
+    "control": "http-header-expiry-gap",
+    "test": "test_expiry_during_headers_prevents_first_body_byte",
+    "outcome": "intended_failure",
+    "reason": "Expiry during headers releases no product bytes"
+  },
+  {
+    "control": "http-header-deadline-gap",
+    "test": "test_deadline_expiring_during_headers_prevents_first_body_byte",
+    "outcome": "intended_failure",
+    "reason": "Deadline during headers releases no product bytes"
+  },
+  {
+    "control": "http-real-stalled-client-unbounded",
+    "test": "test_nonreading_client_releases_owned_handler",
+    "outcome": "intended_failure",
+    "reason": "Nonreading client must release the owned HTTP handler before its whole-stage deadline"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

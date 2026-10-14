@@ -33,7 +33,7 @@ def base_url(value):
     parsed = urlsplit(value)
     if (parsed.scheme not in ('http', 'https') or not parsed.hostname or parsed.username
             or parsed.password or '?' in value or '#' in value or '\\' in value
-            or '%' in parsed.netloc or '..' in parsed.path.split('/')):
+            or '%' in parsed.netloc or parsed.path not in ('', '/')):
         raise ValueError('Artifact access base URL differs')
     try:
         parsed.port

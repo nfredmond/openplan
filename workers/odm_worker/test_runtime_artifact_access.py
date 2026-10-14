@@ -29,7 +29,7 @@ class Checks(unittest.TestCase):
         self.access=module.ArtifactAccess(self.f.plan,authorize,timeout=4,clock=lambda:self.now)
     def prepare(self,**changes):
         with self.runtime.owner():
-            return self.access.prepare(self.request,self.observation,**{'public_base_url':'https://worker.example/retained','expires_at':1100,**changes})
+            return self.access.prepare(self.request,self.observation,**{'public_base_url':'https://worker.example','expires_at':1100,**changes})
     def serve(self,lease,output=None,**changes):
         output=output if output is not None else io.BytesIO()
         fields={'request_id':self.request,'observation_hash':self.observation,'job_reference':lease['binding']['jobReference'],'token':lease['token'],'filename':'orthophoto.tif','output':output,**changes}
@@ -47,7 +47,7 @@ class Checks(unittest.TestCase):
         self.assertEqual(len(lease['artifacts']),4,'Original full roster stays present')
         for original,row in zip(self.original['manifest']['artifacts'],lease['artifacts']):
             self.assertEqual({k:row[k] for k in original},original,'Lease keeps exact descriptors')
-            self.assertEqual(row['downloadUrl'],'https://worker.example/retained/artifacts/'+lease['binding']['jobReference']+'/'+lease['token']+'/'+row['filename'] if row['availability']=='retained' else None,'Only retained files receive original URLs')
+            self.assertEqual(row['downloadUrl'],'https://worker.example/artifacts/'+lease['binding']['jobReference']+'/'+lease['token']+'/'+row['filename'] if row['availability']=='retained' else None,'Only retained files receive original URLs')
         self.assertIs(lease['terminalCallbackPermission'],False,'Download access cannot authorize terminal callback')
         for key in ('processingQualityVerification','requestedDeliverableCompletenessVerification','mapPlacementVerification'):
             self.assertEqual(lease[key],'unassessed','Lease cannot promote '+key)
@@ -174,6 +174,16 @@ class Checks(unittest.TestCase):
         class Stalled:
             def write(self,raw):return 0
         with self.assertRaisesRegex(OSError,'output made no progress'):self.serve(lease,Stalled())
+    def test_path_prefix_refuses_before_lease_publication(self):
+        with self.assertRaisesRegex(ValueError,'base URL differs'):
+            self.prepare(public_base_url='https://worker.example/retained')
+        for suffix in ('/retained/', '//', '/%2F'):
+            with self.subTest(suffix=suffix),self.assertRaisesRegex(ValueError,'base URL differs'):
+                module.base_url('https://worker.example'+suffix)
+        self.assertFalse((self.pack/'lease.json').exists(),'Unserved prefixes cannot publish a lease')
+        with self.runtime.owner():
+            self.assertEqual(module.base_url('https://worker.example/'),'https://worker.example','Root slash remains usable')
+
     def test_invalid_base_refuses(self):
         for url in ('https://user:pass@worker.example','https://worker.example?','https://worker.example#'):
             with self.subTest(url=url),self.assertRaisesRegex(ValueError,'base URL differs'):self.prepare(public_base_url=url)
