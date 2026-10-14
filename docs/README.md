@@ -86,6 +86,8 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+The [October14 explicit worker command](reviews/2026-10-14-owned-worker-cli/STATUS.md) joins private settings, exact credential references and preset options to the existing owned service. Actual child admission/replay/shutdown remains separate from processing and full application delivery.
+
 **October 14 owned HTTP service candidate.** The [service record](reviews/2026-10-14-owned-worker-service/STATUS.md) joins the explicit Bundle to durable HTTP admission and owned shutdown. Delayed handlers retain the writer; captured service roles and bounds precede admission; SQLite contention returns unavailable. Source controls cover 30 cases and 32 faults per interpreter, with 286 related cases each. Corrected static review finds no further concrete defect. CLI, native/full receiver, default and hosted activation remain open.
 
 **October 14 retained transit storage check.** The [storage-room record](reviews/2026-10-14-gtfs-storage-room/STATUS.md) covers original workspace usage, immutable archive retry accounting and actual HTTP cancellation. Exact retained bytes still determine custody. Source and diagnostic controls, scoped types and lint pass; concurrent usage is not an atomic reservation. Managed admission stays disabled on the hosted installation.

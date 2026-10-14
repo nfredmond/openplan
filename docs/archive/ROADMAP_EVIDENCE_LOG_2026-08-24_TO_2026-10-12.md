@@ -420,3 +420,12 @@ October 14: [explicit original runtime assembly candidate](../reviews/2026-10-14
 **October 14 explicit assembly native recovery repeat.** The [assembly record](../reviews/2026-10-14-runtime-assembly/STATUS.md) adds four four-case positive cohorts and two intended SQL faults on a retained415 clone. The exact worker census matches. Actual PostgREST and supervised sockets exercise original copied inputs, committed journals and archive bytes; the callback fixture writes the ledger directly. Bundle factory native execution, the full receiver/Storage, default activation and independent-host acceptance remain open. M3/M5b grades do not change.
 
 **October 14 explicit owned HTTP service candidate.** The [dated record](../reviews/2026-10-14-owned-worker-service/STATUS.md) adds actual loopback durable admission/replay and shutdown to the explicit Bundle. Both interpreters pass four 30-case cohorts, 32 intended faults and 286 related cases. Frozen review closes ownership-drain, cached-role, pre-guard bound and SQLite-classification findings. The delayed admission retains ownership beyond its shutdown diagnostic and refuses a replacement writer. CLI commissioning, full native application/Storage, default activation, capacity and independent-host acceptance remain open; M3/M5b grades stay unchanged.
+
+
+**October14 explicit original-worker command candidate.**
+[Private command inputs and lifecycle](../reviews/2026-10-14-owned-worker-cli/STATUS.md)
+pass both-interpreter four32-case cohorts/41 intended faults and197 related cases
+each, including observed idle child admission/replay/SIGTERM and retained accepted
+phase. Static review closes a startup-fixture race. Native processing, full
+receiver/Storage, adoption, default activation and independent-host proof remain
+open under M3/M5b. Milestone grades do not change.
