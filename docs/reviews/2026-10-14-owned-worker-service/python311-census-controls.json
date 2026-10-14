@@ -1,0 +1,6 @@
+{
+  "positiveControls": 2,
+  "unmappedCaseRefused": true,
+  "removedGuard": "intended_failure",
+  "blindCategory": "Other files and dynamically generated methods are outside this static source census."
+}
