@@ -22,6 +22,8 @@ stable enough to promise smooth upgrades indefinitely.
 
 **Account and storage limits:** one person may own 5 workspaces and one workspace may store 5 GiB unless the operator sets `OPENPLAN_MAX_OWNED_WORKSPACES` or `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES`. Apply migration `20261017000010_workspace_storage_quota.sql` before deploying; workspace creation and uploads fail until it runs.
 
+**Generated reports and exports count against the storage limit.** Report PDF and HTML files, grant application exports and engagement review files are now refused when they would put a workspace over its storage limit, with the same message uploads give. Signed-in members can no longer upload straight into the report and grant export file stores with their own sign-in, which let them pass the limit; the server now stores those files. Existing files stay readable. Apply migration `20261017000013_artifact_storage_server_writes.sql` together with this code: older code fails to store report PDFs once the migration runs, and this code works before or after it.
+
 **Close comments on a live engagement page.** Staff can now close and reopen
 public comments from the campaign's Publish panel. The public page stays up as
 view only, and comment, photo and survey submissions are refused while closed.

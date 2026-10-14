@@ -4,6 +4,16 @@ import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { pagingFake } from "./helpers/paging-fake";
 import { parseReportAerialEvidenceSourceContext } from "@/lib/reports/aerial-source-context";
 import { createHash } from "node:crypto";
+import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// wants a full or unreadable workspace queues it.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -293,8 +303,11 @@ type ArtifactInsertPayload = {
 } & Record<string, unknown>;
 const artifactsInsertMock = vi.fn((_payload: ArtifactInsertPayload) => ({ select: artifactsInsertSelectMock }));
 
-const storageUploadMock = vi.fn();
-const storageFromMock = vi.fn(() => ({ upload: storageUploadMock }));
+// The signed-in member's own Storage client. Migration 20261017000013 removed
+// member INSERT on report-artifacts, so by default it refuses the way row
+// level security does; the route must never write through it.
+const memberStorageUploadMock = vi.fn();
+const memberStorageFromMock = vi.fn(() => ({ upload: memberStorageUploadMock }));
 const aerialCustodyMaybeSingleMock = vi.fn();
 const aerialCustodyEqMock = vi.fn(() => ({ eq: aerialCustodyEqMock, maybeSingle: aerialCustodyMaybeSingleMock }));
 const aerialCustodySelectMock = vi.fn(() => ({ eq: aerialCustodyEqMock }));
@@ -992,7 +1005,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
       error: null,
     });
 
-    storageUploadMock.mockResolvedValue({ error: null });
+    memberStorageUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
+    checkWorkspaceStorageRoomMock.mockReset();
     serviceStorageUploadMock.mockResolvedValue({ error: null });
     renderReportPdfMock.mockResolvedValue({
       bytes: new Uint8Array([37, 80, 68, 70]),
@@ -1005,7 +1019,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       auth: { getUser: authGetUserMock },
       from: fromMock,
       rpc: rpcMock,
-      storage: { from: storageFromMock },
+      storage: { from: memberStorageFromMock },
     });
     createServiceRoleClientMock.mockReturnValue({
       from: vi.fn((table: string) => {
@@ -1041,7 +1055,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
       expect(response.status).toBe(403);
       expect(await response.json()).toMatchObject({ error: "Planner Agent approval hash mismatch." });
-      expect(storageUploadMock).not.toHaveBeenCalled();
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
       expect(artifactsInsertMock).not.toHaveBeenCalled();
       expect(reportUpdateMock).not.toHaveBeenCalled();
       expect(executionInsertMock).not.toHaveBeenCalled();
@@ -1138,8 +1152,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
       previewBytes,
       { contentType: "image/png", upsert: false },
     );
-    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(String(htmlUpload?.[1])).toContain("data:image/png;base64");
+    // The frozen preview is checked as "already at the limit?" before it is
+    // copied, then the packet is checked with its own byte count.
+    expect(checkWorkspaceStorageRoomMock.mock.calls.map((call) => [call[1], call[2]])).toEqual([
+      ["33333333-3333-4333-8333-333333333333", 0],
+      ["33333333-3333-4333-8333-333333333333", (htmlUpload?.[1] as Buffer).byteLength],
+    ]);
+    expect(memberStorageUploadMock).not.toHaveBeenCalled();
   });
 
   it("persists a pdf artifact with storage_path + sets latest_artifact_kind to pdf", async () => {
@@ -1156,9 +1177,9 @@ describe("POST /api/reports/[reportId]/generate", () => {
 
     expect(response.status).toBe(200);
     expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
-    expect(storageFromMock).toHaveBeenCalledWith("report-artifacts");
-    expect(storageUploadMock).toHaveBeenCalledTimes(1);
-    const uploadArgs = storageUploadMock.mock.calls[0];
+    expect(serviceStorageFromMock).toHaveBeenCalledWith("report-artifacts");
+    expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+    const uploadArgs = serviceStorageUploadMock.mock.calls[0];
     const uploadPath: string = uploadArgs[0];
     expect(uploadPath.startsWith("33333333-3333-4333-8333-333333333333/11111111-1111-4111-8111-111111111111/")).toBe(
       true
@@ -1232,7 +1253,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    expect(storageUploadMock).toHaveBeenCalled();
+    expect(serviceStorageUploadMock).toHaveBeenCalled();
     expect(artifactsInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         metadata_json: expect.objectContaining({ pdfEngine: "builtin" }),
@@ -1288,7 +1309,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
   });
 
   it("returns 500 when PDF storage upload fails", async () => {
-    storageUploadMock.mockResolvedValueOnce({ error: { message: "bucket unavailable" } });
+    serviceStorageUploadMock.mockResolvedValueOnce({ error: { message: "bucket unavailable" } });
 
     const response = await postGenerate(
       new NextRequest("http://localhost/api/reports/1/generate", {
@@ -1304,6 +1325,170 @@ describe("POST /api/reports/[reportId]/generate", () => {
     expect(response.status).toBe(500);
     expect(renderReportPdfMock).toHaveBeenCalledTimes(1);
     expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  describe("the workspace storage limit", () => {
+    const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
+    const QUOTA = 5 * 1024 ** 3;
+
+    function generate(format: "pdf" | "html") {
+      return postGenerate(
+        new NextRequest("http://localhost/api/reports/1/generate", {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ format }),
+        }),
+        { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+    }
+
+    function serviceClient() {
+      return createServiceRoleClientMock.mock.results[0]?.value;
+    }
+
+    for (const format of ["pdf", "html"] as const) {
+      it(`stores a ${format} packet with the service role after checking the limit with its byte count`, async () => {
+        const response = await generate(format);
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const [path, bytes] = serviceStorageUploadMock.mock.calls[0];
+        expect(String(path).startsWith(`${WORKSPACE_ID}/11111111-1111-4111-8111-111111111111/`)).toBe(true);
+        expect(String(path).endsWith(`.${format}`)).toBe(true);
+        expect(serviceStorageFromMock).toHaveBeenCalledWith("report-artifacts");
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledTimes(1);
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, (bytes as Buffer).byteLength);
+        expect((bytes as Buffer).byteLength).toBeGreaterThan(0);
+        expect(memberStorageFromMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+      });
+
+      it(`refuses a ${format} packet that would pass the limit, naming the limit and current use, and stores nothing`, async () => {
+        const usedBytes = QUOTA - 2;
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "full",
+          usedBytes,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(usedBytes, QUOTA, 100),
+        });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(413);
+        const body = await response.json();
+        expect(body).toEqual({ error: workspaceStorageFullMessage(usedBytes, QUOTA, 100), usedBytes, quotaBytes: QUOTA });
+        expect(body.error).toContain("5 GiB storage limit (5 GiB used)");
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+        expect(reportUpdateMock).not.toHaveBeenCalled();
+        expect(mockAudit.warn).toHaveBeenCalledWith(
+          "report_artifact_storage_refused",
+          expect.objectContaining({ workspaceId: WORKSPACE_ID, status: "full", usedBytes, quotaBytes: QUOTA })
+        );
+      });
+
+      it(`refuses a ${format} packet when storage use cannot be read`, async () => {
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "unreadable",
+          message: WORKSPACE_STORAGE_UNREADABLE_MESSAGE,
+          detail: "permission denied for function workspace_storage_bytes",
+        });
+
+        const response = await generate(format);
+
+        expect(response.status).toBe(503);
+        expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+      });
+    }
+
+    for (const target of ["rtp", "campaign"] as const) {
+      function selectTarget() {
+        reportNamesCountyRun({
+          project_id: null,
+          rtp_cycle_id: target === "rtp" ? "77777777-7777-4777-8777-777777777777" : null,
+          engagement_campaign_id: target === "campaign" ? "99999999-9999-4999-8999-999999999999" : null,
+          modeling_county_run_id: null,
+        });
+      }
+
+      it(`stores a ${target} pdf packet with the service role after checking the limit`, async () => {
+        selectTarget();
+        const response = await generate("pdf");
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).toHaveBeenCalledTimes(1);
+        const [path, bytes] = serviceStorageUploadMock.mock.calls[0];
+        expect(String(path).endsWith(".pdf")).toBe(true);
+        expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, (bytes as Buffer).byteLength);
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+      });
+
+      it(`refuses a ${target} pdf packet at the limit and stores nothing`, async () => {
+        selectTarget();
+        checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+          status: "full",
+          usedBytes: QUOTA,
+          quotaBytes: QUOTA,
+          message: workspaceStorageFullMessage(QUOTA, QUOTA, 4),
+        });
+
+        const response = await generate("pdf");
+
+        expect(response.status).toBe(413);
+        expect((await response.json()).error).toBe(workspaceStorageFullMessage(QUOTA, QUOTA, 4));
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(memberStorageUploadMock).not.toHaveBeenCalled();
+        expect(artifactsInsertMock).not.toHaveBeenCalled();
+      });
+
+      it(`stores no file and checks no limit for a ${target} html packet, which lives in the artifact record`, async () => {
+        selectTarget();
+        const response = await generate("html");
+
+        expect(response.status).toBe(200);
+        expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+        expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
+      });
+    }
+
+    it("refuses before copying a selected aerial preview into a workspace already at its limit", async () => {
+      reportMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: WORKSPACE_ID,
+          project_id: "44444444-4444-4444-8444-444444444444",
+          rtp_cycle_id: null,
+          modeling_county_run_id: null,
+          title: "Project Status Packet",
+          summary: "Packet summary",
+          report_type: "project_status",
+          status: "draft",
+          created_at: "2026-03-14T00:00:00.000Z",
+          generated_at: null,
+          metadata_json: { aerialOrthoSelections: [{ custodyId: "55555555-5555-4555-8555-555555555555" }] },
+        },
+        error: null,
+      });
+      checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+        status: "full",
+        usedBytes: QUOTA,
+        quotaBytes: QUOTA,
+        message: workspaceStorageFullMessage(QUOTA, QUOTA, 0),
+      });
+
+      const response = await generate("html");
+
+      expect(response.status).toBe(413);
+      expect((await response.json()).error).toBe(workspaceStorageFullMessage(QUOTA, QUOTA, 0));
+      expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(serviceClient(), WORKSPACE_ID, 0);
+      expect(aerialCustodyMaybeSingleMock).not.toHaveBeenCalled();
+      expect(serviceStorageDownloadMock).not.toHaveBeenCalled();
+      expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+      expect(artifactsInsertMock).not.toHaveBeenCalled();
+    });
   });
 
   it("returns 403 when workspace role is unsupported", async () => {
@@ -1343,7 +1528,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     );
 
     expect(response.status).toBe(200);
-    const htmlUpload = storageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
+    const htmlUpload = serviceStorageUploadMock.mock.calls.find((call) => String(call[0]).endsWith(".html"));
     expect(htmlUpload?.[2]).toEqual({ contentType: "text/html", upsert: false });
     expect(await response.json()).toMatchObject({
       reportId: "11111111-1111-4111-8111-111111111111",
