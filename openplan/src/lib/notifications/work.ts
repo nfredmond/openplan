@@ -130,7 +130,6 @@ import {
   latestTodayAnywhere,
   resolveWorkspaceTimeZone,
   todayIn,
-  WORKSPACE_CALENDAR_COLUMNS,
 } from "@/lib/time/workspace-calendar";
 
 import { enqueueEmail } from "./engagement";
@@ -1663,7 +1662,8 @@ async function loadSweepCalendars(
     try {
       const { data, error } = await client
         .from("workspaces")
-        .select(`id, ${WORKSPACE_CALENDAR_COLUMNS}`)
+        // A literal, so the projection guard checks it against the schema.
+        .select("id, time_zone, home_country_code")
         .in("id", batch);
       if (error) {
         unavailable = true;
