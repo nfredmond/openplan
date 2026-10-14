@@ -41,6 +41,13 @@ fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the
 [dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
 
+**Planner Agent funding words.** The assistant panel's funding answers, quick
+links and the prompts it sends after an action counted "project funding lanes"
+and "reimbursement lanes" and offered to "Create funding need anchor". They now
+count projects, one or many, and name the funding target, the invoice or the
+Grants page. The panel summary no longer reads "3 missing a funding targets".
+Action ids, kinds and payload fields are unchanged. No migration.
+
 **Native engine observer, candidate:** add an explicit Linux NodeODM observer
 for the configured original container, image, process-mounted configuration and
 private endpoint. It requires the same host PID namespace and permission to read

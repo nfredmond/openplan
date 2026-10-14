@@ -306,6 +306,11 @@ describe("grants lane operations", () => {
     expect(text).toContain("unknown");
     expect(text).not.toContain("0 funding awards recorded");
     expect(response.evidence.join("\n")).toContain("Awards: unknown (read failed)");
+    // The register brief says it in the planner's words: the award records,
+    // not an "award lane".
+    const brief = buildAssistantResponse(context, "grants-brief");
+    expect(brief.summary).toMatch(/ visible from this register; the award records could not be read\.$/);
+    expect(brief.summary).not.toMatch(/\blanes?\b/);
   });
 });
 
