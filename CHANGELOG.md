@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Aerial held-file custody, candidate:** migration
+`20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
+replacing the original facts of a held file. Attempt counts and timestamps can
+still advance. Deploy the callback recovery code first, then take a fresh backup
+and apply this migration before merging the dependent guard. Hosted activation
+and full worker integration remain pending. See the
+[guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
+
 **RTP comment record counts every comment.** The comment-response record on
 the RTP cycle page and in the exported packet read approved comments, responses
 and consultations in one request each, so a plan with more than 1,000 comments
