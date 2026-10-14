@@ -30,6 +30,8 @@ import {
   type ApplicationSectionStatus,
 } from "@/lib/grants/application";
 import { GRANT_PROGRAM_CATALOG } from "@/lib/grants/program-catalog";
+import { isAtpApplication } from "@/lib/grants/atp-packet";
+import { AtpScoringPacketPanel } from "@/components/grants/atp-scoring-packet-panel";
 
 /**
  * The application workspace for one funding opportunity: initialize from a
@@ -521,6 +523,8 @@ export function FundingOpportunityApplicationWorkspace({
   }
 
   const isEmptyApplication = hasLoaded && sections.length === 0 && attachments.length === 0;
+  // ATP is a California program: only an application seeded from its template shows the packet.
+  const showAtpPacket = pursuitKind === "grant" && isAtpApplication(sections);
 
   return (
     <div className="module-note mt-4 text-sm" data-testid="application-workspace">
@@ -622,6 +626,8 @@ export function FundingOpportunityApplicationWorkspace({
                   draft even though one exists.
                 </p>
               ) : null}
+
+              {showAtpPacket ? <AtpScoringPacketPanel opportunityId={opportunityId} /> : null}
 
               <div className="space-y-2" data-testid="application-sections">
                 <p className="text-label font-semibold text-foreground/70">

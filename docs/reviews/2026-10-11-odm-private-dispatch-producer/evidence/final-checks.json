@@ -1,0 +1,23 @@
+{
+  "tests": {
+    "numTotalTests": 59,
+    "numPassedTests": 59,
+    "numFailedTests": 0,
+    "success": true
+  },
+  "checks": [
+    {
+      "name": "tests",
+      "exit": 0
+    },
+    {
+      "name": "types",
+      "exit": 0
+    },
+    {
+      "name": "lint",
+      "exit": 0
+    }
+  ],
+  "scope": "Two focused application files, scoped TypeScript and changed-file lint. No full application QA, CI, browser or hosted acceptance."
+}

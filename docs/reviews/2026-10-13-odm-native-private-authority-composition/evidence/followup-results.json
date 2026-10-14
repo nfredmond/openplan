@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "default-helper-compatibility",
+    "returncode": 0,
+    "seconds": 39.047
+  },
+  {
+    "stage": "native-composition311",
+    "returncode": 0,
+    "seconds": 45.735
+  },
+  {
+    "stage": "documentation",
+    "returncode": 0,
+    "seconds": 3.856
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.348
+  }
+]

@@ -1,0 +1,22 @@
+{
+  "date": "2026-10-11T17:39:50.027096+00:00",
+  "unit": "openplan-gtfs-current-main-preview-20261011-02.service",
+  "verifiedCwd": "/home/nathaniel/.local/state/openplan/gtfs-current-main-join-20261011/openplan",
+  "stoppedPid": 53196,
+  "after": "ActiveState=inactive\nMainPID=0\nResult=success\nExecMainStatus=0\nMemoryPeak=[not set]\n",
+  "startupHealthStatus": 200,
+  "t3Tab": "tab_3",
+  "initialOpenAutomationCapable": true,
+  "resizeAttempt": {
+    "width": 1280,
+    "height": 900,
+    "timeoutMs": 15000,
+    "result": "Preview automation resize timed out after15000ms"
+  },
+  "navigateAttempt": "No preview automation host available; explicit do-not-retry response",
+  "snapshotAttempt": "PreviewAutomationNoAvailableHostError; explicit do-not-retry response",
+  "navigationAcceptance": false,
+  "screenshotAcceptance": false,
+  "desktopOr390VisualAcceptance": false,
+  "scope": "Owned frozen preview only. Original expanded target services remain available and unchanged by this stop. No alternative browser, demo, hosted, main merge, model run, adoption or scientific acceptance."
+}

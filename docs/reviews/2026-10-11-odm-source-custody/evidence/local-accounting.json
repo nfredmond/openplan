@@ -1,0 +1,62 @@
+[
+  {
+    "Id": "openplan-odm-source-custody-controls-20261011-04.service",
+    "InvocationID": "8a2b9209ef624c39a47d8923006a68e2",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "32849920",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "CPUUsageNSec": "4925661000",
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": "128"
+  },
+  {
+    "Id": "openplan-odm-source-custody-native-20261011-02.service",
+    "InvocationID": "6e1bbc19c66e4fcaa30eac97f370ec1c",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "536870912",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "CPUUsageNSec": "1564822000",
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": "128"
+  },
+  {
+    "Id": "openplan-odm-source-custody-ci-controls-20261011-01.service",
+    "InvocationID": "c9049cc4b6a648648eb67c8424cce089",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "64880640",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "CPUUsageNSec": "4701269000",
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": "128"
+  },
+  {
+    "Id": "openplan-odm-source-custody-suites-20261011-01.service",
+    "InvocationID": "5f5d49c7eedb45099c7e1699718149a1",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "53723136",
+    "MemoryMax": "536870912",
+    "MemorySwapMax": "0",
+    "CPUUsageNSec": "1230202000",
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": "128"
+  },
+  {
+    "Id": "openplan-odm-source-custody-doc-checks-20261011-01.service",
+    "InvocationID": "b3e0381341394f59909da9978c2d88ab",
+    "Result": "success",
+    "ExecMainStatus": "0",
+    "MemoryPeak": "342061056",
+    "MemoryMax": "1073741824",
+    "MemorySwapMax": "0",
+    "CPUUsageNSec": "4277248000",
+    "CPUQuotaPerSecUSec": "1s",
+    "TasksMax": "128"
+  }
+]

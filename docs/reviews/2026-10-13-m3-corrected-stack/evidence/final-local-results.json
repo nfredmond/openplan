@@ -1,0 +1,27 @@
+[
+  {
+    "stage": "application-and-documentation",
+    "returncode": 0,
+    "seconds": 5.972
+  },
+  {
+    "stage": "scoped-types",
+    "returncode": 0,
+    "seconds": 1.412
+  },
+  {
+    "stage": "changed-file-lint",
+    "returncode": 0,
+    "seconds": 1.599
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.345
+  },
+  {
+    "stage": "hosted-schema-readonly",
+    "returncode": 0,
+    "seconds": 0.37
+  }
+]

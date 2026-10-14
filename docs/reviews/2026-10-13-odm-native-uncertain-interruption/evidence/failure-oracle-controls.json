@@ -1,0 +1,66 @@
+[
+  {
+    "case": "AssertionError-baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "AssertionError-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "AssertionError-restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "AssertionError-zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "AssertionError-wrong-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "AssertionError-extra-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "AssertionError-missing-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "AssertionError-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "ValueError-baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "ValueError-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "ValueError-restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "ValueError-zero-exit",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "ValueError-wrong-reason",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "ValueError-extra-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "ValueError-missing-error",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "ValueError-wrong-type",
+    "outcome": "intended_refusal"
+  }
+]

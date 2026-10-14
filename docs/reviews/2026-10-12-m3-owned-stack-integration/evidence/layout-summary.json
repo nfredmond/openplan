@@ -1,0 +1,7 @@
+{
+  "controls": 4,
+  "classifierControls": 10,
+  "sourceSha256": "aafbd87b97847363b166ec726c2373d2303ba16252672e0afa99afb0683b3c89",
+  "testSha256": "eaec59b383e60243e87d58baa58c5f38af06fa0af1bdd3726c5c47985cb7b915",
+  "boundary": "Synthetic Xvfb geometry and keyboard checks only; no live services or browser."
+}

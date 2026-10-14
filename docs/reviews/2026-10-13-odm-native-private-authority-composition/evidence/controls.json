@@ -1,0 +1,53 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "actual-attestor-call-omitted",
+    "outcome": "intended_failure",
+    "reason": "Changed native engine must refuse before the next intent"
+  },
+  {
+    "control": "engine-refusal-cohort-omitted",
+    "outcome": "intended_failure",
+    "reason": "native-composition-changedEngineRefused"
+  },
+  {
+    "control": "backend-image-bytes-changed",
+    "outcome": "intended_failure",
+    "reason": "native-composition-retainedDraftContents"
+  },
+  {
+    "control": "backend-original-form-changed",
+    "outcome": "intended_failure",
+    "reason": "native-composition-retainedDraftContents"
+  },
+  {
+    "control": "backend-unplanned-file-added",
+    "outcome": "intended_failure",
+    "reason": "native-composition-retainedDraftContents"
+  },
+  {
+    "control": "predicate-census-omitted",
+    "outcome": "intended_failure",
+    "reason": "Changed native composition result survived"
+  },
+  {
+    "control": "predicate-bool-type-omitted",
+    "outcome": "intended_failure",
+    "reason": "Changed native composition result survived"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,32 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "normal-retry-keeps-fault-deadline",
+    "outcome": "intended_failure",
+    "reason": "GTFS uploaded archive is unconfirmed"
+  },
+  {
+    "control": "upload-gets-owner-signal-without-deadline",
+    "outcome": "intended_failure",
+    "reason": "Ignored upload must receive its deadline before reconciliation"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  },
+  {
+    "control": "complete-intake-suite",
+    "outcome": "survived"
+  }
+]

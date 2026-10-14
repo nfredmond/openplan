@@ -1,0 +1,16 @@
+{
+  "stages": 31,
+  "unittestSuites": 23,
+  "unittestCases": 591,
+  "scenarioPrograms": 7,
+  "documentationCases": 20,
+  "sourceControlsPerInterpreter": 31,
+  "sourceSurvivors": 4,
+  "sourceFaults": 27,
+  "nativeReplayControlsPerInterpreter": 8,
+  "nativeSurvivors": 3,
+  "nativeFaults": 5,
+  "originalWorkerSourcesRestored": true,
+  "workerRecoveryAccepted": false,
+  "defaultActivated": false
+}

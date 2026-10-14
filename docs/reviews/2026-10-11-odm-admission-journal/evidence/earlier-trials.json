@@ -1,0 +1,32 @@
+[
+  {
+    "trial": "controls-01",
+    "outcome": "failed",
+    "reason": "final diagnostic reader omitted multiline equality assertion message",
+    "retained": true
+  },
+  {
+    "trial": "controls-02",
+    "outcome": "superseded",
+    "reason": "45-test version before companion/schema/JSON durability additions",
+    "retained": true
+  },
+  {
+    "trial": "controls-03",
+    "outcome": "failed",
+    "reason": "stored-receipt mutation also reached encoding guard; fixture now preserves encoding to isolate identity",
+    "retained": true
+  },
+  {
+    "trial": "ci-discovery-01",
+    "outcome": "failed",
+    "reason": "local machine has python3 but no python alias; workflow and rerun use python3",
+    "retained": true
+  },
+  {
+    "trial": "native-01",
+    "outcome": "superseded",
+    "reason": "native-02 adds missing-field and equal-value wrong-type observation refusals",
+    "retained": true
+  }
+]

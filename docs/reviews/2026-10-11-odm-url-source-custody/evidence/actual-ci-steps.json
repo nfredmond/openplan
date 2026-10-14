@@ -1,0 +1,14 @@
+[
+  {
+    "name": "Original URL source harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-url-source-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-url-source-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "cfd275286ee2d22e3cc8ea15fb472241f44e292dd631465c33c27f374fac8a83"
+  },
+  {
+    "name": "Interrupted URL source and two stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-url-source-custody/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-url-source-native\"\n",
+    "exit": 0,
+    "workflowSha256": "cfd275286ee2d22e3cc8ea15fb472241f44e292dd631465c33c27f374fac8a83"
+  }
+]

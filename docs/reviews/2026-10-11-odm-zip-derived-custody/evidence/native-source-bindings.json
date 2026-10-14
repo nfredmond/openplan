@@ -1,0 +1,10 @@
+{
+  "docs/reviews/2026-10-11-coordinated-worker-point/worker_root.py": "5785a629453489501b2dca6c1bd33d8c40e3cca3ba2cbed743e4619cc439286d",
+  "docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py": "7d5ad7083c29b1b16c93ea84b4abb2496ae07ecef0c2d35f867f27ea6153d06a",
+  "openplan/scripts/ops/worker_journal_snapshot.py": "7e5570eec9861b44abfe1138b0eb31bf0a982e7b13b8b179a174e1007fe05ebb",
+  "openplan/scripts/ops/worker_root_snapshot.py": "4ea3f9d9c084e0de5b45dee2b371f2ce6fcb5182ea6c2a0f2eac8a6a83040d24",
+  "workers/odm_worker/admission_journal.py": "d14e9b05ba1cc21115ca844f4949bb1566d46d40fe5493ce57f7cc71163121ba",
+  "workers/odm_worker/derived_zip.py": "6b075f87f1cd3fddb288479027074eaffa028a74cacc64dabd6a631581ca07d0",
+  "workers/odm_worker/intake.py": "adef35cbad063b233669d2125f89be3b0bc16eb8da8ea3802ffa3a9737e4dc0a",
+  "workers/odm_worker/retained_source.py": "e1cda4f217eff7f1a1e628b0b2062e60b5ad1a4de62f0ee190bcf294b1c1bf81"
+}

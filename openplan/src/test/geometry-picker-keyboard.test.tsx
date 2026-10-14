@@ -11,6 +11,8 @@ const mapboxMocks = vi.hoisted(() => {
       keyboard: { disable: vi.fn() },
       addControl: vi.fn(),
       on: vi.fn(),
+      // A real map can take a listener off; the style wait does on unmount.
+      off: vi.fn(),
       getCanvas: vi.fn(() => ({ setAttribute: vi.fn() })),
       getCenter: vi.fn(() => center),
       panBy: vi.fn((offset:number[],options?:{duration:number})=>{if(options?.duration===0)center={lng:center.lng+offset[0]/1000,lat:center.lat-offset[1]/1000};}),

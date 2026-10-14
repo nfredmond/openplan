@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Original URL draft pipeline harmless and targeted controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-url-draft-pipeline-controls\"\npython3 -B docs/reviews/2026-10-11-odm-url-draft-pipeline/verify_transport_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-url-draft-pipeline-transport-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "adcd4ad4b1830572c77df2c25406727b78caa7aa7ed1dadf8e1cead442d2e59d"
+  }
+]

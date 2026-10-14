@@ -20,7 +20,7 @@ import { emptyPortalTranslationIndex, resolveOperatorText } from "@/lib/engageme
 import { resolvePortalMapFraming, type PublicPortalBundle } from "@/lib/engagement/public-portal-data";
 import { buildPortalMapShellProps } from "@/lib/engagement/portal-surface-props";
 import { resolvePublicBasemapConfig } from "@/lib/cartographic/basemaps";
-import { fakeMaps, lastFakeMap, resetFakeMaps } from "@/test/helpers/mapbox-gl-fake";
+import { failNextFakeMapConstruction, fakeMaps, lastFakeMap, resetFakeMaps } from "@/test/helpers/mapbox-gl-fake";
 
 const protocols = vi.hoisted(() => ({ added: [] as string[] }));
 
@@ -241,6 +241,16 @@ describe("the map with no Mapbox key", () => {
     expect(screen.getByTestId("portal-map-stage-unavailable").textContent).toContain("NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL");
     expect(screen.getByTestId("portal-map-stage-unavailable").textContent).not.toContain("Mapbox");
     expect(fakeMaps()).toHaveLength(0);
+  });
+
+  it("says the map could not load when MapLibre cannot build a map (no WebGL2)", async () => {
+    const quiet = vi.spyOn(console, "error").mockImplementation(() => undefined);
+    failNextFakeMapConstruction("Failed to initialize WebGL");
+    await renderShell();
+    await waitFor(() => expect(screen.getByTestId("portal-map-stage-unavailable")).toBeInTheDocument());
+    expect(screen.getByTestId("portal-map-stage-unavailable").textContent).toContain("WebGL2");
+    expect(fakeMaps()).toHaveLength(0);
+    quiet.mockRestore();
   });
 });
 

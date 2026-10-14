@@ -1,0 +1,15 @@
+{
+  "state": "failed-source-private-directory-precondition",
+  "sourceFileCensusMatched": true,
+  "sourceCopied": false,
+  "servicesStarted": 0,
+  "reason": "Strict complete private-root inventory refuses backend directory modes in the previously retained Storage subtree. Retain this trial and source unchanged. A fresh packet may harden its copy, preserving the full original file/directory mode metadata separately.",
+  "nonPrivateModes": {
+    "files": {
+      "0o644": 10
+    },
+    "directories": {
+      "0o755": 2
+    }
+  }
+}

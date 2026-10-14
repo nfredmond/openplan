@@ -1,0 +1,58 @@
+[
+  {
+    "control": "runtime-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "runtime-harmless-copy",
+    "outcome": "survived"
+  },
+  {
+    "control": "runtime-durable-hash",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "runtime-missing-durable-file",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "runtime-durable-mode",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "runtime-unexpected-data",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "runtime-restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "sources-baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "sources-harmless-copy",
+    "outcome": "survived"
+  },
+  {
+    "control": "sources-durable-hash",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sources-missing-durable-file",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sources-durable-mode",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sources-unexpected-data",
+    "outcome": "intended_refusal"
+  },
+  {
+    "control": "sources-restored",
+    "outcome": "survived"
+  }
+]

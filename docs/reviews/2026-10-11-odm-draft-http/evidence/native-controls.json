@@ -1,0 +1,350 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-extra-observation",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "ownedEngineCount-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedEngineCount-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedEngineCount-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeInitCount-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeInitCount-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeInitCount-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeUploadCount-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeUploadCount-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeUploadCount-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeCommandCount-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeCommandCount-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "nativeCommandCount-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allResponsesChecked-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allResponsesChecked-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allResponsesChecked-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRuntimeCallsDraft-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRuntimeCallsDraft-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRuntimeCallsDraft-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "lostUploadRemainsUnresolved-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "lostUploadRemainsUnresolved-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "lostUploadRemainsUnresolved-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noUncertainReissue-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noUncertainReissue-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noUncertainReissue-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredUncertainHold-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredUncertainHold-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredUncertainHold-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredAdmissionExact-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredAdmissionExact-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "restoredAdmissionExact-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeDraftHoldsCommit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeDraftHoldsCommit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeDraftHoldsCommit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitIntents-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitIntents-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitIntents-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitRequests-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitRequests-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noCommitRequests-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allContextAndPlansOriginal-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allContextAndPlansOriginal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allContextAndPlansOriginal-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allExactUploadedBytes-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allExactUploadedBytes-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allExactUploadedBytes-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allInspectionsPassed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allInspectionsPassed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allInspectionsPassed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "partialNativeCustodyMatches-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "partialNativeCustodyMatches-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "partialNativeCustodyMatches-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeNativeCustodyMatches-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeNativeCustodyMatches-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completeNativeCustodyMatches-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "inspectionDeniesTransport-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "inspectionDeniesTransport-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "inspectionDeniesTransport-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesVerified-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesVerified-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesVerified-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedRootsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedRootsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedRootsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allProtectedPackagesUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOwnedEnginesStopped-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOwnedEnginesStopped-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOwnedEnginesStopped-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allImagesPinned-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allImagesPinned-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allImagesPinned-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allNetworksInternalNoPublishedPorts-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allNetworksInternalNoPublishedPorts-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allNetworksInternalNoPublishedPorts-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allHTTPChildrenReaped-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allHTTPChildrenReaped-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allHTTPChildrenReaped-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allEngineMemoryLimitsDeclared-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allEngineMemoryLimitsDeclared-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allEngineMemoryLimitsDeclared-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  }
+]

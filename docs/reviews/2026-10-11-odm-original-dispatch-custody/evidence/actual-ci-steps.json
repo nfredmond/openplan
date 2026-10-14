@@ -1,0 +1,8 @@
+[
+  {
+    "name": "Original dispatch custody harmless and targeted controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-original-dispatch-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-original-dispatch-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "5b5ea47f04e65c21b8f041035513b982e6f3ab20a9cd6804be08d7a5689525aa"
+  }
+]

@@ -731,6 +731,7 @@ export function ExploreWorkbench({
             <MapUnavailableNotice
               className="max-w-md border-border bg-background/95 px-5 shadow-lg backdrop-blur-sm"
               unusableToken={mapUnavailableReason === "unusable_token"}
+              cause={mapUnavailableReason === "cannot_start" ? "cannot_start" : "not_set_up"}
               stillWorks="Corridor runs still work. Only the map display is affected."
             />
           </div>

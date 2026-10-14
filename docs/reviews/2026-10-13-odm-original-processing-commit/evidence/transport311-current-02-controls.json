@@ -1,0 +1,190 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 19
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 19
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 19
+  },
+  {
+    "control": "post-changed-to-get",
+    "outcome": "intended_failure",
+    "case": "test_one_exact_original_post_and_complete_reply",
+    "diagnostic": "Original processing commit did not complete",
+    "kind": "errors"
+  },
+  {
+    "control": "commit-reply-not-validated",
+    "outcome": "intended_failure",
+    "case": "test_wrong_uuid_error_and_duplicate_reply_refuse",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "non-success-response-accepted",
+    "outcome": "intended_failure",
+    "case": "test_non_success_and_partial_body_refuse_without_retry",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "partial-response-accepted",
+    "outcome": "intended_failure",
+    "case": "test_non_success_and_partial_body_refuse_without_retry",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "unowned-commit-accepted",
+    "outcome": "intended_failure",
+    "case": "test_unowned_and_precancelled_calls_stop_before_credentials_or_http",
+    "diagnostic": "InterruptedError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "pre-cancellation-ignored",
+    "outcome": "intended_failure",
+    "case": "test_unowned_and_precancelled_calls_stop_before_credentials_or_http",
+    "diagnostic": "InterruptedError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "engine-check-omitted",
+    "outcome": "intended_failure",
+    "case": "test_engine_refusal_prevents_commit_request",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "late-owner-check-suppressed",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_closes_stalled_actual_request",
+    "diagnostic": "TimeoutError",
+    "kind": "errors"
+  },
+  {
+    "control": "final-engine-check-omitted",
+    "outcome": "intended_failure",
+    "case": "test_final_engine_refusal_cannot_acknowledge_commit_reply",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "parent-metadata-bound-omitted",
+    "outcome": "intended_failure",
+    "case": "test_parent_metadata_bound_precedes_child_creation",
+    "diagnostic": "Oversized original metadata reached child creation",
+    "kind": "failures"
+  },
+  {
+    "control": "child-envelope-shape-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_child_shape_uuid_and_credential_refuse_before_http",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "child-uuid-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_child_shape_uuid_and_credential_refuse_before_http",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "original-plan-comparison-omitted",
+    "outcome": "intended_failure",
+    "case": "test_changed_plan_refuses_before_credentials_or_network",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "engine-boolean-coerced",
+    "outcome": "intended_failure",
+    "case": "test_engine_check_false_or_nonboolean_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "parent-credential-check-omitted",
+    "outcome": "intended_failure",
+    "case": "test_credential_none_and_invalid_values",
+    "diagnostic": "Invalid original credential reached child creation",
+    "kind": "failures"
+  },
+  {
+    "control": "child-credential-check-omitted",
+    "outcome": "intended_failure",
+    "case": "test_child_shape_uuid_and_credential_refuse_before_http",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "credential-error-exposed",
+    "outcome": "intended_failure",
+    "case": "test_credential_resolution_error_is_not_exposed",
+    "diagnostic": "PRIVATE_CREDENTIAL_MARKER",
+    "kind": "errors"
+  },
+  {
+    "control": "cancellation-type-coerced",
+    "outcome": "intended_failure",
+    "case": "test_nonboolean_cancellation_refuses",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-adapters-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_adapters_are_required",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "missing-owner-adapter-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_adapters_are_required",
+    "diagnostic": "'NoneType' object is not callable",
+    "kind": "errors"
+  },
+  {
+    "control": "owned-output-bound-omitted",
+    "outcome": "intended_failure",
+    "case": "test_owned_child_output_bounds",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "child-metadata-bound-omitted",
+    "outcome": "intended_failure",
+    "case": "test_child_metadata_bound_precedes_payload_read",
+    "diagnostic": "Oversized child metadata reached payload read",
+    "kind": "failures"
+  },
+  {
+    "control": "owner-type-coerced",
+    "outcome": "intended_failure",
+    "case": "test_absent_or_nonboolean_ownership_refuses",
+    "diagnostic": "not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "deadline-not-checked",
+    "outcome": "intended_failure",
+    "case": "test_deadline_refuses_before_network",
+    "diagnostic": "did not complete",
+    "kind": "errors"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 19
+  }
+]

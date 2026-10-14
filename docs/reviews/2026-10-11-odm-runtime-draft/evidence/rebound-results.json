@@ -1,0 +1,14 @@
+[
+  {
+    "check": "controls-05",
+    "exit": 0
+  },
+  {
+    "check": "native-03",
+    "exit": 0
+  },
+  {
+    "check": "ci-02",
+    "exit": 0
+  }
+]

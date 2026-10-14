@@ -1,0 +1,26 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-json-space",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "missing-prelude",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "changed-prelude",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "extra-stdout",
+    "outcome": "intended_failure"
+  }
+]

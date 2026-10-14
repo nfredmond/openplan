@@ -1,0 +1,12 @@
+{
+  "Id": "openplan-odm-draft-driver-controls-20261011-01.service",
+  "InvocationID": "ad6a0813fc9f4e39a7c2285d12742c83",
+  "Result": "success",
+  "ExecMainStatus": "0",
+  "MemoryPeak": "25264128",
+  "MemoryMax": "268435456",
+  "MemorySwapMax": "0",
+  "CPUUsageNSec": "224164000",
+  "CPUQuotaPerSecUSec": "1s",
+  "TasksMax": "128"
+}

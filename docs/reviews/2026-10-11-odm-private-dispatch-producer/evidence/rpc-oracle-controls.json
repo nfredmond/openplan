@@ -1,0 +1,59 @@
+{
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived"
+    },
+    {
+      "name": "harmless",
+      "result": "survived"
+    },
+    {
+      "name": "exit-removed",
+      "result": "intended refusal lost: success-exit"
+    },
+    {
+      "name": "assertion-removed",
+      "result": "intended refusal lost: duplicate-assertion"
+    },
+    {
+      "name": "first-line-removed",
+      "result": "intended refusal lost: noise-before"
+    },
+    {
+      "name": "message-ignored",
+      "result": "intended refusal lost: revoked-intended"
+    },
+    {
+      "name": "restored",
+      "result": "survived"
+    },
+    {
+      "name": "network-baseline",
+      "result": "survived"
+    },
+    {
+      "name": "network-harmless",
+      "result": "survived"
+    },
+    {
+      "name": "network-overlap-removed",
+      "result": "intended refusal lost: docker-overlap"
+    },
+    {
+      "name": "network-size-removed",
+      "result": "intended refusal lost: wide-subnet"
+    },
+    {
+      "name": "network-private-removed",
+      "result": "intended refusal lost: public-subnet"
+    },
+    {
+      "name": "network-restored",
+      "result": "survived"
+    }
+  ],
+  "classificationCases": 11,
+  "networkCases": 6,
+  "scope": "In-memory classifier and network controls only; actual CLI/RPC evidence remains separate."
+}
