@@ -1,0 +1,7 @@
+{
+  "cases": 846,
+  "suites": 37,
+  "interpreter": "Python 3.14",
+  "scope": "all aerial unit suites",
+  "nativeDatabaseAcceptance": false
+}

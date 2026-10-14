@@ -1,0 +1,5 @@
+{
+  "path": "docs/reviews/2026-10-14-odm-output-schema-recovery/drivers/migration_source.py",
+  "sha256": "af8ecbae61e6c067826adb298cff271f987fea8e00d549c0236380753e3ee47c",
+  "blindCategory": "Git source custody does not establish database schema, installation or recovery acceptance."
+}

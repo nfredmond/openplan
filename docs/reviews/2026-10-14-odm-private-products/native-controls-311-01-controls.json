@@ -1,0 +1,48 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "final-access-read-omitted",
+    "outcome": "intended_failure",
+    "diagnostic": "Original products need five actual current access reads"
+  },
+  {
+    "case": "actual-revocation-swallowed",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual post-copy actor revocation must refuse completion"
+  },
+  {
+    "case": "saved-product-changed",
+    "outcome": "intended_failure",
+    "diagnostic": "Saved original product bytes differ"
+  },
+  {
+    "case": "delivery-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Native products cannot permit delivery"
+  },
+  {
+    "case": "quality-promoted",
+    "outcome": "intended_failure",
+    "diagnostic": "Private native products cannot promote processingQualityVerification"
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "outcome": "intended_failure",
+    "diagnostic": "Actual product child must exit after retained member bytes"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  }
+]

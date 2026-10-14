@@ -50,6 +50,8 @@ only reviewed consultant invoices, and client invoices past draft can change onl
 their status, enforced in the database for every writer. Existing records are not
 rewritten; the rules apply to new writes.
 
+Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On

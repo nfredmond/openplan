@@ -1,0 +1,103 @@
+{
+  "gdalVersion": "GDAL 3.12.2 \"Chicoutimi\", released 2026/02/03",
+  "cases": [
+    {
+      "case": "rotated",
+      "epsg": 32610,
+      "fileBytes": 408,
+      "sha256": "2562dd8f1737026e4c7871a86c1108612979dd9bbf5691774d58ff7542c18ba6",
+      "gdalNativeStepLengths": [
+        5.0,
+        5.0
+      ],
+      "parserNativeStepLengths": [
+        5.0,
+        5.0
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    },
+    {
+      "case": "quarter-turn",
+      "epsg": 32610,
+      "fileBytes": 408,
+      "sha256": "2bccca1a054c080c74b0fae647d1ac92af1952f52914a485b7fce3c4d180bbf6",
+      "gdalNativeStepLengths": [
+        3.0,
+        2.0
+      ],
+      "parserNativeStepLengths": [
+        3.0,
+        2.0
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    },
+    {
+      "case": "sheared",
+      "epsg": 32610,
+      "fileBytes": 408,
+      "sha256": "dbf115336e619f760fe7fd4c7567733c4774e0f3f0b9f07b91123449caf6ce7f",
+      "gdalNativeStepLengths": [
+        2.0,
+        3.1622776601683795
+      ],
+      "parserNativeStepLengths": [
+        2.0,
+        3.1622776601683795
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    },
+    {
+      "case": "reflected",
+      "epsg": 32610,
+      "fileBytes": 408,
+      "sha256": "9b5c9f07bce3f56ae148138d74e63df3d8ff53f3192ef28538b95f6f9f0d9517",
+      "gdalNativeStepLengths": [
+        5.0,
+        5.0
+      ],
+      "parserNativeStepLengths": [
+        5.0,
+        5.0
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    },
+    {
+      "case": "axis-aligned",
+      "epsg": 32610,
+      "fileBytes": 364,
+      "sha256": "fa183612cf398dab85be9701be1b12ba17c52f8c8a2925e59591337b395fe55d",
+      "gdalNativeStepLengths": [
+        0.05,
+        0.1
+      ],
+      "parserNativeStepLengths": [
+        0.05,
+        0.1
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    },
+    {
+      "case": "asymmetric",
+      "epsg": 32610,
+      "fileBytes": 408,
+      "sha256": "4b6701fa4962c18181003c34b8b7e6a9a328322b0e0f91e7ed2bfb7112570b63",
+      "gdalNativeStepLengths": [
+        12.36931687685298,
+        6.4031242374328485
+      ],
+      "parserNativeStepLengths": [
+        12.36931687685298,
+        6.4031242374328485
+      ],
+      "scope": "synthetic_native_tag_and_vector_arithmetic",
+      "surveyAccuracy": "unassessed"
+    }
+  ],
+  "sourceSha256": "9a3dfcc47b6f4a1c204ec432523adca6e9dd4ff1f5ddd9c937b99decd58f6a87",
+  "scientificAcceptance": false
+}
