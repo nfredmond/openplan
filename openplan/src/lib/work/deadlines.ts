@@ -225,22 +225,26 @@ export function invoicePriority(
  * How a deadline reads on screen — ONE rendering, so a date does not appear as
  * `2026-08-20` in one place and `8/20/2026, 12:00:00 AM` in another.
  *
- * UTC, deliberately. Half these columns are `DATE` (deliverables, milestones,
- * submittals, invoices) and half are `TIMESTAMPTZ` (grant decisions, award
- * obligations); rendering the first group in the reader's local zone shifts a
- * plain calendar date backwards for anyone west of UTC, which is how a
- * deadline of the 20th shows as the 19th. An unparseable value is returned
- * verbatim rather than swallowed.
+ * Half these columns are `DATE` (deliverables, milestones, submittals,
+ * invoices) and half are `TIMESTAMPTZ` (grant decisions, award obligations).
+ * A `DATE` is already a calendar day and is shown as that day in every zone;
+ * read as an instant it would be midnight UTC, the evening before in the
+ * Americas. A `TIMESTAMPTZ` is shown on the calendar of `timeZone`, the
+ * workspace's zone (`lib/time/workspace-calendar.ts`), so an obligation due
+ * at 11 p.m. Pacific on the 20th reads as the 20th. A caller with no workspace
+ * calendar gets UTC, as before. An unparseable value is returned verbatim
+ * rather than swallowed.
  */
-export function formatWorkDeadlineDate(value: string | null | undefined): string | null {
+export function formatWorkDeadlineDate(value: string | null | undefined, timeZone: string = "UTC"): string | null {
   if (!value) return null;
   const parsed = new Date(value);
   if (Number.isNaN(parsed.getTime())) return value;
+  const calendarDay = /^\d{4}-\d{2}-\d{2}$/.test(value.trim());
   return parsed.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
     year: "numeric",
-    timeZone: "UTC",
+    timeZone: calendarDay ? "UTC" : (validTimeZone(timeZone) ?? "UTC"),
   });
 }
 

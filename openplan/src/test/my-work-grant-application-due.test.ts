@@ -118,7 +118,7 @@ describe("my work, application due dates on pursued opportunities", () => {
   it("splits between the dashboard's backlog read and its upcoming read on the close date", async () => {
     const read = async (bounds: { dueBefore?: string; dueOnOrAfter?: string; datedOnly?: boolean }) => {
       const { client } = createFakeSupabase(seededDb());
-      const result = await loadMyWork(client, { workspaceId: WS_A, userId: ME, roster: ROSTER, now: NOW, ...bounds });
+      const result = await loadMyWork(client, { workspaceId: WS_A, userId: ME, roster: ROSTER, now: NOW, timeZone: "UTC", ...bounds });
       return idsOf(dueItems(result.items));
     };
 

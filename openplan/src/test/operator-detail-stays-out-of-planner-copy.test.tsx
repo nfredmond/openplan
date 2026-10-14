@@ -493,6 +493,7 @@ describe("the my-work board", () => {
         roster={ROSTER}
         departedIncludedInUnassigned={result.departedIncludedInUnassigned}
         isViewer={false}
+        timeZone="UTC"
       />
     );
 

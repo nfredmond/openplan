@@ -174,7 +174,7 @@ function mixedDb(): Db {
 async function backlogRead() {
   const fake = createFakeSupabase(mixedDb());
   const result = await loadMyWork(fake.client, {
-    workspaceId: WS_A, userId: ME, scope: "all_projects", roster: ROSTER, limitPerSource: 20, dueBefore: BOUNDARY, now: NOW,
+    workspaceId: WS_A, userId: ME, scope: "all_projects", roster: ROSTER, limitPerSource: 20, dueBefore: BOUNDARY, now: NOW, timeZone: "UTC",
   });
   return { fake, result };
 }
@@ -183,7 +183,7 @@ async function upcomingRead() {
   const fake = createFakeSupabase(mixedDb());
   const result = await loadMyWork(fake.client, {
     workspaceId: WS_A, userId: ME, scope: "all_projects", roster: ROSTER, limitPerSource: 10,
-    dueOnOrAfter: BOUNDARY, dueOnOrBefore: UNTIL, datedOnly: true, now: NOW,
+    dueOnOrAfter: BOUNDARY, dueOnOrBefore: UNTIL, datedOnly: true, now: NOW, timeZone: "UTC",
   });
   return { fake, result };
 }
@@ -223,7 +223,7 @@ describe("My Work date windows for sources that may be undated", () => {
     expect(upcomingTasks?.ops).toEqual(
       expect.arrayContaining([
         { verb: "gte", args: ["deadline", BOUNDARY] },
-        { verb: "lte", args: ["deadline", `${UNTIL}T23:59:59Z`] },
+        { verb: "lte", args: ["deadline", UNTIL] },
         { verb: "not", args: ["deadline", "is", null] },
         // Soonest first, so the read cap keeps the nearest deadlines.
         { verb: "order", args: ["deadline", { ascending: true }] },

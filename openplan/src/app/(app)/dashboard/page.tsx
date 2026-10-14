@@ -166,6 +166,7 @@ export default async function DashboardPage({
       limitPerSource: BACKLOG_CAP_PER_SOURCE,
       dueBefore: boundary,
       now,
+      timeZone,
     }),
     // Dated work from the boundary forward, soonest first. Read separately so
     // a long overdue backlog cannot push every upcoming item past the cap.
@@ -179,6 +180,7 @@ export default async function DashboardPage({
       dueOnOrBefore: chartEnd,
       datedOnly: true,
       now,
+      timeZone,
     }),
     loadWorkspaceDates(
       supabase as unknown as WorkspaceDatesSupabaseLike,
