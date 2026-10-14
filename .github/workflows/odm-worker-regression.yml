@@ -222,3 +222,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-14-private-raster-inspection/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-raster-inspection-controls"
+      - name: Private original artifact preparation controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-private-artifact-preparation/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-artifact-preparation-controls"
