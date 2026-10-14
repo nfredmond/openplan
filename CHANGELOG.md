@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**RTP comment record counts every comment.** The comment-response record on
+the RTP cycle page and in the exported packet read approved comments, responses
+and consultations in one request each, so a plan with more than 1,000 comments
+showed only the first 1,000. It now reads every page, and a read that stops part
+way is shown as a failed read, not a short count. The Grants queue now says how
+many projects have no funding target, or have an invoice to link to their
+award, instead of counting "funding lanes". No migration.
+
 **Safety action plan, first part:** Safety now ranks a high-injury network from
 the project's stored crashes and road lines, draws it on the map, and lists it
 with method, years, source and coverage. A source with only deaths gives a
