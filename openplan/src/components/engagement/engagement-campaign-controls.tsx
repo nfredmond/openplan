@@ -10,7 +10,7 @@ import { StateBlock } from "@/components/ui/state-block";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ENGAGEMENT_CAMPAIGN_STATUSES, ENGAGEMENT_TYPES, titleizeEngagementValue } from "@/lib/engagement/catalog";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
-import { parseCorridorText } from "@/lib/models/study-area";
+import { campaignPlaceFromPicker } from "@/lib/engagement/campaign-place-request";
 import type { PlaceBoundaryResponse } from "@/lib/api/place-geographies";
 // Type-only: the resolver is server-side, and an `import type` is erased before
 // this component reaches the browser.
@@ -224,18 +224,14 @@ export function EngagementCampaignControls({
 
   async function handleSaveArea() {
     // A searched place is saved by REFERENCE so the server re-resolves the
-    // boundary; a drawn one has no reference to send.
-    if (pickedPlace) {
-      await saveArea({ mode: "place", kind: pickedPlace.kind, geoid: pickedPlace.geoid });
-      return;
-    }
-
-    const drawn = parseCorridorText(areaText);
-    if (!drawn) {
+    // boundary; a drawn one has no reference to send. The publish checklist
+    // builds the same body through the same helper.
+    const place = campaignPlaceFromPicker(pickedPlace, areaText);
+    if (!place) {
       setAreaError("Search for a place or draw an area before saving.");
       return;
     }
-    await saveArea({ mode: "drawn", geometry: drawn });
+    await saveArea(place);
   }
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
@@ -431,7 +427,7 @@ export function EngagementCampaignControls({
                 </div>
                 <p className="text-label text-muted-foreground">
                   A corridor-wide comment window is often about several projects at once. Every
-                  checked project shows this campaign in its engagement lane and in the project
+                  checked project shows this campaign in its engagement section and in the project
                   filter on the engagement catalog. Reports and RTP comment records still follow the
                   lead project.
                 </p>

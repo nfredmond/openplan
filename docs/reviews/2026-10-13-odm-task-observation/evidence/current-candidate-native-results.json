@@ -1,0 +1,16 @@
+{
+  "originalPlanSavedBeforeApiEffects": true,
+  "observations": [
+    "failed"
+  ],
+  "realFailedState": true,
+  "reportedAutomaticOptions": [
+    "pc-ept",
+    "cog",
+    "gltf"
+  ],
+  "decodedImageryAccepted": false,
+  "applicationAuthorityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "defaultActivated": false
+}

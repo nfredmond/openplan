@@ -89,6 +89,15 @@ function summarizeCeqaDeterminations(ceqaRows: AtpCeqaRow[] | null | undefined):
   );
 }
 
+function roundScore(value: number | null): number | null {
+  return value === null ? null : pythonRound(value, 3);
+}
+
+/** One decimal place, or "not recorded" when the run did not record the score. */
+function formatAtpScore(value: number | null): string {
+  return value === null ? "not recorded" : formatFixedPython(value, 1);
+}
+
 /**
  * Build per-project ATP application packets from run evidence.
  *
@@ -147,11 +156,12 @@ export function computeAtpPacket(
       continue;
     }
 
-    const safety = parseOptionalFloat(row.safety_score) ?? 0;
-    const equity = parseOptionalFloat(row.equity_score) ?? 0;
-    const climate = parseOptionalFloat(row.climate_score) ?? 0;
-    const feasibility = parseOptionalFloat(row.feasibility_score) ?? 0;
-    const total = parseOptionalFloat(row.total_score) ?? 0;
+    // A score the run did not record stays null; 0 would read as a real, failing score.
+    const safety = parseOptionalFloat(row.safety_score);
+    const equity = parseOptionalFloat(row.equity_score);
+    const climate = parseOptionalFloat(row.climate_score);
+    const feasibility = parseOptionalFloat(row.feasibility_score);
+    const total = parseOptionalFloat(row.total_score);
     const sensitivity = coerceStr(row.sensitivity_flag, "UNKNOWN");
 
     const lapm = lapmById.get(pid) ?? {};
@@ -167,6 +177,7 @@ export function computeAtpPacket(
     );
     const estimatedCost = parseOptionalFloat(lapm.estimated_cost_usd);
 
+    const equityRecorded = equityById.has(pid);
     const equityRow = equityById.get(pid) ?? {};
     const overlaySupplied = coerceBool(equityRow.overlay_supplied);
     const dac = coerceBool(equityRow.dac_sb535);
@@ -199,11 +210,11 @@ export function computeAtpPacket(
       name: coerceStr(row.name, pid),
       agency,
       cycle,
-      total_score: pythonRound(total, 3),
-      safety_score: pythonRound(safety, 3),
-      equity_score: pythonRound(equity, 3),
-      climate_score: pythonRound(climate, 3),
-      feasibility_score: pythonRound(feasibility, 3),
+      total_score: roundScore(total),
+      safety_score: roundScore(safety),
+      equity_score: roundScore(equity),
+      climate_score: roundScore(climate),
+      feasibility_score: roundScore(feasibility),
       sensitivity_flag: sensitivity,
       location_note: locationNote,
       description,
@@ -211,6 +222,7 @@ export function computeAtpPacket(
       estimated_cost_usd: estimatedCost,
       schedule_note: scheduleNote,
       ceqa_determination: ceqaSummary,
+      equity_recorded: equityRecorded,
       dac_sb535: dac,
       low_income_ab1550: lowIncome,
       tribal_area: tribal,
@@ -231,10 +243,14 @@ export function computeAtpPacket(
     (app) => app.low_income_ab1550 && !app.dac_sb535
   ).length;
   const tribalCount = applications.filter((app) => app.tribal_area).length;
+  // The mean covers only applications with a recorded total; it is null when none has one.
+  const recordedTotals = applications
+    .map((app) => app.total_score)
+    .filter((score): score is number => score !== null);
   const meanScore =
-    applicationCount > 0
-      ? applications.reduce((sum, app) => sum + app.total_score, 0) / applicationCount
-      : 0;
+    recordedTotals.length > 0
+      ? recordedTotals.reduce((sum, score) => sum + score, 0) / recordedTotals.length
+      : null;
   const dacShare = applicationCount > 0 ? dacCount / applicationCount : 0;
 
   const summary: AtpPortfolioSummary = {
@@ -242,8 +258,10 @@ export function computeAtpPacket(
     dac_application_count: dacCount,
     low_income_application_count: lowIncomeCount,
     tribal_application_count: tribalCount,
+    equity_recorded_count: applications.filter((app) => app.equity_recorded).length,
     dac_share: pythonRound(dacShare, 3),
-    mean_total_score: pythonRound(meanScore, 3),
+    scored_application_count: recordedTotals.length,
+    mean_total_score: roundScore(meanScore),
   };
 
   return {
@@ -256,21 +274,38 @@ export function computeAtpPacket(
   };
 }
 
+/**
+ * The portfolio mean, said plainly when it is partial or absent. Unscored
+ * applications are left out of the mean, not counted as 0.
+ */
+function describeAtpMeanScore(summary: AtpPortfolioSummary): string {
+  if (summary.mean_total_score === null) {
+    return "mean total score not recorded";
+  }
+  const mean = `mean total score ${formatFixedPython(summary.mean_total_score, 1)}/100`;
+  return summary.scored_application_count < summary.application_count
+    ? `${mean} (partial: ${summary.scored_application_count} of ${summary.application_count} applications scored)`
+    : mean;
+}
+
 /** Produce grounded fact blocks per application plus the portfolio summary. */
 export function atpGrantFactBlocks(result: AtpGrantResult, sourcePath: string): FactBlock[] {
   const blocks: FactBlock[] = [];
   for (const app of result.applications) {
-    const dacPhrase = app.dac_sb535
+    const dacPhrase = !app.equity_recorded
+      ? "not recorded"
+      : app.dac_sb535
       ? "SB 535 DAC"
       : app.low_income_ab1550
         ? "AB 1550 low-income"
         : "non-DAC / non-AB-1550";
     const claim =
       `ATP application draft for project \`${app.project_id}\` ` +
-      `(${app.name}): total screening score ${formatFixedPython(app.total_score, 1)}/100 ` +
-      `(safety ${formatFixedPython(app.safety_score, 1)}, equity ${formatFixedPython(app.equity_score, 1)}, ` +
-      `climate ${formatFixedPython(app.climate_score, 1)}, feasibility ` +
-      `${formatFixedPython(app.feasibility_score, 1)}); community context ` +
+      `(${app.name}): total screening score ${formatAtpScore(app.total_score)}` +
+      `${app.total_score === null ? "" : "/100"} ` +
+      `(safety ${formatAtpScore(app.safety_score)}, equity ${formatAtpScore(app.equity_score)}, ` +
+      `climate ${formatAtpScore(app.climate_score)}, feasibility ` +
+      `${formatAtpScore(app.feasibility_score)}); community context ` +
       `${dacPhrase}; sensitivity flag ${app.sensitivity_flag}.`;
     blocks.push({
       fact_id: `atp-application-${app.project_id}`,
@@ -286,14 +321,22 @@ export function atpGrantFactBlocks(result: AtpGrantResult, sourcePath: string): 
 
   if (result.summary !== null) {
     const summary = result.summary;
+    // With no equity-lens row at all, the counts are zeros by default, not findings.
+    const communityClaim =
+      summary.equity_recorded_count === 0
+        ? "community context not recorded."
+        : `${summary.dac_application_count} SB 535 DAC ` +
+          `(${formatFixedPython(summary.dac_share * 100, 1)}%), ` +
+          `${summary.low_income_application_count} AB 1550 low-income (not DAC), ` +
+          `${summary.tribal_application_count} in a tribal area` +
+          (summary.equity_recorded_count < summary.application_count
+            ? ` (partial: ${summary.equity_recorded_count} of ${summary.application_count} applications have equity findings).`
+            : ".");
     const portfolioClaim =
       `ATP portfolio for ${result.agency} (${result.cycle}): ` +
       `${summary.application_count} application draft(s), ` +
-      `mean total score ${formatFixedPython(summary.mean_total_score, 1)}/100; ` +
-      `${summary.dac_application_count} SB 535 DAC ` +
-      `(${formatFixedPython(summary.dac_share * 100, 1)}%), ` +
-      `${summary.low_income_application_count} AB 1550 low-income (not DAC), ` +
-      `${summary.tribal_application_count} in a tribal area.`;
+      `${describeAtpMeanScore(summary)}; ` +
+      communityClaim;
     blocks.push({
       fact_id: "atp-application-summary",
       fact_type: "atp_application_summary",

@@ -1,0 +1,13 @@
+{
+  "ownedChildren": [
+    {
+      "pid": 1358462,
+      "exit": -15
+    },
+    {
+      "pid": 1358605,
+      "exit": -15
+    }
+  ],
+  "listenerClosed": true
+}

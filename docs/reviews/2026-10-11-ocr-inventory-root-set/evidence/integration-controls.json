@@ -1,0 +1,52 @@
+[
+  {
+    "control": "baseline-set",
+    "exit": 0
+  },
+  {
+    "control": "harmless-inventory-copy",
+    "exit": 0
+  },
+  {
+    "control": "changed-configuration",
+    "exactByteComparison": "intended_refusal",
+    "exit": 1
+  },
+  {
+    "control": "changed-profile",
+    "exactByteComparison": "intended_refusal",
+    "exit": 1
+  },
+  {
+    "control": "restored-inventory",
+    "exit": 0
+  },
+  {
+    "control": "harmless-manifest-key-order",
+    "exit": 0
+  },
+  {
+    "control": "missing-selection",
+    "exit": 1
+  },
+  {
+    "control": "corrupt-retained-pdf",
+    "exit": 1
+  },
+  {
+    "control": "restored-set",
+    "exit": 0
+  },
+  {
+    "control": "harmless-exact-replay",
+    "status": 200
+  },
+  {
+    "control": "changed-same-id-bytes",
+    "status": 409
+  },
+  {
+    "control": "wrong-bearer",
+    "status": 403
+  }
+]

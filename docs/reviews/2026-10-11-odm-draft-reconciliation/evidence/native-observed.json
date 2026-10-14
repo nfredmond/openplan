@@ -1,0 +1,22 @@
+{
+  "bothUploadResponsesSucceed": true,
+  "captureExit": 0,
+  "duplicateFilenamesDiffer": true,
+  "duplicateUploadedBytes": true,
+  "originalDraftMetadataOverwritten": true,
+  "originalInitSameUuid": true,
+  "originalStoppedCleanly": true,
+  "originalTaskInfoAbsent": true,
+  "originalTaskListEmpty": true,
+  "packageOrdinaryUnchanged": true,
+  "repeatedInitSameUuid": true,
+  "restoredDraftBytesRetained": true,
+  "restoredStoppedCleanly": true,
+  "restoredTaskInfoAbsent": true,
+  "restoredTaskListEmpty": true,
+  "retainedMatchesSource": true,
+  "runtimeInitiallyMatchesPackage": true,
+  "sourceBindingsUnchanged": true,
+  "sourceOrdinaryUnchanged": true,
+  "verifyExit": 0
+}

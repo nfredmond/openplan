@@ -1,0 +1,166 @@
+{
+  "sourceSha256": "bebf2a1cf0f8d5ace5af56250f449742264586ab14c91fef7cb4748edae79ee8",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "assertion": "survivor"
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "assertion": "survivor"
+    },
+    {
+      "name": "original-bytes",
+      "result": "intended assertion failure",
+      "assertion": "changed-exact-bytes"
+    },
+    {
+      "name": "original-installation",
+      "result": "intended assertion failure",
+      "assertion": "changed-original-installation"
+    },
+    {
+      "name": "original-target",
+      "result": "intended assertion failure",
+      "assertion": "changed-original-target"
+    },
+    {
+      "name": "original-actor",
+      "result": "intended assertion failure",
+      "assertion": "other-member-original-actor"
+    },
+    {
+      "name": "admitted-status",
+      "result": "intended assertion failure",
+      "assertion": "refuse-admission-accepted"
+    },
+    {
+      "name": "admitted-role",
+      "result": "intended assertion failure",
+      "assertion": "viewer-admission"
+    },
+    {
+      "name": "admitted-null-role",
+      "result": "intended assertion failure",
+      "assertion": "null-role-admission"
+    },
+    {
+      "name": "current-status",
+      "result": "intended assertion failure",
+      "assertion": "terminal-succeeded"
+    },
+    {
+      "name": "current-role",
+      "result": "intended assertion failure",
+      "assertion": "viewer-revoked"
+    },
+    {
+      "name": "current-mission-project",
+      "result": "intended assertion failure",
+      "assertion": "mission-project-changed"
+    },
+    {
+      "name": "current-project-workspace",
+      "result": "intended assertion failure",
+      "assertion": "project-moved"
+    },
+    {
+      "name": "actor-existence",
+      "result": "intended assertion failure",
+      "assertion": "private-deleted-actor"
+    },
+    {
+      "name": "actor-lock",
+      "result": "intended assertion failure",
+      "assertion": "private-missing-actor"
+    },
+    {
+      "name": "payload-requestId",
+      "result": "intended assertion failure",
+      "assertion": "payload-requestId"
+    },
+    {
+      "name": "payload-system",
+      "result": "intended assertion failure",
+      "assertion": "payload-system"
+    },
+    {
+      "name": "payload-workspaceId",
+      "result": "intended assertion failure",
+      "assertion": "payload-workspaceId"
+    },
+    {
+      "name": "payload-missionId",
+      "result": "intended assertion failure",
+      "assertion": "payload-missionId"
+    },
+    {
+      "name": "payload-projectId",
+      "result": "intended assertion failure",
+      "assertion": "payload-projectId"
+    },
+    {
+      "name": "payload-presetId",
+      "result": "intended assertion failure",
+      "assertion": "payload-presetId"
+    },
+    {
+      "name": "payload-imagery",
+      "result": "intended assertion failure",
+      "assertion": "payload-imagery"
+    },
+    {
+      "name": "payload-schemaVersion",
+      "result": "intended assertion failure",
+      "assertion": "payload-schemaVersion"
+    },
+    {
+      "name": "projection-id",
+      "result": "intended assertion failure",
+      "assertion": "tampered-projection-id"
+    },
+    {
+      "name": "projection-request_id",
+      "result": "intended assertion failure",
+      "assertion": "tampered-projection-request_id"
+    },
+    {
+      "name": "projection-workspace_id",
+      "result": "intended assertion failure",
+      "assertion": "tampered-projection-workspace_id"
+    },
+    {
+      "name": "projection-mission_id",
+      "result": "intended assertion failure",
+      "assertion": "tampered-projection-mission_id"
+    },
+    {
+      "name": "projection-project_id",
+      "result": "intended assertion failure",
+      "assertion": "project-deleted"
+    },
+    {
+      "name": "projection-created_by",
+      "result": "intended assertion failure",
+      "assertion": "tampered-projection-created_by"
+    },
+    {
+      "name": "projection-preset_id",
+      "result": "intended assertion failure",
+      "assertion": "job-changed-preset_id"
+    },
+    {
+      "name": "projection-imagery_type",
+      "result": "intended assertion failure",
+      "assertion": "job-changed-imagery_type"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "assertion": "survivor"
+    }
+  ],
+  "scope": "Candidate functions replaced only within rolled-back native transactions. PostgreSQL scope/refusal checks, not PostgREST, caller authenticity, external revocation fences or full installation acceptance."
+}

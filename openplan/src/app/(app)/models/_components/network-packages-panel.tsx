@@ -1,4 +1,5 @@
 import { Network } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { MetaItem, MetaList } from "@/components/ui/meta-item";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { StateBlock } from "@/components/ui/state-block";
@@ -153,11 +154,10 @@ export async function NetworkPackagesPanel({ workspaceId }: { workspaceId: strin
 
       {schemaPending ? (
         <div className="mt-5">
-          <StateBlock
-            tone="warning"
-            title="Network package schema pending"
-            description="The network package tables are not present in this deployment's database yet. Apply the latest migrations to enable this panel."
-          />
+          <SetupPendingNotice consequence="Network packages cannot be listed or added.">
+            The network package tables are not present in this deployment&apos;s database yet. Apply the
+            latest migrations to enable this panel.
+          </SetupPendingNotice>
         </div>
       ) : packages.length === 0 ? (
         <div className="mt-5">

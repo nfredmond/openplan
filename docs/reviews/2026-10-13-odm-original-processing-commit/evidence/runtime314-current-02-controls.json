@@ -1,0 +1,148 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 16
+  },
+  {
+    "control": "incomplete-draft-grants-commit",
+    "outcome": "intended_failure",
+    "case": "test_incomplete_original_drafts_hold_before_permission_or_transport",
+    "diagnostic": "held_incomplete_draft",
+    "kind": "failures"
+  },
+  {
+    "control": "acknowledged-commit-replayed",
+    "outcome": "intended_failure",
+    "case": "test_one_exact_commit_retains_reply_and_replay_sends_nothing",
+    "diagnostic": "Retained commit replay cannot obtain another grant",
+    "kind": "failures"
+  },
+  {
+    "control": "denied-permission-accepted",
+    "outcome": "intended_failure",
+    "case": "test_permission_requires_exact_true_before_intent",
+    "diagnostic": "PermissionError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "uncertain-commit-reauthorized",
+    "outcome": "intended_failure",
+    "case": "test_lost_acknowledgment_keeps_uncertain_commit_without_second_post",
+    "diagnostic": "Uncertain original commit cannot obtain another grant",
+    "kind": "failures"
+  },
+  {
+    "control": "wrong-reply-accepted",
+    "outcome": "intended_failure",
+    "case": "test_wrong_original_commit_reply_stays_unresolved",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "response-shape-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_response_shape_must_be_tuple_before_retention",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "authorization-plan-alias",
+    "outcome": "intended_failure",
+    "case": "test_adapters_cannot_replace_original_plan_or_command",
+    "diagnostic": "Saved engine plan differs from original identity",
+    "kind": "errors"
+  },
+  {
+    "control": "authorization-command-alias",
+    "outcome": "intended_failure",
+    "case": "test_adapters_cannot_replace_original_plan_or_command",
+    "diagnostic": "Authorization cannot replace the original commit command",
+    "kind": "failures"
+  },
+  {
+    "control": "permission-deadline-not-checked",
+    "outcome": "intended_failure",
+    "case": "test_expired_permission_refuses_before_commit_intent",
+    "diagnostic": "Expired processing permission cannot issue an original intent",
+    "kind": "failures"
+  },
+  {
+    "control": "owner-silently-restored-before-intent",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_during_permission_refuses_before_intent",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "owner-silently-restored-after-transport",
+    "outcome": "intended_failure",
+    "case": "test_owner_loss_after_transport_retains_intent_and_refuses_reply",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "processing-lock-omitted",
+    "outcome": "intended_failure",
+    "case": "test_concurrent_committers_share_one_durable_intent_and_post",
+    "diagnostic": "Concurrent original committers must retain the same coordination outcome",
+    "kind": "failures"
+  },
+  {
+    "control": "command-order-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_out_of_order_original_receipts_refuse",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "original-job-scope-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_job_hook_requires_original_request_and_never_reports_completion",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-adapters-not-required",
+    "outcome": "intended_failure",
+    "case": "test_constructor_requires_explicit_adapters_and_finite_timeout",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "constructor-deadline-not-required",
+    "outcome": "intended_failure",
+    "case": "test_constructor_requires_explicit_adapters_and_finite_timeout",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "malformed-job-not-refused",
+    "outcome": "intended_failure",
+    "case": "test_malformed_job_hook_refuses_before_journal_or_transport",
+    "diagnostic": "TypeError: 'NoneType' object is not subscriptable",
+    "kind": "errors"
+  },
+  {
+    "control": "existing-intent-sent-again",
+    "outcome": "intended_failure",
+    "case": "test_existing_intent_is_never_sent_from_stale_snapshot",
+    "diagnostic": "held_uncertain",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 16
+  }
+]

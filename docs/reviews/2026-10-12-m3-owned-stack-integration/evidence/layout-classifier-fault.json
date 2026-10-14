@@ -1,0 +1,6 @@
+{
+  "control": "accept-all-failures",
+  "outcome": "intended_failure",
+  "reason": "Layout classifier differs",
+  "productionSourceUnchanged": true
+}

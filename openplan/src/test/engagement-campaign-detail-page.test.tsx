@@ -57,11 +57,18 @@ const campaignSelectMock = vi.fn((columns?: string) => {
 
 const projectMaybeSingleMock = vi.fn();
 const projectOrderMock = vi.fn();
+/**
+ * The linked project's place-of-record, a second framing candidate the portal
+ * place loader reads, and the area the publish checklist offers to copy onto
+ * the campaign. Unset by default; configurable per test.
+ */
+let projectPlaceResult: { data: Record<string, unknown> | null; error: { message: string } | null } = {
+  data: null,
+  error: null,
+};
 const projectSelectMock = vi.fn((columns?: string) => {
-  // The linked project's place-of-record — a second framing candidate the
-  // portal place loader reads. Unset by default; nothing here tests it.
   if (columns?.includes("place_source")) {
-    return { eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) };
+    return { eq: () => ({ maybeSingle: async () => projectPlaceResult }) };
   }
   return {
     eq: (column: string) => {
@@ -513,7 +520,8 @@ describe("EngagementCampaignDetailPage", () => {
 
   it("shows a retry instead of an empty staff-response builder when the read fails", async () => {
     closeLoopReadError = { message: "SYNTHETIC connection lost" };
-    await renderPage({ tab: "setup" });
+    // The report-back builder lives on Responses, after the comments it answers.
+    await renderPage({ tab: "responses" });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_response_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001", p_published_only: false });
     expect(snapshotRpcMock).toHaveBeenCalledWith("read_engagement_translation_snapshot", { p_campaign: "50000000-0000-4000-8000-000000000001" });
     expect(screen.getByRole("button", { name: "Retry loading responses" })).toBeEnabled();
@@ -567,6 +575,7 @@ describe("EngagementCampaignDetailPage", () => {
     translationReadError = null;
     sourceLocaleResult = { data: null, error: null };
     campaignPlaceResult = { data: null, error: null };
+    projectPlaceResult = { data: null, error: null };
     surveyQuestionsReadError = null;
     closeLoopReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
@@ -1098,7 +1107,7 @@ describe("EngagementCampaignDetailPage", () => {
 
       await renderPage({ tab: "setup" });
 
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
       expect(screen.getByText(/That is not the same as none/)).toBeInTheDocument();
       // The claim that must not be made out of a database failure.
       expect(screen.queryByText("Not translated")).not.toBeInTheDocument();
@@ -1122,7 +1131,7 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByText(/Nobody has recorded which language/)).not.toBeInTheDocument();
       expect(screen.getByText(/could not be read, so OpenPlan is falling back/)).toBeInTheDocument();
       // And it is a pending migration, not a fault to go investigating.
-      expect(screen.getByText(/does not have the translation storage yet/i)).toBeInTheDocument();
+      expect(screen.getByText(/Translation storage is not set up on this installation yet/i)).toBeInTheDocument();
     });
 
     it("withholds coverage when part of what participants read could not be listed", async () => {
@@ -1511,8 +1520,8 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage({ tab: "setup" });
 
       const flow = screen.getByTestId("campaign-publish-flow");
-      expect(within(flow).getByText(/This campaign is live/i)).toBeInTheDocument();
-      expect(within(flow).getByRole("link", { name: /Preview the resident view/i })).toHaveAttribute(
+      expect(within(flow).getByRole("heading", { name: /The public page is live/i })).toBeInTheDocument();
+      expect(within(flow).getByRole("link", { name: /Preview as a resident/i })).toHaveAttribute(
         "href",
         "/engagement/50000000-0000-4000-8000-000000000001/preview"
       );
@@ -1539,8 +1548,8 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.getByTestId("publish-step-share_token")).toHaveAttribute("data-state", "todo");
       expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
       expect(within(flow).getByRole("button", { name: /Generate link/i })).toBeInTheDocument();
-      expect(within(flow).getByRole("button", { name: /Set the campaign to Active/i })).toBeInTheDocument();
-      expect(within(flow).queryByText(/This campaign is live/i)).not.toBeInTheDocument();
+      expect(within(flow).getByRole("button", { name: /Set to Active/i })).toBeInTheDocument();
+      expect(within(flow).queryByRole("heading", { name: /The public page is live/i })).not.toBeInTheDocument();
     });
 
     it("marks the steps the campaign has genuinely completed as done", async () => {
@@ -1579,17 +1588,17 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage({ tab: "setup" });
 
       expect(screen.getByTestId("publish-area-advisory")).toHaveTextContent(
-        /Campaign area on record: Franklin County, Ohio/
+        "The map opens on Franklin County, Ohio."
       );
-      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
     });
 
     it("states the consequences of publishing without a campaign area", async () => {
       await renderPage({ tab: "setup" });
 
       const advisory = screen.getByTestId("publish-area-advisory");
-      expect(advisory).toHaveTextContent(/No campaign area is set/i);
-      expect(advisory).toHaveTextContent(/location check .* cannot be turned on/i);
+      expect(advisory).toHaveTextContent(/No area is set/i);
+      expect(advisory).toHaveTextContent(/middle of the country/i);
     });
 
     it("does not render a failed area read as a missing area", async () => {
@@ -1600,7 +1609,96 @@ describe("EngagementCampaignDetailPage", () => {
       const advisory = screen.getByTestId("publish-area-advisory");
       expect(advisory).toHaveTextContent(/could not be read/i);
       expect(advisory).toHaveTextContent(/failed read, not a missing area/i);
-      expect(screen.queryByText(/No campaign area is set/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+    });
+
+    it("sets the map area inside the checklist, offering the linked project's own place", async () => {
+      // A draft, so the full checklist renders; the project's area is a
+      // searched county with a GEOID the route can re-resolve.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "tigerweb",
+          place_kind: "county",
+          place_ref: "06061",
+          place_label: "Placer County, California",
+          place_min_lon: -121.5,
+          place_min_lat: 38.7,
+          place_max_lon: -120.0,
+          place_max_lat: 39.3,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step.closest("[data-testid='campaign-publish-flow']")).not.toBeNull();
+      expect(
+        within(step).getByRole("button", { name: "Use the project's area: Placer County, California" })
+      ).toBeVisible();
+      // The old warning that sent a planner to the bottom of the page is gone.
+      expect(screen.queryByText(/at the bottom of this page/i)).not.toBeInTheDocument();
+    });
+
+    it("offers no one-click copy when the project's area was drawn, not searched", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "drawn",
+          place_kind: null,
+          place_ref: null,
+          place_label: "Downtown loop",
+          place_min_lon: -121.3,
+          place_min_lat: 38.9,
+          place_max_lon: -121.2,
+          place_max_lat: 39.0,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(within(step).queryByRole("button", { name: /Use the project's area/i })).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose an area/i })).toBeVisible();
+    });
+
+    it("puts the comments switch inside the checklist", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", allow_public_submissions: false }),
+        error: null,
+      });
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-submission_mode");
+      expect(within(step).getByRole("checkbox", { name: /Accept comments from residents/i })).toBeVisible();
+    });
+
+    it("offers a preview as a resident as its own step, before going live", async () => {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft" }),
+        error: null,
+      });
+
+      await renderPage({ tab: "setup" });
+
+      const preview = screen.getByTestId("publish-step-preview");
+      expect(within(preview).getByRole("link", { name: /Preview as a resident/i })).toHaveAttribute(
+        "href",
+        "/engagement/50000000-0000-4000-8000-000000000001/preview"
+      );
+      expect(
+        preview.compareDocumentPosition(screen.getByTestId("publish-step-active_status")) &
+          Node.DOCUMENT_POSITION_FOLLOWING
+      ).toBeTruthy();
     });
   });
 
@@ -1774,9 +1872,8 @@ describe("EngagementCampaignDetailPage", () => {
       // Setup surfaces.
       expect(screen.getByTestId("campaign-publish-flow")).toBeInTheDocument();
       expect(screen.getByRole("heading", { name: /Survey & form questions/i })).toBeInTheDocument();
-      expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
       expect(screen.getByText(/RTP attachment/)).toBeInTheDocument();
-      expect(screen.getByText(/Current categories/i)).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: "Comment categories" })).toBeInTheDocument();
       // Portal surfaces and intake.
       expect(screen.getByText(/Put your project on the map/i)).toBeInTheDocument();
       expect(screen.getByText(/Comments that did not come through the portal/i)).toBeInTheDocument();
@@ -1784,15 +1881,16 @@ describe("EngagementCampaignDetailPage", () => {
       expect(
         screen.getByRole("heading", { name: /publish this campaign in your community.s languages/i })
       ).toBeInTheDocument();
-      // Operator Actions footer.
+      // Settings, public access and adding a comment by hand.
       expect(screen.getByTestId("engagement-campaign-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-share-controls")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-composer")).toBeInTheDocument();
 
       await renderTabAfresh("responses");
-      // Moderation.
+      // Moderation, and reporting back on what was heard.
       expect(screen.getByTestId("engagement-bulk-moderation")).toBeInTheDocument();
       expect(screen.getByTestId("engagement-item-registry")).toBeInTheDocument();
+      expect(screen.getByRole("heading", { name: /You said \/ We did/i })).toBeInTheDocument();
 
       await renderTabAfresh("analysis");
       // Analysis.
@@ -1813,15 +1911,84 @@ describe("EngagementCampaignDetailPage", () => {
      * their TABS: each section is pinned to its tab's open panel, and the tab
      * links are compared in the strip.
      */
-    it("puts the publish flow and both builders above the analysis panels", async () => {
+    it("puts the publish flow and the survey builder above the analysis panels", async () => {
       await renderTabAfresh("analysis");
       expect(panelOf(screen.getByTestId("synthesis-source-scope"))).toBe("analysis");
 
       await renderTabAfresh("setup");
       expect(panelOf(screen.getByTestId("campaign-publish-flow"))).toBe("setup");
       expect(panelOf(screen.getByRole("heading", { name: /Survey & form questions/i }))).toBe("setup");
-      expect(panelOf(screen.getByRole("heading", { name: /You said \/ We did/i }))).toBe("setup");
       assertPrecedes(tabLink("setup"), tabLink("analysis"));
+    });
+
+    /*
+      THE SETUP TAB IN TWO GROUPS. The two-month review (October 12, 2026)
+      found twelve sections on Setup with the map area and public access last,
+      and the report-back builder placed before any comment existed. These pin
+      what a planner sees before opening anything: the "Before publishing"
+      group, in order, and an Advanced group that is closed but still holds
+      every other capability. Visibility is jsdom's reading of a closed
+      <details>, so a group rendered open fails here.
+    */
+    it("shows only what a first public page needs, in working order, before Advanced", async () => {
+      const existing = await campaignMaybeSingleMock();
+      await renderTabAfresh("setup", () =>
+        campaignMaybeSingleMock.mockResolvedValueOnce({ ...existing, data: { ...existing.data, status: "draft" } })
+      );
+
+      const before = screen.getByRole("region", { name: "Before publishing" });
+      const flow = within(before).getByTestId("campaign-publish-flow");
+      const categories = within(before).getByRole("heading", { name: "Comment categories" });
+      const questions = within(before).getByRole("heading", { name: /Survey & form questions/i });
+      // Categories before the questions that use them.
+      assertPrecedes(flow, categories);
+      assertPrecedes(categories, questions);
+      for (const element of [flow, categories, questions]) expect(element).toBeVisible();
+
+      const advanced = screen.getByTestId("setup-advanced");
+      expect(advanced.tagName).toBe("DETAILS");
+      expect(advanced).not.toHaveAttribute("open");
+      assertPrecedes(before, advanced);
+      expect(within(advanced).getByText(/^Advanced$/)).toBeVisible();
+    });
+
+    it("keeps every other Setup capability in the closed Advanced group", async () => {
+      await renderTabAfresh("setup");
+      const advanced = screen.getByTestId("setup-advanced");
+
+      for (const content of [
+        within(advanced).getByText(/Put your project on the map/i),
+        within(advanced).getByRole("heading", { name: /publish this campaign in your community.s languages/i }),
+        within(advanced).getByText(/Comments that did not come through the portal/i),
+        within(advanced).getByText(/If a resident cannot use the portal/i),
+        within(advanced).getByText(/RTP attachment/),
+        within(advanced).getByTestId("engagement-campaign-controls"),
+        within(advanced).getByTestId("engagement-share-controls"),
+        within(advanced).getByTestId("engagement-item-composer"),
+      ]) {
+        expect(content).not.toBeVisible();
+      }
+      // None of it leaked into the open group, which a live page names for
+      // what it is rather than "Before publishing".
+      expect(within(screen.getByRole("region", { name: "Public page" })).queryByTestId("engagement-share-controls")).toBeNull();
+    });
+
+    it("moves the report-back builder off Setup and onto Responses", async () => {
+      await renderTabAfresh("setup");
+      expect(screen.queryByRole("heading", { name: /You said \/ We did/i })).not.toBeInTheDocument();
+
+      await renderTabAfresh("responses");
+      const reportBack = screen.getByRole("heading", { name: /You said \/ We did/i });
+      expect(panelOf(reportBack)).toBe("responses");
+      // After the comments it answers.
+      assertPrecedes(screen.getByTestId("engagement-item-registry"), reportBack);
+    });
+
+    it("names the tab strip and the categories without builder notes", async () => {
+      await renderTabAfresh("setup");
+      expect(screen.getByRole("navigation", { name: "Campaign sections" })).toBeInTheDocument();
+      expect(screen.queryByText(/Category Registry/i)).not.toBeInTheDocument();
+      expect(screen.queryByText(/intentionally light/i)).not.toBeInTheDocument();
     });
 
     it("keeps moderation above the analysis panels in the working column", async () => {

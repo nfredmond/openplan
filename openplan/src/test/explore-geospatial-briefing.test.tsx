@@ -86,7 +86,14 @@ describe("ExploreGeospatialBriefing", () => {
     // not presentable as "no crashes occurred here".
     expect(screen.getByText(/No crash source answered for this study area/)).toBeInTheDocument();
     expect(screen.getByText(/not a finding that no crashes occurred/)).toBeInTheDocument();
-    expect(screen.getByText("Census tract geometry + choropleth overlays")).toBeInTheDocument();
+  });
+
+  it("carries no roadmap of layers still to be built", () => {
+    const { container } = render(
+      <ExploreGeospatialBriefing planningSignals={[]} geospatialSourceCards={[]} sourceSnapshots={undefined} />
+    );
+
+    expect(container.textContent).not.toMatch(/Next layer buildout|CARTO|\blanes?\b/i);
   });
 
   it("never points a planner at SWITRS, which was retired on 2025-01-08", () => {

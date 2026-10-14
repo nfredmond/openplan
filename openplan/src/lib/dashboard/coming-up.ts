@@ -18,13 +18,16 @@ export type ComingUpKind =
   | "milestone"
   | "submittal"
   | "grant"
+  | "application-due"
   | "award"
   | "invoice"
   | "plan-action"
   | "plan-review"
   | "public-review"
   | "adoption"
-  | "comment-period";
+  | "comment-period"
+  | "contract-task"
+  | "work-program-review";
 
 export type ComingUpItem = {
   key: string;
@@ -58,8 +61,11 @@ const KIND_BY_SOURCE: Partial<Record<MyWorkSourceId, ComingUpKind>> = {
   land_use_plan_process: "plan-action",
   land_use_plan_review_closing: "plan-review",
   grant_decisions: "grant",
+  grant_application_due: "application-due",
   award_obligations: "award",
   invoice_windows: "invoice",
+  contract_tasks: "contract-task",
+  work_program_reviews: "work-program-review",
 };
 
 /** The word shown beside each date. */
@@ -68,6 +74,7 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   milestone: "Milestone",
   submittal: "Submittal",
   grant: "Grant decision",
+  "application-due": "Application due",
   award: "Award deadline",
   invoice: "Invoice window",
   "plan-action": "Plan action",
@@ -75,6 +82,8 @@ export const COMING_UP_KIND_LABELS: Record<ComingUpKind, string> = {
   "public-review": "Public review closes",
   adoption: "Adoption target",
   "comment-period": "Comment period ends",
+  "contract-task": "Contract task",
+  "work-program-review": "Work program review",
 };
 
 const DATED_BLOCKS = new Set(["deadlines", "workspace_deadlines"]);

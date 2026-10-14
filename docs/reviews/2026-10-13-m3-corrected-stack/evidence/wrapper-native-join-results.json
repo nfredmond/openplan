@@ -1,0 +1,17 @@
+[
+  {
+    "stage": "wrapper-controls",
+    "returncode": 0,
+    "seconds": 0.023
+  },
+  {
+    "stage": "documentation-and-release-ordering",
+    "returncode": 0,
+    "seconds": 3.872
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.348
+  }
+]

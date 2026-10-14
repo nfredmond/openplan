@@ -6,7 +6,8 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { hasEngagementLocation, readStoredEngagementGeometry, type EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
-import { resolvePublicMapboxToken } from "@/lib/mapbox/public-token";
+import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
+import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
 import type { ParticipantContextLayerSet } from "@/lib/engagement/context-layers";
 import { syncContextLayers } from "@/lib/engagement/context-layer-paint";
 import { ParticipantMapLegend } from "./participant-map-legend";
@@ -14,10 +15,8 @@ import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { useAerialOrthoMapBinding } from "@/components/cartographic/use-aerial-ortho-map-binding";
 import { AerialOrthoLayersPanel } from "@/components/cartographic/aerial-ortho-layers-panel";
 
-const MAPBOX_ACCESS_TOKEN = resolvePublicMapboxToken(
-  process.env.NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN,
-  process.env.NEXT_PUBLIC_MAPBOX_TOKEN,
-);
+/** Mapbox with a public key, else MapLibre with the operator's open style. */
+const MAP_ENGINE = deploymentMapEngine();
 
 // Zoom for the first paint before the load handler fits to the full extent.
 const SEEDED_ZOOM = 11;
@@ -145,6 +144,8 @@ export function LocationDisplayMap({
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
   const [mapReady, setMapReady] = useState(false);
+  // The browser could not start the map library (no WebGL), or MapLibre never arrived.
+  const [cannotStart, setCannotStart] = useState(false);
   const markersRef = useRef<mapboxgl.Marker[]>([]);
   const onSupportRef = useRef(onSupport);
   const onSelectRef = useRef(onSelectItem);
@@ -172,9 +173,7 @@ export function LocationDisplayMap({
 
   useEffect(() => {
     const container = mapContainerRef.current;
-    if (!container || mapRef.current || !MAPBOX_ACCESS_TOKEN) return;
-
-    mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
+    if (!container || mapRef.current || MAP_ENGINE.kind === "none") return;
 
     const popupOptions = {
       onSupport: onSupportRef.current
@@ -220,152 +219,155 @@ export function LocationDisplayMap({
             ? [(contextSeed[0] + contextSeed[2]) / 2, (contextSeed[1] + contextSeed[3]) / 2]
             : null;
 
-    const map = new mapboxgl.Map({
-      container,
-      style: "mapbox://styles/mapbox/dark-v11",
-      center: seed ?? CONTINENTAL_US_CENTER,
-      zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
-      attributionControl: false,
-    });
-
-    // The engagement console shows this inside its Responses tab, which is not
-    // always the landing tab; a closed tab is `display: none`, so the map is
-    // built against a 0x0 box and stays that size until something re-measures.
-    const stopSizing = keepMapSizedToContainer(map, container);
-
-    map.addControl(new mapboxgl.NavigationControl({ showCompass: false }), "top-right");
-    // Mapbox and OpenStreetMap require visible attribution on every map.
-    map.addControl(new mapboxgl.AttributionControl({ compact: true }), "bottom-right");
-
-    const shapeItemById = new Map(shapeItems.map((item) => [item.id, item]));
-
-    map.on("load", () => {
-      setMapReady(true);
-      // Lines and areas render as styled layers with click popups.
-      if (shapeItems.length > 0) {
-        map.addSource("engagement-shapes", {
-          type: "geojson",
-          data: {
-            type: "FeatureCollection",
-            features: shapeItems.map((item) => ({
-              type: "Feature" as const,
-              id: item.id,
-              geometry: item.parsedGeometry,
-              properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
-            })),
-          },
-        });
-
-        // Data-driven color: each feature carries its category color (default
-        // when absent), so lines/areas render per-category, not one uniform hue.
-        const shapeColor = ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression;
-
-        map.addLayer({
-          id: "engagement-shapes-fill",
-          type: "fill",
-          source: "engagement-shapes",
-          paint: { "fill-color": shapeColor, "fill-opacity": 0.2 },
-          filter: ["==", ["geometry-type"], "Polygon"],
-        });
-        map.addLayer({
-          id: "engagement-shapes-outline",
-          type: "line",
-          source: "engagement-shapes",
-          paint: { "line-color": shapeColor, "line-width": 2 },
-          filter: ["==", ["geometry-type"], "Polygon"],
-        });
-        map.addLayer({
-          id: "engagement-shapes-line",
-          type: "line",
-          source: "engagement-shapes",
-          paint: { "line-color": shapeColor, "line-width": 3 },
-          filter: ["==", ["geometry-type"], "LineString"],
-        });
-
-        const openShapePopup = (event: mapboxgl.MapMouseEvent) => {
-          const feature = event.features?.[0];
-          const itemId = feature?.properties?.itemId as string | undefined;
-          const item = itemId ? shapeItemById.get(itemId) : undefined;
-          if (!item) return;
-          if (onSelectRef.current) { onSelectRef.current(item.id); return; }
-
-          new mapboxgl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
-            .setLngLat(event.lngLat)
-            .setDOMContent(buildPopupContent(item, popupOptions))
-            .addTo(map);
-        };
-
-        for (const layerId of ["engagement-shapes-fill", "engagement-shapes-line"]) {
-          map.on("click", layerId, openShapePopup);
-          map.on("mouseenter", layerId, () => {
-            map.getCanvas().style.cursor = "pointer";
-          });
-          map.on("mouseleave", layerId, () => {
-            map.getCanvas().style.cursor = "";
-          });
-        }
-      }
-
-      // Native review buttons open full detail; reading maps attach popups.
-      pointItems.forEach((item) => {
-        const popup = new mapboxgl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
-          buildPopupContent(item, popupOptions)
-        );
-
-        const el = document.createElement(onSelectRef.current ? 'button' : 'div');
-        if (onSelectRef.current) {
-          el.setAttribute('type','button'); el.setAttribute('aria-label',`Review contribution ${item.title || item.id}`);
-          el.addEventListener('click',(event)=>{event.stopPropagation();onSelectRef.current?.(item.id);});
-        }
-        el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
-        el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
-
-        const marker = new mapboxgl.Marker({ element: el })
-          .setLngLat([item.longitude, item.latitude])
-          .addTo(map);
-        // Staff review opens the full item beside the map. Reading maps retain popups.
-        if (onSelectRef.current) el.setAttribute("role", "button");
-        else marker.setPopup(popup);
-
-        markersRef.current.push(marker);
+    return startMap(MAP_ENGINE, mapboxgl, (gl) => {
+      const map = new gl.Map({
+        container,
+        style: styleForEngine(MAP_ENGINE, "mapbox://styles/mapbox/dark-v11") as string,
+        center: seed ?? CONTINENTAL_US_CENTER,
+        zoom: seed ? SEEDED_ZOOM : NEUTRAL_ZOOM,
+        attributionControl: false,
       });
 
-      // Frame everything the map carries, community input and operator context
-      // alike. A campaign whose only geometry is the published alignment still
-      // gets framed on it rather than on the continent.
-      const positionCount = pointItems.length + shapeItems.length;
-      if (positionCount > 1 || shapeItems.length > 0 || openingContextLayers.length > 0) {
-        const bounds = new mapboxgl.LngLatBounds();
-        pointItems.forEach((item) => bounds.extend([item.longitude, item.latitude]));
-        shapeItems.forEach((item) => {
-          collectGeometryPositions(item.parsedGeometry).forEach((position) => bounds.extend(position));
-        });
-        openingContextLayers.forEach((layer) => {
-          if (!layer.bbox) return;
-          bounds.extend([layer.bbox[0], layer.bbox[1]]);
-          bounds.extend([layer.bbox[2], layer.bbox[3]]);
-        });
-        if (!bounds.isEmpty()) {
-          map.fitBounds(bounds, { padding: 40, maxZoom: 14 });
+      // The engagement console shows this inside its Responses tab, which is not
+      // always the landing tab; a closed tab is `display: none`, so the map is
+      // built against a 0x0 box and stays that size until something re-measures.
+      const stopSizing = keepMapSizedToContainer(map, container);
+
+      map.addControl(new gl.NavigationControl({ showCompass: false }), "top-right");
+      // Mapbox, OpenStreetMap and any open style's sources require visible attribution.
+      map.addControl(new gl.AttributionControl({ compact: true }), "bottom-right");
+
+      const shapeItemById = new Map(shapeItems.map((item) => [item.id, item]));
+
+      map.on("load", () => {
+        setMapReady(true);
+        // Lines and areas render as styled layers with click popups.
+        if (shapeItems.length > 0) {
+          map.addSource("engagement-shapes", {
+            type: "geojson",
+            data: {
+              type: "FeatureCollection",
+              features: shapeItems.map((item) => ({
+                type: "Feature" as const,
+                id: item.id,
+                geometry: item.parsedGeometry,
+                properties: { itemId: item.id, color: safeHexColor(item.color) ?? DEFAULT_MAP_COLOR },
+              })),
+            },
+          });
+
+          // Data-driven color: each feature carries its category color (default
+          // when absent), so lines/areas render per-category, not one uniform hue.
+          const shapeColor = ["coalesce", ["get", "color"], DEFAULT_MAP_COLOR] as unknown as mapboxgl.Expression;
+
+          map.addLayer({
+            id: "engagement-shapes-fill",
+            type: "fill",
+            source: "engagement-shapes",
+            paint: { "fill-color": shapeColor, "fill-opacity": 0.2 },
+            filter: ["==", ["geometry-type"], "Polygon"],
+          });
+          map.addLayer({
+            id: "engagement-shapes-outline",
+            type: "line",
+            source: "engagement-shapes",
+            paint: { "line-color": shapeColor, "line-width": 2 },
+            filter: ["==", ["geometry-type"], "Polygon"],
+          });
+          map.addLayer({
+            id: "engagement-shapes-line",
+            type: "line",
+            source: "engagement-shapes",
+            paint: { "line-color": shapeColor, "line-width": 3 },
+            filter: ["==", ["geometry-type"], "LineString"],
+          });
+
+          const openShapePopup = (event: mapboxgl.MapMouseEvent) => {
+            const feature = event.features?.[0];
+            const itemId = feature?.properties?.itemId as string | undefined;
+            const item = itemId ? shapeItemById.get(itemId) : undefined;
+            if (!item) return;
+            if (onSelectRef.current) { onSelectRef.current(item.id); return; }
+
+            new gl.Popup({ offset: 12, maxWidth: "min(300px, calc(100% - 24px))" })
+              .setLngLat(event.lngLat)
+              .setDOMContent(buildPopupContent(item, popupOptions))
+              .addTo(map);
+          };
+
+          for (const layerId of ["engagement-shapes-fill", "engagement-shapes-line"]) {
+            map.on("click", layerId, openShapePopup);
+            map.on("mouseenter", layerId, () => {
+              map.getCanvas().style.cursor = "pointer";
+            });
+            map.on("mouseleave", layerId, () => {
+              map.getCanvas().style.cursor = "";
+            });
+          }
         }
-      }
-    });
 
-    mapRef.current = map;
+        // Native review buttons open full detail; reading maps attach popups.
+        pointItems.forEach((item) => {
+          const popup = new gl.Popup({ offset: 25, maxWidth: "min(300px, calc(100% - 24px))" }).setDOMContent(
+            buildPopupContent(item, popupOptions)
+          );
 
-    return () => {
-      stopSizing();
-      map.remove();
-      mapRef.current = null;
-      setMapReady(false);
-    };
+          const el = document.createElement(onSelectRef.current ? 'button' : 'div');
+          if (onSelectRef.current) {
+            el.setAttribute('type','button'); el.setAttribute('aria-label',`Review contribution ${item.title || item.id}`);
+            el.addEventListener('click',(event)=>{event.stopPropagation();onSelectRef.current?.(item.id);});
+          }
+          el.className = 'w-4 h-4 rounded-full border-2 border-background shadow-sm cursor-pointer';
+          el.style.backgroundColor = safeHexColor(item.color) ?? DEFAULT_MAP_COLOR;
+
+          const marker = new gl.Marker({ element: el })
+            .setLngLat([item.longitude, item.latitude])
+            .addTo(map);
+          // Staff review opens the full item beside the map. Reading maps retain popups.
+          if (onSelectRef.current) el.setAttribute("role", "button");
+          else marker.setPopup(popup);
+
+          markersRef.current.push(marker);
+        });
+
+        // Frame everything the map carries, community input and operator context
+        // alike. A campaign whose only geometry is the published alignment still
+        // gets framed on it rather than on the continent.
+        const positionCount = pointItems.length + shapeItems.length;
+        if (positionCount > 1 || shapeItems.length > 0 || openingContextLayers.length > 0) {
+          const bounds = new gl.LngLatBounds();
+          pointItems.forEach((item) => bounds.extend([item.longitude, item.latitude]));
+          shapeItems.forEach((item) => {
+            collectGeometryPositions(item.parsedGeometry).forEach((position) => bounds.extend(position));
+          });
+          openingContextLayers.forEach((layer) => {
+            if (!layer.bbox) return;
+            bounds.extend([layer.bbox[0], layer.bbox[1]]);
+            bounds.extend([layer.bbox[2], layer.bbox[3]]);
+          });
+          if (!bounds.isEmpty()) {
+            map.fitBounds(bounds, { padding: 40, maxZoom: 14 });
+          }
+        }
+      });
+
+      mapRef.current = map;
+
+      return () => {
+        stopSizing();
+        map.remove();
+        mapRef.current = null;
+        setMapReady(false);
+      };
+    }, () => setCannotStart(true));
   }, [items]);
 
   // Operator context, painted UNDER the community's shapes. `beforeId` is the
   // first shape layer when one exists; a campaign with only points has no
   // canvas layer to sit below, and DOM markers always draw above the canvas.
-  // Re-runs on `style.load` for the same reason the cartographic backdrop does:
-  // a style swap wipes the source and layer registry.
+  // Waits until the style can take layers (`whenStyleAccepts`), the same as the
+  // cartographic backdrop. Re-runs on `mapReady` because MapLibre builds the
+  // map after this first ran.
   useEffect(() => {
     const map = mapRef.current;
     if (!map) return;
@@ -386,12 +388,8 @@ export function LocationDisplayMap({
       syncContextLayers(map, layers, { beforeId });
     };
 
-    if (map.isStyleLoaded()) {
-      paint();
-    } else {
-      map.once("style.load", paint);
-    }
-  }, [contextLayers, items]);
+    return whenStyleAccepts(map, paint);
+  }, [contextLayers, items, mapReady]);
 
   const hasMappedItems = items.some(hasEngagementLocation);
   // A campaign that has published context but collected no located input yet
@@ -414,7 +412,7 @@ export function LocationDisplayMap({
   // (the 2026-08-03 review's finding #6). Checked AFTER the something-to-show
   // gate above, so a campaign with no located input and no layers still renders
   // nothing rather than a notice about an empty map.
-  if (!MAPBOX_ACCESS_TOKEN) {
+  if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
       <div
         className="mb-4 rounded-[0.5rem] border border-dashed border-border/70 bg-muted/20 px-4 py-4 text-sm text-muted-foreground"
@@ -422,16 +420,33 @@ export function LocationDisplayMap({
         data-testid="engagement-map-unavailable"
       >
         <p className="font-medium text-foreground">This campaign&apos;s map can&apos;t be shown</p>
-        <p className="mt-1.5">
-          There is a map for this campaign, but this OpenPlan deployment has no map key configured, so
-          it can&apos;t be drawn. Commenting and surveys work without it.
-        </p>
-        <p className="mt-1.5">Whoever runs this deployment can add a map key to enable maps.</p>
-        <OperatorDetail>
-          <p>
-            Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
-            rebuild.
+        {cannotStart ? (
+          <p className="mt-1.5">
+            There is a map here, but this browser could not start it. Commenting and surveys work
+            without it.
           </p>
+        ) : (
+          <>
+            <p className="mt-1.5">
+              There is a map for this campaign, but this OpenPlan deployment has no map key configured, so
+              it can&apos;t be drawn. Commenting and surveys work without it.
+            </p>
+            <p className="mt-1.5">Whoever runs this deployment can add a map key to enable maps.</p>
+          </>
+        )}
+        <OperatorDetail>
+          {cannotStart ? (
+            <p>
+              The map library did not start in this browser. MapLibre needs WebGL2 and Mapbox needs
+              WebGL. The browser console holds the exact error.
+            </p>
+          ) : (
+            <p>
+              Set NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN to a public Mapbox token (it begins with pk.) and
+              rebuild. To draw this map without a key, set NEXT_PUBLIC_OPENPLAN_MAP_STYLE_URL to a
+              MapLibre style instead; see docs/SELF_HOSTING.md.
+            </p>
+          )}
         </OperatorDetail>
       </div>
     );

@@ -113,6 +113,12 @@ export type MyWorkSource = {
   assigneeColumn: string | null;
   orderColumn: string;
   orderAscending: boolean;
+  /**
+   * The due-date column of a source whose rows may or may not have one. A
+   * dated row is a deadline and an undated row is not, so date bounds apply to
+   * this column and still keep the undated rows (see `loadMyWork`).
+   */
+  dueColumn?: string;
   staticFilters: readonly MyWorkStaticFilter[];
   /**
    * How deep to read. Only the stage-gate source overrides it: the board keeps
@@ -736,6 +742,7 @@ const landUsePlanActionsSource: MyWorkSource = {
   assigneeColumn: "assignee_user_id",
   orderColumn: "due_on",
   orderAscending: true,
+  dueColumn: "due_on",
   staticFilters: [
     { kind: "notIn", column: "status", values: ["completed", "deferred"] },
   ],
@@ -783,7 +790,7 @@ const contractPendingReviewsSource: MyWorkSource = {
 const contractTasksSource: MyWorkSource = {
   id: "contract_tasks", label: "Contract tasks", readLabel: "approved contract task assignments", block: "undated",
   table: "contract_active_tasks_my_work", select: "id, engagement_id, workspace_id, assignee_user_id, project_id, title, deadline",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "id", orderAscending: true, dueColumn: "deadline",
   staticFilters: [],
   toItems: (rows,{now}) => rows.map(row => { const task=row,dueOn=asString(task?.deadline),overdue=dueOn?isDeadlinePast(dueOn,now):false;return { sourceId:"contract_tasks",block:dueOn?"deadlines":"undated",id:String(row.id),title:asString(task?.title)??"Contract task",projectId:asString(task?.project_id),projectName:null,dueOn,isOverdue:overdue,assigneeUserId:asString(row.assignee_user_id),ownerLabel:null,badge:{label:"Contract task",tone:overdue?"warning":"neutral"},detail:dueOn?`Agreed deadline ${dueOn}`:"Agreed deadline unrecorded",href:`/invoicing/engagements/${row.engagement_id}?tab=remaining`,dedupKey:null } satisfies MyWorkItem; }),
 };
@@ -799,7 +806,7 @@ const workProgramPeriodsSource: MyWorkSource = {
 const workProgramReviewsSource: MyWorkSource = {
   id: "work_program_reviews", label: "Work program reviews", readLabel: "work program reviews", block: "undated",
   table: "program_work_program_reviews", select: "id, program_id, revision_id, assignee_user_id, due_on, status, programs!inner(title, workspace_id)",
-  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true,
+  workspaceFilterColumn: "workspace_id", assigneeColumn: "assignee_user_id", orderColumn: "due_on", orderAscending: true, dueColumn: "due_on",
   staticFilters: [{ kind: "in", column: "status", values: ["pending", "returned"] }],
   toItems: (rows, { now }) => rows.map(row => {
     const program = embedded(row.programs), dueOn = asString(row.due_on), overdue = isDeadlinePast(dueOn, now);
@@ -944,6 +951,70 @@ const grantDecisionsSource: MyWorkSource = {
       .filter((item): item is MyWorkItem => item !== null),
 };
 
+// ── 9b. Application due dates on pursued opportunities ──────────────────────
+
+/**
+ * The decision state that means "we are applying" (20260410000042). Every later
+ * state (under_review, awarded, denied) means the application went in, and
+ * skip means it was dropped, so none of those rows is read: a call that closed
+ * after the planner recorded a submission or dropped it is never overdue.
+ */
+const PURSUED_DECISION_STATE = "pursue";
+
+/**
+ * Opportunity statuses that end the pursuit regardless of decision state
+ * (20260410000041): an archived call was set aside, an awarded one went in.
+ * A `closed` status stays readable, because a pursued call that closed with no
+ * recorded submission is exactly the missed deadline this source exists for.
+ */
+const PURSUIT_ENDED_OPPORTUNITY_STATUSES: readonly string[] = ["archived", "awarded"];
+
+const grantApplicationDueSource: MyWorkSource = {
+  id: "grant_application_due",
+  label: "Applications due",
+  readLabel: "pursued grant opportunities",
+  block: "workspace_deadlines",
+  table: "funding_opportunities",
+  select: "id, project_id, title, opportunity_status, decision_state, closes_at, agency_name, projects(id, name)",
+  workspaceFilterColumn: "workspace_id",
+  assigneeColumn: null,
+  orderColumn: "closes_at",
+  orderAscending: true,
+  staticFilters: [
+    { kind: "notNull", column: "closes_at" },
+    { kind: "eq", column: "decision_state", value: PURSUED_DECISION_STATE },
+    { kind: "notIn", column: "opportunity_status", values: PURSUIT_ENDED_OPPORTUNITY_STATUSES },
+  ],
+  toItems: (rows, { now }) =>
+    rows.map((row) => {
+      const project = embedded(row.projects);
+      const id = String(row.id);
+      const closesAt = asString(row.closes_at);
+      // closes_at is a full timestamp entered as a local date and time, so the
+      // shared rule compares instants.
+      const overdue = isDeadlinePast(closesAt, now);
+      const closes = formatWorkDeadlineDate(closesAt);
+      return {
+        sourceId: "grant_application_due",
+        block: "workspace_deadlines",
+        id,
+        title: asString(row.title) ?? "(untitled opportunity)",
+        projectId: asString(row.project_id),
+        projectName: asString(project?.name),
+        dueOn: closesAt,
+        isOverdue: overdue,
+        // No assigneeUserId key: funding_opportunities has no assignee column.
+        ownerLabel: null,
+        badge: deadlineBadge("Application", overdue),
+        detail: overdue
+          ? `Call closed ${closes}. Set the decision to Under review if it went in, or Skip.`
+          : [asString(row.agency_name), `closes ${closes}`].filter(Boolean).join(" · "),
+        href: `/grants?focusOpportunityId=${id}#funding-opportunity-${id}`,
+        dedupKey: null,
+      } satisfies MyWorkItem;
+    }),
+};
+
 // ── 10. Award obligations — de-duplicated against mirrored milestones ────────
 
 const awardObligationsSource: MyWorkSource = {
@@ -1071,6 +1142,7 @@ export const MY_WORK_SOURCES: readonly MyWorkSource[] = [
   landUsePlanProcessSource,
   landUsePlanReviewClosingSource,
   grantDecisionsSource,
+  grantApplicationDueSource,
   awardObligationsSource,
   invoiceWindowsSource,
 ];

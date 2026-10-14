@@ -19,7 +19,7 @@
  * the wording that says so must not drift.
  */
 
-import type { AtpGrantResult, AtpProjectApplication, CeqaVmtResult } from "./types";
+import type { AtpGrantResult, AtpPortfolioSummary, AtpProjectApplication, CeqaVmtResult } from "./types";
 import {
   describeClaimTierForDetermination,
   type VmtClaimTierEvidence,
@@ -219,6 +219,30 @@ ${
   return out;
 }
 
+/** A score the run did not record reads "Not recorded", never 0.0. */
+function formatPacketScore(value: number | null): string {
+  return value === null ? "Not recorded" : formatPythonFloat(value);
+}
+
+/**
+ * The DAC lines for one application. Without an equity-lens row the flags are
+ * defaults, so they read "Not recorded" rather than "No".
+ */
+function renderAtpEquityLines(app: AtpProjectApplication): string {
+  if (!app.equity_recorded) {
+    return `- SB 535 DAC: Not recorded
+- AB 1550 low-income: Not recorded
+- Tribal area: Not recorded
+- Benefit category: **Not recorded**
+- ATP DAC benefit bonus eligible: **Not recorded** (needs an equity lens for this project: SB 535, AB 1550 and tribal-area findings).`;
+  }
+  return `- SB 535 DAC: ${yesNo(app.dac_sb535)}
+- AB 1550 low-income: ${yesNo(app.low_income_ab1550)}
+- Tribal area: ${yesNo(app.tribal_area)}
+- Benefit category: **${app.benefit_category}**
+- ATP DAC benefit bonus eligible: **${yesNo(app.atp_dac_benefit_eligible)}** (eligible when the equity lens places the project in DAC, Low-income near DAC, or Low-income categories).`;
+}
+
 function renderAtpApplication(app: AtpProjectApplication): string {
   const costLine =
     app.estimated_cost_usd !== null
@@ -244,22 +268,18 @@ ${app.description}
 
 | Dimension | Score |
 |---|---:|
-| Safety | ${formatPythonFloat(app.safety_score)} |
-| Equity | ${formatPythonFloat(app.equity_score)} |
-| Climate | ${formatPythonFloat(app.climate_score)} |
-| Feasibility | ${formatPythonFloat(app.feasibility_score)} |
-| **Total (weighted 30/25/25/20)** | **${formatPythonFloat(app.total_score)}** |
+| Safety | ${formatPacketScore(app.safety_score)} |
+| Equity | ${formatPacketScore(app.equity_score)} |
+| Climate | ${formatPacketScore(app.climate_score)} |
+| Feasibility | ${formatPacketScore(app.feasibility_score)} |
+| **Total (weighted 30/25/25/20)** | **${formatPacketScore(app.total_score)}** |
 | Sensitivity flag | ${app.sensitivity_flag} |
 
 - CEQA §15064.3 VMT screening: ${app.ceqa_determination}
 
 **Disadvantaged-community benefit (ATP scoring area DAC)**
 
-- SB 535 DAC: ${yesNo(app.dac_sb535)}
-- AB 1550 low-income: ${yesNo(app.low_income_ab1550)}
-- Tribal area: ${yesNo(app.tribal_area)}
-- Benefit category: **${app.benefit_category}**
-- ATP DAC benefit bonus eligible: **${yesNo(app.atp_dac_benefit_eligible)}** (eligible when the equity lens places the project in DAC, Low-income near DAC, or Low-income categories).
+${renderAtpEquityLines(app)}
 
 **Scope, schedule, and budget**
 
@@ -283,6 +303,26 @@ ${costLine}
   ATP application.
 
 `;
+}
+
+/**
+ * The portfolio DAC counts. With no equity-lens row they are zeros by default,
+ * so they read "Not recorded"; with some rows they say how many are covered.
+ */
+function renderAtpPortfolioEquityLines(summary: AtpPortfolioSummary): string {
+  if (summary.equity_recorded_count === 0) {
+    return `- SB 535 DAC applications: **Not recorded**
+- AB 1550 low-income (not DAC) applications: **Not recorded**
+- Tribal-area applications: **Not recorded** (no equity lens for these projects)`;
+  }
+  const partial =
+    summary.equity_recorded_count < summary.application_count
+      ? `
+- Equity findings recorded for ${summary.equity_recorded_count} of ${summary.application_count} applications; the counts above cover only those.`
+      : "";
+  return `- SB 535 DAC applications: **${summary.dac_application_count}** (${formatFixedPython(summary.dac_share * 100, 1)}%)
+- AB 1550 low-income (not DAC) applications: **${summary.low_income_application_count}**
+- Tribal-area applications: **${summary.tribal_application_count}** (AB 52 consultation trigger if any)${partial}`;
 }
 
 /** Render the ATP application packet as Markdown. */
@@ -340,10 +380,13 @@ determination, final schedule).
 
   if (summary !== null) {
     out += `- Application drafts: **${summary.application_count}**
-- Mean screening total score: **${formatPythonFloat(summary.mean_total_score)}**
-- SB 535 DAC applications: **${summary.dac_application_count}** (${formatFixedPython(summary.dac_share * 100, 1)}%)
-- AB 1550 low-income (not DAC) applications: **${summary.low_income_application_count}**
-- Tribal-area applications: **${summary.tribal_application_count}** (AB 52 consultation trigger if any)
+- Mean screening total score: **${formatPacketScore(summary.mean_total_score)}**${
+      summary.mean_total_score !== null &&
+      summary.scored_application_count < summary.application_count
+        ? ` (partial: ${summary.scored_application_count} of ${summary.application_count} applications scored)`
+        : ""
+    }
+${renderAtpPortfolioEquityLines(summary)}
 `;
   } else {
     out += "_Portfolio summary unavailable._\n";

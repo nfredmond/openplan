@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "bebf2a1cf0f8d5ace5af56250f449742264586ab14c91fef7cb4748edae79ee8",
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "harmless",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "job-before-parent",
+      "result": "intended native deadlock",
+      "parentExit": 0,
+      "workerExit": 3
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "parentExit": 0,
+      "workerExit": 3
+    }
+  ],
+  "scope": "Actual project deletion/admission lock order on four fresh retained native database clones. Other parent paths, authority fences, external requests and full recovery remain unproved."
+}

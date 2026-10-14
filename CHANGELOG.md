@@ -20,6 +20,26 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Aerial journal correction:** tolerate a retired SQLite companion only after a
+fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
+for present files, including dangling or reappeared aliases. See the
+[dated proof](docs/reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md).
+
+**Native engine observer, candidate:** add an explicit Linux NodeODM observer
+for the configured original container, image, process-mounted configuration and
+private endpoint. It requires the same host PID namespace and permission to read
+that process root. Keep shared deadlines, ownership and parent lifetime. Defaults
+and processing commit remain held. See the
+[dated evidence](docs/reviews/2026-10-12-odm-native-engine-attestation/STATUS.md).
+
+**Money record corrections.** Apply `20261017000005_money_integrity_corrections.sql`
+before deploying. Work-program labor can no longer be counted twice, an issued
+report rechecks its adoption, a second amendment cannot overwrite one in
+progress, a voided contract draft releases its billed sources, finance approves
+only reviewed consultant invoices, and client invoices past draft can change only
+their status, enforced in the database for every writer. Existing records are not
+rewritten; the rules apply to new writes.
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On
@@ -28,6 +48,19 @@ Development runs keep the old behavior. Sign-in and sign-up now refuse redirect
 values that only look local, the sign-up confirmation notice says to check spam
 and can resend the link, and the pages no longer promise a workspace before the
 email is confirmed.
+
+The aerial private-dispatch candidate adds
+`20261017000003_aerial_private_dispatch_custody.sql`. It retains exact original
+application request text and its actor, workspace, project, mission and job scope.
+The worker-only read reports current access separately from saved custody and
+does not grant engine permission. Apply this additive migration before enabling
+dependent reader code. It remains a candidate, with hosted rollout and default
+worker activation pending. See the [producer evidence](docs/reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md).
+
+The local control panel keeps its update/recovery caption visible at the
+minimum window size and double display scale by reducing the summary gap.
+The [combined worker integration evidence](docs/reviews/2026-10-12-m3-owned-stack-integration/STATUS.md)
+records its layout controls and the retained worker candidate's verification limits.
 
 The managed transit import candidate moves URL, catalog, ZIP and refresh imports
 to an installed worker when the installation explicitly enables it. The worker
@@ -82,6 +115,12 @@ configuration now sets `file_size_limit = "1GiB"`; restart a running local
 stack (`npm exec -- supabase stop`, then `start`) to pick it up. A hosted
 project needs the same limit in its storage settings.
 `OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
+
+Apply `20261017000006_permission_integrity.sql` before deploying the app. It
+stops signed-in users from asking about another person's contract access,
+requires a map package's grant application to belong to its project and refuses
+retries that change the client or practice marking, and limits census tract
+loads to workspace writers at 20 counties per person per hour.
 
 **Maps.** A new Maps page lists map packages for every project in a workspace:
 figures as PDF, PNG and SVG, map books, a web map, a Google Earth file, a QGIS
@@ -192,6 +231,36 @@ could not be read. The public-claims guard now follows relative imports.
 Not done: a map that works without a Mapbox key, replying from the map, and
 observation with residents. See
 `docs/reviews/2026-10-10-engagement-map-sweep/README.md`.
+
+Apply `20261017000002_engagement_survey_question_counts.sql` before deploying
+this change. It adds a function that returns a campaign's approved survey
+response count and per-question answer counts, with no answers, to members of
+the campaign's workspace. The Planner Agent reads survey counts through it; its
+survey read failed on every campaign before, because survey answers are closed
+to every client role.
+
+AI moderation flags comments that try to instruct the screen, under a new
+"Instructions to the screen" label, and sends them to a person for review.
+Before, such a comment fit no category and came out "approve" even when the
+rationale asked for review.
+
+The Planner Agent can now set a funding opportunity's closing date when it
+proposes the record. Before, a planner who gave it a due date had to enter the
+date again on the record. The date is part of what the planner approves; a
+request carrying a different date is refused.
+
+Corridor crash density now divides by every year the crash source answered,
+including years with no crash in the study area. It divided by the years that
+returned a crash, so an empty year raised the annual rate: a downtown test area
+read a third too high, and one crash in four years read as one a year. The run
+summary also states the non-fatal injury crash count, which the Planner Agent
+reads; without it the agent said injury crashes were not recorded.
+
+RTP document extraction now returns project costs. The prompt told the model
+that a figure's exact digits must appear in its quote, so it left out costs a
+plan prints as "$24 million" rather than risk losing the project row. The
+prompt now states the rule the checker applies: "$24 million", "$24M" and
+"24,000,000" are the same figure.
 
 ## 0.68.0 (2026-10-09)
 

@@ -1,0 +1,169 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "archive-bytes-changed",
+    "outcome": "intended_failure",
+    "case": "test_exact_archive_and_all_members_remain_private_and_unassessed",
+    "diagnostic": "AssertionError",
+    "kind": "failures"
+  },
+  {
+    "control": "complete-replay-refetches",
+    "outcome": "intended_failure",
+    "case": "test_completed_replay_needs_no_original_source_and_preserves_inode",
+    "diagnostic": "FileNotFoundError:",
+    "kind": "errors"
+  },
+  {
+    "control": "copied-receipt-changed",
+    "outcome": "intended_failure",
+    "case": "test_private_root_copy_preserves_original_receipt",
+    "diagnostic": "Local copied archive must retain original byte and context receipt",
+    "kind": "failures"
+  },
+  {
+    "control": "raw-size-preflight-omitted",
+    "outcome": "intended_failure",
+    "case": "test_raw_archive_bound_refuses_before_plan",
+    "diagnostic": "Raw bound must precede ZIP directory parsing",
+    "kind": "failures"
+  },
+  {
+    "control": "expanded-size-preflight-omitted",
+    "outcome": "intended_failure",
+    "case": "test_expanded_member_bound_refuses_before_plan",
+    "diagnostic": "Expanded bound must precede member inflation",
+    "kind": "failures"
+  },
+  {
+    "control": "directory-bounds-ignored",
+    "outcome": "intended_failure",
+    "case": "test_directory_and_entry_bounds_precede_zip_loading",
+    "diagnostic": "Directory bounds must precede ZIP loading",
+    "kind": "failures"
+  },
+  {
+    "control": "unsafe-members-accepted",
+    "outcome": "intended_failure",
+    "case": "test_unsafe_and_duplicate_names_refuse_before_receipt",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "special-members-accepted",
+    "outcome": "intended_failure",
+    "case": "test_special_members_and_empty_archives_refuse",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "noncompleted-source-accepted",
+    "outcome": "intended_failure",
+    "case": "test_noncompleted_original_observation_refuses_before_output_directory",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "original-plan-not-compared",
+    "outcome": "intended_failure",
+    "case": "test_changed_plan_or_receipt_cannot_replace_original_custody",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "corrupt-archive-not-rechecked",
+    "outcome": "intended_failure",
+    "case": "test_corrupt_retained_archive_refuses_without_recopied_source",
+    "diagnostic": "not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "interrupted-alias-left-behind",
+    "outcome": "intended_failure",
+    "case": "test_interrupted_alias_publication_recovers_exact_original_bytes",
+    "diagnostic": "Source file must be private and owned without aliases",
+    "kind": "errors"
+  },
+  {
+    "control": "changed-copy-hash-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_changed_source_after_frozen_plan_refuses_original_version",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "expired-copy-published",
+    "outcome": "intended_failure",
+    "case": "test_expired_copy_never_publishes_archive_receipt",
+    "diagnostic": "Expired copy cannot publish archive bytes",
+    "kind": "failures"
+  },
+  {
+    "control": "integer-limits-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_limits_types_and_separate_private_roots_are_required",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "overlapping-roots-accepted",
+    "outcome": "intended_failure",
+    "case": "test_limits_types_and_separate_private_roots_are_required",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "finite-timeout-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_limits_types_and_separate_private_roots_are_required",
+    "diagnostic": "does not match",
+    "kind": "failures"
+  },
+  {
+    "control": "original-observer-type-unchecked",
+    "outcome": "intended_failure",
+    "case": "test_limits_types_and_separate_private_roots_are_required",
+    "diagnostic": "'NoneType' object has no attribute 'load'",
+    "kind": "errors"
+  },
+  {
+    "control": "lost-plan-reconstructed",
+    "outcome": "intended_failure",
+    "case": "test_missing_original_plan_refuses_before_reconstructing_existing_archive",
+    "diagnostic": "Missing original plan cannot be reconstructed from a source path",
+    "kind": "failures"
+  },
+  {
+    "control": "owned-partial-kept",
+    "outcome": "intended_failure",
+    "case": "test_owned_unpublished_metadata_does_not_accumulate_on_recovery",
+    "diagnostic": "Owned unpublished metadata must be removed without changing original receipt",
+    "kind": "failures"
+  },
+  {
+    "control": "unknown-partial-discarded",
+    "outcome": "intended_failure",
+    "case": "test_unknown_unpublished_file_is_preserved_and_refused",
+    "diagnostic": "ValueError not raised",
+    "kind": "failures"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 18
+  }
+]

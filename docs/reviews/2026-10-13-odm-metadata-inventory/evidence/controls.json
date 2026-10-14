@@ -1,0 +1,54 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "omit-engine",
+    "outcome": "intended_refusal",
+    "reason": "known metadata command requires both selected roots"
+  },
+  {
+    "control": "omit-metadata",
+    "outcome": "intended_refusal",
+    "reason": "known metadata command requires both selected roots"
+  },
+  {
+    "control": "corrupt-configuration",
+    "outcome": "intended_refusal",
+    "reason": "Retained worker inventory bytes or layout differ"
+  },
+  {
+    "control": "corrupt-component",
+    "outcome": "intended_refusal",
+    "reason": "Worker-root package content differs from its manifest"
+  },
+  {
+    "control": "changed-summary",
+    "outcome": "intended_refusal",
+    "reason": "captured metadata command summary differs"
+  },
+  {
+    "control": "change-source",
+    "outcome": "intended_refusal",
+    "reason": "retained original root changed"
+  },
+  {
+    "control": "missing-stopped-record",
+    "outcome": "intended_refusal",
+    "reason": "retained fixture must record stopped engine capture"
+  },
+  {
+    "control": "wrong-digest",
+    "outcome": "intended_refusal",
+    "reason": "metadata command did not reopen the captured digest"
+  }
+]

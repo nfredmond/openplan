@@ -149,7 +149,7 @@ describe("project evidence bundle reachability", () => {
     const setTimer = vi.spyOn(window, "setTimeout");
     const clearTimer = vi.spyOn(window, "clearTimeout");
     const view = render(<ProjectEvidenceBundlePanel projectId={PROJECT_ID} canGenerate />);
-    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest SHA-256" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Copy manifest fingerprint" }));
     await screen.findByText("Copied");
     await waitFor(() => expect(setTimer.mock.calls.some((call) => call[1] === 1_500)).toBe(true));
     const timerIndex = setTimer.mock.calls.findIndex((call) => call[1] === 1_500);
@@ -168,7 +168,7 @@ describe("project evidence bundle reachability", () => {
       INVENTORY.priorBundles[0].downloadHref
     );
     expect(screen.getByText(INVENTORY.priorBundles[0].manifestSha256)).toBeVisible();
-    fireEvent.click(screen.getByRole("button", { name: "Copy manifest SHA-256" }));
+    fireEvent.click(screen.getByRole("button", { name: "Copy manifest fingerprint" }));
     await waitFor(() => {
       expect(navigator.clipboard.writeText).toHaveBeenCalledWith(
         INVENTORY.priorBundles[0].manifestSha256,

@@ -1,0 +1,104 @@
+[
+  {
+    "name": "All aerial worker suites",
+    "command": "set -eu\nfor suite in workers/odm_worker/test_*.py; do\n  python3 -B \"$suite\"\ndone\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Journal harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-admission-journal/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-admission-journal-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Disconnected journal root capture and replay",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-admission-journal/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-admission-journal-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Source custody harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-source-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-source-custody-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Interrupted source copy and stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-source-custody/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-source-custody-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Engine effect harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-engine-effects/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-engine-effects-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Disconnected engine effect root capture and replay",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-engine-effects/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-engine-effects-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Captured draft harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-draft-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-draft-custody-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "ZIP derived source harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-zip-derived-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Interrupted ZIP image copy and stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-derived-custody/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-zip-derived-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "ZIP engine lineage harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-zip-engine-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Original ZIP engine stopped-root replay",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-zip-engine-integration/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-zip-engine-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Durable HTTP admission harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-admission/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-admission-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Actual HTTP admission and stopped-root held-start recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-admission/native_recovery.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-admission-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Owned runtime preparation harmless and targeted fault controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-runtime-preparation-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Interrupted owned runtime preparation and stopped-root recovery",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-runtime-preparation/native_recovery.py \\\n  --out \"$RUNNER_TEMP/odm-runtime-preparation-native\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  },
+  {
+    "name": "Native readiness publication harmless and targeted controls",
+    "command": "python3 -B docs/reviews/2026-10-11-odm-native-readiness-race/verify_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-native-readiness-controls\"\npython3 -B docs/reviews/2026-10-11-odm-native-readiness-race/verify_native_controls.py \\\n  --repo \"$GITHUB_WORKSPACE\" --out \"$RUNNER_TEMP/odm-native-readiness-native-controls\"\n",
+    "exit": 0,
+    "workflowSha256": "6a30ad18869c640b9b09e0ca18d4add2cf9bbf5a3d2f852da615981f94541e2c"
+  }
+]

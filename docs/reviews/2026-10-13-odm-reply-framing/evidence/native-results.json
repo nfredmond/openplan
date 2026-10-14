@@ -1,0 +1,14 @@
+{
+  "changedEngineRefused": true,
+  "restoredEngineAuthority": true,
+  "rpcCases": true,
+  "originalsUnchangedAfterRefusal": true,
+  "retainedDraftContents": true,
+  "relocatedWithoutFetch": true,
+  "commitHeld": true,
+  "threeDistinctDrafts": true,
+  "actualTaskListEmpty": true,
+  "noProcessingDirectories": true,
+  "revokedBeforeEngine": true,
+  "stalledOriginalPreserved": true
+}

@@ -1087,3 +1087,25 @@ export async function publicReviewStillCurrent(service: SupabaseClient, snapshot
 export async function loadSurveyAttachmentAnswer(service: SupabaseClient, campaignId: string, sessionId: string, answerId: string) {
  return service.from('engagement_survey_answers').select('answer_json').eq('id',answerId).eq('campaign_id',campaignId).eq('session_id',sessionId).maybeSingle();
 }
+
+/**
+ * Every survey record of one campaign that can hold an uploaded file's path, as
+ * one JSON text, for the photo sweep (photo-sweep.ts) to search. Answers and
+ * the review history are both read: a redaction replaces the answer but keeps
+ * the original, file path included, in the history. An unfinished read is an
+ * error, because a missed record would let the sweep delete a kept photo.
+ */
+export async function loadSurveyFileReferenceText(
+  service: Pick<SupabaseClient, "from">,
+  campaignId: string
+): Promise<{ text: string; error: null } | { text: null; error: { message: string } }> {
+  const answers = await pageSurveyRows((from, to) =>
+    service.from("engagement_survey_answers").select("id, answer_json").eq("campaign_id", campaignId).order("id", { ascending: true }).range(from, to)
+  );
+  if (answers.error) return { text: null, error: answers.error };
+  const reviews = await pageSurveyRows((from, to) =>
+    service.from("engagement_survey_review_history").select("id, before_json, after_json").eq("campaign_id", campaignId).order("id", { ascending: true }).range(from, to)
+  );
+  if (reviews.error) return { text: null, error: reviews.error };
+  return { text: JSON.stringify([answers.rows, reviews.rows]), error: null };
+}

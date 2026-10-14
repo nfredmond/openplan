@@ -318,7 +318,7 @@ export function GrantsAwardsReimbursementSection({
                       </Link>
                       {exactBillingTriageHref ? <InvoiceTriageLinkCopy href={exactBillingTriageHref} /> : null}
                       <Link href={`/projects/${item.project.id}#project-funding-opportunities`} className="inline-flex items-center gap-2 text-muted-foreground transition hover:text-foreground">
-                        Open project funding lane
+                        Open project funding
                         <ArrowRight className="h-4 w-4" />
                       </Link>
                     </div>

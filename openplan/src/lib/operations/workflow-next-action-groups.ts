@@ -616,12 +616,9 @@ function modelingRunStateSuffix(summary: WorkspaceOperationsSummary): string {
     modeling.activeModelRuns !== null && modeling.activeModelRuns > 0
       ? `, ${pluralize(modeling.activeModelRuns, "still in flight", "still in flight")}`
       : "";
-  const validated =
-    modeling.validatedScreeningCountyRuns !== null && modeling.validatedScreeningCountyRuns > 0
-      ? ` ${pluralize(modeling.validatedScreeningCountyRuns, "county validation run")} ${modeling.validatedScreeningCountyRuns === 1 ? "has" : "have"} reached validated screening.`
-      : "";
-
-  return ` This workspace holds ${describeObservedCount(modeling.modelRuns, "model run")} and ${describeObservedCount(modeling.scenarioSets, "scenario set")}${inFlight}.${validated}`;
+  // No sentence about "validated screening" county runs: that stage is
+  // retired, and a county run's standing is its claim tier, not its stage.
+  return ` This workspace holds ${describeObservedCount(modeling.modelRuns, "model run")} and ${describeObservedCount(modeling.scenarioSets, "scenario set")}${inFlight}.`;
 }
 
 function analysisReadiness(summary: WorkspaceOperationsSummary): WorkflowReadinessRollup {

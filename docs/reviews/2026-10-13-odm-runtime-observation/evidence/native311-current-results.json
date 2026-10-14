@@ -1,0 +1,15 @@
+{
+  "actualRuntimeObservation": true,
+  "rpcCases": 17,
+  "applicationReads": 3,
+  "nativeEngineChecks": 2,
+  "taskGets": 1,
+  "reportedState": "failed",
+  "reportedImageCount": 2,
+  "bodySha256": "2d32a593ef2d46801c350caaa561d123a8e0de6db078a1ca764b80eaa950a187",
+  "localCopiedReplyExact": true,
+  "applicationPermissionChecked": true,
+  "processingQualityAccepted": false,
+  "workerRecoveryAccepted": false,
+  "defaultActivated": false
+}

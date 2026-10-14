@@ -1,14 +1,16 @@
 name: Production Health
 
-# Optional manual check. Hosted operation is deferred as of September 7, 2026.
-# Polls an explicitly configured deployment's /api/health. OpenPlan has no canonical
-# hosted instance, so the URL comes from the repository variable
-# OPENPLAN_HEALTH_URL (Settings -> Secrets and variables -> Actions ->
-# Variables). When the variable is unset — every fresh fork — the job is
+# Polls an explicitly configured deployment's /api/health every 30 minutes and on
+# demand. The hosted installation (live since October 11, 2026) sets the
+# repository variable OPENPLAN_HEALTH_URL (Settings -> Secrets and variables ->
+# Actions -> Variables). A failed scheduled run is GitHub's alert: it emails the
+# repository owner. When the variable is unset, as in a fresh fork, the job is
 # skipped instead of failing or polling somebody else's deployment.
 
 on:
   workflow_dispatch:
+  schedule:
+    - cron: "7,37 * * * *"
 
 permissions:
   contents: read

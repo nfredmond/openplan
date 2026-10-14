@@ -104,6 +104,21 @@ const SERVICE_ROLE_ONLY_WRITES: Record<string, { functions: string[]; reason: st
       "an RLS policy to, so these tables are written service-role and read only through the " +
       "campaign-scoped helpers this module exposes.",
   },
+  "src/lib/engagement/photo-upload-allowance.ts": {
+    functions: ["reservePhotoUpload", "releasePhotoUpload"],
+    reason:
+      "Public photo uploads are counted in usage_events so every server instance sees one limit. " +
+      "The uploader is anonymous, reached by share token with no session, so there is no member " +
+      "to scope a write policy to; usage_events has a member SELECT policy and no write policy. " +
+      "Reached only from /api/engage/[shareToken]/photo-upload, which passes createServiceRoleClient().",
+  },
+  "src/lib/engagement/photo-sweep.ts": {
+    functions: ["sweepUnattachedEngagementPhotos"],
+    reason:
+      "The daily sweep removes public photos nothing took up and clears their usage_events rows. " +
+      "It runs from /api/cron/sweep-engagement-photos with no auth.uid() at all and passes " +
+      "createServiceRoleClient(); no member may delete these rows, since they are the upload limit.",
+  },
   "src/lib/knowledge-base/documents.ts": {
     functions: ["insertKbChunks"],
     reason:
@@ -243,7 +258,10 @@ const UNVERIFIED_CALLER_WRITES: Record<string, number> = {
   "src/app/api/funding-opportunities/[opportunityId]/application/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/draft/route.ts": 1,
   "src/app/api/funding-opportunities/[opportunityId]/sections/[sectionId]/route.ts": 1,
-  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 4,
+  // 4 -> 1: line replacement moved into replace_client_invoice_lines, one
+  // transaction that refuses a short stamp count itself. The void release of
+  // time entries is the one write left here.
+  "src/app/api/invoicing/client-invoices/[invoiceId]/route.ts": 1,
   "src/app/api/invoicing/rate-tables/[rateTableId]/route.ts": 1,
   "src/app/api/invoicing/time-entries/[timeEntryId]/route.ts": 1,
   // 4 -> 3: the relaunch re-queue now chains `.select("id").maybeSingle()` and

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 import { InvoiceBalance } from "@/components/invoicing/contracts/invoice-balance";
 import { ClientComposer, type ClientComposerRecord } from "@/components/invoicing/client-composer";
@@ -250,11 +251,13 @@ export async function ReceivablesLane({
             <p className="text-xs font-semibold text-muted-foreground">Client invoices</p>
             <h2 className="text-lg font-semibold tracking-tight text-foreground">Receivable register</h2>
           </div>
-          <p className="mt-4 text-sm text-muted-foreground">
-            {receivableCorePending
-              ? "The client invoicing tables are pending in this database. Apply the latest migrations before expecting clients, engagements, or client invoices to render here."
-              : "Client invoicing records could not be loaded right now."}
-          </p>
+          {receivableCorePending ? (
+            <SetupPendingNotice className="mt-4" consequence="Clients, engagements and client invoices are not shown.">
+              The client invoicing tables are pending in this database. Apply the latest migrations.
+            </SetupPendingNotice>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">Client invoicing records could not be loaded right now.</p>
+          )}
         </article>
       </section>
     );
@@ -485,11 +488,13 @@ export async function ReceivablesLane({
         </div>
 
         {timeAndRatesUnavailable ? (
-          <p className="mt-4 text-sm text-muted-foreground">
-            {timeAndRatesPending
-              ? "The time and rate tables are pending in this database. Apply the latest migrations before expecting staff, rate tables, or time entries to render here."
-              : "Time and rate records could not be loaded right now."}
-          </p>
+          timeAndRatesPending ? (
+            <SetupPendingNotice className="mt-4" consequence="Staff, rate tables and time entries are not shown.">
+              The time and rate tables are pending in this database. Apply the latest migrations.
+            </SetupPendingNotice>
+          ) : (
+            <p className="mt-4 text-sm text-muted-foreground">Time and rate records could not be loaded right now.</p>
+          )
         ) : (
           <div className="mt-4 space-y-4">
             <StaffAndRatesPanel

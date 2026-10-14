@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { CartographicSurfaceWide } from "@/components/cartographic/cartographic-surface-wide";
 import { AlertTriangle, ShieldCheck } from "lucide-react";
 import { ScenarioEntryComposer } from "@/components/scenarios/scenario-entry-composer";
@@ -672,11 +673,10 @@ export default async function ScenarioSetDetailPage({
       <ReadFailureNotice reads={reads} title="Part of this scenario set could not be read" />
 
       {modelRunsSchemaPending ? (
-        <StateBlock
-          tone="warning"
-          title="Model-run evidence is waiting on a migration"
-          description="This deployment has not applied the model-runs migration, so runs attached to these entries, the attach picker, and the trip-generation comparison affordance are unavailable. That is a missing migration, not an absence of model runs."
-        />
+        <SetupPendingNotice consequence="Model runs attached to these entries, and the trip-generation comparison, are not shown. That does not mean there are no model runs.">
+          This deployment has not applied the model-runs migration, so attached runs, the attach
+          picker and the trip-generation comparison are unavailable.
+        </SetupPendingNotice>
       ) : null}
 
       <PageTabNav
@@ -741,7 +741,7 @@ export default async function ScenarioSetDetailPage({
               </p>
               <p className="module-summary-detail">
                 {comparisonSnapshotsSchemaPending
-                  ? "Apply the latest scenario spine migration to persist comparison artifacts."
+                  ? "Saving comparisons is not set up on this installation yet."
                   : comparisonSnapshotsUnreadable
                     ? "Saved comparison snapshots could not be read, so this is not a count of zero."
                     : "Persistent comparison snapshots can now carry narrative, caveats, and indicator deltas."}
@@ -1117,9 +1117,9 @@ export default async function ScenarioSetDetailPage({
             ) : null}
 
             {comparisonSnapshotsSchemaPending ? (
-              <div className="module-empty-state mt-5 text-sm">
+              <SetupPendingNotice className="mt-5" consequence="Saved comparisons are not shown.">
                 Comparison snapshot storage is waiting on the latest scenario spine migration.
-              </div>
+              </SetupPendingNotice>
             ) : comparisonSnapshotsUnreadable ? (
               <div className="module-empty-state mt-5 text-sm">
                 Saved comparison snapshots could not be read for this render. Nothing is listed below, and that is not a

@@ -219,14 +219,25 @@ describe("managed GTFS source intake", () => {
     expect(f.events).not.toContain("archive-confirmation");
   });
   it("bounds an ignored upload deadline and recovers saved bytes on retry", async () => {
-    const f = await fixture(), normal = f.transport.getMockImplementation()!; let uploadSignal: AbortSignal | null | undefined;
+    const f = await fixture(), normal = f.transport.getMockImplementation()!;
+    const recoveryTimeoutMs = f.options.uploadTimeoutMs;
+    let uploadSignal: AbortSignal | null | undefined, abortedBeforeReconciliation = false;
     f.options.uploadTimeoutMs = 15;
     f.transport.mockImplementation(async (input, init) => {
       if (init?.method === "POST") { uploadSignal = init.signal; return new Promise<Response>(() => {}); }
+      if (uploadSignal) abortedBeforeReconciliation = uploadSignal.aborted;
       return normal(input, init);
     });
-    await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed"); expect(uploadSignal!.aborted).toBe(true);
-    f.transport.mockImplementation(normal); expect((await f.run()).ok).toBe(true); expect(fetchSource).toHaveBeenCalledTimes(1);
+    await expect(f.run()).rejects.toThrow("uploaded archive is unconfirmed");
+    expect(abortedBeforeReconciliation, "Ignored upload must receive its deadline before reconciliation").toBe(true);
+    expect(uploadSignal!.aborted).toBe(true);
+    f.options.uploadTimeoutMs = recoveryTimeoutMs;
+    f.transport.mockImplementation(async (input, init) => {
+      if (init?.method === "POST") await new Promise(resolve => setTimeout(resolve, 50));
+      return normal(input, init);
+    });
+    expect((await f.run()).ok).toBe(true);
+    expect(fetchSource, "Retry must reuse its saved original bytes").toHaveBeenCalledTimes(1);
   });
   it.each(["inactive", "actor", "archive", "unconfirmed"])("refuses %s refreshed custody before parsing", async kind => {
     const f = await fixture(), normal = f.transport.getMockImplementation()!;

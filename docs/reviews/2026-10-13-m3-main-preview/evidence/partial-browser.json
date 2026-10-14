@@ -1,0 +1,37 @@
+{
+  "url": "http://127.74.9.10:3578/models/492638e4-9937-4e61-a31c-d69f7e36f49b",
+  "engine": "aequilibrae",
+  "feed": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+  "eventCount": 1,
+  "event": {
+    "feedId": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+    "geometryHash": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+    "matchesForm": true,
+    "method": "POST",
+    "payload": {
+      "coverage": "yes",
+      "reason": null,
+      "serviceEndDate": "2026-08-09",
+      "stopServiceRowsInStudyArea": 238,
+      "usesFrequencies": false
+    },
+    "status": 200,
+    "url": "/api/gtfs/feeds/study-area-coverage",
+    "workspaceId": "e9df9fa9-8c14-4800-8b85-2d5a074fb513"
+  },
+  "diagnostics": [],
+  "viewport": {
+    "height": 800,
+    "width": 1280
+  },
+  "sourceCommit": "14ec90115b1629c35e0382938d8296dc0d5e118a",
+  "buildId": "8GniSObykruqCmEWqLrLP",
+  "limitations": [
+    "Older retained isolated synthetic database, not current-main database",
+    "DOM select changes, native keyboard actions failed",
+    "Snapshots failed and resize timed out; last measured viewport1280x800",
+    "Diagnostics cover events after observer installation only",
+    "No model launch, adoption or project write",
+    "No visual/mobile, practitioner, scientific or whole-installation acceptance"
+  ]
+}

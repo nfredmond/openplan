@@ -1,4 +1,5 @@
 import { Wallet } from "lucide-react";
+import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { ProjectSpendEntryForm } from "@/components/projects/project-spend-entry-form";
 import {
@@ -63,19 +64,19 @@ export function ProjectBudgetPanel({
       </div>
 
       {pendingSchema.deliverableBudgetColumns ? (
-        <div className="module-alert mt-5 text-sm">
-          Deliverable budget fields will appear after the deliverable-budgets migration is applied to the database.
-        </div>
+        <SetupPendingNotice className="mt-5" consequence="Deliverable budgets are not shown.">
+          Deliverable budget fields appear after the deliverable-budgets migration is applied to the database.
+        </SetupPendingNotice>
       ) : null}
       {pendingSchema.spendEntries ? (
-        <div className="module-alert mt-5 text-sm">
-          The project spend ledger will appear after the spend-ledger migration is applied to the database.
-        </div>
+        <SetupPendingNotice className="mt-5" consequence="Project spending is not shown.">
+          The project spend ledger appears after the spend-ledger migration is applied to the database.
+        </SetupPendingNotice>
       ) : null}
       {pendingSchema.clientInvoices ? (
-        <div className="module-alert mt-5 text-sm">
-          Billed client-invoice lines will appear after the client invoicing migration is applied to the database.
-        </div>
+        <SetupPendingNotice className="mt-5" consequence="Billed client invoice lines are not shown.">
+          Billed client-invoice lines appear after the client invoicing migration is applied to the database.
+        </SetupPendingNotice>
       ) : null}
 
       <div className="module-summary-grid cols-5 mt-5">

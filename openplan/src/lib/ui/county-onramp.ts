@@ -87,7 +87,7 @@ export function getCountyRunNextAction(stage: CountyRunStage): string {
     case "validation-scaffolded":
       return "Tighten station definitions or complete count ingestion, then rerun validation.";
     case "validated-screening":
-      return "Review the validation report and preserve all screening-grade caveats in any downstream use.";
+      return "Review the validation report. Treat results as prototype-only.";
     default:
       return "Review county state.";
   }
@@ -186,7 +186,14 @@ export function buildCountyRunManifestProofSummary(input: {
 
   const validationRows: CountyRunManifestProofRow[] = [
     { label: "Recorded stage", value: stageLabel },
-    { label: "Screening gate", value: validationStatusLabel ?? "No screening-gate status recorded yet." },
+    // The old count gate is a diagnostic (KI-2026-10-12-001); its verdict is
+    // shown as one, never as a pass.
+    {
+      label: "Old count gate (diagnostic)",
+      value: validationStatusLabel
+        ? `${validationStatusLabel}. Diagnostic only, not a validation result.`
+        : "No count-gate result recorded yet.",
+    },
     ...(formatKnownNumber(metrics.medianApe)
       ? [{ label: "Median APE", value: `${formatKnownNumber(metrics.medianApe)}%` }]
       : []),

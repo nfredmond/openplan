@@ -1,0 +1,506 @@
+{
+  "sourceSha256": "19b9477de044e77f6b0d1e4f5da8363fb57685a03566bdeec310bb663ca14afb",
+  "testSha256": "9070204276eccd97ebc5b7d758147ee2d24a682009d61929bc1a445056c6a79b",
+  "sourceRestored": true,
+  "coveredMethods": [
+    "test_assessment_custody",
+    "test_assessment_explanation",
+    "test_assessment_references",
+    "test_assessment_shape",
+    "test_assessment_state",
+    "test_cli_capture_arguments_required",
+    "test_cli_scope_and_diagnostics",
+    "test_configuration_changes_during_capture",
+    "test_configuration_id",
+    "test_configuration_layout_even_with_rewritten_census",
+    "test_configuration_list",
+    "test_configuration_path",
+    "test_configuration_shape",
+    "test_configured_configuration_required",
+    "test_copied_configuration_checked",
+    "test_copied_profile_checked",
+    "test_current_software_catalogue",
+    "test_deadline_bounds",
+    "test_declared_quiescence",
+    "test_destination_overlaps_root",
+    "test_directory_sync_required",
+    "test_duplicate_configuration_ids",
+    "test_duplicate_json_keys",
+    "test_empty_selection_remains_unassessed",
+    "test_every_family_assessed",
+    "test_exact_private_configuration",
+    "test_existing_destination_refused",
+    "test_file_sync_required",
+    "test_invalid_software_scripts_diagnostic",
+    "test_local_custody_root_required",
+    "test_manifest_cannot_promote_coverage",
+    "test_nested_duplicate_json_keys",
+    "test_non_string_software_command",
+    "test_package_layout_even_with_rewritten_census",
+    "test_private_inputs",
+    "test_profile_and_configuration_precede_selection",
+    "test_profile_changes_during_capture",
+    "test_profile_directory_diagnostic",
+    "test_profile_shape_and_id",
+    "test_profile_size_bound",
+    "test_publication_failure_no_receipt",
+    "test_relocated_verify_without_original_paths",
+    "test_retained_catalogue_format",
+    "test_retargeted_known_npm_command",
+    "test_root_selection_syntax",
+    "test_selected_roots_overlap",
+    "test_selection_binding_even_with_rewritten_census",
+    "test_shared_and_historical_roots",
+    "test_software_changes_during_capture",
+    "test_source_directory_not_configuration_file",
+    "test_unassessed_custody_not_promoted",
+    "test_unknown_npm_entrypoint",
+    "test_unknown_python_entrypoint",
+    "test_unreferenced_selections",
+    "test_verifier_deadline_bounds",
+    "test_verifier_refuses_changed_bytes"
+  ],
+  "cases": [
+    {
+      "case": "baseline",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-comment",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "harmless-json-spacing",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    },
+    {
+      "case": "guard-00",
+      "method": "test_unknown_npm_entrypoint",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-01",
+      "method": "test_unknown_python_entrypoint",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-02",
+      "method": "test_invalid_software_scripts_diagnostic",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "AttributeError"
+    },
+    {
+      "case": "guard-03",
+      "method": "test_non_string_software_command",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "package scripts are invalid"
+    },
+    {
+      "case": "guard-04",
+      "method": "test_duplicate_json_keys",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-05",
+      "method": "test_nested_duplicate_json_keys",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-06",
+      "method": "test_profile_shape_and_id",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-07",
+      "method": "test_configuration_id",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-08",
+      "method": "test_configuration_shape",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-09",
+      "method": "test_duplicate_configuration_ids",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-10",
+      "method": "test_configuration_path",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-11",
+      "method": "test_every_family_assessed",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-12",
+      "method": "test_assessment_shape",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-13",
+      "method": "test_assessment_state",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-14",
+      "method": "test_assessment_custody",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-15",
+      "method": "test_assessment_explanation",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-16",
+      "method": "test_assessment_references",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "references differ"
+    },
+    {
+      "case": "guard-17",
+      "method": "test_configured_configuration_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-18",
+      "method": "test_local_custody_root_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-19",
+      "method": "test_unassessed_custody_not_promoted",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-20",
+      "method": "test_unreferenced_selections",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-21",
+      "method": "test_configuration_list",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "not a list"
+    },
+    {
+      "case": "guard-22",
+      "method": "test_retained_catalogue_format",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-23",
+      "method": "test_declared_quiescence",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-24",
+      "method": "test_source_directory_not_configuration_file",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "IsADirectoryError"
+    },
+    {
+      "case": "guard-25",
+      "method": "test_selected_roots_overlap",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-26",
+      "method": "test_destination_overlaps_root",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-27",
+      "method": "test_configuration_changes_during_capture",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-28",
+      "method": "test_profile_changes_during_capture",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-29",
+      "method": "test_software_changes_during_capture",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-30",
+      "method": "test_copied_configuration_checked",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-31",
+      "method": "test_copied_profile_checked",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-32",
+      "method": "test_profile_size_bound",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "below one MiB"
+    },
+    {
+      "case": "guard-33",
+      "method": "test_profile_directory_diagnostic",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "IsADirectoryError"
+    },
+    {
+      "case": "guard-34",
+      "method": "test_verifier_refuses_changed_bytes",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "selection binding differs"
+    },
+    {
+      "case": "guard-35",
+      "method": "test_selection_binding_even_with_rewritten_census",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-36",
+      "method": "test_manifest_cannot_promote_coverage",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-37",
+      "method": "test_package_layout_even_with_rewritten_census",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "guard-38",
+      "method": "test_configuration_layout_even_with_rewritten_census",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "retargeted-alias-accepted",
+      "method": "test_retargeted_known_npm_command",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "library-instead-of-executable",
+      "method": "test_current_software_catalogue",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "AssertionError"
+    },
+    {
+      "case": "wrong-source-hash",
+      "method": "test_current_software_catalogue",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "AssertionError"
+    },
+    {
+      "case": "lost-private-mode",
+      "method": "test_exact_private_configuration",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "configuration bytes differ"
+    },
+    {
+      "case": "duplicate-shared-root",
+      "method": "test_shared_and_historical_roots",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "AssertionError"
+    },
+    {
+      "case": "lost-worker-assessments",
+      "method": "test_empty_selection_remains_unassessed",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "AssertionError"
+    },
+    {
+      "case": "verify-reads-original-roots",
+      "method": "test_relocated_verify_without_original_paths",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "FileNotFoundError"
+    },
+    {
+      "case": "skip-root-syntax",
+      "method": "test_root_selection_syntax",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "privacy-bypass",
+      "method": "test_private_inputs",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "reuse-empty-destination",
+      "method": "test_existing_destination_refused",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "FileExistsError not raised"
+    },
+    {
+      "case": "selection-before-configuration",
+      "method": "test_profile_and_configuration_precede_selection",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "Configuration must precede root selection"
+    },
+    {
+      "case": "receipt-before-selection",
+      "method": "test_profile_and_configuration_precede_selection",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "Receipt must publish last"
+    },
+    {
+      "case": "omit-directory-sync",
+      "method": "test_directory_sync_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "not found in"
+    },
+    {
+      "case": "omit-file-sync",
+      "method": "test_file_sync_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "Every retained file must be synced"
+    },
+    {
+      "case": "omit-publication",
+      "method": "test_publication_failure_no_receipt",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "OSError not raised"
+    },
+    {
+      "case": "ignore-capture-deadline",
+      "method": "test_deadline_bounds",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "ignore-verify-deadline",
+      "method": "test_verifier_deadline_bounds",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "ValueError not raised"
+    },
+    {
+      "case": "leak-private-diagnostic",
+      "method": "test_cli_scope_and_diagnostics",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "unexpectedly found"
+    },
+    {
+      "case": "mixed-cli-scope",
+      "method": "test_cli_scope_and_diagnostics",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "SystemExit not raised"
+    },
+    {
+      "case": "missing-cli-arguments",
+      "method": "test_cli_capture_arguments_required",
+      "exitCode": 1,
+      "result": "failed intended oracle",
+      "expectedFailure": "SystemExit not raised"
+    },
+    {
+      "case": "restored",
+      "method": null,
+      "exitCode": 0,
+      "result": "survived",
+      "expectedFailure": null
+    }
+  ]
+}

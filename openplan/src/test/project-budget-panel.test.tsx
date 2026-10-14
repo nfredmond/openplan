@@ -94,8 +94,17 @@ describe("ProjectBudgetPanel", () => {
       />
     );
 
-    expect(screen.getByText(/Deliverable budget fields will appear after/i)).toBeInTheDocument();
-    expect(screen.getByText(/spend ledger will appear after/i)).toBeInTheDocument();
-    expect(screen.getByText(/client-invoice lines will appear after/i)).toBeInTheDocument();
+    // The planner reads what is missing and who can turn it on.
+    expect(screen.getByText(/Deliverable budgets are not shown/i)).toBeInTheDocument();
+    expect(screen.getByText(/Project spending is not shown/i)).toBeInTheDocument();
+    expect(screen.getByText(/Billed client invoice lines are not shown/i)).toBeInTheDocument();
+    // Each migration is still named, behind the operator disclosure.
+    for (const operatorLine of [
+      /Deliverable budget fields appear after/i,
+      /spend ledger appears after/i,
+      /client-invoice lines appear after/i,
+    ]) {
+      expect(screen.getByText(operatorLine).closest("details")).not.toBeNull();
+    }
   });
 });

@@ -123,8 +123,8 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
       const connection = buildPublicSubmissionClientFingerprint(voteRequest());
       const voters = voteInsertMock.mock.calls.map(([row]) => (row as { voter_fingerprint: string }).voter_fingerprint);
       expect(voters).toEqual([
-        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_A))}`,
-        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_B))}`,
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_A), CAMPAIGN_ID)}`,
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("POST", undefined, DEVICE_B), CAMPAIGN_ID)}`,
       ]);
       expect(new Set(voters).size).toBe(2);
     });
@@ -158,7 +158,7 @@ describe("POST /api/engage/[shareToken]/items/[itemId]/vote", () => {
       const connection = buildPublicSubmissionClientFingerprint(voteRequest());
       expect(voteDeleteEqFingerprintMock).toHaveBeenCalledWith(
         "voter_fingerprint",
-        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("DELETE", undefined, DEVICE_A))}`
+        `${connection}:${buildPublicParticipantDeviceFingerprint(voteRequest("DELETE", undefined, DEVICE_A), CAMPAIGN_ID)}`
       );
     });
   });

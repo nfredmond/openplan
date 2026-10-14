@@ -1,0 +1,47 @@
+[
+  {
+    "proof": "controls-04",
+    "invocation": "91e3c39a8d634d1696c8f4670b0239c8",
+    "memoryPeakBytes": 64163840,
+    "memoryMaxBytes": 268435456,
+    "memorySwapMaxBytes": 0,
+    "exit": 0,
+    "stopped": true
+  },
+  {
+    "proof": "native-01",
+    "invocation": "0a825c2c0835431894d3e11b877a59f2",
+    "memoryPeakBytes": 57864192,
+    "memoryMaxBytes": 268435456,
+    "memorySwapMaxBytes": 0,
+    "exit": 0,
+    "stopped": true
+  },
+  {
+    "proof": "python311-02",
+    "invocation": "dfee3f301aee4e6197befa81b0c900ee",
+    "memoryPeakBytes": 60841984,
+    "memoryMaxBytes": 268435456,
+    "memorySwapMaxBytes": 0,
+    "exit": 0,
+    "stopped": true
+  },
+  {
+    "proof": "ci-01",
+    "invocation": "b808cc63d809413182a4a10126340c93",
+    "memoryPeakBytes": 73236480,
+    "memoryMaxBytes": 268435456,
+    "memorySwapMaxBytes": 0,
+    "exit": 0,
+    "stopped": true
+  },
+  {
+    "proof": "documentation-01",
+    "invocation": "b9484dc0fd1b4ec4996405a828873a71",
+    "memoryPeakBytes": 278171648,
+    "memoryMaxBytes": 1073741824,
+    "memorySwapMaxBytes": 0,
+    "exit": 0,
+    "stopped": true
+  }
+]

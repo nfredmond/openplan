@@ -38,6 +38,7 @@ import { renderSafetyStreetContextSvg, SAFETY_STREET_CONTEXT_PROJECTION_NOTE } f
 import { corridorGeojsonSchema } from "@/lib/models/run-launch";
 import { type ReportScenarioSetLink } from "@/lib/reports/scenario-provenance";
 import { modelingClaimStatusLabel, type ModelingClaimStatus } from "@/lib/models/evidence-backbone";
+import { countyRunStageLabelFor } from "@/lib/models/county-onramp";
 import {
   buildReportModelingEvidenceExportProof,
   formatModelingValidationStatusLabel,
@@ -600,6 +601,15 @@ function citedModelRunMarkup(run: ReportCitedModelRun): string {
   </article>`;
 }
 
+/**
+ * A county run's stage, in the app's own words. No stage is a pass: the old
+ * count gate that once set `validated-screening` is a diagnostic, and what a
+ * run may claim is its claim tier.
+ */
+function countyRunStageText(stage: string | null | undefined): string {
+  return countyRunStageLabelFor(stage) ?? titleize(stage || "unknown");
+}
+
 function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
   const validation =
     run.validation_summary_json && typeof run.validation_summary_json === "object"
@@ -617,7 +627,7 @@ function citedCountyRunMarkup(run: ReportCitedCountyRun): string {
         <h3>${esc(run.run_name?.trim() || "County run")}</h3>
         <p class="meta">County validation run</p>
       </div>
-      <span class="pill ${run.stage === "validated-screening" ? "pill-pass" : "pill-hold"}">${esc(titleize(run.stage || "unknown"))}</span>
+      <span class="pill pill-hold">${esc(countyRunStageText(run.stage))}</span>
     </div>
     ${
       validationParts.length > 0
@@ -1341,7 +1351,7 @@ function modelingEvidenceMarkup(modelingEvidence: ReportModelingEvidence[]): str
 
           return `<article class="metric-card modeling-evidence-card">
             <h3>${esc(item.geographyLabel?.trim() || item.runName?.trim() || "County model run")}</h3>
-            <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(titleize(item.stage || "unknown"))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
+            <p class="meta">${esc(item.runName?.trim() || "County run")} • ${esc(countyRunStageText(item.stage))} • updated ${esc(formatDateTime(item.updatedAt))}</p>
             ${
               claim
                 ? `<p><strong>${esc(modelingClaimStatusLabel(claim.claimStatus))}:</strong> ${esc(

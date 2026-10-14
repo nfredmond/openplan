@@ -5,7 +5,7 @@ Start here:
 - [Roadmap](ROADMAP.md): status of every milestone and the next three tasks.
 - [V1 product contract](product/V1_PRODUCT_CONTRACT.md): what v1 must deliver.
 - [Known issues](ops/KNOWN_ISSUES.md): open defects and limits, including the October 12 review findings.
-- [Hosted cutover record](ops/HOSTED_LIVE_2026-10-11.md): the public installation at openplan-zeta.vercel.app since October 11, 2026.
+- [Hosted installation](#hosted-installation): the public installation at openplan-zeta.vercel.app since October 11, 2026, and its dated records.
 - [Two-month review](reviews/2026-10-12-two-month-review/README.md): findings from August 11 to October 11 and the staged plan to v1.
 
 Use this index to distinguish current instructions and priorities from historical
@@ -30,8 +30,7 @@ pointer to AGENTS.md, not a second rulebook.
 ## Hosted installation
 
 [Development release policy](product/DEVELOPMENT_RELEASE_POLICY.md) governs interim releases and authorized hosted operation.
-The [October 11 hosted public cutover record](ops/HOSTED_LIVE_2026-10-11.md) tracks the current managed installation. The [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) preserves its implementation history.
-The [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) records the scoped demo key, actual AI requests, 405-migration hosted state, and the disabled GTFS commissioning boundary.
+For the hosted installation, start with the "Live hosted installation" section of [AGENTS.md](../AGENTS.md), then read the dated records newest first: the [October 12 review follow-up](reviews/2026-10-12-hosted-review-followup/STATUS.md), the [October 12 review fixes](reviews/2026-10-12-hosted-review-fixes/STATUS.md), the [October 11 demo AI and schema catch-up](ops/HOSTED_DEMO_AI_AND_GTFS_SCHEMA_2026-10-11.md) (405-migration hosted state, disabled GTFS commissioning), the [October 11 public cutover record](ops/HOSTED_LIVE_2026-10-11.md) (deployment identities; its migration, archive and rollback figures are superseded) and the [October 10 checkpoint](ops/HOSTED_RELAUNCH_2026-10-10.md) (implementation history). [Hosted recovery](../openplan/docs/ops/HOSTED_RECOVERY.md) names the current rollback procedure.
 
 ## Evaluate and operate
 
@@ -87,7 +86,7 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
-These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 to 11. They are not current authority; the documents under "Start here" are.
+These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 to 12. They are not current authority; the documents under "Start here" are.
 
 The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
 
@@ -108,6 +107,61 @@ The October 7 land-use checkpoints record [frozen staff history](reviews/2026-10
 The [October 11 managed admission and progress point](reviews/2026-10-11-managed-stage-point/STATUS.md) adds original native claim/progress recovery, execution-admission and attempt-root preservation. It exercises existing helpers; normal polling, engine resume and the remaining M3 floor stay open.
 
 The [October 11 complete selected worker-root snapshot candidate](reviews/2026-10-11-worker-root-snapshot/STATUS.md) adds a supported private-root package command, native SQLite/WAL controls and five known-root checks. Fresh package copies recover original managed receipts without computation; installation-wide recovery and the remaining M3 floor stay open.
+
+The [October 11 selected worker-root set candidate](reviews/2026-10-11-worker-root-set/STATUS.md) retains exact selection bytes, binds components to the initial source inventory and publishes one final set manifest. Five known roots and a relocated copy verify. It does not discover omitted installation roots or establish a new database/Storage cut. The failed T3 host retry remains explicit.
+
+The [October 11 retained recovery-packet candidate](reviews/2026-10-11-recovery-point-manifest/STATUS.md) binds declared database/Storage artifacts, roles, key, configuration and a verified worker-root set. The 3,092-file encrypted transport restores exact packet bytes/modes, preserving original backend mode metadata and failed trials. This is an offline retained-artifact check; installation-wide consistency and independent commissioning remain open.
+
+The [October 11 explicit worker inventory candidate](reviews/2026-10-11-installation-worker-inventory/STATUS.md) requires declarations for each known worker family and retains exact private configuration before producing a selected-root inventory. Its source audit distinguishes model, imagery, OCR, email, synthesis and native connector state. Historical-fixture integration is verified; installation coverage and commissioning remain unassessed.
+
+The [October 11 native OCR text-layer recovery proof](reviews/2026-10-11-ocr-worker-recovery/STATUS.md) recovers exact original callback bytes from a stopped private-root package without another download or extraction. A blank page, original admission replay and changed-request refusal survive. Scanned OCR quality, a live OpenPlan consumer and the remaining M3 floor stay open.
+
+The [October 11 OCR inventory/root-set integration proof](reviews/2026-10-11-ocr-inventory-root-set/STATUS.md) binds a selected synthetic configuration and root through both existing operators, then continues the original result in a fresh runtime. The consumer reads a persisted ledger, and 53 controls pass. One fixture is configured; the other 14 families and installation coverage remain unassessed.
+
+The [October 11 aerial admission counterexample](reviews/2026-10-11-odm-restart-reproduction/STATUS.md) reproduces a queued ODM request receiving a new job/admission identity after complete stopped-root restoration. No imagery or engine work runs. The defect remains open; a verifying file package does not establish recovery of memory-only accepted work.
+
+The [October 11 disconnected aerial journal candidate](reviews/2026-10-11-odm-admission-journal/STATUS.md) preserves original admission and start-intent records through actual stopped-root capture and relocated journal replay. The HTTP worker remains disconnected; the native restart defect and source/engine/result/artifact integration remain open.
+
+The [October 11 disconnected aerial source candidate](reviews/2026-10-11-odm-source-custody/STATUS.md) preserves exact complete local source bytes and their original plan through an actual interrupted copy, stopped-root capture and fresh-copy resumption. The HTTP worker remains disconnected; downloads, engine effects and full worker recovery stay open.
+
+The [October 11 native aerial draft counterexample](reviews/2026-10-11-odm-draft-reconciliation/STATUS.md) shows repeated uploads creating duplicate files and repeated initialization overwriting metadata. Original draft bytes survive restored API startup even though no registered task is found. No commit or reconstruction runs; safe engine-effect reconciliation remains open.
+
+The [October 11 disconnected aerial engine journal](reviews/2026-10-11-odm-engine-effects/STATUS.md) freezes original source/engine/settings/task identity, preserves exact commands and replies, and refuses a second first-issue flag. Stopped-root copy replay preserves unresolved effects. Actual engine custody, ZIP-derived imagery and runtime recovery remain open.
+
+The [October 11 captured aerial draft inspector](reviews/2026-10-11-odm-draft-custody/STATUS.md) compares verified captured metadata and upload bytes with the original saved plan. Native partial/complete drafts match; duplicate uploads, overwritten metadata and changed bytes refuse. Results grant no transport permission. Complete worker recovery remains open.
+
+The [October 11 original ZIP-derived source candidate](reviews/2026-10-11-odm-zip-derived-custody/STATUS.md) retains ordered member bytes and distinct image-slot filenames under the original archive/admission/context. Actual interrupted-copy recovery resumes from the captured retained ZIP without the original download. Engine-journal and runtime integration remain open.
+
+The [October 11 ZIP engine-journal integration candidate](reviews/2026-10-11-odm-zip-engine-integration/STATUS.md) binds actual derived image bytes and original archive lineage before command intents. Stopped-root replay preserves uncertain commands; actual cached engine drafts compare exact original slots. Runtime dispatch and complete worker recovery remain open.
+
+The [October 11 opt-in durable aerial HTTP admission candidate](reviews/2026-10-11-odm-runtime-admission/STATUS.md) preserves exact original HTTP receipts and pending work through stopped-root restoration, while holding uncertain starts. Missing original journal/seal refuses startup. Source/actor/engine stages, outputs/callback custody and full worker recovery remain open.
+
+The [October 11 owned aerial runtime preparation candidate](reviews/2026-10-11-odm-runtime-preparation/STATUS.md) binds original actor/context and task to retained local inputs and engine plans inside the actual owned runtime. Native interrupted preparation and relocated-copy recovery pass. Trusted context/URL intake, live authority, transport/results and complete worker recovery remain open.
+
+The [October 11 SQLite concurrency correction](reviews/2026-10-11-odm-sqlite-companion-race/STATUS.md) tolerates only retired transient companions, preserves unsafe/unavailable-file refusal and passes 54 tests/59 controls on two Python versions plus 200 serial native concurrency pairs. Inherited actual CI and stopped-root preparation recovery pass; exact-head GitHub checks remain separate. Preserve the main merge hold.
+
+The [October 11 owned aerial draft candidate](reviews/2026-10-11-odm-runtime-draft/STATUS.md) advances one original initialization/upload through the actual admission runtime, retained source and command journal. Uncertain effects hold without reissue and complete drafts leave commit unissued. Twenty tests/31 controls and actual cached-engine capture/restore pass; supplied permission is not live authority. Actual cancellation, trusted context/URL intake, processing/results/callbacks and full worker recovery remain open. Preserve the main merge hold.
+
+The [October 11 supervised aerial HTTP candidate](reviews/2026-10-11-odm-draft-http/STATUS.md) adds one original init/upload transport with streaming, deadline, cancellation and parent-lifetime ownership. It preserves unresolved effects and holds commit. Native proof caught and corrected initialization metadata loss. All 31 tests/47 controls, 18 actual-CI suites and pinned-engine capture/restore checks pass. Fourteen nested documentation tests and the direction check pass; live authority, URL intake, processing and full worker recovery remain open. Main merges remain held.
+
+The [October 11 retained aerial URL source candidate](reviews/2026-10-11-odm-url-source-custody/STATUS.md) saves original complete source bytes before owned preparation, with immutable context, slot receipts and bounded orphan attempts. Forty tests/48 controls and actual interrupted two-root recovery pass. Completed receipts prevent refetch and corrupt completed bytes refuse. Supervised network transport, live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Preserve the main merge hold.
+
+The [October 11 supervised aerial URL source candidate](reviews/2026-10-11-odm-url-transport/STATUS.md) stops original network intake on deadline, cancellation or abrupt owner exit. Available loopback redirect targets, local TLS, 33 tests/59 controls and actual interrupted two-root recovery pass. Original source receipts prevent refetch. Public network, live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Preserve the main merge hold.
+
+The [October 11 original aerial URL intake candidate](reviews/2026-10-11-odm-runtime-url-intake/STATUS.md) saves supplied original settings before fetch and source mapping before preparation. All 39 tests/56 controls and actual interrupted HTTP recovery pass. Recovery keeps original actor/engine/options and can replay completed preparation without the download root. Missing original records or bytes hold without replacement or refetch. Live authority, trusted dispatch, processing/results/callbacks and full worker recovery remain open. Main merges stay held.
+
+The [October 11 original URL-to-draft candidate](reviews/2026-10-11-odm-url-draft-pipeline/STATUS.md) advances one original command from frozen URL settings and bytes. Twenty composition tests/32 controls and actual composed HTTP body cancellation pass. Native source intake and pinned engine drafts retain uncertain intents and hold commit. Supplied authority, processing/results/callbacks and full worker recovery remain unassessed. Main merges stay held.
+
+The [original dispatch custody candidate](reviews/2026-10-11-odm-original-dispatch-custody/STATUS.md) preserves exact supplied request bytes, original actor and nullable project before URL intake. It compares frozen settings and engine context with the private receipt and refuses recapture after input work. Supplied authorship and current authority remain unassessed. The coordinator lifts the merge hold at 2026-10-12T02:46:46Z, subject to serial merges and production health verification.
+
+The [private application dispatch producer candidate](reviews/2026-10-11-odm-private-dispatch-producer/STATUS.md) saves exact request text outside member-readable jobs before optional dispatch and checks current original scope through service-only RPCs. It retains nullable project and original actor and refuses uncertain storage replies. Focused application, native mutation, project-lock, local SQL restore, installed CLI upgrade and actual RPC interruption checks pass. Full worker recovery and hosted integration remain open; no engine permission is established.
+
+The [October 12 combined M3 candidate](reviews/2026-10-12-m3-owned-stack-integration/STATUS.md) joins the owned recovery and aerial stack with the separate worker-root parent and fetched main. Its worker, operations, application and installed-RPC checks pass, including a narrow native control-panel layout correction. The [private reader](reviews/2026-10-12-odm-private-dispatch-reader/STATUS.md), [receipt capacity correction](reviews/2026-10-12-odm-private-reader-capacity/STATUS.md) and [current draft authority](reviews/2026-10-12-odm-private-draft-authority/STATUS.md) retain their distinct limits. Hosted migration, current-head CI, native engine attestation and full-worker acceptance remain separate.
+
+The [October 12 deadline-test clock correction](reviews/2026-10-12-odm-deadline-test-clock/STATUS.md) measures the aerial pipeline's actual start instead of including fixture setup. It removes the earlier test allowance and passes the existing harmless and broken deadline controls under Python 3.14 and 3.11. Production code and its deadline stay unchanged; exact-commit CI remains separate.
+
+
+The [October 11 native readiness correction](reviews/2026-10-11-odm-native-readiness-race/STATUS.md) fixes a partial listener write in the actual aerial recovery harness. Paused atomic publication passes; deliberately broken direct publication reproduces GitHub's JSON-read failure. Worker behavior and the main merge hold stay unchanged.
 
 ## Historical evidence
 
@@ -174,3 +228,45 @@ Contract management: [operator workflow](ops/CONTRACT_RECONCILIATION.md) and [v0
 - [v0.62.0 retained synthesis source and staff review](reviews/2026-09-14-m9b-synthesis-custody/RELEASE_VERIFICATION.md): complete selected-source custody, reasoned revisions, interrupted retry and retirement of unsafe legacy generation; [published after final CI](reviews/2026-09-14-m9b-synthesis-custody/PUBLICATION.md).
 
 - [Engagement synthesis operating guide](ops/ENGAGEMENT_SYNTHESIS_REVIEW.md): retained source selection, reasoned corrections, earlier history and interrupted-save recovery.
+
+The [native engine observation candidate](reviews/2026-10-12-odm-native-engine-attestation/STATUS.md) binds one supported Linux NodeODM original to daemon and process-root observations. Its defaults and processing commit remain held.
+
+The [SQLite companion retirement correction](reviews/2026-10-13-odm-retired-sqlite-companions/STATUS.md) preserves the committed original after a transient file is unlinked, while refusing present unsafe files and aliases.
+
+The [October13 corrected combined worker candidate](reviews/2026-10-13-m3-corrected-stack/STATUS.md) joins the recorded recovery stack, native engine observer and journal retirement correction with current main. It retains separate CI, hosted and production boundaries.
+
+The [GTFS deadline fixture correction](reviews/2026-10-13-gtfs-intake-deadline-fixture/STATUS.md) preserves the short ignored-upload deadline, restores the normal recovery deadline and checks cancellation before archive reconciliation. Production intake remains unchanged.
+
+The [native private-authority composition](reviews/2026-10-13-odm-native-private-authority-composition/STATUS.md) joins actual RPC access, original engine attestation and real draft init/upload transport in an owned fixture. Processing stays held; installation, physical-host recovery and scientific acceptance remain separate.
+
+The [intake clock fixture correction](reviews/2026-10-13-odm-intake-clock-fixture/STATUS.md) compares nested fetch deadlines with the actual shared intake deadline. Controlled startup delay stays outside that budget; production limits remain unchanged.
+
+The [aerial CI wrapper correction](reviews/2026-10-13-odm-ci-job-budget/STATUS.md) preserves every execution command while extending the outer job limit after a recorded cancellation. Worker and test deadlines stay unchanged; current-head GitHub completion remains required.
+
+The [native interrupted-upload proof](reviews/2026-10-13-odm-native-uncertain-interruption/STATUS.md) exits an owned process after a checked real response but before journal saving. Relocated recovery holds the uncertain upload without another authorization or transport; this does not reconcile it or grant retry permission.
+
+The [admission deadline fixture correction](reviews/2026-10-13-gtfs-admission-deadline-fixture/STATUS.md) keeps upload timing separate from durable source resolution, observes physical abort before reconciliation and refuses late replies without changing production budgets.
+The [commit reply correction](reviews/2026-10-13-odm-commit-reply-contract/STATUS.md) matches the original UUID observed from the pinned engine, preserves exact reply bytes and refuses invalid old mock receipts without rewriting them. Processing remains held.
+
+The [task metadata parser](reviews/2026-10-13-odm-task-observation/STATUS.md) binds supplied status replies to the original plan and preserves reported options separately from execution settings. Metadata grants no permission or quality claim; runtime polling remains unconnected.
+
+The [failed-task stopped-root probe](reviews/2026-10-13-odm-committed-task-restore/STATUS.md) retains one known backend task’s API identity and failed status across an exact root copy. It does not authorize a new engine identity or establish full worker recovery.
+
+The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/STATUS.md) requires a declared retained directory apart from scratch, refuses missing recovery roots and checks original receipt replay with fresh replacement scratch. The operator still verifies its backing storage and installation-wide recovery inventory.
+
+- [Separate retained aerial task metadata root](reviews/2026-10-13-odm-task-observation-retention/STATUS.md), current candidate and bounded source/native evidence.
+
+- [Local aerial task metadata command](reviews/2026-10-13-odm-task-observation-cli/STATUS.md), supplied private replies, exact digest reads and bounded operator summaries.
+- [Aerial HTTP reply framing](reviews/2026-10-13-odm-reply-framing/STATUS.md), incomplete declared replies refuse before acknowledgement publication.
+- [Original aerial task reads](reviews/2026-10-13-odm-original-task-read/STATUS.md), owned network reads and exact retained replies with separate claim limits.
+- [Explicit original task command](reviews/2026-10-13-odm-original-task-command/STATUS.md), private native fetch inputs, operator interruption and saved-digest recovery.
+- [Owned runtime task observations](reviews/2026-10-13-odm-runtime-observation/STATUS.md), original application bindings, current access and private reported task records.
+- [Original processing commit custody](reviews/2026-10-13-odm-original-processing-commit/STATUS.md), explicit original access, owned POST, uncertain holds and exact private reply replay.
+
+- [Complete owned OpenCode fixture receipts](reviews/2026-10-13-opencode-receipt-fixture/STATUS.md), actual process interruption, unchanged production shutdown and current main failure hold.
+
+- [Original uncertain commit inspection](reviews/2026-10-13-odm-uncertain-commit-inspection/STATUS.md), current task observations with a missing acknowledgment held separately.
+
+- [Supplied output archive custody](reviews/2026-10-13-odm-output-archive-custody/STATUS.md), bounded complete private bytes, member inventory and interruption recovery without publication or quality promotion.
+- [Original output archive HTTP](reviews/2026-10-13-odm-original-output-http/STATUS.md), supervised fixed-task downloads with ownership, cancellation and bounded byte writing.
+- [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.

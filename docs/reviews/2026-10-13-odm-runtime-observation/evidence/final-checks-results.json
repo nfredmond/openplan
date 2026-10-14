@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "source314-final",
+    "returncode": 0,
+    "seconds": 12.389
+  },
+  {
+    "stage": "source311-final",
+    "returncode": 0,
+    "seconds": 11.205
+  },
+  {
+    "stage": "native314-final",
+    "returncode": 0,
+    "seconds": 353.808
+  },
+  {
+    "stage": "native311-final",
+    "returncode": 0,
+    "seconds": 347.038
+  }
+]

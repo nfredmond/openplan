@@ -1,0 +1,674 @@
+[
+  {
+    "control": "post-changed-to-get-exact",
+    "accepted": true
+  },
+  {
+    "control": "post-changed-to-get-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-changed-to-get-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "post-changed-to-get-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "post-changed-to-get-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "post-changed-to-get-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "post-changed-to-get-success-output",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-exact",
+    "accepted": true
+  },
+  {
+    "control": "commit-reply-not-validated-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "commit-reply-not-validated-success-output",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "non-success-response-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "non-success-response-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "partial-response-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "partial-response-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-exact",
+    "accepted": true
+  },
+  {
+    "control": "unowned-commit-accepted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "unowned-commit-accepted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-exact",
+    "accepted": true
+  },
+  {
+    "control": "pre-cancellation-ignored-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "pre-cancellation-ignored-success-output",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "engine-check-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "engine-check-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-exact",
+    "accepted": true
+  },
+  {
+    "control": "late-owner-check-suppressed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "late-owner-check-suppressed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "final-engine-check-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "final-engine-check-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "parent-metadata-bound-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "parent-metadata-bound-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "child-envelope-shape-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "child-envelope-shape-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "child-uuid-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "child-uuid-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "original-plan-comparison-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "original-plan-comparison-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-exact",
+    "accepted": true
+  },
+  {
+    "control": "engine-boolean-coerced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "engine-boolean-coerced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "parent-credential-check-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "parent-credential-check-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "child-credential-check-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "child-credential-check-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-exact",
+    "accepted": true
+  },
+  {
+    "control": "credential-error-exposed-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "credential-error-exposed-success-output",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-exact",
+    "accepted": true
+  },
+  {
+    "control": "cancellation-type-coerced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "cancellation-type-coerced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "constructor-adapters-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-exact",
+    "accepted": true
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "missing-owner-adapter-unchecked-success-output",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "owned-output-bound-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "owned-output-bound-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-exact",
+    "accepted": true
+  },
+  {
+    "control": "child-metadata-bound-omitted-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "child-metadata-bound-omitted-success-output",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-exact",
+    "accepted": true
+  },
+  {
+    "control": "owner-type-coerced-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "owner-type-coerced-success-output",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-exact",
+    "accepted": true
+  },
+  {
+    "control": "deadline-not-checked-wrong-exit",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-boolean-exit",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-wrong-case",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-wrong-kind",
+    "accepted": false
+  },
+  {
+    "control": "deadline-not-checked-success-output",
+    "accepted": false
+  }
+]

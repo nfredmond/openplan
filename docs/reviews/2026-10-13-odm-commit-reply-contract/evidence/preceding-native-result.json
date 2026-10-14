@@ -1,0 +1,14 @@
+{
+  "apiVersion": "2.2.4",
+  "sameOriginalUuid": true,
+  "commitStatus": 200,
+  "commitReplySha256": "3bbaddfe204cbf022887a35cdbdd755203a53887cdafdeb855dec97ac5cdef6b",
+  "commitReplyKeys": [
+    "uuid"
+  ],
+  "workerParserAcceptsActualReply": false,
+  "suppliedFiles": 3,
+  "decodedImageryAccepted": false,
+  "reconstructionQualityAccepted": false,
+  "workerRecoveryAccepted": false
+}

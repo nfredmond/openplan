@@ -1,0 +1,22 @@
+[
+  {
+    "stage": "source-controls311",
+    "returncode": 0,
+    "seconds": 5.012
+  },
+  {
+    "stage": "native-corrected",
+    "returncode": 0,
+    "seconds": 7.108
+  },
+  {
+    "stage": "effect-source-recovery",
+    "returncode": 0,
+    "seconds": 0.806
+  },
+  {
+    "stage": "zip-engine-source-recovery",
+    "returncode": 0,
+    "seconds": 0.91
+  }
+]

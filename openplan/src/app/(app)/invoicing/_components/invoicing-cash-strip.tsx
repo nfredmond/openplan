@@ -58,7 +58,7 @@ export async function InvoicingCashStrip({ workspaceId }: { workspaceId: string 
           </p>
         ) : reimbursementRecords.length === 0 ? (
           <p className="mt-2 text-sm text-muted-foreground">
-            Not set up yet — no reimbursement invoice records in this workspace. The reimbursement lane is where funder draws are logged.
+            No reimbursement invoices in this workspace yet. Funder draws are logged as reimbursement invoices.
           </p>
         ) : (
           <>

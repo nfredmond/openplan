@@ -1,0 +1,218 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived"
+  },
+  {
+    "case": "changedEngineRefused-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "changedEngineRefused-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "changedEngineRefused-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "restoredEngineAuthority-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "restoredEngineAuthority-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "restoredEngineAuthority-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "rpcCases-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "rpcCases-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "rpcCases-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "originalsUnchangedAfterRefusal-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "originalsUnchangedAfterRefusal-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "originalsUnchangedAfterRefusal-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "retainedDraftContents-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "retainedDraftContents-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "retainedDraftContents-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "relocatedWithoutFetch-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "relocatedWithoutFetch-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "relocatedWithoutFetch-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "commitHeld-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "commitHeld-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "commitHeld-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedDraftExact-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedDraftExact-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedDraftExact-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedProcessExit-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedProcessExit-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedProcessExit-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "unresolvedUploadHeld-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "unresolvedUploadHeld-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "unresolvedUploadHeld-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noRecoveryTransport-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noRecoveryTransport-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noRecoveryTransport-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedOriginalPreserved-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedOriginalPreserved-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "interruptedOriginalPreserved-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "threeDistinctDrafts-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "threeDistinctDrafts-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "threeDistinctDrafts-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "actualTaskListEmpty-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "actualTaskListEmpty-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "actualTaskListEmpty-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noProcessingDirectories-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noProcessingDirectories-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "noProcessingDirectories-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "revokedBeforeEngine-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "revokedBeforeEngine-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "revokedBeforeEngine-missing",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "stalledOriginalPreserved-false",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "stalledOriginalPreserved-wrong-type",
+    "outcome": "intended_refusal"
+  },
+  {
+    "case": "stalledOriginalPreserved-missing",
+    "outcome": "intended_refusal"
+  }
+]

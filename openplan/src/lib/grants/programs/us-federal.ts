@@ -1,9 +1,10 @@
 // United States — federal grant programs.
 //
-// Curated catalog entries for federal transportation funding programs, as
-// encountered by a California applicant today (several are administered
-// through Caltrans as the state pass-through). This is static reference data,
-// not a live opportunity feed. Cycle timing is phrased as guidance text on
+// Curated catalog entries for federal transportation funding programs. Several
+// reach local agencies through a state pass-through. This text is read in every
+// state, so it names no state's agency or tools: a state bundle's
+// `federalProgramAdministration` carries those (see ./state-administration.ts).
+// This is static reference data, not a live opportunity feed. Cycle timing is phrased as guidance text on
 // purpose — funding cycles shift, so every entry tells the operator where to
 // verify the current call instead of asserting a deadline. URLs point at the
 // official program pages.
@@ -14,7 +15,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "hsip",
     name: "Highway Safety Improvement Program (HSIP)",
-    administeringAgency: "FHWA, administered by Caltrans Division of Local Assistance",
+    administeringAgency: "FHWA, administered by your state DOT",
     level: "federal",
     typicalApplicants: "Cities, counties, tribal governments",
     eligibleProjectTypes: [
@@ -23,27 +24,27 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Guardrail and shoulder treatments",
       "Systemic safety improvements",
     ],
-    cycleNote: "Local HSIP calls run roughly every one to two years — verify the current call with Caltrans Local Assistance.",
+    cycleNote: "Each state sets its own HSIP call for local agencies. Verify the current call with your state DOT's local assistance office.",
     matchRequirement:
       "Typically 90% federal / 10% local; certain safety countermeasures qualify for 100% federal funding — verify the current call.",
-    url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/highway-safety-improvement-program",
+    url: "https://highways.dot.gov/safety/hsip",
     summary:
-      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a Local Roadway Safety Plan or safety action plan.",
+      "Federal safety funding for infrastructure countermeasures on local roads, awarded through data-driven benefit/cost scoring against crash history. A workhorse program for small agencies with documented collision patterns, and pairs naturally with a local road safety plan or safety action plan.",
     bcaNote:
-      "Awards are scored on benefit/cost computed with the Caltrans Local Roadway Safety Manual method — countermeasure crash-reduction factors and Caltrans-published crash costs control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the LRSM B/C.",
+      "States that select local HSIP projects by benefit/cost compute it with the state's own method, crash-reduction factors and crash costs, and those control the actual score. The screening BCA is a USDOT-style screening analogue (crashes avoided by severity at USDOT crash costs), not a preview of the state's B/C.",
     applicationSections: [
       {
         key: "project-description",
         title: "Project description",
         guidance:
-          "Describe the location, the safety problem, and the proposed countermeasures. Verify the current call's application form and countermeasure list with Caltrans Local Assistance — both change between calls.",
+          "Describe the location, the safety problem, and the proposed countermeasures. Verify the current call's application form and countermeasure list with your state DOT. Both change between calls.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "crash-history-analysis",
         title: "Crash history and safety analysis",
         guidance:
-          "Summarize the crash history that motivates the project: pattern, severity, and time window. Verify the current call's required crash-data window and source with Caltrans Local Assistance.",
+          "Summarize the crash history that motivates the project: pattern, severity, and time window. Verify the current call's required crash-data window and source with your state DOT.",
         // Same reason as SS4A's safety-problem section: the crash history a
         // community reported is evidence about the crash history.
         suggestedEvidence: ["project", "bca", "engagement", "kb"],
@@ -52,14 +53,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "countermeasure-selection",
         title: "Countermeasure selection rationale",
         guidance:
-          "Explain why the selected countermeasures fit the documented crash pattern. Verify the current call's approved countermeasure set and crash-reduction factors with Caltrans Local Assistance.",
+          "Explain why the selected countermeasures fit the documented crash pattern. Verify the current call's approved countermeasure set and crash-reduction factors with your state DOT.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "benefit-cost-calculation",
-        title: "Benefit/cost calculation (LRSM tool)",
+        title: "Benefit/cost calculation (state tool)",
         guidance:
-          "The score-controlling B/C is computed in the Caltrans Local Roadway Safety Manual tool from your crash data and countermeasures — it is a calculation, never drafted prose, and OpenPlan's screening BCA is only an early-warning analogue. Verify the current call's B/C tool version with Caltrans Local Assistance.",
+          "Where the state scores by benefit/cost, the score-controlling B/C comes from the state's own tool, using your crash data and countermeasures. It is a calculation, never drafted prose, and OpenPlan's screening BCA is only an early-warning analogue. Verify the current call's B/C tool and version with your state DOT.",
         suggestedEvidence: ["bca"],
         aiDraftingEnabled: false,
       },
@@ -67,15 +68,15 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "implementation-schedule",
         title: "Delivery schedule",
         guidance:
-          "Lay out design, environmental, right-of-way, and construction milestones. Verify the current call's delivery deadlines with Caltrans Local Assistance.",
+          "Lay out design, environmental, right-of-way, and construction milestones. Verify the current call's delivery deadlines with your state DOT.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
     ],
     requiredAttachments: [
       {
         key: "lrsm-bc-tool-output",
-        title: "LRSM benefit/cost tool output",
-        guidance: "Output of the Caltrans LRSM B/C tool for the selected countermeasures. Verify the required tool version with the current call.",
+        title: "Benefit/cost tool output",
+        guidance: "Output of the state's B/C tool for the selected countermeasures, where the call requires one. Verify the required tool and version with the current call.",
         required: true,
       },
       {
@@ -87,7 +88,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "engineers-cost-estimate",
         title: "Engineer's cost estimate",
-        guidance: "Itemized project cost estimate. Verify the current call's estimate format with Caltrans Local Assistance.",
+        guidance: "Itemized project cost estimate. Verify the current call's estimate format with your state DOT.",
         required: true,
       },
       {
@@ -291,7 +292,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
     matchRequirement: "INFRA funds capped at 60% of project cost; total federal share capped at 80% — verify the current NOFO.",
     url: "https://www.transportation.gov/grants/infra-grant-program",
     summary:
-      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with Caltrans or a regional agency on a goods-movement or corridor application.",
+      "Large-scale federal discretionary funding for freight and highway projects of national or regional significance, with minimum awards of roughly $5M for small projects. For rural agencies, the realistic path is usually a partnership with the state DOT or a regional agency on a goods-movement or corridor application.",
     bcaNote:
       "USDOT requires a benefit-cost analysis per its BCA Guidance for INFRA applications, with freight benefits typically driving the ratio. Run the screening BCA early — a BCR below 1.0 at screening grade is a signal to rescope or firm up benefit evidence before committing to the full analysis.",
     applicationSections: [
@@ -349,7 +350,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "letters-of-support",
         title: "Letters of funding commitment and support",
-        guidance: "Match commitments and partner support, often including Caltrans or the regional agency on partnership applications. Verify commitment-evidence requirements in the current NOFO.",
+        guidance: "Match commitments and partner support, often including the state DOT or the regional agency on partnership applications. Verify commitment-evidence requirements in the current NOFO.",
         required: false,
       },
     ],
@@ -357,17 +358,17 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "cmaq",
     name: "Congestion Mitigation and Air Quality Improvement (CMAQ)",
-    administeringAgency: "FHWA, programmed through Caltrans and regional MPOs/RTPAs",
+    administeringAgency: "FHWA, programmed through your state DOT and regional planning agencies",
     level: "federal",
-    typicalApplicants: "Cities, counties, and transit agencies via their MPO/RTPA",
+    typicalApplicants: "Cities, counties, and transit agencies through their MPO or regional planning agency",
     eligibleProjectTypes: [
       "Transit service and fleet projects",
       "Bicycle and pedestrian facilities",
       "Signal timing and ITS",
       "Clean-vehicle and trip-reduction projects",
     ],
-    cycleNote: "Programmed through regional MPO/RTPA cycles rather than a single statewide call — verify timing with your MPO/RTPA.",
-    matchRequirement: "Typically 88.53% federal / 11.47% local in California; some projects qualify for higher federal share — verify.",
+    cycleNote: "Programmed through regional cycles rather than a single statewide call. Verify timing with your MPO or regional planning agency.",
+    matchRequirement: "Typically 80% federal / 20% local; states with large areas of federal land use a higher sliding-scale federal share, and some projects qualify for more. Verify with the programming agency.",
     url: "https://www.fhwa.dot.gov/environment/air_quality/cmaq/",
     summary:
       "Federal formula funding for projects that reduce transportation emissions in air-quality nonattainment and maintenance areas, programmed regionally rather than by statewide competition. Availability depends on your county's air-quality designation, so confirm eligibility with the regional agency first.",
@@ -376,35 +377,35 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "project-description",
         title: "Project description",
         guidance:
-          "Describe the project and how it reduces transportation emissions or congestion. Verify your MPO/RTPA's current programming application format — CMAQ is programmed regionally and each agency structures its call differently.",
+          "Describe the project and how it reduces transportation emissions or congestion. Verify your regional planning agency's current programming application format. CMAQ is programmed regionally and each agency structures its call differently.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "emissions-benefit-narrative",
         title: "Emissions benefit narrative",
         guidance:
-          "Explain the mechanism by which the project reduces emissions and summarize the quantified estimate. The quantified figures come from the required emissions calculation methodology — verify which calculator your MPO/RTPA's current call requires.",
+          "Explain the mechanism by which the project reduces emissions and summarize the quantified estimate. The quantified figures come from the required emissions calculation methodology. Verify which calculator your regional planning agency's current call requires.",
         suggestedEvidence: ["modeling", "kb"],
       },
       {
         key: "eligibility-and-air-quality-context",
         title: "Eligibility and air-quality context",
         guidance:
-          "Document the area's nonattainment or maintenance designation and the project's CMAQ eligibility category. Verify current designations and eligible categories with your MPO/RTPA.",
+          "Document the area's nonattainment or maintenance designation and the project's CMAQ eligibility category. Verify current designations and eligible categories with your regional planning agency.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "implementation-schedule",
         title: "Implementation schedule",
         guidance:
-          "Lay out delivery milestones and obligation timing. Verify programming-year and obligation expectations with your MPO/RTPA's current cycle.",
+          "Lay out delivery milestones and obligation timing. Verify programming-year and obligation expectations with your regional planning agency's current cycle.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
         key: "cost-estimate",
         title: "Cost estimate",
         guidance:
-          "Cost figures come from the engineer's estimate, never from AI drafting. Verify the current cycle's estimate format and the applicable federal share with your MPO/RTPA.",
+          "Cost figures come from the engineer's estimate, never from AI drafting. Verify the current cycle's estimate format and the applicable federal share with your regional planning agency.",
         suggestedEvidence: ["funding"],
         aiDraftingEnabled: false,
       },
@@ -413,13 +414,13 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "emissions-calculation-worksheet",
         title: "Emissions calculation worksheet",
-        guidance: "Quantified emissions-reduction estimate on the required methodology. Verify the accepted calculator with your MPO/RTPA's current call.",
+        guidance: "Quantified emissions-reduction estimate on the required methodology. Verify the accepted calculator with your regional planning agency's current call.",
         required: true,
       },
       {
         key: "project-location-map",
         title: "Project location map",
-        guidance: "Map locating the project. Verify format expectations with your MPO/RTPA's current application instructions.",
+        guidance: "Map locating the project. Verify format expectations with your regional planning agency's current application instructions.",
         required: false,
       },
     ],
@@ -427,7 +428,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "fta-5310",
     name: "FTA Section 5310 (Enhanced Mobility of Seniors & Individuals with Disabilities)",
-    administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
+    administeringAgency: "FTA, through your state DOT's transit office for small urban and rural areas and through designated recipients in large urbanized areas",
     level: "federal",
     typicalApplicants: "Nonprofits and public agencies serving seniors and people with disabilities",
     eligibleProjectTypes: [
@@ -435,45 +436,45 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Mobility management",
       "Operating support for specialized services",
     ],
-    cycleNote: "Statewide competitive cycles roughly every two years — verify the current call with Caltrans DRMT.",
+    cycleNote: "Each state or designated recipient sets its own call. Verify the current call with your state DOT's transit office or your area's designated recipient.",
     matchRequirement: "Typically 80/20 federal/local for capital and 50/50 for operating; toll credits may cover match — verify.",
     url: "https://www.transit.dot.gov/funding/grants/enhanced-mobility-seniors-individuals-disabilities-section-5310",
     summary:
-      "Federal formula funds passed through Caltrans to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
+      "Federal formula funds passed through states and designated recipients to improve mobility for seniors and people with disabilities where transit is unavailable or insufficient. The standard source for paratransit vehicle replacement and mobility management in small and rural communities.",
     applicationSections: [
       {
         key: "need-for-service",
         title: "Need for service",
         guidance:
-          "Document the mobility gap for seniors and people with disabilities in the service area. Verify the current call's need-documentation expectations with Caltrans DRMT.",
+          "Document the mobility gap for seniors and people with disabilities in the service area. Verify the current call's need-documentation expectations with the agency running the call.",
         suggestedEvidence: ["project", "engagement", "kb"],
       },
       {
         key: "project-implementation-plan",
         title: "Project implementation plan",
         guidance:
-          "Describe the service or capital project, staffing, and operating approach. Verify the current call's implementation-plan format with Caltrans DRMT.",
+          "Describe the service or capital project, staffing, and operating approach. Verify the current call's implementation-plan format with the agency running the call.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
         key: "coordination-narrative",
         title: "Coordination with the coordinated plan",
         guidance:
-          "Show how the project derives from the region's coordinated public transit-human services transportation plan. Verify which plan and adoption date the current call recognizes with Caltrans DRMT.",
+          "Show how the project derives from the region's coordinated public transit-human services transportation plan. Verify which plan and adoption date the current call recognizes with the agency running the call.",
         suggestedEvidence: ["engagement", "kb"],
       },
       {
         key: "management-capacity",
         title: "Management capacity",
         guidance:
-          "Document the organization's capacity to manage federal awards and maintain vehicles or services. Verify the current call's capacity questions with Caltrans DRMT.",
+          "Document the organization's capacity to manage federal awards and maintain vehicles or services. Verify the current call's capacity questions with the agency running the call.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "budget-narrative",
         title: "Budget narrative",
         guidance:
-          "Budget figures come from vendor quotes and finance staff, never from AI drafting. Verify current capital and operating share splits and toll-credit availability with Caltrans DRMT.",
+          "Budget figures come from vendor quotes and finance staff, never from AI drafting. Verify current capital and operating share splits and toll-credit availability with the agency running the call.",
         suggestedEvidence: ["funding"],
         aiDraftingEnabled: false,
       },
@@ -488,13 +489,13 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "authorizing-resolution",
         title: "Authorizing resolution",
-        guidance: "Governing-body resolution authorizing the application. Verify the current call's resolution template with Caltrans DRMT.",
+        guidance: "Governing-body resolution authorizing the application. Verify the current call's resolution template with the agency running the call.",
         required: true,
       },
       {
         key: "vehicle-specifications",
         title: "Vehicle specifications",
-        guidance: "Specifications for requested vehicles or equipment. Verify the current call's accepted vehicle categories with Caltrans DRMT.",
+        guidance: "Specifications for requested vehicles or equipment. Verify the current call's accepted vehicle categories with the agency running the call.",
         required: false,
       },
     ],
@@ -502,7 +503,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "fta-5311",
     name: "FTA Section 5311 (Formula Grants for Rural Areas)",
-    administeringAgency: "FTA, administered in California by Caltrans Division of Rail and Mass Transportation",
+    administeringAgency: "FTA, administered by your state DOT's transit office",
     level: "federal",
     typicalApplicants: "Rural transit operators, counties, tribes; intercity bus carriers under 5311(f)",
     eligibleProjectTypes: [
@@ -510,31 +511,31 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Transit capital and vehicle replacement",
       "Intercity bus service (5311(f))",
     ],
-    cycleNote: "Annual apportionments programmed through Caltrans; periodic competitive 5311(f) intercity bus calls — verify with Caltrans DRMT.",
+    cycleNote: "Annual apportionments programmed through the state, with periodic 5311(f) intercity bus calls. Verify with your state DOT's transit office.",
     matchRequirement: "Operating assistance roughly 50/50 and capital roughly 80/20 federal share; sliding scale and toll credits apply — verify.",
     url: "https://www.transit.dot.gov/rural-formula-grants-5311",
     summary:
-      "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural California operators access it through Caltrans, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
+      "The backbone federal funding source for public transit in areas under 50,000 population, covering both operating and capital needs. Rural operators access it through their state, with the 5311(f) set-aside supporting intercity bus connections between rural communities and urban hubs.",
     applicationSections: [
       {
         key: "service-description",
         title: "Service description",
         guidance:
-          "Describe the rural transit service: routes, span, ridership, and the communities connected. Verify the current programming cycle's service-data requirements with Caltrans DRMT.",
+          "Describe the rural transit service: routes, span, ridership, and the communities connected. Verify the current programming cycle's service-data requirements with your state DOT's transit office.",
         suggestedEvidence: ["project", "engagement", "kb"],
       },
       {
         key: "program-of-projects",
         title: "Program of projects",
         guidance:
-          "List the operating and capital items requested for the apportionment year. Verify the current cycle's program-of-projects format with Caltrans DRMT.",
+          "List the operating and capital items requested for the apportionment year. Verify the current cycle's program-of-projects format with your state DOT's transit office.",
         suggestedEvidence: ["project", "funding", "kb"],
       },
       {
         key: "operating-capital-budget",
         title: "Operating and capital budget",
         guidance:
-          "Budget figures come from the operator's adopted budget, never from AI drafting. Verify current sliding-scale shares and toll-credit rules with Caltrans DRMT.",
+          "Budget figures come from the operator's adopted budget, never from AI drafting. Verify current sliding-scale shares and toll-credit rules with your state DOT's transit office.",
         suggestedEvidence: ["funding"],
         aiDraftingEnabled: false,
       },
@@ -542,7 +543,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "compliance-certifications",
         title: "Compliance certifications",
         guidance:
-          "Certifications and assurances are executed legal documents, never AI-drafted. Verify the current federal fiscal year's certification package with Caltrans DRMT.",
+          "Certifications and assurances are executed legal documents, never AI-drafted. Verify the current federal fiscal year's certification package with your state DOT's transit office.",
         suggestedEvidence: ["project"],
         aiDraftingEnabled: false,
       },
@@ -551,13 +552,13 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       {
         key: "authorizing-resolution",
         title: "Authorizing resolution",
-        guidance: "Governing-body resolution authorizing the application and execution. Verify the current cycle's resolution language with Caltrans DRMT.",
+        guidance: "Governing-body resolution authorizing the application and execution. Verify the current cycle's resolution language with your state DOT's transit office.",
         required: true,
       },
       {
         key: "certifications-and-assurances",
         title: "Certifications and assurances",
-        guidance: "The current federal fiscal year's executed certifications. Verify the applicable package with Caltrans DRMT.",
+        guidance: "The current federal fiscal year's executed certifications. Verify the applicable package with your state DOT's transit office.",
         required: true,
       },
     ],
@@ -565,7 +566,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "crp",
     name: "Carbon Reduction Program (CRP)",
-    administeringAgency: "FHWA, administered through Caltrans Local Assistance and regional MPOs/RTPAs",
+    administeringAgency: "FHWA, administered through your state DOT and regional planning agencies",
     level: "federal",
     typicalApplicants: "Cities, counties, and transit agencies via state and regional programming",
     eligibleProjectTypes: [
@@ -574,17 +575,17 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "Zero-emission vehicle infrastructure",
       "Transit projects that reduce emissions",
     ],
-    cycleNote: "Programmed through state and regional cycles rather than one statewide call — verify with Caltrans Local Assistance or your MPO/RTPA.",
-    matchRequirement: "Typically 88.53% federal / 11.47% local in California — verify with the programming agency.",
-    url: "https://dot.ca.gov/programs/local-assistance/fed-and-state-programs/carbon-reduction-program",
+    cycleNote: "Programmed through state and regional cycles rather than one statewide call. Verify with your state DOT's local assistance office or your MPO.",
+    matchRequirement: "Typically 80% federal / 20% local; states with large areas of federal land use a higher sliding-scale federal share. Verify with the programming agency.",
+    url: "https://highways.dot.gov/iija/fact-sheets/carbon-reduction-program-crp",
     summary:
-      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split in California between a state-programmed share and local shares programmed regionally. Eligibility overlaps heavily with active transportation, ITS, and ZEV infrastructure work small agencies already plan.",
+      "BIL formula program dedicated to projects that reduce on-road transportation emissions, split between a share the state programs and shares suballocated by population and programmed regionally. Eligibility overlaps heavily with active transportation, ITS, and ZEV infrastructure work small agencies already plan.",
     applicationSections: [
       {
         key: "project-description",
         title: "Project description",
         guidance:
-          "Describe the project and its eligible carbon-reduction category. Verify the current programming cycle's application format with Caltrans Local Assistance or your MPO/RTPA — CRP is programmed through state and regional cycles, not one statewide call.",
+          "Describe the project and its eligible carbon-reduction category. Verify the current programming cycle's application format with your state DOT or your MPO. CRP is programmed through state and regional cycles, not one statewide call.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -628,7 +629,7 @@ const programs: readonly GrantProgramCatalogEntry[] = [
   {
     key: "protect",
     name: "PROTECT (Resilience) Program",
-    administeringAgency: "FHWA (formula funds via Caltrans; discretionary NOFOs direct from FHWA)",
+    administeringAgency: "FHWA (formula funds through your state DOT; discretionary NOFOs direct from FHWA)",
     level: "federal",
     typicalApplicants: "States, MPOs, counties, cities, tribes",
     eligibleProjectTypes: [
@@ -637,17 +638,17 @@ const programs: readonly GrantProgramCatalogEntry[] = [
       "At-risk coastal infrastructure",
       "Resilience planning",
     ],
-    cycleNote: "Formula funds flow through Caltrans; discretionary NOFOs are periodic — verify current opportunities with FHWA and Caltrans.",
+    cycleNote: "Formula funds flow through your state DOT, and discretionary NOFOs are periodic. Verify current opportunities with FHWA and your state DOT.",
     matchRequirement: "Typically 80% federal share; planning activities can reach a higher federal share — verify the current guidance.",
     url: "https://highways.dot.gov/iija/fact-sheets/protect-formula-program",
     summary:
-      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural California agencies managing fire-country corridors and storm-damaged roads.",
+      "Federal resilience program funding projects that harden surface transportation against wildfire, flooding, sea-level rise, and other natural hazards, including evacuation routes. Directly relevant to rural agencies managing wildfire corridors and storm-damaged roads.",
     applicationSections: [
       {
         key: "resilience-need",
         title: "Resilience need and hazard exposure",
         guidance:
-          "Document the natural hazards threatening the asset — wildfire, flooding, storm damage, sea-level rise — and the consequence of failure, including evacuation function. Verify the current opportunity's hazard-documentation expectations with FHWA or Caltrans.",
+          "Document the natural hazards threatening the asset (wildfire, flooding, storm damage, sea-level rise) and the consequence of failure, including evacuation function. Verify the current opportunity's hazard-documentation expectations with FHWA or your state DOT.",
         suggestedEvidence: ["project", "kb"],
       },
       {
@@ -668,14 +669,14 @@ const programs: readonly GrantProgramCatalogEntry[] = [
         key: "planning-consistency",
         title: "Planning consistency",
         guidance:
-          "Show consistency with resilience planning — a resilience improvement plan can raise the federal share. Verify the current opportunity's planning-consistency provisions with FHWA or Caltrans.",
+          "Show consistency with resilience planning. A resilience improvement plan can raise the federal share. Verify the current opportunity's planning-consistency provisions with FHWA or your state DOT.",
         suggestedEvidence: ["project", "kb"],
       },
       {
         key: "budget-narrative",
         title: "Budget narrative",
         guidance:
-          "Budget figures come from the engineer's estimate, never from AI drafting. Verify the current opportunity's federal share and match rules with FHWA or Caltrans.",
+          "Budget figures come from the engineer's estimate, never from AI drafting. Verify the current opportunity's federal share and match rules with FHWA or your state DOT.",
         suggestedEvidence: ["funding"],
         aiDraftingEnabled: false,
       },

@@ -38,6 +38,60 @@ Record the chosen method and interval. Resume writers only after capture and
 inventory completion. A backup taken while those writers continue is not yet a
 proved consistent recovery point.
 
+## Explicit worker assessments and protected configuration
+
+The candidate inventory command requires an explicit assessment for each of the
+15 currently catalogued worker families. The [source audit](../../../docs/reviews/2026-10-11-installation-worker-inventory/WORKER_FOOTPRINTS.md)
+identifies different roots, shared state and external dependencies. It does not
+discover the running installation. Start with the
+[unassessed profile template](../../../docs/reviews/2026-10-11-installation-worker-inventory/profile-template.json)
+in a private operator-owned directory. Keep the edited profile and every selected
+configuration file private, with no symlinks or hard-link aliases.
+
+Replace the inventory's `installationId` label and add actual absolute paths to
+its `roots` and `configuration` lists. Each item has a unique safe `id` and a
+`path`. For every worker, record configuration state as `configured`,
+`not_deployed` or `unassessed`, with explanatory notes. This is a configuration
+assessment, not a claim that the worker is healthy. Missing environment variables
+do not establish absence. Configured workers require `configurationIds` and
+declare custody as `local_roots`, `database_and_storage`, `external` or
+`unassessed`. Local custody also requires `rootIds`. Every selected file/root
+must have an assessment reference. Shared roots have one ID; historical roots
+may remain referenced by a stopped or unassessed family.
+
+The label does not replace the original runtime installation identity. Preserve
+the actual worker and deployment identities in exact protected configuration.
+Record external services, native account reauthorization and unresolved custody
+in the notes. Environment files remain opaque bytes; this command never executes
+their contents. From `openplan/`, after declaring configuration-writer quiescence:
+
+```bash
+python3 scripts/ops/installation_worker_inventory.py \
+  --profile /private/operator/worker-profile.json \
+  --destination /private/recovery/worker-inventory \
+  --writers-quiesced --timeout 120
+python3 scripts/ops/installation_worker_inventory.py \
+  --verify /private/recovery/worker-inventory
+```
+
+Require exit 0 and verification before using the generated `inventory.json`
+from that private destination with the worker-root set command below. The package retains the exact profile,
+known entrypoint/launcher catalogue, selected configuration bytes and one final
+receipt. It rechecks sources and never overwrites a destination. Retain failed
+destinations for diagnosis and retry in a new directory. Keep the entire verified
+inventory package with the recovery point's protected configuration. The root-set
+command retains its exact selection bytes but does not separately copy these
+configuration files.
+
+The inventory binds current package and source bytes and refuses unreviewed
+Python worker entrypoints, npm worker keys or retargeted npm launch commands.
+It does not bind every imported library or discover arbitrary installed helpers.
+An empty selection with 15 unassessed entries is not evidence of zero workers.
+Operator declarations and installation coverage remain unassessed. The command
+does not capture worker roots, a database or Storage, align a live cut, encrypt a
+backup, or demonstrate operational restart. [Dated checks](../../../docs/reviews/2026-10-11-installation-worker-inventory/STATUS.md)
+record the candidate's narrower evidence.
+
 ## Model worker recovery records
 
 Include the complete durable worker root in the recovery inventory. This
@@ -109,6 +163,63 @@ inventories, Storage, real-worker quiescence and a different physical host still
 require their own verification. The default-local archive commands below do not
 capture the worker roots automatically.
 
+## Capture an explicitly selected worker-root set
+
+The candidate Linux set command retains one private inventory and every selected
+root as a single verified package. It does not discover omitted workers. Establish
+the required roots from the installation's actual configuration and preserve that
+authority separately. A private inventory has this shape; paths below are examples:
+
+```json
+{
+  "format": "openplan-worker-root-inventory-v1",
+  "roots": [
+    {"id": "transit", "path": "/private/installation/transit-worker"},
+    {"id": "model", "path": "/private/installation/model-worker"}
+  ]
+}
+```
+
+Use unique IDs containing only ASCII letters, numbers, `.`, `_` or `-`, beginning
+with a letter or number, with at most 64 characters. Paths must be absolute and
+private, without aliases or overlapping roots. Keep the inventory private and
+operator-owned. Its exact bytes, including any opaque metadata, are retained.
+An empty `roots` list means zero selected roots; it does not establish an empty
+installation. Quiesce every relevant writer and keep it stopped through the whole
+coordinated point. From `openplan/`, using a fresh destination with a private parent:
+
+```bash
+python3 scripts/ops/worker_root_set_snapshot.py \
+  --inventory /private/installation/worker-inventory.json \
+  --destination /private/recovery-point/worker-root-set \
+  --writers-quiesced --timeout 120
+python3 scripts/ops/worker_root_set_snapshot.py \
+  --destination /private/recovery-point/worker-root-set --verify --timeout 120
+```
+
+Require both commands to exit 0. The timeout covers the selected set. The command
+inventories all sources before component copying, binds each component to that
+initial inventory, and rechecks all sources and selection bytes before publishing
+the final manifest. These checks detect observed changes; they do not acquire a
+writer fence or detect every change and exact restoration between observations.
+Retain an incomplete destination for diagnosis and use a fresh one on retry.
+Nested component manifests do not establish complete set capture.
+
+The package contains exact `inventory.json`, component packages under `roots/<id>/`,
+and final `snapshot.json`. Verification uses only these retained files and works
+without the original source paths. Preserve the set manifest hash through the
+protected coordinated point with database, Storage, installation identity and
+configuration. Self-consistent retained files do not authenticate their own origin.
+This command does not encrypt data or create that coordinated point automatically.
+
+Recover verified `roots/<id>/root/` directories into fresh working locations,
+preserving relative paths, modes and original command custody. Keep the retained
+set unchanged while working copies recover receipts. Source-path identity binds
+the original selection; it does not authorize computation at a new location.
+The [dated set checks](../../../docs/reviews/2026-10-11-worker-root-set/STATUS.md)
+record five known retained roots, exact relocation checks and the remaining
+installation, browser, physical-host and scientific boundaries.
+
 ## Capture a complete selected worker root
 
 The candidate Linux root operator packages one explicitly selected private worker
@@ -170,6 +281,75 @@ encrypt the package, align database/Storage captures, recover another physical
 host, resume models or establish scientific acceptance. Native SQLite extension
 requirements and complete agency installations remain unassessed.
 
+## Seal already retained local recovery artifacts
+
+The candidate offline packet command binds retained database and Storage bytes,
+cluster roles, database root key, protected configuration and a verified worker-root
+set. It does not create those artifacts or establish a new consistent cut. Complete
+the topology-specific capture under declared quiescence first. Use a private,
+operator-owned packet directory and include the actual software/installation
+identity, Auth settings, integration encryption secret, database properties,
+required roles and all other configuration identified by the installation inventory.
+Do not copy secrets into source control, public reports or chat.
+
+Every packet file and directory must deny group and other access. Backend files
+can carry broader original permissions. Preserve their original file/directory
+metadata privately, harden a fresh packet copy and keep the original unchanged.
+Restoring backend permissions and ownership remains topology-specific; private
+packet permissions do not define the running service's required permissions.
+
+Save exact private `point-inventory.json` inside the packet. This example names
+required categories; replace paths with the retained artifacts for your topology:
+
+```json
+{
+  "format": "openplan-recovery-packet-inventory-v1",
+  "artifacts": {
+    "databaseArchive": {"kind": "file", "path": "postgres.dump"},
+    "storage": {"kind": "file", "path": "storage.tgz"},
+    "clusterRoles": {"kind": "file", "path": "configuration/roles.sql"},
+    "databaseRootKey": {"kind": "file", "path": "configuration/root.key"},
+    "configuration": {"kind": "directory", "path": "configuration"},
+    "workerRootSet": {"kind": "directory", "path": "worker-root-set"}
+  }
+}
+```
+
+Storage can instead name a retained object-byte directory with `kind: "directory"`.
+Artifact paths are relative to the packet, without absolute paths, aliases, parent
+traversal, duplicate paths or normalized-path ambiguity. Roles and key files may
+sit inside the configuration directory. All required file artifacts must be
+nonempty. Opaque metadata in the declaration remains byte bound; it does not
+establish that the named roles, settings or artifacts are complete or usable.
+
+From `openplan/`, using the already captured packet:
+
+```bash
+python3 scripts/ops/recovery_point_manifest.py \
+  --point /private/recovery-point --seal --writers-quiesced --timeout 120
+python3 scripts/ops/recovery_point_manifest.py \
+  --point /private/recovery-point --verify --timeout 120
+```
+
+Require both commands to exit 0. Sealing validates the worker-root set, syncs all
+retained files and directories, rechecks the complete packet and publishes
+`recovery-point.json` last. A completed or interrupted publication cannot be
+overwritten. Preserve an incomplete packet for diagnosis and create a fresh one
+on retry. The timeout checks progress; it cannot interrupt every blocking kernel
+operation. Declared quiescence is not a live writer fence.
+
+Keep the manifest hash with the protected backup authority. Encrypt and retain
+the complete packet through the installation's chosen backup process. Verify the
+protected copy, restore to a fresh directory and rerun packet verification before
+using its artifacts. It needs no original worker paths or running services. Keep
+the packet unchanged while recovery uses fresh working copies. A self-consistent
+manifest does not authenticate its origin. Matching hashes do not establish native
+database restoration, Storage access, complete installation coverage or permission
+to resume computation. The command leaves installation consistency unassessed.
+
+The [dated packet evidence](../../../docs/reviews/2026-10-11-recovery-point-manifest/STATUS.md)
+records controls, retained-artifact transport and remaining acceptance boundaries.
+
 ## Capture the default local stack
 
 From the nested `openplan/` app directory, confirm the selected project and its
@@ -202,8 +382,11 @@ test -s "$OPENPLAN_BACKUP_DIR/storage.tgz"
 
 These two archives exclude separately mounted local worker files and protected
 configuration. Capture every other item in the inventory under the same
-consistency interval, with access controls and hashes. No universal worker-volume
-archive script exists here; record the exact selected paths and their owners.
+consistency interval, with access controls and hashes. The selected worker-root
+set command above covers explicitly named private filesystem roots, not every
+worker volume automatically. Include that verified set and all protected
+configuration before sealing the packet. Record the actual selected paths and
+their owners; installation-wide discovery remains unimplemented.
 
 Check archive structure using the source container's PostgreSQL tooling and local
 tar, then verify hashes:

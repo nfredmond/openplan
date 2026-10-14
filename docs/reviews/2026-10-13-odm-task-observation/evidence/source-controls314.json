@@ -1,0 +1,207 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-comment",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "original-plan-validation-omitted",
+    "test": "test_original_plan_is_required",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "raw-response-hash-lost",
+    "test": "test_raw_bytes_and_plan_hash_are_exact",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Observation response hash must bind its exact bytes"
+  },
+  {
+    "control": "plan-hash-lost",
+    "test": "test_raw_bytes_and_plan_hash_are_exact",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Observation must bind its complete original plan"
+  },
+  {
+    "control": "metadata-grants-transport",
+    "test": "test_acknowledged_metadata_never_grants_permission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "transportPermission must remain denied"
+  },
+  {
+    "control": "metadata-promotes-settings",
+    "test": "test_acknowledged_metadata_never_grants_permission",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "effectiveExecutionSettingsVerification cannot be promoted"
+  },
+  {
+    "control": "response-status-type-or-bound",
+    "test": "test_response_status_types_and_byte_bound",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "empty-error-accepted",
+    "test": "test_response_object_and_error_presence",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "required-fields-omitted",
+    "test": "test_required_metadata_is_not_filled_in",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "KeyError: 'uuid'"
+  },
+  {
+    "control": "duplicate-json-keys",
+    "test": "test_duplicate_and_nonfinite_json_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "nonfinite-json-accepted",
+    "test": "test_duplicate_and_nonfinite_json_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "original-uuid-name-unchecked",
+    "test": "test_original_uuid_and_name_match",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "image-count-type-unchecked",
+    "test": "test_known_image_count_matches_exactly",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unknown-count-becomes-zero",
+    "test": "test_unknown_image_count_remains_unassessed",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Unknown image count cannot become zero"
+  },
+  {
+    "control": "automatic-flags-lost",
+    "test": "test_requested_options_are_separate_from_added_flags",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Lists differ"
+  },
+  {
+    "control": "option-shape-omitted",
+    "test": "test_option_shape_and_duplicate_names_refuse",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "KeyError: 'name'"
+  },
+  {
+    "control": "option-name-duplicates",
+    "test": "test_option_shape_and_duplicate_names_refuse",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "requested-options-unchecked",
+    "test": "test_requested_option_values_order_and_types_match",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "automatic-option-order-unchecked",
+    "test": "test_automatic_option_names_values_and_order_match_profile",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "empty-supported-subset-refused",
+    "test": "test_supported_automatic_subsets_and_explicit_false_are_preserved",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Synthetic unsupported empty subset"
+  },
+  {
+    "control": "reported-state-type-unchecked",
+    "test": "test_reported_state_is_known_exact_integer",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "completed-state-relabeled",
+    "test": "test_all_reported_states_stay_reported",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "'failed' != 'completed'"
+  },
+  {
+    "control": "error-detail-unchecked",
+    "test": "test_reported_error_detail_is_bounded_or_missing",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "progress-type-unchecked",
+    "test": "test_progress_is_reported_finite_range_not_defaulted",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "huge-progress-converted-before-range",
+    "test": "test_huge_finite_progress_refuses_before_float_conversion",
+    "kind": "diagnostic_refusal",
+    "outcome": "intended_failure",
+    "reason": "OverflowError: int too large to convert to float"
+  },
+  {
+    "control": "time-type-unchecked",
+    "test": "test_reported_times_are_exact_integer_ranges",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "not-started-time-becomes-zero",
+    "test": "test_not_started_processing_time_is_distinct_from_zero",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Not-started time cannot become zero"
+  },
+  {
+    "control": "returned-views-alias",
+    "test": "test_inputs_and_outputs_do_not_alias",
+    "kind": "broken_behavior",
+    "outcome": "intended_failure",
+    "reason": "Returned option views must not alias"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

@@ -1,0 +1,25 @@
+{
+  "baselineCount": 8,
+  "candidateCount": 8,
+  "newFindings": 0,
+  "removedFindings": 0,
+  "levels": {
+    "WARN": 7,
+    "ERROR": 1
+  },
+  "inheritedNames": [
+    "function_search_path_mutable",
+    "rls_disabled_in_public",
+    "extension_in_public"
+  ],
+  "inheritedErrorMetadata": [
+    {
+      "name": "spatial_ref_sys",
+      "type": "table",
+      "schema": "public"
+    }
+  ],
+  "runnerSha256": "07270f9df0195ef72cd0edcd817695400c7b292acde4810773a15150b24ba501",
+  "migrationSha256": "8fe8cdfd8c38277d8534dab7821c5aaefa1bf702a630596eb9f7a747dbebcc09",
+  "scope": "Installed CLI security advisor comparison in an isolated restored cluster. Eight inherited findings remain: seven warnings and one spatial_ref_sys error. Private-schema role and RLS enforcement come from separate native tests. No hosted or whole-installation acceptance."
+}

@@ -40,7 +40,7 @@ export function AerialOrthoLayersPanel({ compact = false }: { compact?: boolean 
       ) : layers.length === 0 ? (
         <p className={compact ? "text-xs text-muted-foreground" : "op-cart-layer-item__note"}>
           {catalogState === "unavailable"
-            ? "Processed previews exist, but none has verified custody and map placement."
+            ? "Processed previews exist, but none has been checked and placed on the map yet."
             : "No map-ready aerial preview yet. Process a mission in Aerial first."}{" "}
           <Link href="/aerial" className="underline underline-offset-2">Open Aerial</Link>
         </p>
@@ -67,7 +67,7 @@ export function AerialOrthoLayersPanel({ compact = false }: { compact?: boolean 
                     </span>
                   ) : null}
                   <details className="mt-1 text-xs text-muted-foreground">
-                    <summary className="cursor-pointer">Custody and placement</summary>
+                    <summary className="cursor-pointer">Storage and placement</summary>
                     <span className="block">SHA-256 {shortHash(layer.checksumSha256)}</span>
                     {formatDate(layer.collectedAt) ? (
                       <span className="block">Collected {formatDate(layer.collectedAt)}</span>

@@ -181,42 +181,47 @@ export function getPublicPortalReadiness(
   const submissionsClosed = Boolean(campaign.submissions_closed_at);
   const allowsSubmissions = Boolean(campaign.allow_public_submissions);
 
+  // Planner words, one short sentence each. The publish checklist shows a
+  // step's detail only while the step is open, so the open wording carries the
+  // instruction and the done wording only has to confirm.
   const checks: PublicPortalReadinessCheck[] = [
     {
       id: "share_token",
-      label: "Share token saved",
+      label: "Make the public link",
       passed: Boolean(shareToken),
       detail: shareToken
-        ? "The campaign has a stable public URL for outreach materials."
-        : "Generate and save a share token before sending public outreach.",
+        ? "The public link is saved."
+        : "The link stays closed to residents until the last step is done.",
     },
     {
       id: "active_status",
-      label: "Campaign active",
+      label: "Go live",
       passed: campaign.status === "active",
       detail:
         campaign.status === "active"
-          ? "The portal route can resolve for public visitors."
-          : "Move the campaign to Active when the portal should be reachable.",
+          ? "The status is Active, so the link opens for residents."
+          : "Set the status to Active when residents should be able to open the link.",
     },
     {
       id: "public_description",
-      label: "Public description present",
+      label: "Describe the project for residents",
       passed: publicDescription.length >= 24,
       detail:
         publicDescription.length >= 24
-          ? "Visitors get enough context before submitting feedback."
-          : "Add a short public description explaining the project and requested feedback.",
+          ? "Residents read this before they comment."
+          : "A few sentences on the project and what you want to hear about.",
     },
     {
       id: "submission_mode",
-      label: "Submission mode intentional",
+      label: "Let residents comment",
       passed: allowsSubmissions || submissionsClosed,
+      // "Waits for review" is the moderation rule a planner has to know before
+      // turning comments on; it stays in the done wording too.
       detail: allowsSubmissions
-        ? "The portal is configured to accept moderated public submissions."
+        ? "Residents can comment. Each comment waits for staff review before residents see it."
         : submissionsClosed
-          ? "Submissions are explicitly closed, so the portal is view-only by design."
-          : "Enable public submissions or close submissions to make the portal's intake posture explicit.",
+          ? "Comments are closed, so the page is view only."
+          : "Each comment waits for staff review before residents see it.",
     },
   ];
 
@@ -238,17 +243,17 @@ export function getPublicPortalReadiness(
   */
   checks.push({
     id: "map_opens_somewhere",
-    label: "Resident map opens on the right place",
+    label: "Choose where the map opens",
     // An unreadable area is NOT a missing one. It passes rather than sending a
     // planner to set something that may already be there; the console's own
     // area panel is where a failed read is reported.
     passed: areaState !== "unset",
     detail:
       areaState === "set"
-        ? "The resident map opens on this campaign's area."
+        ? "The map opens on this area."
         : areaState === "unreadable"
-          ? "This campaign's area could not be read just now, so this step cannot be checked. That is a failed read, not a missing area."
-          : "No area is set, so the resident map opens wide — a visitor who drops a pin without moving the map first will place it in the middle of the country. Set an area, or leave it if this campaign is not about one place.",
+          ? "The area could not be read just now, so this step cannot be checked. That is a failed read, not a missing area."
+          : "No area is set. A pin dropped without moving the map lands in the middle of the country. Skip this step if the project is not about one place.",
   });
 
   const completeCount = checks.filter((check) => check.passed).length;

@@ -1,0 +1,157 @@
+[
+  {
+    "control": "baseline-original",
+    "wireBytes": 67109194,
+    "outcome": "survived",
+    "phase": "maximum-original",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 2.8,
+    "clientResidentPeakBytes": 365744128,
+    "childResidentPeakBytes": 94896128
+  },
+  {
+    "control": "baseline-wire",
+    "wireBytes": 202375168,
+    "outcome": "survived",
+    "phase": "maximum-wire",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 3.449,
+    "clientResidentPeakBytes": 501366784,
+    "childResidentPeakBytes": 230326272
+  },
+  {
+    "control": "baseline-relocated",
+    "outcome": "survived",
+    "phase": "recover",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 0.82,
+    "clientResidentPeakBytes": 298668032,
+    "childResidentPeakBytes": 0
+  },
+  {
+    "control": "harmless-original",
+    "wireBytes": 67109194,
+    "outcome": "survived",
+    "phase": "maximum-original",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 2.861,
+    "clientResidentPeakBytes": 365133824,
+    "childResidentPeakBytes": 95047680
+  },
+  {
+    "control": "harmless-wire",
+    "wireBytes": 202375168,
+    "outcome": "survived",
+    "phase": "maximum-wire",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 3.69,
+    "clientResidentPeakBytes": 501829632,
+    "childResidentPeakBytes": 229261312
+  },
+  {
+    "control": "harmless-relocated",
+    "outcome": "survived",
+    "phase": "recover",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 0.85,
+    "clientResidentPeakBytes": 298311680,
+    "childResidentPeakBytes": 0
+  },
+  {
+    "control": "restored-original",
+    "wireBytes": 67109194,
+    "outcome": "survived",
+    "phase": "maximum-original",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 2.955,
+    "clientResidentPeakBytes": 364802048,
+    "childResidentPeakBytes": 94953472
+  },
+  {
+    "control": "restored-wire",
+    "wireBytes": 202375168,
+    "outcome": "survived",
+    "phase": "maximum-wire",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 3.661,
+    "clientResidentPeakBytes": 501608448,
+    "childResidentPeakBytes": 229650432
+  },
+  {
+    "control": "restored-relocated",
+    "outcome": "survived",
+    "phase": "recover",
+    "originalBytes": 33554432,
+    "payloadSha256": "96a097af93e3aa63d2c79425078a242f27befb9dac77e4bf252b0407bf2f2cd1",
+    "engineTransportPermission": false,
+    "seconds": 0.849,
+    "clientResidentPeakBytes": 298000384,
+    "childResidentPeakBytes": 0
+  },
+  {
+    "control": "original-overflow",
+    "wireBytes": 67109196,
+    "outcome": "survived",
+    "refused": true,
+    "phase": "original-overflow",
+    "originalSaved": false,
+    "seconds": 0.614,
+    "clientResidentPeakBytes": 230957056,
+    "childResidentPeakBytes": 94736384
+  },
+  {
+    "control": "declared-overflow",
+    "wireBytes": 202375169,
+    "outcome": "survived",
+    "refused": true,
+    "phase": "declared-overflow",
+    "originalSaved": false,
+    "seconds": 0.124,
+    "clientResidentPeakBytes": 30613504,
+    "childResidentPeakBytes": 30613504
+  },
+  {
+    "control": "actual-overflow",
+    "wireBytes": 202375169,
+    "outcome": "survived",
+    "refused": true,
+    "phase": "actual-overflow",
+    "originalSaved": false,
+    "seconds": 0.366,
+    "clientResidentPeakBytes": 30388224,
+    "childResidentPeakBytes": 229941248
+  },
+  {
+    "control": "cancel",
+    "wireBytes": 202375168,
+    "outcome": "survived",
+    "refused": true,
+    "phase": "cancel",
+    "originalSaved": false,
+    "seconds": 0.141,
+    "clientResidentPeakBytes": 30388224,
+    "childResidentPeakBytes": 29605888
+  },
+  {
+    "control": "maximum-original-stripped",
+    "wireBytes": 67109194,
+    "outcome": "intended_failure",
+    "reason": "Maximum private original must retain every exact byte"
+  }
+]

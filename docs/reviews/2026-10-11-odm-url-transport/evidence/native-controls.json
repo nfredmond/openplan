@@ -1,0 +1,350 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless-extra-observation",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored",
+    "outcome": "survived"
+  },
+  {
+    "control": "originalChildExit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalChildExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalChildExit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualInterruptedSecondSource-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualInterruptedSecondSource-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualInterruptedSecondSource-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptComplete-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptComplete-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptComplete-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSecondReceiptMissing-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSecondReceiptMissing-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSecondReceiptMissing-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSetManifestMissing-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSetManifestMissing-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalSetManifestMissing-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPartialObjectRetained-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPartialObjectRetained-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPartialObjectRetained-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "twoRootPackagesVerified-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "twoRootPackagesVerified-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "twoRootPackagesVerified-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "onlyMissingOriginalSourceFetched-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "onlyMissingOriginalSourceFetched-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "onlyMissingOriginalSourceFetched-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalFirstReceiptUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalOrphanUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalOrphanUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalOrphanUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allCompletedSourceBytesOriginal-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allCompletedSourceBytesOriginal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allCompletedSourceBytesOriginal-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourcePlanAndContextOriginal-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourcePlanAndContextOriginal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourcePlanAndContextOriginal-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalAdmissionReplayed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedQueueStillHeld-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedQueueStillHeld-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalStartedQueueStillHeld-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPreparationBytesOriginal-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPreparationBytesOriginal-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualPreparationBytesOriginal-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntents-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntents-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "noEngineIntents-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allAuthorityUnassessed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allAuthorityUnassessed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allAuthorityUnassessed-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedReplayHasNoFetch-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedReplayHasNoFetch-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "completedReplayHasNoFetch-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalAssetsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalAssetsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allOriginalAssetsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "documentedReaderSidecarsChecked-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "documentedReaderSidecarsChecked-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "documentedReaderSidecarsChecked-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "allPackagesUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInputsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInputsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalInputsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "sourceBindingsUnchanged-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedChildStopped-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedChildStopped-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedChildStopped-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTransportExit-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTransportExit-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "originalTransportExit-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualOriginalNetworkRequests-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualOriginalNetworkRequests-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualOriginalNetworkRequests-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRecoveredNetworkRequest-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRecoveredNetworkRequest-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "actualRecoveredNetworkRequest-wrong-type",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedHTTPPeerClosed-wrong",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedHTTPPeerClosed-missing",
+    "outcome": "intended_failure"
+  },
+  {
+    "control": "ownedHTTPPeerClosed-wrong-type",
+    "outcome": "intended_failure"
+  }
+]

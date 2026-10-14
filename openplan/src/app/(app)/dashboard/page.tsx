@@ -63,11 +63,14 @@ const NEEDS_YOU_LIMIT = 6;
 const UPCOMING_CAP_PER_SOURCE = 10;
 const BACKLOG_CAP_PER_SOURCE = 20;
 
-/** Sources that returned their full cap: more rows may exist than were read. */
-function cappedLabels(result: MyWorkResult, cap: number, blocks: readonly string[]): string[] {
+/**
+ * Sources that returned their full cap: more rows may exist than were read.
+ * `"every"` counts every source the read touched, for the dated-only read.
+ */
+function cappedLabels(result: MyWorkResult, cap: number, blocks: readonly string[] | "every"): string[] {
   return Object.entries(result.rowsRead).flatMap(([sourceId, rows]) => {
     const source = MY_WORK_SOURCES_BY_ID[sourceId as keyof typeof MY_WORK_SOURCES_BY_ID];
-    if (!source || rows === undefined || !blocks.includes(source.block)) return [];
+    if (!source || rows === undefined || (blocks !== "every" && !blocks.includes(source.block))) return [];
     return rows >= cap ? [source.label.toLowerCase()] : [];
   });
 }
@@ -169,7 +172,7 @@ export default async function DashboardPage({
       datedOnly: true,
       now,
     }),
-    loadWorkspaceDates(supabase as unknown as WorkspaceDatesSupabaseLike, workspaceId, boundary, chartEnd),
+    loadWorkspaceDates(supabase as unknown as WorkspaceDatesSupabaseLike, workspaceId, boundary, chartEnd, now),
     supabase
       .from("projects")
       .select("id, name, status, delivery_phase")
@@ -205,12 +208,12 @@ export default async function DashboardPage({
   );
 
   // ── Coming up ──
-  const overdue = sortComingUp(comingUpFromMyWork(backlog.items));
+  const overdue = sortComingUp([...comingUpFromMyWork(backlog.items), ...workspaceDates.missed]);
   const allUpcoming = sortComingUp([...comingUpFromMyWork(upcoming.items), ...workspaceDates.items]);
   const nextDays = withinWindow(allUpcoming, windowEnd);
   const comingUpCapped = cappedSourcesSentence(
     [
-      ...cappedLabels(upcoming, UPCOMING_CAP_PER_SOURCE, ["deadlines", "workspace_deadlines"]),
+      ...cappedLabels(upcoming, UPCOMING_CAP_PER_SOURCE, "every"),
       ...cappedLabels(backlog, BACKLOG_CAP_PER_SOURCE, ["deadlines", "workspace_deadlines"]),
       ...workspaceDates.capped,
     ].map((label) => ({ label, shown: UPCOMING_CAP_PER_SOURCE }))
@@ -262,10 +265,18 @@ export default async function DashboardPage({
   const deadlineCounts = deadlinesByMonth(allUpcoming, boundary, DEADLINE_CHART_MONTHS);
 
   // ── Setup ──
-  const setupSteps = [aiKeyConfigured, homeGeographyIsSet, kpis.totalRuns > 0];
+  // The operations summary reads every project in the workspace, whatever its
+  // status; this page's own list keeps only open ones, so it cannot say "none".
+  const projectCountUnreadable = (operationsSummary.moduleObservations?.unreadable ?? []).some(
+    (failure) => failure.label === "projects"
+  );
+  const projectCount = projectCountUnreadable ? null : operationsSummary.counts.projects;
+  // The AI key is optional, so it is not one of the steps counted here.
+  const setupSteps = [projectCount !== null && projectCount > 0, homeGeographyIsSet, kpis.totalRuns > 0];
   const setupDone = setupSteps.filter(Boolean).length;
   const checklist = (
     <FirstRunChecklist
+      projectCount={projectCount}
       aiKeyConfigured={aiKeyConfigured}
       homeGeographyIsSet={homeGeographyIsSet}
       homeGeographyUnreadable={homeGeographyUnreadable}
