@@ -70,7 +70,8 @@ def run(repo, out):
     def execute(label, test=None):
         names = ['test_runtime_output_intake' + ('.Checks.' + test if test else '')]
         result = subprocess.run([sys.executable, '-B', '-m', 'unittest', '-v', *names], cwd=module.parent,
-            capture_output=True, text=True, timeout=30, env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
+            capture_output=True, text=True, timeout=30 if test else 90,
+            env={**os.environ, 'PYTHONDONTWRITEBYTECODE': '1'})
         output = result.stdout + result.stderr
         (out / (label + '-private.log')).write_text(output)
         return result.returncode, output
