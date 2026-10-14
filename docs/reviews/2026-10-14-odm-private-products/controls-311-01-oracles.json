@@ -1,0 +1,922 @@
+[
+  {
+    "case": "early-access-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "early-access-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-object-replaced",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-hash-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-plan-not-compared",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "required-member-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "empty-member-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "unknown-object-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "file-alias-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "missing-plan-inferred",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "final-access-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "copy-cancellation-late",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "expanded-size-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "member-hash-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "receipt-not-compared",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "unrelated-error",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  }
+]

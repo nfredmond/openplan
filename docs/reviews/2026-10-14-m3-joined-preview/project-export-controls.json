@@ -1,0 +1,85 @@
+{
+  "controls": [
+    {
+      "case": "bytes-baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "geometry-baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "bytes-harmless-timestamp",
+      "outcome": "survived"
+    },
+    {
+      "case": "geometry-harmless-timestamp",
+      "outcome": "survived"
+    },
+    {
+      "case": "changed-byte-control",
+      "outcome": "intended_failure",
+      "reason": "Browser-delivered project export bytes differ"
+    },
+    {
+      "case": "valid-translated-geometry",
+      "outcome": "intended_failure",
+      "reason": "Decoded project export geometry differs from actual coverage input"
+    },
+    {
+      "case": "bytes-restored",
+      "outcome": "survived"
+    },
+    {
+      "case": "geometry-restored",
+      "outcome": "survived"
+    }
+  ],
+  "byteSha256": "e042bdcbf5ea9f194951828b3da3a2d1dead3ba850b65a4b1affa174d76c340f",
+  "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+  "sqliteIntegrity": "ok",
+  "layerStatuses": [
+    {
+      "layer": "project_area",
+      "status": "included",
+      "count": 1
+    },
+    {
+      "layer": "project_location",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "project_corridors",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "crash_ksi",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "aequilibrae_links",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "activitysim_links",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "engagement_geometry",
+      "status": "unavailable",
+      "count": null
+    },
+    {
+      "layer": "land_use_designations",
+      "status": "unavailable",
+      "count": null
+    }
+  ],
+  "originalUnchanged": true,
+  "scope": "Native GDAL/SQLite checks on one synthetic project export. No native GUI, planner acceptance, map drawing, independent installation or scientific acceptance."
+}

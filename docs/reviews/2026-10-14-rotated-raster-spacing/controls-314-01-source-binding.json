@@ -1,0 +1,5 @@
+{
+  "path": "workers/odm_worker/georef.py",
+  "sha256": "9a3dfcc47b6f4a1c204ec432523adca6e9dd4ff1f5ddd9c937b99decd58f6a87",
+  "blindCategory": "Synthetic tag arithmetic cannot prove complete TIFF decoding, CRS fidelity, ground accuracy or a rendered map."
+}

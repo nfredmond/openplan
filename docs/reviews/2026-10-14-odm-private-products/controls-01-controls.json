@@ -1,0 +1,160 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 18
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 18
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 18
+  },
+  {
+    "case": "early-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Current access must bracket private materialization"
+  },
+  {
+    "case": "saved-object-replaced",
+    "outcome": "intended_failure",
+    "test": "test_replay_preserves_files_without_another_external_get",
+    "diagnostic": "Product recovery cannot replace original objects"
+  },
+  {
+    "case": "saved-hash-ignored",
+    "outcome": "intended_failure",
+    "test": "test_changed_saved_product_refuses_without_overwriting_it",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "original-plan-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_original_plan_change_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "required-member-ignored",
+    "outcome": "intended_failure",
+    "test": "test_missing_required_orthomosaic_refuses_before_product_plan",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "empty-member-ignored",
+    "outcome": "intended_failure",
+    "test": "test_empty_selected_member_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "interruption-ignores-known-copy",
+    "outcome": "intended_failure",
+    "test": "test_mid_copy_interruption_recovers_without_another_get",
+    "diagnostic": "InterruptedError not raised"
+  },
+  {
+    "case": "publication-alias-not-reconciled",
+    "outcome": "intended_failure",
+    "test": "test_interrupted_publication_alias_recovers",
+    "diagnostic": "Source file must be private and owned without aliases"
+  },
+  {
+    "case": "unknown-object-ignored",
+    "outcome": "intended_failure",
+    "test": "test_unknown_object_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "file-alias-ignored",
+    "outcome": "intended_failure",
+    "test": "test_aliased_product_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "missing-plan-inferred",
+    "outcome": "intended_failure",
+    "test": "test_lost_plan_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "final-access-omitted",
+    "outcome": "intended_failure",
+    "test": "test_current_access_after_copy_refuses_completion",
+    "diagnostic": "PermissionError not raised"
+  },
+  {
+    "case": "copy-cancellation-late",
+    "outcome": "intended_failure",
+    "test": "test_cancellation_precedes_member_writing",
+    "diagnostic": "Cancellation must stop before member bytes are written"
+  },
+  {
+    "case": "expanded-size-ignored",
+    "outcome": "intended_failure",
+    "test": "test_inflated_member_cannot_exceed_retained_size",
+    "diagnostic": "does not match"
+  },
+  {
+    "case": "member-hash-ignored",
+    "outcome": "intended_failure",
+    "test": "test_changed_member_cannot_be_published",
+    "diagnostic": "does not match"
+  },
+  {
+    "case": "receipt-not-compared",
+    "outcome": "intended_failure",
+    "test": "test_changed_receipt_refuses",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "unrelated-alias-deleted",
+    "outcome": "intended_failure",
+    "test": "test_unrelated_partial_cannot_be_deleted_as_publication_alias",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "invalid-constructor-accepted",
+    "outcome": "intended_failure",
+    "test": "test_arguments_require_real_intake_and_finite_positive_timeout",
+    "diagnostic": "ValueError not raised"
+  },
+  {
+    "case": "callbackPermission-promoted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Private products cannot authorize callbacks"
+  },
+  {
+    "case": "publicationPermission-promoted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Private products cannot authorize publication"
+  },
+  {
+    "case": "processingQualityVerification-promoted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Private products cannot promote processingQualityVerification"
+  },
+  {
+    "case": "requestedDeliverableCompletenessVerification-promoted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Private products cannot promote requestedDeliverableCompletenessVerification"
+  },
+  {
+    "case": "archiveTaskProvenanceVerification-promoted",
+    "outcome": "intended_failure",
+    "test": "test_exact_original_products_and_absence_grant_no_delivery",
+    "diagnostic": "Private products cannot promote archiveTaskProvenanceVerification"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 18
+  }
+]
