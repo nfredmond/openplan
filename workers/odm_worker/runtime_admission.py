@@ -104,7 +104,7 @@ class Runtime:
         with self.journal.connection() as connection:
             rows = connection.execute('SELECT request_id FROM admissions ORDER BY rowid').fetchall()
             entries = [self.journal.read(connection, row[0]) for row in rows]
-            outcomes = [self._outcome(row) for row in entries if row.phase == 'started']
+        outcomes = [self._outcome(row) for row in entries if row.phase == 'started']
         return {'accepted': sum(row.phase == 'accepted' for row in entries), 'heldStarted': sum(row is None or row['reportedEngineTerminal'] is None for row in outcomes),
                 'localTerminal': sum(row is not None for row in outcomes),
                 'sourceCustodyVerification': 'unassessed', 'engineCustodyVerification': 'unassessed',

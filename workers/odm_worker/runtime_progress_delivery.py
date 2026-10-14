@@ -165,8 +165,11 @@ class Delivery:
         """Allow specialized delivery bounds before retaining a new intent."""
         self._check(command['binding']['requestId'], deadline)
 
-    def advance(self, request_id, event_key):
+    def advance(self, request_id, event_key, *, expected_command_sha256=None):
         """Make one owned attempt, or return an already retained receiver outcome."""
+        if expected_command_sha256 is not None and (not isinstance(expected_command_sha256,str)
+                or re.fullmatch('[0-9a-f]{64}',expected_command_sha256) is None):
+            raise ValueError('Progress delivery expected original command hash differs')
         deadline = time.monotonic()+self.timeout
         self._access(request_id, deadline)
         root = self.folder(request_id, event_key)
@@ -174,6 +177,8 @@ class Delivery:
         with writer(root, deadline):
             command = self._load(request_id, event_key, root, deadline)
             command_hash = checksum(json_bytes(command))
+            if expected_command_sha256 is not None and command_hash!=expected_command_sha256:
+                raise ValueError('Progress delivery original command changed before attempt')
             attempts = sorted(path.name for path in root.iterdir() if path.name.startswith('attempt-'))
             if attempts != [f'attempt-{index:06d}.json' for index in range(len(attempts))]:
                 raise ValueError('Progress delivery attempt sequence differs')

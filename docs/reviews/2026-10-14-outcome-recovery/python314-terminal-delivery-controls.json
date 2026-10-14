@@ -1,0 +1,274 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 42
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 42
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 42
+  },
+  {
+    "control": "command-format-progress",
+    "test": "test_exact_terminal_body_scope_and_separate_records",
+    "outcome": "intended_failure",
+    "reason": "Terminal command has its separate format"
+  },
+  {
+    "control": "new-replay-identity",
+    "test": "test_restart_keeps_original_identity_time_urls_and_body",
+    "outcome": "intended_failure",
+    "reason": "Replay cannot invent terminal identity"
+  },
+  {
+    "control": "unknown-body-reencoded",
+    "test": "test_uncertain_send_retries_same_bytes",
+    "outcome": "intended_failure",
+    "reason": "Uncertain replay cannot change terminal bytes"
+  },
+  {
+    "control": "ack-posted-again",
+    "test": "test_acknowledged_replay_does_not_post_again",
+    "outcome": "intended_failure",
+    "reason": "Saved terminal acknowledgement prevents another POST"
+  },
+  {
+    "control": "expired-replay-blocked",
+    "test": "test_expired_lease_keeps_saved_command_and_ack_replay",
+    "outcome": "intended_failure",
+    "reason": "original lease expired"
+  },
+  {
+    "control": "expired-first-accepted",
+    "test": "test_expired_lease_refuses_first_preparation",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "failed-misreported",
+    "test": "test_failed_observation_needs_no_success_lease",
+    "outcome": "intended_failure",
+    "reason": "no reported terminal observation"
+  },
+  {
+    "control": "canceled-misreported",
+    "test": "test_canceled_observation_needs_no_success_lease",
+    "outcome": "intended_failure",
+    "reason": "no reported terminal observation"
+  },
+  {
+    "control": "running-accepted",
+    "test": "test_running_observation_refuses_terminal_preparation",
+    "outcome": "intended_failure",
+    "reason": "differs from original reported engine state"
+  },
+  {
+    "control": "status-substituted",
+    "test": "test_wrong_reported_status_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "url-substituted",
+    "test": "test_changed_artifact_url_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "command-replaced",
+    "test": "test_changed_callback_identity_cannot_replace_saved_command",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "revoked-prepare-accepted",
+    "test": "test_revoked_actor_refuses_before_preparation",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "ignored-acknowledged",
+    "test": "test_ignored_receiver_is_not_applied_completion",
+    "outcome": "intended_failure",
+    "reason": "Ignored callback is not completion acknowledgement"
+  },
+  {
+    "control": "wrong-status-acknowledged",
+    "test": "test_wrong_receiver_status_remains_retry_pending",
+    "outcome": "intended_failure",
+    "reason": "Other receiver status cannot acknowledge terminal completion"
+  },
+  {
+    "control": "event-substituted",
+    "test": "test_another_event_key_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lost-command-recreated",
+    "test": "test_lost_command_with_attempt_refuses_recreation",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "lost_context_refuses_saved_replay",
+    "test": "test_lost_context_refuses_saved_replay",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "changed_context_refuses_observation_substitution",
+    "test": "test_changed_context_refuses_observation_substitution",
+    "outcome": "intended_failure",
+    "reason": "FileNotFoundError not raised"
+  },
+  {
+    "control": "malformed-ignored-permanent",
+    "test": "test_malformed_ignored_reply_remains_retry_pending",
+    "outcome": "intended_failure",
+    "reason": "Malformed ignored reply cannot stop original replay"
+  },
+  {
+    "control": "transport-bound-ignored",
+    "test": "test_first_preparation_refuses_transport_too_small",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "partial-not-recovered",
+    "test": "test_known_partial_metadata_recovers_before_first_command",
+    "outcome": "intended_failure",
+    "reason": "records require their original command"
+  },
+  {
+    "control": "lease-receipt-ignored",
+    "test": "test_lease_change_refuses_saved_terminal_replay",
+    "outcome": "intended_failure",
+    "reason": "artifact projection differs from original lease"
+  },
+  {
+    "control": "reply-format-ignored",
+    "test": "test_saved_reply_from_progress_namespace_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "intent-format-progress",
+    "test": "test_saved_intent_from_progress_namespace_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "post-intent-access-omitted",
+    "test": "test_revocation_after_intent_prevents_post",
+    "outcome": "intended_failure",
+    "reason": "Current access after intent precedes terminal POST"
+  },
+  {
+    "control": "post-reply-access-omitted",
+    "test": "test_revocation_after_reply_keeps_receiver_fact",
+    "outcome": "intended_failure",
+    "reason": "PermissionError not raised"
+  },
+  {
+    "control": "interrupted-command-recreated",
+    "test": "test_interrupted_command_recovers_exact_body",
+    "outcome": "intended_failure",
+    "reason": "Recovery cannot create callback identity"
+  },
+  {
+    "control": "history-asks-current-permission",
+    "test": "test_ignored_receipt_remains_historical_after_current_authority_refuses",
+    "outcome": "intended_failure",
+    "reason": "current original actor refused"
+  },
+  {
+    "control": "history-owner-bypassed",
+    "test": "test_historical_receipt_requires_original_ownership",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-intent-ignored",
+    "test": "test_historical_receipt_refuses_changed_intent",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-orphan-ignored",
+    "test": "test_historical_receipt_refuses_orphan_reply",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-gap-ignored",
+    "test": "test_historical_receipt_refuses_attempt_gap",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "history-current-expiry-applied",
+    "test": "test_historical_receipt_does_not_publish_attempt_or_apply_current_lease_expiry",
+    "outcome": "intended_failure",
+    "reason": "original lease expired"
+  },
+  {
+    "control": "large-body-child-lowered",
+    "test": "test_explicit_large_body_reaches_original_endpoint_exactly",
+    "outcome": "intended_failure",
+    "reason": "Progress HTTP child did not complete"
+  },
+  {
+    "control": "default-bound-raised",
+    "test": "test_default_body_bound_remains_progress_limit",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "constructor-bound-ignored",
+    "test": "test_invalid_body_allowance_refuses_constructor",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "child-body-unbounded",
+    "test": "test_child_body_bound_refuses_before_dns",
+    "outcome": "intended_failure",
+    "reason": "Invalid child body must precede DNS"
+  },
+  {
+    "control": "child-bound-ignored",
+    "test": "test_child_allowance_refuses_before_dns",
+    "outcome": "intended_failure",
+    "reason": "Invalid child body must precede DNS"
+  },
+  {
+    "control": "history-current-allowance-applied",
+    "test": "test_historical_and_cached_ack_survive_smaller_current_transport",
+    "outcome": "intended_failure",
+    "reason": "actual transport allowance"
+  },
+  {
+    "control": "new-post-bound-omitted",
+    "test": "test_new_post_refuses_smaller_current_transport_before_intent",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "large-history-current-allowance-applied",
+    "test": "test_large_original_body_remains_readable_with_progress_size_transport",
+    "outcome": "intended_failure",
+    "reason": "actual transport allowance"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 42
+  }
+]

@@ -35,3 +35,14 @@ The [root URL correction](../2026-10-14-artifact-root-url/STATUS.md) joins this 
 ## Original running progress join
 
 The [running progress adapter](../2026-10-14-running-progress/STATUS.md) joins the corrected artifact URL tree. Its source campaign passes four 36-case cohorts and 32 faults on each interpreter. Both 199-case related suites pass. Fresh joined restored-schema recovery passes four four-case cohorts and two SQL faults; all 19 joined nested checks pass. The direct-ledger callback fixture retains its application-receiver limit. Default, complete application delivery and capacity remain open. Fresh exact-head CI and coordinated hosted migration application still precede merge.
+
+## Current integration follow-on
+
+The October 14 join retains current main bf4263883 and the verified original
+outcome checkpoint9f8e0e979. Both running-progress and outcome CI steps remain.
+Joined source/native checks and exact-head CI precede publication. The older
+72bdbf35c worker job passes in 44 minutes 37 seconds against its 45-minute
+limit. The added recovery controls require more time, so this candidate sets
+a bounded 60-minute allowance while retaining every suite and fault control.
+This changes no acceptance threshold or claim tier. Hosted11/12, default
+activation and full receiver/Storage acceptance remain open.

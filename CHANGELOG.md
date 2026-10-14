@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Original local outcome recovery, candidate:** an explicit worker adapter preserves
+an older failure record and binds a separate recovery receipt to acknowledged
+original delivery. Saved acknowledgements repair bookkeeping without another
+callback POST. Pending sends retain original engine facts and require current
+actor access plus the saved command hash. Default worker selection remains
+pending. See the [recovery proof](docs/reviews/2026-10-14-outcome-recovery/STATUS.md).
+
 **Aerial held-file custody, candidate:** migration
 `20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
 replacing the original facts of a held file. Attempt counts and timestamps can
