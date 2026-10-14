@@ -4,6 +4,7 @@ import { stepCountIs, streamText } from "ai";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
 import { createClient } from "@/lib/supabase/server";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { loadAssistantContext } from "@/lib/assistant/context";
@@ -155,8 +156,19 @@ export async function POST(request: NextRequest) {
         query: parsed.data.question,
         limit: ASSISTANT_CHAT_MAX_KB_EXCERPTS,
       });
+      // The workspace's own zone first, then the browser's, then UTC.
+      const workspaceCalendar = context.workspace.id
+        ? await loadWorkspaceCalendar(supabase, context.workspace.id)
+        : null;
+      if (workspaceCalendar?.readError) {
+        audit.warn("workspace_calendar_unreadable", {
+          workspaceId: context.workspace.id,
+          message: workspaceCalendar.readError,
+        });
+      }
+      const today = assistantToday(new Date(), parsed.data.timeZone, workspaceCalendar);
       const systemPrompt = buildAssistantChatSystemPrompt(context, {
-        ...assistantToday(new Date(), parsed.data.timeZone),
+        ...today,
         knowledgeBaseExcerpts,
       });
       // Drop any leading assistant turns so the forwarded conversation always
@@ -178,6 +190,7 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         audit,
         budget,
+        timeZone: today.timeZone,
       });
 
       const result = streamText({
