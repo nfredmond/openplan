@@ -39,6 +39,9 @@ const jobGuardSelectMock = vi.fn();
 const evidenceLookupMaybeSingleMock = vi.fn();
 const evidenceInsertSingleMock = vi.fn();
 const evidenceInsertMock = vi.fn();
+const evidenceReadinessUpdateMock = vi.fn();
+const evidenceReadinessEqMock = vi.fn();
+const evidenceReadinessSelectMock = vi.fn();
 const missionTitleMaybeSingleMock = vi.fn();
 const custodyUpsertMock = vi.fn();
 const custodySelectEqMock = vi.fn();
@@ -60,6 +63,7 @@ const serviceFromMock = vi.fn((table: string) => {
     return {
       select: () => ({ eq: () => ({ maybeSingle: evidenceLookupMaybeSingleMock }) }),
       insert: evidenceInsertMock,
+      update: evidenceReadinessUpdateMock,
     };
   }
   if (table === "aerial_missions") {
@@ -285,6 +289,9 @@ describe("artifact custody decides what an evidence package may claim", () => {
     evidenceLookupMaybeSingleMock.mockResolvedValue({ data: null, error: null });
     evidenceInsertSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
     evidenceInsertMock.mockReturnValue({ select: () => ({ single: evidenceInsertSingleMock }) });
+    evidenceReadinessSelectMock.mockResolvedValue({ data: [], error: null });
+    evidenceReadinessEqMock.mockReturnValue({ eq: evidenceReadinessEqMock, select: evidenceReadinessSelectMock });
+    evidenceReadinessUpdateMock.mockReturnValue({ eq: evidenceReadinessEqMock });
     missionTitleMaybeSingleMock.mockResolvedValue({ data: { title: "Corridor survey" }, error: null });
     rebuildAerialProjectPostureMock.mockResolvedValue({ posture: null, updatedAt: null, error: null });
     custodyUpsertMock.mockResolvedValue({ error: null });
@@ -339,6 +346,9 @@ describe("artifact custody decides what an evidence package may claim", () => {
 
     const insert = evidencePackageInsert();
     expect(insert.verification_readiness).toBe("partial");
+    expect(evidenceReadinessEqMock, "Planner custody repair preserves human verification").toHaveBeenCalledWith("verification_readiness", "pending");
+    expect(evidenceReadinessEqMock).toHaveBeenCalledWith("processing_job_id", JOB_ROW.id);
+    expect(evidenceReadinessSelectMock).toHaveBeenCalledWith("id");
     expect(custodyUpsertMock.mock.calls[0]?.[0]?.[0]?.state, "Planner package follows actual held custody").toBe("held");
     expect(String(insert.notes)).toContain("OpenPlan holds its own copy");
   });

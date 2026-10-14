@@ -350,7 +350,8 @@ class Checks(unittest.TestCase):
         with lock.open('rb') as blocker:
             fcntl.flock(blocker.fileno(),fcntl.LOCK_EX|fcntl.LOCK_NB)
             with self.assertRaisesRegex(TimeoutError,'Source custody deadline exceeded'):
-                self.prepare(timeout=0.02)
+                with retained_source.writer(self.destination, time.monotonic()+2):
+                    pass
 
     def test_disk_budget_refuses(self):
         with patch('retained_source.shutil.disk_usage',return_value=SimpleNamespace(free=0)):

@@ -68,7 +68,7 @@ type Harness = {
   priorRows?: Record<string, unknown>[];
   priorError?: { message?: string } | null;
   uploadError?: { message?: string } | null;
-  upsertError?: { message?: string } | null;
+  upsertError?: { message?: string; code?: string } | null;
 };
 
 /** The projection the pre-read uses; the roll-up read uses the shared constant. */
@@ -160,6 +160,92 @@ function candidate(overrides: Record<string, unknown> = {}) {
     ...overrides,
   };
 }
+
+describe("preserved concurrent custody", () => {
+  const heldRecord = () => ({
+    kind: "orthomosaic", ordinal: 0, state: "held", storage_bucket: AERIAL_ARTIFACT_BUCKET,
+    storage_path: "original/orthomosaic.tif", byte_size: 3, checksum_sha256: "a".repeat(64),
+    source_host: "worker.example.net", source_expires_at: FUTURE, attempt_count: 1,
+    held_at: "2026-07-30T00:00:00Z",
+  });
+  it("rereads preserved held rows after a conflicting bulk write", async () => {
+    const h = harness();
+    h.upsertError = { code: "23514", message: "Original held aerial custody cannot be replaced" };
+    h.rollupRows = [{ ...heldRecord(), kind: "orthomosaic", ordinal: 0 }];
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient, job: JOB,
+      candidates: [candidate()], fetchImpl: vi.fn().mockResolvedValue(okResponse("abc")),
+    });
+    expect(result.unreadableReason, "Conflict recovery reads preserved custody").toBeNull();
+    expect(result.posture.state, "Preserved complete roster stays complete").toBe("complete");
+    expect(result.records[0].checksum_sha256, "Conflict recovery keeps original checksum").toBe(heldRecord().checksum_sha256);
+    expect(h.jobUpdates[0]?.artifact_custody_state).toBe("complete");
+    expect(h.custodySelectColumns).toEqual([PRIOR_CUSTODY_SELECT, AERIAL_ARTIFACT_CUSTODY_COLUMNS]);
+  });
+
+  it("does not publish a partial retained roster as complete after bulk rollback", async () => {
+    const h = harness();
+    h.upsertError = { code: "23514", message: "Original held aerial custody cannot be replaced" };
+    h.rollupRows = [{ ...heldRecord(), kind: "orthomosaic", ordinal: 0 }];
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient, job: JOB,
+      candidates: [candidate(), candidate({ kind: "point_cloud" })],
+      fetchImpl: vi.fn().mockImplementation(async () => okResponse("abc")),
+    });
+    expect(result.unreadableReason, "Missing expected identity requires retry").toContain("1 expected");
+    expect(result.posture.state, "Bulk rollback cannot make partial roster complete").toBe("partial");
+    expect(result.posture.artifactCount).toBe(2);
+    expect(result.posture.heldCount).toBe(1);
+    expect(h.jobUpdates, "Incomplete roster leaves job rollup unchanged").toHaveLength(0);
+  });
+
+  it("keeps an unreadable conflict reread retryable", async () => {
+    const h = harness();
+    h.upsertError = { code: "23514", message: "Original held aerial custody cannot be replaced" };
+    h.rollupError = { message: "Synthetic read interruption" };
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient, job: JOB,
+      candidates: [candidate()], fetchImpl: vi.fn().mockResolvedValue(okResponse("abc")),
+    });
+    expect(result.unreadableReason, "Unreadable conflict reread cannot publish success").toContain("could not be read");
+    expect(h.jobUpdates).toHaveLength(0);
+  });
+
+  it("counts existing pending records alongside missing original identities", async () => {
+    const h = harness();
+    h.upsertError = { code: "23514", message: "Original held aerial custody cannot be replaced" };
+    h.rollupRows = [heldRecord(), { kind: "point_cloud", ordinal: 0, state: "pending", source_expires_at: FUTURE }];
+    const result = await runAerialCustodyPass({
+      supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient, job: JOB,
+      candidates: [candidate(), candidate({ kind: "point_cloud" }), candidate({ kind: "dtm" })],
+      fetchImpl: vi.fn().mockImplementation(async () => okResponse("abc")),
+    });
+    expect(result.posture.pendingCount, "Missing roster retains existing pending count").toBe(2);
+    expect(result.posture.artifactCount).toBe(3);
+    expect(h.jobUpdates).toHaveLength(0);
+  });
+
+  it("does not recover unrelated constraint or serialization errors as held conflicts", async () => {
+    for (const error of [
+      { code: "23514", message: "Unrelated validation constraint" },
+      { code: "40001", message: "Original held aerial custody cannot be replaced" },
+    ]) {
+      const h = harness(); h.upsertError = error; h.rollupRows = [heldRecord()];
+      const result = await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+      storageClientFactory: () => h.supabase as unknown as CustodySupabaseClient, job: JOB,
+        candidates: [candidate()], fetchImpl: vi.fn().mockImplementation(async () => okResponse("abc")),
+      });
+      expect(result.unreadableReason, "Only the named held constraint enters recovery").toContain("could not be recorded");
+      expect(h.custodySelectColumns).toEqual([PRIOR_CUSTODY_SELECT]);
+      expect(h.jobUpdates).toHaveLength(0);
+    }
+  });
+});
 
 /** Every string a person or a log could read out of a custody row. */
 function readableStrings(rows: Record<string, unknown>[]): string {

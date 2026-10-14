@@ -739,6 +739,16 @@ export async function runAerialCustodyPass(input: {
     // while the bytes just uploaded sit in the bucket with nothing recording
     // where. So the roll-up is NOT written (the job keeps whatever it honestly
     // said before) and the reason is returned instead.
+    if (writeError?.code === "23514" && writeError.message === "Original held aerial custody cannot be replaced") {
+      // A competing writer can preserve held rows while rejecting this entire
+      // batch. Re-read every expected identity before reporting its outcome.
+      return finalizeAerialCustodyState({
+        supabase: input.supabase,
+        processingJobId: input.job.processingJobId,
+        expectedCandidates: input.candidates,
+        now,
+      });
+    }
     if (writeError) {
       const held = rows.filter((row) => row.state === "held").length;
       const reason =
@@ -763,6 +773,7 @@ export async function runAerialCustodyPass(input: {
   return finalizeAerialCustodyState({
     supabase: input.supabase,
     processingJobId: input.job.processingJobId,
+    expectedCandidates: input.candidates,
     now,
   });
 }
@@ -778,6 +789,7 @@ export async function runAerialCustodyPass(input: {
 export async function finalizeAerialCustodyState(input: {
   supabase: CustodySupabaseClient;
   processingJobId: string;
+  expectedCandidates?: readonly Pick<CustodyCandidate, "kind" | "ordinal">[];
   now?: Date;
 }): Promise<CustodyPassResult> {
   const now = input.now ?? new Date();
@@ -812,6 +824,27 @@ export async function finalizeAerialCustodyState(input: {
   }
 
   const records = (data ?? []) as AerialArtifactCustodyRecord[];
+  const retainedKeys = new Set(records.map((record) => priorCustodyKey(record.kind, record.ordinal)));
+  const missing = (input.expectedCandidates ?? []).filter(
+    (candidate) => !retainedKeys.has(priorCustodyKey(candidate.kind, candidate.ordinal))
+  );
+  if (missing.length > 0) {
+    const retainedPosture = summarizeAerialArtifactCustody(records, now);
+    const reason = `${missing.length} expected artifact custody records are missing. Retry custody before assessing the complete delivery.`;
+    return {
+      posture: {
+        ...retainedPosture,
+        state: "partial",
+        artifactCount: records.length + missing.length,
+        pendingCount: retainedPosture.pendingCount + missing.length,
+        verificationReadiness: "pending",
+        label: "Artifact custody records are incomplete",
+        detail: reason,
+      },
+      records,
+      unreadableReason: reason,
+    };
+  }
   const posture = summarizeAerialArtifactCustody(records, now);
 
   // `.select("id")` so the roll-up can see whether it changed anything. Under

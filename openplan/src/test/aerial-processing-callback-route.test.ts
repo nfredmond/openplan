@@ -20,6 +20,8 @@ const ledgerLookupEqMock = vi.fn();
 const evidenceLookupMaybeSingleMock = vi.fn();
 const evidenceSelectMock = vi.fn();
 const evidenceEqMock = vi.fn();
+const evidenceReadinessUpdateMock = vi.fn();
+const evidenceReadinessEqMock = vi.fn();
 const evidenceInsertSingleMock = vi.fn();
 const evidenceInsertMock = vi.fn();
 const missionMaybeSingleMock = vi.fn();
@@ -57,6 +59,7 @@ const fromMock = vi.fn((table: string) => {
         } };
       },
       insert: evidenceInsertMock,
+      update: evidenceReadinessUpdateMock,
     };
   }
 
@@ -190,7 +193,10 @@ describe("POST /api/aerial/processing-callback", () => {
       })
     );
     storageUploadMock.mockResolvedValue({ error: null });
-    custodyUpsertMock.mockResolvedValue({ error: null });
+    custodyUpsertMock.mockImplementation(async (rows: unknown[]) => {
+      custodySelectEqMock.mockResolvedValue({ data: rows, error: null });
+      return { error: null };
+    });
     custodySelectEqMock.mockResolvedValue({
       data: [
         {
@@ -234,6 +240,9 @@ describe("POST /api/aerial/processing-callback", () => {
     );
     jobUpdateMock.mockReturnValue({ eq: jobUpdateEqMock });
     evidenceLookupMaybeSingleMock.mockResolvedValue({ data: null, error: null });
+    evidenceReadinessEqMock.mockReturnValue({ eq: evidenceReadinessEqMock,
+      select: () => Promise.resolve({ data: [{ id: JOB_ROW.id }], error: null }) });
+    evidenceReadinessUpdateMock.mockReturnValue({ eq: evidenceReadinessEqMock });
     evidenceInsertSingleMock.mockResolvedValue({ data: { id: "pkg-1", processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output" }, error: null });
     evidenceInsertMock.mockReturnValue({
       select: () => ({ single: evidenceInsertSingleMock }),
@@ -253,6 +262,36 @@ describe("POST /api/aerial/processing-callback", () => {
       updatedAt: "2026-07-21T12:00:00.000Z",
       error: null,
     });
+  });
+
+  it("does not create a package from an unreadable custody pass", async () => {
+    custodySelectEqMock.mockResolvedValue({ data: null, error: { message: "Synthetic read failure" } });
+    const response = await postProcessingCallback(request(callbackPayload({ status: "succeeded", artifacts: SUCCEEDED_ARTIFACTS }), CALLBACK_TOKEN));
+    expect(response.status, "Unreadable callback custody remains retryable").toBe(503);
+    expect(evidenceInsertMock, "Unreadable callback cannot create a pending package").not.toHaveBeenCalled();
+  });
+
+  it("repairs pending package custody without changing human verification", async () => {
+    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: {
+      id: JOB_ROW.id, processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id,
+      mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output",
+    }, error: null });
+    const response = await postProcessingCallback(request(callbackPayload({ status: "succeeded", artifacts: SUCCEEDED_ARTIFACTS }), CALLBACK_TOKEN));
+    expect(response.status).toBe(200);
+    expect(evidenceInsertMock).not.toHaveBeenCalled();
+    expect(evidenceReadinessUpdateMock, "Callback repairs pending package custody").toHaveBeenCalledWith({ verification_readiness: "partial" });
+    expect(evidenceReadinessEqMock, "Callback preserves human verification").toHaveBeenCalledWith("verification_readiness", "pending");
+  });
+
+  it("leaves existing package verification unchanged when no artifact is held", async () => {
+    custodySelectEqMock.mockResolvedValue({ data: [], error: null });
+    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: {
+      id: JOB_ROW.id, processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id,
+      mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output",
+    }, error: null });
+    const response = await postProcessingCallback(request(callbackPayload({ status: "succeeded", artifacts: SUCCEEDED_ARTIFACTS }), CALLBACK_TOKEN));
+    expect(response.status).toBe(200);
+    expect(evidenceReadinessUpdateMock, "Pending callback cannot lower human verification").not.toHaveBeenCalled();
   });
 
   it("returns 503 missing_config when the callback token env is unset", async () => {
@@ -394,7 +433,7 @@ describe("POST /api/aerial/processing-callback", () => {
     expect(response.status).toBe(200);
     expect(custodyUpsertMock).toHaveBeenCalledTimes(1);
     const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
-    expect(rows[0]).toMatchObject({
+    expect(rows[0], "Valid callback georeference remains recorded").toMatchObject({
       kind: "ortho_preview",
       state: "held",
       bounds_west: -120.51,
@@ -432,7 +471,7 @@ describe("POST /api/aerial/processing-callback", () => {
     // Custody still happens — the bytes matter more than the placement — but
     // the row carries no georef, and the refusal reason is on the record.
     const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
-    expect(rows[0]).toMatchObject({
+    expect(rows[0], "Refused callback georeference remains null").toMatchObject({
       kind: "ortho_preview",
       state: "held",
       bounds_west: null,
@@ -463,7 +502,7 @@ describe("POST /api/aerial/processing-callback", () => {
 
     expect(response.status).toBe(200);
     const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
-    expect(rows[0]).toMatchObject({
+    expect(rows[0], "Absent callback georeference remains null").toMatchObject({
       bounds_west: null,
       bounds_south: null,
       bounds_east: null,
