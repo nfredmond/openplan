@@ -236,6 +236,27 @@ export default async function ProgramDetailPage({
     notFound();
   }
 
+  // The work program is offered on an Overall Work Program, and on any other
+  // program that already holds work program records (an uploaded source, a
+  // saved version or a reporting period), so none of those becomes unreachable.
+  // A failed read offers it rather than hide records that may exist.
+  const workProgramRecordResults =
+    program.program_type === "owp_upwp"
+      ? []
+      : await Promise.all([
+          supabase.from("program_work_program_sources").select("id").eq("program_id", program.id).limit(1),
+          supabase.from("program_work_program_revisions").select("id").eq("program_id", program.id).limit(1),
+          supabase.from("work_program_reporting_periods").select("id").eq("program_id", program.id).limit(1),
+        ]);
+  const workProgramRecordLabels = ["work program sources", "work program versions", "work program reporting periods"];
+  const workProgramRecordsUnreadable = workProgramRecordResults
+    .map((result, index) => reads.check(workProgramRecordLabels[index], result))
+    .some(Boolean);
+  const offersWorkProgram =
+    program.program_type === "owp_upwp" ||
+    workProgramRecordsUnreadable ||
+    workProgramRecordResults.some((result) => (result.data ?? []).length > 0);
+
   const [projectsResult, primaryProjectResult, linksResult, projectPlansResult, projectReportsResult, projectCampaignsResult, fundingOpportunitiesResult] =
     await Promise.all([
       supabase
@@ -809,10 +830,14 @@ export default async function ProgramDetailPage({
           {/* The doors to this record's sub-routes. They sat in the old header and
               stay on the default tab so a planner still reaches them in one click. */}
           <div className="flex flex-wrap items-center gap-2">
-            <Link href={`/programs/${programId}/work-program`} className="module-record-chip">
-              <span>Work program</span><strong>Prepare OWP / UPWP</strong>
-            </Link>
-            <Link href={`/programs/${programId}/work-program#actual-work`} className="module-record-chip">Administer a reporting period</Link>
+            {offersWorkProgram ? (
+              <>
+                <Link href={`/programs/${programId}/work-program`} className="module-record-chip">
+                  <span>Work program</span><strong>Prepare OWP / UPWP</strong>
+                </Link>
+                <Link href={`/programs/${programId}/work-program#actual-work`} className="module-record-chip">Administer a reporting period</Link>
+              </>
+            ) : null}
             {/* The only door to the measure fund, and shown for a local measure alone:
                 an RTIP row has no ordinance, receipts or sub-recipients. */}
             {program.program_type === "local_measure" ? (

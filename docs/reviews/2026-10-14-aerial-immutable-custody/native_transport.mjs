@@ -17,6 +17,8 @@ const db = {
     select: () => ({eq: async () => ({data: rows, error: null})}),
     update: () => ({eq: () => ({select: async () => ({data: [{id: job.processingJobId}], error: null})})}),
   }),
+  // workspace_storage_bytes (20261017000010): an empty workspace, so custody may store.
+  rpc: async () => ({data: 0, error: null}),
 };
 const candidate={kind:'orthomosaic',ordinal:0,downloadUrl:'https://example.invalid/source.tif',expiresAt:'2099-01-01T00:00:00Z'};
 const cases=[];
