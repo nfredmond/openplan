@@ -195,7 +195,7 @@ class Checks(unittest.TestCase):
 
     def test_source_stage_shares_total_deadline_without_mutating_original_adapter(self):
         # Exercise real delegates with distinct budgets, then inspect the
-        # forwarded boundaries instead of requiring fixture syncs within one second.
+        # forwarded boundaries instead of requiring fixture fsyncs within1s.
         self.f.intake.timeout=120
         original=module.Intake;draft=module.Draft;timeouts=[];timeout=self.f.intake.timeout;clocks=[]
         def observed_clock():
