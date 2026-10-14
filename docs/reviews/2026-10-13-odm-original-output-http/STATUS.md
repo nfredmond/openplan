@@ -67,3 +67,45 @@ bytes under 768 MiB, with zero swap/max/OOM events. These are bounded fixtures,
 not spare-capacity or useful engine-output acceptance. Fresh GitHub and main/
 public integration remain required. Current-authority output retention, useful
 processing, artifact validation and callback/storage recovery remain open.
+
+## Actual-engine option order correction
+
+A useful-processing fixture uploads 18 retained public JPEGs and commits the
+original task. The pinned engine reports requested options in catalogue order,
+so the former strict caller-order prefix rejects unchanged names and values.
+The regression fails before the fix. Comparison now sorts only its temporary
+validation views by unique option name. Original command bytes, original saved
+order and actual reported order stay unchanged. Typed values, duplicate names,
+unsupported additions and changed/missing requested options still refuse.
+
+Both Python versions pass four positive task-observation cohorts, 28 faults
+and all 24 cases. The actual engine now reports running through the corrected
+observer. Processing completion, archive transfer and product quality remain
+pending. Previous45-stage results are historical for this correction; the
+current full recipe and fresh head CI are required before merge. This source
+correction joins PR295 so the main294 turn can resolve the reproduced defect.
+
+## Corrected recipe and useful native checkpoint
+
+The corrected 45-stage recipe passes 813 unit cases across 35 suites, seven
+custom scripts and 78 restored source bindings. Twenty documentation cases,
+product direction and baseline, harmless, broken and restored pointer controls
+pass. The stopped service peaks at 891,019,264 bytes under 1 GiB. Swap, max
+events and OOM kills remain zero. Fresh corrected-head CI is still required.
+
+The useful native trial now completes actual processing of all 18 retained
+public photographs. Original task replay does not commit again. Original archive
+download retains 3,245,368 exact bytes, inventories 32 members including
+directories, and replays from saved bytes without another download. GDAL opens
+the retained orthophoto as a 221 by 165, four-band raster with a declared CRS.
+The engine is independently inspected stopped, under 2 GiB and one CPU, with
+no extra swap, published ports or OOM kill. The stopped parent peaks at
+305,356,800 bytes under 512 MiB with zero swap, max or OOM events.
+
+This fixture uses supplied application-access receipts. It does not establish
+live RLS composition, survey accuracy, product completeness, current schema or
+physical-host recovery, browser use, practitioner acceptance or scientific use.
+The output-intake adapter remains a separate candidate. Failed input-projection,
+option-order, readonly temporary-directory and working-directory trials remain
+preserved. The final environment keeps the readonly root and original working
+directory, with temporary processing files in the existing private writable mount.
