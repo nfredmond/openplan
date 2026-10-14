@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { ProjectEvidenceBundleError } from "@/lib/project-evidence-bundles/archive";
 import type { ProjectEvidenceCandidate } from "@/lib/project-evidence-bundles/contracts";
+import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 
 const createClientMock = vi.fn();
 const createServiceRoleClientMock = vi.fn();
@@ -151,13 +152,22 @@ function fakeClient(planRevision = PROJECT_REVISION) {
   };
 }
 
+// What workspace_storage_bytes answers; storage-quota.ts reads it through the real module.
+let storageUse: { data: unknown; error: { message: string } | null };
+
 function fakeService(upload: ReturnType<typeof vi.fn>, remove = vi.fn()) {
   const updates: unknown[] = [];
   const filters: unknown[] = [];
+  const rpc = vi.fn(async (name: string) => {
+    if (name !== "workspace_storage_bytes") throw new Error(`Unexpected service rpc ${name}`);
+    return storageUse;
+  });
   return {
     updates,
     filters,
+    rpc,
     client: {
+      rpc,
       storage: { from: () => ({ upload, remove }) },
       from(table: string) {
         if (table !== "project_evidence_bundles") throw new Error(`Unexpected service table ${table}`);
@@ -197,6 +207,8 @@ const context = { params: Promise.resolve({ projectId: PROJECT_ID }) };
 
 beforeEach(() => {
   vi.clearAllMocks();
+  vi.unstubAllEnvs();
+  storageUse = { data: 0, error: null };
   createServiceRoleClientMock.mockReturnValue(fakeService(vi.fn().mockResolvedValue({ error: null })).client);
   loadProjectAccessMock.mockResolvedValue({
     project: { id: PROJECT_ID, workspace_id: WORKSPACE_ID, name: "Main Street", updated_at: PROJECT_REVISION },
@@ -407,5 +419,62 @@ describe("POST /api/projects/[projectId]/evidence-bundles", () => {
         checksums_sha256: "d".repeat(64),
       })
     );
+  });
+
+  it("checks the workspace storage limit with the finished ZIP's size before storing it", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    const service = fakeService(upload);
+    createServiceRoleClientMock.mockReturnValue(service.client);
+    // 1000-byte limit, 997 used: the 3-byte "zip" just fits.
+    vi.stubEnv("OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES", "1000");
+    storageUse = { data: 997, error: null };
+
+    const response = await POST(request(), context);
+    expect(response.status).toBe(201);
+    expect(service.rpc).toHaveBeenCalledWith("workspace_storage_bytes", { p_workspace_id: WORKSPACE_ID });
+    expect(service.rpc.mock.invocationCallOrder[0]).toBeLessThan(upload.mock.invocationCallOrder[0]);
+    expect(upload).toHaveBeenCalledOnce();
+  });
+
+  it("refuses with 413 and the planner storage message when the ZIP would pass the limit, storing nothing", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    const service = fakeService(upload);
+    createServiceRoleClientMock.mockReturnValue(service.client);
+    vi.stubEnv("OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES", "1000");
+    storageUse = { data: 998, error: null };
+
+    const response = await POST(request(), context);
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({
+      error: workspaceStorageFullMessage(998, 1000, 3),
+      usedBytes: 998,
+      quotaBytes: 1000,
+    });
+    expect(upload).not.toHaveBeenCalled();
+    expect(service.updates).toEqual([
+      expect.objectContaining({ status: "failed", failure_code: "workspace_storage_full" }),
+    ]);
+    expect(service.filters).toEqual(expect.arrayContaining([["status", "preparing"]]));
+  });
+
+  it("refuses with 503 when storage use cannot be read, storing nothing", async () => {
+    const fake = fakeClient();
+    createClientMock.mockResolvedValue(fake.client);
+    const upload = vi.fn().mockResolvedValue({ error: null });
+    const service = fakeService(upload);
+    createServiceRoleClientMock.mockReturnValue(service.client);
+    storageUse = { data: null, error: { message: "permission denied for function workspace_storage_bytes" } };
+
+    const response = await POST(request(), context);
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+    expect(upload).not.toHaveBeenCalled();
+    expect(service.updates).toEqual([
+      expect.objectContaining({ status: "failed", failure_code: "workspace_storage_unreadable" }),
+    ]);
   });
 });
