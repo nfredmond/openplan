@@ -37,3 +37,11 @@ Storage, capacity, planner/browser and independent-host evidence remain open.
 No hosted migration, release or milestone grade changes. These local fixtures
 cannot establish running-engine attestation, scientific quality, publication
 permission or hostile same-user filesystem isolation.
+
+## October 14 assembly extension, uncommitted draft
+
+The [assembly draft](../2026-10-14-runtime-assembly/STATUS.md) adds explicit source
+and callback network policies to configuration. The earlier 38-case evidence
+above identifies checkpoint 0be980d50. It does not qualify changed configuration
+bytes. The new four 41-case cohorts and 41 faults pass on each interpreter. Joined
+regression and final document checks continue. No prior independent or operational grade changes.

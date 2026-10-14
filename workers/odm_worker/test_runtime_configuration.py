@@ -24,6 +24,8 @@ class Checks(unittest.TestCase):
                 'configurationSha256':'b'*64,'credentialReference':'engine-original'},
             'sourceRoot':str(self.base/'sources'),'publicBaseUrl':'https://worker.example',
             'callbackCredentialReference':'callback-original','daemonSocket':str(self.base/'daemon.sock'),'daemonUid':1000,
+            'sourcePolicy':{'allowedNetworks':[],'allowedPorts':[80,443],'maxRedirects':5},
+            'callbackPolicy':{'allowedNetworks':[],'allowedPorts':[80,443],'maxRedirects':0},
             'bounds':{'sourceMaxBytes':4096,'archiveMaxBytes':16384,'expandedMaxBytes':16384,
                 'archiveMaxEntries':10,'archiveMaxDirectoryBytes':4096,'timeoutSeconds':4,'leaseSeconds':100,'pollSeconds':1}}
         self.binding=module.Binding(self.runtime,self.value)
@@ -222,3 +224,13 @@ class Checks(unittest.TestCase):
         alternate=Journal(self.base/'alternate-admissions');alternate.accepted()
         with patch.object(self.runtime.journal,'root',alternate.root),patch.object(module,'configuration',side_effect=AssertionError('Foreign admission root cannot parse operator settings')):
             with self.assertRaisesRegex(ValueError,'admission root differs'):module.Binding(self.runtime,self.value)
+
+    def test_network_policy_refuses_extra_fields(self):
+        value=copy.deepcopy(self.value);value['sourcePolicy']['extra']=True
+        with self.assertRaisesRegex(ValueError,'network policy fields differ'):module.configuration(value)
+    def test_callback_policy_refuses_redirect_permission(self):
+        value=copy.deepcopy(self.value);value['callbackPolicy']['maxRedirects']=1
+        with self.assertRaisesRegex(ValueError,'cannot permit redirects'):module.configuration(value)
+    def test_network_policy_replay_refuses_changed_allowlist(self):
+        self.binding.establish();value=copy.deepcopy(self.value);value['sourcePolicy']['allowedNetworks']=['127.0.0.0/8']
+        with self.assertRaisesRegex(ValueError,'Saved operator configuration differs'):module.Binding(self.runtime,value).establish()

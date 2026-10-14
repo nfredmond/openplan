@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Explicit original worker assembly, candidate:** joins the existing input,
+processing, observation, artifact and callback journals under sealed settings.
+Source and callback address policies are explicit. Changed transports, roles and
+resource settings refuse before operation. Actual local cancellation checks have
+separate native and default-worker limits. See the [assembly record](docs/reviews/2026-10-14-runtime-assembly/STATUS.md).
+
 **Explicit operator configuration, candidate:** a new private worker root binds
 its installation, target, application, engine and resource settings before
 admission. Exact replay preserves the original seal. Existing unsealed roots

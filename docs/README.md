@@ -86,6 +86,9 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+**October 14 explicit worker assembly candidate.** The [assembly record](reviews/2026-10-14-runtime-assembly/STATUS.md) links operator settings to the existing original worker graph. Guarded transports and roles remain pinned through recovery. The [hosted migration record](reviews/2026-10-14-hosted-aerial-authority/STATUS.md) separately records 11/12 application and backup/readback limits. Service/default, native composition and legacy adoption remain open.
+
+
 **October 14 operator configuration candidate.** The [dated record](reviews/2026-10-14-runtime-binding/STATUS.md) binds explicit new-root settings before admission, retains exact original replay and recovers known unpublished temporary files. Source controls cover each new case. Service/default activation and legacy-root adoption remain open.
 
 

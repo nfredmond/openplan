@@ -22,7 +22,7 @@ FORMAT = 'openplan.odm-runtime-observation.v1'
 
 
 class Observer:
-    def __init__(self, reader, resolve, attest, *, timeout=10):
+    def __init__(self, reader, resolve, attest, *, timeout=10, cancelled=lambda:False):
         if not isinstance(reader, Reader) or not callable(resolve) or not callable(attest):
             raise ValueError('Private application reader and explicit task adapters are required')
         if not finite_number(timeout) or timeout <= 0:
@@ -30,6 +30,8 @@ class Observer:
         self.reader = reader
         self.resolve = resolve
         self.attest = attest
+        if not callable(cancelled):raise ValueError('Runtime observation needs a cancellation adapter')
+        self.cancelled=cancelled
         self.timeout = timeout
 
     def _original(self, request_id, deadline):
@@ -79,7 +81,7 @@ class Observer:
         dispatch = self.reader.dispatch
         owned = lambda: dispatch.runtime._owned
         transport = Transport(plan, self.resolve,
-            lambda engine, end: self.attest(engine, end, owned=owned))
+            lambda engine, end: self.attest(engine, end, owned=owned),cancelled=self.cancelled)
         status, body = transport(plan, deadline, owned=owned)
         self._access(request_id, deadline)
         observe(plan, status, body)

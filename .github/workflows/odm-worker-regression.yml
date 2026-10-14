@@ -261,6 +261,10 @@ jobs:
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-recovery-controls"
           python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_oracle_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-summary-controls"
+      - name: Explicit original runtime assembly controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-runtime-assembly/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-assembly-controls"
       - name: Original operator configuration controls
         run: |
           python3 -B docs/reviews/2026-10-14-runtime-binding/verify_controls.py \

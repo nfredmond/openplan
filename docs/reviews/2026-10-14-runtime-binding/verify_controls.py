@@ -54,6 +54,9 @@ def run(repo,out):
     add('journal-reference','replaced_runtime_journal_refuses_before_writer',lambda text:helper.disable(text,'Operator binding original runtime changed'),'Changed runtime journal cannot acquire writer')
     add('journal-root-reference','replaced_journal_root_cannot_bypass_original_admission',lambda text:helper.disable(text,'Operator binding original runtime changed'),'Changed admission root cannot acquire writer')
     add('initial-journal-root','constructor_refuses_unjoined_admission_root_before_configuration',lambda text:helper.disable(text,'Operator binding admission root differs'),'Foreign admission root cannot parse operator settings')
+    add('policy-projection','network_policy_refuses_extra_fields',lambda text:helper.disable(text,'Original operator network policy fields differ'),'ValueError not raised')
+    add('callback-redirects','callback_policy_refuses_redirect_permission',lambda text:helper.disable(text,'Original callback policy cannot permit redirects'),'ValueError not raised')
+    add('network-replay','network_policy_replay_refuses_changed_allowlist',lambda text:helper.disable(text,'Saved operator configuration differs'),'ValueError not raised')
     census={n.name for n in ast.walk(ast.parse(originals[tests])) if isinstance(n,ast.FunctionDef) and n.name.startswith('test_')}
     if {c[1] for c in cases}!=census:raise ValueError('Every configuration case needs its own fault')
     controls=[]

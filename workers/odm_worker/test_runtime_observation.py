@@ -221,5 +221,24 @@ class Checks(unittest.TestCase):
         self.assertNotIn('taskObservation', job)
 
 
+
+    def test_cancellation_adapter_type_refuses_before_private_reads(self):
+        with self.assertRaisesRegex(ValueError,'cancellation adapter'):
+            module.Observer(self.application.f.reader,lambda reference:None,self.application.attest,cancelled=None)
+    def test_active_task_get_closes_after_supplied_cancellation(self):
+        import threading
+        decision=threading.Event();self.network.mode='held';self.observer.timeout=10;self.observer.reader.timeout=10
+        self.observer.cancelled=decision.is_set
+        def cancel_then_release():
+            self.network.entered.wait(timeout=2);decision.set()
+            self.network.closed.wait(timeout=.5);self.network.release.set()
+        thread=threading.Thread(target=cancel_then_release,daemon=True)
+        thread.start()
+        try:
+            with self.assertRaisesRegex(InterruptedError,'cancelled'):self.call()
+            self.assertTrue(self.network.entered.is_set(),'Cancellation fixture reaches actual task GET')
+            self.assertTrue(self.network.closed.wait(timeout=1),'Cancelled task GET closes actual connection')
+        finally:self.network.release.set();thread.join(timeout=3)
+
 if __name__ == '__main__':
     unittest.main()

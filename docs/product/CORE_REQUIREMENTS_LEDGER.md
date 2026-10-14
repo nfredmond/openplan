@@ -533,3 +533,13 @@ grade changes. The relaunch owner retains hosted coordination and the main hold.
 **October 14 CORE-AERIAL-01 original coordinator candidate.** The [bounded coordination record](../reviews/2026-10-14-worker-coordination/STATUS.md) preserves original observations and delivery commands across local product failures and lost acknowledgements. Current actor refusal remains separate from historical receipts. Both-interpreter and isolated native controls pass within their recorded limits. Complete input/commit/default integration and application receiver acceptance remain open. No requirement grade changes.
 
 **October 14 CORE-AERIAL-01 original input/commit candidate.** The [explicit pipeline record](../reviews/2026-10-14-original-pipeline/STATUS.md) connects existing retained input, engine command and terminal journals. Uncertain commits cannot become another POST or automatic terminal callback. Both-interpreter source controls pass within fixture limits. Native copied-journal recovery passes within its recorded fixture limits. Application receiver/Storage and default activation remain open. No requirement grade changes.
+
+**October 14 CORE-AERIAL-01 explicit configuration and assembly candidates.**
+The [configuration checkpoint](../reviews/2026-10-14-runtime-binding/STATUS.md)
+binds original new-root settings before admission. The separate
+[assembly draft](../reviews/2026-10-14-runtime-assembly/STATUS.md) joins the
+existing journals and transport roles and adds explicit address policies.
+Current source, native and default-operation boundaries stay separate. Full
+application receiver/Storage, older-root adoption, independent-host recovery,
+planner usefulness and scientific quality remain open. No requirement grade
+changes. M3 and M5b.2 remain the active roadmap homes.

@@ -15,15 +15,26 @@ from runtime_artifact_access import base_url
 from runtime_outcome_recovery import Runtime
 from runtime_progress_delivery import parse
 from retained_output_archive import clear_unpublished
+from url_transport import Transport as AddressPolicy
 
 FORMAT='openplan.odm-operator-configuration.v1'
 NAME='operator-configuration.json'
 BOUND=64*1024
 FIELDS={'format','installationId','targetId','applicationEndpoint','applicationCredentialReference',
         'allowApplicationHttp','engine','sourceRoot','publicBaseUrl','callbackCredentialReference',
-        'daemonSocket','daemonUid','bounds'}
+        'daemonSocket','daemonUid','bounds','sourcePolicy','callbackPolicy'}
 BOUNDS={'sourceMaxBytes','archiveMaxBytes','expandedMaxBytes','archiveMaxEntries',
         'archiveMaxDirectoryBytes','timeoutSeconds','leaseSeconds','pollSeconds'}
+
+
+def network_policy(value,*,callback=False):
+    if not isinstance(value,dict) or set(value)!={'allowedNetworks','allowedPorts','maxRedirects'}:
+        raise ValueError('Original operator network policy fields differ')
+    if callback and value['maxRedirects']!=0:
+        raise ValueError('Original callback policy cannot permit redirects')
+    policy=AddressPolicy(allowed_networks=value['allowedNetworks'],allowed_ports=value['allowedPorts'],max_redirects=value['maxRedirects'])
+    return {'allowedNetworks':[str(network) for network in policy.networks],
+            'allowedPorts':list(policy.ports),'maxRedirects':policy.max_redirects}
 
 
 def configuration(value):
@@ -34,6 +45,7 @@ def configuration(value):
             raise ValueError('Original operator configuration references differ')
     endpoint(value['applicationEndpoint'],value['allowApplicationHttp'])
     engine=engine_identity(value['engine']);public=base_url(value['publicBaseUrl'])
+    source_policy=network_policy(value['sourcePolicy']);callback_policy=network_policy(value['callbackPolicy'],callback=True)
     source=absolute(value['sourceRoot']);socket=absolute(value['daemonSocket'])
     if type(value['daemonUid']) is not int or value['daemonUid']<0:
         raise ValueError('Original operator daemon owner differs')
@@ -46,7 +58,7 @@ def configuration(value):
                 raise ValueError('Original operator deadlines must be finite and positive')
         elif type(item) is not int or item<=0:
             raise ValueError('Original operator byte and entry limits must be positive integers')
-    normalized={**value,'engine':engine,'publicBaseUrl':public,'sourceRoot':str(source),'daemonSocket':str(socket)}
+    normalized={**value,'sourcePolicy':source_policy,'callbackPolicy':callback_policy,'engine':engine,'publicBaseUrl':public,'sourceRoot':str(source),'daemonSocket':str(socket)}
     raw=json_bytes(normalized)
     if len(raw)>BOUND:raise ValueError('Original operator configuration exceeds its bound')
     return parse(raw,BOUND)
