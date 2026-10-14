@@ -1,0 +1,44 @@
+{
+  "database": "odm_held_e69df22740f9453587cf3f0cf799036d",
+  "sourceMigrations": 409,
+  "candidateDDL": "20261017000011",
+  "cases": [
+    {
+      "case": "complete",
+      "state": "complete",
+      "held": 1,
+      "retryable": false
+    },
+    {
+      "case": "missing",
+      "state": "partial",
+      "held": 1,
+      "retryable": true
+    },
+    {
+      "case": "retry",
+      "status": 200,
+      "retriedCount": 0
+    },
+    {
+      "case": "human",
+      "status": 200,
+      "retriedCount": 0
+    },
+    {
+      "case": "callback",
+      "status": 200
+    },
+    {
+      "case": "member-http",
+      "visible": 2,
+      "written": 0
+    },
+    {
+      "case": "anonymous-http",
+      "code": "42501"
+    }
+  ],
+  "actual23514": 2,
+  "scope": "actual compiled engine/routes, SDK and PostgREST; source and Storage synthetic, selected409 plus candidate DDL, no current-main restore/browser/hosted acceptance"
+}

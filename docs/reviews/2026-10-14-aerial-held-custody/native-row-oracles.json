@@ -1,0 +1,317 @@
+[
+  {
+    "case": "serialization-code-used",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "serialization-code-used",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "held-state-guard-disabled",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "before-update-trigger-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-checksum_sha256-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-storage_path-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-byte_size-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-held_at-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-source_host-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "source-only",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-crs-made-mutable",
+    "oracle": "timeout",
+    "accepted": false
+  }
+]

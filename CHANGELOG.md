@@ -20,6 +20,13 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Aerial held-file custody, candidate:** migration
+`20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
+replacing the original facts of a held file. Attempt counts and timestamps can
+still advance. Deploy the callback recovery code first, then take a fresh backup
+and apply this migration before merging the dependent guard. Hosted activation
+and full worker integration remain pending. See the
+[guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
 **Original aerial delivery authority, candidate:** migration
 `20261017000012_aerial_delivery_authority.sql` adds a service-only observation
 for original artifact access and terminal delivery. Processing access stays
@@ -70,6 +77,8 @@ progress, a voided contract draft releases its billed sources, finance approves
 only reviewed consultant invoices, and client invoices past draft can change only
 their status, enforced in the database for every writer. Existing records are not
 rewritten; the rules apply to new writes.
+
+**Overall Work Program type.** Apply `20261017000009_owp_program_type.sql` before deploying; programs can now be typed Overall Work Program (OWP/UPWP), and the Work program entry shows on those programs and on any program that already has work program records.
 
 Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
 
