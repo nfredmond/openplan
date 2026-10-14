@@ -67,3 +67,23 @@ schema boundary; later main joins do not promote that installation evidence.
 Private proof base:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-private-georef-20261014/`.
 The native driver uses fixed retained profiles and is not a portable installer.
+
+The native cohorts execute the exact worker/producer bytes later committed at
+`663ccce428b9178305a750d4a3dbe614344aecf2`, with its selected 409 source
+migration inventory. The later join of main c8b adds workspace-time-zone
+migration 00007. Worker/producer hashes remain unchanged, and all four new CI
+steps survive the join. The historical native driver must run against its
+identified 409 source, not silently accept a later source inventory. It is not
+a current-main installation command. Twenty joined documentation cases pass. Fresh GitHub CI remains pending.
+
+## Complete joined local recipe
+
+All 50 actual worker stages pass, with 888 unit cases across 39 suites.
+Twenty documentation cases, product direction and four report-link controls
+pass from the nested application package. Every worker/workflow source binding
+restores after its fault cohort. The serial service takes 780.43 seconds and
+peaks at 898,109,440 bytes, about 856.5 MiB, under 1 GiB. Swap, max pressure
+and OOM events remain zero in this recipe. The separate repeated native
+cohorts retain their documented cap-pressure limits. GitHub and merged-main
+acceptance stay pending. No migration, hosted setting, worker default, version
+or release tag changes belong to this increment.
