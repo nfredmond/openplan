@@ -76,3 +76,13 @@ photogrammetry quality, map placement, practitioner, independent-host or V1
 acceptance follows from these checks. The next integration work connects the
 original worker coordinator, handles local failures without inventing engine
 observations, and verifies complete callback and Storage recovery.
+
+## Exact-head admission controller correction
+
+The first318 worker CI stops because the older admission mutation controller
+expects the previous server assignment line. The explicit adapter keeps that
+assignment through `resolved_admissions`. The controller now targets that line
+and still deliberately removes the actual runtime from the server. Four
+30-case cohorts and45 faults pass on each of Python3.14 and3.11 with the
+corrected anchor. Fresh exact-head CI remains required. No production behavior
+changes in this correction.
