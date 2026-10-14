@@ -83,3 +83,22 @@ row is not independent scientific validation. No milestone or V1 grade changes.
 
 Private proof base:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/aerial-held-custody-20261014/`.
+
+## Joined main and CI corrections, October 14
+
+The candidate joins main2b0dbee8c without conflicts. Scoped types and seven-file
+lint pass. The related cohort passes294 cases across19 files, including the
+program-type changes. An initial result classifier expects `.ts` for the
+programs page; the actual selected test is `.tsx`. The corrected exact roster
+and census validate the retained successful run. The classifier failure stays
+in the owned service journal. Peak memory is563.9MiB under1GiB, zero swap.
+
+The fresh joined-head worker check rejects a source-lock fault that still passes.
+Its20ms budget can expire during unrelated file work. The corrected test probes
+the actual held writer directly with a two-second bound. The separate retained
+observation fixture uses its ordinary write budget before holding the lock and
+supplies two seconds to the contended call. Neither correction changes a
+production deadline. Source controls pass four44-case cohorts with55 intended
+faults. Retention controls pass four31-case cohorts with34 intended faults.
+Fresh exact-head CI must run again. No merge or deployment acceptance follows
+from these local corrections.
