@@ -109,6 +109,7 @@ import {
   toMeasureOffTheTopTakeRead,
 } from "@/lib/measures/receipts";
 import { authorizeMeasureWrite } from "@/lib/measures/write-authorization";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 
 const paramsSchema = z.object({ measureId: z.string().uuid(), periodId: z.string().uuid() });
 
@@ -164,6 +165,13 @@ export async function POST(
     const supabase = await createClient();
     const authorization = await authorizeMeasureWrite(supabase as unknown as Parameters<typeof authorizeMeasureWrite>[0], audit, parsedParams.data.measureId);
     if (!authorization.ok) return authorization.response;
+
+    // The day an allocation is stated is the workspace's day, not the server's.
+    const workspaceToday = async () => {
+      const calendar = await todayInWorkspace(supabase, authorization.workspaceId);
+      if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
+      return calendar.today;
+    };
 
     const periodResult = await supabase
       .from("measure_fund_periods")
@@ -241,6 +249,7 @@ export async function POST(
         }
       }
 
+      const statedOn = await workspaceToday();
       rows = payload.data.allocations.map((entry) => ({
         workspace_id: authorization.workspaceId,
         measure_fund_id: authorization.fund.id,
@@ -252,7 +261,7 @@ export async function POST(
         computation_basis: "manual",
         rationale: entry.rationale,
         stated_by: authorization.userId,
-        stated_on: new Date().toISOString().slice(0, 10),
+        stated_on: statedOn,
       }));
     } else {
       const rulesResult = await supabase
@@ -395,7 +404,7 @@ export async function POST(
       }
 
       allocationSummary = outcome.allocation;
-      const statedOn = new Date().toISOString().slice(0, 10);
+      const statedOn = await workspaceToday();
 
       // What the receipt gave up before the categories were cut. One row per
       // ordinance clause, carrying what the clause called for as well as what

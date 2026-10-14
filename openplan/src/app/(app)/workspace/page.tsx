@@ -8,6 +8,7 @@ import { WorkspaceIntegrationKeysPanel } from "@/components/workspaces/workspace
 import { WorkspaceMembershipRequired } from "@/components/workspaces/workspace-membership-required";
 import { WorkspaceStageGatePanel } from "@/components/workspaces/workspace-stage-gate-panel";
 import { WorkspaceTeamPanel } from "@/components/workspaces/workspace-team-panel";
+import { WorkspaceTimeZonePanel } from "@/components/workspaces/workspace-time-zone-panel";
 import { navLabel } from "@/components/nav/nav-registry";
 import { PageHeader } from "@/components/ui/page-header";
 import { JurisdictionReadinessPanel } from "@/components/jurisdiction-readiness/jurisdiction-readiness-panel";
@@ -30,6 +31,8 @@ import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-ke
 import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { parseWorkspaceHomeGeography } from "@/lib/workspaces/home-geography";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
+import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
 
 export const metadata = moduleMetadata("Workspace setup & health");
 
@@ -65,6 +68,8 @@ export default async function WorkspacePage() {
     readError: workspaceRead.error,
   });
   const workspaceReadUnreadable = workspaceRead.error || !workspaceRead.data;
+  // A separate read: it tolerates a database that does not have the column yet.
+  const calendar = await loadWorkspaceCalendar(supabase, workspaceId);
   const workspaceGeography = workspaceReadUnreadable
     ? null
     : parseWorkspaceHomeGeography(workspaceRead.data);
@@ -115,6 +120,16 @@ export default async function WorkspacePage() {
       ) : null}
 
       <WorkspaceGeographyPanel workspaceId={workspaceId} canManage={canManage} />
+
+      <WorkspaceTimeZonePanel
+        workspaceId={workspaceId}
+        canManage={canManage}
+        savedTimeZone={calendar.setting}
+        effective={{ timeZone: calendar.timeZone, source: calendar.source }}
+        fallback={calendar.fallback}
+        unreadable={calendar.readError !== null && !looksLikePendingSchema(calendar.readError)}
+        unavailable={calendar.readError !== null && looksLikePendingSchema(calendar.readError)}
+      />
 
       <JurisdictionReadinessPanel
         reports={jurisdictionReadiness?.reports ?? []}

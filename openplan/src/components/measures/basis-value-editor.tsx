@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { MeasureField, MeasureSubmitFeedback, useMeasureSubmit } from "./measure-form-shell";
+import { browserToday } from "@/lib/time/workspace-calendar";
 
 /**
  * The figures an ordinance apportions on — population, lane miles, parcels.
@@ -137,7 +138,7 @@ export function BasisValueEditor({
         vintageLabel,
         basisValue,
         basisSourceNote,
-        statedOn: new Date().toISOString().slice(0, 10),
+        statedOn: browserToday(),
       },
     });
     if (created) {
