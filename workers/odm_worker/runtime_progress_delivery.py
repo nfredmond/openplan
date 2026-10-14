@@ -43,6 +43,8 @@ def checksum(raw):
 
 
 class Delivery:
+    record_format = FORMAT
+
     def __init__(self, reader, transport, credential_reference, *, timeout=120,
                  cancelled=lambda: False, max_attempts=10000):
         if not isinstance(reader, Reader) or not callable(transport) or not callable(cancelled):
@@ -101,7 +103,7 @@ class Delivery:
             raise ValueError('Progress delivery progress differs')
         if 'message' in value and (not isinstance(value['message'], str) or len(value['message'].encode('utf-16-le'))//2 > 2048):
             raise ValueError('Progress delivery message differs')
-        return {'format': FORMAT, 'binding': {
+        return {'format': self.record_format, 'binding': {
             'installationId': self.reader.dispatch.runtime.installation['installationId'],
             'targetId': self.reader.dispatch.target, 'requestId': request_id,
             'eventKey': event_key, 'jobReference': entry.job_reference,
@@ -144,7 +146,7 @@ class Delivery:
             return self._load(request_id, event_key, root, deadline)
 
     @staticmethod
-    def _result(reply):
+    def _result(reply, command=None):
         status = reply['status']
         if 400 <= status < 500:
             return 'refused'
@@ -156,6 +158,10 @@ class Delivery:
             if isinstance(body, dict) and body.get('ok') is True:
                 return 'acknowledged'
         return 'retry_pending'
+
+    def _before_transport(self, command, deadline):
+        """Allow specialized delivery bounds before retaining a new intent."""
+        self._check(command['binding']['requestId'], deadline)
 
     def advance(self, request_id, event_key):
         """Make one owned attempt, or return an already retained receiver outcome."""
@@ -174,13 +180,13 @@ class Delivery:
                 raise ValueError('Progress delivery reply requires its original attempt')
             for index, name in enumerate(attempts):
                 intent = read_json(root, name)
-                if json_bytes(intent) != json_bytes({'format': FORMAT, 'commandSha256': command_hash, 'attempt': index}):
+                if json_bytes(intent) != json_bytes({'format': self.record_format, 'commandSha256': command_hash, 'attempt': index}):
                     raise ValueError('Progress delivery attempt binding differs')
                 reply_name = f'reply-{index:06d}.json'
                 if (root/reply_name).exists() or (root/reply_name).is_symlink():
                     reply = read_json(root, reply_name)
                     self._validate_reply(reply, command_hash, index)
-                    state = self._result(reply)
+                    state = self._result(reply, command)
                     if state != 'retry_pending':
                         self._access(request_id, deadline)
                         return {'state': state, 'attempt': index, 'commandSha256': command_hash,
@@ -189,8 +195,9 @@ class Delivery:
                 raise ValueError('Progress delivery attempt retention limit reached')
             index = len(attempts)
             self._access(request_id, deadline)
+            self._before_transport(command, deadline)
             publish(root, f'attempt-{index:06d}.json', json_bytes({
-                'format': FORMAT, 'commandSha256': command_hash, 'attempt': index}))
+                'format': self.record_format, 'commandSha256': command_hash, 'attempt': index}))
             self._access(request_id, deadline)
             status, body = self.transport(command['callbackUrl'], command['credentialReference'],
                 command['bodyText'].encode('utf-8'), deadline,
@@ -198,17 +205,17 @@ class Delivery:
             self._check(request_id, deadline)
             if type(body) is not bytes or len(body) > REPLY_LIMIT:
                 raise ValueError('Progress delivery receiver reply exceeds its bound')
-            reply = {'format': FORMAT, 'commandSha256': command_hash, 'attempt': index,
+            reply = {'format': self.record_format, 'commandSha256': command_hash, 'attempt': index,
                 'status': status, 'bodyBase64': base64.b64encode(body).decode()}
             self._validate_reply(reply, command_hash, index)
             publish(root, f'reply-{index:06d}.json', json_bytes(reply))
             self._access(request_id, deadline)
-            return {'state': self._result(reply), 'attempt': index, 'commandSha256': command_hash,
+            return {'state': self._result(reply, command), 'attempt': index, 'commandSha256': command_hash,
                 'receiverReply': reply, 'publicationPermission': False}
 
-    @staticmethod
-    def _validate_reply(reply, command_hash, index):
-        if not isinstance(reply, dict) or set(reply) != {'format', 'commandSha256', 'attempt', 'status', 'bodyBase64'} or reply['format'] != FORMAT or reply['commandSha256'] != command_hash or type(reply['attempt']) is not int or reply['attempt'] != index or type(reply['status']) is not int or not 100 <= reply['status'] <= 599 or not isinstance(reply['bodyBase64'], str):
+    @classmethod
+    def _validate_reply(cls, reply, command_hash, index):
+        if not isinstance(reply, dict) or set(reply) != {'format', 'commandSha256', 'attempt', 'status', 'bodyBase64'} or reply['format'] != cls.record_format or reply['commandSha256'] != command_hash or type(reply['attempt']) is not int or reply['attempt'] != index or type(reply['status']) is not int or not 100 <= reply['status'] <= 599 or not isinstance(reply['bodyBase64'], str):
             raise ValueError('Progress delivery receiver reply binding differs')
         try:
             body = base64.b64decode(reply['bodyBase64'], validate=True)

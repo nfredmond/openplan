@@ -19,6 +19,7 @@ from url_transport import Transport as AddressPolicy, connection, deadline_check
 WIRE_LIMIT = 128 * 1024
 METADATA_LIMIT = 128 * 1024
 ERROR_LIMIT = 4096
+MAX_BODY_LIMIT = 64 * 1024
 
 
 def decode_response(payload):
@@ -36,9 +37,12 @@ def decode_response(payload):
 class Transport:
     def __init__(self, callback_url, credential_reference, credentials, *,
                  allowed_networks=(), allowed_ports=(80, 443), cancelled=lambda: False,
-                 ca_file=None):
+                 ca_file=None, max_body_bytes=BODY_LIMIT):
         if not isinstance(credential_reference, str) or not credential_reference.strip() or len(credential_reference) > 256 or not callable(credentials):
             raise ValueError('Progress HTTP requires original endpoint and credential adapters')
+        if type(max_body_bytes) is not int or not 1 <= max_body_bytes <= MAX_BODY_LIMIT:
+            raise ValueError('Progress HTTP body allowance differs')
+        self.max_body = max_body_bytes
         self.policy = AddressPolicy(allowed_networks=allowed_networks, allowed_ports=allowed_ports,
             max_redirects=0, cancelled=cancelled, ca_file=ca_file)
         parse_url(callback_url, self.policy.ports)
@@ -58,7 +62,7 @@ class Transport:
         self._check(deadline, owned)
         if url != self.url or credential_reference != self.reference:
             raise ValueError('Progress HTTP original endpoint or credential reference differs')
-        if type(body) is not bytes or not 0 < len(body) <= BODY_LIMIT:
+        if type(body) is not bytes or not 0 < len(body) <= self.max_body:
             raise ValueError('Progress HTTP exact body bytes exceed their bound')
         try:
             token = self.credentials(self.reference)
@@ -68,7 +72,7 @@ class Transport:
             raise ValueError('Progress HTTP credential value differs')
         metadata = json.dumps({'url': self.url, 'token': token, 'bodyBase64': base64.b64encode(body).decode(),
             'ports': self.policy.ports, 'networks': [str(net) for net in self.policy.networks],
-            'caFile': self.policy.ca_file, 'deadline': deadline}, allow_nan=False, separators=(',', ':')).encode()
+            'caFile': self.policy.ca_file, 'deadline': deadline, 'maxBodyBytes': self.max_body}, allow_nan=False, separators=(',', ':')).encode()
         if len(metadata) > METADATA_LIMIT:
             raise ValueError('Progress HTTP metadata exceeds its bound')
         self._check(deadline, owned)
@@ -126,13 +130,18 @@ def child(lifetime):
     if size > METADATA_LIMIT:
         raise ValueError('Progress HTTP metadata exceeds its bound')
     value = json.loads(exact_input(size)); deadline = value['deadline']
+    bound = value['maxBodyBytes']
+    if type(bound) is not int or not 1 <= bound <= MAX_BODY_LIMIT:
+        raise ValueError('Progress HTTP body allowance differs')
+    body = base64.b64decode(value['bodyBase64'], validate=True)
+    if not 0 < len(body) <= bound:
+        raise ValueError('Progress HTTP child body exceeds its allowance')
     deadline_check(deadline)
     parts, port = parse_url(value['url'], value['ports'])
     rows = resolve(parts, port, tuple(ipaddress.ip_network(net, strict=True) for net in value['networks']))
     deadline_check(deadline)
     client = connection(parts, port, rows, deadline, value['caFile'])
     try:
-        body = base64.b64decode(value['bodyBase64'], validate=True)
         client.request('POST', (parts.path or '/')+('?' + parts.query if parts.query else ''), body=body,
             headers={'Content-Type': 'application/json', 'Accept': 'application/json',
                 'Accept-Encoding': 'identity', 'Authorization': 'Bearer '+value['token'], 'User-Agent': 'openplan-odm-worker'})

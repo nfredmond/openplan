@@ -27,7 +27,7 @@ PARAMETERS = {'p_request', 'p_installation', 'p_target'}
 DEFAULT_RPC = 'read_aerial_original_dispatch'
 DELIVERY_RPC = 'read_aerial_delivery_authority'
 DELIVERY_PARAMETERS = PARAMETERS | {'p_reference', 'p_operation', 'p_callback'}
-DELIVERY_BODY_LIMIT = 16 * 1024
+DELIVERY_BODY_LIMIT = 64 * 1024
 
 
 def rpc_name(value):
@@ -132,7 +132,7 @@ class Transport:
         metadata = json.dumps({'endpoint': self.url, 'allowHttp': self.allow_http, 'credentials': tokens,
             'parameters': arguments, 'deadline': deadline, 'maxResponseBytes': self.max_response,
             **({'rpc': self.rpc} if self.rpc != DEFAULT_RPC else {})},
-            allow_nan=False, separators=(',', ':')).encode()
+            ensure_ascii=False, allow_nan=False, separators=(',', ':')).encode()
         if len(metadata) > METADATA_LIMIT:
             raise ValueError('Private dispatch metadata exceeds its bound')
         lifetime_read, lifetime_write = os.pipe()

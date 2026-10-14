@@ -392,3 +392,7 @@ authority supports completed downloads and exact applied terminal replay while
 processing remains active-job-only. Selected-schema SQL/HTTP and source controls
 do not establish default worker, browser, quality or full M3/M5b.2 acceptance.
 Migration12 remains tentative and unapplied. Milestone grades stay unchanged.
+
+## October 14 original terminal journal candidate
+
+The [dated terminal record](../reviews/2026-10-14-terminal-delivery/STATUS.md) retains the original callback identity, occurrence time, observation and exact artifact projection. Historical receiver facts grant no new send permission. Four source cohorts and 42 intended faults pass; both-interpreter regression, corrected native supersession and intended-schema restore checks continue. The default worker stays unchanged. Complete runtime delivery, quality, browser/practitioner and separate-host evidence remain open under M3/M5b.2. Milestone grades do not change.

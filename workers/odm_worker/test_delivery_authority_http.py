@@ -35,6 +35,12 @@ class Checks(unittest.TestCase):
         self.read(args)
         self.assertEqual(json.loads(self.f.requests[0][2]),args,'Terminal authority receives exact original callback including Unicode')
 
+    def test_large_utf8_callback_fits_private_metadata(self):
+        callback=self.callback();callback['callbackId']='🚀'*15000
+        args={**self.args,'p_operation':TERMINAL,'p_callback':callback}
+        self.read(args)
+        self.assertEqual(json.loads(self.f.requests[0][2]),args,'UTF8 delivery callback fits actual supervised metadata')
+
     def test_default_rpc_cannot_accept_delivery_arguments(self):
         with self.assertRaisesRegex(ValueError,'RPC parameters differ'):
             self.f.transport(self.args,time.monotonic()+3)

@@ -297,3 +297,5 @@ candidate does not close source identity, concurrent custody, live RLS, browser
 or complete delivery acceptance.
 
 The [October 14 retained artifact access candidate](reviews/2026-10-14-artifact-access/STATUS.md) keeps original download leases and checks separate current delivery authority. Source, loopback and selected-schema SQL/HTTP fault controls pass. Both Python versions pass; intended-schema upgrade, default worker and visible delivery acceptance remain pending.
+
+The [October 14 terminal journal candidate](reviews/2026-10-14-terminal-delivery/STATUS.md) preserves original terminal callback bytes and distinguishes historical receiver replies from current permission to send. A smaller replacement transport can read saved receipts but cannot start an unsendable POST. Source controls pass; both-interpreter regression, realistic native supersession and intended-schema restore checks continue. Default worker integration and complete M3/M5b.2 acceptance remain open.

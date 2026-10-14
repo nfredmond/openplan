@@ -233,6 +233,10 @@ jobs:
           python3 -B docs/reviews/2026-10-14-artifact-access/verify_authority_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-delivery-authority-controls"
 
+      - name: Original terminal callback and explicit byte allowance controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-terminal-delivery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-terminal-delivery-controls"
       - name: Exact progress callback journal controls
         run: |
           python3 -B docs/reviews/2026-10-14-progress-delivery/verify_controls.py \

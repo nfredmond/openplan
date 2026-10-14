@@ -68,3 +68,16 @@ practitioner, separate-host or V1 acceptance.
 
 Private proof base:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/artifact-access-20261014/`.
+
+## October 14 intended-schema restore checkpoint
+
+The [delivery upgrade record](delivery-upgrade-result.json) adds four complete
+upgrade/restore cohorts and five intended faults. It starts from retained409,
+upgrades through selected411 and exact9/10/11 to415 with delivery12, captures
+and restores a new database, and preserves held rows, member read-only access,
+service-only function execution and invoker/search-path metadata. A fresh capture
+precedes delivery12. Exact9/10 source pins remain recorded. This is a same-cluster
+fixture proof;10 source still awaits its main merge. No hosted apply, Storage or
+login restore, global-role recovery or separate-host acceptance runs. Migration12
+remains unapplied. The active integration work is recorded in the
+[terminal journal candidate](../2026-10-14-terminal-delivery/STATUS.md).

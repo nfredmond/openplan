@@ -1,0 +1,34 @@
+{
+  "selectedMain": "122cfbbaa9235a4491b30fef733f7aa9bdb58465",
+  "prerequisiteCommits": {
+    "20261017000009_owp_program_type.sql": "11b6c3632f6cf5852633d59c70b7e11ae03915a3",
+    "20261017000010_workspace_storage_quota.sql": "6a921772cc82c75937dca0bac755e65dc33ee1a8"
+  },
+  "variant": "restored",
+  "historyBefore": 409,
+  "historyMain": 411,
+  "historyPrerequisites": 413,
+  "historyBeforeDelivery": 414,
+  "historyCandidate": 415,
+  "retainedDatabases": [
+    "odm_held_upgrade_7684153b8b0848f2a523b34a480a9816",
+    "odm_held_restore_d056e9b4d2b34ada925a6b65f22f4fd8"
+  ],
+  "freshBackup": {
+    "bytes": 5618768,
+    "sha256": "646b52264e9a9fba75141f3f1756962f906c4a13013e09044f3c6e8ce3c93f79"
+  },
+  "beforeDeliveryCapture": {
+    "bytes": 5621021,
+    "sha256": "02f4b56cf790423ffcb852b5aa302111a5bf3416e8179b69cfb324d93f1cd9b3"
+  },
+  "restoredCapture": {
+    "bytes": 5627553,
+    "sha256": "8a9a41d8147b779354367823aa7717daeba1f44d94bf51275c5b7bb9555d9768"
+  },
+  "restoredDeliveryAuthority": true,
+  "originalRowPreserved": true,
+  "restoredGuard": true,
+  "restoredMemberVisibleRows": 1,
+  "scope": "same-cluster representative database fixture and logical restore through exact9/10/11/12;10 source remains a pinned branch prerequisite; no hosted backup/restore, Storage restore, login, global-role or separate-host acceptance"
+}

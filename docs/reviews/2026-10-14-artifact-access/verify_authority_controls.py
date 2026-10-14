@@ -48,6 +48,7 @@ def run(repo,out):
     add('reader','binding-shape-ignored','invalid_binding_refuses',omit('Delivery authority requires its original binding'),"not subscriptable")
     add('http','delivery-rpc-path-changed','fixed_delivery_path_and_original_scope',change("parts.path + '/rpc/read_aerial_delivery_authority'","parts.path + '/rpc/read_aerial_original_dispatch'"),'Only explicit delivery RPC receives delivery scope')
     add('http','callback-normalized','terminal_body_and_unicode_identity_remain_exact',change('return dict(value)\n\n\ndef endpoint',"return {**value,'p_callback':{**value['p_callback'],'callbackId':'changed'}} if value['p_callback'] is not None else dict(value)\n\n\ndef endpoint"),'Terminal authority receives exact original callback including Unicode')
+    add('http','unicode-metadata-expanded','large_utf8_callback_fits_private_metadata',change('            ensure_ascii=False, allow_nan=False, separators=', '            ensure_ascii=True, allow_nan=False, separators='),'Private dispatch metadata exceeds its bound')
     add('http','default-infers-delivery','default_rpc_cannot_accept_delivery_arguments',change('arguments = parameters(arguments) if self.rpc == DEFAULT_RPC else delivery_parameters(arguments)','arguments = delivery_parameters(arguments) if "p_operation" in arguments else parameters(arguments)'),'Private dispatch RPC read did not complete')
     add('http','constructor-arbitrary-rpc','unknown_rpc_constructor_refuses',omit('Private dispatch RPC selection differs'),'ValueError not raised')
     add('http','child-arbitrary-rpc','unknown_rpc_child_refuses_before_network',omit('Private dispatch RPC selection differs'),'Child independently refuses arbitrary RPC')
@@ -72,7 +73,7 @@ def run(repo,out):
         (out/(label+'.log')).write_text(output);return code,output
     def positive(label):
         code,log=execute(label)
-        assert code==0 and 'Ran 25 tests' in log and 'Ran 12 tests' in log,'Complete37-case delivery authority cohort: '+label
+        assert code==0 and 'Ran 25 tests' in log and 'Ran 13 tests' in log,'Complete38-case delivery authority cohort: '+label
         outcomes.append({'control':label,'outcome':'survived'});print(label+' survived',flush=True)
     try:
         positive('baseline')
@@ -87,7 +88,7 @@ def run(repo,out):
                 outcomes.append({'control':label,'test':target,'outcome':'intended_failure','reason':reason});print(label+' intended failure',flush=True)
             finally:restore()
         positive('restored-final');assert all(p.read_bytes()==raw for p,raw in original.items()),'All delivery source restores exactly'
-        (out/'controls.json').write_text(json.dumps(outcomes,indent=2)+'\n');(out/'oracle-controls.json').write_text(json.dumps(oracles,indent=2)+'\n');(out/'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)):hashlib.sha256(p.read_bytes()).hexdigest() for p in original},indent=2)+'\n');print({'cases':37,'positive':4,'faults':len(cases)})
+        (out/'controls.json').write_text(json.dumps(outcomes,indent=2)+'\n');(out/'oracle-controls.json').write_text(json.dumps(oracles,indent=2)+'\n');(out/'source-bindings.json').write_text(json.dumps({str(p.relative_to(repo)):hashlib.sha256(p.read_bytes()).hexdigest() for p in original},indent=2)+'\n');print({'cases':38,'positive':4,'faults':len(cases)})
     finally:restore()
 
 if __name__=='__main__':

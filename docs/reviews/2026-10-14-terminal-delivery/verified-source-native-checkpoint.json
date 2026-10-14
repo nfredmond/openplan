@@ -1,0 +1,56 @@
+{
+  "source": {
+    "both_interpreters": true,
+    "casesPerCohort": 42,
+    "positiveCohorts": 4,
+    "faults": 42
+  },
+  "authority": {
+    "both_interpreters": true,
+    "casesPerCohort": 38,
+    "positiveCohorts": 4,
+    "faults": 39
+  },
+  "progress": {
+    "both_interpreters": true,
+    "casesPerCohort": 23,
+    "positiveCohorts": 4,
+    "faults": 37
+  },
+  "http": {
+    "both_interpreters": true,
+    "casesPerCohort": 11,
+    "positiveCohorts": 4,
+    "faults": 21
+  },
+  "native": {
+    "proof": "native-03",
+    "positiveCohorts": 4,
+    "casesPerCohort": 3,
+    "faults": 3
+  },
+  "upgrade": {
+    "proof": "upgrade-05",
+    "positiveCohorts": 4,
+    "faults": 5,
+    "history": [
+      409,
+      411,
+      413,
+      414,
+      415
+    ],
+    "scope": "Retained same-cluster fixture logical upgrade/restore; no hosted or separate-host acceptance"
+  },
+  "dispatch": {
+    "both_interpreters": true,
+    "casesPerCohort": 43,
+    "positiveCohorts": 4,
+    "faults": 56
+  },
+  "related": {
+    "passed": 19,
+    "files": 3,
+    "failed": 0
+  }
+}
