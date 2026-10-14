@@ -137,6 +137,11 @@ export type SafetyCrashQueryResponse = SafetyCrashCollection & {
   /** US Census tract context for mapped KSI records; empty where no adapter data exists. */
   ksiEquityTracts: SafetyKsiEquityTract[] | null;
   ksiEquityDemographicSource: { label: string; vintage: string };
+  /**
+   * Ranked road pieces (or grid squares) by severe crashes. Null when no
+   * acquisition is in context; an unavailable state carries its reason.
+   */
+  highInjuryNetwork?: import("./high-injury-network").HighInjuryNetwork | null;
 };
 
 /** The latest ingest for a workspace, as rendered by the coverage banner. */
