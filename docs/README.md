@@ -92,6 +92,8 @@ The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md)
 
 - [Land-use restore cascade correction](reviews/2026-10-07-land-use-authority/RESTORE_CASCADE_FAILURE.md): reproduced restore failures, additive migration and remaining full-drill boundary.
 
+The [October 14 custody roster recovery candidate](reviews/2026-10-14-aerial-custody-recovery/STATUS.md) preserves missing original artifact identities and repairs pending package readiness while keeping human verification. Application recovery precedes the separate held-row guard. Hosted, browser and full worker acceptance remain open.
+
 The [October 14 progress delivery candidate](reviews/2026-10-14-progress-delivery/STATUS.md) retains original accepted/running callback bytes before a supervised POST. Current actor access, exact retry, refusal and received-response custody stay separate from artifact delivery and terminal completion. The worker default remains unchanged.
 
 The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
