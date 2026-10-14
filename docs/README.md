@@ -260,6 +260,16 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Original output archive HTTP](reviews/2026-10-13-odm-original-output-http/STATUS.md), supervised fixed-task downloads with ownership, cancellation and bounded byte writing.
 - [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
 
+- [Private original aerial products](reviews/2026-10-14-odm-private-products/STATUS.md), exact selected member bytes and interrupted recovery under current access, without delivery or quality promotion.
+- [Protected Linux transfer preparation](reviews/2026-10-14-linux-transfer-preparation/STATUS.md), pinned source and separate retained fixtures, encrypted transport and open separate-host limits.
+- [Selected-schema original output recovery](reviews/2026-10-14-odm-output-schema-recovery/STATUS.md), populated isolated fixture upgrades, logical restores and current actor checks.
+- [Joined candidate transit and export observations](reviews/2026-10-14-m3-joined-preview/STATUS.md), identified T3 views, original geometry and native GeoPackage checks with explicit limits.
 - [Transit archive period and staff drawing guidance](reviews/2026-10-14-gtfs-source-period-guidance/STATUS.md), dates and caller wording with bounded source controls and desktop/390px T3 observations.
 
 The [October 14 aerial callback retry candidate](reviews/2026-10-14-aerial-callback-retry/STATUS.md) resumes interrupted application from the same retained JSON payload, refuses changed worker/payload identity and guards status writes against concurrent changes. The compiled route and SDK pass isolated database HTTP checks; full deployment and durable output delivery remain separate.
+
+The [October 14 rotated raster spacing correction](reviews/2026-10-14-rotated-raster-spacing/STATUS.md) retains full native column and row vector lengths. Six TIFF cases, intended source faults and independently decoded GDAL positions check the arithmetic. Survey accuracy, aerial delivery and complete M3/M5b.2/v1 acceptance remain open.
+
+The [October 14 private raster inspection candidate](reviews/2026-10-14-private-raster-inspection/STATUS.md) binds declared native tag readings to original product bytes and code profiles. Source and selected-schema native controls preserve failed, unsupported, absent and unassessed outcomes. Ground quality, map placement, current-main installation, public delivery and full M3/M5b.2/v1 acceptance remain open.
+
+The [October 14 private artifact preparation candidate](reviews/2026-10-14-private-artifact-preparation/STATUS.md) binds original job, actor, file bytes and native inspection receipts in one immutable private manifest. Exact interrupted replay and current access remain separate from callback delivery, map placement, processing quality and default-worker integration.
