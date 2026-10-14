@@ -573,6 +573,44 @@ export function resolvePortalMapFraming(candidates: {
   return framed(null, "none", null);
 }
 
+/**
+ * Where the publish checklist says the resident map opens, decided by
+ * `resolvePortalMapFraming`, the same resolver the resident map runs.
+ *
+ * The step counts the campaign's own area and the linked project's area,
+ * because the resident map falls back from one to the other. The workspace
+ * home is not counted: it is the agency's whole area, not a choice made for
+ * this page.
+ *
+ * A campaign area that could not be read stays `unreadable`, because it would
+ * outrank the project's area and nothing about where the map opens is known.
+ * A campaign area on record whose extent cannot frame the map stays `set`, as
+ * before; the console's area panel reports that problem.
+ */
+export function publishChecklistMapArea(candidates: Pick<PortalPlaceCandidates, "campaign" | "project">): {
+  state: PortalPlaceCandidate["state"];
+  label: string | null;
+  source?: "campaign" | "project";
+} {
+  if (candidates.campaign.state === "unreadable") return { state: "unreadable", label: null };
+
+  const framing = resolvePortalMapFraming({
+    campaignPlace: candidates.campaign,
+    projectPlace: candidates.project,
+  });
+  if (framing.origin === "campaign_place") {
+    return { state: "set", label: framing.originLabel, source: "campaign" };
+  }
+  if (framing.origin === "project_place") {
+    return { state: "set", label: framing.originLabel, source: "project" };
+  }
+  if (candidates.campaign.state === "set") {
+    return { state: "set", label: candidates.campaign.label, source: "campaign" };
+  }
+  if (framing.unreadable.some((gap) => gap.reason === "read")) return { state: "unreadable", label: null };
+  return { state: "unset", label: null };
+}
+
 /** Only `from` is used, so any Supabase client — caller-RLS or service-role — fits. */
 type QueryClient = Pick<SupabaseClient, "from">;
 

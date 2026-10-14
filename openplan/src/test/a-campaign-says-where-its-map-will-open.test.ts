@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 import { getPublicPortalReadiness } from "@/lib/engagement/public-portal";
+import { publishChecklistMapArea, type PortalPlaceCandidate } from "@/lib/engagement/public-portal-data";
 
 /**
  * PUBLISHING MUST SAY WHERE THE RESIDENT MAP WILL OPEN.
@@ -94,5 +95,65 @@ describe("a campaign says where its map will open", () => {
         `readiness check "${check.id}" counts toward the step total but has no place in the flow's stepOrder, so it renders nowhere`
       ).toBe(true);
     }
+  });
+});
+
+/**
+ * THE STEP COUNTS THE AREA THE RESIDENT MAP ACTUALLY OPENS ON.
+ *
+ * The resident map falls back from the campaign's own area to the linked
+ * project's. The checklist used to read only the campaign's, so a campaign on a
+ * project with an area was told "no area is set" and "a pin lands in the middle
+ * of the country", which was false. `publishChecklistMapArea` asks the same
+ * resolver the resident map runs.
+ */
+describe("the publish checklist reads the map's own fallback", () => {
+  const BBOX = { minLon: -121.5, minLat: 38.7, maxLon: -120.0, maxLat: 39.3 };
+  const unset: PortalPlaceCandidate = { state: "unset", label: null, bbox: null };
+  const unreadable: PortalPlaceCandidate = { state: "unreadable", label: null, bbox: null };
+  const set = (label: string, bbox: PortalPlaceCandidate["bbox"] = BBOX): PortalPlaceCandidate => ({
+    state: "set",
+    label,
+    bbox,
+  });
+
+  it("counts the linked project's area when the campaign has none", () => {
+    for (const label of ["Placer County, California", "Columbus city, Ohio"]) {
+      expect(publishChecklistMapArea({ campaign: unset, project: set(label) })).toEqual({
+        state: "set",
+        label,
+        source: "project",
+      });
+    }
+  });
+
+  it("prefers the campaign's own area, as the resident map does", () => {
+    expect(
+      publishChecklistMapArea({ campaign: set("Downtown corridor"), project: set("Placer County, California") })
+    ).toEqual({ state: "set", label: "Downtown corridor", source: "campaign" });
+  });
+
+  it("does not count a project area that cannot frame the map", () => {
+    expect(publishChecklistMapArea({ campaign: unset, project: set("Placer County, California", null) })).toEqual({
+      state: "unset",
+      label: null,
+    });
+  });
+
+  it("stays unset when neither has an area", () => {
+    expect(publishChecklistMapArea({ campaign: unset, project: unset })).toEqual({ state: "unset", label: null });
+  });
+
+  it("never turns a failed read into a missing area or a guessed one", () => {
+    // The campaign's area outranks the project's, so an unread campaign area
+    // means nothing is known about where the map opens.
+    expect(publishChecklistMapArea({ campaign: unreadable, project: set("Placer County, California") })).toEqual({
+      state: "unreadable",
+      label: null,
+    });
+    expect(publishChecklistMapArea({ campaign: unset, project: unreadable })).toEqual({
+      state: "unreadable",
+      label: null,
+    });
   });
 });

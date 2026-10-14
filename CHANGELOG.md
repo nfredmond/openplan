@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Close comments on a live engagement page.** Staff can now close and reopen
+public comments from the campaign's Publish panel. The public page stays up as
+view only, and comment, photo and survey submissions are refused while closed.
+The close time is recorded from the server clock. Until now nothing in the app
+set it, so the view-only state could not be reached. No migration.
+
+**Publish checklist map step.** The "Choose where the map opens" step now counts
+the linked project's area, which the resident map already opens on when the
+campaign has no area of its own. It no longer tells staff a pin will land in the
+middle of the country in that case.
+
 **RTP comment record counts every comment.** The comment-response record on
 the RTP cycle page and in the exported packet read approved comments, responses
 and consultations in one request each, so a plan with more than 1,000 comments
