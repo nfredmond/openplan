@@ -44,3 +44,16 @@ survives, and every mutation restores in finally. Its service peaks at about
 
 Private proof:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/aerial-callback-retry-20261014/`.
+
+The first documentation pointer oracle expects the missing path inside JSON
+failureMessages, which omit Vitest's rendered array detail. It refuses that
+incomplete diagnostic. The corrected verbose-plus-JSON control passes baseline,
+harmless and restored checks and rejects the intended missing-link assertion.
+The first local source commit precedes this correction and was not pushed.
+Joined-main/308 checks follow before publication. No failed trial is acceptance.
+
+Joined main901 and the308 correction preserve the route bytes. The joined lint
+and 129 related/documentation cases pass again. The new CI source-control
+command also passes from the actual nested package: four positives, 18 targeted
+faults and 90 oracles. CI adds that command after QA without removing a check.
+No migration, hosted setting, version or release tag changes belong here.
