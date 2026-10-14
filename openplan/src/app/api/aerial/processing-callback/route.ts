@@ -289,6 +289,8 @@ export async function POST(request: NextRequest) {
       // does not reach is written `pending` for the retry route rather than lost.
       const custodyResult = await runAerialCustodyPass({
         supabase,
+        storageClientFactory: (fetchImpl) => createServiceRoleClient({ fetchImpl }),
+        signal: request.signal,
         job: {
           processingJobId: job.id,
           workspaceId: job.workspace_id,

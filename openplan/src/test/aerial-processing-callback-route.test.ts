@@ -1,3 +1,4 @@
+import { Blob as ServerBlob } from "node:buffer";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -23,6 +24,7 @@ const missionMaybeSingleMock = vi.fn();
 const custodyUpsertMock = vi.fn();
 const custodySelectEqMock = vi.fn();
 const storageUploadMock = vi.fn();
+const storageObjects = new Map<string, Uint8Array>();
 const fetchMock = vi.fn();
 
 const mockAudit = {
@@ -147,6 +149,7 @@ function request(body: unknown, token?: string) {
 describe("POST /api/aerial/processing-callback", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageObjects.clear();
     jobStatusSelectMock.mockReset();
     jobUpdateEqMock.mockReset();
     process.env.OPENPLAN_AERIAL_PROCESSING_CALLBACK_BEARER_TOKEN = CALLBACK_TOKEN;
@@ -154,7 +157,20 @@ describe("POST /api/aerial/processing-callback", () => {
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
-      storage: { from: () => ({ upload: storageUploadMock }) },
+      storage: { from: () => ({
+        upload: async (path: string, body: Uint8Array, options: { upsert?: boolean }) => {
+          const result = await storageUploadMock(path, body, options);
+          if (!result.error) {
+            if (storageObjects.has(path) && options?.upsert !== true) return { error: { message: "Object already exists" } };
+            storageObjects.set(path, new Uint8Array(body));
+          }
+          return result;
+        },
+        download: (path: string) => ({ asStream: async () => ({
+          data: storageObjects.has(path) ? new ServerBlob([storageObjects.get(path)!]).stream() : null,
+          error: null,
+        }) }),
+      }) },
     });
 
     // Custody now runs inside the succeeded branch. These stubs make it succeed
@@ -374,6 +390,7 @@ describe("POST /api/aerial/processing-callback", () => {
     const rows = custodyUpsertMock.mock.calls[0][0] as Record<string, unknown>[];
     expect(rows[0]).toMatchObject({
       kind: "ortho_preview",
+      state: "held",
       bounds_west: -120.51,
       bounds_south: 39.2,
       bounds_east: -120.49,
