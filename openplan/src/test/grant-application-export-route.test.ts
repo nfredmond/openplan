@@ -8,8 +8,23 @@ const authGetUserMock = vi.fn();
 const loadFundingOpportunityAccessMock = vi.fn();
 const renderReportPdfMock = vi.fn();
 const uploadMock = vi.fn();
-const storageFromMock = vi.fn(() => ({ upload: uploadMock }));
 const createSignedUrlMock = vi.fn();
+// The service role's Storage client: the only writer of this bucket.
+const storageFromMock = vi.fn(() => ({ upload: uploadMock, createSignedUrl: createSignedUrlMock }));
+// The signed-in member's own Storage client. Migration 20261017000013 removed
+// member INSERT on grant-application-exports, so it refuses the way row level
+// security does; the route must never write through it.
+const memberUploadMock = vi.fn();
+const memberStorageFromMock = vi.fn(() => ({ upload: memberUploadMock }));
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// wants a full or unreadable workspace queues it.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
 
 const OPPORTUNITY_ID = "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa";
 const WORKSPACE_ID = "33333333-3333-4333-8333-333333333333";
@@ -47,6 +62,7 @@ vi.mock("@/lib/grants/pursuit", async () => {
 });
 
 import { POST as exportApplication } from "@/app/api/funding-opportunities/[opportunityId]/application/export/route";
+import { WORKSPACE_STORAGE_UNREADABLE_MESSAGE, workspaceStorageFullMessage } from "@/lib/workspaces/storage-quota";
 import { GET as downloadExport } from "@/app/api/funding-opportunities/[opportunityId]/application/export/[exportId]/download/route";
 
 type QueryResult = { data: unknown; error: { message: string; code?: string } | null };
@@ -73,7 +89,7 @@ function installTables(handlers: Record<string, () => QueryChain>) {
       if (!handler) throw new Error(`Unexpected table: ${table}`);
       return handler();
     }),
-    storage: { from: storageFromMock },
+    storage: { from: memberStorageFromMock },
   });
 }
 
@@ -206,12 +222,14 @@ beforeEach(() => {
     error: null,
   });
   uploadMock.mockResolvedValue({ error: null });
+  memberUploadMock.mockResolvedValue({ error: { message: "new row violates row-level security policy" } });
+  checkWorkspaceStorageRoomMock.mockReset();
   createSignedUrlMock.mockResolvedValue({
     data: { signedUrl: "https://storage.example/signed?token=abc" },
     error: null,
   });
   createServiceRoleClientMock.mockReturnValue({
-    storage: { from: () => ({ createSignedUrl: createSignedUrlMock }) },
+    storage: { from: storageFromMock },
   });
 });
 
@@ -356,6 +374,71 @@ describe("POST /api/funding-opportunities/[opportunityId]/application/export", (
     const body = await response.json();
     expect(body.export).toMatchObject({ id: EXPORT_ID, pdf_engine: "builtin" });
     expect(body.engineDisclosure).toContain("built-in PDF writer");
+
+    // Written with the service role, after the limit was checked for these bytes.
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledTimes(1);
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(
+      createServiceRoleClientMock.mock.results[0]?.value,
+      WORKSPACE_ID,
+      (bytes as Buffer).byteLength
+    );
+    expect((bytes as Buffer).byteLength).toBe(3);
+    expect(memberStorageFromMock).not.toHaveBeenCalled();
+    expect(memberUploadMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses an export that would pass the workspace storage limit, naming the limit and current use", async () => {
+    const quotaBytes = 5 * 1024 ** 3;
+    const usedBytes = quotaBytes - 1;
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "full",
+      usedBytes,
+      quotaBytes,
+      message: workspaceStorageFullMessage(usedBytes, quotaBytes, 3),
+    });
+    const insertChain = makeQuery({ data: exportRowResult, error: null });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => insertChain,
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+
+    expect(response.status).toBe(413);
+    const body = await response.json();
+    expect(body).toEqual({ error: workspaceStorageFullMessage(usedBytes, quotaBytes, 3), usedBytes, quotaBytes });
+    expect(body.error).toContain("5 GiB storage limit (5 GiB used)");
+    expect(uploadMock).not.toHaveBeenCalled();
+    expect(memberUploadMock).not.toHaveBeenCalled();
+    expect(insertChain.insert).not.toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith(
+      "application_export_storage_refused",
+      expect.objectContaining({ workspaceId: WORKSPACE_ID, status: "full", usedBytes, quotaBytes })
+    );
+  });
+
+  it("refuses the export when storage use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValueOnce({
+      status: "unreadable",
+      message: WORKSPACE_STORAGE_UNREADABLE_MESSAGE,
+      detail: "permission denied for function workspace_storage_bytes",
+    });
+    const insertChain = makeQuery({ data: exportRowResult, error: null });
+    installTables({
+      funding_opportunity_application_sections: () =>
+        makeQuery({ data: [finalOperatorSection], error: null }),
+      funding_opportunity_attachments: () => makeQuery({ data: [], error: null }),
+      funding_opportunity_application_exports: () => insertChain,
+    });
+
+    const response = await exportApplication(postRequest(), postContext);
+
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({ error: WORKSPACE_STORAGE_UNREADABLE_MESSAGE });
+    expect(uploadMock).not.toHaveBeenCalled();
+    expect(insertChain.insert).not.toHaveBeenCalled();
   });
 
   it("keys the cover on the pursuit kind: a proposal packet leads with the solicitation", async () => {

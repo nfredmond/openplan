@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
 import { renderReportPdf } from "@/lib/reports/pdf";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import {
   APPLICATION_ATTACHMENT_SELECT,
   APPLICATION_FINALIZER_PENDING_SCHEMA_ERROR,
@@ -373,10 +374,30 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const exportId = crypto.randomUUID();
     const storagePath = `${opportunity.workspace_id}/${opportunity.id}/${exportId}.pdf`;
+    const pdfBytes = Buffer.from(pdf.bytes);
 
-    const { error: uploadError } = await supabase.storage
+    // Members have no direct INSERT on this bucket (migration
+    // 20261017000013): the export is stored with the service role, after the
+    // programs.write check above and the workspace storage limit here.
+    const service = createServiceRoleClient();
+    const room = await checkWorkspaceStorageRoom(service, opportunity.workspace_id, pdfBytes.byteLength);
+    if (room.status !== "room") {
+      audit.warn("application_export_storage_refused", {
+        opportunityId: opportunity.id,
+        workspaceId: opportunity.workspace_id,
+        userId: user.id,
+        incomingBytes: pdfBytes.byteLength,
+        status: room.status,
+        ...(room.status === "full"
+          ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes }
+          : { detail: room.detail }),
+      });
+      return workspaceStorageRefusal(room);
+    }
+
+    const { error: uploadError } = await service.storage
       .from(EXPORT_BUCKET)
-      .upload(storagePath, Buffer.from(pdf.bytes), {
+      .upload(storagePath, pdfBytes, {
         contentType: "application/pdf",
         upsert: false,
       });

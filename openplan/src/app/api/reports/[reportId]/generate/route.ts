@@ -35,6 +35,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { checkWorkspaceStorageRoom, workspaceStorageRefusal } from "@/lib/workspaces/storage-quota";
 import { assistantActionAuditIdentity, recordAssistantActionExecution } from "@/lib/observability/action-audit";
 import { verifyAssistantActionApproval } from "@/lib/assistant/action-approval-server";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
@@ -320,6 +321,68 @@ type ArtifactHistoryEntry = {
 
 function asRecord(value: unknown): Record<string, unknown> | null {
   return value && typeof value === "object" && !Array.isArray(value) ? (value as Record<string, unknown>) : null;
+}
+
+const REPORT_ARTIFACT_BUCKET = "report-artifacts";
+
+/**
+ * Refuse with the planner-facing storage message when the workspace has no
+ * room for `incomingBytes` more (0: refuse only a workspace already at its
+ * limit). Returns null when there is room.
+ */
+async function refuseWhenReportStorageFull(input: {
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>;
+  audit: ReturnType<typeof createApiAuditLogger>;
+  reportId: string;
+  workspaceId: string;
+  incomingBytes: number;
+}): Promise<NextResponse | null> {
+  const room = await checkWorkspaceStorageRoom(input.serviceSupabase, input.workspaceId, input.incomingBytes);
+  if (room.status === "room") return null;
+  input.audit.warn("report_artifact_storage_refused", {
+    reportId: input.reportId,
+    workspaceId: input.workspaceId,
+    incomingBytes: input.incomingBytes,
+    status: room.status,
+    ...(room.status === "full"
+      ? { usedBytes: room.usedBytes, quotaBytes: room.quotaBytes }
+      : { detail: room.detail }),
+  });
+  return workspaceStorageRefusal(room);
+}
+
+/**
+ * Store one generated report file after checking the workspace storage limit.
+ *
+ * Writes with the service role: members have no direct INSERT on
+ * report-artifacts (migration 20261017000013), so this route, which has
+ * already checked the caller's report.generate role, is the only way a
+ * generated file gets there. Returns null once stored, or the response to send.
+ */
+async function storeReportArtifactFile(input: {
+  serviceSupabase: ReturnType<typeof createServiceRoleClient>;
+  audit: ReturnType<typeof createApiAuditLogger>;
+  reportId: string;
+  workspaceId: string;
+  storagePath: string;
+  bytes: Buffer;
+  contentType: "application/pdf" | "text/html";
+}): Promise<NextResponse | null> {
+  const refusal = await refuseWhenReportStorageFull({ ...input, incomingBytes: input.bytes.byteLength });
+  if (refusal) return refusal;
+  const { error: uploadError } = await input.serviceSupabase.storage
+    .from(REPORT_ARTIFACT_BUCKET)
+    .upload(input.storagePath, input.bytes, { contentType: input.contentType, upsert: false });
+  if (!uploadError) return null;
+  const pdf = input.contentType === "application/pdf";
+  input.audit.error(pdf ? "report_pdf_upload_failed" : "report_html_upload_failed", {
+    reportId: input.reportId,
+    message: uploadError.message,
+  });
+  return NextResponse.json(
+    { error: pdf ? "Failed to upload PDF artifact" : "Failed to upload HTML artifact" },
+    { status: 500 }
+  );
 }
 
 function buildArtifactHistoryEntry(input: {
@@ -734,16 +797,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
         const pdfBuffer = Buffer.from(rendered.bytes);
         const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-        const { error: uploadError } = await supabase.storage
-          .from("report-artifacts")
-          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-        if (uploadError) {
-          audit.error("report_pdf_upload_failed", {
-            reportId: report.id,
-            message: uploadError.message,
-          });
-          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-        }
+        const notStored = await storeReportArtifactFile({
+          serviceSupabase,
+          audit,
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          storagePath,
+          bytes: pdfBuffer,
+          contentType: "application/pdf",
+        });
+        if (notStored) return notStored;
         rtpPdfStoragePath = storagePath;
       }
       const artifactMetadata = {
@@ -1196,16 +1259,16 @@ export async function POST(request: NextRequest, context: RouteContext) {
         }
         const pdfBuffer = Buffer.from(rendered.bytes);
         const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-        const { error: uploadError } = await supabase.storage
-          .from("report-artifacts")
-          .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-        if (uploadError) {
-          audit.error("report_pdf_upload_failed", {
-            reportId: report.id,
-            message: uploadError.message,
-          });
-          return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-        }
+        const notStored = await storeReportArtifactFile({
+          serviceSupabase,
+          audit,
+          reportId: report.id,
+          workspaceId: report.workspace_id,
+          storagePath,
+          bytes: pdfBuffer,
+          contentType: "application/pdf",
+        });
+        if (notStored) return notStored;
         campaignPdfStoragePath = storagePath;
       }
 
@@ -1993,6 +2056,20 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const generatedAt = new Date().toISOString();
     const artifactId = crypto.randomUUID();
     const aerialSelections = readReportAerialOrthoSelections(report.metadata_json);
+    // Freezing the selected aerial preview copies its PNG into this
+    // workspace's report-artifacts folder before the packet itself is stored.
+    // Its size is not known here, so refuse only a workspace already at its
+    // limit; the packet's own check below counts the frozen copy.
+    if (aerialSelections.length === 1) {
+      const refusal = await refuseWhenReportStorageFull({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        incomingBytes: 0,
+      });
+      if (refusal) return refusal;
+    }
     const frozenAerial = aerialSelections.length === 1
       ? await freezeSelectedReportAerialOrtho({
           supabase,
@@ -2582,28 +2659,31 @@ export async function POST(request: NextRequest, context: RouteContext) {
       }
       const pdfBuffer = Buffer.from(rendered.bytes);
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.pdf`;
-      const { error: uploadError } = await supabase.storage
-        .from("report-artifacts")
-        .upload(storagePath, pdfBuffer, { contentType: "application/pdf", upsert: false });
-      if (uploadError) {
-        audit.error("report_pdf_upload_failed", {
-          reportId: report.id,
-          message: uploadError.message,
-        });
-        return NextResponse.json({ error: "Failed to upload PDF artifact" }, { status: 500 });
-      }
+      const notStored = await storeReportArtifactFile({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        storagePath,
+        bytes: pdfBuffer,
+        contentType: "application/pdf",
+      });
+      if (notStored) return notStored;
       artifactStoragePath = storagePath;
     } else {
       const storagePath = `${report.workspace_id}/${report.id}/${artifactId}.html`;
-      const { error: uploadError } = await supabase.storage
-        .from("report-artifacts")
-        // Storage bucket allowlists compare the media type literally. Charset
-        // belongs on the download response, not in the stored object's type.
-        .upload(storagePath, Buffer.from(exportHtml, "utf8"), { contentType: "text/html", upsert: false });
-      if (uploadError) {
-        audit.error("report_html_upload_failed", { reportId: report.id, message: uploadError.message });
-        return NextResponse.json({ error: "Failed to upload HTML artifact" }, { status: 500 });
-      }
+      // Storage bucket allowlists compare the media type literally. Charset
+      // belongs on the download response, not in the stored object's type.
+      const notStored = await storeReportArtifactFile({
+        serviceSupabase,
+        audit,
+        reportId: report.id,
+        workspaceId: report.workspace_id,
+        storagePath,
+        bytes: Buffer.from(exportHtml, "utf8"),
+        contentType: "text/html",
+      });
+      if (notStored) return notStored;
       artifactStoragePath = storagePath;
     }
     const artifactMetadata = {
