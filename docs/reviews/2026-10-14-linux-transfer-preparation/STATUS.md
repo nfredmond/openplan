@@ -60,14 +60,14 @@ open. Dependencies and compatibility on the receiving computer require checks.
 Desktop and 390px T3 journeys, practitioner use and scientific validity remain
 separate. M3, M5b.2 and full v1 acceptance do not change.
 
-## Revision2 retains the transport license
+## Revision 2 retains the transport license
 
-The revised archive includes the retained Restic0.19.1 BSD2Clause license,
+The revised archive includes the retained Restic 0.19.1 BSD 2-Clause license,
 source inventory, signed checksums and public release key. Its license bytes
-match the original captured SHA256. Complete bundled dependency review remains
+match the original captured SHA-256. Complete bundled dependency review remains
 unassessed. The encrypted payload and separately held password do not change.
 
-`openplan-linux-transfer-20261014-r2.tar` is774830080 bytes, SHA256
+`openplan-linux-transfer-20261014-r2.tar` is 774,830,080 bytes, SHA-256
 `0f958fd3d22d4cb3182d523036ff7568f91e2d3e42524eefc2de86615e49225e`.
 The first archive remains intact with its original hash. A first regeneration
 trial incorrectly includes the checksum file itself and fails. The correction
@@ -75,3 +75,14 @@ excludes that exact root file. Baseline, actual harmless timestamp and restored
 checks pass; reintroducing the self-entry fails only that named checksum.
 The corrected finalizer stops successfully, with its retained resource record.
 The separate-host and installation limits above remain unchanged.
+
+## Joined documentation check
+
+Twenty documentation cases pass on the joined branch. A harmless index comment
+survives. Each of the three deliberately broken new report links fails the
+relative-link assertion; restored documentation passes. Eight native source
+bindings and the selected migration bytes remain unchanged. Earlier wrapper
+trials select the wrong release-test path and correctly refuse their expected
+case count. Those failures remain retained. The final owned service stops
+successfully with a 311,758,848-byte observed peak under 1 GiB. These mechanical
+checks do not establish installation or acceptance.
