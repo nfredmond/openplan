@@ -29,7 +29,16 @@ set it, so the view-only state could not be reached. No migration.
 **Publish checklist map step.** The "Choose where the map opens" step now counts
 the linked project's area, which the resident map already opens on when the
 campaign has no area of its own. It no longer tells staff a pin will land in the
-middle of the country in that case.
+middle of the country in that case. It also counts the workspace home area, the
+resident map's next fallback, and names it.
+
+**Reopening comments after the participation end date.** The public page, the
+submit routes and the database refuse comments once the participation end date
+has passed, but the console still said "accepting submissions" after a reopen.
+The console now says "Comments are closed because the participation period ended
+on <date>", in the workspace's time zone, and links to the end date. A reopen
+request after that date is refused with the same sentence; the end date is never
+moved for you. No migration.
 
 **RTP comment record counts every comment.** The comment-response record on
 the RTP cycle page and in the exported packet read approved comments, responses

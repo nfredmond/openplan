@@ -51,6 +51,7 @@ export function buildCampaignTabs(flags: CampaignTabReadFlags): PageTabDefinitio
         "campaign-control-project",
         "campaign-control-rtp-cycle",
         "campaign-control-rtp-chapter",
+        "campaign-control-participation-ends",
       ],
       // There is deliberately no `survey-` prefix here. The only `survey-*`
       // ids in the repo belong to the PUBLIC form (`public-survey-form.tsx`,
