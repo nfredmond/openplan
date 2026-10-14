@@ -27,3 +27,7 @@ Progress/configuration and default integration, complete application callback/
 Storage recovery, capacity, planner journeys, scientific quality and placement,
 practitioner and independent-host acceptance remain open. No development tag or
 V1 acceptance follows from this engineering candidate.
+
+## Artifact URL review correction
+
+The [root URL correction](../2026-10-14-artifact-root-url/STATUS.md) joins this candidate after the original fingerprint checkpoint. It changes the artifact access validator and its fixture. Four 48-case source cohorts with 51 faults and four 34-case HTTP cohorts with 35 faults pass on each interpreter. The other inherited worker evidence remains historical at its recorded fingerprints. All 19 joined nested documentation/direction/release checks pass. Exact-head CI remains required; migrations 11 and 12 are still unapplied by this lane.
