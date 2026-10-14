@@ -18,6 +18,8 @@ import {
   projectPlaceFromPlaceBoundary,
 } from "@/lib/projects/project-place";
 import { loadPortalPlaceCandidates, resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
+import { participationDateClosure } from "@/lib/engagement/public-portal";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import {
   geofenceUpdateRefusal,
   placeCanGeofence,
@@ -723,6 +725,29 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
             { status: 404 }
           );
         }
+      }
+    }
+
+    /*
+      A reopen after the participation end date changes nothing a resident
+      sees: the public page, the submit routes and the database triggers all
+      refuse comments from that instant on. Clearing the close time anyway
+      would tell staff comments are open when they are not, so the reopen is
+      refused, naming the date. The end date is never moved for the caller; a
+      PATCH that also sets a later end date reopens.
+    */
+    if (parsed.data.submissionsClosed === false) {
+      const endsAt =
+        parsed.data.participationEndsAt !== undefined
+          ? parsed.data.participationEndsAt
+          : (access.campaign.participation_ends_at ?? null);
+      if (participationDateClosure({ participation_ends_at: endsAt })?.reason === "ended") {
+        const { timeZone } = await loadWorkspaceCalendar(supabase, access.campaign.workspace_id);
+        const sentence =
+          participationDateClosure({ participation_ends_at: endsAt }, { timeZone })?.sentence ??
+          "Comments are closed because the participation period has ended.";
+        const refusal = `${sentence} Change the end date to take comments again.`;
+        return NextResponse.json({ error: refusal, message: refusal }, { status: 409 });
       }
     }
 

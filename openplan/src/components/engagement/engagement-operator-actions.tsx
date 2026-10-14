@@ -10,6 +10,7 @@ type OperatorActionsProps = {
     ComponentProps<typeof EngagementShareControls>["campaign"];
   projects: ComponentProps<typeof EngagementCampaignControls>["projects"];
   categories: ComponentProps<typeof EngagementItemComposer>["categories"];
+  timeZone?: ComponentProps<typeof EngagementShareControls>["timeZone"];
 };
 
 /**
@@ -28,6 +29,7 @@ export function EngagementOperatorActions({
   campaign,
   projects,
   categories,
+  timeZone,
 }: OperatorActionsProps) {
   return (
     <div className="space-y-6">
@@ -40,7 +42,7 @@ export function EngagementOperatorActions({
 
       <div className="grid gap-6 xl:grid-cols-2">
         <EngagementCampaignControls campaign={campaign} projects={projects} />
-        <EngagementShareControls campaign={campaign} />
+        <EngagementShareControls campaign={campaign} timeZone={timeZone} />
       </div>
 
       <div className="grid gap-6 xl:grid-cols-1">

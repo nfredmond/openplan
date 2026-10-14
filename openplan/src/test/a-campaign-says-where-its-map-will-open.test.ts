@@ -3,7 +3,11 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 
 import { getPublicPortalReadiness } from "@/lib/engagement/public-portal";
-import { publishChecklistMapArea, type PortalPlaceCandidate } from "@/lib/engagement/public-portal-data";
+import {
+  publishChecklistMapArea,
+  resolvePortalMapFraming,
+  type PortalPlaceCandidate,
+} from "@/lib/engagement/public-portal-data";
 
 /**
  * PUBLISHING MUST SAY WHERE THE RESIDENT MAP WILL OPEN.
@@ -102,10 +106,11 @@ describe("a campaign says where its map will open", () => {
  * THE STEP COUNTS THE AREA THE RESIDENT MAP ACTUALLY OPENS ON.
  *
  * The resident map falls back from the campaign's own area to the linked
- * project's. The checklist used to read only the campaign's, so a campaign on a
- * project with an area was told "no area is set" and "a pin lands in the middle
- * of the country", which was false. `publishChecklistMapArea` asks the same
- * resolver the resident map runs.
+ * project's, then to the workspace home. The checklist used to read only the
+ * campaign's, then (October 14, 2026) only the campaign's and the project's,
+ * so a workspace with a home area was told "a pin lands in the middle of the
+ * country", which was false. `publishChecklistMapArea` asks the same resolver
+ * the resident map runs, with the same three candidates.
  */
 describe("the publish checklist reads the map's own fallback", () => {
   const BBOX = { minLon: -121.5, minLat: 38.7, maxLon: -120.0, maxLat: 39.3 };
@@ -119,7 +124,7 @@ describe("the publish checklist reads the map's own fallback", () => {
 
   it("counts the linked project's area when the campaign has none", () => {
     for (const label of ["Placer County, California", "Columbus city, Ohio"]) {
-      expect(publishChecklistMapArea({ campaign: unset, project: set(label) })).toEqual({
+      expect(publishChecklistMapArea({ campaign: unset, project: set(label), workspaceHome: unset })).toEqual({
         state: "set",
         label,
         source: "project",
@@ -129,31 +134,73 @@ describe("the publish checklist reads the map's own fallback", () => {
 
   it("prefers the campaign's own area, as the resident map does", () => {
     expect(
-      publishChecklistMapArea({ campaign: set("Downtown corridor"), project: set("Placer County, California") })
+      publishChecklistMapArea({
+        campaign: set("Downtown corridor"),
+        project: set("Placer County, California"),
+        workspaceHome: set("Sacramento Area Council of Governments region"),
+      })
     ).toEqual({ state: "set", label: "Downtown corridor", source: "campaign" });
   });
 
   it("does not count a project area that cannot frame the map", () => {
-    expect(publishChecklistMapArea({ campaign: unset, project: set("Placer County, California", null) })).toEqual({
+    expect(publishChecklistMapArea({ campaign: unset, project: set("Placer County, California", null), workspaceHome: unset })).toEqual({
       state: "unset",
       label: null,
     });
   });
 
-  it("stays unset when neither has an area", () => {
-    expect(publishChecklistMapArea({ campaign: unset, project: unset })).toEqual({ state: "unset", label: null });
+  it("counts the workspace home, which the resident map falls back to next", () => {
+    // Two places, so a step that hardcoded one label would fail.
+    for (const label of ["Nevada County, California", "Franklin County, Ohio"]) {
+      expect(publishChecklistMapArea({ campaign: unset, project: unset, workspaceHome: set(label) })).toEqual({
+        state: "set",
+        label,
+        source: "workspace",
+      });
+    }
+    // A project area outranks the workspace home, as it does on the resident map.
+    expect(
+      publishChecklistMapArea({
+        campaign: unset,
+        project: set("Placer County, California"),
+        workspaceHome: set("Nevada County, California"),
+      })
+    ).toEqual({ state: "set", label: "Placer County, California", source: "project" });
+  });
+
+  it("names the area the resident map opens on, from the same resolver", () => {
+    // The checklist and the resident map must name one area for every mix of
+    // candidates, including a project area that cannot frame the map.
+    const shapes: PortalPlaceCandidate[] = [unset, set("Placer County, California"), set("Placer County, California", null)];
+    for (const project of shapes) {
+      for (const workspaceHome of [unset, set("Nevada County, California"), set("Nevada County, California", null)]) {
+        const step = publishChecklistMapArea({ campaign: unset, project, workspaceHome });
+        const map = resolvePortalMapFraming({ campaignPlace: unset, projectPlace: project, workspaceHome });
+        expect(step.label, JSON.stringify({ project, workspaceHome })).toBe(map.originLabel);
+        expect(step.state === "set", JSON.stringify({ project, workspaceHome })).toBe(map.view !== null);
+      }
+    }
+  });
+
+  it("stays unset when no area is set anywhere", () => {
+    expect(publishChecklistMapArea({ campaign: unset, project: unset, workspaceHome: unset })).toEqual({ state: "unset", label: null });
   });
 
   it("never turns a failed read into a missing area or a guessed one", () => {
     // The campaign's area outranks the project's, so an unread campaign area
     // means nothing is known about where the map opens.
-    expect(publishChecklistMapArea({ campaign: unreadable, project: set("Placer County, California") })).toEqual({
+    expect(publishChecklistMapArea({ campaign: unreadable, project: set("Placer County, California"), workspaceHome: unset })).toEqual({
       state: "unreadable",
       label: null,
     });
-    expect(publishChecklistMapArea({ campaign: unset, project: unreadable })).toEqual({
+    expect(publishChecklistMapArea({ campaign: unset, project: unreadable, workspaceHome: unset })).toEqual({
       state: "unreadable",
       label: null,
     });
+    // A failed project read under a workspace-home framing: the project's area
+    // would have outranked the home, so where the map opens is not known.
+    expect(
+      publishChecklistMapArea({ campaign: unset, project: unreadable, workspaceHome: set("Nevada County, California") })
+    ).toEqual({ state: "unreadable", label: null });
   });
 });

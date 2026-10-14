@@ -22,11 +22,14 @@ const PORTAL_VISIBILITY_TONES: Record<ReturnType<typeof getPublicPortalState>["v
 export function EngagementPortalStatusChip({
   campaign,
   className,
+  timeZone,
 }: {
   campaign: PublicPortalCampaignLike;
   className?: string;
+  /** The workspace calendar's zone, for a date in the tooltip. Absent means UTC. */
+  timeZone?: string;
 }) {
-  const portal = getPublicPortalState(campaign);
+  const portal = getPublicPortalState(campaign, { timeZone });
 
   return (
     <StatusBadge tone={PORTAL_VISIBILITY_TONES[portal.visibility]} className={className} title={portal.detail}>

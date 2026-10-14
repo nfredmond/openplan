@@ -66,6 +66,9 @@ let projectPlaceResult: { data: Record<string, unknown> | null; error: { message
   data: null,
   error: null,
 };
+/** The workspace home geography row and the workspace calendar row. Unset by default. */
+let workspaceHomeRow: Record<string, unknown> | null = null;
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } | null = null;
 const projectSelectMock = vi.fn((columns?: string) => {
   if (columns?.includes("place_source")) {
     return { eq: () => ({ maybeSingle: async () => projectPlaceResult }) };
@@ -335,10 +338,22 @@ const fromMock = vi.fn((table: string) => {
       error: translationReadError,
     }));
   }
-  // The workspace home geography — the portal place loader's third framing
-  // candidate. Unset: these tests exercise the campaign candidate only.
+  // The workspace row, read twice: the home geography (the portal place
+  // loader's third framing candidate) and the calendar (the zone staff
+  // sentences name dates in). Both unset unless a test sets them.
   if (table === "workspaces") {
-    return { select: () => ({ eq: () => ({ maybeSingle: async () => ({ data: null, error: null }) }) }) };
+    return {
+      select: (columns?: string) => ({
+        eq: () => ({
+          maybeSingle: async () =>
+            columns === "time_zone, home_country_code"
+              ? { data: workspaceCalendarRow, error: null }
+              : columns?.includes("home_geography_source")
+                ? { data: workspaceHomeRow, error: null }
+                : { data: null, error: null },
+        }),
+      }),
+    };
   }
   // Operator notifications (loadOperatorNotifications) — select → eq → order → limit.
   if (table === "engagement_notifications") {
@@ -418,11 +433,16 @@ vi.mock("@/components/engagement/engagement-item-registry", () => ({
 }));
 
 vi.mock("@/components/engagement/engagement-share-controls", () => ({
-  EngagementShareControls: () => <div data-testid="engagement-share-controls" />,
+  // The zone is exposed so the page's calendar wiring can be checked.
+  EngagementShareControls: ({ timeZone }: { timeZone?: string }) => (
+    <div data-testid="engagement-share-controls" data-time-zone={timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-public-link-compact", () => ({
-  EngagementPublicLinkCompact: () => <div data-testid="engagement-public-link-compact" />,
+  EngagementPublicLinkCompact: ({ timeZone }: { timeZone?: string }) => (
+    <div data-testid="engagement-public-link-compact" data-time-zone={timeZone ?? ""} />
+  ),
 }));
 
 vi.mock("@/components/engagement/engagement-bulk-moderation", () => ({
@@ -564,6 +584,9 @@ describe("EngagementCampaignDetailPage", () => {
     itemsPaging.reset();
     categoriesPaging.reset();
     vi.clearAllMocks();
+    // clearAllMocks keeps queued Once values; a test that returns before
+    // reading one would hand it to the next test under a shuffled order.
+    campaignMaybeSingleMock.mockReset();
     coverageRows = [{ project_id: "project-1", projects: { id: "project-1", name: "Downtown Mobility Plan" } }];
     coverageError = null;
 
@@ -576,6 +599,8 @@ describe("EngagementCampaignDetailPage", () => {
     sourceLocaleResult = { data: null, error: null };
     campaignPlaceResult = { data: null, error: null };
     projectPlaceResult = { data: null, error: null };
+    workspaceHomeRow = null;
+    workspaceCalendarRow = null;
     surveyQuestionsReadError = null;
     closeLoopReadError = null;
     membershipMaybeSingleMock.mockResolvedValue({
@@ -1705,6 +1730,68 @@ describe("EngagementCampaignDetailPage", () => {
       );
       expect(within(step).queryByRole("button", { name: /Use the project's area/i })).not.toBeInTheDocument();
       expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
+    });
+
+    it("counts the workspace home area, which the resident map falls back to after the project's", async () => {
+      // No campaign area, no project area: the resident map opens on the
+      // workspace home, so the step must not say a pin lands in the middle of
+      // the country.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      workspaceHomeRow = {
+        home_geography_source: "tigerweb",
+        home_geography_kind: "county",
+        home_geography_ref: "06057",
+        home_geography_label: "Nevada County, California",
+        home_country_code: "US",
+        home_subdivision_code: "US-CA",
+        home_min_lon: -121.28,
+        home_min_lat: 39.0,
+        home_max_lon: -120.0,
+        home_max_lat: 39.53,
+        home_geography_set_at: "2026-09-01T00:00:00.000Z",
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the workspace's home area, Nevada County, California."
+      );
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
+    });
+
+    it("names a past participation end date in the workspace's own calendar", async () => {
+      for (const [timeZone, named] of [
+        ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+        ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+      ] as const) {
+        campaignMaybeSingleMock.mockResolvedValueOnce({
+          data: campaignRow({
+            status: "active",
+            share_token: "share-token",
+            allow_public_submissions: true,
+            submissions_closed_at: null,
+            participation_ends_at: "2026-10-11T02:30:00+00:00",
+          }),
+          error: null,
+        });
+        workspaceCalendarRow = { time_zone: timeZone, home_country_code: "US" };
+
+        await renderPage({ tab: "setup" });
+
+        const flow = screen.getByTestId("campaign-publish-flow");
+        expect(flow).toHaveTextContent(`Comments are closed because the participation period ended on ${named}.`);
+        expect(flow).not.toHaveTextContent(/accepting submissions/i);
+        // The header link and the share controls name dates in the same zone.
+        expect(screen.getByTestId("engagement-public-link-compact")).toHaveAttribute("data-time-zone", timeZone);
+        expect(screen.getByTestId("engagement-share-controls")).toHaveAttribute("data-time-zone", timeZone);
+        cleanup();
+      }
     });
 
     it("puts the comments switch inside the checklist", async () => {
