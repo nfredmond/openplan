@@ -40,7 +40,7 @@ After the concurrent main merges, a fresh source dump retains the same populated
 and 06 install through the CLI. Native exact output recovery, current actor
 refusal and fresh logical-database restoration repeat under both interpreters.
 Each cohort passes four positives, five targeted failures and eight oracles.
-The [frozen capture](drivers/capture_main41c.py),
+The [executed historical capture](drivers/historical/capture_main41c.py),
 [native producer](drivers/native_upgrade_restore_main41c.py) and
 [control runner](drivers/verify_native_upgrade_controls_main41c.py) preserve
 executed source. They retain original private paths and are not portable
@@ -54,3 +54,28 @@ establish whole-schema equivalence, global-role/key reconstruction, hosted data,
 Auth/Storage recovery, installation alignment, physical-host independence or
 scientific/processing quality. The prepared transfer archive is unchanged and
 continues to describe its earlier pinned contents.
+
+## Capture provenance correction
+
+PR303 review finds that the archived capture compares two committed Git trees
+while hashing worktree files. A retained real Git fixture reproduces the gap:
+a dirty migration passes that comparison while its bytes differ from the
+selected commit. No database capture runs in that reproducer.
+
+The [corrected source guard](drivers/migration_source.py) checks index and
+worktree differences, rejects untracked or nested migration files, and reads
+selected bytes directly from Git objects. A second check protects the capture
+window. Both interpreters pass nine cases in four positive cohorts, nine
+intended faults and 72 oracles. Source restores in finally. A first control
+expects the index diagnostic for an overly broad scope; the earlier worktree
+refusal is the actual diagnostic. That failed trial remains retained.
+
+An independent audit compares every recorded migration hash in the original
+408 and 409 captures with its selected commit object. All 837 match. This supports
+those retained records without changing the original executed driver. The corrected capture retains a fresh 5,519,770-byte populated fixture dump,
+checks all 409 selected Git migration blobs before and after capture, and stops
+its owned database. Its source bindings match the executed driver and helper.
+The [capture summary](corrected-capture-summary.json) records this new boundary.
+It does not replace or rerun the earlier upgrade/restore cohorts. Fresh GitHub
+gates remain pending. Whole-schema and
+installation acceptance limits above remain unchanged.
