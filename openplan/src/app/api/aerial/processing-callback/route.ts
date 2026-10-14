@@ -196,14 +196,22 @@ export async function POST(request: NextRequest) {
         .eq("callback_id", job.last_callback_id)
         .maybeSingle();
       const parsedApplied = processingCallbackSchema.safeParse(applied?.payload);
-      if (appliedError || !applied || applied.processing_job_id !== job.id
+      // Older dispatch handlers saved accepted identity/time only on the job.
+      // That specific baseline remains usable; an unreadable ledger or a
+      // missing running/terminal event must still refuse application.
+      const legacyAccepted = !appliedError && !applied && job.status === "accepted"
+        && Boolean(job.last_callback_id) && Boolean(job.job_reference)
+        && job.job_reference === callback.jobReference;
+      if (!legacyAccepted && (appliedError || !applied || applied.processing_job_id !== job.id
         || applied.workspace_id !== job.workspace_id || !parsedApplied.success
-        || parsedApplied.data.callbackId !== job.last_callback_id) {
+        || parsedApplied.data.callbackId !== job.last_callback_id)) {
         return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
       }
-      // The retained payload keeps precision that a database timestamp or a
-      // JavaScript Date may drop. The returned column remains a write fence.
-      const order = compareCallbackTimes(parsedApplied.data.occurredAt, callback.occurredAt);
+      // New accepted responses retain original precision in the ledger. The
+      // legacy baseline uses only the timestamp actually saved on that job.
+      const appliedTime = legacyAccepted ? job.last_callback_at
+        : parsedApplied.success ? parsedApplied.data.occurredAt : null;
+      const order = appliedTime ? compareCallbackTimes(appliedTime, callback.occurredAt) : null;
       if (order === null) {
         return NextResponse.json({ error: "Unreadable callback order" }, { status: 503 });
       }
@@ -342,10 +350,17 @@ export async function POST(request: NextRequest) {
         custodyUnreadable: custodyResult.unreadableReason,
       });
 
-      // Idempotent evidence-package creation keyed on processing_job_id.
+      // Preserve legacy package IDs; new callback-created packages use the
+      // job UUID as their primary key so overlapping revised handlers cannot
+      // create two packages after both observe no existing row.
+      const packageColumns = "id, processing_job_id, workspace_id, mission_id, project_id, package_type";
+      const matchesPackageScope = (value: Record<string, unknown> | null) => Boolean(value
+        && value.processing_job_id === job.id && value.workspace_id === job.workspace_id
+        && value.mission_id === job.mission_id && value.project_id === job.project_id
+        && value.package_type === "measurable_output");
       const { data: existingPackage, error: existingPackageError } = await supabase
         .from("aerial_evidence_packages")
-        .select("id")
+        .select(packageColumns)
         .eq("processing_job_id", job.id)
         .maybeSingle();
 
@@ -357,6 +372,10 @@ export async function POST(request: NextRequest) {
           code: existingPackageError.code ?? null,
         });
         return NextResponse.json({ error: "Failed to check evidence package" }, { status: 500 });
+      }
+
+      if (existingPackage && !matchesPackageScope(existingPackage)) {
+        return NextResponse.json({ error: "evidence_package_scope_mismatch" }, { status: 409 });
       }
 
       if (!existingPackage) {
@@ -381,6 +400,7 @@ export async function POST(request: NextRequest) {
         const { data: pkg, error: insertError } = await supabase
           .from("aerial_evidence_packages")
           .insert({
+            id: job.id,
             mission_id: job.mission_id,
             workspace_id: job.workspace_id,
             project_id: job.project_id,
@@ -399,7 +419,20 @@ export async function POST(request: NextRequest) {
           .select("id")
           .single();
 
-        if (insertError || !pkg) {
+        if (insertError?.code === POSTGRES_UNIQUE_VIOLATION) {
+          const { data: retainedPackage, error: retainedPackageError } = await supabase
+            .from("aerial_evidence_packages")
+            .select(packageColumns)
+            .eq("id", job.id)
+            .maybeSingle();
+          if (retainedPackageError) {
+            return NextResponse.json({ error: "Failed to read retained evidence package" }, { status: 500 });
+          }
+          if (!retainedPackage || retainedPackage.id !== job.id || !matchesPackageScope(retainedPackage)) {
+            return NextResponse.json({ error: "evidence_package_scope_mismatch" }, { status: 409 });
+          }
+          // The conflicting original remains unchanged, including human edits.
+        } else if (insertError || !pkg) {
           audit.error("evidence_package_insert_failed", {
             requestId: callback.requestId,
             processingJobId: job.id,
@@ -409,8 +442,8 @@ export async function POST(request: NextRequest) {
           return NextResponse.json({ error: "Failed to create evidence package" }, { status: 500 });
         }
 
-        audit.info("evidence_package_created", {
-          packageId: pkg.id,
+        audit.info(insertError?.code === POSTGRES_UNIQUE_VIOLATION ? "evidence_package_reused" : "evidence_package_created", {
+          packageId: pkg?.id ?? job.id,
           missionId: job.mission_id,
           workspaceId: job.workspace_id,
           processingJobId: job.id,

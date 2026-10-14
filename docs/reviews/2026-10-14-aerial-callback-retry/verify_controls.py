@@ -12,10 +12,11 @@ def run(repo, out, before=None):
     out.mkdir(mode=0o700)
     route = repo/'openplan/src/app/api/aerial/processing-callback/route.ts'
     order = repo/'openplan/src/lib/aerial/callback-order.ts'
-    originals = {route: route.read_bytes(), order: order.read_bytes()}
+    dispatch = repo/'openplan/src/app/api/aerial/missions/[missionId]/process/route.ts'
+    originals = {route: route.read_bytes(), order: order.read_bytes(), dispatch: dispatch.read_bytes()}
     original = originals[route]
     source = original.decode()
-    tests = ['src/test/aerial-processing-callback-route.test.ts', 'src/test/aerial-callback-order.test.ts', 'src/test/aerial-artifact-custody-reaches-a-planner.test.tsx']
+    tests = ['src/test/aerial-processing-callback-route.test.ts', 'src/test/aerial-callback-order.test.ts', 'src/test/aerial-artifact-custody-reaches-a-planner.test.tsx', 'src/test/aerial-process-dispatch-route.test.ts']
     cases, rows, oracles = [], [], []
     def fault(name, left, right, test, message, target=route):
         text = originals[target].decode()
@@ -51,7 +52,7 @@ def run(repo, out, before=None):
         'retries a changed or missing job without applying downstream artifacts', 'Changed or missing job cannot apply artifacts')
     fault('replay-projection-omits-original', '.select("processing_job_id, workspace_id, payload")\n          .eq("callback_id", callback.callbackId)', '.select("processing_job_id, workspace_id")\n          .eq("callback_id", callback.callbackId)',
         'resumes an exact redelivery without a second evidence insert', 'Replay loads both scope and payload')
-    fault('original-job-id-not-bound', '.eq("id", job.id)', '.eq("id", "other-job")',
+    fault('original-job-id-not-bound', '.eq("id", job.id)\n      .eq("status", job.status)', '.eq("id", "other-job")\n      .eq("status", job.status)',
         'requires the observed state and worker reference in the status write', 'Write guards original job identity')
     fault('original-callback-key-not-bound', '.eq("callback_id", callback.callbackId)', '.eq("callback_id", callback.requestId)',
         'resumes an exact redelivery without a second evidence insert', 'Replay loads exact original callback key')
@@ -72,7 +73,7 @@ def run(repo, out, before=None):
         'guards empty callback identity and time on the first application', 'Write guards original empty callback identity')
     fault('empty-event-time-omitted', 'identifiedWrite.is("last_callback_at", null)', 'identifiedWrite',
         'guards empty callback identity and time on the first application', 'Write guards original empty callback time')
-    fault('applied-order-read-unchecked', 'if (appliedError || !applied || applied.processing_job_id !== job.id', 'if (false || false || false',
+    fault('applied-order-read-unchecked', 'if (!legacyAccepted && (appliedError || !applied || applied.processing_job_id !== job.id', 'if (!legacyAccepted && (false || false || false',
         'refuses unreadable callback ordering without applying it', 'Unreadable callback order cannot apply effects')
     fault('applied-job-scope-ignored', 'applied.processing_job_id !== job.id', 'false',
         'refuses unreadable callback ordering without applying it', 'Unreadable callback order cannot apply effects')
@@ -97,6 +98,44 @@ def run(repo, out, before=None):
         'writes a VERIFICATION-PENDING package, naming the reason, when the bytes could not be taken', 'Custody follows a guarded status write')
     fault('custody-returned-id-projection-unchecked', ').select("id");', ').select("id, status");',
         'writes a VERIFICATION-PENDING package, naming the reason, when the bytes could not be taken', 'Custody follows a checked returned job identity')
+    fault('legacy-accepted-baseline-blocked', 'const legacyAccepted = !appliedError && !applied', 'const legacyAccepted = false && !appliedError && !applied',
+        'advances a legacy accepted pointer whose synchronous event was never posted', 'First posted callback advances the legacy synchronous baseline')
+    fault('legacy-baseline-status-not-bound', 'job.status === "accepted"', 'true',
+        'refuses unreadable callback ordering without applying it', 'Unreadable callback order cannot apply effects')
+    fault('package-deterministic-key-omitted', '            id: job.id,', '',
+        'keeps one deterministic evidence package when exact retries overlap', 'Concurrent packages share the deterministic job primary key')
+    fault('package-conflict-refused', 'if (insertError?.code === POSTGRES_UNIQUE_VIOLATION)', 'if (false)',
+        'keeps one deterministic evidence package when exact retries overlap', 'Both exact retries complete after a primary-key conflict')
+    fault('package-scope-projection-omitted', 'const packageColumns = "id, processing_job_id, workspace_id, mission_id, project_id, package_type";', 'const packageColumns = "id";',
+        'keeps one deterministic evidence package when exact retries overlap', 'Package replay projects all original scope fields')
+    fault('package-conflicting-key-not-bound', '.eq("id", job.id)\n            .maybeSingle()', '.eq("processing_job_id", job.id)\n            .maybeSingle()',
+        'keeps one deterministic evidence package when exact retries overlap', 'Conflicting creation reads the deterministic original ID')
+    fault('package-reuse-logged-as-creation', 'insertError?.code === POSTGRES_UNIQUE_VIOLATION ? "evidence_package_reused" : "evidence_package_created"', '"evidence_package_created"',
+        'keeps one deterministic evidence package when exact retries overlap', 'Conflicting creation records reuse of the original package')
+    fault('package-retained-id-not-checked', 'retainedPackage.id !== job.id', 'false',
+        'refuses a conflicting package outside the exact original scope', 'Conflicting package retains exact binding: id')
+    for field in ['processing_job_id', 'workspace_id', 'mission_id', 'project_id', 'package_type']:
+        expected = {'processing_job_id':'job.id','workspace_id':'job.workspace_id','mission_id':'job.mission_id','project_id':'job.project_id','package_type':'"measurable_output"'}[field]
+        fault('package-scope-' + field + '-ignored', 'value.' + field + ' === ' + expected, 'true',
+            'refuses a conflicting package outside the exact original scope', 'Conflicting package retains exact binding: ' + field)
+    fault('package-legacy-scope-ignored', 'if (existingPackage && !matchesPackageScope(existingPackage))', 'if (false)',
+        'refuses a legacy linked package outside the processing scope', 'Legacy package must belong to the original processing scope')
+    fault('accepted-ledger-not-recorded', 'payload: accepted,', 'payload: {},',
+        'retains the original accepted payload before installing its ordering pointer', 'Accepted response reaches the private ledger', dispatch)
+    fault('accepted-ledger-failure-ignored', 'if (!acceptedRecorded)', 'if (false)',
+        'refuses an unavailable accepted ledger without installing an unreadable pointer', 'Missing accepted custody remains visible', dispatch)
+    fault('accepted-conflict-scope-ignored', 'retained?.processing_job_id === jobRow.id', 'true',
+        'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer', dispatch)
+    fault('accepted-workspace-scope-ignored', 'retained.workspace_id === mission.workspace_id', 'true',
+        'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer: workspace_id', dispatch)
+    fault('accepted-original-payload-ignored', 'isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(accepted)))', 'true',
+        'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer: payload', dispatch)
+    fault('accepted-projection-not-bound', '.select("processing_job_id, workspace_id, payload")', '.select("payload")',
+        'accepts only an exact scoped retained accepted response after a unique conflict', 'Read every binding needed for accepted replay', dispatch)
+    fault('accepted-request-not-bound', '|| parsedAccepted.data.requestId !== requestId', '',
+        'refuses an accepted response for a different request', 'Accepted response belongs to the original request', dispatch)
+    fault('accepted-state-not-guarded', '.eq("status", "requested")', '',
+        'retains the original accepted payload before installing its ordering pointer', 'Accepted response cannot overwrite running callback state', dispatch)
     def execute(label, test=None):
         destination = out/(label+'.json')
         command = ['node', '--max-old-space-size=512', 'node_modules/vitest/vitest.mjs', 'run', *tests,
@@ -111,8 +150,8 @@ def run(repo, out, before=None):
         return code == 1 and len(failed) == 1 and failed[0]['title']==test and diagnostic in '\n'.join(failed[0]['failureMessages'])
     def positive(label):
         code, result = execute(label)
-        assert code == 0 and result['numPassedTests']==36 and result['numFailedTests']==0, label+' callback cohort failed'
-        rows.append({'case':label,'outcome':'survived','tests':36})
+        assert code == 0 and result['numPassedTests']==69 and result['numFailedTests']==0, label+' callback cohort failed'
+        rows.append({'case':label,'outcome':'survived','tests':69})
     try:
         positive('baseline')
         route.write_bytes(original+b'\n// Harmless callback recovery comment.\n')

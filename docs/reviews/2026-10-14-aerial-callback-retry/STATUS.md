@@ -108,3 +108,47 @@ Changed-file lint and145 related/documentation cases in14 files pass on the
 joined custody fixture. The CI source command runs all36 affected route, time
 and custody/page cases in its positive cohorts. Fresh full/shuffled CI follows
 the pushed fixture correction; the captured failed run is retained.
+
+## October 14 accepted-response and overlapping-retry correction
+
+GitHub review identifies two defects in the combined candidate. The dispatch
+handler records the synchronous accepted callback pointer without retaining its
+payload in the private callback ledger. The ordering reader then refuses the
+first posted running event. Separately, two exact terminal retries can both read
+no evidence package and insert separate records.
+
+The correction validates the accepted response's original request ID, retains
+its normalized payload before installing the ordering pointer, and accepts a
+unique conflict only after reading the exact payload and original job/workspace.
+The accepted write guards the requested state and empty worker reference and
+callback pointer, so a faster callback can advance the job without being
+replaced. A missing accepted ledger remains a visible503, with no invented
+ordering pointer. The worker may already own that request.
+
+Legacy accepted jobs can use the timestamp actually saved on the job after a
+successful ledger lookup returns no row. They must remain accepted and carry a
+matching worker reference and saved callback identity. This does not reconstruct
+fractional precision absent from that saved timestamp. Missing running/terminal
+records, failed reads and mismatched retained payloads still refuse application.
+
+New callback-created packages use the processing job UUID as their existing
+primary key. Overlapping revised handlers cannot create separate IDs. A unique
+conflict reads that deterministic ID and verifies job, workspace, mission,
+project and package type without replacing human edits. The initial legacy
+lookup checks those same scope fields. This introduces no migration. Older
+writers using random IDs, other direct writers, existing duplicates and
+concurrent artifact custody remain separate gaps.
+
+Four source cohorts each pass69 cases. All58 faults reach the intended
+assertion, and290 oracle controls reject wrong tests, diagnostics and exits.
+The first assertion-order failure remains. A later surviving scope mutation
+reveals a vacuous fixture that changed both job identity and payload. The revised
+fixture changes job, workspace and payload separately; all three targeted faults
+then fail. No assertion is removed to make that evidence pass.
+
+The actual compiled route and installed SDK pass a selected409 PostgREST fixture.
+Two real package reads finish before either insert, overlapping exact terminal
+retries both complete, and SQL finds one package whose ID equals the job UUID.
+A legacy accepted pointer also advances. This adapter is not a full Next build,
+browser journey, current-main restore, hosted acceptance or scientific proof.
+Native controlled faults and current exact CI remain pending at this checkpoint.

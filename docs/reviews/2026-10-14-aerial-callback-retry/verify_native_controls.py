@@ -46,6 +46,13 @@ def run(repo, out):
         'Old native replay cannot replace a newer same-status event')
     fault('same-status-last-event-fences-omitted', module, '    const identifiedWrite = job.last_callback_id === null\n      ? referencedWrite.is("last_callback_id", null)\n      : referencedWrite.eq("last_callback_id", job.last_callback_id);\n    const { data: appliedJobs, error: updateError } = await (job.last_callback_at === null\n      ? identifiedWrite.is("last_callback_at", null)\n      : identifiedWrite.eq("last_callback_at", job.last_callback_at)).select("id");', '    const { data: appliedJobs, error: updateError } = await referencedWrite.select("id");',
         'Concurrent same-status event must fence a stale write')
+    fault('legacy-accepted-baseline-rejected', module, 'const legacyAccepted = !appliedError && !applied',
+        'const legacyAccepted = false && !appliedError && !applied',
+        'Actual first posted event advances the legacy accepted baseline')
+    fault('deterministic-package-key-removed', module, '            id: job.id,', '',
+        'Actual concurrent callback creates one evidence package')
+    fault('package-primary-key-conflict-rejected', module, 'if (insertError?.code === POSTGRES_UNIQUE_VIOLATION)', 'if (false)',
+        'Actual overlapping exact retries complete after a package conflict')
     def execute(label):
         result = subprocess.run([sys.executable, '-B', str(producer), '--repo', str(repo),
             '--out', str(out/(label+'-private'))], capture_output=True, text=True, timeout=300,
@@ -63,6 +70,7 @@ def run(repo, out):
         assert code == 0, label+' native cohort failed'
         result = json.loads((out/(label+'-private/result.json')).read_bytes())
         assert result['exactRetryApplied'] and result['terminalStatePreserved'] and result['concurrentStateRefused']
+        assert result['legacyAcceptedBaselineAdvanced'] and result['concurrentPackageCount']==1 and result['concurrentPackageKeyIsJob']
         controls.append({'case': label, 'outcome': 'survived'})
 
     try:

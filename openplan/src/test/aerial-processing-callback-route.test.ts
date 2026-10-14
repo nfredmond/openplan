@@ -17,6 +17,8 @@ const ledgerLookupMock = vi.fn();
 const ledgerSelectMock = vi.fn();
 const ledgerLookupEqMock = vi.fn();
 const evidenceLookupMaybeSingleMock = vi.fn();
+const evidenceSelectMock = vi.fn();
+const evidenceEqMock = vi.fn();
 const evidenceInsertSingleMock = vi.fn();
 const evidenceInsertMock = vi.fn();
 const missionMaybeSingleMock = vi.fn();
@@ -45,11 +47,13 @@ const fromMock = vi.fn((table: string) => {
 
   if (table === "aerial_evidence_packages") {
     return {
-      select: () => ({
-        eq: () => ({
-          maybeSingle: evidenceLookupMaybeSingleMock,
-        }),
-      }),
+      select: (columns: string) => {
+        evidenceSelectMock(columns);
+        return { eq: (column: string, value: string) => {
+          evidenceEqMock(column, value);
+          return { maybeSingle: evidenceLookupMaybeSingleMock };
+        } };
+      },
       insert: evidenceInsertMock,
     };
   }
@@ -212,7 +216,7 @@ describe("POST /api/aerial/processing-callback", () => {
     );
     jobUpdateMock.mockReturnValue({ eq: jobUpdateEqMock });
     evidenceLookupMaybeSingleMock.mockResolvedValue({ data: null, error: null });
-    evidenceInsertSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
+    evidenceInsertSingleMock.mockResolvedValue({ data: { id: "pkg-1", processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output" }, error: null });
     evidenceInsertMock.mockReturnValue({
       select: () => ({ single: evidenceInsertSingleMock }),
     });
@@ -452,7 +456,7 @@ describe("POST /api/aerial/processing-callback", () => {
   });
 
   it("skips a second evidence package when one exists for the processing job", async () => {
-    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
+    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "pkg-1", processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output" }, error: null });
 
     const response = await postProcessingCallback(
       request(
@@ -481,7 +485,7 @@ describe("POST /api/aerial/processing-callback", () => {
     ledgerLookupMock.mockResolvedValue({ data: {
       processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload,
     }, error: null });
-    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "pkg-1" }, error: null });
+    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "pkg-1", processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output" }, error: null });
     const response = await postProcessingCallback(request(payload, CALLBACK_TOKEN));
 
     expect(response.status).toBe(200);
@@ -625,10 +629,86 @@ describe("POST /api/aerial/processing-callback", () => {
     expect(jobStatusIsMock, "Write guards original empty callback time").toHaveBeenCalledWith("last_callback_at", null);
   });
 
+  it("keeps one deterministic evidence package when exact retries overlap", async () => {
+    const payload = callbackPayload({ status: "succeeded", artifacts: [] });
+    jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW, status: "succeeded",
+      last_callback_id: payload.callbackId, last_callback_at: payload.occurredAt }, error: null });
+    ledgerInsertMock.mockResolvedValue({ error: { code: "23505" } });
+    ledgerLookupMock.mockResolvedValue({ data: { processing_job_id: JOB_ROW.id,
+      workspace_id: JOB_ROW.workspace_id, payload }, error: null });
+    const packages = new Map<string, Record<string, unknown>>();
+    let lookups = 0;
+    let release: () => void = () => {};
+    const bothLooked = new Promise<void>((resolve) => { release = resolve; });
+    evidenceLookupMaybeSingleMock.mockImplementation(async () => {
+      lookups += 1;
+      if (lookups <= 2) {
+        if (lookups === 2) release();
+        await bothLooked;
+        return { data: null, error: null };
+      }
+      return { data: packages.get(JOB_ROW.id) ?? null, error: null };
+    });
+    evidenceInsertSingleMock.mockImplementation(async () => {
+      const row = evidenceInsertMock.mock.calls.at(-1)?.[0] as Record<string, unknown>;
+      const id = String(row.id);
+      if (packages.has(id)) return { data: null, error: { code: "23505" } };
+      packages.set(id, { ...row, title: "Retained human title" });
+      return { data: { id }, error: null };
+    });
+    const responses = await Promise.all([
+      postProcessingCallback(request(payload, CALLBACK_TOKEN)),
+      postProcessingCallback(request(payload, CALLBACK_TOKEN)),
+    ]);
+    expect([...packages.keys()], "Concurrent packages share the deterministic job primary key").toEqual([JOB_ROW.id]);
+    expect(responses.map((response) => response.status), "Both exact retries complete after a primary-key conflict").toEqual([200, 200]);
+    expect(packages.get(JOB_ROW.id)?.title, "A replay preserves human changes to the original package").toBe("Retained human title");
+    expect(evidenceSelectMock, "Package replay projects all original scope fields").toHaveBeenCalledWith("id, processing_job_id, workspace_id, mission_id, project_id, package_type");
+    expect(evidenceEqMock, "Conflicting creation reads the deterministic original ID").toHaveBeenCalledWith("id", JOB_ROW.id);
+    expect(mockAudit.info, "Conflicting creation records reuse of the original package").toHaveBeenCalledWith("evidence_package_reused", expect.objectContaining({ packageId: JOB_ROW.id }));
+  });
+
+  it("refuses a conflicting package outside the exact original scope", async () => {
+    const payload = callbackPayload({ status: "succeeded", artifacts: [] });
+    evidenceInsertSingleMock.mockResolvedValue({ data: null, error: { code: "23505" } });
+    const correct = { id: JOB_ROW.id, processing_job_id: JOB_ROW.id,
+      workspace_id: JOB_ROW.workspace_id, mission_id: JOB_ROW.mission_id,
+      project_id: JOB_ROW.project_id, package_type: "measurable_output" };
+    for (const field of ["id", "processing_job_id", "workspace_id", "mission_id", "project_id", "package_type"]) {
+      evidenceLookupMaybeSingleMock.mockReset();
+      evidenceLookupMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null })
+        .mockResolvedValue({ data: { ...correct, [field]: "foreign-value" }, error: null });
+      const response = await postProcessingCallback(request(payload, CALLBACK_TOKEN));
+      expect(response.status, "Conflicting package retains exact binding: " + field).toBe(409);
+    }
+  });
+
+  it("refuses a legacy linked package outside the processing scope", async () => {
+    const payload = callbackPayload({ status: "succeeded", artifacts: [] });
+    evidenceLookupMaybeSingleMock.mockResolvedValue({ data: { id: "legacy-package",
+      processing_job_id: JOB_ROW.id, workspace_id: "foreign-workspace",
+      mission_id: JOB_ROW.mission_id, project_id: JOB_ROW.project_id, package_type: "measurable_output" }, error: null });
+    const response = await postProcessingCallback(request(payload, CALLBACK_TOKEN));
+    expect(response.status, "Legacy package must belong to the original processing scope").toBe(409);
+    expect(evidenceInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("advances a legacy accepted pointer whose synchronous event was never posted", async () => {
+    jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW,
+      last_callback_id: "cb-original-accepted", last_callback_at: "2026-07-21T12:00:00+00:00",
+    }, error: null });
+    ledgerLookupMock.mockResolvedValue({ data: null, error: null });
+    const response = await postProcessingCallback(request(callbackPayload({ occurredAt: "2026-07-21T12:01:00Z" }), CALLBACK_TOKEN));
+    expect(response.status, "First posted callback advances the legacy synchronous baseline").toBe(200);
+    expect(jobUpdateMock).toHaveBeenCalledWith(expect.objectContaining({ status: "running" }));
+    expect(jobStatusEqMock).toHaveBeenCalledWith("status", "accepted");
+    expect(jobStatusEqMock).toHaveBeenCalledWith("last_callback_id", "cb-original-accepted");
+  });
+
   it("refuses unreadable callback ordering without applying it", async () => {
     const applied = callbackPayload({ callbackId: "other-callback" });
     jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW,
-      last_callback_id: applied.callbackId, last_callback_at: applied.occurredAt,
+      status: "running", last_callback_id: applied.callbackId, last_callback_at: applied.occurredAt,
     }, error: null });
     const correct = { processing_job_id: JOB_ROW.id, workspace_id: JOB_ROW.workspace_id, payload: applied };
     for (const value of [

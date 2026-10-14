@@ -62,8 +62,9 @@ def run(repo, out):
     raw=encode({'alg':'HS256','typ':'JWT'})+b'.'+encode({'role':'service_role','exp':int(time.time())+3600})
     key=(raw+b'.'+base64.urlsafe_b64encode(hmac.new(values['PGRST_JWT_SECRET'].encode(),raw,hashlib.sha256).digest()).rstrip(b'=')).decode()
     jobs={name:{'id':str(uuid.uuid4()),'request':'callback-native-'+uuid.uuid4().hex,
-        'reference':'owned-callback-'+uuid.uuid4().hex} for name in ['interrupted','raced','superseded','same_status']}
+        'reference':'owned-callback-'+uuid.uuid4().hex} for name in ['interrupted','raced','superseded','same_status','legacy','concurrent']}
     fail_patch=True;race_read=True;same_status_armed=False;events=[]
+    package_reads=0;package_lock=threading.Lock();package_barrier=threading.Barrier(2)
     try:
         subprocess.run(['docker','start',PG],check=True,stdout=subprocess.DEVNULL);started.append(PG)
         for _ in range(120):
@@ -79,10 +80,10 @@ def run(repo, out):
         class Proxy(BaseHTTPRequestHandler):
             def log_message(self,*_):pass
             def forward(self):
-                nonlocal fail_patch,race_read,same_status_armed
+                nonlocal fail_patch,race_read,same_status_armed,package_reads
                 target=self.path.removeprefix('/rest/v1')
                 parsed=urlsplit(target)
-                if parsed.path not in ['/aerial_processing_jobs','/aerial_processing_callbacks']:
+                if parsed.path not in ['/aerial_processing_jobs','/aerial_processing_callbacks','/aerial_artifact_custody','/aerial_evidence_packages','/aerial_missions']:
                     self.send_response(404);self.end_headers();return
                 body=self.rfile.read(int(self.headers.get('content-length','0')))
                 events.append({'method':self.command,'table':parsed.path,'query':parsed.query})
@@ -111,6 +112,13 @@ def run(repo, out):
                         sql('INSERT INTO public.aerial_processing_callbacks (processing_job_id,workspace_id,callback_id,status,occurred_at,payload) VALUES ('+
                             ','.join(q(value) for value in [jobs['same_status']['id'],original['workspace_id'],newer,'running',event_payload['occurredAt'],json.dumps(event_payload)])+');')
                         sql("UPDATE public.aerial_processing_jobs SET progress=70,last_callback_id="+q(newer)+",last_callback_at='2026-10-14T06:01:00Z' WHERE id="+q(jobs['same_status']['id'])+';')
+                if self.command=='GET' and parsed.path=='/aerial_evidence_packages' and parse_qs(parsed.query).get('processing_job_id')==['eq.'+jobs['concurrent']['id']]:
+                    with package_lock:
+                        package_reads+=1
+                        initial_read=package_reads<=2
+                    if initial_read:
+                        # Both actual reads finish before either insert starts.
+                        package_barrier.wait(timeout=15)
                 self.send_response(status);self.send_header('content-type','application/json');self.send_header('content-length',str(len(payload)));self.end_headers();self.wfile.write(payload)
             do_GET=forward;do_POST=forward;do_PATCH=forward
         server=ThreadingHTTPServer(('127.0.0.1',0),Proxy)
@@ -125,9 +133,10 @@ def run(repo, out):
         logs=(out/'route-private.log').open('wb')
         child=subprocess.Popen(['node',str(Path(__file__).with_name('route_server.cjs'))],cwd=repo/'openplan',env=env,stdout=subprocess.PIPE,stderr=logs)
         port=json.loads(child.stdout.readline())['port'];address='http://127.0.0.1:'+str(port)+'/callback'
-        def post(job,callback_id,progress=40,reference=None,occurred_at='2026-10-14T06:00:00Z'):
+        def post(job,callback_id,progress=40,reference=None,occurred_at='2026-10-14T06:00:00Z',status='running'):
             payload={'schemaVersion':'natford-aerial-processing.v1','requestId':job['request'],'callbackId':callback_id,
-                'jobReference':reference or job['reference'],'status':'running','occurredAt':occurred_at,'progress':progress}
+                'jobReference':reference or job['reference'],'status':status,'occurredAt':occurred_at,'progress':progress}
+            if status=='succeeded':payload['artifacts']=[]
             request=urllib.request.Request(address,data=json.dumps(payload).encode(),method='POST',headers={'content-type':'application/json','authorization':'Bearer '+bearer})
             try:
                 with urllib.request.urlopen(request,timeout=20) as response:return response.status,json.loads(response.read())
@@ -161,10 +170,28 @@ def run(repo, out):
         assert post(jobs['same_status'],pending_id,40)[0]==503, 'Concurrent same-status event must fence a stale write'
         assert post(jobs['same_status'],pending_id,40)==(200,{'ok':True,'ignored':'superseded'}), 'Same-status retry must preserve the newer applied event'
         assert sql('SELECT progress::text FROM public.aerial_processing_jobs WHERE id='+q(jobs['same_status']['id'])+';')=='70.00'
+        legacy_id='native-legacy-accepted-'+uuid.uuid4().hex
+        sql("UPDATE public.aerial_processing_jobs SET last_callback_id="+q(legacy_id)+",last_callback_at='2026-10-14T05:59:00Z' WHERE id="+q(jobs['legacy']['id'])+';')
+        assert post(jobs['legacy'],'native-legacy-running-'+uuid.uuid4().hex)[0]==200, 'Actual first posted event advances the legacy accepted baseline'
+        concurrent_id='native-concurrent-'+uuid.uuid4().hex
+        original_event={'schemaVersion':'natford-aerial-processing.v1','requestId':jobs['concurrent']['request'],
+            'callbackId':concurrent_id,'jobReference':jobs['concurrent']['reference'],'status':'succeeded',
+            'occurredAt':'2026-10-14T06:00:00Z','progress':40,'artifacts':[]}
+        sql('INSERT INTO public.aerial_processing_callbacks (processing_job_id,workspace_id,callback_id,status,occurred_at,payload) VALUES ('+
+            ','.join(q(value) for value in [jobs['concurrent']['id'],original['workspace_id'],concurrent_id,'succeeded',original_event['occurredAt'],json.dumps(original_event)])+');')
+        sql("UPDATE public.aerial_processing_jobs SET status='succeeded',last_callback_id="+q(concurrent_id)+",last_callback_at='2026-10-14T06:00:00Z' WHERE id="+q(jobs['concurrent']['id'])+';')
+        from concurrent.futures import ThreadPoolExecutor
+        with ThreadPoolExecutor(max_workers=2) as executor:
+            attempts=[executor.submit(post,jobs['concurrent'],concurrent_id,status='succeeded') for _ in range(2)]
+            replies=[attempt.result(timeout=30) for attempt in attempts]
+        assert all(reply[0]==200 for reply in replies), 'Actual overlapping exact retries complete after a package conflict'
+        assert package_reads==2, 'Native package reads overlap before both inserts'
+        assert sql('SELECT count(*) FROM public.aerial_evidence_packages WHERE processing_job_id='+q(jobs['concurrent']['id'])+';')=='1', 'Actual concurrent callback creates one evidence package'
+        assert sql('SELECT id::text FROM public.aerial_evidence_packages WHERE processing_job_id='+q(jobs['concurrent']['id'])+';')==jobs['concurrent']['id'], 'Actual package uses deterministic job primary key'
         (out/'result.json').write_text(json.dumps({'scope':'isolated_selected409_compiled_route_sdk_http','firstWriteInterrupted':True,
             'originalLedgerRetained':True,'exactRetryApplied':True,'changedPayloadRefused':True,'foreignWorkerRefused':True,
             'concurrentStateRefused':True,'terminalStatePreserved':True,'newerSameStatusPreserved':True,'sameStatusRaceFenced':True,'fullNextBuildAcceptance':False,'browserAcceptance':False,
-            'hostedAcceptance':False,'routeSha256':hashlib.sha256((repo/'openplan/src/app/api/aerial/processing-callback/route.ts').read_bytes()).hexdigest()},indent=2)+'\n')
+            'hostedAcceptance':False,'legacyAcceptedBaselineAdvanced':True,'concurrentPackageCount':1,'concurrentPackageKeyIsJob':True,'routeSha256':hashlib.sha256((repo/'openplan/src/app/api/aerial/processing-callback/route.ts').read_bytes()).hexdigest()},indent=2)+'\n')
         (out/'transport-private.json').write_text(json.dumps(events,indent=2)+'\n')
         print(json.dumps({'exactRetryApplied':True,'concurrentStateRefused':True,'selectedSchema':409}),flush=True)
     finally:

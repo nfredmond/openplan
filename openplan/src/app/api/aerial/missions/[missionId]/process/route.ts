@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
+import { isDeepStrictEqual } from "node:util";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { buildOdmProcessingBoundary } from "@/lib/aerial/odm-processing";
@@ -645,7 +646,8 @@ export async function POST(request: NextRequest, context: RouteContext) {
     const acceptedBody = await workerResponse.json().catch(() => null);
     const parsedAccepted = processingCallbackSchema.safeParse(acceptedBody);
 
-    if (!parsedAccepted.success || parsedAccepted.data.status !== "accepted") {
+    if (!parsedAccepted.success || parsedAccepted.data.status !== "accepted"
+      || parsedAccepted.data.requestId !== requestId) {
       const detail = "worker accepted response did not match the processing contract";
       audit.error("worker_accepted_response_invalid", {
         requestId,
@@ -658,6 +660,34 @@ export async function POST(request: NextRequest, context: RouteContext) {
 
     const accepted = parsedAccepted.data;
 
+    // Retain the synchronous response before making it the ordering baseline.
+    // The worker does not separately POST this accepted event.
+    const { error: acceptedLedgerError } = await jobsWriter
+      .from("aerial_processing_callbacks")
+      .insert({
+        processing_job_id: jobRow.id,
+        workspace_id: mission.workspace_id,
+        callback_id: accepted.callbackId,
+        status: accepted.status,
+        occurred_at: accepted.occurredAt,
+        payload: accepted,
+      });
+    let acceptedRecorded = !acceptedLedgerError;
+    if (acceptedLedgerError?.code === "23505") {
+      const { data: retained, error: retainedError } = await jobsWriter
+        .from("aerial_processing_callbacks")
+        .select("processing_job_id, workspace_id, payload")
+        .eq("callback_id", accepted.callbackId)
+        .maybeSingle();
+      acceptedRecorded = !retainedError && retained?.processing_job_id === jobRow.id
+        && retained.workspace_id === mission.workspace_id
+        && isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(accepted)));
+    }
+    if (!acceptedRecorded) {
+      audit.error("processing_acceptance_record_unavailable", { requestId, missionId: mission.id });
+      return NextResponse.json({ error: "processing_acceptance_record_unavailable", requestId }, { status: 503 });
+    }
+
     const { error: acceptUpdateError } = await jobsWriter
       .from("aerial_processing_jobs")
       .update({
@@ -666,7 +696,12 @@ export async function POST(request: NextRequest, context: RouteContext) {
         last_callback_id: accepted.callbackId,
         last_callback_at: accepted.occurredAt,
       })
-      .eq("id", jobRow.id);
+      .eq("id", jobRow.id)
+      .eq("status", "requested")
+      .is("job_reference", null)
+      .is("last_callback_id", null)
+      .is("last_callback_at", null)
+      .select("id");
 
     if (acceptUpdateError) {
       // The worker owns the job now; keep the row (callbacks will advance it)
