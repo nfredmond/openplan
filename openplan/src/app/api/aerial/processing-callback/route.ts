@@ -352,6 +352,10 @@ export async function POST(request: NextRequest) {
         custodyUnreadable: custodyResult.unreadableReason,
       });
 
+      if (custodyResult.unreadableReason) {
+        return NextResponse.json({ error: "Artifact custody could not be established" }, { status: 503 });
+      }
+
       // Preserve legacy package IDs; new callback-created packages use the
       // job UUID as their primary key so overlapping revised handlers cannot
       // create two packages after both observe no existing row.
@@ -450,6 +454,20 @@ export async function POST(request: NextRequest) {
           workspaceId: job.workspace_id,
           processingJobId: job.id,
         });
+      }
+
+      // Held originals persist across competing passes. Advance only pending
+      // custody readiness; preserve human verification and package edits.
+      if (custody.verificationReadiness === "partial") {
+        const { error: readinessError } = await supabase
+          .from("aerial_evidence_packages")
+          .update({ verification_readiness: "partial" })
+          .eq("processing_job_id", job.id)
+          .eq("verification_readiness", "pending")
+          .select("id");
+        if (readinessError) {
+          return NextResponse.json({ error: "Failed to update evidence custody readiness" }, { status: 503 });
+        }
       }
 
       if (job.project_id) {

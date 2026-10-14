@@ -1,0 +1,29 @@
+{
+  "types": "scoped dependencies pass",
+  "lint": "seven changed files pass",
+  "relatedFiles": 16,
+  "relatedPassed": 257,
+  "relatedFailed": 0,
+  "censusControls": [
+    {
+      "case": "callback-wrong-census",
+      "outcome": "intended_failure",
+      "diagnostic": "baseline callback cohort failed"
+    },
+    {
+      "case": "custody-wrong-census",
+      "outcome": "intended_failure",
+      "diagnostic": "All six affected test files reach the complete 108-case cohort"
+    }
+  ],
+  "sourceBindings": {
+    "src/lib/aerial/artifact-custody-server.ts": "69fa289343c1150f3f6312dc9af855c08d1df33ed9cdecdb44ff6489cf6b782c",
+    "src/app/api/aerial/processing-callback/route.ts": "3c94e27308373812773aa7b6f18719b6a27f0296d98dac4437f0834e771971d5",
+    "src/app/api/aerial/processing-callback/custody/route.ts": "d19946c3990a82f4b7ba420b50528be65b0c9c378bb68fabf0dceb1d9e358fc8",
+    "src/test/aerial-artifact-custody.test.ts": "d0a83804936a9ff4e1aa6b8cb8e50446aea736bb7ffa88c8d5d0d29842095fe0",
+    "src/test/aerial-artifact-custody-retry-route.test.ts": "be1531d120b9ad7dc470fdc985e58b2774d0f5736873ea7cc5a56792858c5f46",
+    "src/test/aerial-processing-callback-route.test.ts": "b05e95cd5027303b39c24d0b77691ba4f63deac9f10d164a89b3836d5f851f08",
+    "src/test/aerial-artifact-custody-reaches-a-planner.test.tsx": "6b39877d189a5a4b4e741912f87f71aab5833170c582cac9c1932cf7656da135"
+  },
+  "scope": "source/dependency verification; native evidence separate; no hosted/browser/full-pipeline acceptance"
+}
