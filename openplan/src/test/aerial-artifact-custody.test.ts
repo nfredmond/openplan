@@ -63,6 +63,10 @@ type Harness = {
   priorError?: { message?: string } | null;
   uploadError?: { message?: string } | null;
   upsertError?: { message?: string } | null;
+  /** What `workspace_storage_bytes` answers. */
+  storageUsedBytes: unknown;
+  storageUsageError: { message?: string } | null;
+  rpcCalls: Array<{ fn: string; args: Record<string, unknown> }>;
 };
 
 /** The projection the pre-read uses; the roll-up read uses the shared constant. */
@@ -78,6 +82,9 @@ function harness(): Harness {
     uploadError: null,
     rollupError: null,
     priorError: null,
+    storageUsedBytes: 0,
+    storageUsageError: null,
+    rpcCalls: [],
   };
 
   state.supabase = {
@@ -110,6 +117,14 @@ function harness(): Harness {
         };
       },
     }),
+    rpc: (fn: string, args: Record<string, unknown>) => {
+      state.rpcCalls.push({ fn, args });
+      return Promise.resolve(
+        state.storageUsageError
+          ? { data: null, error: state.storageUsageError }
+          : { data: state.storageUsedBytes, error: null }
+      );
+    },
     storage: {
       from: (bucket: string) => ({
         upload: (path: string, body: unknown, options?: { contentType?: string; upsert?: boolean }) => {
@@ -324,6 +339,54 @@ describe("aerial artifact custody — taking the bytes", () => {
       state: "failed",
       failure_code: "storage_write_failed",
       storage_path: null,
+    });
+  });
+
+  describe("the workspace storage limit", () => {
+    it("checks this workspace's use with the measured bytes before storing", async () => {
+      const h = harness();
+      h.storageUsedBytes = 1024;
+      await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        job: JOB,
+        candidates: [candidate({ sizeBytes: 4 })],
+        env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1, 2, 3, 4]))) as unknown as typeof fetch,
+      });
+      expect(h.rpcCalls).toEqual([{ fn: "workspace_storage_bytes", args: { p_workspace_id: WORKSPACE_ID } }]);
+      // 1024 used + 4 measured = 1028, exactly the limit: stored.
+      expect(h.uploads).toHaveLength(1);
+      expect(h.upserted[0][0]).toMatchObject({ state: "held" });
+    });
+
+    it("stores nothing and says why when the artifact would go over the limit", async () => {
+      const h = harness();
+      h.storageUsedBytes = 1025;
+      await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        job: JOB,
+        candidates: [candidate({ sizeBytes: 4 })],
+        env: { OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES: "1028" } as unknown as NodeJS.ProcessEnv,
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1, 2, 3, 4]))) as unknown as typeof fetch,
+      });
+      expect(h.uploads).toHaveLength(0);
+      const row = h.upserted[0][0];
+      expect(row).toMatchObject({ state: "failed", failure_code: "workspace_storage_full", storage_path: null, attempt_count: 1 });
+      expect(String(row.failure_detail)).toContain("over its storage limit");
+      expect(String(row.failure_detail)).not.toContain(SIGNED_URL);
+    });
+
+    it("stores nothing when the workspace's use cannot be read", async () => {
+      const h = harness();
+      h.storageUsageError = { message: "permission denied for function workspace_storage_bytes" };
+      await runAerialCustodyPass({
+        supabase: h.supabase as unknown as CustodySupabaseClient,
+        job: JOB,
+        candidates: [candidate({ sizeBytes: 4 })],
+        fetchImpl: vi.fn().mockResolvedValue(okResponse(new Uint8Array([1, 2, 3, 4]))) as unknown as typeof fetch,
+      });
+      expect(h.uploads).toHaveLength(0);
+      expect(h.upserted[0][0]).toMatchObject({ state: "failed", failure_code: "workspace_storage_unreadable", storage_path: null });
     });
   });
 

@@ -138,6 +138,8 @@ describe("POST /api/aerial/processing-callback", () => {
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     createServiceRoleClientMock.mockReturnValue({
       from: fromMock,
+      // workspace_storage_bytes: an empty workspace, so custody may store.
+      rpc: async () => ({ data: 0, error: null }),
       storage: { from: () => ({ upload: storageUploadMock }) },
     });
 

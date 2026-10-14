@@ -34,6 +34,7 @@
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkWorkspaceStorageRoom, type WorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 import {
   AERIAL_ARTIFACT_BUCKET,
   AERIAL_ARTIFACT_CUSTODY_COLUMNS,
@@ -81,6 +82,8 @@ export type CustodySupabaseLike = {
       eq: (column: string, value: string) => { select: (columns: string) => PromiseLike<CustodyQueryResult> };
     };
   };
+  /** The workspace storage-use read (`workspace_storage_bytes`) made before each store. */
+  rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
   storage: {
     from: (bucket: string) => {
       upload: (
@@ -365,9 +368,10 @@ async function custodyOfOne(
     now: Date;
     fetchImpl: typeof fetch;
     priorAttempts: number;
+    storageRoom: (workspaceId: string, bytes: number) => Promise<WorkspaceStorageRoom>;
   }
 ): Promise<CustodyRowWrite> {
-  const { supabase, maxBytes, timeoutMs, now, fetchImpl, priorAttempts } = options;
+  const { supabase, maxBytes, timeoutMs, now, fetchImpl, priorAttempts, storageRoom } = options;
   const sourceHost = artifactSourceHost(candidate.downloadUrl) ?? "the processing worker";
   const base = { kind: candidate.kind, sourceHost, sourceExpiresAt: candidate.expiresAt };
 
@@ -428,6 +432,24 @@ async function custodyOfOne(
 
   const uploadContentType =
     download.contentType ?? candidate.contentType ?? "application/octet-stream";
+
+  // The workspace's storage total, with the measured bytes, before they are stored.
+  const room = await storageRoom(job.workspaceId, download.bytes.byteLength);
+  if (room.status !== "room") {
+    const code = room.status === "full" ? "workspace_storage_full" : "workspace_storage_unreadable";
+    return failedRow(
+      candidate,
+      job,
+      sourceHost,
+      code,
+      room.status === "full"
+        ? { ...base, code, quotaBytes: room.quotaBytes, usedBytes: room.usedBytes }
+        : { ...base, code },
+      true,
+      now,
+      priorAttempts
+    );
+  }
 
   // `upsert` is what makes a redelivered callback store ONE copy: the path is
   // derived from ids OpenPlan owns, so the second write lands on the first
@@ -619,6 +641,7 @@ export async function runAerialCustodyPass(input: {
         now,
         fetchImpl,
         priorAttempts,
+        storageRoom: (workspaceId, bytes) => checkWorkspaceStorageRoom(input.supabase, workspaceId, bytes, env),
       })
     );
   }
