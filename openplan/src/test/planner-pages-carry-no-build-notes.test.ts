@@ -54,6 +54,9 @@ const ROOTS = ["src/app", "src/components"].map((dir) => path.join(process.cwd()
  */
 const RENDERED_LIB_FILES = [
   "src/lib/http/read-outcome.ts",
+  // The workspace command queue: its titles and details are the dashboard's and
+  // the Grants page's "what to do next" lines.
+  "src/lib/operations/workspace-summary.ts",
   "src/lib/rtp/export-input.ts",
   "src/lib/ui/setup-pending.ts",
 ].map((file) => path.join(process.cwd(), file));
@@ -197,8 +200,10 @@ function withoutOperatorCopy(code: string): string {
 function plannerText(source: string): string[] {
   const code = withoutOperatorCopy(stripSourceComments(source));
   const strings = (code.match(STRING_LITERAL) ?? [])
-    // An interpolation stands in as one word, so `SHA-256 ${hash}` is still a label.
-    .map((literal) => literal.slice(1, -1).replace(/\$\{[^}]*\}/g, "x"))
+    // An interpolation stands in as one token, so `SHA-256 ${hash}` is still a
+    // label. The token is not a letter: with "x", `lane${plural}` read as
+    // "lanex", and "1 project funding lane has" reached the dashboard unseen.
+    .map((literal) => literal.slice(1, -1).replace(/\$\{[^}]*\}/g, "#"))
     .filter((text) => /\S\s+\S/.test(text));
   const jsx = [...code.matchAll(JSX_TEXT)]
     .map((match) => match[1].replace(/\s+/g, " ").trim())
@@ -278,6 +283,8 @@ describe("planner pages carry no build notes", () => {
     const leaked: Array<[string, string]> = [
       ["lane", `<p>Open control lane</p>`],
       ["lane", `const label = "Primary queue lane";`],
+      // The plural sat in an interpolation right after the word (workspace-summary.ts, October 2026).
+      ["lane", "const detail = `${n} project funding lane${n === 1 ? \" has\" : \"s have\"} no funding target.`;"],
       ["custody", `<p>Loading decision custody…</p>`],
       ["receipt", `const note = "No server queue receipt was found for this allowance.";`],
       ["operator-facing", `const d = "Operator-facing summary of the current run.";`],
@@ -310,6 +317,8 @@ describe("planner pages carry no build notes", () => {
       `<p>Two travel lanes and a bike lane, 14.2 lane miles in good condition.</p>`,
       `const path = "./_components/receivables-lane";`,
       `<li>{lane.label}</li>`,
+      "const href = `/api/workspaces/${id}/migrations`;",
+      "const label = `${count} bike lane${count === 1 ? \"\" : \"s\"}`;",
     ];
     for (const source of clean) {
       expect(operatorVocabularyIn(source), source).toEqual([]);

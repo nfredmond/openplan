@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**RTP comment record counts every comment.** The comment-response record on
+the RTP cycle page and in the exported packet read approved comments, responses
+and consultations in one request each, so a plan with more than 1,000 comments
+showed only the first 1,000. It now reads every page, and a read that stops part
+way is shown as a failed read, not a short count. The Grants queue now says how
+many projects have no funding target, or have an invoice to link to their
+award, instead of counting "funding lanes". No migration.
+
 **Aerial journal correction:** tolerate a retired SQLite companion only after a
 fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the

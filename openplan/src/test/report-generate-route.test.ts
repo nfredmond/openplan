@@ -215,7 +215,10 @@ const engagementCampaignEqIdMock = vi.fn(() => ({ maybeSingle: engagementCampaig
 const rtpEngagementCampaignsOrderMock = vi.fn();
 const engagementCampaignEqWorkspaceMock = vi.fn((column?: string) => {
   if (column === "rtp_cycle_id") {
-    return { order: rtpEngagementCampaignsOrderMock };
+    // Two reads take this chain: the packet's campaign list awaits it, and the
+    // comment-response record pages it. Each read draws one answer from
+    // `rtpEngagementCampaignsOrderMock`, held to the server's 1,000-row cap.
+    return pagingFake(() => rtpEngagementCampaignsOrderMock(), { serverCap: 1000 }).chain;
   }
 
   return { eq: engagementCampaignEqIdMock };
@@ -576,6 +579,8 @@ const fromMock = vi.fn((table: string) => {
       empty[method] = () => empty;
     }
     empty.then = (resolve: (value: unknown) => unknown) => Promise.resolve({ data: [], error: null }).then(resolve);
+    // The comment-response record pages its responses; an empty table ends on the first page.
+    empty.range = async () => ({ data: [], error: null });
     return empty;
   }
 
