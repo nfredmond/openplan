@@ -12,6 +12,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import dynamic from "next/dynamic";
 import { ModelRecoveryPanel } from "@/components/models/model-recovery-panel";
+import { HistoricalRunDecision } from "@/components/models/historical-run-decision";
+import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import { ModelRunEvidencePanel } from "@/components/models/model-run-evidence-panel";
 import { StructuralDiagnosisExplanation } from "@/components/models/structural-diagnosis-explanation";
 import { ModelRunHeadlineAnswer } from "@/components/models/model-run-headline-answer";
@@ -60,7 +62,7 @@ import {
   reconcileModelRunExecutionOutlook,
   type ModelingWorkerHealth,
 } from "@/lib/models/worker-health";
-import { modelRecoveryNeedsReview, modelRecoveryNotice, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
+import { historicalRunNeedsDecision, modelRecoveryNeedsReview, modelRecoveryNotice, type ModelRecoveryStatus } from "@/lib/models/recovery-status";
 import { managedRunStatusPresentation } from "@/lib/models/run-status";
 import { formatModelDateTime } from "@/lib/models/catalog";
 
@@ -625,6 +627,16 @@ export function ModelRunManager({
       run.artifacts.some((artifact) => artifact.artifact_type === "demand_model_agreement_geojson"),
   );
   const hasActiveRun = useMemo(() => modelRuns.some(isNonTerminalRun), [modelRuns]);
+
+  // A closed historical run is never resumed. Its method and scenario seed the
+  // launch form, and the planner launches a separate run from there.
+  function startFreshRunFrom(run: ManagedModelRun) {
+    if (isWorkerExecutedRunMode(run.engine_key)) setEngineKey(run.engine_key as ManagedRunModeKey);
+    if (run.scenario_entry_id && scenarioEntries.some((entry) => entry.id === run.scenario_entry_id)) setScenarioEntryId(run.scenario_entry_id);
+    const field = document.getElementById("managed-run-engine");
+    field?.scrollIntoView({ behavior: "smooth", block: "center" });
+    field?.focus();
+  }
   const [now, setNow] = useState(0);
 
   // Poll while any run is non-terminal so the UI reflects worker progress
@@ -1362,13 +1374,30 @@ export function ModelRunManager({
                           for every non-failed run, so the copy below is
                           untouched for them.
                         */}
-                        {recoveryUserId && workspaceId && isWorkerExecutedRunMode(run.engine_key) ? (
+                        {/*
+                          Abandonment cannot reach a historical run: the database
+                          fence refuses its writes. Those runs get keep-or-close,
+                          which appends a receipt and changes nothing else.
+                        */}
+                        {recoveryUserId && workspaceId && isWorkerExecutedRunMode(run.engine_key) && run.recovery?.state !== "historical_unassessed" ? (
                           <ModelRecoveryPanel key={`${recoveryUserId}:${workspaceId}:${modelId}:${run.id}`} userId={recoveryUserId} workspaceId={workspaceId} modelId={modelId} runId={run.id} permission={recoveryPermission} stageNames={Object.fromEntries(run.stages.map((stage) => [stage.id, stage.stage_name]))} onConfirmed={() => router.refresh()} />
                         ) : null}
                         {recoveryNotice ? (
-                          <div className="space-y-1 text-sm text-amber-800 dark:text-amber-200" data-testid="run-recovery-notice">
+                          <div className="space-y-2 text-sm text-amber-800 dark:text-amber-200" data-testid="run-recovery-notice">
                             <p>{recoveryNotice}</p>
-                            <p>Saved run status: {run.status}. This is a retained record.</p>
+                            {recoveryUserId && workspaceId && historicalRunNeedsDecision(run.recovery) ? (
+                              <HistoricalRunDecision key={`${recoveryUserId}:${workspaceId}:${modelId}:${run.id}`} userId={recoveryUserId} workspaceId={workspaceId} modelId={modelId} runId={run.id} permission={recoveryPermission} onDecided={() => router.refresh()} />
+                            ) : null}
+                            {run.recovery?.state === "historical_unassessed" && run.recovery.historicalDecision?.outcome === "closed_for_fresh_run" ? (
+                              <Button type="button" size="sm" variant="outline" onClick={() => startFreshRunFrom(run)}>Start a new run</Button>
+                            ) : null}
+                            <OperatorDetail testId="run-recovery-operator-detail">
+                              <p>Saved run status: {run.status}.</p>
+                              {run.recovery?.state === "historical_unassessed" ? <p>Enrolled as historical at {run.recovery.enrolledAt}. The database refuses writes to this run, and a decision does not lift that.</p> : null}
+                              {run.recovery?.state === "historical_unassessed" && run.recovery.historicalDecision ? (
+                                <p>Decision {run.recovery.historicalDecision.outcome} recorded {run.recovery.historicalDecision.recordedAt} by {run.recovery.historicalDecision.actorId}, request {run.recovery.historicalDecision.requestId}. Reason: {run.recovery.historicalDecision.reason}</p>
+                              ) : null}
+                            </OperatorDetail>
                           </div>
                         ) : null}
                         {failureSummary ? (
