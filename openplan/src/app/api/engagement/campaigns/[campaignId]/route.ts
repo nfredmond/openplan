@@ -102,6 +102,13 @@ const patchCampaignSchema = z
     accessibilityContactPhone: z.union([z.string().trim().max(80), z.null()]).optional(),
     accessibilityAlternateFormats: z.union([z.string().trim().max(2000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
+    /**
+     * Close or reopen public submissions. The close time is set here, from the
+     * server clock, never sent by the caller: it is the date the public page,
+     * the submit routes and report provenance all read as "comments closed".
+     * Closing an already closed campaign keeps the first close time.
+     */
+    submissionsClosed: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
     /**
      * Refuse a submitted pin that falls outside this campaign's own area
@@ -760,6 +767,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
+    if (parsed.data.submissionsClosed === false) {
+      updates.submissions_closed_at = null;
+    } else if (parsed.data.submissionsClosed === true && !access.campaign.submissions_closed_at) {
+      updates.submissions_closed_at = new Date().toISOString();
+    }
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
 
     // Empty string means "cleared", which the column stores as NULL. The table's
@@ -1059,6 +1071,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       // ledger convention here is derived facts, and the row itself records
       // the value with better provenance than a log line.
       publicSlugChanged: parsed.data.publicSlug !== undefined,
+      // Closed, reopened, or untouched (null).
+      submissionsClosed: parsed.data.submissionsClosed ?? null,
       // Counts, not ids: enough to reconstruct that coverage changed and by
       // how much; the join table itself records which rows, with provenance.
       projectLinksAdded: projectLinksChanged?.added ?? 0,

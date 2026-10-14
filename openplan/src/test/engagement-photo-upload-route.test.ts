@@ -209,6 +209,23 @@ describe("POST /api/engage/[shareToken]/photo-upload", () => {
     expect(storageUploadMock).not.toHaveBeenCalled();
   });
 
+  it("rejects uploads when staff have closed submissions", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: CAMPAIGN_ID,
+        status: "active",
+        allow_public_submissions: true,
+        submissions_closed_at: "2026-04-02T09:30:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await POST(photoRequest(JPEG_BYTES, "image/jpeg"), routeContext());
+
+    expect(response.status).toBe(403);
+    expect(storageUploadMock).not.toHaveBeenCalled();
+  });
+
   it("returns 404 for an unknown share token", async () => {
     campaignMaybeSingleMock.mockResolvedValueOnce({ data: null, error: null });
 

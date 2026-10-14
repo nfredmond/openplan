@@ -266,6 +266,26 @@ describe("POST /api/engage/[shareToken]/submit", () => {
     expect(response.status).toBe(403);
   });
 
+  it("rejects when staff have closed submissions, even with submissions allowed", async () => {
+    campaignMaybeSingleMock.mockResolvedValueOnce({
+      data: {
+        id: "11111111-1111-4111-8111-111111111111",
+        status: "active",
+        allow_public_submissions: true,
+        submissions_closed_at: "2026-04-02T09:30:00.000Z",
+      },
+      error: null,
+    });
+
+    const response = await POST(
+      jsonRequest("test-share-token-12345", { body: "Some feedback" }),
+      { params: Promise.resolve({ shareToken: "test-share-token-12345" }) }
+    );
+
+    expect(response.status).toBe(403);
+    expect(await response.json()).toMatchObject({ error: expect.stringMatching(/not currently accepting/i) });
+  });
+
   it("retains honeypot-filled submissions as flagged instead of reporting false success", async () => {
     const response = await POST(
       jsonRequest("test-share-token-12345", {
