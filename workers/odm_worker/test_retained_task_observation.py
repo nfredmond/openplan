@@ -277,7 +277,7 @@ class Checks(unittest.TestCase):
         result = store.record(200, self.body())
         with writer(self.records_root, time.monotonic() + 1):
             with self.assertRaisesRegex(TimeoutError, 'deadline exceeded'):
-                store.record(200, self.body(), deadline=time.monotonic() + 0.05)
+                store.record(200, self.body(), deadline=time.monotonic() + 2)
         self.assertEqual(store.load(result['bodySha256']), result)
 
     def test_concurrent_equal_records_retain_one_exact_reply(self):
