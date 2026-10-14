@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Explicit operator configuration, candidate:** a new private worker root binds
+its installation, target, application, engine and resource settings before
+admission. Exact replay preserves the original seal. Existing unsealed roots
+require separate adoption. This candidate does not activate the default worker.
+See the [configuration record](docs/reviews/2026-10-14-runtime-binding/STATUS.md).
+
 **Original recovery scheduling, candidate:** an explicit supplied worker graph
 attempts old-outcome repair, held original recovery and new admission in that
 order. Each attempted stage ends its step. Lifetime ownership and pinned

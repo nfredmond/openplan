@@ -86,6 +86,9 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+**October 14 operator configuration candidate.** The [dated record](reviews/2026-10-14-runtime-binding/STATUS.md) binds explicit new-root settings before admission, retains exact original replay and recovers known unpublished temporary files. Source controls cover each new case. Service/default activation and legacy-root adoption remain open.
+
+
 These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 through 14. They are not current authority; the documents under "Start here" are.
 
 The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
