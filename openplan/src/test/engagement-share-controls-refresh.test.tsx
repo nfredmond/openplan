@@ -24,6 +24,22 @@ describe("share settings follow saved values without losing drafts", () => {
     expect(description()).toHaveValue("SYNTHETIC published"); expect(submissions()).toBeChecked(); expect(demographics()).toBeChecked(); expect(slug()).toHaveValue("synthetic-published");
     expect(screen.getByText("Portal status: Live · accepting submissions")).toBeVisible(); expect(save()).toBeDisabled();
   });
+  it("names a past participation end date in the workspace calendar instead of accepting", () => {
+    for (const [timeZone, named] of [
+      ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+      ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+    ] as const) {
+      const view = render(
+        <EngagementShareControls
+          campaign={{ ...initial, allow_public_submissions: true, participation_ends_at: "2026-10-11T02:30:00+00:00" }}
+          timeZone={timeZone}
+        />
+      );
+      expect(screen.getByText("Portal status: Live · submissions closed")).toBeVisible();
+      expect(screen.getByText(`Comments are closed because the participation period ended on ${named}.`)).toBeVisible();
+      view.unmount();
+    }
+  });
   it("keeps unsaved submission changes separate from live status and sends only that edit", async () => {
     render(<EngagementShareControls campaign={{ ...initial, allow_public_submissions: true }} />);
     fireEvent.click(submissions()); expect(submissions()).not.toBeChecked();

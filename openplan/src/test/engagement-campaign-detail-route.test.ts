@@ -24,7 +24,14 @@ const campaignUpdateMock = vi.fn(() => ({ eq: campaignUpdateEqMock }));
 const campaignPlaceMaybeSingleMock = vi.fn();
 const workspaceMaybeSingleMock = vi.fn();
 const workspaceEqMock = vi.fn(() => ({ maybeSingle: workspaceMaybeSingleMock }));
-const workspaceSelectMock = vi.fn(() => ({ eq: workspaceEqMock }));
+/** The workspace calendar (`loadWorkspaceCalendar`), read only to name a date in a refusal. */
+let workspaceCalendarRow: { time_zone: string | null; home_country_code: string | null } | null = null;
+const workspaceCalendarEqMock = vi.fn(() => ({
+  maybeSingle: async () => ({ data: workspaceCalendarRow, error: null }),
+}));
+const workspaceSelectMock = vi.fn((columns?: string) =>
+  columns === "time_zone, home_country_code" ? { eq: workspaceCalendarEqMock } : { eq: workspaceEqMock }
+);
 
 const membershipMaybeSingleMock = vi.fn();
 const membershipEqUserMock = vi.fn(() => ({ maybeSingle: membershipMaybeSingleMock }));
@@ -218,6 +225,28 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-15T12:00:00.000Z"));
     vi.clearAllMocks();
+    /*
+      clearAllMocks clears call history but NOT queued mockResolvedValueOnce
+      values. A test that queues one and returns before reading it (a 400 on
+      the payload, say) leaves it for whichever test runs next, which only
+      shows up when the order is shuffled. Every mock a test queues a Once on
+      is reset here and re-seeded below.
+    */
+    for (const mock of [
+      campaignMaybeSingleMock,
+      membershipMaybeSingleMock,
+      campaignGeofenceMaybeSingleMock,
+      campaignUpdateMaybeSingleMock,
+      resolvePlaceBoundaryMock,
+      rtpCyclesOrderMock,
+    ]) {
+      mock.mockReset();
+    }
+    campaignUpdateMaybeSingleMock.mockResolvedValue({
+      data: { id: "11111111-1111-4111-8111-111111111111" },
+      error: null,
+    });
+    workspaceCalendarRow = null;
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -873,6 +902,157 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     );
 
     expect(campaignGeofenceMaybeSingleMock).not.toHaveBeenCalled();
+  });
+
+  /**
+   * CLOSING PUBLIC SUBMISSIONS. Before this field existed nothing in the app
+   * wrote `submissions_closed_at`, so the view-only public page, the submit
+   * routes' refusal and the report provenance that read it could never be
+   * reached. The close time comes from the server clock.
+   */
+  describe("closing and reopening public submissions", () => {
+    const patchBody = (body: Record<string, unknown>) =>
+      patchCampaignDetail(
+        new NextRequest("http://localhost/api/engagement/campaigns/1", {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+
+    function campaignWithClosedAt(closedAt: string | null, participationEndsAt: string | null = null) {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "Downtown listening campaign",
+          status: "active",
+          engagement_type: "comment_collection",
+          allow_public_submissions: true,
+          submissions_closed_at: closedAt,
+          participation_ends_at: participationEndsAt,
+        },
+        error: null,
+      });
+    }
+
+    it("closes submissions at the server's time", async () => {
+      campaignWithClosedAt(null);
+      vi.setSystemTime(new Date("2026-04-02T09:30:00.000Z"));
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: "2026-04-02T09:30:00.000Z" });
+      expect(campaignUpdateEqMock).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
+      expect(mockAudit.info).toHaveBeenCalledWith(
+        "campaign_updated",
+        expect.objectContaining({ submissionsClosed: true })
+      );
+    });
+
+    it("keeps the first close time when an already closed campaign is closed again", async () => {
+      campaignWithClosedAt("2026-03-01T00:00:00.000Z");
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("reopens submissions by clearing the close time", async () => {
+      campaignWithClosedAt("2026-03-01T00:00:00.000Z");
+
+      const response = await patchBody({ submissionsClosed: false });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: null });
+    });
+
+    /*
+      The public page, the submit routes and the database triggers refuse
+      comments from the participation end instant on. A reopen after it would
+      clear the close time and change nothing residents see, so it is refused
+      in words, naming the date in the workspace calendar. The end date is
+      never moved for the caller.
+    */
+    it("refuses to reopen after the participation end date, naming it in the workspace calendar", async () => {
+      vi.setSystemTime(new Date("2026-10-14T18:00:00.000Z"));
+      for (const [timeZone, named] of [
+        ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+        ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+      ] as const) {
+        campaignUpdateMock.mockClear();
+        workspaceCalendarRow = { time_zone: timeZone, home_country_code: null };
+        campaignWithClosedAt("2026-10-01T00:00:00.000Z", "2026-10-11T02:30:00+00:00");
+
+        const response = await patchBody({ submissionsClosed: false });
+
+        expect(response.status).toBe(409);
+        const body = (await response.json()) as { message: string };
+        expect(body.message).toBe(
+          `Comments are closed because the participation period ended on ${named}. Change the end date to take comments again.`
+        );
+        expect(campaignUpdateMock).not.toHaveBeenCalled();
+        expect(workspaceCalendarEqMock).toHaveBeenLastCalledWith("id", "33333333-3333-4333-8333-333333333333");
+      }
+    });
+
+    it("reopens when the same request moves the end date later, and never moves it itself", async () => {
+      vi.setSystemTime(new Date("2026-10-14T18:00:00.000Z"));
+      campaignWithClosedAt("2026-10-01T00:00:00.000Z", "2026-10-11T02:30:00+00:00");
+
+      const response = await patchBody({ submissionsClosed: false, participationEndsAt: "2026-11-01T07:00:00.000Z" });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({
+        participation_ends_at: "2026-11-01T07:00:00.000Z",
+        submissions_closed_at: null,
+      });
+    });
+
+    it("reopens before the end date without touching it", async () => {
+      vi.setSystemTime(new Date("2026-10-14T18:00:00.000Z"));
+      campaignWithClosedAt("2026-10-01T00:00:00.000Z", "2026-10-14T18:00:01+00:00");
+
+      const response = await patchBody({ submissionsClosed: false });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: null });
+    });
+
+    it("still closes a campaign whose end date has passed", async () => {
+      vi.setSystemTime(new Date("2026-10-14T18:00:00.000Z"));
+      campaignWithClosedAt(null, "2026-10-11T02:30:00+00:00");
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: "2026-10-14T18:00:00.000Z" });
+    });
+
+    it("does not let a caller choose the close time", async () => {
+      // Refused at the payload, before the campaign is read.
+      const response = await patchBody({ submissionsClosedAt: "2020-01-01T00:00:00.000Z" });
+
+      expect(response.status).toBe(400);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a viewer, the same as every other campaign edit", async () => {
+      campaignWithClosedAt(null);
+      membershipMaybeSingleMock.mockResolvedValueOnce({
+        data: { workspace_id: "33333333-3333-4333-8333-333333333333", role: "viewer" },
+        error: null,
+      });
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(403);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
   });
 
   /**

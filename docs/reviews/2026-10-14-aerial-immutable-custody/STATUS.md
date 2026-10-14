@@ -105,3 +105,13 @@ match the restored joined tree. CI now runs the custody source and loopback
 transport controls after callback controls; the local actual Storage fixture
 retains its separate target fence and is not a generic hosted test. Fresh CI,
 main integration and exact hosted delivery remain pending.
+
+## October 14 current-main account-limit join
+
+The combined worker stack joins main d0d2290da7e7 and preserves the incoming
+workspace storage check. Its native transport fixture now asserts both the
+workspace_storage_bytes function and the original workspace argument. Four
+six-case installed-SDK cohorts pass. Six transfer faults and two fixture-scope
+faults fail at their named assertions. The changed native fixture is bound by
+stack-transport-bindings.json. Storage permissions and database writes remain
+fixtures; this is separate from live RLS and hosted delivery.

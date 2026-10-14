@@ -29,6 +29,25 @@ describe("EngagementPublicLinkCompact", () => {
     ).toBeInTheDocument();
   });
 
+  it("names a past participation end date in the workspace calendar on the status chip", () => {
+    for (const [timeZone, named] of [
+      ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+      ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+    ] as const) {
+      const { unmount } = render(
+        <EngagementPublicLinkCompact
+          campaign={campaign({ participation_ends_at: "2026-10-11T02:30:00+00:00" })}
+          timeZone={timeZone}
+        />
+      );
+      expect(screen.getByText(/Portal · Live/).closest("[title]")).toHaveAttribute(
+        "title",
+        `Comments are closed because the participation period ended on ${named}.`
+      );
+      unmount();
+    }
+  });
+
   it("shows Private with no URL when no share token exists", () => {
     render(<EngagementPublicLinkCompact campaign={campaign({ share_token: null })} />);
 

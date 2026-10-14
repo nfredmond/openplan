@@ -16,6 +16,8 @@ def run(repo, out):
     os.umask(0o077)
     out.mkdir(mode=0o700)
     source = repo / 'openplan/src/lib/aerial/artifact-custody-server.ts'
+    fixture = Path(__file__).with_name('native_transport.mjs')
+    fixture_original = fixture.read_bytes()
     original = source.read_bytes()
     (out / 'original-source-private.ts').write_bytes(original)
     text = original.decode()
@@ -41,8 +43,10 @@ def run(repo, out):
     try:
         positive('baseline')
         source.write_bytes(original + b'\n// Harmless native transport comment.\n')
+        fixture.write_bytes(fixture_original + b'\n// Harmless fixture scope note.\n')
         positive('harmless-comment')
         source.write_bytes(original)
+        fixture.write_bytes(fixture_original)
         positive('restored-after-harmless')
         no_transport_signal = replace('signal: requestSignal ? AbortSignal.any([signal, requestSignal]) : signal,', 'signal: requestSignal ?? undefined,')
         cases = [
@@ -72,6 +76,19 @@ def run(repo, out):
                 rows.append({'case': label, 'outcome': 'intended_failure', 'transportCase': mode, 'diagnostic': reason})
             finally:
                 source.write_bytes(original)
+        for label, old, diagnostic in [
+            ('fixture-rpc-name-unchecked', "    assert.equal(name, 'workspace_storage_bytes', 'Fixture requires original storage RPC');", 'Missing expected rejection: Wrong RPC must fail the fixture'),
+            ('fixture-workspace-unchecked', "    assert.deepEqual(args, {p_workspace_id: job.workspaceId}, 'Fixture requires original workspace scope');", 'Missing expected rejection: Wrong workspace must fail the fixture'),
+        ]:
+            try:
+                fixture_text = fixture_original.decode()
+                assert fixture_text.count(old) == 1
+                fixture.write_text(fixture_text.replace(old, '// Deliberately omitted fixture scope assertion.', 1))
+                code, output = execute(label, 'thrown-acknowledgement')
+                assert intended(code, output, diagnostic), label + ' reaches intended fixture assertion'
+                rows.append({'case': label, 'outcome': 'intended_failure', 'diagnostic': diagnostic})
+            finally:
+                fixture.write_bytes(fixture_original)
         positive('restored')
         (out / 'controls.json').write_text(json.dumps(rows, indent=2) + '\n')
         (out / 'oracles.json').write_text(json.dumps(oracles, indent=2) + '\n')
@@ -79,7 +96,8 @@ def run(repo, out):
         print(rows)
     finally:
         source.write_bytes(original)
-        assert source.read_bytes() == original
+        fixture.write_bytes(fixture_original)
+        assert source.read_bytes() == original and fixture.read_bytes() == fixture_original
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

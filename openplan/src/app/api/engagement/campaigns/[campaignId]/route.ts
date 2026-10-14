@@ -18,6 +18,8 @@ import {
   projectPlaceFromPlaceBoundary,
 } from "@/lib/projects/project-place";
 import { loadPortalPlaceCandidates, resolvePortalMapFraming } from "@/lib/engagement/public-portal-data";
+import { participationDateClosure } from "@/lib/engagement/public-portal";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import {
   geofenceUpdateRefusal,
   placeCanGeofence,
@@ -102,6 +104,13 @@ const patchCampaignSchema = z
     accessibilityContactPhone: z.union([z.string().trim().max(80), z.null()]).optional(),
     accessibilityAlternateFormats: z.union([z.string().trim().max(2000), z.null()]).optional(),
     allowPublicSubmissions: z.boolean().optional(),
+    /**
+     * Close or reopen public submissions. The close time is set here, from the
+     * server clock, never sent by the caller: it is the date the public page,
+     * the submit routes and report provenance all read as "comments closed".
+     * Closing an already closed campaign keeps the first close time.
+     */
+    submissionsClosed: z.boolean().optional(),
     demographicsEnabled: z.boolean().optional(),
     /**
      * Refuse a submitted pin that falls outside this campaign's own area
@@ -719,6 +728,29 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       }
     }
 
+    /*
+      A reopen after the participation end date changes nothing a resident
+      sees: the public page, the submit routes and the database triggers all
+      refuse comments from that instant on. Clearing the close time anyway
+      would tell staff comments are open when they are not, so the reopen is
+      refused, naming the date. The end date is never moved for the caller; a
+      PATCH that also sets a later end date reopens.
+    */
+    if (parsed.data.submissionsClosed === false) {
+      const endsAt =
+        parsed.data.participationEndsAt !== undefined
+          ? parsed.data.participationEndsAt
+          : (access.campaign.participation_ends_at ?? null);
+      if (participationDateClosure({ participation_ends_at: endsAt })?.reason === "ended") {
+        const { timeZone } = await loadWorkspaceCalendar(supabase, access.campaign.workspace_id);
+        const sentence =
+          participationDateClosure({ participation_ends_at: endsAt }, { timeZone })?.sentence ??
+          "Comments are closed because the participation period has ended.";
+        const refusal = `${sentence} Change the end date to take comments again.`;
+        return NextResponse.json({ error: refusal, message: refusal }, { status: 409 });
+      }
+    }
+
     const updates: Record<string, unknown> = {};
     if (parsed.data.participationStartsAt !== undefined) updates.participation_starts_at = parsed.data.participationStartsAt;
     if (parsed.data.participationEndsAt !== undefined) updates.participation_ends_at = parsed.data.participationEndsAt;
@@ -760,6 +792,11 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
     }
     if (parsed.data.publicDescription !== undefined) updates.public_description = parsed.data.publicDescription;
     if (parsed.data.allowPublicSubmissions !== undefined) updates.allow_public_submissions = parsed.data.allowPublicSubmissions;
+    if (parsed.data.submissionsClosed === false) {
+      updates.submissions_closed_at = null;
+    } else if (parsed.data.submissionsClosed === true && !access.campaign.submissions_closed_at) {
+      updates.submissions_closed_at = new Date().toISOString();
+    }
     if (parsed.data.demographicsEnabled !== undefined) updates.demographics_enabled = parsed.data.demographicsEnabled;
 
     // Empty string means "cleared", which the column stores as NULL. The table's
@@ -1059,6 +1096,8 @@ export async function PATCH(request: NextRequest, context: RouteContext) {
       // ledger convention here is derived facts, and the row itself records
       // the value with better provenance than a log line.
       publicSlugChanged: parsed.data.publicSlug !== undefined,
+      // Closed, reopened, or untouched (null).
+      submissionsClosed: parsed.data.submissionsClosed ?? null,
       // Counts, not ids: enough to reconstruct that coverage changed and by
       // how much; the join table itself records which rows, with provenance.
       projectLinksAdded: projectLinksChanged?.added ?? 0,

@@ -13,6 +13,7 @@ import {
   getPublicPortalReadiness,
   getPublicPortalState,
   normalizeShareToken,
+  participationDateClosure,
   type PublicPortalReadinessCheck,
 } from "@/lib/engagement/public-portal";
 import type { ProjectPlaceReference } from "@/lib/projects/project-place";
@@ -24,6 +25,8 @@ export type PublishFlowCampaign = {
   public_description: string | null;
   allow_public_submissions: boolean;
   submissions_closed_at: string | null;
+  participation_starts_at: string | null;
+  participation_ends_at: string | null;
 };
 
 /**
@@ -35,6 +38,13 @@ export type PublishFlowCampaign = {
 export type PublishFlowCampaignArea = {
   state: "set" | "unset" | "unreadable";
   label: string | null;
+  /**
+   * Whose area the resident map opens on when the state is `set`: the
+   * campaign's own, the linked project's, or the workspace home, the order the
+   * resident map falls back through (`publishChecklistMapArea`). Absent means
+   * the campaign's own.
+   */
+  source?: "campaign" | "project" | "workspace";
 };
 
 type StepId = PublicPortalReadinessCheck["id"] | "preview";
@@ -69,18 +79,21 @@ export function CampaignPublishFlow({
   campaign,
   campaignArea,
   projectArea = null,
+  timeZone,
 }: {
   campaign: PublishFlowCampaign;
   campaignArea: PublishFlowCampaignArea;
   /** The linked project's area, when it can be copied by reference. */
   projectArea?: ProjectPlaceReference | null;
+  /** The workspace calendar's zone, for dates in staff sentences. Absent means UTC. */
+  timeZone?: string;
 }) {
   const router = useRouter();
   // Steps are derived from the SERVER-saved campaign row, never from local
   // drafts: a step only turns green after the save round-trips and the page
   // re-renders with the new truth.
-  const portalState = getPublicPortalState(campaign);
-  const portalReadiness = getPublicPortalReadiness(campaign, campaignArea.state);
+  const portalState = getPublicPortalState(campaign, { timeZone });
+  const portalReadiness = getPublicPortalReadiness(campaign, campaignArea.state, { timeZone });
   const checkById = new Map<PublicPortalReadinessCheck["id"], PublicPortalReadinessCheck>(
     portalReadiness.checks.map((check) => [check.id, check])
   );
@@ -148,6 +161,46 @@ export function CampaignPublishFlow({
       "Failed to generate the public link"
     );
   }
+
+  // Closing keeps the page up and stops new comments; reopening clears the
+  // close time. Same PATCH as every other step. A page that never took
+  // comments has nothing to close.
+  //
+  // Once the participation end date has passed, reopening changes nothing a
+  // resident sees: the public page, the submit routes and the database all
+  // refuse comments after that date. So no reopen is offered; the planner is
+  // sent to the end date instead. The sentence naming the date is the status
+  // line (live) or the comments step's own detail (checklist).
+  const commentsClosed = Boolean(campaign.submissions_closed_at);
+  const takesComments = commentsClosed || campaign.allow_public_submissions;
+  const datesEnded = takesComments && participationDateClosure(campaign, { timeZone })?.reason === "ended";
+  const closeCommentsButton = datesEnded ? (
+    <a
+      href="#campaign-control-participation-ends"
+      className="w-fit text-sm font-medium underline underline-offset-2 hover:text-foreground"
+      data-testid="publish-change-end-date"
+    >
+      Change the end date to take comments again
+    </a>
+  ) : takesComments ? (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={() =>
+          void patchCampaign(
+            "submissions_closed",
+            { submissionsClosed: !commentsClosed },
+            commentsClosed ? "Failed to reopen comments" : "Failed to close comments"
+          )
+        }
+        disabled={busyAction !== null}
+      >
+        {busyAction === "submissions_closed" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {commentsClosed ? "Reopen comments" : "Close comments"}
+      </Button>
+    ) : null;
 
   const areaStep = (
     <MapAreaStep
@@ -222,6 +275,7 @@ export function CampaignPublishFlow({
         </div>
         <div className="mt-5 space-y-3">
           {urlRow}
+          {closeCommentsButton}
           {areaStep}
           {errorBlock}
           <p className="text-xs text-muted-foreground">
@@ -362,7 +416,8 @@ export function CampaignPublishFlow({
                 PATCH as the checkbox in Public access, and it reads the SAVED
                 row, so it flips only after the save comes back.
               */}
-              {id === "submission_mode" ? (
+              {id === "submission_mode" && (commentsClosed || datesEnded) ? closeCommentsButton : null}
+              {id === "submission_mode" && !commentsClosed && !datesEnded ? (
                 <label className="flex w-fit items-center gap-2 text-sm font-medium">
                   <input
                     id="publish-flow-allow-comments"
@@ -483,7 +538,11 @@ function MapAreaStep({
   const [areaText, setAreaText] = useState("");
   const [pickedPlace, setPickedPlace] = useState<PlaceBoundaryResponse | null>(null);
 
-  if (area.state === "set") {
+  // The map falls back to the linked project's area, then the workspace home,
+  // so the step is done, but the planner can still give this page its own area.
+  const inherited = area.state === "set" && (area.source === "project" || area.source === "workspace");
+
+  if (area.state === "set" && !inherited) {
     return (
       <p id="publish-area-advisory" className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
         {area.label ? `The map opens on ${area.label}.` : detail}
@@ -516,11 +575,15 @@ function MapAreaStep({
         true here. Say only what is known.
       */}
       <p id="publish-area-advisory" className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
-        {projectArea ? "No area is set for this page yet." : detail}
+        {inherited
+          ? inheritedAreaSentence(area.source === "workspace" ? "the workspace's home area" : "the project's area", area.label)
+          : projectArea
+            ? "No area is set for this page yet."
+            : detail}
       </p>
       {!choosing ? (
         <div className="flex flex-wrap gap-2">
-          {projectArea ? (
+          {projectArea && area.source !== "project" ? (
             <Button
               type="button"
               variant="outline"
@@ -541,7 +604,7 @@ function MapAreaStep({
           ) : null}
           <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setChoosing(true)}>
             <MapPin className="h-4 w-4" />
-            {projectArea ? "Choose another area" : "Choose an area"}
+            {projectArea || inherited ? "Choose another area" : "Choose an area"}
           </Button>
         </div>
       ) : (
@@ -580,4 +643,9 @@ function MapAreaStep({
       )}
     </div>
   );
+}
+
+/** "The map opens on the project's area, Placer County, California." */
+function inheritedAreaSentence(whose: string, label: string | null): string {
+  return label ? `The map opens on ${whose}, ${label}.` : `The map opens on ${whose}.`;
 }

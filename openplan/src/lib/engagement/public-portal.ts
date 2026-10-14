@@ -1,10 +1,76 @@
+import { calendarDayOf, UTC_TIME_ZONE, wallClockTimeOf } from "@/lib/time/workspace-calendar";
+
 export type PublicPortalCampaignLike = {
   status?: string | null;
   share_token?: string | null;
   public_description?: string | null;
   allow_public_submissions?: boolean | null;
   submissions_closed_at?: string | null;
+  participation_starts_at?: string | null;
+  participation_ends_at?: string | null;
 };
+
+/** The clock and calendar a staff sentence about participation dates is written in. */
+export type PortalClockOptions = {
+  now?: Date;
+  /** The workspace's IANA zone (`loadWorkspaceCalendar`). Absent means UTC, and the sentence says so. */
+  timeZone?: string;
+};
+
+/**
+ * Why the participation dates keep comments closed right now, or null when
+ * they do not.
+ *
+ * The comparison is the one the public page, the submit routes and the
+ * database triggers make: closed before the start, and closed from the end
+ * instant on. Staff copy reads this so the console cannot say "accepting
+ * submissions" while the public page refuses them.
+ */
+export function participationDateClosure(
+  campaign: Pick<PublicPortalCampaignLike, "participation_starts_at" | "participation_ends_at">,
+  options: PortalClockOptions = {}
+): { reason: "not_started" | "ended"; sentence: string } | null {
+  const now = (options.now ?? new Date()).getTime();
+  const timeZone = options.timeZone ?? UTC_TIME_ZONE;
+  const starts = campaign.participation_starts_at;
+  const ends = campaign.participation_ends_at;
+
+  if (starts && Date.parse(starts) > now) {
+    const moment = recordedMoment(starts, timeZone);
+    return {
+      reason: "not_started",
+      sentence: moment
+        ? `Comments open on ${moment}, when the participation period starts.`
+        : "Comments open when the participation period starts.",
+    };
+  }
+  if (ends && Date.parse(ends) <= now) {
+    const moment = recordedMoment(ends, timeZone);
+    return {
+      reason: "ended",
+      sentence: moment
+        ? `Comments are closed because the participation period ended on ${moment}.`
+        : "Comments are closed because the participation period has ended.",
+    };
+  }
+  return null;
+}
+
+/** "October 10, 2026 at 16:00 (America/Los_Angeles)", in the workspace calendar. Null when unreadable. */
+function recordedMoment(value: string, timeZone: string): string | null {
+  const day = calendarDayOf(value, timeZone);
+  if (!day) return null;
+  const [year, month, date] = day.split("-").map(Number);
+  // The day is already the workspace's; format it as a plain calendar day.
+  const longDay = new Intl.DateTimeFormat("en-US", {
+    timeZone: UTC_TIME_ZONE,
+    year: "numeric",
+    month: "long",
+    day: "numeric",
+  }).format(new Date(Date.UTC(year, month - 1, date)));
+  const time = wallClockTimeOf(value, timeZone);
+  return time ? `${longDay} at ${time} (${timeZone})` : longDay;
+}
 
 export type PublicPortalReadinessCheck = {
   id: "share_token" | "active_status" | "public_description" | "submission_mode" | "map_opens_somewhere";
@@ -78,7 +144,10 @@ export function buildPublicPortalPath(shareToken: string | null | undefined): st
   return normalized ? `/engage/${encodeURIComponent(normalized)}` : null;
 }
 
-export function getPublicPortalState(campaign: PublicPortalCampaignLike): PublicPortalState {
+export function getPublicPortalState(
+  campaign: PublicPortalCampaignLike,
+  options: PortalClockOptions = {}
+): PublicPortalState {
   const shareToken = normalizeShareToken(campaign.share_token);
   const portalPath = buildPublicPortalPath(shareToken);
 
@@ -122,6 +191,26 @@ export function getPublicPortalState(campaign: PublicPortalCampaignLike): Public
       shortLabel: "Staged",
       detail: "A share link is saved, but the public page only resolves when the campaign status is Active.",
       isPubliclyReachable: false,
+      isAcceptingSubmissions: false,
+    };
+  }
+
+  // The dates outrank a staff close, because they are what still keeps the
+  // page closed after comments are reopened. A page that never took comments
+  // stays "view only" below: the dates change nothing about it.
+  const dateClosure =
+    campaign.submissions_closed_at || campaign.allow_public_submissions
+      ? participationDateClosure(campaign, options)
+      : null;
+  if (dateClosure) {
+    return {
+      shareToken,
+      portalPath,
+      visibility: "live_closed",
+      label: dateClosure.reason === "ended" ? "Live · submissions closed" : "Live · comments not open yet",
+      shortLabel: "Live",
+      detail: dateClosure.sentence,
+      isPubliclyReachable: true,
       isAcceptingSubmissions: false,
     };
   }
@@ -174,12 +263,17 @@ export type PublicPortalAreaState = "set" | "unset" | "unreadable";
 
 export function getPublicPortalReadiness(
   campaign: PublicPortalCampaignLike,
-  areaState: PublicPortalAreaState = "unreadable"
+  areaState: PublicPortalAreaState = "unreadable",
+  options: PortalClockOptions = {}
 ): PublicPortalReadiness {
   const shareToken = normalizeShareToken(campaign.share_token);
   const publicDescription = campaign.public_description?.trim() ?? "";
   const submissionsClosed = Boolean(campaign.submissions_closed_at);
   const allowsSubmissions = Boolean(campaign.allow_public_submissions);
+  // Same rule as `getPublicPortalState`: once comments are on or closed by
+  // staff, a past end date is what decides, and the step says so.
+  const dateClosure =
+    allowsSubmissions || submissionsClosed ? participationDateClosure(campaign, options) : null;
 
   // Planner words, one short sentence each. The publish checklist shows a
   // step's detail only while the step is open, so the open wording carries the
@@ -217,7 +311,9 @@ export function getPublicPortalReadiness(
       passed: allowsSubmissions || submissionsClosed,
       // "Waits for review" is the moderation rule a planner has to know before
       // turning comments on; it stays in the done wording too.
-      detail: allowsSubmissions
+      detail: dateClosure?.reason === "ended"
+        ? dateClosure.sentence
+        : allowsSubmissions
         ? "Residents can comment. Each comment waits for staff review before residents see it."
         : submissionsClosed
           ? "Comments are closed, so the page is view only."

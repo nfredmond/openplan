@@ -541,7 +541,7 @@ export function EngagementCampaignControls({
 
         <div className="grid gap-3 sm:grid-cols-2">
           <label className="text-sm">Participation opens, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationStartsAt} onChange={(event) => setParticipationStartsAt(event.target.value)} /></label>
-          <label className="text-sm">Participation closes, UTC<input className="block w-full rounded border p-2" type="datetime-local" value={participationEndsAt} onChange={(event) => setParticipationEndsAt(event.target.value)} /></label>
+          <label className="text-sm">Participation closes, UTC<input id="campaign-control-participation-ends" className="block w-full rounded border p-2" type="datetime-local" value={participationEndsAt} onChange={(event) => setParticipationEndsAt(event.target.value)} /></label>
         </div>
         <Button type="submit" disabled={isSubmitting}>
           {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin" /> : null}

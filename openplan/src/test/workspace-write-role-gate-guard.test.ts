@@ -165,7 +165,7 @@ const UNGATED_BY_DESIGN: Record<string, string> = {
   "workspaces/active/route.ts":
     "switches which workspace the caller is looking at; a viewer must be able to change their own view",
   "workspaces/bootstrap/route.ts":
-    "self-provisions the caller's FIRST workspace, where by definition they hold no prior role",
+    "creates a new workspace the caller will own, where by definition they hold no prior role; create_owned_workspace limits how many each person owns",
   "workspaces/invitations/accept/route.ts":
     "the caller acts on their own invitation; their role in that workspace is the thing being established",
   "workspaces/invitations/decline/route.ts": "the caller declines their own invitation",

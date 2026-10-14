@@ -63,7 +63,8 @@ import { LocationDisplayMap } from "@/components/engagement/location-display-map
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
-import { loadPortalPlaceCandidates } from "@/lib/engagement/public-portal-data";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
+import { loadPortalPlaceCandidates, publishChecklistMapArea } from "@/lib/engagement/public-portal-data";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
@@ -445,8 +446,10 @@ export default async function EngagementCampaignDetailPage({
   // public portal and the campaign GET route read (`loadPortalPlaceCandidates`),
   // so what the flow says about the campaign's area is the fact residents get,
   // not a second calculation. Its three-state answer already keeps a failed
-  // read from arriving as "no area".
-  const [layerAccess, contextLayers, publishedContextLayers, portalPlaceCandidates] = await Promise.all([
+  // read from arriving as "no area". The workspace calendar names the
+  // participation dates in staff sentences; a failed read answers UTC and the
+  // sentence names the zone.
+  const [layerAccess, contextLayers, publishedContextLayers, portalPlaceCandidates, workspaceCalendar] = await Promise.all([
     loadCampaignAccess(supabase, campaign.id, user.id, "engagement.write"),
     loadCampaignContextLayerSummaries(supabase, campaign.id),
     loadParticipantContextLayers(supabase, campaign.id),
@@ -455,6 +458,7 @@ export default async function EngagementCampaignDetailPage({
       workspace_id: campaign.workspace_id,
       project_id: campaign.project_id,
     }),
+    loadWorkspaceCalendar(supabase, campaign.workspace_id),
   ]);
   const canManageContextLayers = "allowed" in layerAccess && Boolean(layerAccess.allowed);
 
@@ -553,7 +557,7 @@ export default async function EngagementCampaignDetailPage({
   // states that plainly, near the top, from the same portal-state function the
   // publish gate uses. It is withheld when the comments could not be read: a
   // failed read licenses no count, in either direction.
-  const portalStateNow = getPublicPortalState(campaign);
+  const portalStateNow = getPublicPortalState(campaign, { timeZone: workspaceCalendar.timeZone });
   const awaitingReviewCount = counts.moderationQueue.actionableCount;
   const showModerationHonestyBanner =
     !itemsUnreadable &&
@@ -669,7 +673,7 @@ export default async function EngagementCampaignDetailPage({
 
       {/* Above the tab strip on purpose: whether residents can reach this
           campaign, and the link they use, matters on every tab. */}
-      <EngagementPublicLinkCompact campaign={campaign} />
+      <EngagementPublicLinkCompact campaign={campaign} timeZone={workspaceCalendar.timeZone} />
 
       <PageTabNav
         tabs={campaignTabs}
@@ -697,11 +701,9 @@ export default async function EngagementCampaignDetailPage({
           </h2>
           <CampaignPublishFlow
             campaign={campaign}
-            campaignArea={{
-              state: portalPlaceCandidates.campaign.state,
-              label: portalPlaceCandidates.campaign.label,
-            }}
+            campaignArea={publishChecklistMapArea(portalPlaceCandidates)}
             projectArea={portalPlaceCandidates.projectReference ?? null}
+            timeZone={workspaceCalendar.timeZone}
           />
 
           <article className="module-section-surface">
@@ -942,6 +944,7 @@ export default async function EngagementCampaignDetailPage({
             campaign={{ ...campaign, public_slug: publicSlug }}
             projects={(projects ?? []) as Array<{ id: string; name: string }>}
             categories={builderCategories}
+            timeZone={workspaceCalendar.timeZone}
           />
         </SetupAdvancedGroup>
         </div>

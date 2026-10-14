@@ -1,4 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
 import { NextRequest } from "next/server";
 vi.mock("server-only", () => ({}));
 
@@ -29,6 +40,7 @@ const dedupEqCalls: Array<[string, unknown]> = [];
 const dedupIsCalls: Array<[string, unknown]> = [];
 /** Service-role writes the upload performed, in order. */
 const serviceInserts: Array<{ table: string; rows: unknown }> = [];
+const storageUploads: string[] = [];
 
 /** Awaitable filter-recording builder standing in for the kb_documents list query. */
 function kbListBuilder() {
@@ -89,7 +101,10 @@ vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({
     storage: {
       from: () => ({
-        upload: async () => ({ error: null }),
+        upload: async (path: string) => {
+          storageUploads.push(path);
+          return { error: null };
+        },
         remove: async () => ({ error: null }),
       }),
     },
@@ -246,6 +261,72 @@ describe("POST /api/knowledge-base/documents — the checksum dedup probe", () =
     expect(auditWarn).toHaveBeenCalledWith("kb_document_dedup_probe_failed", {
       message: "canceling statement due to statement timeout",
     });
+  });
+});
+
+describe("POST /api/knowledge-base/documents: the workspace storage limit", () => {
+  beforeEach(() => {
+    getUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });
+    membershipMaybeSingleMock.mockResolvedValue({ data: { role: "owner" }, error: null });
+    dedupResponse = { data: null, error: null };
+    serviceInserts.length = 0;
+    storageUploads.length = 0;
+    auditWarn.mockClear();
+  });
+
+  it("refuses a file that would go over the limit before any byte is stored", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "full",
+      usedBytes: 5 * 1024 ** 3,
+      quotaBytes: 5 * 1024 ** 3,
+      message: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(413);
+    expect(await res.json()).toMatchObject({
+      error: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+    expect(storageUploads).toEqual([]);
+    expect(serviceInserts).toEqual([]);
+    // The measured body (one byte) against THIS workspace.
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), WORKSPACE_ID, 1);
+  });
+
+  it("refuses when the workspace's use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "unreadable",
+      message: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+      detail: "permission denied",
+    });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(503);
+    expect(await res.json()).toEqual({
+      error: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+    });
+    expect(storageUploads).toEqual([]);
+  });
+
+  it("stores the file while the workspace has room", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(201);
+    expect(storageUploads).toHaveLength(1);
+    expect(storageUploads[0].startsWith(`${WORKSPACE_ID}/`)).toBe(true);
+  });
+
+  it("answers a duplicate without checking, because a duplicate stores nothing", async () => {
+    dedupResponse = { data: { id: "doc-existing", title: "Adopted plan" }, error: null };
+
+    const res = await POST(uploadTextRequest());
+
+    expect(res.status).toBe(200);
+    expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
   });
 });
 

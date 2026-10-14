@@ -34,6 +34,7 @@
 
 import { createHash } from "node:crypto";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { checkWorkspaceStorageRoom, type WorkspaceStorageRoom } from "@/lib/workspaces/storage-quota";
 import {
   AERIAL_ARTIFACT_BUCKET,
   AERIAL_ARTIFACT_CUSTODY_COLUMNS,
@@ -78,6 +79,8 @@ export type CustodySupabaseLike = {
       eq: (column: string, value: string) => { select: (columns: string) => PromiseLike<CustodyQueryResult> };
     };
   };
+  /** The workspace storage-use read (`workspace_storage_bytes`) made before each store. */
+  rpc: (fn: string, args: Record<string, unknown>) => PromiseLike<{ data: unknown; error: { message?: string } | null }>;
   storage: {
     from: (bucket: string) => {
       upload: (
@@ -402,9 +405,10 @@ async function custodyOfOne(
     now: Date;
     fetchImpl: typeof fetch;
     priorAttempts: number;
+    storageRoom: (workspaceId: string, bytes: number) => Promise<WorkspaceStorageRoom>;
   }
 ): Promise<CustodyRowWrite> {
-  const { storage, maxBytes, signal, now, fetchImpl, priorAttempts } = options;
+  const { storage, maxBytes, signal, now, fetchImpl, priorAttempts, storageRoom } = options;
   const sourceHost = artifactSourceHost(candidate.downloadUrl) ?? "the processing worker";
   const base = { kind: candidate.kind, sourceHost, sourceExpiresAt: candidate.expiresAt };
 
@@ -465,6 +469,30 @@ async function custodyOfOne(
 
   const uploadContentType =
     download.contentType ?? candidate.contentType ?? "application/octet-stream";
+
+  // The workspace's storage total, with the measured bytes, before they are
+  // stored. A retry whose earlier attempt already left this exact object (lost
+  // acknowledgement) adds no bytes, so a refusal is only final when no matching
+  // object is there; otherwise the reconciliation below takes custody of it.
+  const room = await storageRoom(job.workspaceId, download.bytes.byteLength);
+  if (
+    room.status !== "room" &&
+    !(await storedArtifactMatches(storage, storagePath, download.bytes.byteLength, download.sha256, signal))
+  ) {
+    const code = room.status === "full" ? "workspace_storage_full" : "workspace_storage_unreadable";
+    return failedRow(
+      candidate,
+      job,
+      sourceHost,
+      code,
+      room.status === "full"
+        ? { ...base, code, quotaBytes: room.quotaBytes, usedBytes: room.usedBytes }
+        : { ...base, code },
+      true,
+      now,
+      priorAttempts
+    );
+  }
 
   // Keep original bytes when a prior upload survives an interrupted row write.
   // An existing key requires byte reconciliation, never replacement.
@@ -678,6 +706,7 @@ export async function runAerialCustodyPass(input: {
         now,
         fetchImpl,
         priorAttempts,
+        storageRoom: (workspaceId, bytes) => checkWorkspaceStorageRoom(input.supabase, workspaceId, bytes, env),
       })
     );
   }

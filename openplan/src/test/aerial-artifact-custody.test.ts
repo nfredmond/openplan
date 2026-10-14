@@ -117,6 +117,8 @@ function harness(): Harness {
         };
       },
     }),
+    // workspace_storage_bytes: an empty workspace, so custody may store.
+    rpc: () => Promise.resolve({ data: 0, error: null }),
     storage: {
       from: (bucket: string) => ({
         upload: (path: string, body: unknown, options?: { contentType?: string; upsert?: boolean }) => {

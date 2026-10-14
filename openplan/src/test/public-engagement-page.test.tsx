@@ -918,6 +918,26 @@ describe("PublicEngagementPage", () => {
     expect(tab.textContent).not.toMatch(/\d/);
   });
 
+  it("shows the page as view only once staff have closed submissions", async () => {
+    // Open first, as the control: the same fixture with no close time.
+    const { unmount } = render(
+      await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) })
+    );
+    expect(screen.getAllByText(EN_MESSAGES["page.submissionsOpen"]).length).toBeGreaterThan(0);
+    unmount();
+
+    const openRow = (await campaignMaybeSingleMock.getMockImplementation()?.()) as { data: Record<string, unknown> };
+    campaignMaybeSingleMock.mockResolvedValue({
+      data: { ...openRow.data, submissions_closed_at: "2026-04-02T09:30:00.000Z" },
+      error: null,
+    });
+
+    render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
+
+    expect(screen.getAllByText(EN_MESSAGES["page.submissionsClosed"]).length).toBeGreaterThan(0);
+    expect(screen.queryByText(EN_MESSAGES["page.submissionsOpen"])).toBeNull();
+  });
+
   it("says the ordinary empty-state when the reads succeeded and there is simply nothing yet", async () => {
     render(await PublicEngagementPage({ params: Promise.resolve({ shareToken: "share-token-12345" }) }));
     openFeedbackTab();

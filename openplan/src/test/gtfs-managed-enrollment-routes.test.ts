@@ -81,3 +81,32 @@ describe("managed transit enrollment routes", () => {
  it("does not read status for a nonmember", async () => { mocks.role = null; expect((await status(request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), context)).status).toBe(404); expect(readStatus).not.toHaveBeenCalled(); });
  it("keeps unavailable status distinct from a missing committed submission", async () => { readStatus.mockRejectedValue(new Error("Private database detail")); const result = await status(request(`/api/gtfs/submissions/${id(3)}?workspaceId=${workspaceId}`), context); expect(result.status).toBe(503); expect(JSON.stringify(await result.json())).not.toContain("Private database detail"); });
 });
+// The body door with managed import off: the workspace storage limit is read
+// through the real storage-quota module, from workspace_storage_bytes.
+describe("the GTFS body upload and the workspace storage limit", () => {
+ const uploadThree = () => upload(new NextRequest(`http://127.0.0.1:3210/api/gtfs/feeds/upload?workspaceId=${workspaceId}&filename=agency.zip`, { method: "POST", headers: { "content-type": "application/zip" }, body: new Uint8Array([1, 2, 3]) }));
+ beforeEach(() => {
+  vi.stubEnv("OPENPLAN_GTFS_MANAGED_INGESTION", "0"); vi.stubEnv("OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES", "10");
+  vi.mocked(runGtfsIngest).mockResolvedValue({ ok: false, status: 422, code: "not_a_zip", detail: "Synthetic refusal", versionId: null, feedId: null, createdFeed: false });
+ });
+ it("refuses an archive that would go over the operator's limit before the ingest stores it", async () => {
+  mocks.service.rpc.mockResolvedValueOnce({ data: 8, error: null });
+  const result = await uploadThree();
+  expect(result.status).toBe(413);
+  expect((await result.json()).error).toBe("This file would put the workspace over its 10 bytes storage limit (8 bytes used). Delete files you no longer need, or ask whoever runs this OpenPlan site to raise the limit.");
+  expect(mocks.service.rpc).toHaveBeenCalledWith("workspace_storage_bytes", { p_workspace_id: workspaceId });
+  expect(runGtfsIngest).not.toHaveBeenCalled();
+ });
+ it("ingests an archive that fits exactly", async () => {
+  mocks.service.rpc.mockResolvedValueOnce({ data: 7, error: null });
+  await uploadThree();
+  expect(runGtfsIngest).toHaveBeenCalledTimes(1);
+ });
+ it("refuses when the workspace's use cannot be read", async () => {
+  mocks.service.rpc.mockResolvedValueOnce({ data: null, error: { message: "permission denied for function workspace_storage_bytes" } });
+  const result = await uploadThree();
+  expect(result.status).toBe(503);
+  expect(JSON.stringify(await result.json())).not.toContain("permission denied");
+  expect(runGtfsIngest).not.toHaveBeenCalled();
+ });
+});

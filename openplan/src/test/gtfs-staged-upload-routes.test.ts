@@ -1,6 +1,17 @@
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+// The workspace storage limit (storage-quota.ts). Room by default; a test that
+// is about the limit sets the answer and checks what the route asked.
+const checkWorkspaceStorageRoomMock = vi.hoisted(() => vi.fn());
+vi.mock("@/lib/workspaces/storage-quota", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("@/lib/workspaces/storage-quota")>()),
+  checkWorkspaceStorageRoom: (...args: unknown[]) =>
+    checkWorkspaceStorageRoomMock(...args) ?? Promise.resolve({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 }),
+}));
+// Every test starts from the default (room), whatever ran before it.
+beforeEach(() => checkWorkspaceStorageRoomMock.mockReset());
+
 /**
  * THE GTFS UPLOAD THAT NEVER RIDES IN A FUNCTION BODY.
  *
@@ -282,6 +293,47 @@ describe("POST /api/gtfs/feeds/upload/start", () => {
     vi.stubEnv("OPENPLAN_GTFS_MANAGED_INGESTION", "1");
     expect((await start(post("start", startBody()))).status).toBe(409);
     expect(mocks.createSignedUploadUrl).not.toHaveBeenCalled();
+  });
+});
+
+describe("POST /api/gtfs/feeds/upload/start: the workspace storage limit", () => {
+  it("refuses before a URL exists when the declared archive would go over the limit", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "full",
+      usedBytes: 4.95 * 1024 ** 3,
+      quotaBytes: 5 * 1024 ** 3,
+      message: "This file would put the workspace over its 5 GiB storage limit (5 GiB used).",
+    });
+    const response = await start(post("start", startBody()));
+    expect(response.status).toBe(413);
+    expect((await response.json()).error).toBe(
+      "This file would put the workspace over its 5 GiB storage limit (5 GiB used)."
+    );
+    expect(mocks.createSignedUploadUrl).not.toHaveBeenCalled();
+    // The declared size, against the workspace the caller is a member of.
+    expect(checkWorkspaceStorageRoomMock).toHaveBeenCalledWith(expect.anything(), WORKSPACE_ID, 94 * 1024 * 1024);
+  });
+
+  it("refuses before a URL exists when the workspace's use cannot be read", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({
+      status: "unreadable",
+      message: "Storage use could not be checked, so nothing was uploaded. Try again in a minute.",
+      detail: "permission denied",
+    });
+    expect((await start(post("start", startBody()))).status).toBe(503);
+    expect(mocks.createSignedUploadUrl).not.toHaveBeenCalled();
+  });
+
+  it("signs the URL while the workspace has room", async () => {
+    checkWorkspaceStorageRoomMock.mockResolvedValue({ status: "room", usedBytes: 0, quotaBytes: 5 * 1024 ** 3 });
+    expect((await start(post("start", startBody()))).status).toBe(200);
+    expect(mocks.createSignedUploadUrl).toHaveBeenCalledTimes(1);
+  });
+
+  it("checks nothing for a viewer, who is refused first", async () => {
+    tables.workspace_members = [{ workspace_id: WORKSPACE_ID, user_id: USER_ID, role: "viewer" }];
+    expect((await start(post("start", startBody()))).status).toBe(403);
+    expect(checkWorkspaceStorageRoomMock).not.toHaveBeenCalled();
   });
 });
 

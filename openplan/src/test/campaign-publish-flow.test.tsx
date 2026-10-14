@@ -26,6 +26,8 @@ function campaign(overrides: Partial<PublishFlowCampaign> = {}): PublishFlowCamp
     public_description: null,
     allow_public_submissions: false,
     submissions_closed_at: null,
+    participation_starts_at: null,
+    participation_ends_at: null,
     ...overrides,
   };
 }
@@ -103,11 +105,14 @@ describe("CampaignPublishFlow", () => {
       expect(screen.getByTestId("publish-step-public_description")).toHaveAttribute("data-state", "done");
       expect(screen.getByTestId("publish-step-submission_mode")).toHaveAttribute("data-state", "done");
       expect(screen.getByTestId("publish-step-active_status")).toHaveAttribute("data-state", "todo");
-      // A done step offers no action, except the comments switch, which is a
-      // switch: it stays so a planner can turn comments off again.
+      // A done step offers no action, except the comments step, which stays
+      // so a planner can change it. Closed comments are reopened, not toggled.
       expect(screen.queryByRole("button", { name: /Generate link/i })).not.toBeInTheDocument();
       expect(screen.queryByRole("button", { name: /Save description/i })).not.toBeInTheDocument();
-      expect(screen.getByRole("checkbox", { name: /Accept comments from residents/i })).toBeInTheDocument();
+      const step = screen.getByTestId("publish-step-submission_mode");
+      expect(within(step).getByText(/Comments are closed, so the page is view only/i)).toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Reopen comments/i })).toBeInTheDocument();
+      expect(within(step).queryByRole("checkbox")).not.toBeInTheDocument();
     });
 
     it("does not count a description shorter than the readiness minimum as done", () => {
@@ -278,6 +283,161 @@ describe("CampaignPublishFlow", () => {
       expect(calls[0]?.method).toBe("PATCH");
     });
 
+    it("closes comments on a live page through the same PATCH", async () => {
+      const calls = stubFetch();
+      render(
+        <CampaignPublishFlow
+          campaign={campaign({
+            id: "ffff6666-6666-4666-8666-666666666666",
+            status: "active",
+            share_token: "tok-live-1234567890abcdefgh",
+            allow_public_submissions: true,
+          })}
+          campaignArea={UNSET_AREA}
+        />
+      );
+
+      expect(screen.queryByRole("button", { name: /Reopen comments/i })).not.toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: /Close comments/i }));
+
+      await waitFor(() => expect(refreshMock).toHaveBeenCalled());
+      expect(calls).toEqual([
+        {
+          url: "/api/engagement/campaigns/ffff6666-6666-4666-8666-666666666666",
+          method: "PATCH",
+          body: { submissionsClosed: true },
+        },
+      ]);
+    });
+
+    it("shows a closed live page as view only and reopens it through the same PATCH", async () => {
+      const calls = stubFetch();
+      render(
+        <CampaignPublishFlow
+          campaign={campaign({
+            id: "abab7777-7777-4777-8777-777777777777",
+            status: "active",
+            share_token: "tok-live-1234567890abcdefgh",
+            allow_public_submissions: true,
+            submissions_closed_at: "2026-04-02T09:30:00.000Z",
+          })}
+          campaignArea={UNSET_AREA}
+        />
+      );
+
+      const flow = screen.getByTestId("campaign-publish-flow");
+      expect(within(flow).getByText(/Live · submissions closed/i)).toBeInTheDocument();
+      expect(within(flow).queryByRole("button", { name: /Close comments/i })).not.toBeInTheDocument();
+      fireEvent.click(within(flow).getByRole("button", { name: /Reopen comments/i }));
+
+      await waitFor(() => expect(refreshMock).toHaveBeenCalled());
+      expect(calls).toEqual([
+        {
+          url: "/api/engagement/campaigns/abab7777-7777-4777-8777-777777777777",
+          method: "PATCH",
+          body: { submissionsClosed: false },
+        },
+      ]);
+    });
+
+    /*
+      A reopen after the participation end date would clear the close time and
+      change nothing residents see, because the public page, the submit routes
+      and the database all refuse comments after that date. The flow names the
+      date and sends the planner to it instead of offering the reopen.
+    */
+    it("names a past end date instead of offering a reopen that would not reopen", () => {
+      for (const [timeZone, named] of [
+        ["America/Los_Angeles", "October 10, 2026 at 19:30 (America/Los_Angeles)"],
+        ["Pacific/Auckland", "October 11, 2026 at 15:30 (Pacific/Auckland)"],
+      ] as const) {
+        const { unmount } = render(
+          <CampaignPublishFlow
+            campaign={campaign({
+              status: "active",
+              share_token: "tok-live-1234567890abcdefgh",
+              allow_public_submissions: true,
+              submissions_closed_at: "2026-10-01T09:30:00.000Z",
+              participation_ends_at: "2026-10-11T02:30:00+00:00",
+            })}
+            campaignArea={UNSET_AREA}
+            timeZone={timeZone}
+          />
+        );
+
+        const flow = screen.getByTestId("campaign-publish-flow");
+        expect(flow).toHaveTextContent(`Comments are closed because the participation period ended on ${named}.`);
+        expect(flow).not.toHaveTextContent(/accepting submissions/i);
+        expect(within(flow).queryByRole("button", { name: /Reopen comments/i })).not.toBeInTheDocument();
+        expect(within(flow).queryByRole("button", { name: /Close comments/i })).not.toBeInTheDocument();
+        expect(within(flow).getByRole("link", { name: /Change the end date/i })).toHaveAttribute(
+          "href",
+          "#campaign-control-participation-ends"
+        );
+        unmount();
+      }
+    });
+
+    it("says a reopened page is closed by its end date, and offers no switch that does nothing", () => {
+      // Reopened (no close time) but past the end date: the state a planner
+      // reached before this change, when the console said "accepting".
+      render(
+        <CampaignPublishFlow
+          campaign={campaign({
+            status: "active",
+            share_token: "tok-live-1234567890abcdefgh",
+            allow_public_submissions: true,
+            submissions_closed_at: null,
+            participation_ends_at: "2026-10-11T02:30:00+00:00",
+          })}
+          campaignArea={UNSET_AREA}
+          timeZone="America/Los_Angeles"
+        />
+      );
+
+      const flow = screen.getByTestId("campaign-publish-flow");
+      expect(within(flow).getByText(/Live · submissions closed/i)).toBeInTheDocument();
+      expect(flow).not.toHaveTextContent(/accepting submissions/i);
+      expect(within(flow).queryByRole("button", { name: /Close comments/i })).not.toBeInTheDocument();
+      expect(within(flow).getByRole("link", { name: /Change the end date/i })).toBeInTheDocument();
+    });
+
+    it("puts the end date in the comments step before the page is live", () => {
+      render(
+        <CampaignPublishFlow
+          campaign={campaign({
+            allow_public_submissions: true,
+            participation_ends_at: "2026-10-11T02:30:00+00:00",
+          })}
+          campaignArea={UNSET_AREA}
+          timeZone="America/Los_Angeles"
+        />
+      );
+
+      const step = screen.getByTestId("publish-step-submission_mode");
+      expect(step).toHaveTextContent(
+        "Comments are closed because the participation period ended on October 10, 2026 at 19:30 (America/Los_Angeles)."
+      );
+      expect(within(step).queryByRole("checkbox")).not.toBeInTheDocument();
+      expect(within(step).getByRole("link", { name: /Change the end date/i })).toBeInTheDocument();
+    });
+
+    it("offers nothing to close on a view-only page that never took comments", () => {
+      render(
+        <CampaignPublishFlow
+          campaign={campaign({
+            status: "active",
+            share_token: "tok-live-1234567890abcdefgh",
+            allow_public_submissions: false,
+          })}
+          campaignArea={UNSET_AREA}
+        />
+      );
+
+      expect(screen.queryByRole("button", { name: /Close comments/i })).not.toBeInTheDocument();
+      expect(screen.queryByRole("button", { name: /Reopen comments/i })).not.toBeInTheDocument();
+    });
+
     it("shows the server's own refusal and does not pretend the step saved", async () => {
       stubFetch({ error: "Workspace access denied" }, 403);
       render(<CampaignPublishFlow campaign={campaign()} campaignArea={UNSET_AREA} />);
@@ -315,6 +475,54 @@ describe("CampaignPublishFlow", () => {
         "The map opens on Franklin County, Ohio."
       );
       expect(within(step).queryByRole("button")).not.toBeInTheDocument();
+    });
+
+    it("counts the linked project's area, which the resident map falls back to", () => {
+      render(
+        <CampaignPublishFlow
+          campaign={campaign()}
+          campaignArea={{ state: "set", label: "Placer County, California", source: "project" }}
+          projectArea={{ kind: "county", geoid: "06061", label: "Placer County, California" }}
+        />
+      );
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the project's area, Placer County, California."
+      );
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+      // Copying the area the map already opens on would change nothing.
+      expect(within(step).queryByRole("button", { name: /Use the project's area/i })).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeInTheDocument();
+      expect(screen.getByText(/1 of 5 steps complete/i)).toBeInTheDocument();
+    });
+
+    it("counts the workspace home area, which the resident map falls back to after the project's", () => {
+      for (const label of ["Nevada County, California", "Franklin County, Ohio"]) {
+        const { unmount } = render(
+          <CampaignPublishFlow
+            campaign={campaign()}
+            campaignArea={{ state: "set", label, source: "workspace" }}
+            projectArea={{ kind: "county", geoid: "06061", label: "Placer County, California" }}
+          />
+        );
+
+        const step = screen.getByTestId("publish-step-map_opens_somewhere");
+        expect(step).toHaveAttribute("data-state", "done");
+        expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+          `The map opens on the workspace's home area, ${label}.`
+        );
+        expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+        // The project's area is narrower than the workspace home and is not
+        // what the map opens on, so it is still offered.
+        expect(
+          within(step).getByRole("button", { name: "Use the project's area: Placer County, California" })
+        ).toBeInTheDocument();
+        expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeInTheDocument();
+        expect(screen.getByText(/1 of 5 steps complete/i)).toBeInTheDocument();
+        unmount();
+      }
     });
 
     it("never renders a failed area read as a missing area", () => {

@@ -255,6 +255,8 @@ describe("artifact custody decides what an evidence package may claim", () => {
     createApiAuditLoggerMock.mockReturnValue(audit);
     createServiceRoleClientMock.mockReturnValue({
       from: serviceFromMock,
+      // workspace_storage_bytes: an empty workspace, so custody may store.
+      rpc: async () => ({ data: 0, error: null }),
       storage: { from: () => ({
         upload: async (path: string, body: Uint8Array, options: { upsert?: boolean }) => {
           const result = await storageUploadMock(path, body, options);
