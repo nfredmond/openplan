@@ -90,6 +90,13 @@ describe("authorized model recovery page join", () => {
     expect(projection).toEqual(expect.stringContaining("id, model_id"));
     expect(projection).toEqual(expect.stringContaining("engine_key, status"));
   });
+  it.each(["kept_as_record", "closed_for_fresh_run"])("keeps a historical run with a %s decision out of reaping", async (outcome) => {
+    const decision = { request_id: "50000000-0000-4000-8000-000000000001", outcome, actor_id: "40000000-0000-4000-8000-000000000001", reason: "Synthetic review", recorded_at: stamp };
+    mocks.rpc.mockImplementation(async (name: string) => ({ data: name === "inspect_model_recovery_status" ? { ...response, historical_decision: decision } : { workspace_id: workspace, run_id: run, state: "unassessed" }, error: null }));
+    const props = managerProps(await load());
+    expect(props?.modelRuns[0].recovery).toMatchObject({ state: "historical_unassessed", historicalDecision: { outcome, reason: "Synthetic review" } });
+    expect(mocks.reap).toHaveBeenCalledExactlyOnceWith([]);
+  });
   it("keeps an unavailable recovery read visible and out of reaping", async () => {
     mocks.rpc.mockResolvedValue({ data: null, error: { message: "unavailable" } });
     const props = managerProps(await load());

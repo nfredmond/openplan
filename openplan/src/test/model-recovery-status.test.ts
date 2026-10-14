@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import { modelRecoveryNeedsReview, modelRecoveryNotice } from "@/lib/models/recovery-status";
+import { historicalRunNeedsDecision, modelRecoveryNeedsReview, modelRecoveryNotice, modelRelaunchNotice } from "@/lib/models/recovery-status";
 import { managedRunStatusPresentation } from "@/lib/models/run-status";
 
 const { rpc } = vi.hoisted(() => ({ rpc: vi.fn() }));
@@ -15,6 +15,7 @@ const response = {
   enrolled_at: stamp, observed_starts: 0, last_start_observed_at: null,
 };
 const runs = [{ id: run, engine_key: "aequilibrae" }];
+const decisionRow = { request_id: "50000000-0000-4000-8000-000000000001", outcome: "kept_as_record", actor_id: "60000000-0000-4000-8000-000000000001", reason: "Synthetic review", recorded_at: stamp };
 
 beforeEach(() => { rpc.mockReset(); rpc.mockImplementation(async (name: string) => ({ data: name === "inspect_model_relaunch_custody" ? { workspace_id: workspace, run_id: run, state: "unstarted" } : response, error: null })); });
 
@@ -24,7 +25,18 @@ describe("scoped recovery records", () => {
     expect(rpc).toHaveBeenCalledTimes(2);
     expect(rpc).toHaveBeenNthCalledWith(1, "inspect_model_recovery_status", { p_workspace: workspace, p_run: run });
     expect(rpc).toHaveBeenNthCalledWith(2, "inspect_model_relaunch_custody", { p_workspace: workspace, p_run: run });
-    expect(result.get(run)).toEqual({ state: "historical_unassessed", relaunchCustody: "unstarted", enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null });
+    expect(result.get(run)).toEqual({ state: "historical_unassessed", relaunchCustody: "unstarted", enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null, historicalDecision: null });
+  });
+  it.each(["kept_as_record", "closed_for_fresh_run"] as const)("carries a recorded %s decision with its actor and reason", async (outcome) => {
+    rpc.mockResolvedValueOnce({ data: { ...response, historical_decision: { ...decisionRow, outcome } }, error: null });
+    expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toMatchObject({
+      state: "historical_unassessed",
+      historicalDecision: { requestId: decisionRow.request_id, outcome, actorId: decisionRow.actor_id, reason: decisionRow.reason, recordedAt: stamp },
+    });
+  });
+  it("reads an explicit null decision as undecided", async () => {
+    rpc.mockResolvedValueOnce({ data: { ...response, historical_decision: null }, error: null });
+    expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toMatchObject({ state: "historical_unassessed", historicalDecision: null });
   });
   it.each(["retained", "unassessed", "unavailable"])("preserves %s custody separately from new-run provenance", async (state) => {
     rpc.mockResolvedValueOnce({ data: { ...response, provenance: "new_run" }, error: null });
@@ -48,6 +60,10 @@ describe("scoped recovery records", () => {
     ["unmatched count", { observed_starts: 1 }],
     ["unmatched timestamp", { last_start_observed_at: stamp }],
     ["extra field", { authorize_replay: true }],
+    ["decision on a new run", { provenance: "new_run", historical_decision: decisionRow }],
+    ["unknown decision outcome", { historical_decision: { ...decisionRow, outcome: "resumed" } }],
+    ["decision without reason", { historical_decision: { ...decisionRow, reason: "" } }],
+    ["decision with extra field", { historical_decision: { ...decisionRow, continuation_authorized: true } }],
   ])("keeps %s failures unavailable", async (_, changed) => {
     rpc.mockResolvedValue({ data: { ...response, ...changed }, error: null });
     expect((await loadModelRecoveryStatuses(workspace, runs)).get(run)).toEqual({ state: "unavailable" });
@@ -67,9 +83,23 @@ describe("scoped recovery records", () => {
 describe("historical status presentation", () => {
   it.each(["queued", "running", "failed", "succeeded"])("does not present historical %s as current execution", (status) => {
     const recovery = { state: "historical_unassessed" as const, enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null };
-    expect(managedRunStatusPresentation({ status, engine_key: "aequilibrae", artifacts: [], recovery })).toEqual({ label: "Reconciliation required", tone: "warning" });
+    expect(managedRunStatusPresentation({ status, engine_key: "aequilibrae", artifacts: [], recovery })).toEqual({ label: "Needs a decision", tone: "warning" });
     expect(modelRecoveryNeedsReview(recovery)).toBe(true);
-    expect(modelRecoveryNotice(recovery)).toContain("saved status and results are preserved");
+    expect(historicalRunNeedsDecision(recovery)).toBe(true);
+    expect(modelRecoveryNotice(recovery)).toBe("Recorded before recovery tracking. Keep as a record, or close it to run again.");
+    expect(modelRelaunchNotice(recovery)).toBe("This run cannot be relaunched. Start a new run instead.");
+  });
+  it.each([
+    ["kept_as_record", "Kept as a record", "Kept as a record. Its saved results stay as they were."],
+    ["closed_for_fresh_run", "Closed", "Closed. Its saved results stay as they were. Start a new run to run it again."],
+  ] as const)("labels a %s decision without making the run live", (outcome, label, notice) => {
+    const historicalDecision = { requestId: decisionRow.request_id, outcome, actorId: decisionRow.actor_id, reason: "Synthetic review", recordedAt: stamp };
+    const recovery = { state: "historical_unassessed" as const, enrolledAt: stamp, observedStarts: 0, lastStartObservedAt: null, historicalDecision };
+    expect(managedRunStatusPresentation({ status: "running", engine_key: "aequilibrae", artifacts: [], recovery })).toEqual({ label, tone: "neutral" });
+    expect(modelRecoveryNotice(recovery)).toBe(notice);
+    expect(historicalRunNeedsDecision(recovery)).toBe(false);
+    expect(modelRecoveryNeedsReview(recovery)).toBe(true);
+    expect(modelRelaunchNotice(recovery)).not.toBeNull();
   });
   it("does not turn a failed read into historical enrollment", () => {
     expect(managedRunStatusPresentation({ status: "running", engine_key: "aequilibrae", artifacts: [], recovery: { state: "unavailable" } }).label).toBe("Recovery status unavailable");

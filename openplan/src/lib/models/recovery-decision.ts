@@ -26,6 +26,18 @@ export const recoveryDecisionSchema = z.object({
 
 export type RecoveryDecision = z.infer<typeof recoveryDecisionSchema>;
 
+/** Keep or close a run enrolled before recovery tracking. Neither choice changes the run. */
+export const historicalRunDecisionSchema = z.object({
+  requestId: recoveryIdentitySchema, decision: z.enum(["keep_as_record", "close_for_fresh_run"]),
+  expectedState: recoveryExpectedStateSchema,
+  reason: z.string().min(1).max(2000).refine((reason) => reason.trim().length > 0),
+}).strict();
+
+export type HistoricalRunDecision = z.infer<typeof historicalRunDecisionSchema>;
+export const recoveryRequestSchema = z.discriminatedUnion("decision", [recoveryDecisionSchema, historicalRunDecisionSchema]);
+
+const historicalOutcomes = { keep_as_record: "kept_as_record", close_for_fresh_run: "closed_for_fresh_run" } as const;
+
 /** The authenticated route supplies actor and workspace; body fields cannot override them. */
 export function recoveryRpcArguments(decision: RecoveryDecision, workspaceId: string, runId: string, actorId: string) {
   return { p_request_id: decision.requestId, p_workspace_id: workspaceId, p_run_id: runId, p_actor_id: actorId,
@@ -39,6 +51,24 @@ export function matchesRecoveryReceipt(value: unknown, args: ReturnType<typeof r
     continuation_authorized: false, model_resumed: false, reported_evidence_verified: false,
     request_payload: { workspace_id: args.p_workspace_id, run_id: args.p_run_id, actor_id: args.p_actor_id,
       expected_state: args.p_expected_state, reason: args.p_reason, reported_evidence: args.p_evidence },
+  };
+  return canonicalizeActionPayload(value) === canonicalizeActionPayload(expected);
+}
+
+/** The authenticated route supplies actor and workspace; body fields cannot override them. */
+export function historicalDecisionRpcArguments(decision: HistoricalRunDecision, workspaceId: string, runId: string, actorId: string) {
+  return { p_request_id: decision.requestId, p_workspace_id: workspaceId, p_run_id: runId, p_actor_id: actorId,
+    p_expected_state: decision.expectedState, p_outcome: historicalOutcomes[decision.decision], p_reason: decision.reason };
+}
+
+/** A receipt confirms only the recorded choice; it never reports a changed run or resumed work. */
+export function matchesHistoricalDecisionReceipt(value: unknown, args: ReturnType<typeof historicalDecisionRpcArguments>): boolean {
+  const expected = {
+    request_id: args.p_request_id, workspace_id: args.p_workspace_id, run_id: args.p_run_id, actor_id: args.p_actor_id,
+    outcome: args.p_outcome, run_status: args.p_expected_state.status, run_record_changed: false,
+    process_termination_verified: false, continuation_authorized: false, model_resumed: false,
+    request_payload: { workspace_id: args.p_workspace_id, run_id: args.p_run_id, actor_id: args.p_actor_id,
+      expected_state: args.p_expected_state, outcome: args.p_outcome, reason: args.p_reason },
   };
   return canonicalizeActionPayload(value) === canonicalizeActionPayload(expected);
 }

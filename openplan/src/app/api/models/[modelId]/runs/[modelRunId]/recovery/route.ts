@@ -6,7 +6,7 @@ import { loadModelAccess } from "@/lib/models/api";
 import { isWorkerExecutedRunMode } from "@/lib/models/run-modes";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
 import { createApiAuditLogger } from "@/lib/observability/audit";
-import { recoveryIdentitySchema, recoveryDecisionSchema, recoveryInspectionSchema, recoveryRpcArguments, matchesRecoveryReceipt } from "@/lib/models/recovery-decision";
+import { recoveryIdentitySchema, recoveryRequestSchema, recoveryInspectionSchema, recoveryRpcArguments, matchesRecoveryReceipt, historicalDecisionRpcArguments, matchesHistoricalDecisionReceipt, type HistoricalRunDecision } from "@/lib/models/recovery-decision";
 
 const paramsSchema = z.object({ modelId: recoveryIdentitySchema, modelRunId: recoveryIdentitySchema });
 type Context = { params: Promise<{ modelId: string; modelRunId: string }> };
@@ -75,11 +75,12 @@ export async function POST(request: NextRequest, context: Context) {
     if (access.response) return access.response;
     const body = await readJsonOrNullWithLimit(request, BODY_LIMITS.normalJson);
     if (!body.ok) return body.response;
-    const parsed = recoveryDecisionSchema.safeParse(body.data);
+    const parsed = recoveryRequestSchema.safeParse(body.data);
     if (!parsed.success) return response("Invalid recovery decision", 400);
     const decision = parsed.data;
     if (decision.expectedState.workspace_id !== access.workspaceId || decision.expectedState.run_id !== access.runId
         || decision.expectedState.model_id !== access.modelId) return response("Recovery observation belongs to another model run", 409);
+    if (decision.decision !== "abandon_execution") return await decideHistoricalRun(decision, access, audit);
     const args = recoveryRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
     const { data, error } = await createServiceRoleClient().rpc("abandon_model_run_execution", args);
     if (error?.code === "42501") return response("Recovery authority changed. Review workspace access.", 403);
@@ -97,4 +98,23 @@ export async function POST(request: NextRequest, context: Context) {
     audit.error("recovery_decision_unconfirmed");
     return NextResponse.json({ error: "Recovery decision is unconfirmed. Retry the same saved request.", outcome: "recovery_unconfirmed" }, { status: 503 });
   }
+}
+
+type Authorized = { runId: string; modelId: string; workspaceId: string; actorId: string };
+
+/** Records keep or close for a historical run. The run, its stages and outputs stay as saved. */
+async function decideHistoricalRun(decision: HistoricalRunDecision, access: Authorized, audit: ReturnType<typeof createApiAuditLogger>) {
+  const args = historicalDecisionRpcArguments(decision, access.workspaceId, access.runId, access.actorId);
+  const { data, error } = await createServiceRoleClient().rpc("record_historical_model_run_decision", args);
+  if (error?.code === "42501") return response("Recovery authority changed. Review workspace access.", 403);
+  if (error?.message === "Model recovery state changed") return response("This run changed. Reload the page before deciding.", 409);
+  if (error?.message === "Historical model run decision already recorded") return response("A decision for this run is already recorded. Reload the page.", 409);
+  if (error?.message === "Historical model run decision requires historical enrollment") return response("This run was not recorded before recovery tracking.", 409);
+  if (error?.message === "Model recovery request identity reused with different payload") return response("This request identity belongs to a different decision", 409);
+  if (error || !matchesHistoricalDecisionReceipt(data, args)) {
+    audit.warn("historical_run_decision_unconfirmed", { requestId: decision.requestId, runId: access.runId });
+    return NextResponse.json({ error: "The decision is unconfirmed. Retry the same request.", outcome: "recovery_unconfirmed", requestId: decision.requestId }, { status: 503 });
+  }
+  audit.info("historical_run_decision_receipt", { requestId: decision.requestId, runId: access.runId, workspaceId: access.workspaceId, actorId: access.actorId, outcome: args.p_outcome });
+  return NextResponse.json(data, { headers: { "Cache-Control": "no-store" } });
 }
