@@ -20,6 +20,15 @@ import {
 import { loadUsTigerRoadContext, roadContextForFrozenPacket } from "@/lib/safety/us-road-context-adapter";
 import { resolveCrashSources } from "@/lib/safety/sources/registry";
 import { readReportSafetyIngestSelections } from "@/lib/reports/safety-evidence-selection";
+import {
+  buildSafetyActionPlanSection,
+  readReportSafetyActionPlan,
+  type SafetyActionPlanSectionDraft,
+} from "@/lib/reports/safety-action-plan";
+import {
+  buildHighInjuryNetworkForIngest,
+  type HighInjuryNetworkSupabaseLike,
+} from "@/lib/safety/high-injury-network-loader";
 import type { StudyAreaBbox } from "@/lib/models/study-area";
 import { ACS_YEAR } from "@/lib/data-sources/census";
 import { NextRequest, NextResponse } from "next/server";
@@ -2405,6 +2414,43 @@ export async function POST(request: NextRequest, context: RouteContext) {
         ),
       }));
     }
+    /**
+     * The safety action plan draft, only when a planner saved one. It must use
+     * the acquisition this report cites; a plan saved against another one is
+     * reported as stale rather than printed.
+     */
+    const savedSafetyActionPlan = readReportSafetyActionPlan(report.metadata_json);
+    let safetyActionPlan: SafetyActionPlanSectionDraft | { kind: "stale_acquisition" } | null = null;
+    if (savedSafetyActionPlan) {
+      if (!selectedSafetyIngestIds.includes(savedSafetyActionPlan.ingestId)) {
+        safetyActionPlan = { kind: "stale_acquisition" };
+      } else {
+        const planEvidence = safetyEvidence?.find((item) => item.ingestId === savedSafetyActionPlan.ingestId) ?? null;
+        const planIngestRow = safetyIngestRowsForConcentrations.find(
+          (row) => (row as { id?: unknown } | null)?.id === savedSafetyActionPlan.ingestId
+        );
+        const planBounds = planIngestRow ? readSafetyKsiBounds([planIngestRow]) : null;
+        const network = planEvidence && planBounds
+          ? await buildHighInjuryNetworkForIngest(
+              supabase as unknown as HighInjuryNetworkSupabaseLike,
+              {
+                workspaceId: report.workspace_id,
+                ingestId: savedSafetyActionPlan.ingestId,
+                severityCompleteness: planEvidence.severityCompleteness,
+                bbox: planBounds,
+                years: planEvidence.years,
+                roads: safetyRoadContext,
+              }
+            )
+          : { status: "unavailable" as const, reason: "crash_read_failed" as const, basis: null };
+        safetyActionPlan = buildSafetyActionPlanSection({
+          plan: savedSafetyActionPlan,
+          evidence: planEvidence,
+          network,
+        });
+      }
+    }
+
     evidenceChainSummary = {
       ...evidenceChainSummary,
       safetyAcquisitionCount: safetyEvidence?.length ?? 0,
@@ -2425,6 +2471,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
       safetyRoadContext,
       safetyKsiEquityTracts,
       safetyKsiEquityDemographicSource: { label: "U.S. Census ACS 5-year", vintage: ACS_YEAR },
+      safetyActionPlan,
       deliverables: (deliverablesResult.data ?? []).map((item) => ({
         id: item.id,
         title: item.title,

@@ -1,0 +1,12 @@
+[
+  {
+    "stage": "documentation",
+    "returncode": 0,
+    "seconds": 3.789
+  },
+  {
+    "stage": "product-direction",
+    "returncode": 0,
+    "seconds": 0.356
+  }
+]

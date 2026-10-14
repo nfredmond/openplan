@@ -783,6 +783,22 @@ describe("module lane chat serialization", () => {
     expect(lines).toContain("submission text is not loaded into this context");
   });
 
+  it("states a close date on the same calendar as the prompt's TODAY line", () => {
+    // 06:59 UTC Oct 1 is 11:59 p.m. Sep 30 in Los Angeles. With TODAY dated in
+    // that zone, a UTC day here would put the close a day after the planner's.
+    const grants = baseContext("grants");
+    grants.moduleLane = {
+      module: "grants",
+      opportunities: {
+        total: 1, awaitingDecision: 0, monitor: 1, pursue: 0, skip: 0, closingSoon: 1, overdueDecision: 0,
+        lead: { id: "opp-1", title: "Closing soon", status: "open", decisionState: "monitor", closesAt: "2026-10-01T06:59:00.000Z" },
+      },
+      awards: { total: 0, awardedAmount: 0, activeSpending: 0, riskFlagged: 0 },
+    };
+    expect(buildAssistantChatContextLines(grants, { timeZone: "America/Los_Angeles" }).join("\n")).toContain("closes 2026-09-30");
+    expect(buildAssistantChatContextLines(grants).join("\n")).toContain("closes 2026-10-01");
+  });
+
   it("serializes every lane it loads: grants, invoicing, aerial, knowledge base, data hub", () => {
     const grants = baseContext("grants");
     grants.moduleLane = {

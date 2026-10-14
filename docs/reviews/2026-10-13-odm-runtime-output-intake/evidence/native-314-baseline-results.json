@@ -1,0 +1,433 @@
+{
+  "cases": [
+    {
+      "case": "saved-replay",
+      "applicationReads": 3,
+      "archiveGets": 0,
+      "archive": {
+        "bytes": 3245368,
+        "sha256": "8ffd925c402a0534a1a188a62ee881d6c20034c2eac62dc8493952f0e27efac2",
+        "expandedBytes": 3239636,
+        "members": [
+          {
+            "name": "cameras.json",
+            "kind": "file",
+            "bytes": 472,
+            "sha256": "fb131a3965998c1dc44275ff7aede18a905f2fe7043a4afe6c4e73be78a7cf76"
+          },
+          {
+            "name": "entwine_pointcloud/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-build.json",
+            "kind": "file",
+            "bytes": 97,
+            "sha256": "cd128c4abd649777a1a61ec3d80e56bee3d6ce21ee266b89a3371134324294f6"
+          },
+          {
+            "name": "entwine_pointcloud/ept-data/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-data/0-0-0-0.laz",
+            "kind": "file",
+            "bytes": 31272,
+            "sha256": "8ac558a7500a9fdf5c60c949224c65ba18b7614027d7dade1f9131850bca82df"
+          },
+          {
+            "name": "entwine_pointcloud/ept-hierarchy/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-hierarchy/0-0-0-0.json",
+            "kind": "file",
+            "bytes": 21,
+            "sha256": "d3cc55d66603d539e45fe917b909a7063d485fcecc2dcba28155894d5d789b9b"
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/manifest.json",
+            "kind": "file",
+            "bytes": 390,
+            "sha256": "248f024969e1b2b0f131669c17886142a99e58e0211a78a10bb36cc1048f4faf"
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/odm_georeferenced_model.json",
+            "kind": "file",
+            "bytes": 13173,
+            "sha256": "d54ad9b7ee726bd206e11a03b531257404783e65d4d9260f69a100c3a009b91c"
+          },
+          {
+            "name": "entwine_pointcloud/ept.json",
+            "kind": "file",
+            "bytes": 4874,
+            "sha256": "ed3fde060e2f51e01aef9edf5d7ba527457fd89b4b561135a9a23f191c2e850f"
+          },
+          {
+            "name": "images.json",
+            "kind": "file",
+            "bytes": 19494,
+            "sha256": "ab5dcf5077a918770e28d977f9d021b58fa84ca789d2f3c1a2b8a29e87fc7c9b"
+          },
+          {
+            "name": "log.json",
+            "kind": "file",
+            "bytes": 56782,
+            "sha256": "e1b1e9987b8620f2703f342d6c8ffc0f84c4d056b94b2affc467f9fd86ad6c46"
+          },
+          {
+            "name": "odm_georeferencing/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "odm_georeferencing/coords.txt",
+            "kind": "file",
+            "bytes": 840,
+            "sha256": "edd20b9df51b7448cf17e369540e323a25412e6622e4604359fe70d4a05c7994"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.boundary.json",
+            "kind": "file",
+            "bytes": 33436,
+            "sha256": "685cfeee2c5d3fb9096a71b88ed1b30719066c8d1a0d50c51dae4b21eff66779"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.bounds.geojson",
+            "kind": "file",
+            "bytes": 7288,
+            "sha256": "1d29919e2f8fc309a60f189e7e57c78f2fbe8441546431c2f3163941cb1a89ad"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.bounds.gpkg",
+            "kind": "file",
+            "bytes": 114688,
+            "sha256": "66dc896ad06d175e8a077fab1242ebf6eeec80326a537afc1c616e8b76be7a04"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.info.json",
+            "kind": "file",
+            "bytes": 2226,
+            "sha256": "226ac3852ed811bb74f28c5eb9cc4f833c4a3a7d31aca6e99c085b0e0a221cfd"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.laz",
+            "kind": "file",
+            "bytes": 31623,
+            "sha256": "5e29bd70f8a0e5877e1bc88ae344cec4b077e07d0206bbb89967e9713534dc6d"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.summary.json",
+            "kind": "file",
+            "bytes": 4714,
+            "sha256": "f5a4cbfced84520354ff29d01db3bc9189abb88444c819cb6eaf04c87eeb7ee8"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferencing_model_geo.txt",
+            "kind": "file",
+            "bytes": 29,
+            "sha256": "8779f056f8bf85ba7b55fe48656ec200360df1ee4e659c4e3485ebe8a694c6e4"
+          },
+          {
+            "name": "odm_georeferencing/proj.txt",
+            "kind": "file",
+            "bytes": 59,
+            "sha256": "9a4f474ed42b5d6f77c4ee8c061728ebe38687c9ae649881fc67df35a984c622"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto.tfw",
+            "kind": "file",
+            "bytes": 84,
+            "sha256": "409daf5eed113476baa6d53c68c9ca23d60aa2b93ff123298976de5fd9d1ac85"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto.tif",
+            "kind": "file",
+            "bytes": 82774,
+            "sha256": "5291421186f9ae1bf3f8d77ec4621ed044d30fd2e8f4c99c34727132e166b12b"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto_extent.dxf",
+            "kind": "file",
+            "bytes": 9202,
+            "sha256": "688c32b1e329a7f4c004af723a2076252bc1febbb908c64cef50a33d46e1ceea"
+          },
+          {
+            "name": "odm_report/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "odm_report/camera_mappings.npz",
+            "kind": "file",
+            "bytes": 471985,
+            "sha256": "dfe3d17deba8ba064206e090dfaff1c63121d1932b76c16689ea3cd2ad78876e"
+          },
+          {
+            "name": "odm_report/report.pdf",
+            "kind": "file",
+            "bytes": 2209141,
+            "sha256": "0a36873aa121a53f1c54cf39d9eb3cd14ad9e3667554ee27dbda033d369f02d3"
+          },
+          {
+            "name": "odm_report/shots.geojson",
+            "kind": "file",
+            "bytes": 8440,
+            "sha256": "5e08b53d7e16bf2b357807d2b4e402f00d5db43b7a9300ededbfa10e279a72e8"
+          },
+          {
+            "name": "odm_report/stats.json",
+            "kind": "file",
+            "bytes": 6952,
+            "sha256": "43cee3fd16353b4a1d12070945c0a6c55becae77f17eddae55e75c4807a63a6e"
+          },
+          {
+            "name": "task_output.txt",
+            "kind": "file",
+            "bytes": 129580,
+            "sha256": "a991d1a877cefe1074c6ddcc08a39744b7c080734317b38f56115f91b4a67e4d"
+          }
+        ]
+      }
+    },
+    {
+      "case": "revoked-replay",
+      "outcome": "refused"
+    },
+    {
+      "case": "native-download",
+      "applicationReads": 5,
+      "archiveGets": 1,
+      "engineChecks": 2,
+      "archive": {
+        "bytes": 3245368,
+        "sha256": "8ffd925c402a0534a1a188a62ee881d6c20034c2eac62dc8493952f0e27efac2",
+        "expandedBytes": 3239636,
+        "members": [
+          {
+            "name": "cameras.json",
+            "kind": "file",
+            "bytes": 472,
+            "sha256": "fb131a3965998c1dc44275ff7aede18a905f2fe7043a4afe6c4e73be78a7cf76"
+          },
+          {
+            "name": "entwine_pointcloud/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-build.json",
+            "kind": "file",
+            "bytes": 97,
+            "sha256": "cd128c4abd649777a1a61ec3d80e56bee3d6ce21ee266b89a3371134324294f6"
+          },
+          {
+            "name": "entwine_pointcloud/ept-data/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-data/0-0-0-0.laz",
+            "kind": "file",
+            "bytes": 31272,
+            "sha256": "8ac558a7500a9fdf5c60c949224c65ba18b7614027d7dade1f9131850bca82df"
+          },
+          {
+            "name": "entwine_pointcloud/ept-hierarchy/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-hierarchy/0-0-0-0.json",
+            "kind": "file",
+            "bytes": 21,
+            "sha256": "d3cc55d66603d539e45fe917b909a7063d485fcecc2dcba28155894d5d789b9b"
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/manifest.json",
+            "kind": "file",
+            "bytes": 390,
+            "sha256": "248f024969e1b2b0f131669c17886142a99e58e0211a78a10bb36cc1048f4faf"
+          },
+          {
+            "name": "entwine_pointcloud/ept-sources/odm_georeferenced_model.json",
+            "kind": "file",
+            "bytes": 13173,
+            "sha256": "d54ad9b7ee726bd206e11a03b531257404783e65d4d9260f69a100c3a009b91c"
+          },
+          {
+            "name": "entwine_pointcloud/ept.json",
+            "kind": "file",
+            "bytes": 4874,
+            "sha256": "ed3fde060e2f51e01aef9edf5d7ba527457fd89b4b561135a9a23f191c2e850f"
+          },
+          {
+            "name": "images.json",
+            "kind": "file",
+            "bytes": 19494,
+            "sha256": "ab5dcf5077a918770e28d977f9d021b58fa84ca789d2f3c1a2b8a29e87fc7c9b"
+          },
+          {
+            "name": "log.json",
+            "kind": "file",
+            "bytes": 56782,
+            "sha256": "e1b1e9987b8620f2703f342d6c8ffc0f84c4d056b94b2affc467f9fd86ad6c46"
+          },
+          {
+            "name": "odm_georeferencing/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "odm_georeferencing/coords.txt",
+            "kind": "file",
+            "bytes": 840,
+            "sha256": "edd20b9df51b7448cf17e369540e323a25412e6622e4604359fe70d4a05c7994"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.boundary.json",
+            "kind": "file",
+            "bytes": 33436,
+            "sha256": "685cfeee2c5d3fb9096a71b88ed1b30719066c8d1a0d50c51dae4b21eff66779"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.bounds.geojson",
+            "kind": "file",
+            "bytes": 7288,
+            "sha256": "1d29919e2f8fc309a60f189e7e57c78f2fbe8441546431c2f3163941cb1a89ad"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.bounds.gpkg",
+            "kind": "file",
+            "bytes": 114688,
+            "sha256": "66dc896ad06d175e8a077fab1242ebf6eeec80326a537afc1c616e8b76be7a04"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.info.json",
+            "kind": "file",
+            "bytes": 2226,
+            "sha256": "226ac3852ed811bb74f28c5eb9cc4f833c4a3a7d31aca6e99c085b0e0a221cfd"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.laz",
+            "kind": "file",
+            "bytes": 31623,
+            "sha256": "5e29bd70f8a0e5877e1bc88ae344cec4b077e07d0206bbb89967e9713534dc6d"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferenced_model.summary.json",
+            "kind": "file",
+            "bytes": 4714,
+            "sha256": "f5a4cbfced84520354ff29d01db3bc9189abb88444c819cb6eaf04c87eeb7ee8"
+          },
+          {
+            "name": "odm_georeferencing/odm_georeferencing_model_geo.txt",
+            "kind": "file",
+            "bytes": 29,
+            "sha256": "8779f056f8bf85ba7b55fe48656ec200360df1ee4e659c4e3485ebe8a694c6e4"
+          },
+          {
+            "name": "odm_georeferencing/proj.txt",
+            "kind": "file",
+            "bytes": 59,
+            "sha256": "9a4f474ed42b5d6f77c4ee8c061728ebe38687c9ae649881fc67df35a984c622"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto.tfw",
+            "kind": "file",
+            "bytes": 84,
+            "sha256": "409daf5eed113476baa6d53c68c9ca23d60aa2b93ff123298976de5fd9d1ac85"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto.tif",
+            "kind": "file",
+            "bytes": 82774,
+            "sha256": "5291421186f9ae1bf3f8d77ec4621ed044d30fd2e8f4c99c34727132e166b12b"
+          },
+          {
+            "name": "odm_orthophoto/odm_orthophoto_extent.dxf",
+            "kind": "file",
+            "bytes": 9202,
+            "sha256": "688c32b1e329a7f4c004af723a2076252bc1febbb908c64cef50a33d46e1ceea"
+          },
+          {
+            "name": "odm_report/",
+            "kind": "directory",
+            "bytes": 0,
+            "sha256": null
+          },
+          {
+            "name": "odm_report/camera_mappings.npz",
+            "kind": "file",
+            "bytes": 471985,
+            "sha256": "dfe3d17deba8ba064206e090dfaff1c63121d1932b76c16689ea3cd2ad78876e"
+          },
+          {
+            "name": "odm_report/report.pdf",
+            "kind": "file",
+            "bytes": 2209141,
+            "sha256": "0a36873aa121a53f1c54cf39d9eb3cd14ad9e3667554ee27dbda033d369f02d3"
+          },
+          {
+            "name": "odm_report/shots.geojson",
+            "kind": "file",
+            "bytes": 8440,
+            "sha256": "5e08b53d7e16bf2b357807d2b4e402f00d5db43b7a9300ededbfa10e279a72e8"
+          },
+          {
+            "name": "odm_report/stats.json",
+            "kind": "file",
+            "bytes": 6952,
+            "sha256": "43cee3fd16353b4a1d12070945c0a6c55becae77f17eddae55e75c4807a63a6e"
+          },
+          {
+            "name": "task_output.txt",
+            "kind": "file",
+            "bytes": 129580,
+            "sha256": "a991d1a877cefe1074c6ddcc08a39744b7c080734317b38f56115f91b4a67e4d"
+          }
+        ]
+      }
+    },
+    {
+      "case": "revoked-after-get",
+      "outcome": "refused",
+      "unconfirmedObjects": 1
+    },
+    {
+      "case": "restored-after-get",
+      "applicationReads": 5,
+      "archiveGets": 1,
+      "objects": 2
+    }
+  ],
+  "permissionEvidence": "actual_retained_schema_rpc",
+  "processingPermissionEvidence": "historical_supplied_receipts",
+  "currentMainRestoreVerification": "unassessed",
+  "surveyAccuracyVerification": "unassessed",
+  "publicationPermission": false
+}

@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
@@ -260,9 +261,13 @@ export async function POST(request: NextRequest, context: RouteContext) {
       const included = (kind: GrantApplicationEvidenceKind) =>
         scopedKinds.length === 0 || scopedKinds.includes(kind);
 
+      // Close dates are stated in the workspace's zone and compared as instants.
+      const calendar = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+      if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
       const facts = buildOpportunityFactList(evidence, {
         suggestedEvidence: scopedKinds.length > 0 ? scopedKinds : undefined,
         now: new Date(),
+        timeZone: calendar.timeZone,
       });
       const factIds = facts.map((fact) => fact.fact_id);
 

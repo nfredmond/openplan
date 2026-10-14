@@ -19,6 +19,7 @@ import { CONTINENTAL_US_CENTER } from "@/lib/models/study-area";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
 import type { WorkspaceGisMapTarget } from "@/lib/cartographic/workspace-gis-map-layers";
 import { applyFitInstruction, type FitInstruction } from "@/lib/cartographic/geometry-bbox";
+import type { HighInjuryNetworkFeatureCollection } from "@/lib/safety/high-injury-network";
 
 // The shared engine choice: Mapbox with a public key (either env name), else
 // MapLibre with the operator's open style, else no map and the notice below.
@@ -38,6 +39,13 @@ const INITIAL_ZOOM = 3.4;
 const CRASH_SOURCE_ID = "safety-crashes";
 const CRASH_HALO_LAYER_ID = "safety-crash-halo";
 const CRASH_CORE_LAYER_ID = "safety-crash-core";
+/** The high-injury network sits under the crash points so no collision is hidden. */
+export const HIGH_INJURY_NETWORK_SOURCE_ID = "safety-high-injury-network";
+export const HIGH_INJURY_NETWORK_LINE_LAYER_ID = "safety-high-injury-network-line";
+export const HIGH_INJURY_NETWORK_FILL_LAYER_ID = "safety-high-injury-network-fill";
+/** One color, outside the severity palette, so the layer never reads as a severity. */
+const HIGH_INJURY_NETWORK_COLOR = "#6d28d9";
+const EMPTY_NETWORK: HighInjuryNetworkFeatureCollection = { type: "FeatureCollection", features: [] };
 
 /**
  * Where the workspace's own uploaded layers sit in this map's z-order.
@@ -143,6 +151,11 @@ type SafetyCrashMapProps = {
   focus?: FitInstruction | null;
   /** Called after `focus` has been applied, so the requester can clear it. */
   onFocusApplied?: () => void;
+  /**
+   * The listed high-injury segments to draw, already built by
+   * `highInjuryNetworkFeatureCollection`. Null or empty draws nothing.
+   */
+  highInjuryNetwork?: HighInjuryNetworkFeatureCollection | null;
 };
 
 /**
@@ -181,6 +194,7 @@ export function SafetyCrashMap({
   onMapReady,
   focus = null,
   onFocusApplied,
+  highInjuryNetwork = null,
 }: SafetyCrashMapProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<mapboxgl.Map | null>(null);
@@ -201,6 +215,7 @@ export function SafetyCrashMap({
   // must draw the crashes on screen now rather than the ones that were on screen
   // when the map was built.
   const collectionRef = useRef(collection);
+  const networkRef = useRef(highInjuryNetwork);
   // Which style the map has been TOLD to load. Compared before calling
   // `setStyle`, so a re-render that changes nothing does not throw the style
   // away and repaint.
@@ -214,9 +229,10 @@ export function SafetyCrashMap({
   useEffect(() => {
     onSelectRef.current = onSelect;
     collectionRef.current = collection;
+    networkRef.current = highInjuryNetwork;
     onMapReadyRef.current = onMapReady;
     onFocusAppliedRef.current = onFocusApplied;
-  }, [onSelect, collection, onMapReady, onFocusApplied]);
+  }, [onSelect, collection, highInjuryNetwork, onMapReady, onFocusApplied]);
 
   // Create the map once; data updates are handled by the effect below so a
   // filter change never tears down and rebuilds the map.
@@ -261,6 +277,44 @@ export function SafetyCrashMap({
        * a claim about a road, and the cheap fix is to say it differently.)
        */
       const paint = () => {
+        // The network goes on first, so the crash layers added below sit on
+        // top of it after every style load.
+        if (!map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID)) {
+          map.addSource(HIGH_INJURY_NETWORK_SOURCE_ID, {
+            type: "geojson",
+            data: networkRef.current ?? EMPTY_NETWORK,
+          });
+        }
+        if (!map.getLayer(HIGH_INJURY_NETWORK_FILL_LAYER_ID)) {
+          map.addLayer({
+            id: HIGH_INJURY_NETWORK_FILL_LAYER_ID,
+            type: "fill",
+            source: HIGH_INJURY_NETWORK_SOURCE_ID,
+            filter: ["==", ["geometry-type"], "Polygon"],
+            paint: {
+              "fill-color": HIGH_INJURY_NETWORK_COLOR,
+              "fill-opacity": 0.22,
+              "fill-outline-color": HIGH_INJURY_NETWORK_COLOR,
+            },
+          });
+        }
+        if (!map.getLayer(HIGH_INJURY_NETWORK_LINE_LAYER_ID)) {
+          map.addLayer({
+            id: HIGH_INJURY_NETWORK_LINE_LAYER_ID,
+            type: "line",
+            source: HIGH_INJURY_NETWORK_SOURCE_ID,
+            filter: ["==", ["geometry-type"], "LineString"],
+            layout: { "line-cap": "round", "line-join": "round" },
+            paint: {
+              "line-color": HIGH_INJURY_NETWORK_COLOR,
+              "line-width": ["interpolate", ["linear"], ["zoom"], 8, 3, 14, 8],
+              "line-opacity": 0.8,
+            },
+          });
+        }
+        const networkSource = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+        networkSource?.setData(networkRef.current ?? EMPTY_NETWORK);
+
         if (!map.getSource(CRASH_SOURCE_ID)) {
           map.addSource(CRASH_SOURCE_ID, {
             type: "geojson",
@@ -448,6 +502,15 @@ export function SafetyCrashMap({
       source?.setData(collection ?? EMPTY_COLLECTION);
     });
   }, [collection]);
+
+  useEffect(() => {
+    const map = mapRef.current;
+    if (!map) return;
+    return whenStyleAccepts(map, () => {
+      const source = map.getSource(HIGH_INJURY_NETWORK_SOURCE_ID) as mapboxgl.GeoJSONSource | undefined;
+      source?.setData(highInjuryNetwork ?? EMPTY_NETWORK);
+    });
+  }, [highInjuryNetwork]);
 
   useEffect(() => {
     const map = mapRef.current;

@@ -133,7 +133,13 @@ describe("Safety crash map", () => {
     // Framed once MapLibre arrives, though the bbox came first.
     await waitFor(() => expect(map.fitBoundsCalls).toHaveLength(1));
     act(() => map.loadStyle());
-    expect(map.layerIds()).toEqual(["safety-crash-halo", "safety-crash-core"]);
+    // The high-injury network goes on first so the crash layers sit on top of it.
+    expect(map.layerIds()).toEqual([
+      "safety-high-injury-network-fill",
+      "safety-high-injury-network-line",
+      "safety-crash-halo",
+      "safety-crash-core",
+    ]);
     expect((map.sourceData("safety-crashes") as SafetyCrashCollection).features).toHaveLength(1);
   });
 
