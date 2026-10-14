@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { readReportSafetyActionPlan } from "@/lib/reports/safety-action-plan";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -218,7 +219,7 @@ export default async function SafetyPage({
     requestedProjectId
       ? supabase
           .from("reports")
-          .select("id, title")
+          .select("id, title, metadata_json")
           .eq("workspace_id", workspaceId)
           .eq("project_id", requestedProjectId)
           .order("updated_at", { ascending: false })
@@ -378,7 +379,13 @@ export default async function SafetyPage({
         openedForProject={projectRow ? { id: projectRow.id, name: projectRow.name } : null}
         projects={projects}
         ingestHistory={ingestHistory}
-        projectReports={(reportsResult.data ?? []) as Array<{ id: string; title: string }>}
+        projectReports={((reportsResult.data ?? []) as Array<{ id: string; title: string; metadata_json?: unknown }>).map(
+          (report) => ({
+            id: report.id,
+            title: report.title,
+            safetyActionPlan: readReportSafetyActionPlan(report.metadata_json),
+          })
+        )}
         basemapChoices={basemaps.choices}
         defaultBasemapId={basemaps.defaultId}
       />
