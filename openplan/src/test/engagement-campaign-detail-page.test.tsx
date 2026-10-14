@@ -1612,9 +1612,9 @@ describe("EngagementCampaignDetailPage", () => {
       expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
     });
 
-    it("sets the map area inside the checklist, offering the linked project's own place", async () => {
-      // A draft, so the full checklist renders; the project's area is a
-      // searched county with a GEOID the route can re-resolve.
+    it("counts the linked project's area as where the map opens, as the resident map does", async () => {
+      // A draft, so the full checklist renders. The campaign has no area of
+      // its own; the project's searched county frames the resident map.
       campaignMaybeSingleMock.mockResolvedValueOnce({
         data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
         error: null,
@@ -1637,14 +1637,47 @@ describe("EngagementCampaignDetailPage", () => {
 
       const step = screen.getByTestId("publish-step-map_opens_somewhere");
       expect(step.closest("[data-testid='campaign-publish-flow']")).not.toBeNull();
-      expect(
-        within(step).getByRole("button", { name: "Use the project's area: Placer County, California" })
-      ).toBeVisible();
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the project's area, Placer County, California."
+      );
+      expect(screen.queryByText(/middle of the country/i)).not.toBeInTheDocument();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
       // The old warning that sent a planner to the bottom of the page is gone.
       expect(screen.queryByText(/at the bottom of this page/i)).not.toBeInTheDocument();
     });
 
-    it("offers no one-click copy when the project's area was drawn, not searched", async () => {
+    it("offers the linked project's place in one click when that area cannot frame the map", async () => {
+      // The project names a searched county but its extent is missing, so the
+      // resident map cannot open on it and the step stays open.
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: campaignRow({ status: "draft", share_token: null, allow_public_submissions: false }),
+        error: null,
+      });
+      projectPlaceResult = {
+        data: {
+          place_source: "tigerweb",
+          place_kind: "county",
+          place_ref: "06061",
+          place_label: "Placer County, California",
+          place_min_lon: null,
+          place_min_lat: null,
+          place_max_lon: null,
+          place_max_lat: null,
+        },
+        error: null,
+      };
+
+      await renderPage({ tab: "setup" });
+
+      const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "todo");
+      expect(
+        within(step).getByRole("button", { name: "Use the project's area: Placer County, California" })
+      ).toBeVisible();
+    });
+
+    it("counts a drawn project area too, and offers nothing to copy", async () => {
       campaignMaybeSingleMock.mockResolvedValueOnce({
         data: campaignRow({ status: "draft", share_token: null }),
         error: null,
@@ -1666,8 +1699,12 @@ describe("EngagementCampaignDetailPage", () => {
       await renderPage({ tab: "setup" });
 
       const step = screen.getByTestId("publish-step-map_opens_somewhere");
+      expect(step).toHaveAttribute("data-state", "done");
+      expect(within(step).getByTestId("publish-area-advisory")).toHaveTextContent(
+        "The map opens on the project's area, Downtown loop."
+      );
       expect(within(step).queryByRole("button", { name: /Use the project's area/i })).not.toBeInTheDocument();
-      expect(within(step).getByRole("button", { name: /Choose an area/i })).toBeVisible();
+      expect(within(step).getByRole("button", { name: /Choose another area/i })).toBeVisible();
     });
 
     it("puts the comments switch inside the checklist", async () => {

@@ -876,6 +876,95 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
   });
 
   /**
+   * CLOSING PUBLIC SUBMISSIONS. Before this field existed nothing in the app
+   * wrote `submissions_closed_at`, so the view-only public page, the submit
+   * routes' refusal and the report provenance that read it could never be
+   * reached. The close time comes from the server clock.
+   */
+  describe("closing and reopening public submissions", () => {
+    const patchBody = (body: Record<string, unknown>) =>
+      patchCampaignDetail(
+        new NextRequest("http://localhost/api/engagement/campaigns/1", {
+          method: "PATCH",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify(body),
+        }),
+        { params: Promise.resolve({ campaignId: "11111111-1111-4111-8111-111111111111" }) }
+      );
+
+    function campaignWithClosedAt(closedAt: string | null) {
+      campaignMaybeSingleMock.mockResolvedValueOnce({
+        data: {
+          id: "11111111-1111-4111-8111-111111111111",
+          workspace_id: "33333333-3333-4333-8333-333333333333",
+          project_id: "44444444-4444-4444-8444-444444444444",
+          title: "Downtown listening campaign",
+          status: "active",
+          engagement_type: "comment_collection",
+          allow_public_submissions: true,
+          submissions_closed_at: closedAt,
+        },
+        error: null,
+      });
+    }
+
+    it("closes submissions at the server's time", async () => {
+      campaignWithClosedAt(null);
+      vi.setSystemTime(new Date("2026-04-02T09:30:00.000Z"));
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: "2026-04-02T09:30:00.000Z" });
+      expect(campaignUpdateEqMock).toHaveBeenCalledWith("id", "11111111-1111-4111-8111-111111111111");
+      expect(mockAudit.info).toHaveBeenCalledWith(
+        "campaign_updated",
+        expect.objectContaining({ submissionsClosed: true })
+      );
+    });
+
+    it("keeps the first close time when an already closed campaign is closed again", async () => {
+      campaignWithClosedAt("2026-03-01T00:00:00.000Z");
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("reopens submissions by clearing the close time", async () => {
+      campaignWithClosedAt("2026-03-01T00:00:00.000Z");
+
+      const response = await patchBody({ submissionsClosed: false });
+
+      expect(response.status).toBe(200);
+      expect(campaignUpdateMock).toHaveBeenCalledWith({ submissions_closed_at: null });
+    });
+
+    it("does not let a caller choose the close time", async () => {
+      campaignWithClosedAt(null);
+
+      const response = await patchBody({ submissionsClosedAt: "2020-01-01T00:00:00.000Z" });
+
+      expect(response.status).toBe(400);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
+
+    it("refuses a viewer, the same as every other campaign edit", async () => {
+      campaignWithClosedAt(null);
+      membershipMaybeSingleMock.mockResolvedValueOnce({
+        data: { workspace_id: "33333333-3333-4333-8333-333333333333", role: "viewer" },
+        error: null,
+      });
+
+      const response = await patchBody({ submissionsClosed: true });
+
+      expect(response.status).toBe(403);
+      expect(campaignUpdateMock).not.toHaveBeenCalled();
+    });
+  });
+
+  /**
    * The RTP attachment options (the campaign side of the RTP↔engagement seam).
    * `rtp_cycle_id` was writable through this PATCH long before anything on the
    * campaign console could read what to write — the classic shipped-invisible

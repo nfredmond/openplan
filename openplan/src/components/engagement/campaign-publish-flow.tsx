@@ -35,6 +35,12 @@ export type PublishFlowCampaign = {
 export type PublishFlowCampaignArea = {
   state: "set" | "unset" | "unreadable";
   label: string | null;
+  /**
+   * Whose area the resident map opens on when the state is `set`: the
+   * campaign's own, or the linked project's, which the resident map falls back
+   * to. Absent means the campaign's own.
+   */
+  source?: "campaign" | "project";
 };
 
 type StepId = PublicPortalReadinessCheck["id"] | "preview";
@@ -149,6 +155,31 @@ export function CampaignPublishFlow({
     );
   }
 
+  // Closing keeps the page up and stops new comments; reopening clears the
+  // close time. Same PATCH as every other step. A page that never took
+  // comments has nothing to close.
+  const commentsClosed = Boolean(campaign.submissions_closed_at);
+  const closeCommentsButton =
+    commentsClosed || campaign.allow_public_submissions ? (
+      <Button
+        type="button"
+        variant="outline"
+        size="sm"
+        className="w-fit"
+        onClick={() =>
+          void patchCampaign(
+            "submissions_closed",
+            { submissionsClosed: !commentsClosed },
+            commentsClosed ? "Failed to reopen comments" : "Failed to close comments"
+          )
+        }
+        disabled={busyAction !== null}
+      >
+        {busyAction === "submissions_closed" ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
+        {commentsClosed ? "Reopen comments" : "Close comments"}
+      </Button>
+    ) : null;
+
   const areaStep = (
     <MapAreaStep
       area={campaignArea}
@@ -222,6 +253,7 @@ export function CampaignPublishFlow({
         </div>
         <div className="mt-5 space-y-3">
           {urlRow}
+          {closeCommentsButton}
           {areaStep}
           {errorBlock}
           <p className="text-xs text-muted-foreground">
@@ -362,7 +394,8 @@ export function CampaignPublishFlow({
                 PATCH as the checkbox in Public access, and it reads the SAVED
                 row, so it flips only after the save comes back.
               */}
-              {id === "submission_mode" ? (
+              {id === "submission_mode" && commentsClosed ? closeCommentsButton : null}
+              {id === "submission_mode" && !commentsClosed ? (
                 <label className="flex w-fit items-center gap-2 text-sm font-medium">
                   <input
                     id="publish-flow-allow-comments"
@@ -483,7 +516,11 @@ function MapAreaStep({
   const [areaText, setAreaText] = useState("");
   const [pickedPlace, setPickedPlace] = useState<PlaceBoundaryResponse | null>(null);
 
-  if (area.state === "set") {
+  // The map falls back to the linked project's area, so the step is done, but
+  // the planner can still give this page its own area.
+  const inherited = area.state === "set" && area.source === "project";
+
+  if (area.state === "set" && !inherited) {
     return (
       <p id="publish-area-advisory" className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
         {area.label ? `The map opens on ${area.label}.` : detail}
@@ -516,11 +553,17 @@ function MapAreaStep({
         true here. Say only what is known.
       */}
       <p id="publish-area-advisory" className="text-xs text-muted-foreground" data-testid="publish-area-advisory">
-        {projectArea ? "No area is set for this page yet." : detail}
+        {inherited
+          ? area.label
+            ? `The map opens on the project's area, ${area.label}.`
+            : "The map opens on the project's area."
+          : projectArea
+            ? "No area is set for this page yet."
+            : detail}
       </p>
       {!choosing ? (
         <div className="flex flex-wrap gap-2">
-          {projectArea ? (
+          {projectArea && !inherited ? (
             <Button
               type="button"
               variant="outline"
@@ -541,7 +584,7 @@ function MapAreaStep({
           ) : null}
           <Button type="button" variant="outline" size="sm" disabled={busy} onClick={() => setChoosing(true)}>
             <MapPin className="h-4 w-4" />
-            {projectArea ? "Choose another area" : "Choose an area"}
+            {projectArea || inherited ? "Choose another area" : "Choose an area"}
           </Button>
         </div>
       ) : (

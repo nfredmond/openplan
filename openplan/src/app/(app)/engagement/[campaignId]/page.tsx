@@ -63,7 +63,7 @@ import { LocationDisplayMap } from "@/components/engagement/location-display-map
 import { EngagementContextLayersPanel } from "@/components/engagement/engagement-context-layers-panel";
 import { loadCampaignContextLayerSummaries, loadParticipantContextLayers } from "@/lib/engagement/context-layers";
 import { getPublicPortalState } from "@/lib/engagement/public-portal";
-import { loadPortalPlaceCandidates } from "@/lib/engagement/public-portal-data";
+import { loadPortalPlaceCandidates, publishChecklistMapArea } from "@/lib/engagement/public-portal-data";
 import { loadCampaignAccess } from "@/lib/engagement/api";
 import { EngagementSynthesisSources } from "@/components/engagement/engagement-synthesis-sources";
 import { EngagementSynthesisPanel } from "@/components/engagement/engagement-synthesis-panel";
@@ -697,10 +697,7 @@ export default async function EngagementCampaignDetailPage({
           </h2>
           <CampaignPublishFlow
             campaign={campaign}
-            campaignArea={{
-              state: portalPlaceCandidates.campaign.state,
-              label: portalPlaceCandidates.campaign.label,
-            }}
+            campaignArea={publishChecklistMapArea(portalPlaceCandidates)}
             projectArea={portalPlaceCandidates.projectReference ?? null}
           />
 
