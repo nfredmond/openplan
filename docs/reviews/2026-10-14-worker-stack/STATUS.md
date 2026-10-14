@@ -46,3 +46,13 @@ limit. The added recovery controls require more time, so this candidate sets
 a bounded 60-minute allowance while retaining every suite and fault control.
 This changes no acceptance threshold or claim tier. Hosted11/12, default
 activation and full receiver/Storage acceptance remain open.
+
+## Original scheduling join
+
+The current combined candidate joins main320/e27efa190 and verified scheduling
+checkpoint98a0e4815. All116 worker files exactly match the native scheduling
+census. Both four21-case/21-fault source campaigns,120 related cases each, four
+native four-case cohorts/two SQL faults and19 joined nested checks retain their
+recorded scope. Current native is the retained415 direct-ledger fixture, not
+current hosted or application receiver acceptance. Default/configuration and
+full receiver/Storage remain open. Fresh exact-head CI precedes any merge.

@@ -261,6 +261,12 @@ jobs:
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-recovery-controls"
           python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_oracle_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-summary-controls"
+      - name: Original recovery scheduling and capture guard controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-recovery-execution-controls"
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_capture_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-execution-capture-controls"
       - name: Exact progress callback journal controls
         run: |
           python3 -B docs/reviews/2026-10-14-progress-delivery/verify_controls.py \

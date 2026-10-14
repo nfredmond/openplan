@@ -1,0 +1,144 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "outcome-priority",
+    "test": "test_outcome_recovery_precedes_every_other_stage",
+    "outcome": "intended_failure",
+    "reason": "Outcome repair cannot enter original recovery"
+  },
+  {
+    "control": "original-priority",
+    "test": "test_original_recovery_precedes_new_admission",
+    "outcome": "intended_failure",
+    "reason": "Original recovery cannot start another admission"
+  },
+  {
+    "control": "admission-order",
+    "test": "test_new_admission_follows_both_false_recoveries",
+    "outcome": "intended_failure",
+    "reason": "New admission cannot reorder recovery"
+  },
+  {
+    "control": "idle-state",
+    "test": "test_idle_requires_three_false_results",
+    "outcome": "intended_failure",
+    "reason": "Idle needs every stage to decline"
+  },
+  {
+    "control": "nonboolean-result",
+    "test": "test_nonboolean_stage_refuses_before_later_effects",
+    "outcome": "intended_failure",
+    "reason": "Malformed stage cannot advance original recovery"
+  },
+  {
+    "control": "owner-read",
+    "test": "test_unowned_step_refuses_before_recovery",
+    "outcome": "intended_failure",
+    "reason": "Unowned step cannot read recovery"
+  },
+  {
+    "control": "post-stage-owner",
+    "test": "test_owner_loss_after_stage_refuses_before_next_stage",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "registration",
+    "test": "test_replaced_registration_refuses_before_recovery",
+    "outcome": "intended_failure",
+    "reason": "Replaced registration cannot read recovery"
+  },
+  {
+    "control": "changed-graph",
+    "test": "test_changed_graph_refuses_before_recovery",
+    "outcome": "intended_failure",
+    "reason": "Changed graph cannot read recovery"
+  },
+  {
+    "control": "foreign-components",
+    "test": "test_same_runtime_foreign_components_refuse_before_stages",
+    "outcome": "intended_failure",
+    "reason": "Foreign same-runtime component cannot read recovery"
+  },
+  {
+    "control": "initial-joins",
+    "test": "test_constructor_revalidates_already_changed_joins",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "initial-delivery-join",
+    "test": "test_constructor_revalidates_delivery_authority_join",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "corrupt-component-refusal",
+    "test": "test_corrupt_nested_component_refuses_before_stage",
+    "outcome": "intended_failure",
+    "reason": "has no attribute 'products'"
+  },
+  {
+    "control": "existing-reader-join",
+    "test": "test_constructor_refuses_existing_foreign_delivery_reader",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "internal-input-pin",
+    "test": "test_compatible_internal_input_replacement_refuses_before_stage",
+    "outcome": "intended_failure",
+    "reason": "Foreign internal input cannot read recovery"
+  },
+  {
+    "control": "initial-input-join",
+    "test": "test_constructor_revalidates_internal_input_target",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "typed-constructor",
+    "test": "test_constructor_requires_typed_graph",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "constructor-registration",
+    "test": "test_constructor_requires_current_registration",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "actual-original-recovery",
+    "test": "test_actual_new_job_then_original_recovery_keeps_one_start",
+    "outcome": "intended_failure",
+    "reason": "Started work resumes before another admission"
+  },
+  {
+    "control": "actual-outcome-recovery",
+    "test": "test_actual_legacy_repair_preserves_original_before_idle",
+    "outcome": "intended_failure",
+    "reason": "Actual old outcome is repaired first"
+  },
+  {
+    "control": "pending-outcome-priority",
+    "test": "test_pending_legacy_delivery_cannot_start_next_job",
+    "outcome": "intended_failure",
+    "reason": "Pending legacy callback cannot enter original recovery"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]
