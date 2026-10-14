@@ -218,3 +218,7 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-14-rotated-raster-spacing/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-rotated-raster-spacing-controls"
+      - name: Private native raster inspection controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-private-raster-inspection/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-raster-inspection-controls"
