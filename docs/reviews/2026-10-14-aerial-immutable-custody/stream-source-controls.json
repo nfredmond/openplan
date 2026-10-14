@@ -1,0 +1,97 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 92
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 92
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 92
+  },
+  {
+    "case": "original-overwritten",
+    "outcome": "intended_failure",
+    "diagnostic": "A retry never replaces the original stored bytes"
+  },
+  {
+    "case": "overwrite-mode",
+    "outcome": "intended_failure",
+    "diagnostic": "upsert"
+  },
+  {
+    "case": "hash-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Unconfirmed actual bytes cannot become held: hash"
+  },
+  {
+    "case": "matching-recovery-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "Matching retained bytes restore the missing custody row"
+  },
+  {
+    "case": "returned-ack-rejected",
+    "outcome": "intended_failure",
+    "diagnostic": "An uncertain upload reply requires actual matching bytes"
+  },
+  {
+    "case": "thrown-ack-not-reconciled",
+    "outcome": "intended_failure",
+    "diagnostic": "Thrown acknowledgement requires actual byte reconciliation"
+  },
+  {
+    "case": "excessive-stream-not-stopped",
+    "outcome": "intended_failure",
+    "diagnostic": "Oversized stream stops at its first excessive chunk"
+  },
+  {
+    "case": "cancel-not-forwarded",
+    "outcome": "intended_failure",
+    "diagnostic": "Canceled transport starts no network request"
+  },
+  {
+    "case": "callback-held-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "held"
+  },
+  {
+    "case": "retry-held-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "Retried artifact records actual held custody"
+  },
+  {
+    "case": "planner-held-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "Planner package follows actual held custody"
+  },
+  {
+    "case": "georef-held-denied",
+    "outcome": "intended_failure",
+    "diagnostic": "held"
+  },
+  {
+    "case": "factory-transport-ignored",
+    "outcome": "intended_failure",
+    "diagnostic": "Factory preserves the original configuration authority"
+  },
+  {
+    "case": "default-transport-changed",
+    "outcome": "intended_failure",
+    "diagnostic": "Default callers retain their SDK transport"
+  },
+  {
+    "case": "target-requirement-removed",
+    "outcome": "intended_failure",
+    "diagnostic": "Missing required environment variable"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 92
+  }
+]

@@ -194,6 +194,9 @@ class Checks(unittest.TestCase):
         self.assertFalse((self.f.fixture.folder/'engine/command-00000.reply.json').exists(),'Cancelled transport cannot save a reply')
 
     def test_source_stage_shares_total_deadline_without_mutating_original_adapter(self):
+        # Exercise real delegates with distinct budgets, then inspect the
+        # forwarded boundaries instead of requiring fixture fsyncs within1s.
+        self.f.intake.timeout=120
         original=module.Intake;draft=module.Draft;timeouts=[];timeout=self.f.intake.timeout;clocks=[]
         def observed_clock():
             current=time.monotonic();clocks.append(current);return current
@@ -201,12 +204,12 @@ class Checks(unittest.TestCase):
         def extended(preparation,authorize,transport,**kwargs):
             def send(engine,command,stream,deadline):return transport(engine,command,stream,deadline+1)
             return draft(preparation,authorize,send,**kwargs)
-        self.pipeline.timeout=1
+        self.pipeline.timeout=30
         with patch('runtime_url_draft.Intake',side_effect=construct),patch('runtime_url_draft.Draft',side_effect=extended),patch.object(module,'time',SimpleNamespace(monotonic=observed_clock)):self.advance()
-        self.assertTrue(timeouts);self.assertLessEqual(timeouts[0],1,'Intake cannot receive more than the whole pipeline deadline')
+        self.assertTrue(timeouts);self.assertLessEqual(timeouts[0],self.pipeline.timeout,'Intake cannot receive more than the whole pipeline deadline')
         self.assertEqual(self.f.intake.timeout,timeout,'Pipeline cannot mutate the original intake timeout')
         self.assertTrue(clocks,'Pipeline must establish its original deadline')
-        self.assertLessEqual(self.calls[0]['deadline'],clocks[0]+1,'Engine transport cannot extend the pipeline deadline')
+        self.assertLessEqual(self.calls[0]['deadline'],clocks[0]+self.pipeline.timeout,'Engine transport cannot extend the pipeline deadline')
 
     def test_expired_permission_cannot_issue_intent(self):
         expired=[False]

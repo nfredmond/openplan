@@ -1,0 +1,182 @@
+[
+  {
+    "case": "body-reencoded",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "body-reencoded",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "body-reencoded",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "body-reencoded",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "body-reencoded",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "body-reencoded",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "acknowledged-replay-posted",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "revoked-access-ignored",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "process-interruption-skipped",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "receiver-duplicates-effect",
+    "oracle": "no-assertion",
+    "accepted": false
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "intended",
+    "accepted": true
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "syntax-error",
+    "accepted": false
+  },
+  {
+    "case": "replacement-changes-body",
+    "oracle": "no-assertion",
+    "accepted": false
+  }
+]

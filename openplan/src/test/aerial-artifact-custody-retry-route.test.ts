@@ -1,3 +1,4 @@
+import { Blob as ServerBlob } from "node:buffer";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 
@@ -29,6 +30,7 @@ const jobUpdateEqMock = vi.fn();
 const packageUpdateEqMock = vi.fn();
 const packageUpdateMock = vi.fn();
 const storageUploadMock = vi.fn();
+const storageObjects = new Map<string, Uint8Array>();
 const membershipMaybeSingleMock = vi.fn();
 const authGetUserMock = vi.fn();
 const fetchMock = vi.fn();
@@ -121,10 +123,24 @@ function request(body: unknown) {
 describe("POST /api/aerial/processing-callback/custody", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageObjects.clear();
     createApiAuditLoggerMock.mockReturnValue(audit);
     createServiceRoleClientMock.mockReturnValue({
       from: serviceFromMock,
-      storage: { from: () => ({ upload: storageUploadMock }) },
+      storage: { from: () => ({
+        upload: async (path: string, body: Uint8Array, options: { upsert?: boolean }) => {
+          const result = await storageUploadMock(path, body, options);
+          if (!result.error) {
+            if (storageObjects.has(path) && options?.upsert !== true) return { error: { message: "Object already exists" } };
+            storageObjects.set(path, new Uint8Array(body));
+          }
+          return result;
+        },
+        download: (path: string) => ({ asStream: async () => ({
+          data: storageObjects.has(path) ? new ServerBlob([storageObjects.get(path)!]).stream() : null,
+          error: null,
+        }) }),
+      }) },
     });
     createClientMock.mockResolvedValue({
       auth: { getUser: authGetUserMock },
@@ -227,6 +243,7 @@ describe("POST /api/aerial/processing-callback/custody", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0]).toBe(SIGNED_URL);
     expect(storageUploadMock).toHaveBeenCalledTimes(1);
+    expect(custodyUpsertMock.mock.calls[0]?.[0]?.[0]?.state, "Retried artifact records actual held custody").toBe("held");
 
     // And the package's claim moves with the bytes.
     expect(packageUpdateMock).toHaveBeenCalledWith({ verification_readiness: "partial" });
