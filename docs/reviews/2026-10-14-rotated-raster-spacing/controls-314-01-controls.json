@@ -1,0 +1,58 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "tests": 6
+  },
+  {
+    "case": "harmless-comment",
+    "outcome": "survived",
+    "tests": 6
+  },
+  {
+    "case": "restored-after-harmless",
+    "outcome": "survived",
+    "tests": 6
+  },
+  {
+    "case": "diagonal-only",
+    "outcome": "intended_failure",
+    "test": "test_rotated_vectors_have_their_full_native_lengths",
+    "diagnostic": "Rotated cells require both model-axis components"
+  },
+  {
+    "case": "quarter-turn-zero",
+    "outcome": "intended_failure",
+    "test": "test_quarter_turn_cannot_report_zero_spacing",
+    "diagnostic": "Quarter-turn cells retain positive declared spacing"
+  },
+  {
+    "case": "row-shear-ignored",
+    "outcome": "intended_failure",
+    "test": "test_sheared_row_keeps_its_own_vector_length",
+    "diagnostic": "Sheared row spacing includes its horizontal component"
+  },
+  {
+    "case": "reflected-length-negative",
+    "outcome": "intended_failure",
+    "test": "test_reflected_vectors_do_not_change_positive_lengths",
+    "diagnostic": "Reflection preserves native cell vector lengths"
+  },
+  {
+    "case": "original-scale-doubled",
+    "outcome": "intended_failure",
+    "test": "test_axis_aligned_transform_keeps_declared_spacing",
+    "diagnostic": "Axis-aligned spacing remains the original declared scale"
+  },
+  {
+    "case": "matrix-rows-used",
+    "outcome": "intended_failure",
+    "test": "test_asymmetric_vectors_use_columns_instead_of_matrix_rows",
+    "diagnostic": "Raster steps use matrix columns rather than horizontal matrix rows"
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "tests": 6
+  }
+]
