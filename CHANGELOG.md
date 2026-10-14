@@ -61,6 +61,21 @@ actually applied to the original job. The retained download adapter keeps its
 original token and expiry; default worker wiring remains pending. No hosted
 activation is declared.
 
+**My Work dates on the workspace calendar.** Grant decision dates,
+application close times and award obligation deadlines on My Work now show the
+day they fall on in the workspace time zone, not the UTC day. An obligation
+due at 11 p.m. Pacific on October 20 reads October 20, and the dashboard's
+date windows keep it on the 20th. Dates stored without a time do not move.
+
+**Work program authority dates follow the workspace's day.** An adoption,
+external acceptance, spending authorization or withdrawal can be dated today
+on the workspace's calendar. Before, the database compared the date with the
+UTC day, so a workspace far east of UTC was told today was in the future, and
+one far west could record tomorrow's date. With no workspace time zone saved,
+the database uses UTC as before. Apply migration
+`20261017000014_work_program_evidence_date_workspace_calendar.sql`; it changes
+one database function, and the app works the same before or after it runs.
+
 **Dates on the workspace calendar.** More planner dates now follow the
 workspace time zone instead of the server's UTC day, which turns over at 5 p.m.
 Pacific. Engagement participation open and close times are entered and shown

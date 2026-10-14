@@ -24,8 +24,26 @@ import { ReadFailureLog } from "@/lib/ui/read-failures";
  * `isViewer` to false.
  */
 
+// The workspace row the calendar reads. Each test sets it; null is a failed read.
+let workspaceRow: { time_zone: string | null; home_country_code: string | null } | null = null;
+const workspaceReads: Array<{ columns: string; id: unknown }> = [];
 const RLS_CLIENT = {
   auth: { getUser: async () => ({ data: { user: { id: USER_ID() } } }) },
+  from(table: string) {
+    if (table !== "workspaces") throw new Error(`unexpected read of ${table}`);
+    return {
+      select: (columns: string) => ({
+        eq: (_column: string, id: unknown) => ({
+          maybeSingle: async () => {
+            workspaceReads.push({ columns, id });
+            return workspaceRow
+              ? { data: workspaceRow, error: null }
+              : { data: null, error: { message: "column workspaces.time_zone does not exist" } };
+          },
+        }),
+      }),
+    };
+  },
 };
 function USER_ID() {
   return "44444444-0000-4000-8000-000000000004";
@@ -85,6 +103,8 @@ function emptyResult(overrides: Record<string, unknown> = {}) {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  workspaceRow = { time_zone: null, home_country_code: null };
+  workspaceReads.length = 0;
   loadParticipantWorkMock.mockResolvedValue({rows:[],complete:true});
   createClientMock.mockResolvedValue(RLS_CLIENT);
   createServiceRoleClientMock.mockReturnValue(SERVICE_CLIENT);
@@ -146,6 +166,28 @@ describe("/my-work page wiring", () => {
     loadMyWorkMock.mockClear();
     await renderPage("../etc/passwd");
     expect(loadMyWorkMock.mock.calls[0][1]).toMatchObject({ scope: "assigned" });
+  });
+
+  it("puts the queue and the board on the workspace's calendar", async () => {
+    // VARY THE BINDING: one zone cannot tell "threads the zone" from a constant.
+    workspaceRow = { time_zone: "America/Los_Angeles", home_country_code: "US" };
+    const pacific = await renderPage();
+    expect(workspaceReads).toEqual([{ columns: "time_zone, home_country_code", id: WORKSPACE_ID }]);
+    expect(loadMyWorkMock.mock.calls[0][1]).toMatchObject({ timeZone: "America/Los_Angeles" });
+    expect(pacific.props.timeZone).toBe("America/Los_Angeles");
+
+    loadMyWorkMock.mockClear();
+    workspaceRow = { time_zone: "Asia/Tokyo", home_country_code: "JP" };
+    const tokyo = await renderPage();
+    expect(loadMyWorkMock.mock.calls[0][1]).toMatchObject({ timeZone: "Asia/Tokyo" });
+    expect(tokyo.props.timeZone).toBe("Asia/Tokyo");
+
+    // A failed read is UTC, as before the workspace had a zone.
+    loadMyWorkMock.mockClear();
+    workspaceRow = null;
+    const unread = await renderPage();
+    expect(loadMyWorkMock.mock.calls[0][1]).toMatchObject({ timeZone: "UTC" });
+    expect(unread.props.timeZone).toBe("UTC");
   });
 
   it("hands the board the roster it read, and the caller's role", async () => {
