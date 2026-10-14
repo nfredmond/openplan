@@ -13,6 +13,8 @@ The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md)
 
 ## Current authorities
 
+The [October 14 progress delivery candidate](reviews/2026-10-14-progress-delivery/STATUS.md) retains original accepted/running callback bytes before a supervised POST. Current actor access, exact retry, refusal and received-response custody stay separate from artifact delivery and terminal completion. The worker default remains unchanged.
+
 The [atomic model run-state correction](reviews/2026-10-08-model-custody-metadata/RUN_STATE_PUBLICATION.md) protects local stage handoffs from truncated writes. Attempt ownership and whole-stage replay remain unfinished.
 
 The October 8 model recovery checkpoints cover [stage preparation and artifact delivery](reviews/2026-10-08-model-custody-metadata/STAGE_RECOVERY.md), [KPI receipt recovery](reviews/2026-10-08-model-custody-metadata/KPI_RECOVERY.md) and [retained agreement computation](reviews/2026-10-08-model-custody-metadata/AGREEMENT_COMPUTATION.md). They preserve interrupted-work boundaries and do not establish full stage replay or scientific acceptance.
