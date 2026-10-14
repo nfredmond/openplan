@@ -88,3 +88,20 @@ Earlier failed trials remain preserved: a full TypeScript heap-limit failure,
 a scoped Node/DOM stream type mismatch, two native-driver errors, a native
 cleanup error, and an incorrect transport-proof assertion location. The corrected
 cohorts above do not turn those failures into passing runs.
+
+## Joined callback and roadmap tree
+
+The combined candidate joins the accepted-response/package correction and
+main259's roadmap status format. Four full custody source cohorts each pass96
+cases across six files. All15 source faults reach their named assertions.
+Four installed-SDK loopback cohorts each pass six cases, with six targeted faults
+and42 exception-oracle controls. Four actual isolated Storage cohorts and two
+intended faults preserve and recover the original object. The last proof database
+is retained as `openplan_attempt_cli_11ad3644a91448049612bbd07f1a55e6`.
+
+The combined TypeScript/lint/148-case record is linked from the
+[callback report](../2026-10-14-aerial-callback-retry/STATUS.md). Source bindings
+match the restored joined tree. CI now runs the custody source and loopback
+transport controls after callback controls; the local actual Storage fixture
+retains its separate target fence and is not a generic hosted test. Fresh CI,
+main integration and exact hosted delivery remain pending.

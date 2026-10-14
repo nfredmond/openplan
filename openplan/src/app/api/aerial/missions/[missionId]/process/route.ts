@@ -679,7 +679,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         .select("processing_job_id, workspace_id, payload")
         .eq("callback_id", accepted.callbackId)
         .maybeSingle();
-      acceptedRecorded = !retainedError && retained?.processing_job_id === jobRow.id
+      acceptedRecorded = !retainedError && retained != null && retained.processing_job_id === jobRow.id
         && retained.workspace_id === mission.workspace_id
         && isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(accepted)));
     }

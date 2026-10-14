@@ -2,8 +2,15 @@ import argparse
 import hashlib
 import json
 import os
+import re
 import subprocess
 from pathlib import Path
+
+def intended(code, output, reason):
+    return code == 1 and re.search(
+        r'^(?:Error|AssertionError(?: \[ERR_ASSERTION\])?): ' + re.escape(reason), output, re.MULTILINE
+    ) is not None and 'SyntaxError:' not in output and 'ReferenceError:' not in output
+
 
 def run(repo, out):
     os.umask(0o077)
@@ -13,6 +20,7 @@ def run(repo, out):
     (out / 'original-source-private.ts').write_bytes(original)
     text = original.decode()
     rows = []
+    oracles = []
     def execute(label, mode=None):
         target = out / label
         env = {**os.environ, 'OPENPLAN_PROOF_OUT': str(target)}
@@ -50,12 +58,23 @@ def run(repo, out):
                 assert changed != text
                 source.write_text(changed)
                 code, output = execute(label, mode)
-                assert code == 1 and reason in output, label + ' reaches intended native assertion'
+                assert intended(code, output, reason), label + ' reaches intended native assertion'
+                for name, c, o, r, expected in [
+                    ('exact', code, output, reason, True), ('success', 0, output, reason, False),
+                    ('wrong-exit', 2, output, reason, False), ('wrong-reason', code, output, 'Absent diagnostic', False),
+                    ('source-only', code, 'assert.ok(false, '+reason+')', reason, False),
+                    ('syntax', code, 'SyntaxError: '+reason, reason, False),
+                    ('reference', code, 'ReferenceError: '+reason, reason, False),
+                ]:
+                    accepted = intended(c, o, r)
+                    assert accepted == expected, label + ' oracle ' + name
+                    oracles.append({'case': label, 'oracle': name, 'accepted': accepted})
                 rows.append({'case': label, 'outcome': 'intended_failure', 'transportCase': mode, 'diagnostic': reason})
             finally:
                 source.write_bytes(original)
         positive('restored')
         (out / 'controls.json').write_text(json.dumps(rows, indent=2) + '\n')
+        (out / 'oracles.json').write_text(json.dumps(oracles, indent=2) + '\n')
         (out / 'bindings.json').write_text(json.dumps({str(source.relative_to(repo)): hashlib.sha256(original).hexdigest(), 'native_transport.mjs': hashlib.sha256(Path(__file__).with_name('native_transport.mjs').read_bytes()).hexdigest()}, indent=2) + '\n')
         print(rows)
     finally:

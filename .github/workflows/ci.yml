@@ -60,6 +60,16 @@ jobs:
           python3 -B ../docs/reviews/2026-10-14-aerial-callback-retry/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-callback-retry-controls"
 
+      - name: Aerial immutable custody source controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-immutable-custody/verify_guard_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-immutable-custody-controls"
+
+      - name: Aerial Storage transport controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-immutable-custody/verify_transport_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-storage-transport-controls"
+
   order-independence:
     name: order independence (shuffled vitest)
     runs-on: ubuntu-latest

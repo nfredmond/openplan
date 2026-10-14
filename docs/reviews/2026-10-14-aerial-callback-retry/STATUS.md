@@ -152,3 +152,23 @@ retries both complete, and SQL finds one package whose ID equals the job UUID.
 A legacy accepted pointer also advances. This adapter is not a full Next build,
 browser journey, current-main restore, hosted acceptance or scientific proof.
 Native controlled faults and current exact CI remain pending at this checkpoint.
+
+## Joined candidate after the roadmap and Storage join
+
+The current combined tree joins main259 and Storage checkpoint95856e9ae.
+Changed source/dependencies pass TypeScript,12 changed files pass lint, and148
+cases pass across11 files. Four callback cohorts each pass69 cases; all60
+source faults reach the named assertion and300 oracle controls reject unrelated
+failures. Four selected409 native cohorts and10 faults pass with80 oracle
+controls. Those native cases include actual overlapping terminal retries,
+one deterministic evidence package, and legacy accepted-baseline advancement.
+The reuse audit now records `evidence_package_reused`.
+
+The joined source bindings match restored files. The first nullable-record
+TypeScript failure remains retained; the corrected guard explicitly requires
+the original accepted record. Missing records and failed reads remain visible.
+The [joined Storage evidence](../2026-10-14-aerial-immutable-custody/STATUS.md)
+protects bytes and actual transport. Its limits remain separate. Fresh exact-head
+CI, main integration and hosted delivery remain pending. No migration, worker
+default, version or tag changes. The bounded candidates do not close the wider
+M3/M5b.2 or v1 contract.

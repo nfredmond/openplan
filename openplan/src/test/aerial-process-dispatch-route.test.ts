@@ -579,6 +579,13 @@ describe("POST /api/aerial/missions/[missionId]/process", () => {
           "Foreign accepted receipt cannot supply a pointer: " + field).toBe(503);
         expect(jobUpdateMock).not.toHaveBeenCalled();
       }
+      for (const error of [null, { message: "Synthetic receipt read unavailable" }]) {
+        jobUpdateMock.mockClear();
+        acceptedLedgerReadMock.mockResolvedValue({ data: null, error });
+        expect((await postProcessMission(request(), routeContext())).status,
+          "Missing accepted receipt cannot supply a pointer").toBe(503);
+        expect(jobUpdateMock).not.toHaveBeenCalled();
+      }
     });
 
     it("refuses an accepted response for a different request", async () => {

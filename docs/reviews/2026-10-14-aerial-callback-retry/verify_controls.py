@@ -124,12 +124,14 @@ def run(repo, out, before=None):
         'retains the original accepted payload before installing its ordering pointer', 'Accepted response reaches the private ledger', dispatch)
     fault('accepted-ledger-failure-ignored', 'if (!acceptedRecorded)', 'if (false)',
         'refuses an unavailable accepted ledger without installing an unreadable pointer', 'Missing accepted custody remains visible', dispatch)
-    fault('accepted-conflict-scope-ignored', 'retained?.processing_job_id === jobRow.id', 'true',
+    fault('accepted-conflict-scope-ignored', 'retained.processing_job_id === jobRow.id', 'true',
         'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer', dispatch)
     fault('accepted-workspace-scope-ignored', 'retained.workspace_id === mission.workspace_id', 'true',
         'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer: workspace_id', dispatch)
     fault('accepted-original-payload-ignored', 'isDeepStrictEqual(retained.payload, JSON.parse(JSON.stringify(accepted)))', 'true',
         'accepts only an exact scoped retained accepted response after a unique conflict', 'Foreign accepted receipt cannot supply a pointer: payload', dispatch)
+    fault('accepted-original-record-not-required', 'retained != null && ', '',
+        'accepts only an exact scoped retained accepted response after a unique conflict', 'Missing accepted receipt cannot supply a pointer', dispatch)
     fault('accepted-projection-not-bound', '.select("processing_job_id, workspace_id, payload")', '.select("payload")',
         'accepts only an exact scoped retained accepted response after a unique conflict', 'Read every binding needed for accepted replay', dispatch)
     fault('accepted-request-not-bound', '|| parsedAccepted.data.requestId !== requestId', '',

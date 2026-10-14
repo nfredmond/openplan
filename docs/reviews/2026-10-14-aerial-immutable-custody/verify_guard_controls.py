@@ -41,7 +41,7 @@ def run(repo, out):
         code, data, _ = execute(label)
         if expected is None:
             expected = data['numPassedTests']
-            assert expected == 92, 'All six affected test files reach the complete 92-case cohort'
+            assert expected == 96, 'All six affected test files reach the complete 96-case cohort'
             assert {Path(file['name']).name for file in data['testResults']} == set(FILES), 'Exact six-file test census'
         assert code == 0 and data['numPassedTests'] == expected and data['numFailedTests'] == 0, label + ' passes complete affected cohort'
         rows.append({'case': label, 'outcome': 'survived', 'tests': expected})
