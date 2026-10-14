@@ -1,0 +1,10 @@
+{
+  "database": "odm_original_pipeline_eb855116557d482e856ad2f80d3c05d5",
+  "restContainer": "be0f19fcc8665c8c8e16d08ce703a1d0a5b21ed86fc77593a3b365db69b59a85",
+  "candidateSha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+  "positiveCohorts": 4,
+  "casesPerCohort": 3,
+  "faults": 2,
+  "historyCandidate": 415,
+  "scope": "Actual isolated original pipeline recovery with PostgREST, copied original input and committed engine journals, copied original archive, supervised callback and artifact sockets on intended restored415 clone; fixture sink directly writes callback ledger; no application receiver route, new engine/input work, public TLS, hosted login, default, quality, placement, browser or V1 acceptance."
+}
