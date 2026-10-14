@@ -49,6 +49,7 @@ const ALLOWED: readonly AllowedSlice[] = [
     reason: FILE_NAME,
   },
   { file: "src/app/api/projects/[projectId]/evidence-bundles/[bundleId]/download/route.ts", snippet: "generated_at.slice(0, 10)", reason: FILE_NAME },
+  { file: "src/app/api/funding-opportunities/[opportunityId]/application/atp-packet/route.ts", snippet: "generated_at.slice(0, 10)", reason: FILE_NAME },
   { file: "src/lib/project-evidence-bundles/bytes.ts", snippet: "generatedAt?.slice(0, 10)", reason: FILE_NAME },
   { file: "src/lib/safety/crash-export.ts", snippet: "generatedAt.slice(0, 10)", reason: FILE_NAME },
   { file: "src/lib/projects/portfolio-export.ts", snippet: "generatedAt.toISOString().slice(0, 10)", reason: FILE_NAME },
