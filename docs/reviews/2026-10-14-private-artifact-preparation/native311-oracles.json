@@ -1,0 +1,482 @@
+[
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "final-access-read-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "post-manifest-revocation-swallowed",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "saved-native-manifest-altered",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-delivery-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-quality-promoted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "child-does-not-interrupt",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "original-byte-hash-replaced",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-original-scope-dropped",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "native-absence-becomes-zero",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "productReceiptSha256-not-bound",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReceiptSha256-not-bound",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "inspectionReportSha256-not-bound",
+    "oracle": "later-error",
+    "accepted": false
+  }
+]

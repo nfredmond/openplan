@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
+import { todayInWorkspace } from "@/lib/time/workspace-calendar";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
@@ -604,7 +605,9 @@ export async function GET(request: NextRequest) {
      * without this reads as current service; the same headway beside the date it
      * ended is a historic fact, which is a different sentence entirely.
      */
-    const today = new Date().toISOString().slice(0, 10);
+    const calendar = await todayInWorkspace(supabase, workspaceId);
+    if (calendar.readError) audit.warn("workspace_calendar_unreadable", { workspaceId, message: calendar.readError });
+    const today = calendar.today;
     const expired = versions.filter(
       (version) => typeof version.service_end_date === "string" && version.service_end_date < today,
     );

@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety action plan, first part:** Safety now ranks a high-injury network from
+the project's stored crashes and road lines, draws it on the map, and lists it
+with method, years, source and coverage. A source with only deaths gives a
+network labeled "fatal crashes only". Planners can attach countermeasures from a
+cited FHWA list (crash modification factors left out and marked [VERIFY]) and
+save them to a project report, which prints a "Safety action plan (draft)"
+section listing the SS4A components it does not cover. No migration.
+
 **Aerial journal correction:** tolerate a retired SQLite companion only after a
 fresh lookup confirms its name is gone. Keep owner, mode, type and link checks
 for present files, including dangling or reappeared aliases. See the
@@ -39,6 +47,8 @@ progress, a voided contract draft releases its billed sources, finance approves
 only reviewed consultant invoices, and client invoices past draft can change only
 their status, enforced in the database for every writer. Existing records are not
 rewritten; the rules apply to new writes.
+
+Apply `20261017000008_historical_run_decisions.sql` before deploying. Owners and admins can now keep a model run recorded before recovery tracking as a read-only record, or close it and start a new run; either choice saves an audited receipt and leaves the run and its results unchanged.
 
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
@@ -238,6 +248,8 @@ response count and per-question answer counts, with no answers, to members of
 the campaign's workspace. The Planner Agent reads survey counts through it; its
 survey read failed on every campaign before, because survey answers are closed
 to every client role.
+
+Apply `20261017000007_workspace_time_zone.sql` so owners and admins can set a workspace time zone in Workspace setup; claims, allocations, invoices, statements, grant facts and the Planner Agent then date "today" in that zone instead of UTC (without it, dates stay UTC).
 
 AI moderation flags comments that try to instruct the screen, under a new
 "Instructions to the screen" label, and sends them to a person for review.

@@ -1,0 +1,115 @@
+{
+  "source": "fc2a17247a861f9d48f1c48baae03873ffb45e88",
+  "build": "hGVOmD-st-VnPoHrgOF8P",
+  "tab": "tab_8",
+  "desktop": {
+    "engine": "aequilibrae",
+    "errors": [],
+    "feed": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+    "rows": [
+      {
+        "feedId": "41145384-4d4a-4cc0-b6e2-bf4ef09829ca",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2027-01-10",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200
+      },
+      {
+        "feedId": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2026-08-09",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200
+      },
+      {
+        "feedId": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+        "geometrySha256": "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+        "response": {
+          "coverage": "yes",
+          "reason": null,
+          "serviceEndDate": "2026-08-09",
+          "stopServiceRowsInStudyArea": 238,
+          "usesFrequencies": false
+        },
+        "status": 200
+      }
+    ],
+    "text": "\n\nZone geography (TAZ resolution)\nCensus tracts (default)\nBlock groups (~3x finer zones)\n\nBlock groups lower the intrazonal trip share, so trip lengths and screening VMT resolve finer. Population and households are tract ACS totals disaggregated by LODES residence weights. Both resolutions are screening-grade.\n\nTransit feed (optional)\nLet the modeling worker choose (catalog discovery, or the operator's feed)\nbart \u00b7 schedule through 2027-01-10\nBay Area Rapid Transit (BART) \u00b7 schedule through 2026-08-09\nwww.bart.gov \u00b7 schedule through 2027-01-10\n\nNaming a feed hands the modeling worker the exact archive OpenPlan parsed \u2014 verified against its checksum \u2014 instead of letting it fetch an address that may have been republished since. It overrides the worker's own feed selection for this run.\n\nIts published schedule runs through 2026-08-09. An expired schedule is usually the last one the agency published and is normally the right thing to model from \u2014 the run records that it was expired so nobody has to guess later.\n\nTune the assignment to local traffic counts, where you have them. The CEQA VMT input is unchanged either way.\n\nThe held-out counts choose and reject calibration steps; they are candidate-selection evidence, not an independent accuracy test. A calibrated-to-counts claim requires a separate untouched validation result. Where no counts match, calibration does not run. Calibrated VMT publishes under distinct KPI names \u2014 it never becomes the CEQA \u00a715064.3 determination input.\n\nRun title\nScenario entry (optional)\nNot attached to a scenario entry\nAttach completed run to selected scenario entry\nQuery text\nStudy area\nSearch a place\nDraw an area\n\nOakland\n\n\u2248 596 km\u00b2 bounding extent\n\nClear\n\nStarting from Oakland. Change it here to run somewhere else \u2014 this does not alter the source.\n\nAdvanced: edit raw corridor GeoJSON\n\nModeling worker health\n\nAequilibraE: No compatible heartbeat was observed; this may be an older worker or no worker at all.\n\nLaunch run\n\nRun history\n\nThe latest runs launched from this model.\n\n0 stored\nNo runs yet. Every launch is recorded here, with a link to its results once they exist.\nPlanner Agent\ngtfs-owner-1dfa005eb8@example.invalid\nowner\nSign out",
+    "viewport": {
+      "height": 800,
+      "width": 1280
+    }
+  },
+  "mobile": {
+    "drawingRequested": "true",
+    "engine": "aequilibrae",
+    "errors": [],
+    "fallbackVisible": true,
+    "feed": "bb28bb0b-1c4f-4e9d-9774-fc24a42d928c",
+    "geometryHashes": [
+      "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd",
+      "007c5ce9a3bea160193427fe1e6f769c33c239b3b448cd9e40ab623d9acdd8fd"
+    ],
+    "mapCanvasCount": 0,
+    "runHistoryEmpty": true,
+    "viewport": {
+      "height": 844,
+      "width": 390
+    }
+  },
+  "export": {
+    "bytes": 126976,
+    "contentType": "application/geopackage+sqlite3",
+    "disposition": "attachment; filename=\"openplan-synthetic-retained-transit-geography-check-2026-10-14.gpkg\"",
+    "sha256": "e042bdcbf5ea9f194951828b3da3a2d1dead3ba850b65a4b1affa174d76c340f",
+    "signature": "SQLite format 3\u0000",
+    "status": 200,
+    "url": "http://127.74.9.10:3581/api/projects/a5b3eaad-7aa4-4693-b56a-3c77cc606abc/export/geopackage"
+  },
+  "screenshots": {
+    "dashboard": {
+      "sha256": "fbccc82d995b981319dd32b33cf950c33398869fff67667ba5704a68814827c7",
+      "pngWidth": 1280,
+      "pngHeight": 800
+    },
+    "mobileFeed": {
+      "sha256": "cfa878e9ef6a6f5c8656d9d8913a144224d41599ef7df5d9b43417acbd43d154",
+      "pngWidth": 566,
+      "pngHeight": 1224
+    },
+    "mobileGeometry": {
+      "sha256": "dae8d34a99a8edb5c0accc6655de505e9ae3715b06a3c80a047c6beaee5e610e",
+      "pngWidth": 566,
+      "pngHeight": 1224
+    },
+    "mobileDrawingUnavailable": {
+      "sha256": "50e9ba323fd384f03ff933ba54ed93b07cd8407871461aa3945d2c6fd8fe85f3",
+      "pngWidth": 566,
+      "pngHeight": 1224
+    },
+    "desktopFeed": {
+      "sha256": "d8b57db1ab3da74bbf2e37961f220115642356d140b6fafc3af1e51762708304",
+      "pngWidth": 1280,
+      "pngHeight": 800
+    }
+  },
+  "limits": [
+    "Older isolated synthetic database, not current main/hosted/demo.",
+    "No model run or saved edit submitted.",
+    "Initial pointer activation of project link failed; native Tab/Enter reaches it.",
+    "ArrowDown/Down tool calls fail; Tab/Enter/b/d/f native calls succeed.",
+    "Drawing has no configured map engine. Participant fallback text is incorrect here.",
+    "No complete pointer/map, practicing-planner, scientific or separate-host acceptance."
+  ]
+}

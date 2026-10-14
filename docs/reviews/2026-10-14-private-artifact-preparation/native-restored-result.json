@@ -1,0 +1,106 @@
+{
+  "selectedMigrations": 409,
+  "selectedSourceRef": "663ccce428b9178305a750d4a3dbe614344aecf2",
+  "firstOperationActualReads": 9,
+  "savedOperationActualReads": 9,
+  "manifest": {
+    "format": "openplan.odm-private-artifact-plan.v1",
+    "scope": "private_original_artifact_preparation",
+    "binding": {
+      "installationId": "owned-useful-daa1eb0482784e008db81593f22492ff",
+      "targetId": "private-useful-native-fixture",
+      "requestId": "useful-native-e6473bb45dce402d8f8a955b6c7bb5f2",
+      "jobReference": "odm-17b558854ca64389afb6",
+      "originalApplicationJob": {
+        "created_by": "99ece842-32dd-4ce3-b4f6-faf14cd7fdcb",
+        "id": "6ef5564d-02c0-42e3-94d7-a09211796d77",
+        "imagery_type": "zip_url",
+        "mission_id": "1cdb891c-381a-49b3-af3d-3d6ed0bd5b69",
+        "preset_id": "balanced",
+        "project_id": null,
+        "request_id": "useful-native-e6473bb45dce402d8f8a955b6c7bb5f2",
+        "workspace_id": "08b04c0f-8e86-4c7b-83fe-16e1c6485530"
+      },
+      "originalDispatchSha256": "8e7158c872565c559386090f263587daef00778acd52533e97761945fea850fb",
+      "originalTaskUuid": "7c3077d9-c578-4726-adc7-156a245c10b0",
+      "observationSha256": "9d5506cea5a23d61ad0afb0ec2d3e42ff12edcd9dbd9c3787a5d3cfd9331f178"
+    },
+    "productReceiptSha256": "0da77a518733c40957ee0382ebffeae8df636e73d84705c2d1a82b7dbaecdd84",
+    "inspectionReceiptSha256": "bcd623474283a63dc6bcd20985e7c799fc885c16b3c190b3d80841fd2ca3e33d",
+    "inspectionReportSha256": "6c5d86142494b583c4076bedab098ec325c8994b2f698e1098105615cff186ed",
+    "artifacts": [
+      {
+        "kind": "orthomosaic",
+        "filename": "orthophoto.tif",
+        "availability": "retained",
+        "reason": null,
+        "sizeBytes": 82774,
+        "checksumSha256": "5291421186f9ae1bf3f8d77ec4621ed044d30fd2e8f4c99c34727132e166b12b",
+        "contentType": "image/tiff",
+        "localRelativePath": "private-products/objects/orthophoto.tif",
+        "nativeInspectionStatus": "read"
+      },
+      {
+        "kind": "dsm",
+        "filename": "dsm.tif",
+        "availability": "unavailable",
+        "reason": "absent_from_original_archive",
+        "sizeBytes": null,
+        "checksumSha256": null,
+        "contentType": "image/tiff",
+        "localRelativePath": null,
+        "nativeInspectionStatus": "unavailable"
+      },
+      {
+        "kind": "dtm",
+        "filename": "dtm.tif",
+        "availability": "unavailable",
+        "reason": "absent_from_original_archive",
+        "sizeBytes": null,
+        "checksumSha256": null,
+        "contentType": "image/tiff",
+        "localRelativePath": null,
+        "nativeInspectionStatus": "unavailable"
+      },
+      {
+        "kind": "point_cloud",
+        "filename": "georeferenced_model.laz",
+        "availability": "retained",
+        "reason": null,
+        "sizeBytes": 31623,
+        "checksumSha256": "5e29bd70f8a0e5877e1bc88ae344cec4b077e07d0206bbb89967e9713534dc6d",
+        "contentType": "application/octet-stream",
+        "localRelativePath": "private-products/objects/georeferenced_model.laz",
+        "nativeInspectionStatus": "unassessed"
+      }
+    ],
+    "unselectedContractKinds": [
+      "mesh",
+      "ortho_preview"
+    ],
+    "processingQualityVerification": "unassessed",
+    "requestedDeliverableCompletenessVerification": "unassessed",
+    "mapPlacementVerification": "unassessed",
+    "callbackPermission": false,
+    "publicationPermission": false
+  },
+  "receipt": {
+    "format": "openplan.odm-private-artifact-plan.v1",
+    "scope": "private_original_artifact_preparation",
+    "manifestSha256": "49dd8ff811eb8022bce863a1b858e14fab5bc23dd5264cd9176c24e1ffb6305a",
+    "processingQualityVerification": "unassessed",
+    "requestedDeliverableCompletenessVerification": "unassessed",
+    "mapPlacementVerification": "unassessed",
+    "callbackPermission": false,
+    "publicationPermission": false
+  },
+  "savedReplayExact": true,
+  "actualChildExit": 44,
+  "interruptedReplayExact": true,
+  "postManifestRevocationRefused": true,
+  "revokedManifestRetained": true,
+  "scope": "isolated_selected409_private_artifact_preparation",
+  "currentMainSchemaAcceptance": false,
+  "physicalHostRecovery": false,
+  "scientificAcceptance": false
+}

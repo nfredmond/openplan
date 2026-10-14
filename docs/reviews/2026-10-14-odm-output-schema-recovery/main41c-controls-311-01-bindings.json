@@ -1,0 +1,14 @@
+{
+  "schemaSourceMain": "41cbd5a856c4da0824b408ac3ebabb459e205e3f",
+  "sourceMigrations": 406,
+  "selectedMigrations": 409,
+  "executableSourceBindings": {
+    "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-output-schema-recovery-20261014/native_upgrade_restore_main41c.py": "e2a6730b5bb4eb8cf05e04727f74ab62d62aff14ddc3e4a34fde31b2318ad075",
+    "workers/odm_worker/runtime_observation.py": "cb567b77b5b6688c6533577c641069c3dd43068f59369e899db352f4de7d1f19",
+    "workers/odm_worker/runtime_output_intake.py": "d8d0e89d2d1a218601f9f2ebec170d8fc7bf495950224dd8f5a9b0940ae214b4",
+    "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-output-schema-recovery-20261014/verify_native_upgrade_controls_main41c.py": "ecca81bedc357055d43c9f3bc8f80e68cd72da9b75346b2d9bda0fff7a1b1d29"
+  },
+  "scope": "same_cluster_populated_fixture_upgrade_and_logical_database_restore",
+  "physicalHostAcceptance": false,
+  "hostedDataRestore": false
+}

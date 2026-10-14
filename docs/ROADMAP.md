@@ -38,8 +38,8 @@ Status page and the only active queue, updated October 12, 2026. Full
 definitions are in [MILESTONES.md](product/MILESTONES.md); dated evidence is in
 the [evidence log](archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md).
 The header's `reviewed_commit` still names the October 6 direction review.
-This page is not a new review. The M3 and M5b rows were updated October 13 from
-the October 11 to 13 recovery and aerial evidence, also kept in the evidence log.
+This page is not a new review. The M3 and M5b rows were updated October 14 from
+the October 11 to 14 recovery and aerial evidence, also kept in the evidence log.
 
 ## Destination
 
@@ -71,12 +71,12 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M2b | File library and document writing | Later (C10) | Audit | Drafting and review |
 | M2c | Dashboard, My Work and appearance | In progress, partial | [PR 187](https://github.com/nfredmond/openplan/pull/187) | Show missed deadlines (KI-015, PR 243) |
 | M2d | Work program (OWP/UPWP) administration | In progress, mostly done | [Sep 9](reviews/2026-09-09-owp-full-recovery/VERIFICATION.md) | Fix KI-002 to 004 (PR 252) |
-| M3 | Free, private, recoverable operation | In progress, partial | [Oct 13](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md) | Stage lease holder columns (rest of KI-018 after PR 258); installation-wide inventory and alignment; all-worker recovery; clean install |
+| M3 | Free, private, recoverable operation | In progress, partial | [Oct 14](reviews/2026-10-14-odm-private-products/STATUS.md) | Stage lease holder columns (rest of KI-018 after PR 258); installation-wide inventory and alignment; all-worker recovery; independent-host recovery; clean install |
 | M3a | Desktop Control and demo recovery | Later, partial | [Sep 9](reviews/2026-09-09-control-main/VERIFICATION.md) | Observed acceptance |
 | M4 | Confidentiality and records | Later | Audit | Records-request design |
 | M5 | Data, GIS and analysis reuse | Later, partial | Audit | Format coverage matrix |
 | M5a | Agency file formats | Next (B1a, C9) | Audit | Large uploads to Storage (KI-017, PR 255) |
-| M5b | Drone work (M5b.1–6) | In progress | [Oct 13](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md) | Default aerial integration and callback/storage delivery (M5b.2); name the DJI controller |
+| M5b | Drone work (M5b.1–6) | In progress | [Oct 14](reviews/2026-10-14-odm-private-products/STATUS.md) | Callback/Storage delivery, preview rendering and default worker integration (M5b.2); name the DJI controller |
 | M6 | Multimodal and safety decisions | Next (B3) | Audit | Safety action plan and SS4A |
 | M6a | Transit, active travel and freight | Later | Audit | Transit service-plan case |
 | M6b | Benefit-cost and demand management | In progress, partial | [Oct 6](reviews/2026-10-06-bca/VERIFICATION.md) | Bind BCA geography (KI-024) |

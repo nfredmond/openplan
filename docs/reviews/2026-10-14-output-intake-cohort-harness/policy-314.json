@@ -1,0 +1,54 @@
+[
+  {
+    "case": "baseline",
+    "outcome": "survived",
+    "calls": [
+      {
+        "named": false,
+        "seconds": 90
+      },
+      {
+        "named": true,
+        "seconds": 30
+      }
+    ]
+  },
+  {
+    "case": "harmless",
+    "outcome": "survived",
+    "calls": [
+      {
+        "named": false,
+        "seconds": 90
+      },
+      {
+        "named": true,
+        "seconds": 30
+      }
+    ]
+  },
+  {
+    "case": "restored",
+    "outcome": "survived",
+    "calls": [
+      {
+        "named": false,
+        "seconds": 90
+      },
+      {
+        "named": true,
+        "seconds": 30
+      }
+    ]
+  },
+  {
+    "case": "full-cohort-shortened",
+    "outcome": "intended_failure",
+    "diagnostic": "Named fault retains30s; full cohort needs90s"
+  },
+  {
+    "case": "named-fault-widened",
+    "outcome": "intended_failure",
+    "diagnostic": "Named fault retains30s; full cohort needs90s"
+  }
+]
