@@ -20,6 +20,7 @@ import {
   type MeasureFiledCategoryReference,
   type MeasureRuleDraft,
 } from "./allocation-rule-draft";
+import { browserToday } from "@/lib/time/workspace-calendar";
 
 /**
  * Setting up the fund behind a `local_measure` program, and recording what the
@@ -243,7 +244,7 @@ export function MeasureFundSetup({
         rule,
         effectiveFrom: effectiveFromRule,
         adoptedNote,
-        statedOn: new Date().toISOString().slice(0, 10),
+        statedOn: browserToday(),
       },
     });
     if (saved) {
