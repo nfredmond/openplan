@@ -323,3 +323,88 @@ describe("planner pages carry no build notes", () => {
     ).toContain("migration");
   });
 });
+
+/*
+  PLANNER AGENT'S FUNDING WORDS (October 14, 2026). The assistant panel counted
+  "project funding lanes" and "project reimbursement lanes", offered "Create
+  funding need anchor", and sent the prompt "Which funding lane should move
+  next?" on a planner's behalf. A planner counts projects and opens invoices.
+  The two files that write those sentences are read here.
+
+  They are not in RENDERED_LIB_FILES above, because the full rules would also
+  flag words other passes own in the same files (the aerial answers' "artifact
+  custody", the "Evidence lane ready" label, the "RTP registry lane"), and a
+  whole-file allowance would let these phrases back. So this rule is narrower:
+  "lane" after a funding or grant word, and the funding "anchor".
+
+  It reads the source with comments removed, not string literals. Both files
+  nest template literals, which the string scanner above splits at the inner
+  backtick, so half of each sentence would fall between two "strings". Reading
+  the source instead, an identifier (`fundingAnchorCommand`, the id
+  "workspace-open-reimbursement-lane", the event "open_reimbursement_lane")
+  never matches, because the rule needs a space before "lane" or "anchor".
+
+  Blind categories: "lane" after a word not on the list ("the reporting lane");
+  a phrase split by an interpolation (`funding ${"lane"}`); a wrong plural,
+  which the assistant-respond tests pin instead; and every other file.
+*/
+const ASSISTANT_FUNDING_FILES = ["src/lib/assistant/operations.ts", "src/lib/assistant/respond.ts"];
+
+const ASSISTANT_FUNDING_WORDS: ReadonlyArray<{ pattern: RegExp; why: string }> = [
+  {
+    pattern: /\b(?:funding|reimbursement|grants?|award|billing|invoicing|decision|conversion|strategy|posture|operating|project)[ \t]+lanes?\b/gi,
+    why: "count the projects, or name the page or record the link opens",
+  },
+  {
+    pattern: /\b(?:funding(?:[- ]need)?|profile|need|missing)[ \t]+anchors?\b|\bnot anchored\b/gi,
+    why: "the record is the project's funding target",
+  },
+];
+
+function assistantFundingWordsIn(source: string): string[] {
+  const code = stripSourceComments(source);
+  return ASSISTANT_FUNDING_WORDS.flatMap(({ pattern, why }) =>
+    [...code.matchAll(pattern)].map((match) => `"${match[0]}" (${why})`)
+  );
+}
+
+describe("Planner Agent's funding answers name projects, not lanes", () => {
+  it("reads both assistant files", () => {
+    for (const file of ASSISTANT_FUNDING_FILES) {
+      expect(readFileSync(path.join(process.cwd(), file), "utf8").length, file).toBeGreaterThan(50_000);
+    }
+  });
+
+  it("finds no funding lane or funding anchor in either file", () => {
+    const findings = ASSISTANT_FUNDING_FILES.flatMap((file) =>
+      assistantFundingWordsIn(readFileSync(path.join(process.cwd(), file), "utf8")).map((found) => `${file}: ${found}`)
+    );
+    expect(findings).toEqual([]);
+  });
+
+  it("catches each phrase in the form it shipped, and lets identifiers and roads through", () => {
+    const leaked = [
+      'const s = `, ${n} funding lane${n === 1 ? " still needs" : "s still need"} sourcing`;',
+      'const s = `${n} project reimbursement lane${n === 1 ? " is" : "s are"} active`;',
+      "const p = `What should be reviewed next on this package funding lane?`;",
+      'const p = "A lead project funding profile anchor was created. Which funding lane should move next?";',
+      'quickLink("project-create-funding-profile", "Create funding need anchor", href, {});',
+      'const label = "Review missing funding anchors in panel";',
+      'const r = "so the grants lane is not anchored at the project level yet.";',
+      'const label = "Open lead award conversion lane";',
+    ];
+    for (const source of leaked) {
+      expect(assistantFundingWordsIn(source), source).not.toEqual([]);
+    }
+    const clean = [
+      'quickLink("workspace-open-reimbursement-lane", "Open lead reimbursement invoice", href, { auditEvent: "assistant.operation.workspace.open_reimbursement_lane" });',
+      "const fundingAnchorCommand = queue.find((item) => item.key === \"anchor-project-funding-needs\");",
+      'const label = "Delivery anchor";',
+      'const s = "Two travel lanes and a bike lane on the funded segment.";',
+      "// The project funding lane is where this used to live.",
+    ];
+    for (const source of clean) {
+      expect(assistantFundingWordsIn(source), source).toEqual([]);
+    }
+  });
+});
