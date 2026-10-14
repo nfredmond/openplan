@@ -218,6 +218,27 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date("2026-03-15T12:00:00.000Z"));
     vi.clearAllMocks();
+    /*
+      clearAllMocks clears call history but NOT queued mockResolvedValueOnce
+      values. A test that queues one and returns before reading it (a 400 on
+      the payload, say) leaves it for whichever test runs next, which only
+      shows up when the order is shuffled. Every mock a test queues a Once on
+      is reset here and re-seeded below.
+    */
+    for (const mock of [
+      campaignMaybeSingleMock,
+      membershipMaybeSingleMock,
+      campaignGeofenceMaybeSingleMock,
+      campaignUpdateMaybeSingleMock,
+      resolvePlaceBoundaryMock,
+      rtpCyclesOrderMock,
+    ]) {
+      mock.mockReset();
+    }
+    campaignUpdateMaybeSingleMock.mockResolvedValue({
+      data: { id: "11111111-1111-4111-8111-111111111111" },
+      error: null,
+    });
 
     createApiAuditLoggerMock.mockReturnValue(mockAudit);
     authGetUserMock.mockResolvedValue({
@@ -942,8 +963,7 @@ describe("/api/engagement/campaigns/[campaignId]", () => {
     });
 
     it("does not let a caller choose the close time", async () => {
-      campaignWithClosedAt(null);
-
+      // Refused at the payload, before the campaign is read.
       const response = await patchBody({ submissionsClosedAt: "2020-01-01T00:00:00.000Z" });
 
       expect(response.status).toBe(400);
