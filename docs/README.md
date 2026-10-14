@@ -261,3 +261,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
 
 - [Transit archive period and staff drawing guidance](reviews/2026-10-14-gtfs-source-period-guidance/STATUS.md), dates and caller wording with bounded source controls and desktop/390px T3 observations.
+
+The [October 14 aerial callback retry candidate](reviews/2026-10-14-aerial-callback-retry/STATUS.md) resumes interrupted application from the same retained JSON payload, refuses changed worker/payload identity and guards status writes against concurrent changes. The compiled route and SDK pass isolated database HTTP checks; full deployment and durable output delivery remain separate.
