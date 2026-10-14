@@ -116,6 +116,12 @@ stack (`npm exec -- supabase stop`, then `start`) to pick it up. A hosted
 project needs the same limit in its storage settings.
 `OPENPLAN_MAP_PACKAGE_MAX_BYTES` lowers the ZIP size the app accepts.
 
+Apply `20261017000006_permission_integrity.sql` before deploying the app. It
+stops signed-in users from asking about another person's contract access,
+requires a map package's grant application to belong to its project and refuses
+retries that change the client or practice marking, and limits census tract
+loads to workspace writers at 20 counties per person per hour.
+
 **Maps.** A new Maps page lists map packages for every project in a workspace:
 figures as PDF, PNG and SVG, map books, a web map, a Google Earth file, a QGIS
 project, an ArcGIS Pro builder and an Illustrator kit, in one ZIP. Claude Fable

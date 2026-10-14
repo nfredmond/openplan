@@ -4,7 +4,10 @@ import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { BODY_LIMITS, readJsonWithLimit } from "@/lib/http/body-limit";
 import { ingestCensusTractsForCounty } from "@/lib/data-sources/census-tract-ingest";
+import { reserveCensusTractIngest } from "@/lib/data-sources/census-tract-ingest-limit";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
+import { VIEWER_READ_ONLY_MESSAGE } from "@/lib/auth/workspace-write-gate";
 import { loadCurrentWorkspaceMembership } from "@/lib/workspaces/current";
 
 // TIGERweb + ACS fetch per county, paged, plus one upsert per tract — beyond the
@@ -15,12 +18,20 @@ export const maxDuration = 60;
 /**
  * Populate `census_tracts` (public data) for the requested US counties.
  *
- * Authenticated, because it drives our server against TIGERweb and ACS — but not
- * workspace-scoped, because the data itself is public and shared: loading a
- * county once makes its equity choropleth available to everyone who looks at it.
+ * The rows are public and shared: loading a county once makes its equity
+ * choropleth available to every workspace. The write still runs as the service
+ * role against TIGERweb and ACS, so it is gated twice. The caller must be able
+ * to change their current workspace (the matrix's `analysis.create` tier, which
+ * excludes viewers), because planners start a load from the workspace geography
+ * panel and the project place editor while setting up a study. And each person
+ * is metered by `reserveCensusTractIngest`, a database-counted allowance, since
+ * anyone who signs up owns a workspace. An operator token, as on the equity
+ * ingest route, would take the button away from the planners who use it.
  * The county filter is jurisdiction-neutral state+county FIPS; the adapter, not
  * this route, owns any single-source specifics.
  */
+const CENSUS_TRACT_INGEST_ACTION = "analysis.create";
+const CENSUS_TRACT_INGEST_ROUTE = "/api/geographies/census-tracts/ingest";
 const ingestSchema = z.object({
   counties: z
     .array(
@@ -62,7 +73,49 @@ export async function POST(request: NextRequest) {
       new Map(parsed.data.counties.map((c) => [`${c.stateFips}${c.countyFips}`, c])).values()
     );
 
+    // The current workspace is both the permission subject and the Census key
+    // scope. A failed lookup refuses rather than loading without a role check.
+    const lookup = await loadCurrentWorkspaceMembership(supabase, user.id)
+      .then(({ membership }) => ({ ok: true as const, membership }))
+      .catch(() => ({ ok: false as const, membership: undefined }));
+    if (!lookup.ok) {
+      return NextResponse.json({ error: "Failed to verify workspace access" }, { status: 500 });
+    }
+    const membership = lookup.membership;
+    if (!membership) {
+      return NextResponse.json({ error: "Join or create a workspace to load census tracts" }, { status: 403 });
+    }
+    if (!canAccessWorkspaceAction(CENSUS_TRACT_INGEST_ACTION, membership.role)) {
+      return NextResponse.json({ error: VIEWER_READ_ONLY_MESSAGE }, { status: 403 });
+    }
+    const workspaceId = membership.workspace_id;
+
     const service = createServiceRoleClient();
+    const reservation = await reserveCensusTractIngest(service, {
+      userId: user.id,
+      workspaceId,
+      counties: uniqueCounties,
+      sourceRoute: CENSUS_TRACT_INGEST_ROUTE,
+    });
+    if (reservation.status === "unavailable") {
+      audit.error("census_tract_ingest_limit_unavailable", { userId: user.id, message: reservation.message });
+      return NextResponse.json(
+        { error: "Could not check the census tract load limit, so nothing was loaded. Try again." },
+        { status: 503 }
+      );
+    }
+    if (reservation.status === "refused") {
+      const minutes = Math.max(1, Math.ceil(reservation.retryAfterSeconds / 60));
+      return NextResponse.json(
+        {
+          error:
+            `You have loaded ${reservation.recent} counties in the last hour; the limit is ${reservation.limit}. ` +
+            `Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`,
+        },
+        { status: 429, headers: { "Retry-After": String(reservation.retryAfterSeconds) } }
+      );
+    }
+
     const runIngest = async () => {
       const collected = [];
       for (const county of uniqueCounties) {
@@ -78,23 +131,15 @@ export async function POST(request: NextRequest) {
 
     // The ACS half of this ingest goes through `withCensusApiKey`, which resolves
     // the workspace's own Census key. Without this context it silently used the
-    // deployment env key instead — so a workspace that had self-served a key
+    // deployment env key instead, so a workspace that had self-served a key
     // under Integration keys still ingested without it, and the "add a Census
     // API key" remedy this route's failures point at was not actually true.
-    //
-    // Best-effort, exactly like /api/geographies/counties: a user with no
-    // workspace, or a failed lookup, ingests with the deployment key rather than
-    // failing outright.
-    const workspaceId = await loadCurrentWorkspaceMembership(supabase, user.id)
-      .then(({ membership }) => membership?.workspace_id ?? null)
-      .catch(() => null);
-    const results = workspaceId
-      ? await withWorkspaceIntegrationContext(workspaceId, runIngest)
-      : await runIngest();
+    const results = await withWorkspaceIntegrationContext(workspaceId, runIngest);
 
     const tractsUpserted = results.reduce((sum, r) => sum + r.tractsUpserted, 0);
     audit.info("census_tract_ingest_finished", {
       userId: user.id,
+      workspaceId,
       counties: uniqueCounties.length,
       tractsUpserted,
       durationMs: Date.now() - startedAt,
