@@ -275,3 +275,10 @@ The [October 14 rotated raster spacing correction](reviews/2026-10-14-rotated-ra
 The [October 14 private raster inspection candidate](reviews/2026-10-14-private-raster-inspection/STATUS.md) binds declared native tag readings to original product bytes and code profiles. Source and selected-schema native controls preserve failed, unsupported, absent and unassessed outcomes. Ground quality, map placement, current-main installation, public delivery and full M3/M5b.2/v1 acceptance remain open.
 
 The [October 14 private artifact preparation candidate](reviews/2026-10-14-private-artifact-preparation/STATUS.md) binds original job, actor, file bytes and native inspection receipts in one immutable private manifest. Exact interrupted replay and current access remain separate from callback delivery, map placement, processing quality and default-worker integration.
+
+October 14 aerial Storage correction candidate: [immutable custody and transport
+checks](reviews/2026-10-14-aerial-immutable-custody/STATUS.md) retain original
+objects across interrupted row writes, reconcile actual streamed bytes, and
+carry cancellation through the installed SDK upload transport. This isolated
+candidate does not close source identity, concurrent custody, live RLS, browser
+or complete delivery acceptance.

@@ -1,3 +1,4 @@
+import { Blob as ServerBlob } from "node:buffer";
 import { render } from "@testing-library/react";
 import type { ComponentPropsWithoutRef } from "react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -42,6 +43,7 @@ const missionTitleMaybeSingleMock = vi.fn();
 const custodyUpsertMock = vi.fn();
 const custodySelectEqMock = vi.fn();
 const storageUploadMock = vi.fn();
+const storageObjects = new Map<string, Uint8Array>();
 const fetchMock = vi.fn();
 
 const audit = { info: vi.fn(), warn: vi.fn(), error: vi.fn() };
@@ -243,12 +245,26 @@ function evidencePackageInsert(): Record<string, unknown> {
 describe("artifact custody decides what an evidence package may claim", () => {
   beforeEach(() => {
     vi.clearAllMocks();
+    storageObjects.clear();
     process.env.OPENPLAN_AERIAL_PROCESSING_CALLBACK_BEARER_TOKEN = CALLBACK_TOKEN;
 
     createApiAuditLoggerMock.mockReturnValue(audit);
     createServiceRoleClientMock.mockReturnValue({
       from: serviceFromMock,
-      storage: { from: () => ({ upload: storageUploadMock }) },
+      storage: { from: () => ({
+        upload: async (path: string, body: Uint8Array, options: { upsert?: boolean }) => {
+          const result = await storageUploadMock(path, body, options);
+          if (!result.error) {
+            if (storageObjects.has(path) && options?.upsert !== true) return { error: { message: "Object already exists" } };
+            storageObjects.set(path, new Uint8Array(body));
+          }
+          return result;
+        },
+        download: (path: string) => ({ asStream: async () => ({
+          data: storageObjects.has(path) ? new ServerBlob([storageObjects.get(path)!]).stream() : null,
+          error: null,
+        }) }),
+      }) },
     });
 
     jobMaybeSingleMock.mockResolvedValue({ data: { ...JOB_ROW }, error: null });
@@ -313,13 +329,15 @@ describe("artifact custody decides what an evidence package may claim", () => {
         headers: { "content-type": "image/tiff" },
       })
     );
-    custodySelectEqMock.mockResolvedValue({ data: [custodyRow({})], error: null });
+    custodySelectEqMock.mockResolvedValueOnce({ data: [], error: null })
+      .mockResolvedValue({ data: [custodyRow({})], error: null });
 
     const response = await postProcessingCallback(succeededCallbackRequest());
     expect(response.status).toBe(200);
 
     const insert = evidencePackageInsert();
     expect(insert.verification_readiness).toBe("partial");
+    expect(custodyUpsertMock.mock.calls[0]?.[0]?.[0]?.state, "Planner package follows actual held custody").toBe("held");
     expect(String(insert.notes)).toContain("OpenPlan holds its own copy");
   });
 
@@ -359,6 +377,7 @@ describe("what the planner actually sees on the mission page", () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    storageObjects.clear();
     pagePackageSelects.length = 0;
     createClientMock.mockResolvedValue({ auth: { getUser: authGetUserMock }, from: pageFromMock });
     authGetUserMock.mockResolvedValue({ data: { user: { id: "user-1" } } });

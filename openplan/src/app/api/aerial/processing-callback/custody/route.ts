@@ -233,6 +233,8 @@ export async function POST(request: NextRequest) {
 
     const result = await runAerialCustodyPass({
       supabase: service,
+      storageClientFactory: (fetchImpl) => createServiceRoleClient({ fetchImpl }),
+      signal: request.signal,
       job: {
         processingJobId: job.id,
         workspaceId: job.workspace_id,
