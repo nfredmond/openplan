@@ -91,3 +91,20 @@ faults and 175 oracles. Applied job/workspace/callback-key and unreadable-record
 cases are separately challenged. Current native controls pass four positives,
 seven faults and 56 oracles. Source restores and owned services stop. Fresh
 GitHub CI follows on the pushed correction; no earlier-head result is inherited.
+
+## Existing custody fixture join
+
+Fresh shuffled CI fails three checks in the existing custody-to-planner fixture.
+It models the old eq-only status write and omits the new nullable callback fields.
+The route therefore stops before custody. The corrected fixture supplies the
+same guarded eq/is/select chain as the actual client, checks its observed status
+filter and returned-id projection, and keeps every custody/privacy/page assertion.
+Captured shuffle seed491551 passes all36 affected cases. Four positive36-case
+cohorts,37 targeted faults and185 oracles pass; the harmless comment survives.
+The two added faults omit the custody status filter or alter its id projection.
+This remains fixture/source coverage, distinct from the real database proof.
+
+Changed-file lint and145 related/documentation cases in14 files pass on the
+joined custody fixture. The CI source command runs all36 affected route, time
+and custody/page cases in its positive cohorts. Fresh full/shuffled CI follows
+the pushed fixture correction; the captured failed run is retained.

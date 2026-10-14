@@ -15,7 +15,7 @@ def run(repo, out, before=None):
     originals = {route: route.read_bytes(), order: order.read_bytes()}
     original = originals[route]
     source = original.decode()
-    tests = ['src/test/aerial-processing-callback-route.test.ts', 'src/test/aerial-callback-order.test.ts']
+    tests = ['src/test/aerial-processing-callback-route.test.ts', 'src/test/aerial-callback-order.test.ts', 'src/test/aerial-artifact-custody-reaches-a-planner.test.tsx']
     cases, rows, oracles = [], [], []
     def fault(name, left, right, test, message, target=route):
         text = originals[target].decode()
@@ -93,6 +93,10 @@ def run(repo, out, before=None):
     fault('nonfinite-time-accepted', 'if (!Number.isFinite(seconds)) return null;', '',
         'refuses invalid or unzoned instants', 'Unknown callback time has no fabricated order', order)
 
+    fault('custody-status-filter-omitted', '.eq("status", job.status)', '',
+        'writes a VERIFICATION-PENDING package, naming the reason, when the bytes could not be taken', 'Custody follows a guarded status write')
+    fault('custody-returned-id-projection-unchecked', ').select("id");', ').select("id, status");',
+        'writes a VERIFICATION-PENDING package, naming the reason, when the bytes could not be taken', 'Custody follows a checked returned job identity')
     def execute(label, test=None):
         destination = out/(label+'.json')
         command = ['node', '--max-old-space-size=512', 'node_modules/vitest/vitest.mjs', 'run', *tests,
@@ -107,8 +111,8 @@ def run(repo, out, before=None):
         return code == 1 and len(failed) == 1 and failed[0]['title']==test and diagnostic in '\n'.join(failed[0]['failureMessages'])
     def positive(label):
         code, result = execute(label)
-        assert code == 0 and result['numPassedTests']==28 and result['numFailedTests']==0, label+' callback cohort failed'
-        rows.append({'case':label,'outcome':'survived','tests':28})
+        assert code == 0 and result['numPassedTests']==36 and result['numFailedTests']==0, label+' callback cohort failed'
+        rows.append({'case':label,'outcome':'survived','tests':36})
     try:
         positive('baseline')
         route.write_bytes(original+b'\n// Harmless callback recovery comment.\n')
