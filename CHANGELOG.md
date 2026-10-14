@@ -41,7 +41,9 @@ disallowed), drops the `X-Powered-By` header, and sends a report-only
 content-security policy without `'unsafe-eval'` beside the enforced one, so
 violations are reported before anything is blocked. Hosted operators: see
 `openplan/docs/ops/HOSTED_OPERATIONS.md` for monitoring, rollback, key rotation
-and where each secret lives. No migration.
+and where each secret lives. Deep-health deadlines cancel the actual SDK reads;
+malformed error-reporting configuration does not reject reporting, and public
+UUID-shaped link tokens are scrubbed. No migration.
 
 **Dates on the workspace calendar.** More planner dates now follow the
 workspace time zone instead of the server's UTC day, which turns over at 5 p.m.

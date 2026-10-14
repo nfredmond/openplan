@@ -1,0 +1,5 @@
+{
+  "openplan/src/lib/observability/sentry-envelope.ts": "ef25dbedc9349834e51c0ab89bd06b9f489fba16a61b9a6cfb61c2229215a037",
+  "openplan/src/lib/observability/error-report.ts": "15e68b3c8a0566a57de6eb9501c1a031aac16a410c6eaaa5391e1ff8194d2772",
+  "openplan/src/test/error-report-recovery.test.ts": "58cde8fff4c114d03438cfb85ca48019536d4b3eb369953d78fec96183d6946c"
+}

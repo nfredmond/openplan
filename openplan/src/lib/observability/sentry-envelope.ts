@@ -23,13 +23,14 @@ export function parseSentryDsn(raw: string | undefined | null): SentryTarget | n
   const value = raw?.trim();
   if (!value) return null;
   let url: URL;
+  let publicKey: string;
   try {
     url = new URL(value);
+    publicKey = decodeURIComponent(url.username);
   } catch {
     return null;
   }
   if (url.protocol !== "https:" && url.protocol !== "http:") return null;
-  const publicKey = decodeURIComponent(url.username);
   const segments = url.pathname.split("/").filter(Boolean);
   const projectId = segments.pop();
   if (!publicKey || !projectId || !/^\d+$/.test(projectId)) return null;

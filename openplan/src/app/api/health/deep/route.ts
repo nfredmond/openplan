@@ -25,20 +25,38 @@ function bearerToken(request: NextRequest): string | null {
   return match ? match[1].trim() : null;
 }
 
-async function timed<T>(work: () => PromiseLike<T>): Promise<{ value: T | null; ms: number; timedOut: boolean }> {
+function probeClient(signal: AbortSignal) {
+  return createServiceRoleClient({ fetchImpl: async (input, init) => {
+    signal.throwIfAborted();
+    const inherited = init?.signal ?? (input instanceof Request ? input.signal : undefined);
+    const active = inherited ? AbortSignal.any([signal, inherited]) : signal;
+    active.throwIfAborted();
+    return fetch(input, { ...init, signal: active });
+  } });
+}
+
+async function timed<T>(work: (signal: AbortSignal) => PromiseLike<T>, caller: AbortSignal): Promise<{ value: T | null; ms: number; timedOut: boolean }> {
   const started = Date.now();
+  const ending = new AbortController();
+  const signal = AbortSignal.any([ending.signal, caller]);
+  let timedOut = false;
   let timer: ReturnType<typeof setTimeout> | undefined;
   const timeout = new Promise<"timeout">((resolve) => {
-    timer = setTimeout(() => resolve("timeout"), CHECK_TIMEOUT_MS);
+    timer = setTimeout(() => {
+      timedOut = true;
+      resolve("timeout");
+    }, CHECK_TIMEOUT_MS);
   });
   try {
-    const outcome = await Promise.race([Promise.resolve(work()), timeout]);
+    signal.throwIfAborted();
+    const outcome = await Promise.race([Promise.resolve(work(signal)), timeout]);
     if (outcome === "timeout") return { value: null, ms: Date.now() - started, timedOut: true };
-    return { value: outcome as T, ms: Date.now() - started, timedOut: false };
+    return { value: outcome as T, ms: Date.now() - started, timedOut };
   } catch {
-    return { value: null, ms: Date.now() - started, timedOut: false };
+    return { value: null, ms: Date.now() - started, timedOut };
   } finally {
     clearTimeout(timer);
+    ending.abort();
   }
 }
 
@@ -71,25 +89,12 @@ export async function GET(request: NextRequest) {
   }
 
   const now = Date.now();
-  const service = (() => {
-    try {
-      return createServiceRoleClient();
-    } catch {
-      return null;
-    }
-  })();
-
-  const heartbeats = service
-    ? await timed(() =>
-        service
-          .from("modeling_worker_heartbeats")
-          .select("worker_kind,last_successful_heartbeat_at")
-          .then(({ data, error }) => (error ? null : (data ?? []))),
-      )
-    : { value: null, ms: 0, timedOut: false };
-  const buckets = service
-    ? await timed(() => service.storage.listBuckets().then(({ data, error }) => (error ? null : (data ?? []))))
-    : { value: null, ms: 0, timedOut: false };
+  const heartbeats = await timed((signal) => probeClient(signal)
+    .from("modeling_worker_heartbeats")
+    .select("worker_kind,last_successful_heartbeat_at")
+    .then(({ data, error }) => (error ? null : (data ?? []))), request.signal);
+  const buckets = await timed((signal) => probeClient(signal).storage.listBuckets()
+    .then(({ data, error }) => (error ? null : (data ?? []))), request.signal);
 
   const database: CheckResult = { state: heartbeats.value ? "ok" : "failed", ms: heartbeats.ms };
   const storage: CheckResult & { buckets?: number } = buckets.value

@@ -383,3 +383,13 @@ merged; its fresh main/deployment checks remain pending at this checkpoint. Full
 terminal/artifact delivery, default integration, source identity, browser and
 practitioner evidence, independent-host recovery and scientific quality remain
 open under M3/M5b.2. Milestone grades do not change.
+
+
+**October 14 operator health and error-report recovery candidate.**
+[Deep-health transport](../reviews/2026-10-14-ops-health-transport/STATUS.md)
+proves actual local SDK cancellation and socket closure with four eight-case
+cohorts and eleven intended faults. Error-report recovery retains malformed DSN
+and UUID-token scrubbing checks, four six-case cohorts and six faults. This
+unmerged PR #326 correction supports existing M3/M15a. Hosted backend access,
+workflow delivery, real Sentry receipt and planner acceptance remain open.
+Milestone grades do not change.

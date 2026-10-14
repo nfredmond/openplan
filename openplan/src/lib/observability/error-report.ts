@@ -43,7 +43,7 @@ export function scrubPath(raw: string): string {
   const scrubbed = segments.map((segment, index) => {
     if (!segment) return segment;
     const parent = segments[index - 1] ?? "";
-    if (TOKEN_PARENTS.has(parent) && !UUID.test(segment)) return "[token]";
+    if (TOKEN_PARENTS.has(parent)) return "[token]";
     if (!UUID.test(segment) && OPAQUE_SEGMENT.test(segment)) return "[token]";
     return segment;
   });
