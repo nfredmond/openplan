@@ -28,15 +28,18 @@ import { requireContractVerificationStack } from "./helpers/contract-verificatio
 function probe(mutation = "") {
   const container = resolveLocalDbContainer();
   requireContractVerificationStack(container);
-  const actor = randomUUID(), workspace = randomUUID(), foreignWorkspace = randomUUID();
+  const actor = randomUUID(), steward = randomUUID(), workspace = randomUUID(), foreignWorkspace = randomUUID();
   const sql = `BEGIN;
 SET LOCAL statement_timeout='15s'; SET LOCAL lock_timeout='2s';
 ${mutation}
-INSERT INTO auth.users(id,aud,role,email) VALUES('${actor}','authenticated','authenticated','security-${actor}@example.invalid');
+INSERT INTO auth.users(id,aud,role,email) VALUES
+ ('${actor}','authenticated','authenticated','security-${actor}@example.invalid'),
+ ('${steward}','authenticated','authenticated','security-${steward}@example.invalid');
 INSERT INTO public.workspaces(id,name,slug) VALUES
  ('${workspace}','SYNTHETIC Storage policy','security-${workspace}'),
  ('${foreignWorkspace}','SYNTHETIC foreign Storage policy','security-${foreignWorkspace}');
-INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('${workspace}','${actor}','owner');
+-- A second owner keeps the workspace owned while the actor changes role and is removed.
+INSERT INTO public.workspace_members(workspace_id,user_id,role) VALUES('${workspace}','${actor}','owner'),('${workspace}','${steward}','owner');
 CREATE FUNCTION pg_temp.assert_true(value boolean,label text) RETURNS void LANGUAGE plpgsql AS $$
 BEGIN IF value IS DISTINCT FROM true THEN RAISE EXCEPTION '%',label; END IF; END $$;
 CREATE FUNCTION pg_temp.expect_denied(statement text,label text) RETURNS void LANGUAGE plpgsql AS $$
