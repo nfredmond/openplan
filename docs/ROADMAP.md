@@ -71,7 +71,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M2b | File library and document writing | Later (C10) | Audit | Drafting and review |
 | M2c | Dashboard, My Work and appearance | In progress, partial | [PR 187](https://github.com/nfredmond/openplan/pull/187) | Show missed deadlines (KI-015, PR 243) |
 | M2d | Work program (OWP/UPWP) administration | In progress, mostly done | [Sep 9](reviews/2026-09-09-owp-full-recovery/VERIFICATION.md) | Fix KI-002 to 004 (PR 252) |
-| M3 | Free, private, recoverable operation | In progress, partial | [Oct 13](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md) | Stage leases (KI-018, PR 258); installation-wide inventory and alignment; all-worker recovery; clean install |
+| M3 | Free, private, recoverable operation | In progress, partial | [Oct 13](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md) | Stage lease holder columns (rest of KI-018 after PR 258); installation-wide inventory and alignment; all-worker recovery; clean install |
 | M3a | Desktop Control and demo recovery | Later, partial | [Sep 9](reviews/2026-09-09-control-main/VERIFICATION.md) | Observed acceptance |
 | M4 | Confidentiality and records | Later | Audit | Records-request design |
 | M5 | Data, GIS and analysis reuse | Later, partial | Audit | Format coverage matrix |
