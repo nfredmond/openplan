@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState, type ComponentProps } from "react";
 import dynamic from "next/dynamic";
 import { AlertTriangle, Loader2, MapPin, Pencil, Search, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -15,8 +15,18 @@ import {
 import type { EngagementGeometry } from "@/lib/engagement/geometry";
 import { CONTINENTAL_US_CENTER, LARGE_AREA_KM2, summarizeCorridorText } from "@/lib/models/study-area";
 
+// Keep staff instructions in this caller without loading the map before it is needed.
 const GeometryPickerMap = dynamic(
-  () => import("@/components/engagement/geometry-picker-map").then((m) => m.GeometryPickerMap),
+  () => import("@/components/engagement/geometry-picker-map").then((module) => {
+    const words = {
+      ...module.EN_GEOMETRY_PICKER_WORDS,
+      mapUnavailable:
+        "This drawing map is unavailable. Use Search a place instead. Any area already selected stays unchanged.",
+    };
+    return function StudyAreaDrawingMap(props: ComponentProps<typeof module.GeometryPickerMap>) {
+      return <module.GeometryPickerMap {...props} words={words} />;
+    };
+  }),
   {
     ssr: false,
     loading: () => <div className="h-[300px] w-full animate-pulse rounded-xl border border-border bg-muted/20" />,
