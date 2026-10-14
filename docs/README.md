@@ -257,3 +257,5 @@ The [managed aerial state correction](reviews/2026-10-13-odm-managed-state-root/
 - [Original uncertain commit inspection](reviews/2026-10-13-odm-uncertain-commit-inspection/STATUS.md), current task observations with a missing acknowledgment held separately.
 
 - [Supplied output archive custody](reviews/2026-10-13-odm-output-archive-custody/STATUS.md), bounded complete private bytes, member inventory and interruption recovery without publication or quality promotion.
+- [Original output archive HTTP](reviews/2026-10-13-odm-original-output-http/STATUS.md), supervised fixed-task downloads with ownership, cancellation and bounded byte writing.
+- [Original runtime output intake](reviews/2026-10-13-odm-runtime-output-intake/STATUS.md), current access, confirmed download receipts and private archive recovery without publication.
