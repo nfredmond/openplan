@@ -152,8 +152,8 @@ def run(repo, out, before=None):
         return code == 1 and len(failed) == 1 and failed[0]['title']==test and diagnostic in '\n'.join(failed[0]['failureMessages'])
     def positive(label):
         code, result = execute(label)
-        assert code == 0 and result['numPassedTests']==69 and result['numFailedTests']==0, label+' callback cohort failed'
-        rows.append({'case':label,'outcome':'survived','tests':69})
+        assert code == 0 and result['numPassedTests']==72 and result['numFailedTests']==0, label+' callback cohort failed'
+        rows.append({'case':label,'outcome':'survived','tests':72})
     try:
         positive('baseline')
         route.write_bytes(original+b'\n// Harmless callback recovery comment.\n')

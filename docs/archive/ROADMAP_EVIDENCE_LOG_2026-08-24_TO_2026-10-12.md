@@ -371,3 +371,15 @@ These are isolated candidates. Mixed-version package writes, concurrent custody,
 source-extension identity, complete terminal/artifact delivery, default-worker
 integration, browser/practitioner evidence, independent-host recovery and
 scientific quality remain open under M3/M5b.2. Milestone grades do not change.
+
+**October 14 custody roster and readiness recovery candidate.**
+[Application recovery](../reviews/2026-10-14-aerial-custody-recovery/STATUS.md)
+checks the complete original artifact roster after a rejected bulk write, refuses
+unreadable package publication and repairs pending readiness without replacing
+human verification. The application needs no schema change and precedes the
+separate held-custody guard. Native row/HTTP and pinned logical restore evidence
+retain their selected-schema and synthetic-source boundaries. Main source312 is
+merged; its fresh main/deployment checks remain pending at this checkpoint. Full
+terminal/artifact delivery, default integration, source identity, browser and
+practitioner evidence, independent-host recovery and scientific quality remain
+open under M3/M5b.2. Milestone grades do not change.
