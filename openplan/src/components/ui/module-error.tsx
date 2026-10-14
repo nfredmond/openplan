@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { OperatorDetail } from "@/components/ui/read-failure-notice";
+import { reportClientError } from "@/lib/observability/report-client-error";
 
 /**
  * Retry a failed route segment so the retry can actually succeed.
@@ -64,6 +65,7 @@ export function ModuleError({
       message: error.message,
       digest: error.digest ?? null,
     });
+    reportClientError(logTag, error);
   }, [error, logTag]);
 
   // Move focus to the heading, so a keyboard or screen reader user starts at

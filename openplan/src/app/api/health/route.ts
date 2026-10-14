@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { expectedMigrations } from "@/lib/ops/migration-manifest";
 import { APP_VERSION, appCommitSha } from "@/lib/runtime/app-version";
 
 const NO_STORE_HEADERS = {
@@ -33,6 +34,7 @@ function safeCommitSha(value: string | null | undefined) {
  * and the version is what makes it comparable.
  */
 function healthPayload() {
+  const migrations = expectedMigrations();
   return {
     status: "ok",
     service: "openplan",
@@ -40,6 +42,9 @@ function healthPayload() {
     deployment: {
       commit: safeCommitSha(appCommitSha()),
       version: APP_VERSION,
+      // What this build expects, not what the database has: the database is
+      // not read here. The token-protected /api/health/deep lists every version.
+      migrations: migrations ? { expected: migrations.count, latest: migrations.latest } : null,
     },
     checks: {
       app: "ok",

@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { useRefreshThenReset } from "@/components/ui/module-error";
+import { reportClientError } from "@/lib/observability/report-client-error";
 
 /**
  * What a member of the public sees when an agency's published page fails to
@@ -19,6 +20,7 @@ export default function PublishedError({
 
   useEffect(() => {
     console.error("[openplan/published-error]", { message: error.message, digest: error.digest ?? null });
+    reportClientError("published-error", error);
   }, [error]);
 
   return (

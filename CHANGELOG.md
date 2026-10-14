@@ -20,6 +20,29 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Operating the live site.** `/api/health` now reports how many migrations
+the deployed build expects and the latest one, read from
+`openplan/supabase/migrations` at build time. A new token-protected
+`/api/health/deep` reads the database and Storage once each, gives each
+modeling worker's heartbeat age, and lists every expected migration; it is off
+until you set `OPENPLAN_HEALTH_TOKEN`. The Production Health workflow also
+runs after each successful Vercel production deployment, and a second step
+fails when the deployed code expects a migration the hosted database has not
+applied. It compares whole sets, because hosted migrations may be applied out
+of order. That step needs the repository variable
+`OPENPLAN_SUPABASE_PROJECT_REF` and the secrets `OPENPLAN_HEALTH_TOKEN` and
+`SUPABASE_ACCESS_TOKEN`; until they are set it prints a notice. Error pages
+now send a scrubbed report (path with share tokens replaced, error type,
+message, digest and stack; no user, cookie or query string) to
+`/api/client-errors`, which logs it and, only when `OPENPLAN_SENTRY_DSN` is
+set, forwards it and server request errors to Sentry from the server. The site
+serves `robots.txt` (public pages open; app, API and account pages
+disallowed), drops the `X-Powered-By` header, and sends a report-only
+content-security policy without `'unsafe-eval'` beside the enforced one, so
+violations are reported before anything is blocked. Hosted operators: see
+`openplan/docs/ops/HOSTED_OPERATIONS.md` for monitoring, rollback, key rotation
+and where each secret lives. No migration.
+
 **Dates on the workspace calendar.** More planner dates now follow the
 workspace time zone instead of the server's UTC day, which turns over at 5 p.m.
 Pacific. Engagement participation open and close times are entered and shown
