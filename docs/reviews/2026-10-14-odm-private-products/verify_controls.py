@@ -84,6 +84,18 @@ def run(repo, out):
         'test_unrelated_partial_cannot_be_deleted_as_publication_alias')
     remove('invalid-constructor-accepted', 'Private products require original intake and a finite timeout',
         'test_arguments_require_real_intake_and_finite_positive_timeout')
+    remove('disk-shortage-ignored', 'Insufficient free space for remaining original products',
+        'test_shortage_refuses_before_any_product_bytes')
+    replace('cumulative-space-understated', '            remaining = sum(row[\'bytes\'] for row in rows',
+        '            remaining = max(row[\'bytes\'] for row in rows',
+        'test_space_check_covers_all_missing_products', 'ValueError not raised')
+    replace('completed-products-budgeted-again', "                    and not (objects/row['filename']).exists())",
+        '                    )', 'test_resume_budgets_only_missing_products',
+        'Insufficient free space for remaining original products', kind='errors')
+    replace('completed-replay-needs-new-space', '            if shutil.disk_usage(pack).free < 2*remaining:',
+        '            if shutil.disk_usage(pack).free < 2*remaining+1:',
+        'test_saved_replay_requires_no_new_product_space',
+        'Insufficient free space for remaining original products', kind='errors')
     for key in ['callbackPermission', 'publicationPermission']:
         replace(key+'-promoted', "'"+key+"': False", "'"+key+"': True",
             'test_exact_original_products_and_absence_grant_no_delivery',
@@ -108,8 +120,8 @@ def run(repo, out):
 
     def positive(label):
         code, output = execute(label)
-        assert code == 0 and 'Ran 18 tests' in output and output.rstrip().endswith('OK'), label
-        controls.append({'case': label, 'outcome': 'survived', 'tests': 18})
+        assert code == 0 and 'Ran 22 tests' in output and output.rstrip().endswith('OK'), label
+        controls.append({'case': label, 'outcome': 'survived', 'tests': 22})
 
     try:
         positive('baseline')

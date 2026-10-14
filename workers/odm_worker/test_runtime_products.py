@@ -4,6 +4,7 @@ import io
 import json
 import os
 import stat
+from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 import zipfile
@@ -227,6 +228,54 @@ class Checks(unittest.TestCase):
         for timeout in [0, -1, False, float('nan'), float('inf')]:
             with self.subTest(timeout=timeout), self.assertRaisesRegex(ValueError, 'finite timeout'):
                 module.Products(self.f.intake, timeout=timeout)
+
+    def product_space(self, free):
+        actual = module.shutil.disk_usage
+        return patch.object(module.shutil, 'disk_usage', side_effect=lambda path:
+            SimpleNamespace(free=free) if path == self.pack else actual(path))
+
+    def test_shortage_refuses_before_any_product_bytes(self):
+        with self.product_space(0), self.assertRaisesRegex(ValueError,
+                'Insufficient free space for remaining original products'):
+            self.call()
+        self.assertEqual(list((self.pack/'objects').iterdir()), [],
+            'Expanded-space refusal must precede every product write')
+        self.assertFalse((self.pack/'receipt.json').exists())
+        self.assertEqual((self.f.root/'output-archive/archive.zip').read_bytes(), self.f.raw,
+            'Expanded-space refusal keeps the original retained archive')
+
+    def test_space_check_covers_all_missing_products(self):
+        selected = [self.members[row[2]] for row in module.PRODUCTS if row[2] in self.members]
+        free = 2*max(map(len, selected))
+        with self.product_space(free), self.assertRaisesRegex(ValueError,
+                'Insufficient free space for remaining original products'):
+            self.call()
+        self.assertEqual(list((self.pack/'objects').iterdir()), [],
+            'Cumulative product shortage cannot start a partial extraction')
+
+    def test_resume_budgets_only_missing_products(self):
+        original = self.products._copy
+        def interrupted(*args):
+            original(*args)
+            raise InterruptedError('First product retained before interruption')
+        with patch.object(self.products, '_copy', side_effect=interrupted), self.assertRaisesRegex(
+                InterruptedError, 'First product retained before interruption'):
+            self.call()
+        path = self.pack/'objects/orthophoto.tif'
+        inode = path.stat().st_ino
+        remaining = sum(len(self.members[row[2]]) for row in module.PRODUCTS
+            if row[2] in self.members and row[1] != 'orthophoto.tif')
+        with self.product_space(2*remaining):
+            result = self.call()
+        self.assertEqual(path.stat().st_ino, inode,
+            'Space accounting cannot replace a completed original product')
+        self.assertIs(result['publicationPermission'], False)
+
+    def test_saved_replay_requires_no_new_product_space(self):
+        first = self.call()
+        with self.product_space(0):
+            self.assertEqual(self.call(), first,
+                'Completed product replay requires no expanded file allocation')
 
 
 if __name__ == '__main__':

@@ -72,4 +72,33 @@ The candidate joins PR303's corrected migration-source guard. Original product
 library and native producer hashes remain unchanged. Both new CI steps and all
 report links remain present. The added migration-source controller and twenty
 joined documentation cases pass separately. Fresh CI runs the combined recipe;
-the earlier47-stage result remains identified as that earlier recipe.
+the earlier 47-stage result remains identified as that earlier recipe.
+
+## Disk preflight review correction
+
+Review 4266670295 finds that private product extraction does not check its
+expanded file requirement. Two new tests reproduce the missing refusal before
+correction; the initial 22-case trial retains two intended failures.
+
+The correction checks twice the total bytes of all missing selected products
+against current free disk before the first member copy. Completed files do not
+consume the new allocation budget. This is a conservative preflight, not an OS
+reservation or protection against another process consuming space afterward.
+Insufficient space preserves the retained archive and leaves product objects
+empty. Recovery budgets only the remaining files; complete replay needs no
+new product allocation.
+
+Python 3.14 and 3.11 each pass 22 tests in four positive cohorts, 27 intended
+faults and 216 failure-oracle controls. The harmless source change survives,
+and source restores in finally. Both 256 MiB services stop successfully with
+zero swap, max pressure and OOM events; peaks are about 48.2 and 46.5 MiB.
+The free-space tests supply controlled disk observations with real loopback
+archives. They do not establish filesystem quota reservation or actual ENOSPC
+behavior. The earlier 47-stage proof remains bound to the earlier source.
+Fresh Python 3.11 useful native recovery passes exact replay, real child exit 44
+and post-copy actor revocation on the retained selected 409-migration fixture.
+Both owned services stop; the original role restores in finally. The service
+peaks at about 448.2 MiB under 1 GiB, with zero swap, max pressure and OOM events.
+This does not establish a new installed schema or separate-host acceptance.
+All 37 aerial unit suites pass 862 cases under Python 3.11, and 20 nested
+application documentation cases pass. Fresh GitHub gates remain pending.

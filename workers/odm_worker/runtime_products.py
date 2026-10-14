@@ -2,6 +2,7 @@
 import copy
 import hashlib
 import os
+import shutil
 import stat
 import time
 import zipfile
@@ -131,6 +132,12 @@ class Products:
             else:
                 synchronize(pack)
             private(objects, True)
+            # Budget all remaining expanded files before writing the first member.
+            remaining = sum(row['bytes'] for row in rows
+                if row['availability'] == 'retained'
+                    and not (objects/row['filename']).exists())
+            if shutil.disk_usage(pack).free < 2*remaining:
+                raise ValueError('Insufficient free space for remaining original products')
             for row in rows:
                 if row['availability'] == 'retained':
                     self._copy(root/'output-archive', objects, row, request_id, deadline)
