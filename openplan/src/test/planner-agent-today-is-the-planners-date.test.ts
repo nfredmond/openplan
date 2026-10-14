@@ -50,16 +50,42 @@ describe("assistantToday", () => {
     expect(assistantToday(EVENING_IN_THE_AMERICAS, "America/Los_Angeles")).toEqual({
       today: "2026-10-11",
       timeZone: "America/Los_Angeles",
+      timeZoneSource: "browser",
     });
     expect(assistantToday(EVENING_IN_THE_AMERICAS, "Pacific/Auckland")).toEqual({
       today: "2026-10-12",
       timeZone: "Pacific/Auckland",
+      timeZoneSource: "browser",
     });
   });
 
   it("falls back to the UTC date when no valid zone arrives", () => {
-    expect(assistantToday(EVENING_IN_THE_AMERICAS, "Not/AZone")).toEqual({ today: "2026-10-12", timeZone: null });
-    expect(assistantToday(EVENING_IN_THE_AMERICAS)).toEqual({ today: "2026-10-12", timeZone: null });
+    expect(assistantToday(EVENING_IN_THE_AMERICAS, "Not/AZone")).toEqual({
+      today: "2026-10-12",
+      timeZone: null,
+      timeZoneSource: "utc_fallback",
+    });
+    expect(assistantToday(EVENING_IN_THE_AMERICAS)).toEqual({
+      today: "2026-10-12",
+      timeZone: null,
+      timeZoneSource: "utc_fallback",
+    });
+  });
+
+  it("uses the workspace's own zone before the browser's", () => {
+    // A planner travelling in Tokyo still works on the agency's calendar.
+    expect(
+      assistantToday(EVENING_IN_THE_AMERICAS, "Asia/Tokyo", {
+        timeZone: "America/Los_Angeles",
+        source: "workspace_setting",
+      })
+    ).toEqual({ today: "2026-10-11", timeZone: "America/Los_Angeles", timeZoneSource: "workspace_setting" });
+  });
+
+  it("does not let a UTC fallback outrank the browser's zone", () => {
+    expect(
+      assistantToday(EVENING_IN_THE_AMERICAS, "America/New_York", { timeZone: "UTC", source: "utc_fallback" })
+    ).toEqual({ today: "2026-10-11", timeZone: "America/New_York", timeZoneSource: "browser" });
   });
 });
 
@@ -69,6 +95,12 @@ describe("assistantTodayLine", () => {
     expect(line).toContain("TODAY: 2026-10-11 (calendar date in America/Los_Angeles, the planner's time zone).");
     expect(line).toContain("A deadline dated today is still open unless its recorded close time has passed.");
     expect(line).not.toContain("UTC");
+  });
+
+  it("names the workspace's zone when the date came from the workspace", () => {
+    const line = assistantTodayLine("2026-10-11", "America/Los_Angeles", "workspace_setting");
+    expect(line).toContain("TODAY: 2026-10-11 (calendar date in America/Los_Angeles, the workspace's time zone).");
+    expect(line).not.toContain("the planner's time zone");
   });
 
   it("says when the zone is unknown that yesterday's deadline may still be open", () => {

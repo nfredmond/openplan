@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import { defaultClaudeModelId, estimateClaudeListPriceUsd } from "@/lib/ai/model-policy";
 import { anthropicModel, hasAnthropicAccess } from "@/lib/integrations/anthropic-access";
 import { withWorkspaceIntegrationContext } from "@/lib/integrations/workspace-keys";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { createClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadFundingOpportunityAccess } from "@/lib/programs/api";
@@ -209,7 +210,10 @@ export async function POST(request: NextRequest, context: RouteContext) {
       // cite these with inline [fact:N] tokens; the citations are validated
       // deterministically after generation (planner-pack grounding contract).
       const hasModelingEvidence = Boolean(evidence.modelingHeadline && evidence.modelingReadinessDetail);
-      const facts = buildOpportunityFactList(evidence, { now: new Date() });
+      // Close dates are stated in the workspace's zone and compared as instants.
+      const calendar = await loadWorkspaceCalendar(supabase, opportunity.workspace_id);
+      if (calendar.readError) audit.warn("workspace_calendar_unreadable", { message: calendar.readError });
+      const facts = buildOpportunityFactList(evidence, { now: new Date(), timeZone: calendar.timeZone });
       const factIds = facts.map((fact) => fact.fact_id);
 
       const promptSections = [
