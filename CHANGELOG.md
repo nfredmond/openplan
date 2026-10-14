@@ -27,6 +27,7 @@ still advance. Deploy the callback recovery code first, then take a fresh backup
 and apply this migration before merging the dependent guard. Hosted activation
 and full worker integration remain pending. See the
 [guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
+
 **Original aerial delivery authority, candidate:** migration
 `20261017000012_aerial_delivery_authority.sql` adds a service-only observation
 for original artifact access and terminal delivery. Processing access stays
