@@ -84,7 +84,7 @@ const BLOCK_NOTES: Record<MyWorkBlockId, string> = {
   needs_review:
     "Work awaiting a review or decision. Contract items appear only when your designated role can take that next step.",
   workspace_deadlines:
-    "Grant decisions, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
+    "Grant decisions, application due dates, award obligations and invoice windows. Nobody is assigned to these, so nothing here is shown as belonging to anyone.",
 };
 
 /** Which sources feed which block — used to answer "empty, or unreadable?". */
@@ -93,7 +93,7 @@ const BLOCK_SOURCES: Record<MyWorkBlockId, readonly MyWorkSourceId[]> = {
   undated: ["issues", "land_use_plan_actions", "contract_tasks"],
   blocked_projects: ["stage_gate_holds"],
   needs_review: ["engagement_moderation", "failed_model_runs", "narrative_drafts", "decision_package_reviews", "contract_work_reviews", "contract_pending_reviews"],
-  workspace_deadlines: ["grant_decisions", "award_obligations", "invoice_windows"],
+  workspace_deadlines: ["grant_decisions", "grant_application_due", "award_obligations", "invoice_windows"],
 };
 
 /**
