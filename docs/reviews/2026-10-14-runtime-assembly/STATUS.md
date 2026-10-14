@@ -42,9 +42,22 @@ server before the read deadline when cancellation is ignored, isolating the
 intended assertion. Ordinary local files, supplied facts and source guards do not
 establish a running native installation or complete application receiver.
 
+## Retained native recovery repeat
+
+The current worker bytes also pass four four-case positive cohorts and two
+intended SQL faults on a disposable clone of the retained 415-migration fixture.
+[The result](native-recovery.json) and [source census](native-source-census.json)
+bind that campaign. Actual PostgREST, supervised HTTP sockets, original copied
+inputs, committed journals and retained archive bytes are exercised. The callback
+fixture writes the delivery ledger directly. This checks existing recovery
+composition; it does not execute the new Bundle factory against a native engine
+or the full application receiver and Storage. The service completes within its
+1 GiB limit and reaches that limit, so no spare-capacity claim follows.
+The fixture is not current hosted history or current main.
+
 ## Remaining boundaries
 
-Current fault campaigns, native composed delivery, full application receiver and
+Bundle factory native execution, the full application receiver and
 Storage, a service entry point, legacy-root adoption and default activation remain
 open. Capacity, planner/browser, scientific quality, publication and independent
 host acceptance remain separate. No milestone grade or release changes.
