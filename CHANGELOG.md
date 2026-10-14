@@ -40,6 +40,8 @@ only reviewed consultant invoices, and client invoices past draft can change onl
 their status, enforced in the database for every writer. Existing records are not
 rewritten; the rules apply to new writes.
 
+**Overall Work Program type.** Apply `20261017000009_owp_program_type.sql` before deploying; programs can now be typed Overall Work Program (OWP/UPWP), and the Work program entry shows on those programs and on any program that already has work program records.
+
 **Action for single-agency installations that use `ANTHROPIC_API_KEY`:** a
 production build no longer lets workspaces without their own key spend the
 deployment's Anthropic key unless `OPENPLAN_SHARED_AI_KEY=allow` is also set. On

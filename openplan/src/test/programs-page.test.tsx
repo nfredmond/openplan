@@ -388,6 +388,26 @@ describe("ProgramsPage", () => {
       expect(workProgramWorkflowSelectMock).toHaveBeenCalledWith("program_id, effective_revision_id");
     });
 
+    it("lists an Overall Work Program before its first version is saved", async () => {
+      programsOrderMock.mockResolvedValue({
+        data: [
+          { ...BASE_PROGRAM, id: "program-new-owp", title: "FY 2027-28 OWP", program_type: "owp_upwp", cycle_name: "FY 2027-28" },
+          { ...BASE_PROGRAM, id: "program-rtip", title: "2027 RTIP", program_type: "rtip", cycle_name: "2027 RTIP" },
+        ],
+        error: null,
+      });
+
+      await renderPage();
+
+      expect(doorList().getByRole("link", { name: "FY 2027-28 OWP" })).toHaveAttribute(
+        "href",
+        "/programs/program-new-owp/work-program"
+      );
+      expect(doorList().getByText("Not adopted yet")).toBeInTheDocument();
+      expect(doorList().queryByRole("link", { name: "2027 RTIP" })).not.toBeInTheDocument();
+      expect(screen.queryByText(/None yet\./)).not.toBeInTheDocument();
+    });
+
     it("says a work program is adopted only when an adopted version is recorded", async () => {
       withPrograms();
       workProgramWorkflowInMock.mockResolvedValue({
@@ -413,7 +433,9 @@ describe("ProgramsPage", () => {
     it("says how to start one when there are none", async () => {
       await renderPage();
 
-      expect(screen.getByText(/None yet\. To start an OWP or UPWP, open a program and choose Work program\./)).toBeInTheDocument();
+      expect(
+        screen.getByText(/None yet\. To start a work program, add a program with the type Overall Work Program \(OWP\/UPWP\)\./)
+      ).toBeInTheDocument();
       expect(screen.queryByRole("list", { name: "Work programs and measure funds" })).not.toBeInTheDocument();
     });
 
