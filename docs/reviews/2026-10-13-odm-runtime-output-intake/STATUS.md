@@ -74,3 +74,73 @@ archive transfer/current RLS composition, geospatial validity/quality, default
 worker integration, callback/storage delivery, full installation and physical-
 host recovery, browser use and practitioner acceptance remain open. Fresh
 GitHub and main/public acceptance are separate. No version tag is declared.
+
+## Joined option-order correction and useful output
+
+The candidate joins corrected PR295 source a4f0bc89b. Its actual 46-stage
+recipe passes 840 cases across 36 suites, seven custom scripts, 80 restored
+bindings and 20 documentation cases plus direction and pointer controls.
+The stopped service peaks at 911,749,120 bytes under 1 GiB, with zero swap,
+max or OOM events. Earlier 839-case results precede this correction.
+
+A pinned engine completes processing of all 18 public photographs. This
+intake retains 3,245,368 exact original archive bytes and replays without
+another GET. GDAL reads the retained four-band, 221 by 165 orthophoto and
+its declared CRS. The engine and parent stop within their recorded limits.
+Application access during that processing uses supplied receipts. Live
+current-permission output recovery is now a separate isolated check. Survey
+accuracy, product completeness, current-main and physical-host restore,
+default integration, callback/storage delivery and browser/practitioner
+acceptance remain open. No callback or publication permission is granted.
+
+## Actual current-permission output recovery
+
+The [native producer](native_useful_recovery.py) reopens the verified retained
+RPC fixture and the exact stopped useful-processing engine. It records the
+original useful request through the installed immutable admission function.
+Saved output replay checks three actual current access reads and issues no
+archive GET. Fresh original download checks five current access reads, one supervised
+archive GET and two native engine checks. Its physical archive hash and size
+match the earlier useful output independently.
+
+Revoked access refuses saved replay. Revocation after the real GET preserves
+one unconfirmed object and publishes neither completion nor archive custody.
+Restored access retains that object, downloads a second bounded attempt and
+recovers the exact useful archive. Callback and publication remain false.
+Processing quality and archive provenance remain unassessed.
+
+The [native controls](verify_native_useful_controls.py) pass four positive
+cohorts and eight targeted faults on Python 3.14 and 3.11. Eight oracle rows
+per version distinguish expected assertions from unrelated failure. A real
+redundant GET fails the saved-replay census. Other faults ignore actor
+revocation, drop a current read, corrupt physical bytes, swallow post-download
+revocation, delete the first attempt or promote provenance/publication.
+Source restores in finally. Independent Docker reads confirm the three
+fixture services stopped, with their existing limits, no ports or OOM kills.
+
+Repeated complete runtime copies reach the 1 GiB parent cap and record memory
+max events. Swap and OOM events remain zero. A captured Python 3.11 sample
+records 1,006,215,168 file-cache bytes and 30,695,424 anonymous bytes. This
+resource pressure remains part of the evidence; it is not spare-capacity
+acceptance. Exact peaks and event counts appear in the native evidence.
+
+The first prototype starts the database before the engine, changing its
+private address; the original endpoint fence refuses. Restarting the engine
+first preserves the original pinned endpoint. Two failed child-census trials
+check the adapter filename instead of its actual url_transport.py child.
+Those trials remain preserved. Corrected redundant-GET controls establish
+that the final no-refetch census can fail.
+
+This uses the retained old schema and real RPC permissions during output
+recovery. Earlier processing still uses supplied receipts. It does not prove
+current-main or hosted whole-installation restore, processing-time permissions,
+physical-host recovery, survey accuracy, product completeness, default worker
+integration, callback/storage delivery or browser/practitioner acceptance.
+Fresh GitHub and main/public checks remain required before landing.
+
+## Combined pull request scope
+
+This verified intake layer joins the output HTTP transport and option-order
+correction in PR295. The combined source recipe and native checks above apply.
+Fresh combined-head CI replaces earlier transport-only checks. No default
+activation or migration joins this scope.
