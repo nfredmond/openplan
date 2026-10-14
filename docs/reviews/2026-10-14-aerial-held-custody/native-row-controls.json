@@ -2,17 +2,17 @@
   {
     "case": "baseline",
     "outcome": "survived",
-    "retainedDatabase": "odm_held_06c92bb33cc74a40b4dbe99c721a74f2"
+    "retainedDatabase": "odm_held_d20fa8f223664e368d8be34a818e3cab"
   },
   {
     "case": "harmless-comment",
     "outcome": "survived",
-    "retainedDatabase": "odm_held_6616a12ba7a54f629f27e852c9009ecd"
+    "retainedDatabase": "odm_held_5ac65c3f3da14655a7818343d9d94fad"
   },
   {
     "case": "restored-after-harmless",
     "outcome": "survived",
-    "retainedDatabase": "odm_held_c3bce438052d4f5d8909cde3a126e3c9"
+    "retainedDatabase": "odm_held_c84629227db142ad9aa57490a7cccb5e"
   },
   {
     "case": "serialization-code-used",
@@ -62,6 +62,6 @@
   {
     "case": "restored",
     "outcome": "survived",
-    "retainedDatabase": "odm_held_fec541fd2b51428cab9b90c9d56a7828"
+    "retainedDatabase": "odm_held_de02d2d9340245abab22912fa01f269d"
   }
 ]

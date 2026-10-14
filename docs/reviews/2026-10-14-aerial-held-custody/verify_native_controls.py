@@ -24,7 +24,12 @@ def run(repo,out):
         candidate=out/(label+'.sql');candidate.write_bytes(original if sql is None else sql.encode())
         cmd=[sys.executable,'-B',str(Path(__file__).with_name('native_guard.py')),'--repo',str(repo),'--out',str(out/label),'--migration',str(candidate)]
         if case:cmd+=['--only',case]
-        result=subprocess.run(cmd,capture_output=True,text=True,timeout=45)
+        try:
+            result=subprocess.run(cmd,capture_output=True,text=True,timeout=240)
+        except subprocess.TimeoutExpired:
+            from verify_upgrade_controls import cleanup_owned_cluster
+            cleanup_owned_cluster()
+            raise TimeoutError('Owned native row control deadline; cleanup requested') from None
         output=result.stdout+result.stderr;(out/(label+'-private.log')).write_text(output)
         return result.returncode,output
     def positive(label,sql=None):

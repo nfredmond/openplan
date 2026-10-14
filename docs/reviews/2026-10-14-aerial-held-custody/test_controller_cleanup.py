@@ -1,5 +1,5 @@
 """Exercise cleanup fences with a simulated Docker boundary, never real services."""
-import importlib.util,json,subprocess,tempfile,unittest
+import importlib.util,json,subprocess,sys,tempfile,unittest
 from pathlib import Path
 from unittest.mock import patch
 p=Path(__file__).with_name('verify_upgrade_controls.py');spec=importlib.util.spec_from_file_location('controller',p);m=importlib.util.module_from_spec(spec);spec.loader.exec_module(m)
@@ -32,4 +32,16 @@ class Checks(unittest.TestCase):
   with tempfile.TemporaryDirectory(prefix='openplan-held-cleanup-') as root,patch.object(m.subprocess,'check_output',return_value=json.dumps([state()]).encode()),patch.object(m.subprocess,'run',side_effect=process):
    with self.assertRaises(TimeoutError):m.run(repo,Path(root)/'proof')
   self.assertTrue([c for c in calls if c[0]=='docker']==[['docker','stop','--time','120',IDENTITY]],'Outer timeout requests owned cluster cleanup')
+ def test_native_controller_timeouts_request_fenced_cleanup(self):
+  for name in ['verify_native_controls.py','verify_aftermath_controls.py']:
+   target=p.with_name(name);spec=importlib.util.spec_from_file_location('native_controller',target);module=importlib.util.module_from_spec(spec);spec.loader.exec_module(module)
+   calls=[]
+   def process(args,**kwargs):
+    calls.append(args)
+    if args[0]=='docker':return subprocess.CompletedProcess(args,0)
+    raise subprocess.TimeoutExpired(args,240)
+   repo=Path(__file__).resolve().parents[3]
+   with self.subTest(controller=name),tempfile.TemporaryDirectory(prefix='openplan-held-native-cleanup-') as root,patch.dict(sys.modules,{'verify_upgrade_controls':m}),patch.object(m.subprocess,'check_output',return_value=json.dumps([state()]).encode()),patch.object(m.subprocess,'run',side_effect=process):
+    with self.assertRaises(TimeoutError):module.run(repo,Path(root)/'proof')
+    self.assertTrue([c for c in calls if c[0]=='docker']==[['docker','stop','--time','120',IDENTITY]],'Native controller timeout requests owned cluster cleanup')
 if __name__=='__main__':unittest.main(verbosity=2)

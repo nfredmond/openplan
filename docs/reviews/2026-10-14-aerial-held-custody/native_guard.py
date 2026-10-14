@@ -49,9 +49,9 @@ def run(repo, out, migration=None, only=None):
     first=second=None
     try:
         subprocess.run(['docker','start',PG],check=True,stdout=subprocess.DEVNULL)
-        for _ in range(80):
+        for _ in range(120):
             if subprocess.run(['docker','exec',PG,'pg_isready','-U','postgres'],capture_output=True).returncode==0:break
-            time.sleep(.1)
+            time.sleep(.25)
         else:raise TimeoutError('Owned PostgreSQL readiness')
         assert sql('SELECT count(*) FROM pg_stat_activity WHERE datname='+quoted(SOURCE)+';',target='postgres').stdout.strip()=='0'
         sql('CREATE DATABASE '+database+' TEMPLATE '+SOURCE+';',target='postgres')
@@ -129,7 +129,7 @@ def run(repo, out, migration=None, only=None):
             if process and process.poll() is None:
                 process.terminate();process.communicate(timeout=10)
         value=json.loads(subprocess.check_output(['docker','inspect',PG]))[0]
-        if value['State']['Running']:subprocess.run(['docker','stop','--time','60',PG],check=True,stdout=subprocess.DEVNULL)
+        if value['State']['Running']:subprocess.run(['docker','stop','--time','120',PG],check=True,stdout=subprocess.DEVNULL)
         assert not json.loads(subprocess.check_output(['docker','inspect',PG]))[0]['State']['OOMKilled']
 
 

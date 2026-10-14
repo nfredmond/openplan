@@ -32,9 +32,9 @@ def run(repo,out,migration=None):
   return {'schemaVersion':'natford-aerial-processing.v1','requestId':jobs[name]['request'],'callbackId':'held-callback-'+name+'-0001','jobReference':jobs[name]['reference'],'status':'succeeded','occurredAt':'2026-10-14T12:01:00Z','artifacts':[{'kind':kind,'downloadUrl':'https://example.invalid/proof.tif','expiresAt':'2099-01-01T00:00:00Z','sizeBytes':3,'contentType':'image/tiff'} for kind in (['orthomosaic'] if name=='callback' else ['orthomosaic','point_cloud'])]}
  try:
   subprocess.run(['docker','start',PG],check=True,stdout=subprocess.DEVNULL);started=True
-  for _ in range(80):
+  for _ in range(120):
    if subprocess.run(['docker','exec',PG,'pg_isready','-U','postgres'],capture_output=True).returncode==0:break
-   time.sleep(.1)
+   time.sleep(.25)
   else:raise TimeoutError('Owned aftermath PostgreSQL readiness')
   for name,job in jobs.items():
    sql('INSERT INTO public.aerial_processing_jobs(id,workspace_id,mission_id,created_by,request_id,job_reference,status,imagery_url) VALUES ('+','.join(q(v) for v in [job['id'],original['workspace_id'],original['mission_id'],original['created_by'],job['request'],job['reference'],'succeeded','https://example.invalid/input.zip'])+');')
@@ -117,6 +117,6 @@ def run(repo,out,migration=None):
  finally:
   if server:server.shutdown();server.server_close()
   if created:subprocess.run(['docker','rm','-f',owned],check=True,capture_output=True)
-  if started:subprocess.run(['docker','stop',PG],check=True,stdout=subprocess.DEVNULL)
+  if started:subprocess.run(['docker','stop','--time','120',PG],check=True,stdout=subprocess.DEVNULL)
 if __name__=='__main__':
  p=argparse.ArgumentParser();p.add_argument('--repo',type=Path,required=True);p.add_argument('--out',type=Path,required=True);p.add_argument('--migration',type=Path);a=p.parse_args();run(a.repo.resolve(),a.out.resolve(),a.migration)

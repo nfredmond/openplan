@@ -80,7 +80,7 @@ The independent read-only review identifies the earlier unreadable-summary
 regression and confirms its corrected scope. Its pending-count and failed-repair
 suggestions are incorporated. The final source review confirms the exact23514/message classification and
 code-before-guard rollout. Its controller-timeout cleanup suggestion is
-implemented and tested with four simulated-boundary cohorts and nine intended
+implemented and tested with four five-case simulated-boundary cohorts and11 intended
 faults. It does not establish actual timeout cleanup, hosted or browser acceptance.
 
 ## Evidence limits
@@ -96,3 +96,20 @@ second Linux machine available. No M3, M5b.2 or V1 acceptance is declared.
 The controls, bindings and native result are stored beside this report. Private
 logs and retained database identities remain under:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/aerial-held-custody-20261014/`.
+
+## Proof runner cleanup correction
+
+The native row and HTTP runners now allow30 seconds for initial readiness and
+120 seconds for graceful owned-cluster shutdown. Their controllers use a bounded
+240-second outer allowance and invoke the same fenced cleanup on timeout. The
+fresh row controls retain four cohorts, nine intended faults and63 classifier
+controls. The fresh HTTP controls retain four seven-case cohorts, six faults and
+36 classifier controls. Cleanup controls pass four five-test cohorts and11
+intended faults, including skipped cleanup in either native controller. The
+Docker boundary in those timeout checks is simulated; native cohorts separately
+exercise ordinary owned service cleanup. No production budget changes.
+
+Application recovery is PR313. This guard branch includes that exact source.
+The guard remains unapplied and cannot merge until application recovery is live,
+00009/00010 source joins main, and the hosted owner takes a fresh backup, applies
+and verifies00011. Selected-source fixture evidence does not replace that rollout.

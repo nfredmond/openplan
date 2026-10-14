@@ -10,7 +10,12 @@ def run(repo,out):
  originals={p:p.read_bytes() for p in [engine,retry,callback,migration]};rows=[];oracles=[]
  def execute(label,sql=None):
   target=out/label;candidate=out/(label+'.sql');candidate.write_bytes(originals[migration] if sql is None else sql.encode())
-  r=subprocess.run([sys.executable,'-B',str(Path(__file__).with_name('native_aftermath.py')),'--repo',str(repo),'--out',str(target),'--migration',str(candidate)],capture_output=True,text=True,timeout=45)
+  try:
+   r=subprocess.run([sys.executable,'-B',str(Path(__file__).with_name('native_aftermath.py')),'--repo',str(repo),'--out',str(target),'--migration',str(candidate)],capture_output=True,text=True,timeout=240)
+  except subprocess.TimeoutExpired:
+   from verify_upgrade_controls import cleanup_owned_cluster
+   cleanup_owned_cluster()
+   raise TimeoutError('Owned native HTTP control deadline; cleanup requested') from None
   log=r.stdout+r.stderr
   if (target/'application-private.log').exists():log+='\n'+(target/'application-private.log').read_text()
   (out/(label+'-private.log')).write_text(log);return r.returncode,log
