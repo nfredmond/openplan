@@ -6,6 +6,7 @@ describe("GET /api/health", () => {
   beforeEach(() => {
     vi.stubEnv("OPENPLAN_COMMIT_SHA", undefined);
     vi.stubEnv("VERCEL_GIT_COMMIT_SHA", undefined);
+    vi.stubEnv("OPENPLAN_BUILD_MIGRATION_VERSIONS", undefined);
   });
 
   afterEach(() => {
@@ -25,6 +26,7 @@ describe("GET /api/health", () => {
       deployment: {
         commit: "unknown",
         version: APP_VERSION,
+        migrations: null,
       },
       checks: {
         app: "ok",
@@ -39,7 +41,7 @@ describe("GET /api/health", () => {
     const response = GET();
     const payload = await response.json();
 
-    expect(payload.deployment).toEqual({ commit: "abcdef123456", version: APP_VERSION });
+    expect(payload.deployment).toEqual({ commit: "abcdef123456", version: APP_VERSION, migrations: null });
   });
 
   /**
@@ -87,7 +89,7 @@ describe("GET /api/health", () => {
     const payload = await response.json();
     const serialized = JSON.stringify(payload);
 
-    expect(payload.deployment).toEqual({ commit: "unknown", version: APP_VERSION });
+    expect(payload.deployment).toEqual({ commit: "unknown", version: APP_VERSION, migrations: null });
     expect(serialized).not.toContain("service-role-secret");
     expect(serialized).not.toContain("anthropic-secret");
     expect(serialized).not.toContain("readiness-secret");

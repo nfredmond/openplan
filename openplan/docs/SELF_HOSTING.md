@@ -70,6 +70,8 @@ configuration.
 | `CRON_SECRET` | Shared secret for the authenticated maintenance requests listed below. Configure the scheduler's protected environment as well as the app. |
 | `OPENPLAN_MAX_OWNED_WORKSPACES` | How many workspaces one person may own. Unset means 5, which includes the workspace created at signup. Each workspace has its own AI and run allowance, so this keeps one account from multiplying them on a deployment with public signup. Use a positive whole number; any other value falls back to 5. Requires migration `20261017000010`. This is an operator limit, not a paid tier. |
 | `OPENPLAN_WORKSPACE_STORAGE_QUOTA_BYTES` | Total bytes one workspace may keep in Storage. Unset means 5 GiB (5368709120). Uploads, generated report files, grant application exports, engagement review files, project evidence bundles and work program exports that would pass it are refused before any upload URL is issued or any byte is stored; if current use cannot be read, the file is refused. The total counts every object whose path begins with the workspace id. Public engagement photos have their own allowance and are not counted. Use a positive whole number; any other value falls back to 5 GiB. Requires migration `20261017000010`; migration `20261017000013` stops members from uploading report and grant export files around it. This is an operator limit, not a paid tier. |
+| `OPENPLAN_HEALTH_TOKEN` | Turns on `GET /api/health/deep`, which answers only `Authorization: Bearer <token>`. Unset means the route answers 404. It reads the database once and Storage once, gives each modeling worker's heartbeat age, and lists every migration version the build expects. Use a long random value and give the same value to your monitor. |
+| `OPENPLAN_SENTRY_DSN` | Optional. A Sentry project DSN (Sentry's free Developer plan works). Unset means error reports stay in this deployment's server log. When set, each browser error an error page catches, and each server request error, is scrubbed and sent to that project from the server. Browsers never contact Sentry, so the content-security policy does not change. |
 
 `NEXT_PUBLIC_*` values are included at build time: rebuild after changing them.
 Restart server processes after changing their private environment. A worker
@@ -285,6 +287,35 @@ On a self-hosted installation, arrange a scheduler that sends
 failures. Merely setting a variable in an interactive shell does not configure
 cron. Confirm the intended cleanup/reminder effects as well as delivery.
 
+### Monitoring
+
+- `GET /api/health` is public and reads nothing. It names the commit, the
+  version, and how many migrations the build expects with the latest version.
+  Point a free uptime monitor at it; a reply proves the app answers, not that
+  its database works.
+- `GET /api/health/deep` needs `OPENPLAN_HEALTH_TOKEN`. It answers 503 when the
+  database or Storage read fails. Only the modeling workers write heartbeats;
+  the Node queues do not yet, so a stopped queue does not show here.
+- `npm run ops:check-deep-health` compares the migrations the deployed build
+  expects with the ones a Supabase-hosted project has applied, and fails when
+  the database lacks one. It needs `OPENPLAN_HEALTH_URL`,
+  `OPENPLAN_HEALTH_TOKEN`, `OPENPLAN_SUPABASE_PROJECT_REF` and a Supabase
+  personal access token in `SUPABASE_ACCESS_TOKEN`, which it uses only to list
+  migrations. It compares whole sets, because migrations may be applied out of
+  numeric order. The repository's Production Health workflow runs it when the
+  repository variable `OPENPLAN_SUPABASE_PROJECT_REF` and the secrets
+  `OPENPLAN_HEALTH_TOKEN` and `SUPABASE_ACCESS_TOKEN` are set; until then it
+  prints a notice. An independently hosted Supabase has no Management API; run
+  `npm exec -- supabase migration list` against it instead.
+- Error pages report what they caught to `/api/client-errors` on the same
+  deployment, which writes one scrubbed line to the server log (and to Sentry
+  when `OPENPLAN_SENTRY_DSN` is set). Reports carry the page path with share
+  and invitation tokens replaced, the error's type, message, digest and stack,
+  and no user, workspace, cookie or query string.
+- Responses carry a `Content-Security-Policy-Report-Only` header beside the
+  enforced policy. It is the same policy without `'unsafe-eval'`; browsers
+  report what it would block to `/api/csp-report` and block nothing.
+
 Before upgrading, read the [release notes](../../CHANGELOG.md), capture the
 [recovery inventory](ops/BACKUP_AND_RESTORE.md), and rehearse the release against
 populated data. Coordinate migrations and app/worker rollout rather than racing
@@ -319,6 +350,7 @@ sensitive workflows before using private planning material.
 | Census, TIGERweb, LEHD, OSM and other source services | Geography/source queries and downloads. Consult [Census](https://www.census.gov/data/developers.html), [TIGERweb](https://tigerweb.geo.census.gov/), [LEHD](https://lehd.ces.census.gov/data/), [OSM terms](https://www.openstreetmap.org/copyright) and [Mobility Database](https://mobilitydatabase.org/). Transit, crash and other integrations add their own source endpoints. |
 | Anthropic | Material selected for enabled AI actions: prompts/context, comments and document text or images. [API usage is priced separately](https://platform.claude.com/docs/en/about-claude/pricing). |
 | Resend | Recipients, message content and relevant invitation/reminder links. [Provider limits and pricing](https://resend.com/pricing) apply. |
+| Sentry (only with `OPENPLAN_SENTRY_DSN`) | Scrubbed error reports: the failing page's path with tokens replaced, error type, message, digest, stack, release and commit. Sent from the server, not the browser. See [Sentry pricing](https://sentry.io/pricing/). |
 | Configured workers | Job inputs, document/image locators or bytes, configuration, callbacks and outputs. Processing is local only when the configured service and storage are local. |
 | Source/package/image registries and tooling | Installation/update downloads and tool telemetry where enabled. Supabase distinguishes CLI telemetry from its self-hosted service in its [documentation](https://supabase.com/docs/guides/self-hosting). |
 

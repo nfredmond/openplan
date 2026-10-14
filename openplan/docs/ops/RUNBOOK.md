@@ -5,6 +5,8 @@ reference is [SELF_HOSTING](../SELF_HOSTING.md); recovery inventory and procedur
 belong in [BACKUP_AND_RESTORE](BACKUP_AND_RESTORE.md). Record deployment acceptance
 with [FIRST_DEPLOYMENT](../FIRST_DEPLOYMENT.md). Commands below run from the
 repository's nested `openplan/` app directory unless stated otherwise.
+The hosted installation's monitoring, rollback, key rotation and secret
+locations are on [HOSTED_OPERATIONS](HOSTED_OPERATIONS.md).
 
 This is maintained guidance, not evidence that a particular deployment works.
 The local Supabase CLI stack is an evaluation environment; a complete hardened

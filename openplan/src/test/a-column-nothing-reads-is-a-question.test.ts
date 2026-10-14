@@ -395,6 +395,18 @@ const NAME_COLLISIONS = [
   { column: "land_use_plan_freeze_commands.command_text", category: "READ_IN_SQL", reason: "The native freeze function compares exact command text before replaying the original frozen-version receipt." },
 ];
 
+/**
+ * Source files whose snake_case keys belong to another system's wire format,
+ * not to this database. Each must import no database client, which the last
+ * test below checks, so a real column read cannot hide here.
+ */
+const FOREIGN_PROTOCOL_FILES = new Map([
+  [
+    "lib/observability/sentry-envelope.ts",
+    "Builds Sentry's envelope. Its event_id and sent_at are Sentry protocol fields that the format requires, not columns.",
+  ],
+]);
+
 /** Tables Postgres or an extension owns; not ours to explain. */
 const EXTENSION_OWNED = new Set(["spatial_ref_sys", "geography_columns", "geometry_columns"]);
 
@@ -410,6 +422,7 @@ function sourceIdentifiers(): Set<string> {
         continue;
       }
       if (!/\.tsx?$/.test(full)) continue;
+      if (FOREIGN_PROTOCOL_FILES.has(path.relative(SRC, full).split(path.sep).join("/"))) continue;
       for (const match of readFileSync(full, "utf8").matchAll(/\b[a-z][a-z0-9]*(?:_[a-z0-9]+)+\b/g)) {
         found.add(match[0]);
       }
@@ -504,6 +517,15 @@ describe("a column the application never reads has to say why", () => {
     for (const entry of inert) {
       expect(unread.has(entry.column), `${entry.column} gained a reader — the paid tier is coming back`).
         toBe(true);
+    }
+  });
+
+  it("skips only files that cannot read the database", () => {
+    for (const file of FOREIGN_PROTOCOL_FILES.keys()) {
+      const text = readFileSync(path.join(SRC, file), "utf8");
+      expect(text, `${file} is excused from the scan and must not reach the database`).not.toMatch(
+        /@\/lib\/supabase|@supabase\/|\.from\(|\.rpc\(/,
+      );
     }
   });
 });
