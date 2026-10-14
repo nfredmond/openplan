@@ -43,4 +43,3 @@ cases pass from the actual nested application package. GitHub CI remains pending
 Private proof base:
 `/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/odm-rotated-pixel-spacing-20261014/`.
 Public JSON records retain source bindings and exact failure categories.
-
