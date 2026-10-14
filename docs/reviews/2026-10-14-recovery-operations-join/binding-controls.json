@@ -1,0 +1,17 @@
+{
+  "checkedAt": "2026-10-14T23:35:26.417999+00:00",
+  "boundFiles": 134,
+  "nativeOriginalFiles": 120,
+  "additionalOwnedServiceFiles": 4,
+  "positiveControls": [
+    "baseline",
+    "reordered-map",
+    "harmless-json-spacing"
+  ],
+  "intendedFaults": [
+    "wrong-original-hash",
+    "altered-source-bytes"
+  ],
+  "boundary": "Read-only exact source comparisons. Other files and actual native execution of the four new files are outside the historical120-file native proof.",
+  "gtfsBoundFiles": 5
+}

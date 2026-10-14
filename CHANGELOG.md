@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Explicit owned worker command, candidate:** private operator settings, credential
+roles and preset options start the existing owned service through
+`workers/odm_worker/runtime_service_cli.py`. The command preserves original
+admissions and shutdown ownership, restores signal handlers and keeps private
+inputs out of diagnostics. It does not replace the legacy command, activate a
+hosted worker, adopt unsealed roots or establish processing acceptance. See the
+[operator instructions](docs/reviews/2026-10-14-owned-worker-cli/INSTALLATION.md).
+
 **Explicit original worker assembly, candidate:** joins the existing input,
 processing, observation, artifact and callback journals under sealed settings.
 Source and callback address policies are explicit. Changed transports, roles and
@@ -49,8 +57,8 @@ pending. See the [recovery proof](docs/reviews/2026-10-14-outcome-recovery/STATU
 `20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
 replacing the original facts of a held file. Attempt counts and timestamps can
 still advance. Deploy the callback recovery code first, then take a fresh backup
-and apply this migration before merging the dependent guard. Hosted activation
-and full worker integration remain pending. See the
+and apply this migration before merging the dependent guard. On the hosted installation, this migration is applied and independently read
+back before the candidate merge. Full worker integration remains pending. See the
 [guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
 
 **Original aerial delivery authority, candidate:** migration
@@ -58,8 +66,9 @@ and full worker integration remain pending. See the
 for original artifact access and terminal delivery. Processing access stays
 limited to active jobs. Completed terminal replay must match the callback
 actually applied to the original job. The retained download adapter keeps its
-original token and expiry; default worker wiring remains pending. No hosted
-activation is declared.
+original token and expiry; default worker wiring remains pending. The hosted migration is applied and
+independently read back before the candidate merge; this does not activate a
+worker.
 
 **Operating the live site.** `/api/health` now reports how many migrations
 the deployed build expects and the latest one, read from

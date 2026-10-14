@@ -1,0 +1,27 @@
+{
+  "checkedAt": "2026-10-14T23:34:50.407201+00:00",
+  "project": "lolckycpdjsgeejsmuzl",
+  "status": 201,
+  "historyCount": 417,
+  "selectedMigrations": [
+    {
+      "version": "20261017000011",
+      "name": "aerial_preserve_held_custody",
+      "sha256": "5d388c7dfbed8bab6e58195e1ec5f6dbad8aa36cfde31294c0d286a1e1d0cd2e",
+      "history_count": 417
+    },
+    {
+      "version": "20261017000012",
+      "name": "aerial_delivery_authority",
+      "sha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+      "history_count": 417
+    },
+    {
+      "version": "20261017000014",
+      "name": "work_program_evidence_date_workspace_calendar",
+      "sha256": "76140a2a93f261e2a7dcd0d81aa0f75a85dc9ef7f2149141c3b7513ca308368b",
+      "history_count": 417
+    }
+  ],
+  "boundary": "Read-only exact selected history/source hashes. No apply, restore or hosted worker/backend acceptance."
+}
