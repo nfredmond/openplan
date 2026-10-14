@@ -1,0 +1,214 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 30
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 30
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 30
+  },
+  {
+    "control": "health-claim",
+    "test": "test_owned_idle_health_does_not_resolve_credentials",
+    "outcome": "intended_failure",
+    "reason": "Health remains process-only evidence"
+  },
+  {
+    "control": "receipt-replay",
+    "test": "test_actual_admission_replays_one_original_receipt",
+    "outcome": "intended_failure",
+    "reason": "Actual admission distinguishes original and replay"
+  },
+  {
+    "control": "inbound-bearer",
+    "test": "test_wrong_or_non_ascii_bearer_cannot_admit",
+    "outcome": "intended_failure",
+    "reason": "Wrong inbound bearer refuses before admission"
+  },
+  {
+    "control": "identity-conflict",
+    "test": "test_changed_original_payload_refuses",
+    "outcome": "intended_failure",
+    "reason": "Changed original identity receives conflict"
+  },
+  {
+    "control": "queue-full",
+    "test": "test_full_original_queue_refuses_new_request",
+    "outcome": "intended_failure",
+    "reason": "Full original queue refuses new work"
+  },
+  {
+    "control": "json-refusal",
+    "test": "test_malformed_json_refuses",
+    "outcome": "intended_failure",
+    "reason": "Malformed bytes cannot become an admission"
+  },
+  {
+    "control": "contract",
+    "test": "test_contract_invalid_body_refuses",
+    "outcome": "intended_failure",
+    "reason": "Invalid contract refuses before journal"
+  },
+  {
+    "control": "body-size",
+    "test": "test_oversized_body_cannot_admit",
+    "outcome": "intended_failure",
+    "reason": "Declared oversized body cannot become an admission"
+  },
+  {
+    "control": "framing",
+    "test": "test_transfer_encoding_refuses",
+    "outcome": "intended_failure",
+    "reason": "Ambiguous framing cannot become an admission"
+  },
+  {
+    "control": "header-deadline",
+    "test": "test_dripping_headers_have_absolute_deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual dripping header deadline did not close"
+  },
+  {
+    "control": "body-deadline",
+    "test": "test_dripping_body_has_absolute_deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual dripping body deadline did not close"
+  },
+  {
+    "control": "actual-shutdown",
+    "test": "test_stop_closes_body_and_joins_handlers_before_owner_release",
+    "outcome": "intended_failure",
+    "reason": "Stop cannot leave an active original handler"
+  },
+  {
+    "control": "active-bundle-cancel",
+    "test": "test_stop_closes_body_and_joins_handlers_before_owner_release",
+    "outcome": "intended_failure",
+    "reason": "Owned stop reaches actual Bundle cancellation"
+  },
+  {
+    "control": "inbound-config",
+    "test": "test_inbound_credential_refuses_before_seal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "resource-config",
+    "test": "test_resource_bound_refuses_before_seal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "poll-bound",
+    "test": "test_platform_poll_bound_refuses_before_seal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "caller-cancel",
+    "test": "test_caller_cancellation_adapter_refuses",
+    "outcome": "intended_failure",
+    "reason": "Caller cancellation cannot reach Bundle construction"
+  },
+  {
+    "control": "lifetime-owner",
+    "test": "test_lifetime_owner_precedes_listener",
+    "outcome": "intended_failure",
+    "reason": "Original listener cannot bind without lifetime owner"
+  },
+  {
+    "control": "inactive-check",
+    "test": "test_inactive_check_refuses_before_bundle_read",
+    "outcome": "intended_failure",
+    "reason": "Inactive service cannot read Bundle configuration"
+  },
+  {
+    "control": "connection-slots",
+    "test": "test_connection_slots_bound_actual_handlers",
+    "outcome": "intended_failure",
+    "reason": "Admission thread limit cannot answer a second request"
+  },
+  {
+    "control": "pre-stopped",
+    "test": "test_pre_stopped_service_cannot_listen",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "changed-settings",
+    "test": "test_changed_resource_setting_refuses_actual_health",
+    "outcome": "intended_failure",
+    "reason": "Changed service settings cannot answer healthy"
+  },
+  {
+    "control": "changed-components",
+    "test": "test_replaced_cancellation_event_refuses_actual_health",
+    "outcome": "intended_failure",
+    "reason": "Changed service components cannot answer healthy"
+  },
+  {
+    "control": "second-run",
+    "test": "test_second_run_refuses",
+    "outcome": "intended_failure",
+    "reason": "Repeated service cannot reenter original owner"
+  },
+  {
+    "control": "stage-cancel",
+    "test": "test_scheduler_failure_stops_original_listener",
+    "outcome": "intended_failure",
+    "reason": "Stage failure cancels owned transports"
+  },
+  {
+    "control": "thread-start",
+    "test": "test_failed_http_thread_start_does_not_shutdown_unstarted_loop",
+    "outcome": "intended_failure",
+    "reason": "Unstarted HTTP loop cannot be shut down"
+  },
+  {
+    "control": "handler-owner-retention",
+    "test": "test_delayed_admission_keeps_owner_until_handler_exits",
+    "outcome": "intended_failure",
+    "reason": "Delayed original handler must retain lifetime owner"
+  },
+  {
+    "control": "cached-service-role",
+    "test": "test_replaced_cached_service_cannot_authenticate",
+    "outcome": "intended_failure",
+    "reason": "Changed cached service cannot admit with replacement credential"
+  },
+  {
+    "control": "old-cached-authentication",
+    "test": "test_replaced_cached_service_cannot_authenticate",
+    "outcome": "intended_failure",
+    "reason": "Changed cached service cannot admit with replacement credential"
+  },
+  {
+    "control": "pre-guard-socket-bound",
+    "test": "test_changed_socket_setting_cannot_widen_header_deadline",
+    "outcome": "intended_failure",
+    "reason": "Changed socket settings cannot widen header deadline"
+  },
+  {
+    "control": "actual-sqlite-unavailable",
+    "test": "test_actual_sqlite_contention_returns_unavailable",
+    "outcome": "intended_failure",
+    "reason": "Actual SQLite contention must return structured unavailable"
+  },
+  {
+    "control": "shutdown-error-drain",
+    "test": "test_shutdown_error_still_drains_original_handlers",
+    "outcome": "intended_failure",
+    "reason": "Failed shutdown must drain original admission"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 30
+  }
+]

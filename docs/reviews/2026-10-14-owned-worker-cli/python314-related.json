@@ -1,0 +1,6 @@
+{
+  "cases": 197,
+  "seconds": 65.358,
+  "failures": 0,
+  "execution": "Actual local worker and loopback suites; no engine/full receiver/hosted acceptance"
+}

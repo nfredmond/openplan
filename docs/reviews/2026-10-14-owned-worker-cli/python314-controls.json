@@ -1,0 +1,268 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 32
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 32
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 32
+  },
+  {
+    "control": "exact-document",
+    "test": "test_private_canonical_document_reads_exactly",
+    "outcome": "intended_failure",
+    "reason": "Canonical private input must load"
+  },
+  {
+    "control": "relative",
+    "test": "test_relative_document_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "symlink",
+    "test": "test_alias_document_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "hardlink",
+    "test": "test_hardlinked_document_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "private-file",
+    "test": "test_shared_file_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "private-parent",
+    "test": "test_shared_parent_refuses_before_read",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "input-bound",
+    "test": "test_oversized_document_refuses_before_allocation",
+    "outcome": "intended_failure",
+    "reason": "Oversized command cannot read contents"
+  },
+  {
+    "control": "canonical-json",
+    "test": "test_noncanonical_document_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "short-input",
+    "test": "test_short_document_read_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "inbound-role",
+    "test": "test_role_graph_resolves_exact_original_values",
+    "outcome": "intended_failure",
+    "reason": "Inbound credential must keep explicit value"
+  },
+  {
+    "control": "required-role",
+    "test": "test_missing_credential_role_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "exact-reference-set",
+    "test": "test_extra_credential_reference_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "printable-credential",
+    "test": "test_non_printable_credential_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "runtime-reference",
+    "test": "test_foreign_runtime_reference_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "preset-roster",
+    "test": "test_preset_names_must_be_complete",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "duplicate-options",
+    "test": "test_duplicate_options_refuse",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "finite-options",
+    "test": "test_nonfinite_options_refuse",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "input-snapshot",
+    "test": "test_original_adapter_values_do_not_follow_input_mutation",
+    "outcome": "intended_failure",
+    "reason": "Original options remain pinned"
+  },
+  {
+    "control": "credential-copy",
+    "test": "test_original_adapter_values_do_not_follow_input_mutation",
+    "outcome": "intended_failure",
+    "reason": "Original credential copy stays pinned"
+  },
+  {
+    "control": "balanced-preset",
+    "test": "test_missing_request_preset_uses_explicit_balanced_options",
+    "outcome": "intended_failure",
+    "reason": "Contract default uses explicit balanced options"
+  },
+  {
+    "control": "unknown-preset",
+    "test": "test_unknown_request_preset_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "argument-log",
+    "test": "test_argument_failure_does_not_echo_values",
+    "outcome": "intended_failure",
+    "reason": "Command errors cannot echo supplied arguments"
+  },
+  {
+    "control": "provider-log",
+    "test": "test_failure_does_not_echo_provider_or_file_errors",
+    "outcome": "intended_failure",
+    "reason": "Run errors cannot echo private provider data"
+  },
+  {
+    "control": "signal-restore",
+    "test": "test_original_signal_handlers_restore_after_run",
+    "outcome": "intended_failure",
+    "reason": "CLI restores original signal handlers"
+  },
+  {
+    "control": "cleanup-restore",
+    "test": "test_signal_handlers_restore_even_when_server_close_fails",
+    "outcome": "intended_failure",
+    "reason": "Cleanup errors cannot retain CLI signal handlers"
+  },
+  {
+    "control": "actual-child-stop",
+    "test": "test_actual_child_admits_replays_and_stops_without_processing",
+    "outcome": "intended_failure",
+    "reason": "Explicit child stops through owned service"
+  },
+  {
+    "control": "requested-stop",
+    "test": "test_operator_interruption_is_graceful",
+    "outcome": "intended_failure",
+    "reason": "Requested interruption must stop the explicit command gracefully"
+  },
+  {
+    "control": "unexpected-stop",
+    "test": "test_unrequested_interruption_stays_failed",
+    "outcome": "intended_failure",
+    "reason": "InterruptedError not raised"
+  },
+  {
+    "control": "other-errors",
+    "test": "test_operator_stop_does_not_hide_other_errors",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "admission-phase",
+    "test": "test_actual_child_admits_replays_and_stops_without_processing",
+    "outcome": "intended_failure",
+    "reason": "Idle child cannot invent a processing start"
+  },
+  {
+    "control": "direct-command",
+    "test": "test_direct_command_help_starts_no_service",
+    "outcome": "intended_failure",
+    "reason": "Direct command exposes its operator help"
+  },
+  {
+    "control": "option-input",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-list-type",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-list-bound",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-row-fields",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-name-empty",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-name-bound",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-value-type",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "option-value-bound",
+    "test": "test_invalid_option_shapes_and_bounds_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid option input cannot reach service assembly"
+  },
+  {
+    "control": "role-shape",
+    "test": "test_invalid_role_token_shapes_refuse",
+    "outcome": "intended_failure",
+    "reason": "Invalid role credential cannot reach service assembly"
+  },
+  {
+    "control": "service-wire",
+    "test": "test_command_passes_exact_private_graph_to_service",
+    "outcome": "intended_failure",
+    "reason": "Command passes explicit address and queue bound"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 32
+  }
+]
