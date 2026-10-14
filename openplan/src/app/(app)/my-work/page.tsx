@@ -8,6 +8,7 @@ import { loadMyWork, loadOtherWorkspaceDecisionPackageWork } from "@/lib/my-work
 import { normalizeMyWorkScope } from "@/lib/my-work/types";
 import { loadProjectAssigneeRoster } from "@/lib/projects/assignee-roster";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
+import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
 import { moduleMetadata } from "@/lib/ui/page-title";
 import { ReadFailureLog } from "@/lib/ui/read-failures";
 import { loadWorkspaceContext } from "@/lib/workspaces/current";
@@ -77,11 +78,15 @@ export default async function MyWorkPage({
     reads
   );
 
+  // Grant, award and plan dates land on the workspace's day, the same calendar
+  // the dashboard and the reminder digest use. A failed read answers UTC.
+  const { timeZone } = await loadWorkspaceCalendar(supabase, workspaceId);
   const work = await loadMyWork(supabase, {
     workspaceId,
     userId: user.id,
     scope,
     roster,
+    timeZone,
   });
   const otherDecisionPackageWork = await loadOtherWorkspaceDecisionPackageWork(supabase, {
     currentWorkspaceId: workspaceId,
@@ -109,6 +114,7 @@ export default async function MyWorkPage({
       departedIncludedInUnassigned={work.departedIncludedInUnassigned}
       isViewer={membership.role === "viewer"}
       otherWorkspaceDecisionPackageWork={otherDecisionPackageWork.workspaces}
+      timeZone={timeZone}
     />
   );
 }
