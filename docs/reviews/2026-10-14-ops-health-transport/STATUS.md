@@ -36,3 +36,8 @@ pass; counts are in [related evidence](../2026-10-14-ops-health-transport/relate
 finds no further concrete defect. The socket fixtures stall before headers,
 so cancellation during response-body reading is not directly established.
 Exact updated-head CI and hosted checks remain pending.
+
+The isolated join with main325/eef4253 passes 87 relevant cases. The separate
+aerial/main325 join passes 201 cases and preserves all 120 recorded worker
+source hashes. Only additive changelog entries conflict in either join. See
+[joined tests](joined-tests.json). These do not replace fresh head/main CI.
