@@ -125,6 +125,65 @@ export async function checkWorkspaceStorageRoom(
   };
 }
 
+/** One file a retryable writer is about to store, at a path that never changes between attempts. */
+export type PendingStorageFile = { path: string; bytes: number };
+
+type StorageListClient = Pick<SupabaseClient, "storage">;
+
+function parentAndName(path: string): { parent: string; name: string } {
+  const slash = path.lastIndexOf("/");
+  return slash < 0 ? { parent: "", name: path } : { parent: path.slice(0, slash), name: path.slice(slash + 1) };
+}
+
+/**
+ * How many of `files`' bytes are not already in the bucket.
+ *
+ * For a writer that retries after a partial upload. A file whose path already
+ * holds an object with the same recorded size is already counted in the
+ * workspace's use, and an `upsert: false` upload cannot add to it, so it costs
+ * nothing more. The size compared is Storage's own `metadata.size`, the same
+ * figure `workspace_storage_bytes` sums. A missing object, a different size or
+ * a failed lookup charges the file in full: the check never assumes room it
+ * cannot see.
+ */
+export async function storageBytesNotYetStored(
+  service: StorageListClient,
+  bucket: string,
+  files: readonly PendingStorageFile[]
+): Promise<number> {
+  let pending = 0;
+  for (const file of files) {
+    const { parent, name } = parentAndName(file.path);
+    let stored = false;
+    try {
+      const { data, error } = await service.storage.from(bucket).list(parent, { limit: 100, search: name });
+      stored = !error && (data ?? []).some((entry) => entry.name === name && entry.metadata?.size === file.bytes);
+    } catch {
+      stored = false;
+    }
+    if (!stored) pending += Math.max(0, file.bytes);
+  }
+  return pending;
+}
+
+/**
+ * The storage-limit check for a retryable writer: only bytes not already at
+ * their paths are charged. Returns "stored" when every file is already there,
+ * so a retry that has nothing left to add is never refused for the bytes its
+ * own earlier attempt stored.
+ */
+export async function checkWorkspaceStorageRoomForFiles(
+  service: StorageUsageClient & StorageListClient,
+  workspaceId: string,
+  bucket: string,
+  files: readonly PendingStorageFile[],
+  env: Env = process.env
+): Promise<WorkspaceStorageRoom | { status: "stored" }> {
+  const pendingBytes = await storageBytesNotYetStored(service, bucket, files);
+  if (pendingBytes === 0) return { status: "stored" };
+  return checkWorkspaceStorageRoom(service, workspaceId, pendingBytes, env);
+}
+
 /** The HTTP refusal for a route that answers `{ error }`: 413 when full, 503 when unreadable. */
 export function workspaceStorageRefusal(room: Exclude<WorkspaceStorageRoom, { status: "room" }>): NextResponse {
   return room.status === "full"

@@ -78,6 +78,8 @@ migration.
 
 **Generated reports and exports count against the storage limit.** Report PDF and HTML files, grant application exports and engagement review files are now refused when they would put a workspace over its storage limit, with the same message uploads give. Signed-in members can no longer upload straight into the report and grant export file stores with their own sign-in, which let them pass the limit; the server now stores those files. Existing files stay readable. Apply migration `20261017000013_artifact_storage_server_writes.sql` together with this code: older code fails to store report PDFs once the migration runs, and this code works before or after it.
 
+**Evidence bundles and work program exports count against the storage limit.** Freezing a project evidence bundle and preparing a work program export now refuse with the same storage message when the file would put the workspace over its limit, or when storage use cannot be read; the bundle is recorded as failed and nothing is stored. A retried engagement review or work program export is charged only for files not already stored from its earlier attempt, so a retry near the limit is no longer refused for its own files. No migration.
+
 **Close comments on a live engagement page.** Staff can now close and reopen
 public comments from the campaign's Publish panel. The public page stays up as
 view only, and comment, photo and survey submissions are refused while closed.
