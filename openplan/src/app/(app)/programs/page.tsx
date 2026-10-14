@@ -296,10 +296,11 @@ export default async function ProgramsPage({
       .map((row) => row.program_id)
   );
   // Every work program and every measure fund, unfiltered: this is the way in,
-  // not a view of the list below.
+  // not a view of the list below. An Overall Work Program is listed before its
+  // first version is saved, so a new one can be found here too.
   const programDoors = [
     ...programs
-      .filter((program) => workProgramIds.has(program.id))
+      .filter((program) => program.program_type === "owp_upwp" || workProgramIds.has(program.id))
       .map((program) => ({
         key: `work-program-${program.id}`,
         href: `/programs/${program.id}/work-program`,
@@ -736,7 +737,7 @@ export default async function ProgramsPage({
           </ul>
         ) : programsUnreadable || workProgramsUnreadable ? null : (
           <p className="mt-3 text-sm text-muted-foreground">
-            None yet. To start an OWP or UPWP, open a program and choose Work program.
+            None yet. To start a work program, add a program with the type Overall Work Program (OWP/UPWP).
           </p>
         )}
       </article>
