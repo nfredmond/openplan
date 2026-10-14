@@ -55,6 +55,11 @@ jobs:
           SUPABASE_SERVICE_ROLE_KEY: ci-placeholder-service-role
           ANTHROPIC_API_KEY: ci-placeholder-anthropic-key
 
+      - name: Aerial callback retry source controls
+        run: |
+          python3 -B ../docs/reviews/2026-10-14-aerial-callback-retry/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/aerial-callback-retry-controls"
+
   order-independence:
     name: order independence (shuffled vitest)
     runs-on: ubuntu-latest

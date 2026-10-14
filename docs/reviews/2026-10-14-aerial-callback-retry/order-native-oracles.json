@@ -1,0 +1,282 @@
+[
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "retained-replay-skipped",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "changed-payload-accepted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "different-worker-reference-accepted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "observed-status-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "affected-id-projection-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "newer-applied-event-overwritten",
+    "oracle": "later-error",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "wrong-diagnostic",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "syntax",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "timeout",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "no-failure",
+    "accepted": false
+  },
+  {
+    "case": "same-status-last-event-fences-omitted",
+    "oracle": "later-error",
+    "accepted": false
+  }
+]
