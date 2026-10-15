@@ -73,8 +73,11 @@ def run(repo, out):
         'test_short_and_oversized_response_cannot_be_confirmed', 'ValueError not raised', 'failures'))
     remove('changed-original-scope-accepted', 'Progress HTTP original endpoint or credential reference differs',
         'test_changed_endpoint_reference_body_and_credential_refuse_before_network')
+    # The independent child bound still refuses the bytes. Losing the parent
+    # guard changes the required preflight refusal into a later child failure.
     remove('oversized-original-body-accepted', 'Progress HTTP exact body bytes exceed their bound',
-        'test_changed_endpoint_reference_body_and_credential_refuse_before_network')
+        'test_changed_endpoint_reference_body_and_credential_refuse_before_network',
+        'Progress HTTP child did not complete')
     replace('address-policy-ignored', "tuple(ipaddress.ip_network(net, strict=True) for net in value['networks'])", "(ipaddress.ip_network('127.0.0.1/32'),)",
         'test_private_address_requires_explicit_policy')
     remove('invalid-constructor-accepted', 'Progress HTTP requires original endpoint and credential adapters',

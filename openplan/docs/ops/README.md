@@ -9,6 +9,7 @@ plan.
 |---|---|
 | `RUNBOOK.md` | Operating a live deployment: health checks, common failures, what to do about them. |
 | `BACKUP_AND_RESTORE.md` | The recovery procedure, and the drill that proves it (`npm run ops:restore-drill`). |
+| `HOSTED_OPERATIONS.md` | The hosted site: monitoring, applying a migration, rollback, restore, key rotation, and where each secret lives (names only). |
 
 The rest of the current operating documentation is one directory up:
 `../SELF_HOSTING.md`, `../FIRST_DEPLOYMENT.md`, `../PLAIN_WORDS_FEWER_BOXES.md`,

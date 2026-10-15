@@ -74,6 +74,8 @@ const EXTERNAL_CALLERS: Record<string, string> = {
   "api/knowledge-base/extraction-dispatch": "workers/ocr_worker/main.py polls its configured OPENPLAN_KB_OCR_DISPATCH_URL to recover queued documents and cancellation requests.",
   "api/health":
     "Uptime monitoring and container orchestration probe this; it exists to be called from outside.",
+  "api/health/deep":
+    "scripts/ops/check-deep-health.mjs calls it from the Production Health workflow with the operator's OPENPLAN_HEALTH_TOKEN; deep-health-check-script.test.ts drives that caller.",
   "api/geographies/equity-designation/ingest":
     "Operator/CI data load, authenticated by a shared secret with timingSafeEqual — cross-tenant public reference data, deliberately not driven from a workspace UI.",
   "api/county-runs/[countyRunId]/validate/refresh":

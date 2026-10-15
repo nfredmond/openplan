@@ -140,3 +140,12 @@ native producer bindings match after restoration. Twenty nested-app source/docs
 cases, product direction and pointer controls pass. The [service](evidence/prepared-workflow-resources.json)
 stops successfully, peak 935,092,224 bytes under 1 GiB with zero swap/max/OOM.
 Fresh GitHub checks on the corrected head and its main/public turn remain pending.
+
+## October 14 optional cancellation extension
+
+The [explicit assembly record](../2026-10-14-runtime-assembly/STATUS.md) adds an
+optional cancellation callback to the observer and forwards it to the actual
+supervised task GET. Four 19-case cohorts and 23 intended faults pass on each
+interpreter. The older source/native cohorts above remain historical and do not
+qualify these changed bytes. Full native assembly and default activation remain
+open. No original task facts or claim tiers change.

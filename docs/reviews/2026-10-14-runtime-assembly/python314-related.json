@@ -1,0 +1,6 @@
+{
+  "interpreter": "python314",
+  "cases": 134,
+  "passed": true,
+  "scope": "Actual local journals, supplied engine/receiver facts, task HTTP and supervised Unix-socket interruption; no full application receiver/native processing/default."
+}

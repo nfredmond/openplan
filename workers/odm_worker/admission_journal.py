@@ -185,6 +185,18 @@ class Journal:
         with self.connection() as connection:
             return self.read(connection, request_id)
 
+    def get_reference(self, reference):
+        """Resolve one original unique reference and recheck its complete row."""
+        if not isinstance(reference, str) or not 1 <= len(reference) <= 256:
+            raise ValueError('ODM original reference lookup differs')
+        with self.connection() as connection:
+            row = connection.execute('SELECT request_id FROM admissions WHERE job_reference=?',
+                                     (reference,)).fetchone()
+            found = self.read(connection, row[0]) if row is not None else None
+            if found is not None and found.job_reference != reference:
+                raise ValueError('ODM original reference lookup differs')
+            return found
+
     def accepted(self):
         with self.connection() as connection:
             rows = connection.execute("SELECT request_id,request_json,job_reference,admission_json,phase,started_context_json FROM admissions WHERE phase='accepted' ORDER BY request_id").fetchall()

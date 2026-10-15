@@ -383,3 +383,59 @@ merged; its fresh main/deployment checks remain pending at this checkpoint. Full
 terminal/artifact delivery, default integration, source identity, browser and
 practitioner evidence, independent-host recovery and scientific quality remain
 open under M3/M5b.2. Milestone grades do not change.
+
+## October 14 retained artifact access candidate
+
+The [dated proof](../reviews/2026-10-14-artifact-access/STATUS.md) retains original
+download tokens, expiry and descriptors through interruption. Separate service
+authority supports completed downloads and exact applied terminal replay while
+processing remains active-job-only. Selected-schema SQL/HTTP and source controls
+do not establish default worker, browser, quality or full M3/M5b.2 acceptance.
+Migration12 remains tentative and unapplied. Milestone grades stay unchanged.
+
+## October 14 original terminal journal candidate
+
+The [dated terminal record](../reviews/2026-10-14-terminal-delivery/STATUS.md) retains the original callback identity, occurrence time, observation and exact artifact projection. Historical receiver facts grant no new send permission. Four source cohorts and 42 intended faults pass; both-interpreter regression, corrected native supersession and intended-schema restore checks continue. The default worker stays unchanged. Complete runtime delivery, quality, browser/practitioner and separate-host evidence remain open under M3/M5b.2. Milestone grades do not change.
+
+## October 14: Explicit original artifact HTTP candidate
+
+M3 and M5b.2 gain an explicitly supplied retained-download adapter. Original-reference lookup recovers the complete private admission; the selected lease fixes response headers and original bytes. Four 34-case cohorts on each of Python 3.14 and Python 3.11 detect 35 intended faults, including the actual non-reading-client write bound. [The dated record](../reviews/2026-10-14-artifact-http/STATUS.md) preserves failed trials, the corrected EOF-drain assertion, deadline limits and pending native/default integration. No milestone or requirement grade changes.
+
+**October 14 original worker coordinator candidate.** The [October 14 original worker coordinator candidate](../reviews/2026-10-14-worker-coordination/STATUS.md) connects committed original tasks to retained observations, products, leases and exact terminal delivery. Local errors preserve reported engine facts. Four 34-case cohorts on each interpreter detect 35 intended faults; restored-schema native callback/download recovery detects two SQL faults. Input preparation, engine commit, default activation and planner journeys remain open. No milestone grade changes.
+
+**October 14 original input/commit candidate.** The [October 14 original input and commit candidate](../reviews/2026-10-14-original-pipeline/STATUS.md) connects retained input drafts, one processing commit and original task delivery. Explicit recovery preserves the original started admission and releases its local hold only after acknowledged terminal delivery. Four 25-case cohorts on each interpreter detect 24 intended faults. Uncertain commits and older local outcomes without engine facts stay held. Native copied-journal recovery passes four three-case cohorts and two SQL faults within its fixture limits. Complete application receiver/Storage and default integration remain open. No milestone grade changes.
+
+**October 14 original running progress candidate.** The [running progress record](../reviews/2026-10-14-running-progress/STATUS.md) retains one original running event before source work. Cached acknowledgement requires current actor access. Four 36-case cohorts on each interpreter detect 32 intended faults. Native copied-journal recovery passes four four-case cohorts and two SQL faults within the recorded fixture limits. Independent review confirms three corrections. Default and complete application receiver/Storage integration remain open. No milestone grade changes.
+
+October 14: [original outcome recovery candidate](../reviews/2026-10-14-outcome-recovery/STATUS.md) retains old local failure bytes and separately records acknowledged original delivery. Lost reply, revoked pending access, historical acknowledgement and missing commands have distinct source and isolated native controls. Default integration, complete receiver/Storage and broader operational acceptance remain open.
+
+October 14: [original recovery scheduling candidate](../reviews/2026-10-14-recovery-execution/STATUS.md) attempts one stage per call, with old-outcome and original-start recovery before a new admission. Component joins and lifetime ownership surround the call. Current21-case source controls and120-case related suites have separate native and default-operation boundaries. No milestone grade changes.
+
+October 14: [explicit operator configuration candidate](../reviews/2026-10-14-runtime-binding/STATUS.md) binds new-root settings before admission. Exact replay and pre-publication recovery retain original custody. Four 38-case cohorts and 38 intended faults pass on each interpreter. Older roots require separate adoption; service/default and broader acceptance remain open. No milestone grade changes.
+
+October 14: [explicit original runtime assembly candidate](../reviews/2026-10-14-runtime-assembly/STATUS.md) connects sealed new-root settings to existing journals and guarded transport roles. Four 33-case assembly cohorts/33 faults, 41-case configuration cohorts/41 faults and 19-case observation cohorts/23 faults pass per interpreter. A real local task connection closes and an owned Unix-socket observer child stops after cancellation. Native processing, full receiver, service/default and older-root adoption remain open. [Hosted 11/12 readback](../reviews/2026-10-14-hosted-aerial-authority/STATUS.md) has separate metadata and backup limits. No milestone grade changes.
+
+**October 14 retained GTFS storage room.** The [managed intake record](../reviews/2026-10-14-gtfs-storage-room/STATUS.md) adds the installation usage check to submission and worker upload paths. Exact remote bytes reconcile before charging; same-size metadata cannot confirm custody. Four93-case cohorts/15 faults, diagnostic classifier controls and previous27 intake/33 enrollment faults pass. TypeScript and lint pass. The installation bound does not reserve concurrent space. Native Storage/RLS, hosted activation and planner acceptance remain separate. M3 grade stays unchanged.
+
+**October 14 explicit assembly native recovery repeat.** The [assembly record](../reviews/2026-10-14-runtime-assembly/STATUS.md) adds four four-case positive cohorts and two intended SQL faults on a retained415 clone. The exact worker census matches. Actual PostgREST and supervised sockets exercise original copied inputs, committed journals and archive bytes; the callback fixture writes the ledger directly. Bundle factory native execution, the full receiver/Storage, default activation and independent-host acceptance remain open. M3/M5b grades do not change.
+
+**October 14 explicit owned HTTP service candidate.** The [dated record](../reviews/2026-10-14-owned-worker-service/STATUS.md) adds actual loopback durable admission/replay and shutdown to the explicit Bundle. Both interpreters pass four 30-case cohorts, 32 intended faults and 286 related cases. Frozen review closes ownership-drain, cached-role, pre-guard bound and SQLite-classification findings. The delayed admission retains ownership beyond its shutdown diagnostic and refuses a replacement writer. CLI commissioning, full native application/Storage, default activation, capacity and independent-host acceptance remain open; M3/M5b grades stay unchanged.
+
+
+**October14 explicit original-worker command candidate.**
+[Private command inputs and lifecycle](../reviews/2026-10-14-owned-worker-cli/STATUS.md)
+pass both-interpreter four32-case cohorts/41 intended faults and197 related cases
+each, including observed idle child admission/replay/SIGTERM and retained accepted
+phase. Static review closes a startup-fixture race. Native processing, full
+receiver/Storage, adoption, default activation and independent-host proof remain
+open under M3/M5b. Milestone grades do not change.
+
+
+**October 14 operator health and error-report recovery candidate.**
+[Deep-health transport](../reviews/2026-10-14-ops-health-transport/STATUS.md)
+proves actual local SDK cancellation and socket closure with four eight-case
+cohorts and eleven intended faults. Error-report recovery retains malformed DSN
+and UUID-token scrubbing checks, four six-case cohorts and six faults. This
+unmerged PR #326 correction supports existing M3/M15a. Hosted backend access,
+workflow delivery, real Sentry receipt and planner acceptance remain open.
+Milestone grades do not change.

@@ -1,0 +1,216 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "recovery-not-published",
+    "test": "test_acknowledged_repair_preserves_original_and_releases_hold",
+    "outcome": "intended_failure",
+    "reason": "record.json"
+  },
+  {
+    "control": "missing-terminal-guard-omitted",
+    "test": "test_missing_terminal_command_refuses_before_effects",
+    "outcome": "intended_failure",
+    "reason": "Missing original terminal command cannot reach reader"
+  },
+  {
+    "control": "pending-facts-discarded",
+    "test": "test_pending_original_delivery_retains_hold_without_recovery_record",
+    "outcome": "intended_failure",
+    "reason": "Recovery failure must preserve all known original engine facts"
+  },
+  {
+    "control": "historical-ack-requires-current-send",
+    "test": "test_historical_acknowledgement_repairs_after_actor_revocation_without_transport",
+    "outcome": "intended_failure",
+    "reason": "Historical acknowledgement must publish private outcome repair"
+  },
+  {
+    "control": "revoked-recovery-facts-discarded",
+    "test": "test_pending_delivery_requires_current_actor_and_keeps_hold",
+    "outcome": "intended_failure",
+    "reason": "Recovery failure must preserve all known original engine facts"
+  },
+  {
+    "control": "missing-command-falls-back-to-pipeline",
+    "test": "test_missing_command_after_evidence_cannot_fall_back_to_inputs",
+    "outcome": "intended_failure",
+    "reason": "Missing original command cannot enter general pipeline"
+  },
+  {
+    "control": "changed-command-pin-omitted",
+    "test": "test_changed_command_after_evidence_refuses_before_new_attempt",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "invalid-pin-read-access",
+    "test": "test_invalid_expected_command_hash_refuses_before_current_access",
+    "outcome": "intended_failure",
+    "reason": "Invalid command pin cannot read current access"
+  },
+  {
+    "control": "old-bytes-binding-omitted",
+    "test": "test_legacy_bytes_change_invalidates_recovery",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-recovery-record-ignored",
+    "test": "test_changed_recovery_outcome_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "reported-states-collapsed",
+    "test": "test_reported_failure_and_cancellation_remain_distinct",
+    "outcome": "intended_failure",
+    "reason": "Recovery cannot relabel reported failure or cancellation"
+  },
+  {
+    "control": "registration-ignored",
+    "test": "test_recovery_without_registered_adapter_refuses",
+    "outcome": "intended_failure",
+    "reason": "NoneType"
+  },
+  {
+    "control": "existing-repair-ignored",
+    "test": "test_interrupted_recovery_publication_resumes_without_reissue",
+    "outcome": "intended_failure",
+    "reason": "Published recovery needs no further attempt"
+  },
+  {
+    "control": "owner-guard-omitted",
+    "test": "test_unowned_recovery_refuses_before_effects",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unowned-status-reads-db",
+    "test": "test_unowned_status_refuses_before_database_reads",
+    "outcome": "intended_failure",
+    "reason": "Unowned status cannot read admissions"
+  },
+  {
+    "control": "unowned-outcome-reads-record",
+    "test": "test_unowned_outcome_refuses_before_private_record",
+    "outcome": "intended_failure",
+    "reason": "Unowned recovery cannot read original outcome"
+  },
+  {
+    "control": "constructor-graph-guard-omitted",
+    "test": "test_constructor_requires_typed_original_pipeline",
+    "outcome": "intended_failure",
+    "reason": "has no attribute 'runtime'"
+  },
+  {
+    "control": "nonfinite-timeout-accepted",
+    "test": "test_nonfinite_timeout_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "known-outcome-reclassified",
+    "test": "test_known_original_outcome_cannot_be_reclassified",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "stale-original-snapshot-accepted",
+    "test": "test_stale_original_snapshot_refuses_before_binding",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "unacknowledged-receipt-accepted",
+    "test": "test_unacknowledged_evidence_cannot_supply_recovery_receipt",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "oversized-original-read",
+    "test": "test_oversized_original_outcome_refuses_before_stream_read",
+    "outcome": "intended_failure",
+    "reason": "Oversized original outcome cannot allocate stream bytes"
+  },
+  {
+    "control": "oversized-recovery-read",
+    "test": "test_oversized_recovery_receipt_refuses_before_stream_read",
+    "outcome": "intended_failure",
+    "reason": "Oversized recovery receipt cannot allocate stream bytes"
+  },
+  {
+    "control": "short-original-accepted",
+    "test": "test_short_original_read_cannot_bind_recovery",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "short-recovery-accepted",
+    "test": "test_short_recovery_receipt_cannot_release_hold",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "busy-recovery-reports-attempt",
+    "test": "test_busy_execution_refuses_before_recovery_effects",
+    "outcome": "intended_failure",
+    "reason": "Busy original execution prevents outcome repair"
+  },
+  {
+    "control": "replaced-pipeline-reads-starts",
+    "test": "test_replaced_pipeline_refuses_before_original_journal_read",
+    "outcome": "intended_failure",
+    "reason": "Replaced pipeline cannot read original starts"
+  },
+  {
+    "control": "missing-old-outcome-starts-repair",
+    "test": "test_original_without_local_failure_stays_with_original_pipeline",
+    "outcome": "intended_failure",
+    "reason": "Outcome recovery requires its unresolved original local outcome"
+  },
+  {
+    "control": "unknown-namespace-published",
+    "test": "test_unknown_recovery_records_refuse_before_publication",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "first-byte-fence-omitted",
+    "test": "test_original_bytes_change_between_evidence_reads_refuses_publication",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "publication-byte-fence-omitted",
+    "test": "test_original_bytes_change_at_publication_refuses_saved_recovery",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "status-keeps-write-transaction",
+    "test": "test_acknowledged_repair_preserves_original_and_releases_hold",
+    "outcome": "intended_failure",
+    "reason": "database is locked"
+  },
+  {
+    "control": "terminal-drops-command-pin",
+    "test": "test_changed_command_after_evidence_refuses_before_new_attempt",
+    "outcome": "intended_failure",
+    "reason": "does not match"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

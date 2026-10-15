@@ -57,7 +57,7 @@ def run(repo, out):
         'test_interruption_after_ack_before_receipt_uses_same_body', 'InterruptedError not raised')
     replace('refusal-retried', "if 400 <= status < 500:", "if False:",
         'test_refused_reply_stops_later_posts', 'Explicit consumer refusal stops retries')
-    replace('transient-marked-acknowledged', "        return 'retry_pending'\n\n    def advance", "        return 'acknowledged'\n\n    def advance",
+    replace('transient-marked-acknowledged', "        return 'retry_pending'\n\n    def _before_transport", "        return 'acknowledged'\n\n    def _before_transport",
         'test_transient_and_unconfirmed_success_remain_retryable', 'Unconfirmed delivery cannot become acknowledgement')
     replace('changed-command-accepted', 'if json_bytes(saved) != json_bytes(expected):', 'if False:',
         'test_changed_saved_command_cannot_reach_transport')
@@ -82,7 +82,7 @@ def run(repo, out):
         'test_current_actor_revocation_refuses_preparation_and_replay', 'PermissionError not raised')
     replace('post-intent-access-omitted', "            self._access(request_id, deadline)\n            status, body =", "            status, body =",
         'test_revocation_after_intent_prevents_external_request', 'Access is checked again after the durable intent')
-    replace('post-response-access-omitted', "            self._access(request_id, deadline)\n            return {'state': self._result(reply)", "            return {'state': self._result(reply)",
+    replace('post-response-access-omitted', "            self._access(request_id, deadline)\n            return {'state': self._result(reply, command)", "            return {'state': self._result(reply, command)",
         'test_revocation_after_response_retains_fact_without_claiming_current_access', 'PermissionError not raised')
     remove('cancellation-ignored', 'Progress delivery cancelled',
         'test_unowned_and_cancelled_delivery_refuse_before_post', 'InterruptedError not raised')

@@ -20,6 +20,81 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Explicit owned worker command, candidate:** private operator settings, credential
+roles and preset options start the existing owned service through
+`workers/odm_worker/runtime_service_cli.py`. The command preserves original
+admissions and shutdown ownership, restores signal handlers and keeps private
+inputs out of diagnostics. It does not replace the legacy command, activate a
+hosted worker, adopt unsealed roots or establish processing acceptance. See the
+[operator instructions](docs/reviews/2026-10-14-owned-worker-cli/INSTALLATION.md).
+
+**Explicit original worker assembly, candidate:** joins the existing input,
+processing, observation, artifact and callback journals under sealed settings.
+Source and callback address policies are explicit. Changed transports, roles and
+resource settings refuse before operation. Actual local cancellation checks have
+separate native and default-worker limits. See the [assembly record](docs/reviews/2026-10-14-runtime-assembly/STATUS.md).
+
+**Explicit operator configuration, candidate:** a new private worker root binds
+its installation, target, application, engine and resource settings before
+admission. Exact replay preserves the original seal. Existing unsealed roots
+require separate adoption. This candidate does not activate the default worker.
+See the [configuration record](docs/reviews/2026-10-14-runtime-binding/STATUS.md).
+
+**Original recovery scheduling, candidate:** an explicit supplied worker graph
+attempts old-outcome repair, held original recovery and new admission in that
+order. Each attempted stage ends its step. Lifetime ownership and pinned
+component joins must remain unchanged. The default worker still does not select
+this scheduler. See the [scheduling proof](docs/reviews/2026-10-14-recovery-execution/STATUS.md).
+
+**Original local outcome recovery, candidate:** an explicit worker adapter preserves
+an older failure record and binds a separate recovery receipt to acknowledged
+original delivery. Saved acknowledgements repair bookkeeping without another
+callback POST. Pending sends retain original engine facts and require current
+actor access plus the saved command hash. Default worker selection remains
+pending. See the [recovery proof](docs/reviews/2026-10-14-outcome-recovery/STATUS.md).
+
+**Aerial held-file custody, candidate:** migration
+`20261017000011_aerial_preserve_held_custody.sql` prevents a later write from
+replacing the original facts of a held file. Attempt counts and timestamps can
+still advance. Deploy the callback recovery code first, then take a fresh backup
+and apply this migration before merging the dependent guard. On the hosted installation, this migration is applied and independently read
+back before the candidate merge. Full worker integration remains pending. See the
+[guard proof](docs/reviews/2026-10-14-aerial-held-custody/STATUS.md).
+
+**Original aerial delivery authority, candidate:** migration
+`20261017000012_aerial_delivery_authority.sql` adds a service-only observation
+for original artifact access and terminal delivery. Processing access stays
+limited to active jobs. Completed terminal replay must match the callback
+actually applied to the original job. The retained download adapter keeps its
+original token and expiry; default worker wiring remains pending. The hosted migration is applied and
+independently read back before the candidate merge; this does not activate a
+worker.
+
+**Operating the live site.** `/api/health` now reports how many migrations
+the deployed build expects and the latest one, read from
+`openplan/supabase/migrations` at build time. A new token-protected
+`/api/health/deep` reads the database and Storage once each, gives each
+modeling worker's heartbeat age, and lists every expected migration; it is off
+until you set `OPENPLAN_HEALTH_TOKEN`. The Production Health workflow also
+runs after each successful Vercel production deployment, and a second step
+fails when the deployed code expects a migration the hosted database has not
+applied. It compares whole sets, because hosted migrations may be applied out
+of order. That step needs the repository variable
+`OPENPLAN_SUPABASE_PROJECT_REF` and the secrets `OPENPLAN_HEALTH_TOKEN` and
+`SUPABASE_ACCESS_TOKEN`; until they are set it prints a notice. Error pages
+now send a scrubbed report (path with share tokens replaced, error type,
+message, digest and stack; no user, cookie or query string) to
+`/api/client-errors`, which logs it and, only when `OPENPLAN_SENTRY_DSN` is
+set, forwards it and server request errors to Sentry from the server. The site
+serves `robots.txt` (public pages open; app, API and account pages
+disallowed), drops the `X-Powered-By` header, and sends a report-only
+content-security policy without `'unsafe-eval'` beside the enforced one, so
+violations are reported before anything is blocked. Hosted operators: see
+`openplan/docs/ops/HOSTED_OPERATIONS.md` for monitoring, rollback, key rotation
+and where each secret lives. Deep-health deadlines cancel the actual SDK reads;
+malformed error-reporting configuration does not reject reporting, and public
+UUID-shaped link tokens are scrubbed. No migration.
+
 **My Work dates on the workspace calendar.** Grant decision dates,
 application close times and award obligation deadlines on My Work now show the
 day they fall on in the workspace time zone, not the UTC day. An obligation

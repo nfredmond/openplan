@@ -18,8 +18,14 @@ const db = {
     update: () => ({eq: () => ({select: async () => ({data: [{id: job.processingJobId}], error: null})})}),
   }),
   // workspace_storage_bytes (20261017000010): an empty workspace, so custody may store.
-  rpc: async () => ({data: 0, error: null}),
+  rpc: async (name, args) => {
+    assert.equal(name, 'workspace_storage_bytes', 'Fixture requires original storage RPC');
+    assert.deepEqual(args, {p_workspace_id: job.workspaceId}, 'Fixture requires original workspace scope');
+    return {data: 0, error: null};
+  },
 };
+await assert.rejects(db.rpc('wrong_rpc', {p_workspace_id: job.workspaceId}), /Fixture requires original storage RPC/, 'Wrong RPC must fail the fixture');
+await assert.rejects(db.rpc('workspace_storage_bytes', {p_workspace_id: 'another-workspace'}), /Fixture requires original workspace scope/, 'Wrong workspace must fail the fixture');
 const candidate={kind:'orthomosaic',ordinal:0,downloadUrl:'https://example.invalid/source.tif',expiresAt:'2099-01-01T00:00:00Z'};
 const cases=[];
 for (const mode of ['upload-deadline','upload-cancellation','read-deadline','read-cancellation','read-size','thrown-acknowledgement'].filter(mode => !process.env.OPENPLAN_PROOF_MODE || process.env.OPENPLAN_PROOF_MODE===mode)) {

@@ -1,0 +1,264 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "exact-replay",
+    "test": "test_exact_seal_replays_and_owned_check_preserves_inode",
+    "outcome": "intended_failure",
+    "reason": "Original settings replay without replacement"
+  },
+  {
+    "control": "changed-target",
+    "test": "test_changed_target_cannot_reuse_original_seal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "changed-engine",
+    "test": "test_changed_engine_cannot_reuse_original_seal",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "installation",
+    "test": "test_installation_mismatch_refuses_before_publication",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "existing-admission",
+    "test": "test_existing_admission_requires_adoption",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "existing-record",
+    "test": "test_existing_private_record_requires_adoption",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "owned-establish",
+    "test": "test_owned_establish_refuses_before_writer",
+    "outcome": "intended_failure",
+    "reason": "Owned establish cannot reacquire runtime writer"
+  },
+  {
+    "control": "unowned-read",
+    "test": "test_unowned_check_refuses_before_record_read",
+    "outcome": "intended_failure",
+    "reason": "Unowned configuration cannot read private record"
+  },
+  {
+    "control": "saved-size",
+    "test": "test_oversized_saved_record_refuses_before_read",
+    "outcome": "intended_failure",
+    "reason": "Oversized configuration cannot allocate record bytes"
+  },
+  {
+    "control": "saved-length",
+    "test": "test_short_saved_read_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "saved-canonical",
+    "test": "test_noncanonical_saved_record_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "exact-fields",
+    "test": "test_unknown_config_field_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "reference-empty",
+    "test": "test_reference_fields_refuse_empty_values",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "http-opt-in",
+    "test": "test_application_http_requires_explicit_opt_in",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "public-prefix",
+    "test": "test_public_prefix_refuses_before_binding",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "daemon-owner",
+    "test": "test_daemon_uid_refuses_boolean_and_negative",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "bounds-fields",
+    "test": "test_bounds_projection_refuses_extra_and_missing_fields",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "deadlines",
+    "test": "test_deadlines_refuse_nonfinite_and_boolean",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "integer-limits",
+    "test": "test_byte_and_entry_limits_refuse_boolean_and_zero",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "runtime-type",
+    "test": "test_runtime_type_refuses_before_configuration_reads",
+    "outcome": "intended_failure",
+    "reason": "Foreign runtime cannot parse operator settings"
+  },
+  {
+    "control": "binding-timeout",
+    "test": "test_binding_timeout_refuses_nonfinite_before_configuration",
+    "outcome": "intended_failure",
+    "reason": "Invalid binding deadline cannot parse operator settings"
+  },
+  {
+    "control": "root-overlap",
+    "test": "test_overlapping_roots_refuse_before_publication",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "caller-detachment",
+    "test": "test_canonical_configuration_is_detached_from_caller",
+    "outcome": "intended_failure",
+    "reason": "Caller mutations cannot alter the bound configuration"
+  },
+  {
+    "control": "binding-mutation",
+    "test": "test_mutated_bound_value_refuses_before_private_read",
+    "outcome": "intended_failure",
+    "reason": "Changed bound settings cannot read private record"
+  },
+  {
+    "control": "new-size",
+    "test": "test_new_configuration_size_limit_refuses",
+    "outcome": "intended_failure",
+    "reason": "Oversized new configuration cannot parse record bytes"
+  },
+  {
+    "control": "admission-serialization",
+    "test": "test_configuration_publication_holds_admission_writer",
+    "outcome": "intended_failure",
+    "reason": "Configuration publication must retain admission transaction"
+  },
+  {
+    "control": "interrupted-publication",
+    "test": "test_interrupted_after_publication_replays_exact_settings",
+    "outcome": "intended_failure",
+    "reason": "Original seal replay disabled"
+  },
+  {
+    "control": "fresh-value-change",
+    "test": "test_mutated_fresh_value_refuses_before_writer_and_publication",
+    "outcome": "intended_failure",
+    "reason": "Changed fresh settings cannot acquire runtime writer"
+  },
+  {
+    "control": "locked-value-change",
+    "test": "test_value_change_during_establishment_refuses_before_publication",
+    "outcome": "intended_failure",
+    "reason": "Changed locked settings cannot publish original seal"
+  },
+  {
+    "control": "prepublication-recovery",
+    "test": "test_prepublication_interruption_recovers_safe_temporary",
+    "outcome": "intended_failure",
+    "reason": "Resumed configuration removes unpublished temporary"
+  },
+  {
+    "control": "unknown-temporary",
+    "test": "test_unknown_temporary_refuses_before_publication",
+    "outcome": "intended_failure",
+    "reason": "Unsafe temporary cannot publish configuration"
+  },
+  {
+    "control": "symlink-temporary",
+    "test": "test_symlink_temporary_refuses_before_publication",
+    "outcome": "intended_failure",
+    "reason": "Unsafe temporary cannot publish configuration"
+  },
+  {
+    "control": "hardlink-temporary",
+    "test": "test_hardlink_temporary_refuses_before_publication",
+    "outcome": "intended_failure",
+    "reason": "Unsafe temporary cannot publish configuration"
+  },
+  {
+    "control": "runtime-reference",
+    "test": "test_replaced_runtime_refuses_before_foreign_writer",
+    "outcome": "intended_failure",
+    "reason": "Replaced runtime cannot acquire foreign writer"
+  },
+  {
+    "control": "root-reference",
+    "test": "test_replaced_runtime_root_refuses_before_writer",
+    "outcome": "intended_failure",
+    "reason": "Changed runtime root cannot acquire foreign writer"
+  },
+  {
+    "control": "journal-reference",
+    "test": "test_replaced_runtime_journal_refuses_before_writer",
+    "outcome": "intended_failure",
+    "reason": "Changed runtime journal cannot acquire writer"
+  },
+  {
+    "control": "journal-root-reference",
+    "test": "test_replaced_journal_root_cannot_bypass_original_admission",
+    "outcome": "intended_failure",
+    "reason": "Changed admission root cannot acquire writer"
+  },
+  {
+    "control": "initial-journal-root",
+    "test": "test_constructor_refuses_unjoined_admission_root_before_configuration",
+    "outcome": "intended_failure",
+    "reason": "Foreign admission root cannot parse operator settings"
+  },
+  {
+    "control": "policy-projection",
+    "test": "test_network_policy_refuses_extra_fields",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "callback-redirects",
+    "test": "test_callback_policy_refuses_redirect_permission",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "network-replay",
+    "test": "test_network_policy_replay_refuses_changed_allowlist",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

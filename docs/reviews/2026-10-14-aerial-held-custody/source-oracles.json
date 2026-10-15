@@ -1,0 +1,452 @@
+[
+  {
+    "case": "conflict-not-recovered",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "conflict-not-recovered",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "conflict-not-recovered",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "conflict-not-recovered",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "conflict-not-recovered",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "missing-roster-ignored",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "unreadable-recovery-hidden",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "retry-unreadable-published",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retry-unreadable-published",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retry-unreadable-published",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retry-unreadable-published",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "retry-unreadable-published",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "retry-roster-dropped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retry-roster-dropped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retry-roster-dropped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retry-roster-dropped",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "retry-roster-dropped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "all-held-repair-skipped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "retry-human-filter-removed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "retry-pending-downgrade",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callback-unreadable-published",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callback-unreadable-published",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callback-unreadable-published",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callback-unreadable-published",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "callback-unreadable-published",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callback-repair-skipped",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callback-repair-skipped",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callback-repair-skipped",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callback-repair-skipped",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "callback-repair-skipped",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "callback-human-filter-removed",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "callback-pending-downgrade",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "existing-pending-count-lost",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "package-repair-failure-hidden",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "unrelated-constraint-recovered",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "georef-valid",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "georef-valid",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "georef-valid",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "georef-valid",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "georef-valid",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "georef-refused",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "georef-refused",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "georef-refused",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "georef-refused",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "georef-refused",
+    "oracle": "wrong-test",
+    "accepted": false
+  },
+  {
+    "case": "georef-absent",
+    "oracle": "exact",
+    "accepted": true
+  },
+  {
+    "case": "georef-absent",
+    "oracle": "success",
+    "accepted": false
+  },
+  {
+    "case": "georef-absent",
+    "oracle": "wrong-exit",
+    "accepted": false
+  },
+  {
+    "case": "georef-absent",
+    "oracle": "wrong-reason",
+    "accepted": false
+  },
+  {
+    "case": "georef-absent",
+    "oracle": "wrong-test",
+    "accepted": false
+  }
+]

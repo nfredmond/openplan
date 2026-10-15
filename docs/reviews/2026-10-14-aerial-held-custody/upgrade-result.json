@@ -1,0 +1,28 @@
+{
+  "selectedMain": "122cfbbaa9235a4491b30fef733f7aa9bdb58465",
+  "prerequisiteCommits": {
+    "20261017000009_owp_program_type.sql": "11b6c3632f6cf5852633d59c70b7e11ae03915a3",
+    "20261017000010_workspace_storage_quota.sql": "6a921772cc82c75937dca0bac755e65dc33ee1a8"
+  },
+  "variant": "restored",
+  "historyBefore": 409,
+  "historyMain": 411,
+  "historyPrerequisites": 413,
+  "historyCandidate": 414,
+  "retainedDatabases": [
+    "odm_held_upgrade_0a8b1333903248d7b7461aad7a5a3e61",
+    "odm_held_restore_d559bcb59e2b45f79603acc439954ec1"
+  ],
+  "freshBackup": {
+    "bytes": 5618772,
+    "sha256": "ddb662ca0b970566e1b5b508beefdda02f95dcbbe501e0816cdd5967be0df81c"
+  },
+  "restoredCapture": {
+    "bytes": 5621027,
+    "sha256": "fdf9854c7e774c0a68f0e8f8c007810a1bd9eb3ef83ddb123d1d88b6feb84c81"
+  },
+  "originalRowPreserved": true,
+  "restoredGuard": true,
+  "restoredMemberVisibleRows": 1,
+  "scope": "same-cluster representative database fixture and logical restore;9/10 are pinned branch prerequisites, not yet main; no hosted backup/restore, Storage restore, login, global-role or separate-host acceptance"
+}

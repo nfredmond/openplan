@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { reportClientError } from "@/lib/observability/report-client-error";
 
 /**
  * The last boundary: the root layout itself failed. `reset()` alone re-renders
@@ -18,6 +19,7 @@ export default function GlobalError({
       message: error.message,
       digest: error.digest ?? null,
     });
+    reportClientError("global-error", error);
   }, [error]);
 
   return (

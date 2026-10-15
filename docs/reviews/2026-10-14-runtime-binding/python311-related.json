@@ -1,0 +1,6 @@
+{
+  "interpreter": "python311",
+  "tests": 161,
+  "passed": true,
+  "boundary": "Local filesystem, admission and supplied engine/receiver regression; no default or full application receiver."
+}

@@ -86,6 +86,20 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+The [October 14 deep-health correction](reviews/2026-10-14-ops-health-transport/STATUS.md) records actual SDK cancellation and malformed error-report recovery in an unmerged PR #326 candidate. Hosted checks and workflow delivery remain separate.
+
+The [October14 explicit worker command](reviews/2026-10-14-owned-worker-cli/STATUS.md) joins private settings, exact credential references and preset options to the existing owned service. Actual child admission/replay/shutdown remains separate from processing and full application delivery.
+
+**October 14 owned HTTP service candidate.** The [service record](reviews/2026-10-14-owned-worker-service/STATUS.md) joins the explicit Bundle to durable HTTP admission and owned shutdown. Delayed handlers retain the writer; captured service roles and bounds precede admission; SQLite contention returns unavailable. Source controls cover 30 cases and 32 faults per interpreter, with 286 related cases each. Corrected static review finds no further concrete defect. CLI, native/full receiver, default and hosted activation remain open.
+
+**October 14 retained transit storage check.** The [storage-room record](reviews/2026-10-14-gtfs-storage-room/STATUS.md) covers original workspace usage, immutable archive retry accounting and actual HTTP cancellation. Exact retained bytes still determine custody. Source and diagnostic controls, scoped types and lint pass; concurrent usage is not an atomic reservation. Managed admission stays disabled on the hosted installation.
+
+**October 14 explicit worker assembly candidate.** The [assembly record](reviews/2026-10-14-runtime-assembly/STATUS.md) links operator settings to the existing original worker graph. Guarded transports and roles remain pinned through recovery. The [hosted migration record](reviews/2026-10-14-hosted-aerial-authority/STATUS.md) separately records 11/12 application and backup/readback limits. A retained415 native recovery repeat passes four four-case cohorts and two SQL faults with matching worker hashes. Bundle factory native execution, the full receiver/Storage, service/default and legacy adoption remain open.
+
+
+**October 14 operator configuration candidate.** The [dated record](reviews/2026-10-14-runtime-binding/STATUS.md) binds explicit new-root settings before admission, retains exact original replay and recovers known unpublished temporary files. Source controls cover each new case. Service/default activation and legacy-root adoption remain open.
+
+
 These dated records sat at the top of this index until October 12, 2026, partly under the heading "Current authorities". They record bounded engineering evidence from October 6 through 14. They are not current authority; the documents under "Start here" are.
 
 The [October 6 integration audit](reviews/2026-10-06-integration/INTEGRATION.md) records worktree custody and the next development boundary. The [original October independent review](reviews/2026-10-01-independent-code-review/FINAL_REPORT.md) is preserved beside its later [fix disposition](reviews/2026-10-01-independent-fixes/DISPOSITION.md).
@@ -295,3 +309,23 @@ objects across interrupted row writes, reconcile actual streamed bytes, and
 carry cancellation through the installed SDK upload transport. This isolated
 candidate does not close source identity, concurrent custody, live RLS, browser
 or complete delivery acceptance.
+
+The [October 14 retained artifact access candidate](reviews/2026-10-14-artifact-access/STATUS.md) keeps original download leases and checks separate current delivery authority. Source, loopback and selected-schema SQL/HTTP fault controls pass. Both Python versions pass; intended-schema upgrade, default worker and visible delivery acceptance remain pending.
+
+The [October 14 terminal journal candidate](reviews/2026-10-14-terminal-delivery/STATUS.md) preserves original terminal callback bytes and distinguishes historical receiver replies from current permission to send. A smaller replacement transport can read saved receipts but cannot start an unsendable POST. Source controls pass; both-interpreter regression, realistic native supersession and intended-schema restore checks continue. Default worker integration and complete M3/M5b.2 acceptance remain open.
+
+The [October 14 retained artifact HTTP candidate](reviews/2026-10-14-artifact-http/STATUS.md) resolves original admissions from the private journal and binds response headers to the exact saved lease. It refuses ownership, authority, expiry or deadline changes during headers before releasing product bytes. Four 34-case cohorts on each interpreter detect 35 intended faults, including an actual non-reading client. Existing reader/admission regression passes on both interpreters. Native restored-schema HTTP cohorts and targeted SQL faults pass within the recorded fixture limits. The default worker does not enable the adapter.
+
+The [October 14 original worker coordinator candidate](reviews/2026-10-14-worker-coordination/STATUS.md) connects committed original tasks to retained observations, products, leases and exact terminal delivery. Local errors preserve reported engine facts. Four 34-case cohorts on each interpreter detect 35 intended faults; restored-schema native callback/download recovery detects two SQL faults. Input preparation, engine commit, default activation and planner journeys remain open.
+
+The [October 14 original input and commit candidate](reviews/2026-10-14-original-pipeline/STATUS.md) connects retained input drafts, one processing commit and original task delivery. Explicit recovery preserves the original started admission and releases its local hold only after acknowledged terminal delivery. Four 25-case cohorts on each interpreter detect 24 intended faults. Uncertain commits and older local outcomes without engine facts stay held. Native copied-journal recovery passes four three-case cohorts and two SQL faults within its fixture limits. Complete application receiver/Storage and default integration remain open.
+
+The [October 14 combined original-worker candidate](reviews/2026-10-14-worker-stack/STATUS.md) joins the retained input, commit and delivery checkpoints with current main. It preserves the account-limit changes and checks the Storage fixture scope. Fresh combined CI and coordinated hosted migrations11/12 precede a dependent main merge. Default activation and acceptance remain open.
+
+The [October 14 artifact root URL correction](reviews/2026-10-14-artifact-root-url/STATUS.md) rejects path prefixes the built-in server cannot serve. Both interpreters pass four 48-case source cohorts with 51 faults and four 34-case HTTP cohorts with 35 faults. Default integration remains open.
+
+The [October 14 original running progress candidate](reviews/2026-10-14-running-progress/STATUS.md) retains one original running event before source work. Cached acknowledgement still requires current actor access. Four 36-case cohorts on each interpreter detect 32 intended faults. Native copied-journal recovery passes four four-case cohorts and two SQL faults within the recorded fixture limits. Independent review confirms three corrections. Default and complete application receiver/Storage integration remain open.
+
+The [October 14 original outcome recovery candidate](reviews/2026-10-14-outcome-recovery/STATUS.md) preserves an older local failure and binds a separate receipt to acknowledged original delivery. Historical acknowledgement repairs bookkeeping without another POST; pending delivery requires current actor access and the saved command hash. Source and isolated native controls have separate records. Both interpreters pass four 31-case cohorts, 33 intended faults and 180 related cases. Four native four-case cohorts and two SQL faults have direct-ledger fixture limits. Configuration, default integration and full application receiver/Storage remain open.
+
+The [October 14 original recovery scheduling candidate](reviews/2026-10-14-recovery-execution/STATUS.md) attempts old-outcome repair, held original recovery and new admission in that order. Each attempted stage ends the step. The lifetime owner and pinned adapter joins must remain unchanged. Both21-case source campaigns and120-case related suites pass; four native four-case cohorts and two SQL faults pass on the retained415 direct-ledger fixture. Configuration/default, full application receiver/Storage and broader acceptance remain open.

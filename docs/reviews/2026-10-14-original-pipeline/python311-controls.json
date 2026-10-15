@@ -1,0 +1,162 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived"
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived"
+  },
+  {
+    "control": "commit-before-drafts",
+    "test": "test_fresh_inputs_commit_products_and_original_callback",
+    "outcome": "intended_failure",
+    "reason": "All original uploads precede processing"
+  },
+  {
+    "control": "uncertain-commit-delivered",
+    "test": "test_uncertain_commit_holds_without_task_read_or_callback",
+    "outcome": "intended_failure",
+    "reason": "Uncertain commit must stay held"
+  },
+  {
+    "control": "terminal-replay-inputs",
+    "test": "test_terminal_retry_skips_input_commit_and_engine_reads",
+    "outcome": "intended_failure",
+    "reason": "Terminal replay cannot reenter inputs"
+  },
+  {
+    "control": "terminal-replay-recommit",
+    "test": "test_terminal_retry_skips_input_commit_and_engine_reads",
+    "outcome": "intended_failure",
+    "reason": "Terminal replay cannot recommit"
+  },
+  {
+    "control": "original-commit-scope-unchecked",
+    "test": "test_foreign_commit_journal_root_refuses_before_commit_delegate",
+    "outcome": "intended_failure",
+    "reason": "Foreign commit journal root is refused"
+  },
+  {
+    "control": "missing-commit-ack-ignored",
+    "test": "test_terminal_recovery_requires_saved_acknowledged_commit",
+    "outcome": "intended_failure",
+    "reason": "Terminal cannot hide missing original commit acknowledgement"
+  },
+  {
+    "control": "pending-task-relabeled",
+    "test": "test_running_original_commit_stays_pending",
+    "outcome": "intended_failure",
+    "reason": "Running engine stays pending"
+  },
+  {
+    "control": "local-error-relabeled",
+    "test": "test_local_product_error_cannot_set_local_engine_failure",
+    "outcome": "intended_failure",
+    "reason": "Local product error stays separate"
+  },
+  {
+    "control": "failed-mapped-success",
+    "test": "test_failed_original_skips_products_and_sets_reported30",
+    "outcome": "intended_failure",
+    "reason": "Reported30 maps to local failed state"
+  },
+  {
+    "control": "canceled-mapped-success",
+    "test": "test_canceled_original_sets_reported50",
+    "outcome": "intended_failure",
+    "reason": "Reported50 maps to local canceled state"
+  },
+  {
+    "control": "graph-unchecked",
+    "test": "test_constructor_refuses_different_runtime_or_dispatch",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "job-reference-unchecked",
+    "test": "test_job_identity_is_checked_before_stages",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "job-request-unchecked",
+    "test": "test_foreign_request_refuses_before_input_transport",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "owner-unchecked",
+    "test": "test_unowned_pipeline_refuses_before_capture",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "queue-start-no-hold",
+    "test": "test_actual_runtime_queue_stays_held_before_completion",
+    "outcome": "intended_failure",
+    "reason": "Draft does not release original queue custody"
+  },
+  {
+    "control": "original-resume-no-outcome",
+    "test": "test_owned_resume_finishes_original_start_without_restarting_admission",
+    "outcome": "intended_failure",
+    "reason": "Completed original is not resumed again"
+  },
+  {
+    "control": "uncertain-resume-released",
+    "test": "test_uncertain_resume_keeps_queue_held_and_no_terminal_outcome",
+    "outcome": "intended_failure",
+    "reason": "Uncertain commit remains an original held start"
+  },
+  {
+    "control": "resume-unregistered",
+    "test": "test_resume_requires_registered_owned_pipeline",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "resume-unowned",
+    "test": "test_resume_requires_registered_owned_pipeline",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "resume-overlap",
+    "test": "test_busy_execution_lock_suppresses_recovery",
+    "outcome": "intended_failure",
+    "reason": "Busy original execution cannot overlap recovery"
+  },
+  {
+    "control": "unknown-terminal-allowed",
+    "test": "test_unknown_terminal_projection_cannot_release_queue",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "job-shape-unchecked",
+    "test": "test_non_job_projection_refuses",
+    "outcome": "intended_failure",
+    "reason": "ValueError not raised"
+  },
+  {
+    "control": "prior-outcome-overwritten",
+    "test": "test_existing_local_outcome_without_engine_facts_holds_before_effects",
+    "outcome": "intended_failure",
+    "reason": "Prior local outcome requires separate bound recovery before effects"
+  },
+  {
+    "control": "known-terminal-facts-dropped",
+    "test": "test_terminal_recovery_requires_saved_acknowledged_commit",
+    "outcome": "intended_failure",
+    "reason": "Missing commit acknowledgement retains known original40"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived"
+  }
+]

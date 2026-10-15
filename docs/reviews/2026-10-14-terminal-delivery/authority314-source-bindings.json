@@ -1,0 +1,6 @@
+{
+  "workers/odm_worker/application_delivery_authority.py": "b8faa8e88fe7a9a88ea6b1b5dec63380e113f0a7a4b1bc736dff94717d9debfb",
+  "workers/odm_worker/application_dispatch_http.py": "9eddce4c12c948bcdf8c76434444459e636891d643e14c8001f367e48138ec3a",
+  "workers/odm_worker/test_application_delivery_authority.py": "5b974fc61c05c75301579225e401f2b717abb614b8d26ed2434f04a1949dbed0",
+  "workers/odm_worker/test_delivery_authority_http.py": "adbadb2b2cd6eedc00d70e828e8d93935fee95aa6b370c18e6e09983cea5cc76"
+}

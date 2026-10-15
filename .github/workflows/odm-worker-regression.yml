@@ -8,7 +8,7 @@ permissions:
 jobs:
   odm-worker:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 90
     steps:
       - uses: actions/checkout@v6
       - uses: actions/setup-python@v5
@@ -226,6 +226,63 @@ jobs:
         run: |
           python3 -B docs/reviews/2026-10-14-private-artifact-preparation/verify_controls.py \
             --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-private-artifact-preparation-controls"
+      - name: Original artifact access and separate delivery authority controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-artifact-access/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-artifact-access-controls"
+          python3 -B docs/reviews/2026-10-14-artifact-access/verify_authority_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-delivery-authority-controls"
+
+      - name: Original terminal callback and explicit byte allowance controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-terminal-delivery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-terminal-delivery-controls"
+      - name: Original retained artifact HTTP and stalled socket controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-artifact-http/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-controls"
+          python3 -B docs/reviews/2026-10-14-artifact-http/verify_cleanup.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-artifact-http-cleanup-controls"
+      - name: Original worker coordination and local failure controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-worker-coordination/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-worker-coordination-controls"
+      - name: Original input commit and held-start recovery controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-original-pipeline/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-original-pipeline-controls"
+      - name: Original running progress and historical receipt controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-running-progress/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-running-progress-controls"
+      - name: Original outcome repair and pinned terminal retry controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-recovery-controls"
+          python3 -B docs/reviews/2026-10-14-outcome-recovery/verify_oracle_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-outcome-summary-controls"
+      - name: Explicit original runtime assembly controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-runtime-assembly/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-assembly-controls"
+      - name: Explicit owned HTTP service controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-owned-worker-service/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-owned-service-controls"
+      - name: Explicit original worker command controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-owned-worker-cli/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-owned-cli-controls"
+      - name: Original operator configuration controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-runtime-binding/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-runtime-binding-controls"
+      - name: Original recovery scheduling and capture guard controls
+        run: |
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-recovery-execution-controls"
+          python3 -B docs/reviews/2026-10-14-recovery-execution/verify_capture_controls.py \
+            --repo "$GITHUB_WORKSPACE" --out "$RUNNER_TEMP/odm-execution-capture-controls"
       - name: Exact progress callback journal controls
         run: |
           python3 -B docs/reviews/2026-10-14-progress-delivery/verify_controls.py \
