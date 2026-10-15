@@ -1,0 +1,11 @@
+# Actual v2 checkout succeeds; one production build is running
+
+The parent reads the complete [second independent review](../2026-10-15-current-project-preview-app-binding-independent-round2/REVIEW.md), exact `4eb906b32fd1d6cd74c435e662d396a768438f8e`, which clears F1, R1 and R2 within its stated source and stand-in scope. The parent then verifies the actual reviewed v2 templates, manifest, runner and checksum list. No app candidate or execution record exists before these operations.
+
+The reviewed v2 active-check exits zero in 10.512 seconds and reacquires actual service readiness and immutable source/global/earlier-helper/Storage preservation. The one-shot checkout exits zero in 25.860 seconds. The new isolated clone is clean at exact `67828c17c4c270529468eef1edd144e4a52b693a`; its environment, 419-migration digest, dependencies and current active receipt binding pass the reviewed checks. The original helper purpose and HEAD remain 06a. The failed original REST remains retained.
+
+The parent starts the single production build through the reviewed fixed runner. Its exact unit is `openplan-current-project-preview-app-678-v1-build.service`, invocation `c24248dcd7ba45c4959c78cc280ca97f`. It uses 10 GiB memory, zero swap allowance and 50 percent CPU. The trusted controller runs directly under systemd; the npm payload runs inside the tested filesystem sandbox with private caches, read-only borrowed dependencies and env, and no network. The private packet is `/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2`.
+
+A single Sol-high child observes this existing build read-only. It may report the producer's accepted build result or retained failure. It cannot start another job, retry an intent, start the web app or infer success from an unloaded unit. No other heavy QA/build unit was observed at admission. Available memory was about 17 GiB and free disk about 27 GiB before execution; these are admission observations, not a capacity result.
+
+This dated checkpoint claims no completed build, app startup, live attestation, desktop/390px journey, console or artifact custody. The actual frozen06a full-QA result does not cover the new formatter. The recorded T3 capture blocker remains separate. No original packet, source anchor, helper, hosted configuration, migration, provider, main merge or release changes.
