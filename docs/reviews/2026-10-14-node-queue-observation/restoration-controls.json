@@ -1,0 +1,9 @@
+{
+  "positiveControls": 3,
+  "intendedFailures": [
+    "wrong expected digest",
+    "altered source bytes"
+  ],
+  "filesMatched": 23,
+  "boundary": "Read-only current source hashes and in-memory faults. No application execution."
+}

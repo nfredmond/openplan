@@ -1,3 +1,4 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { processNextEngagementReport } from "../../src/lib/engagement/review-export-worker";
 /** Run with npm run worker:document-exports. Jobs and completed files remain in Documents. */
 import { randomUUID, createHash } from "node:crypto";
@@ -9,13 +10,13 @@ import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { loadWorkProgramExportIdentity, renderWorkProgramExport } from "../../src/lib/programs/work-program/export-job";
 import { storeWorkProgramExport, workProgramExportFailureDetail } from "../../src/lib/programs/work-program/export-storage";
 
-async function main() {
+async function main(noticeStopping: () => void) {
 const service = createServiceRoleClient();
 const root = process.env.OPENPLAN_DOCUMENT_EXPORT_WORK_DIR || join(homedir(), ".local/state/openplan/document-exports");
 await mkdir(root, { recursive: true, mode: 0o700 });
 let stopping = false;
-process.on("SIGTERM", () => { stopping = true; });
-process.on("SIGINT", () => { stopping = true; });
+process.on("SIGTERM", () => { stopping = true; noticeStopping(); });
+process.on("SIGINT", () => { stopping = true; noticeStopping(); });
 while (!stopping) {
   const token = randomUUID();
   const claimed = await service.rpc("claim_work_program_export", { p_token: token });
@@ -57,4 +58,4 @@ while (!stopping) {
 }
 
 }
-void main().catch(()=>{console.error("Document export worker could not start.");process.exitCode=1;});
+void observeNodeQueue("document-exports", main).catch(()=>{console.error("Document export worker could not start.");process.exitCode=1;});

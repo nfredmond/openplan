@@ -1,12 +1,13 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { randomUUID } from "node:crypto";
 import { fork } from "node:child_process";
 import { fileURLToPath } from "node:url";
 import { setTimeout as delay } from "node:timers/promises";
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
 /** Durable jobs recover expired leases. No business approval is inferred by a retry. */
-async function main(){
+async function main(noticeStopping: () => void){
  const service=createServiceRoleClient();let stopping=false;
- process.on("SIGTERM",()=>{stopping=true;});process.on("SIGINT",()=>{stopping=true;});
+ process.on("SIGTERM",()=>{stopping=true;noticeStopping();});process.on("SIGINT",()=>{stopping=true;noticeStopping();});
  while(!stopping){
   const token=randomUUID(),claimed=await service.rpc("claim_contract_calculation",{p_token:token});
   if(claimed.error){console.error("Contract calculation queue unavailable; retrying.");await delay(5000);continue;}
@@ -20,4 +21,4 @@ async function main(){
   if(code!==0){await service.rpc("fail_contract_calculation",{p_job:job.id,p_token:token});console.error(`Contract calculation ${job.id} needs review or retry.`);}else console.log(`Retained contract calculation ${job.id}`);
  }
 }
-void main().catch(()=>{console.error("Contract calculation worker could not start.");process.exitCode=1;});
+void observeNodeQueue("contract-calculations", main).catch(()=>{console.error("Contract calculation worker could not start.");process.exitCode=1;});

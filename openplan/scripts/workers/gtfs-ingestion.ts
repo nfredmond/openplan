@@ -1,15 +1,16 @@
+import { observeNodeQueue } from "../../src/lib/ops/node-queue-observation";
 import { createServiceRoleClient } from "../../src/lib/supabase/server";
 import { gtfsQueueOptions, gtfsQueueParserOptions, runGtfsQueueService } from "../../src/lib/gtfs/managed-worker-queue";
 import { runGtfsSubmissionRecoveryPass } from "../../src/lib/gtfs/managed-submission-recovery";
 import { authorizeManagedGtfsSubmission, resolveManagedGtfsSubmission } from "../../src/lib/gtfs/managed-source";
 
-async function main() {
+async function main(noticeStopping: () => void) {
   const options = gtfsQueueOptions(process.argv.slice(2), process.env);
   if (options.help) {
     console.log("Usage: npm run worker:gtfs-ingestion -- [--once|--help]. No arguments polls enrolled transit imports. --once runs one bounded pass. Configure OPENPLAN_GTFS_INSTALLATION_ID, OPENPLAN_GTFS_PARSER_BUILD and private durable OPENPLAN_GTFS_WORK_DIR. Retain journals across restarts. Completion does not adopt a feed or validate actual transit service.");
     return;
   }
-  const stopping = new AbortController(), stop = () => stopping.abort();
+  const stopping = new AbortController(), stop = () => { stopping.abort(); noticeStopping(); };
   process.on("SIGINT", stop); process.on("SIGTERM", stop);
   try {
     const service = createServiceRoleClient();
@@ -37,7 +38,7 @@ async function main() {
     process.exitCode = status === "unconfirmed" ? 2 : status === "error" || (status === "stopped" && options.once) ? 1 : 0;
   } finally { process.off("SIGINT", stop); process.off("SIGTERM", stop); }
 }
-void main().catch(() => {
+void observeNodeQueue("gtfs-ingestion", main).catch(() => {
   console.error("Transit worker could not run. Check installation/build identity, Supabase configuration and the private absolute worker directory. Retain existing journals.");
   process.exitCode = 1;
 });

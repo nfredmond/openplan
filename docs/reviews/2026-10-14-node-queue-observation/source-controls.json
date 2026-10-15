@@ -1,0 +1,346 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 33
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 33
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 33
+  },
+  {
+    "control": "work-result",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Observation must preserve work result"
+  },
+  {
+    "control": "sequence",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Process states keep original ordering"
+  },
+  {
+    "control": "rpc-target",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Observation must use its dedicated POST RPC"
+  },
+  {
+    "control": "rpc-fields",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Observation carries only operational fields"
+  },
+  {
+    "control": "timer-reference",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Diagnostic timer cannot keep the worker alive"
+  },
+  {
+    "control": "signal-ownership",
+    "test": "preserves work and records one original instance then stopped",
+    "outcome": "intended_failure",
+    "reason": "Observation cannot take ownership of process signals"
+  },
+  {
+    "control": "work-error",
+    "test": "preserves work errors when diagnostic storage refuses",
+    "outcome": "intended_failure",
+    "reason": "promise resolved"
+  },
+  {
+    "control": "warning-count",
+    "test": "preserves work errors when diagnostic storage refuses",
+    "outcome": "intended_failure",
+    "reason": "expected \"error\" to be called 1 times"
+  },
+  {
+    "control": "factory-failure",
+    "test": "runs work when the diagnostic client cannot be created",
+    "outcome": "intended_failure",
+    "reason": "private-provider-sentinel"
+  },
+  {
+    "control": "help",
+    "test": "skips observation for direct help",
+    "outcome": "intended_failure",
+    "reason": "Help cannot construct a diagnostic client"
+  },
+  {
+    "control": "unknown-kind",
+    "test": "refuses an unsupported diagnostic kind without failing work",
+    "outcome": "intended_failure",
+    "reason": "Unsupported observation cannot construct its client"
+  },
+  {
+    "control": "exit-abort",
+    "test": "closes an actual in-flight read on exit without warning about its own cancellation",
+    "outcome": "intended_failure",
+    "reason": "Actual observation exit must close promptly"
+  },
+  {
+    "control": "own-cancellation",
+    "test": "closes an actual in-flight read on exit without warning about its own cancellation",
+    "outcome": "intended_failure",
+    "reason": "Own cancellation is not a diagnostic failure"
+  },
+  {
+    "control": "overlap",
+    "test": "keeps one active request while a heartbeat stalls",
+    "outcome": "intended_failure",
+    "reason": "A stalled observation cannot queue overlapping writes"
+  },
+  {
+    "control": "client-capture",
+    "test": "captures the client and build for the original process",
+    "outcome": "intended_failure",
+    "reason": "Original process must keep one diagnostic client"
+  },
+  {
+    "control": "receipt",
+    "test": "treats an unaccepted RPC result as unavailable without changing work",
+    "outcome": "intended_failure",
+    "reason": "A false diagnostic receipt cannot imply acceptance"
+  },
+  {
+    "control": "logging",
+    "test": "does not let a failed diagnostic logger fail work",
+    "outcome": "intended_failure",
+    "reason": "Diagnostic logging cannot fail work"
+  },
+  {
+    "control": "identity",
+    "test": "uses a new identity for a restarted observation",
+    "outcome": "intended_failure",
+    "reason": "A restarted process cannot revive the old observation identity"
+  },
+  {
+    "control": "stopping",
+    "test": "records stopping on the next pulse with an increasing sequence",
+    "outcome": "intended_failure",
+    "reason": "Signal observations keep monotone process state"
+  },
+  {
+    "control": "timer-cleanup",
+    "test": "records stopping on the next pulse with an increasing sequence",
+    "outcome": "intended_failure",
+    "reason": "Observer exit must clear its owned timer"
+  },
+  {
+    "control": "request-deadline",
+    "test": "closes an actual stalled observation by its request deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual diagnostic deadline must close its SDK connection"
+  },
+  {
+    "control": "actual-sdk-signal",
+    "test": "closes an actual stalled observation by its request deadline",
+    "outcome": "intended_failure",
+    "reason": "Actual diagnostic deadline must close its SDK connection"
+  },
+  {
+    "control": "final-deadline",
+    "test": "bounds the final stopped write and keeps its deadline failure visible",
+    "outcome": "intended_failure",
+    "reason": "Final diagnostic deadline must close its SDK connection"
+  },
+  {
+    "control": "final-failure",
+    "test": "bounds the final stopped write and keeps its deadline failure visible",
+    "outcome": "intended_failure",
+    "reason": "Stopped observation deadline remains visible"
+  },
+  {
+    "control": "build",
+    "test": "records an unknown build instead of persisting arbitrary environment text",
+    "outcome": "intended_failure",
+    "reason": "Invalid build metadata must remain unrecorded"
+  },
+  {
+    "control": "registry",
+    "test": "keeps its registry aligned with deployed and standalone queues",
+    "outcome": "intended_failure",
+    "reason": "Observation registry must cover declared queue workers"
+  },
+  {
+    "control": "caller-document-exports",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue document-exports must invoke its observer around main"
+  },
+  {
+    "control": "caller-engagement-email",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue engagement-email must invoke its observer around main"
+  },
+  {
+    "control": "caller-provider-api",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue provider-api must invoke its observer around main"
+  },
+  {
+    "control": "caller-translation-generation",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue translation-generation must invoke its observer around main"
+  },
+  {
+    "control": "caller-synthesis-preparation",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-preparation must invoke its observer around main"
+  },
+  {
+    "control": "caller-synthesis-execution",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-execution must invoke its observer around main"
+  },
+  {
+    "control": "caller-contract-calculations",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue contract-calculations must invoke its observer around main"
+  },
+  {
+    "control": "caller-gtfs-ingestion",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue gtfs-ingestion must invoke its observer around main"
+  },
+  {
+    "control": "preflight-order",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-preparation must invoke its observer around main"
+  },
+  {
+    "control": "dead-caller",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue provider-api must invoke its observer around main"
+  },
+  {
+    "control": "wrong-kind",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue provider-api must invoke its observer around main"
+  },
+  {
+    "control": "duplicate-main",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue provider-api must invoke its observer around main"
+  },
+  {
+    "control": "stop-notice-document-exports",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue document-exports must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-engagement-email",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue engagement-email must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-provider-api",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue provider-api must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-translation-generation",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue translation-generation must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-synthesis-preparation",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-preparation must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-synthesis-execution",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-execution must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-contract-calculations",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue contract-calculations must notify from its actual stop handlers"
+  },
+  {
+    "control": "stop-notice-gtfs-ingestion",
+    "test": "keeps stopping notification inside each worker signal handler",
+    "outcome": "intended_failure",
+    "reason": "Queue gtfs-ingestion must notify from its actual stop handlers"
+  },
+  {
+    "control": "startup-document-exports-SIGTERM",
+    "test": "preserves default stop during document-exports startup",
+    "outcome": "intended_failure",
+    "reason": "Startup signal must keep default termination before worker handlers"
+  },
+  {
+    "control": "startup-engagement-email-SIGTERM",
+    "test": "preserves default stop during engagement-email startup",
+    "outcome": "intended_failure",
+    "reason": "Startup signal must keep default termination before worker handlers"
+  },
+  {
+    "control": "startup-document-exports-SIGINT",
+    "test": "preserves default stop during document-exports startup",
+    "outcome": "intended_failure",
+    "reason": "Startup signal must keep default termination before worker handlers"
+  },
+  {
+    "control": "startup-engagement-email-SIGINT",
+    "test": "preserves default stop during engagement-email startup",
+    "outcome": "intended_failure",
+    "reason": "Startup signal must keep default termination before worker handlers"
+  },
+  {
+    "control": "stop-callback",
+    "test": "records stopping on the next pulse with an increasing sequence",
+    "outcome": "intended_failure",
+    "reason": "Signal observations keep monotone process state"
+  },
+  {
+    "control": "actual-cli-business-inventory",
+    "test": "runs one bounded empty pass and creates private target custody",
+    "outcome": "intended_failure",
+    "reason": "A bounded empty pass makes one business inventory read"
+  },
+  {
+    "control": "actual-cli-stopped",
+    "test": "runs one bounded empty pass and creates private target custody",
+    "outcome": "intended_failure",
+    "reason": "An actual worker exit must attempt its private stopped observation"
+  },
+  {
+    "control": "actual-cli-preflight",
+    "test": "rejects invalid arguments before HTTP [ '--unknown' ]",
+    "outcome": "intended_failure",
+    "reason": "Invalid arguments cannot start an HTTP request"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 33
+  }
+]
