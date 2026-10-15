@@ -193,6 +193,50 @@ describe("POST /api/projects/import", () => {
     }));
   });
 
+  it("preserves the frozen valid EUR row and skipped invalid source status in one RPC payload", async () => {
+    // Base64 keeps the captured CRLF source bytes stable across Git line-ending settings.
+    storageBytes = Buffer.from(readFileSync(path.join(process.cwd(), "src/test/fixtures/portfolio-import/skipped-invalid-status.csv.b64"), "utf8"), "base64");
+    sourceRows[0].checksum = createHash("sha256").update(storageBytes).digest("hex");
+    sourceRows[0].byte_size = storageBytes.byteLength;
+    const payload = {
+      workspaceId: WORKSPACE_ID, sourceDocumentId: SOURCE_ID,
+      configurations: [{
+        worksheetIndex: 0, headerRow: 1,
+        mapping: { name: 0, description: 1, estimatedCost: 4, status: 2, sourceLocation: 3 },
+        defaults: { planType: "capital_program", status: "draft", deliveryPhase: "programming",
+          cost: { currency: "EUR", scale: "ones", priceYear: null } },
+      }],
+      rowReviews: [
+        { worksheetIndex: 0, rowNumber: 2, decision: "create", confirmNameMatch: false, confirmFormula: false },
+        { worksheetIndex: 0, rowNumber: 3, decision: "skip", confirmNameMatch: false, confirmFormula: false },
+      ],
+    };
+    const reviewed = await POST(request({ ...payload, mode: "preview" }));
+    expect(reviewed.status).toBe(200);
+    const { review } = await reviewed.json();
+    expect(review.previewHash).toBe("b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508");
+    expect(review.rows).toMatchObject([
+      { rowNumber: 2, decision: "create", canCreate: true, state: "warning",
+        estimatedCost: { amount: "125000", currency: "EUR", priceYear: null },
+        warnings: [{ code: "unknown_price_year" }] },
+      { rowNumber: 3, decision: "skip", canCreate: false, state: "blocked",
+        status: "invented-status", errors: [{ code: "invalid_status" }] },
+    ]);
+    const response = await POST(request({ ...payload, mode: "commit", approvedPreviewHash: review.previewHash }));
+    expect(response.status).toBe(201);
+    expect(rpcMock).toHaveBeenCalledTimes(1);
+    expect(rpcMock).toHaveBeenCalledWith("commit_project_portfolio_import_v2", expect.objectContaining({
+      p_preview_hash: review.previewHash,
+      p_rows: [
+        expect.objectContaining({ rowNumber: 2, decision: "create", canCreate: true,
+          estimatedCost: { amount: "125000", currency: "EUR", priceYear: null } }),
+        expect.objectContaining({ rowNumber: 3, decision: "skip", canCreate: false,
+          status: "invented-status", errors: [{ code: "invalid_status", message: expect.any(String) }] }),
+      ],
+    }));
+    // The RPC is mocked. A 201 here proves payload custody, not native success.
+  });
+
   it("returns payload-too-large for a stored source above 10 MiB", async () => {
     storageBytes = new Uint8Array(10 * 1024 * 1024 + 1);
     sourceRows[0].checksum = createHash("sha256").update(storageBytes).digest("hex");

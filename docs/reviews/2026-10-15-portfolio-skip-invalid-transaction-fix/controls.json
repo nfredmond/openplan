@@ -1,0 +1,61 @@
+{
+  "cases": [
+    {
+      "case": "harmless-comment",
+      "returncode": 0,
+      "expected": "survived",
+      "observedAsExpected": true
+    },
+    {
+      "case": "unconditional-classifications",
+      "returncode": 1,
+      "expected": "killed by requires valid classifications only for create",
+      "observedAsExpected": true
+    },
+    {
+      "case": "missing-status-guard",
+      "returncode": 1,
+      "expected": "killed by requires valid classifications only for create",
+      "observedAsExpected": true
+    },
+    {
+      "case": "missing-phase-guard",
+      "returncode": 1,
+      "expected": "killed by requires valid classifications only for create",
+      "observedAsExpected": true
+    },
+    {
+      "case": "unconditional-audit-status",
+      "returncode": 1,
+      "expected": "killed by permits raw invalid skipped audit values",
+      "observedAsExpected": true
+    },
+    {
+      "case": "unconditional-audit-phase",
+      "returncode": 1,
+      "expected": "killed by permits raw invalid skipped audit values",
+      "observedAsExpected": true
+    },
+    {
+      "case": "normalized-skipped-plan",
+      "returncode": 1,
+      "expected": "killed by permits raw invalid skipped audit values",
+      "observedAsExpected": true
+    },
+    {
+      "case": "discarded-skipped-rpc-row",
+      "returncode": 1,
+      "expected": "killed by preserves the frozen valid EUR row",
+      "observedAsExpected": true
+    }
+  ],
+  "restoredExactBytes": true,
+  "sources": {
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+    "openplan/src/app/api/projects/import/route.ts": "15a244fb60d281da3d880a14f8c44881576b900539b255a2b8d4d3027079715f"
+  },
+  "limits": [
+    "SQL checks read source only; no PL/pgSQL or constraint execution.",
+    "Route RPC and authorization/database clients are mocked; no native RLS or atomicity proof."
+  ]
+}
