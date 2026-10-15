@@ -1,6 +1,6 @@
 {
   "openplan/src/lib/ops/node-queue-observation.ts": "86cd1cae6b312098c25422e764b673432338aad9d0fc83aca0879b505cd6d070",
-  "openplan/src/test/node-queue-observation.test.ts": "b550a83fe9a6c6e4114e977bb73ef061fb81a4eb18bd9e6a23abc620e3d2ee24",
+  "openplan/src/test/node-queue-observation.test.ts": "527ee6d74ddfdccd8693c5160772c8fa2fddf546447bb6b1b251882ac196e13a",
   "openplan/src/test/node-queue-observation-wiring.test.ts": "9a65df4dfa75b501431855f62641e581f675daa840d4b73d3c130001195bb6c2",
   "openplan/src/test/node-queue-observation-startup.test.ts": "b817e785d6d1497d4997aa7426c85f9d94fa5de6b855ba81ff66b1fbe6647ff8",
   "openplan/scripts/workers/document-exports.ts": "9fd6ddf54548cc2a97de073cb33c6f7956242be48fbc4490c3c21492aed4081a",

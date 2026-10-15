@@ -167,7 +167,7 @@ describe("Node queue process observation", () => {
       "A restarted process cannot revive the old observation identity").toBe(2);
   });
   it("records stopping on the next pulse with an increasing sequence", async () => {
-    const f = await fixture(); state.fakeRows = [];
+    await fixture(); state.fakeRows = [];
     vi.useFakeTimers({ toFake: ["setInterval", "clearInterval"] });
     await observeNodeQueue("synthesis-execution", async noticeStopping => {
       await settle(); noticeStopping();
