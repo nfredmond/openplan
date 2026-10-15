@@ -1,0 +1,489 @@
+{
+  "sourceCommit": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "proofCommit": "7044c60ac5bbed81ce70628f72969ec2ec29b371",
+  "sourceParity": [
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "blob": "3450738a603e2a2bb5fa2d26c3570efdb94c0901",
+      "sha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "currentSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "equal": true
+    },
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "blob": "030b599aec4a9bfe46cd565c7909a1c08b0b7161",
+      "sha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "currentSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "equal": true
+    },
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+      "blob": "84e8f917f9b21194b621b2bb9109d40f04174fcf",
+      "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "currentSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "equal": true
+    },
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/src/lib/projects/portfolio-workbook.ts",
+      "blob": "c6dfbdab91569fcc7a7f700e66e677ee07b6f85b",
+      "sha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "currentSha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "equal": true
+    },
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/src/lib/projects/project-place.ts",
+      "blob": "0bef59faabfc3518b8faf59db4b7ad0442c5d3af",
+      "sha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "currentSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "equal": true
+    },
+    {
+      "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+      "path": "openplan/supabase/config.toml",
+      "blob": "e28ba83878e53242188c82f465628724c14c2724",
+      "sha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "currentSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "equal": true
+    }
+  ],
+  "originals": [
+    {
+      "file": "portfolio-0.xlsx",
+      "sha256": "40ae4e85dd62644adc529332d49918ff92e7438a44c9bfbae54104f32168fa6c",
+      "bytes": 11659,
+      "mode": "0o600",
+      "hashModeSizeMtimeInodeDeviceUnchanged": true
+    },
+    {
+      "file": "portfolio-1000.xlsx",
+      "sha256": "13cf9d52d34ae21e794f2f841994c65d61c56072ef7ae2d49cbc36e11cd0ab34",
+      "bytes": 257240,
+      "mode": "0o600",
+      "hashModeSizeMtimeInodeDeviceUnchanged": true
+    },
+    {
+      "file": "portfolio-2000.xlsx",
+      "sha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c",
+      "bytes": 501381,
+      "mode": "0o600",
+      "hashModeSizeMtimeInodeDeviceUnchanged": true
+    }
+  ],
+  "fixtureAndObservationFilesPreserved": true,
+  "nativeCases": [
+    {
+      "records": 0,
+      "uniqueProjectIDs": 0,
+      "sheetNames": [
+        "Projects",
+        "Read me"
+      ],
+      "projectColumns": 19,
+      "projectPhysicalRows": 1,
+      "xlsxSha256": "40ae4e85dd62644adc529332d49918ff92e7438a44c9bfbae54104f32168fa6c",
+      "odsSha256": "2d808e233ba3a7f7a8083d361ff3d2000392800efc1eb323b3d3a9cf38681b2f",
+      "idSequenceSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "firstIDSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "lastIDSha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "allTypedCellsEqual": true,
+      "sourceFixtureEqual": true,
+      "unknownPriceYears": 0,
+      "blankDocumentReferences": 0,
+      "formulas": 0
+    },
+    {
+      "records": 1000,
+      "uniqueProjectIDs": 1000,
+      "sheetNames": [
+        "Projects",
+        "Read me"
+      ],
+      "projectColumns": 19,
+      "projectPhysicalRows": 1001,
+      "xlsxSha256": "13cf9d52d34ae21e794f2f841994c65d61c56072ef7ae2d49cbc36e11cd0ab34",
+      "odsSha256": "18055b4db903d8e0dac854c0655310b05da29ab27836e908866bb76ae1defae0",
+      "idSequenceSha256": "032c0f46c54c62c1adccc075c303bca09be0d07b37bbfc4bfd9a5c9337318194",
+      "firstIDSha256": "7d2d84a9c299eb0aab39f8b41c339d86c29e468669736f8c188900bb5d0581e9",
+      "lastIDSha256": "3ba91c8474f172f0432506c4d35d735891f569b12ae42f53ae3eca575783a7dc",
+      "allTypedCellsEqual": true,
+      "sourceFixtureEqual": true,
+      "unknownPriceYears": 500,
+      "blankDocumentReferences": 1000,
+      "formulas": 0
+    },
+    {
+      "records": 2000,
+      "uniqueProjectIDs": 2000,
+      "sheetNames": [
+        "Projects",
+        "Read me"
+      ],
+      "projectColumns": 19,
+      "projectPhysicalRows": 2001,
+      "xlsxSha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c",
+      "odsSha256": "a13d2cac185268a7571b6a06a5ff8b0d9f3d73237f59d02d967c4e953a258a59",
+      "idSequenceSha256": "b88ebc48d38aada5e45ba23b992ec6b809ccc1e28bc55d3862913d5f12665f4d",
+      "firstIDSha256": "d5138d6f13c22ec136c926850ab8f3ab6eeb8732dbf19681d30ec3801aaf2627",
+      "lastIDSha256": "57178c6155d8dec6555a6d854dbb676caa8edc017fba0d68fd2b138437a0399a",
+      "allTypedCellsEqual": true,
+      "sourceFixtureEqual": true,
+      "unknownPriceYears": 1000,
+      "blankDocumentReferences": 2000,
+      "formulas": 0
+    }
+  ],
+  "nativeControls": [
+    {
+      "case": "harmless-native",
+      "outcome": "survived",
+      "inputSha256": "778cc4622583bb4cac7767e163ab872a861dd3de8841d78902ab7579ea9efbe2"
+    },
+    {
+      "case": "dropped-row-native",
+      "outcome": "detected",
+      "diagnostic": "complete project record count",
+      "inputSha256": "d68b26143fa23262ea9f567e10bf5e3fa5f1d7515b0073783b1529473895aef7"
+    }
+  ],
+  "oracleControls": [
+    {
+      "case": "harmless dictionary metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "renamed sheet",
+      "outcome": "detected",
+      "diagnostic": "sheet names and order"
+    },
+    {
+      "case": "changed header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers"
+    },
+    {
+      "case": "dropped row",
+      "outcome": "detected",
+      "diagnostic": "complete project record count"
+    },
+    {
+      "case": "duplicate ID",
+      "outcome": "detected",
+      "diagnostic": "unique project IDs"
+    },
+    {
+      "case": "swapped first and last IDs",
+      "outcome": "detected",
+      "diagnostic": "stable complete ID order including first and last"
+    },
+    {
+      "case": "formula marker on literal",
+      "outcome": "detected",
+      "diagnostic": "literal cells without formulas"
+    },
+    {
+      "case": "missing last column",
+      "outcome": "detected",
+      "diagnostic": "nineteen project cells"
+    },
+    {
+      "case": "decimal text cast to number",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "unknown price year replaced by zero",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "changed description",
+      "outcome": "detected",
+      "diagnostic": "all project literal text values"
+    },
+    {
+      "case": "changed Read me row count",
+      "outcome": "detected",
+      "diagnostic": "complete Read me metadata and instructions"
+    },
+    {
+      "case": "runtime error",
+      "outcome": "refused"
+    },
+    {
+      "case": "wrong assertion",
+      "outcome": "refused"
+    }
+  ],
+  "odsParserControls": [
+    {
+      "case": "harmless-table-metadata",
+      "outcome": "survived",
+      "inputSha256": "243757a2da6f68a5b035549c736809adb748621e1bb0cc0fcf2eaaba3ef0c109"
+    },
+    {
+      "case": "renamed-sheet",
+      "outcome": "detected",
+      "diagnostic": "sheet names and order",
+      "inputSha256": "be8cd6f29164b79af921b23dc921f6bba98c003de203aa1ab20725db27b57abc"
+    },
+    {
+      "case": "changed-header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers",
+      "inputSha256": "0cf7335906447971d959d7374657244f002c9a2d751f6e78a4999df190d07cf1"
+    },
+    {
+      "case": "dropped-native-row",
+      "outcome": "detected",
+      "diagnostic": "complete project record count",
+      "inputSha256": "6763dd3c17915c306927c936c9f240a08182c5bd43002ec06061414a2073c227"
+    },
+    {
+      "case": "duplicate-native-ID",
+      "outcome": "detected",
+      "diagnostic": "unique project IDs",
+      "inputSha256": "faddc9379b329e4781637864da293ae3acbb85cc4e799a6ee22316a544c26c5e"
+    },
+    {
+      "case": "swapped-native-IDs",
+      "outcome": "detected",
+      "diagnostic": "stable complete ID order including first and last",
+      "inputSha256": "a5c93eb3ef9b1dbddd4f805dfb059d35ee7055f4d27e0eeb3adb6adc88e829b6"
+    },
+    {
+      "case": "formula-native-marker",
+      "outcome": "detected",
+      "diagnostic": "literal cells without formulas",
+      "inputSha256": "c0e723745711f542b0d9cc48639f21400fc13189fe795bc3d058b80737bc35f1"
+    },
+    {
+      "case": "native-number-instead-of-text",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics",
+      "inputSha256": "6244772306b80e95697ab9a720cda9b98136d7f1ba370c657c6e647a4c95d1f8"
+    },
+    {
+      "case": "native-zero-instead-of-unknown",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics",
+      "inputSha256": "fff0b9bbc891765b509d465a0fdd72374d147be90d3d45e9413c696164190f0a"
+    },
+    {
+      "case": "changed-native-description",
+      "outcome": "detected",
+      "diagnostic": "all project literal text values",
+      "inputSha256": "1585947265c4b31aa5da1698c49eefd41c8b7ce56d05fbeaf947f171ec265111"
+    },
+    {
+      "case": "missing-native-last-column",
+      "outcome": "detected",
+      "diagnostic": "nineteen project cells",
+      "inputSha256": "4c9a38b63d4ccee9a22ac1659d9271ef8ac414a02c80a99af4d86b4ff0f5a8d9"
+    },
+    {
+      "case": "harmless-readme-style",
+      "outcome": "survived",
+      "inputSha256": "13f11e202fc2debe8cde5cf80e637456ec2db3d22f11e72af000afbacc701105"
+    },
+    {
+      "case": "changed-native-readme",
+      "outcome": "detected",
+      "diagnostic": "complete Read me metadata and instructions",
+      "inputSha256": "1f6d6f82c85573fbd31e228574f264ef86198709f773a09b6bbc5cc081bcafb1"
+    }
+  ],
+  "budgetControls": [
+    {
+      "case": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "case": "harmless metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "memory beyond 1 GiB",
+      "outcome": "refused"
+    },
+    {
+      "case": "swap allowed",
+      "outcome": "refused"
+    },
+    {
+      "case": "full CPU quota",
+      "outcome": "refused"
+    },
+    {
+      "case": "two CPUs",
+      "outcome": "refused"
+    }
+  ],
+  "vacuousOracleRefused": true,
+  "restoration": {
+    "byteExactCopy": true,
+    "nativeAllTypedCellsEqual": true,
+    "sha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c"
+  },
+  "nativeODSOriginalPreserved": true,
+  "resourceMain": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "241217536",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000",
+    "affinity": [
+      23
+    ]
+  },
+  "resourceSupplement": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "95068160",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000",
+    "affinity": [
+      23
+    ]
+  },
+  "nativeConversionCommands": [
+    {
+      "label": "native-0",
+      "exit": 0,
+      "seconds": 1.061,
+      "logSha256": "9ecd31c87a163668b2bf00cffc7582fb66a9971da6a161428706bd7c2ae6ed64",
+      "outputSha256": "2d808e233ba3a7f7a8083d361ff3d2000392800efc1eb323b3d3a9cf38681b2f",
+      "outputBytes": 11165,
+      "pageRange": null
+    },
+    {
+      "label": "native-1000",
+      "exit": 0,
+      "seconds": 1.244,
+      "logSha256": "f80ec2fb92a29c36377aa1b417929552e30063ba076fd4d99acd5842e0328d0f",
+      "outputSha256": "18055b4db903d8e0dac854c0655310b05da29ab27836e908866bb76ae1defae0",
+      "outputBytes": 82834,
+      "pageRange": null
+    },
+    {
+      "label": "native-2000",
+      "exit": 0,
+      "seconds": 1.429,
+      "logSha256": "f611e4a5bf7cddcbca7267e278fed4d84e9b21c9426de96094297f3b2a173263",
+      "outputSha256": "a13d2cac185268a7571b6a06a5ff8b0d9f3d73237f59d02d967c4e953a258a59",
+      "outputBytes": 123479,
+      "pageRange": null
+    },
+    {
+      "label": "harmless-native",
+      "exit": 0,
+      "seconds": 1.409,
+      "logSha256": "4566ff27a633d493ce507d3c8b95f6a224009e21b8c1263294291896d047cdaa",
+      "outputSha256": "f0ea858e0cb7d799723ebe2065aca8abedb4a76daaef72798635891dc6bc7270",
+      "outputBytes": 123479,
+      "pageRange": null
+    },
+    {
+      "label": "dropped-row-native",
+      "exit": 0,
+      "seconds": 1.494,
+      "logSha256": "c39a6c1f59837f3b63786b40acbb55e6d2da8d09fe6a5b487dd90367a196e3fc",
+      "outputSha256": "fd8dfe7220c45c122f7847e4a1892fe941ead924f997f420cebaf8d301abfc95",
+      "outputBytes": 123438,
+      "pageRange": null
+    },
+    {
+      "label": "restored-exact-native",
+      "exit": 0,
+      "seconds": 1.416,
+      "logSha256": "937649a9f4d950a0bab5db5ae3ee678efc5657324e6df2703fd988332c6238a0",
+      "outputSha256": "638e5741d9de5a9b67b0814c022ce662d3070eb69d07f347f8ccdc10fff55323",
+      "outputBytes": 123479,
+      "pageRange": null
+    },
+    {
+      "label": "pdf-empty-first",
+      "exit": 0,
+      "seconds": 0.885,
+      "logSha256": "b39906b78c7108b5a07250e5b68ef7ddb6e3c6f4be5ac5fca700fb0fa702fd37",
+      "outputSha256": "b716937ce2b20e30c5c3cef91cb1fbf35ac5f2249ac1e327c2117bc9d8e4a3b6",
+      "outputBytes": 14833,
+      "pageRange": "1-2"
+    },
+    {
+      "label": "pdf-populated-first",
+      "exit": 0,
+      "seconds": 0.999,
+      "logSha256": "17dbfc130268273a369e98ed9fa26a651d7441336ff59a5478858e00884be426",
+      "outputSha256": "23e5559cd25f63047a4b46b5116470ed9d0b10c1a13c1c95540d0532eb64f9c3",
+      "outputBytes": 20728,
+      "pageRange": "1-2"
+    },
+    {
+      "label": "pdf-empty-tail",
+      "exit": 0,
+      "seconds": 0.87,
+      "logSha256": "00323c052cba1b1e6b78b963b9c51a1af74603c69d9af846ba81bcb9d76e6659",
+      "outputSha256": "9bff491ef1d0e6e2fa10fd8b93be10177d650cf5299c50fa172605cb8e5807d2",
+      "outputBytes": 20860,
+      "pageRange": "3-10"
+    }
+  ],
+  "visualReview": {
+    "pdfPagesExported": 10,
+    "pngPagesInspected": 6,
+    "pngDpi": 110,
+    "lastSheetSourcePages": [
+      7,
+      8
+    ],
+    "findings": [
+      "Populated Projects pages clip project IDs and descriptions.",
+      "Second populated page lacks repeated headers.",
+      "Empty Projects nineteen-column header spans six horizontal pages.",
+      "Read me labels and values split across two horizontal pages.",
+      "Read me title and long instructions clip."
+    ],
+    "notInspected": "All other populated rows/pages and interactive native UI; no complete print or human acceptance."
+  },
+  "failedTrials": [
+    {
+      "stage": "first preflight",
+      "error": "FileNotFoundError: cpuset.cpus.effective",
+      "boundary": "No native child starts. Record process CPU affinity instead; retain memory/CPU cgroup controls."
+    },
+    {
+      "stage": "first ODS parser controls",
+      "error": "Fault survived: nineteen project cells",
+      "boundary": "Physical XML index 18 selects trailing repeated blanks. Correct logical column targeting detects the intended missing-column fault."
+    },
+    {
+      "stage": "final direction command at repository root",
+      "error": "npm exits 254 outside nested openplan package",
+      "boundary": "Corrected nested direction check exits zero; both logs retained privately."
+    }
+  ],
+  "privatePermissions": {
+    "rootMode": "0o700",
+    "allDirectories": "0700",
+    "allRegularFiles": "0600",
+    "violations": 0,
+    "bytes": 8188546
+  },
+  "runnerSha256": {
+    "review.py": "12b88e575dd07bba10dbd5116e156da96ebcff4d8382ac61653cfa970e6b28ed",
+    "supplement.py": "24257626394b7432b8c3dc604792a897ffff10ee38fd4eb873c756e9cf478b7c"
+  },
+  "startedAt": "2026-10-15T08:27:34.202846+00:00",
+  "finishedAt": "2026-10-15T08:27:48.386165+00:00",
+  "directionCheck": {
+    "workingDirectory": "openplan/",
+    "exit": 0,
+    "logSha256": "2349b0ee7d422190abfd0f0f90f5ca367d8e91bc77de43d491bb98690fffad87",
+    "remindersRetained": true
+  }
+}
