@@ -1,0 +1,367 @@
+155	closed-unmerged		docs: add dummy marker note to task completion requirements
+157	closed-unmerged		Add no-op placeholder note to AGENTS task completion requirements
+368	closed-unmerged		chore(release): enforce homebrew cask release contract
+508	closed-unmerged		fix(web): compact plan questionnaire navigation buttons
+529	closed-unmerged		fix: preserve cursor behavior in plan question mode
+621	merged	XS	fix: block image uploads during plan mode questions
+688	closed-unmerged		fix: Pending user input displays with "Pending Approval" status
+742	closed-unmerged		fix: stop cursor from being pushed to the very end on each keystroke in custom question answer entry
+749	closed-unmerged		fix: keep pending answer state when switching threads
+862	closed-unmerged		Expire stale pending plan questions on cold app startup
+921	closed-unmerged		Persist pending plan-mode answers across thread re-entry
+976	closed-unmerged	XL	feat: add OS notifications for completed/failed tasks
+1074	closed-unmerged	L	fix: timer stops counting when waiting for user input (#1069)
+1080	closed-unmerged	S	fix(web): preserve composer input when planning question appears
+1082	closed-unmerged	L	fix: preserve composer drafts during pending user input
+1137	closed-unmerged	XL	fix(web): persist pending plan input drafts and stabilize preset answers
+1606	closed-unmerged	M	fix: clear timed-out codex user input prompts
+1759	closed-unmerged	L	feat: allow dismissing pending user-input questions
+1797	merged	L	Support multi-select pending user inputs
+1921	closed-unmerged	XS	Disable SSH askpass for upstream status fetches
+1949	merged	S	fix(web): replace turn strip overlay gradients with mask-image fade
+2008	closed-unmerged	XXL	Jira active tasks right panel
+2043	closed-unmerged	XXL	Add diff viewer, question tool, archive, and store fixes
+2044	closed-unmerged	XXL	Add diff viewer, question tool, archive, and store fixes
+2046	closed-unmerged	XL	Add mobile question tool with one-at-a-time navigation
+2057	closed-unmerged	XL	feat: add sound notification on task completion
+2314	merged	M	Add task sidebar auto-open setting
+2404	merged	XS	fix(server): key AskUserQuestion answers by question text
+2409	merged	S	Narrow the right sidebar and update task panel and diff panel
+2421	merged	XS	fix(settings): disable auto-open of task sidebar by default
+2766	merged	S	Handle non-resumable pending user input
+2971	closed-unmerged	XXL	Add Grok xAI interactive question handling
+3018	merged	L	Composer polish: focus ring, send/stop buttons, command menu, context meter, answer panel
+3115	merged	XXL	Add file preview comments and task toggles
+3152	closed-unmerged	L	Collapse work details during final answer streaming
+3549	closed-unmerged	XL	feat: delegate task
+3578	merged	XXL	[orchestrator-v2] fix(orchestrator): Harden Grok v2 settlement, background task lifecycle, steer visibility, and images
+3605	closed-unmerged	XS	fix(mobile): enlarge new-task composer text to 17pt
+3638	merged	XXL	feat: scheduled tasks (automations)
+3670	merged	XXL	Surface pending tasks in mobile home and draft flow
+3741	closed-unmerged	XS	fix(server): stop surfacing Claude 'task_updated' messages as work-log errors
+3751	merged	L	feat(server): title background-task work-log rows with the task name
+3867	merged	XS	fix(web): increase contrast of question option descriptions
+3892	closed-unmerged	XL	Add sounds for completed turns and user input requests
+3961	merged	L	Skip stale working-task notifications
+3965	merged	M	Fix documented task-runner commands (bun run -> vp)
+3987	closed-unmerged	XS	fix(docs): correct CI task-runner commands in ci.md
+3990	merged	XS	fix(docs): correct CI task-runner commands in ci.md
+4096	closed-unmerged	L	fix(server): resolve Claude user input prompts on stop
+4255	closed-unmerged	L	feat: show a waiting state when background tasks outlive the turn
+4287	closed-unmerged	XL	Add suggested draft task cards and issue triage flow
+4369	closed-unmerged	L	fix(terminal): answer DA1 queries before client attachment
+4388	closed-unmerged	S	Keep Android new task composer above keyboard
+4393	closed-unmerged	S	fix(mobile): keep Android new-task composer above keyboard
+4415	closed-unmerged	L	feat: "waiting" status for threads with open background tasks (i.e. pr monitors)
+4447	closed-unmerged	XL	Add environment-first new task flow on mobile
+4458	closed-unmerged	XXL	feat(sidebar-v2): add task tabs and context forks
+4506	closed-unmerged	L	Show answered questions in the thread timeline
+4592	closed-unmerged	L	fix(web): preserve unsent user-input answers across thread switches
+5064	merged	L	fix(mobile): server model, worktree, and origin preferences now apply to new tasks
+5118	closed-unmerged	L	fix(mobile): handle long multi-select user input forms
+5186	closed-unmerged	M	fix(web): allow skill replies to pending questions
+5316	merged	L	feat(server): server-stamped task data shapes (stacked on #5219)
+5425	closed-unmerged	XXL	feat(grok): multi-agent visibility via task.* events
+5467	closed-unmerged	XXL	feat: run Discord coding tasks in isolated worktrees
+5524	closed-unmerged	L	fix(server): refresh provider session lastSeenAt on turn and task activity
+5567	closed-unmerged	L	fix(server): respect Codex default-mode user input
+5802	merged	XL	feat(swift-ios): default new tasks to recent project
+5867	closed-unmerged	L	feat(web): render AskUserQuestion exchanges as a stylized Q&A list
+5875	closed-unmerged	M	feat(mobile): auto-start new task flow in most recently active project
+5892	closed-unmerged	M	fix(mobile): sort projects by recent activity to fix new task default
+5990	closed-unmerged	XS	fix(server): respect Codex default-mode user input
+6144	closed-unmerged	XXL	fix(swift-ios): harden new task presentation lifecycle
+6224	merged	XXL	Nest mobile task settings in bottom sheets
+6304	closed-unmerged	M	fix(web): prevent task checkboxes from overwriting large Markdown files
+6443	closed-unmerged	M	fix(web): prevent multi-select questions from auto-advancing
+6588	closed-unmerged	M	feat(web): collapsible question panel in the composer
+6594	closed-unmerged	L	fix(web): improve batch thread deletion UX, ask for worktrees deletion confirmation once instead of going one by one
+6626	closed-unmerged	L	fix(grok): Supervised asks and Always allow works
+6646	merged	S	fix(web): keep multi-select questions open after the first click
+6773	merged	M	feat(web): collapse the question prompt from its header
+7129	closed-unmerged	S	fix(server): stop late progress from reviving idle tasks
+7131	closed-unmerged	L	fix(opencode): settle pending questions before teardown
+7172	merged	S	fix(orchestration): do not revive idle tasks from status-free progress
+7187	closed-unmerged	L	fix(terminal): answer Primary Device Attribute queries for fish
+7266	closed-unmerged	L	feat(mobile): add Plan Mode to new task settings
+7302	closed-unmerged	L	fix(preview): keep snapshots slim unless the agent asks
+7393	closed-unmerged	XL	feat(opencode): show native Task subagents in the Agents panel
+7468	closed-unmerged	XS	fix(server): status-free task updates no longer revive an idle task
+7583	merged	M	fix(server): keep the authoritative subagent model when snapshots race task_started
+7585	closed-unmerged	M	fix(server): emit terminal task rows for subagents that survive a stop sweep
+7634	closed-unmerged	XL	feat(swift-ios): filter the new-task project picker and pick its environment
+7740	merged	S	fix(web): add space above composer task tabs
+7803	closed-unmerged	M	feat(chat): show checkboxes on multi-select question options
+7812	closed-unmerged	L	fix(web): treat skills as text in question answers
+7818	closed-unmerged	L	fix(web): switch to plainText mode for composer due to glitching skill invocation in question tool
+7986	closed-unmerged	XXL	feat(server): server-side scheduled tasks — start agent runs automatically
+7987	closed-unmerged	M	fix(server): cancel pending questions on stop
+8097	closed-unmerged	L	fix(web): restore composer tasks after relaunch
+8131	closed-unmerged	XXL	fix(mobile): edit project tasks and restore selection
+8230	closed-unmerged	L	feat(mobile): search the project list when starting a new task
+8233	closed-unmerged	S	fix(web): Keep plan task counts visible
+8313	merged	S	fix(web): keep long task drawers usable on small screens
+8359	closed-unmerged	L	fix(web): keep $ skill picker usable inside question answers
+8390	closed-unmerged	XXL	add cloud tasks
+8443	closed-unmerged	M	fix(server): classify ACP Task tool calls as collab agent tool calls
+8587	merged	XL	fix(mobile): show composer menus when starting a task
+8716	closed-unmerged	XXL	feat(mcp): answer delegated user-input requests
+8731	closed-unmerged	XL	feat(mcp): run scheduled tasks immediately
+8864	closed-unmerged	M	fix(server): cleanup tasklist/findstr orphaned processes on Windows (#8575)
+9139	merged	XXL	fix(grok): emit task lifecycle for monitors and background shells
+9172	merged	S	fix(chat): align failed task progress test
+9282	merged	M	fix(server): full-access OpenCode threads no longer ask for approvals
+9512	merged	XL	feat(codex): support async questions
+9583	closed-unmerged	XL	feat(threads): show pending agent questions
+9810	closed-unmerged	L	feat(web): make pending questions easy to find without moving threads
+9851	merged	M	fix(server): dismiss native questions when their turn ends
+9871	merged	XXL	feat(chat): attach files to question answers
+9906	closed-unmerged	S	fix(server): bound OpenCode V2 approval and question replies
+9925	closed-unmerged	M	fix(server): load only due tasks during scheduler ticks
+10051	merged	L	fix(orchestrator): preserve task-step elapsed time across restart
+10128	merged	S	fix(web): make task row states readable
+10245	merged	S	fix(mobile): keep pending tasks queued when a send fails in flight
+10247	merged	L	fix(mobile): keep the new-task draft when switching environment
+10259	closed-unmerged	S	feat(web): animate task completion segments
+10260	merged	L	feat(mobile): show new-task drafts alongside pending tasks in the thread list
+10290	closed-unmerged	L	perf(server): count pending questions without loading history
+10327	merged	XL	feat(mobile): allow several new-task drafts per project
+10337	merged	M	fix(server): mark Cursor transport error answers as failed
+10377	closed-unmerged	S	fix(web): stop drawing background tasks as agents in the timeline
+10400	merged	M	fix(server): allow settling threads with unanswered async questions
+10417	closed-unmerged	L	fix(clients): show the submitted answers on user input rows
+10431	merged	L	feat(threads): dismiss async questions without replying
+10435	merged	XL	feat(mobile): open the thread screen as soon as a new task is submitted
+10438	closed-unmerged	XS	fix(server): preserve due tasks when time formatting changes
+10556	merged	L	feat(mcp): expose pending user questions
+10562	merged	M	feat(mcp): expose scheduled task run-now
+10586	closed-unmerged	M	fix(server): dismiss orphaned provider questions
+10599	merged	XS	fix(web): correct pending question attachment message
+10620	merged	L	fix(mobile): fit the Android splash icon to its circular mask
+10669	closed-unmerged	L	feat(codex): attach images to question answers
+10706	closed-unmerged	M	feat(web): switch scheduled tasks between environments
+10793	closed-unmerged	XS	fix(server): attribute async question replies
+10954	closed-unmerged	XXL	Feature/antigravity custom answers
+11014	merged	L	fix(chat): fold question answers into tool activity
+11025	closed-unmerged	L	feat(mobile): show final answers in completion notifications
+11124	closed-unmerged	M	fix(web): keep incoming questions from replacing drafts
+11141	closed-unmerged	L	fix(desktop): render Markdown throughout question cards
+11150	closed-unmerged	XS	fix(server): clean up question uploads when preparation fails
+11153	closed-unmerged	S	fix(server): skip scheduled tasks with malformed stored IDs
+11154	closed-unmerged	XS	fix(server): select an available provider for delegated tasks
+11170	closed-unmerged	L	fix(cursor): map ACP updateTodos tool calls onto the Tasks panel
+11214	closed-unmerged	L	fix(cursor): show native Task children in the Agents panel
+11294	merged	M	fix(acp): accept SDK elicitation requests
+11300	closed-unmerged	M	feat(web): ask for optional details before sending codex feedback
+11337	merged	S	fix(web): stop question answers from resetting the editor caret
+11363	merged	M	fix(chat): keep user input outside collapsed work
+11381	merged	XS	fix(server): release preview hosts after unanswered requests
+11477	merged	XS	fix(web): keep nested task states out of parent bullets
+11557	merged	M	fix(server): roll back question attachment copies when respond preparation fails
+11585	merged	M	fix(server): skip corrupt scheduled-task rows instead of stopping the scheduler
+11586	closed-unmerged	XS	fix(codex): keep browser tasks on T3 preview
+11587	closed-unmerged	XXL	feat(tasks): group related threads with shared workbenches
+11592	open	XXL	fix(server): make scheduled-task edits atomic
+11612	closed-unmerged	M	fix(mobile): render markdown in question cards
+11635	open	XXL	fix(server): pause scheduled tasks bound to archived threads
+11680	closed-unmerged	XL	fix(grok): close background tasks when grok reports task completion
+11714	closed-unmerged	M	fix(device): explain a Command Line Tools-only xcode-select instead of asking for a runtime
+11827	closed-unmerged	XS	fix(web): keep Settled shelf following task list (#11752)
+11840	closed-unmerged	L	fix(codex): preserve child answers and tool counts
+11870	merged	S	fix(server): select an available provider for delegated tasks
+11952	closed-unmerged	S	fix(codex): deduplicate child task start events
+12165	merged	S	fix(web): align composer task rows
+12250	closed-unmerged	XXL	feat(v2): improve scheduled tasks and add host failover
+12291	open	M	fix(server): answer requests that arrive before the HTTP handler attaches
+12293	closed-unmerged	L	fix(web): attach SnapShots to the open question instead of the hidden composer
+12351	merged	XXL	feat(mobile): manage scheduled tasks across environments
+12496	merged	L	feat(mobile): search projects when starting a task
+12529	closed-unmerged	L	fix(server): scheduler writes no longer overwrite concurrent task edits
+12530	closed-unmerged	XL	fix(settings): scheduled-task saves only write the fields that changed
+12575	closed-unmerged	M	fix(web): keep typed text when a question option is clicked
+12577	merged	M	fix(web): keep typed text when a question option is clicked
+12602	closed-unmerged	XXL	perf(server): answer cheap git metadata from repository files instead of spawning git
+12664	closed-unmerged	S	fix(server): report dead-session approval and user-input answers as stale failures
+12723	closed-unmerged	L	fix(server): do not replace Claude session while live tasks run
+12736	closed-unmerged	S	fix(web): discarding a draft from the sidebar asks first
+12795	merged	L	refactor(server): share scheduling for tasks and limit recovery
+12843	merged	L	feat(web): answer pull request actions on the row at once
+12900	merged	M	fix(web): show the agent's question on user-input timeline rows
+13074	closed-unmerged	L	fix(provider/antigravity): suppress background task <system_message> leak from assistant text (#11432)
+13080	closed-unmerged	L	fix(server): do not replace Claude session while live tasks run
+13086	closed-unmerged	M	fix(server): block Claude session replacement while child tasks run
+13097	closed-unmerged	L	fix(server): keep Claude sessions up while child tasks run
+13297	merged	XXL	fix(mobile): lift working control above question overlay
+13336	closed-unmerged	L	fix(web): an unsaved citation comment survives a provider question
+13338	closed-unmerged	M	fix(server): stop stranding late delegated task reports
+13343	open	L	fix(server): tell parents when a delegated task is waiting for input
+13345	closed-unmerged	L	fix(server): report delegated tasks stopped by a server restart
+13363	merged	S	fix(server): keep Codex's reset answer when the re-probe fails
+13385	closed-unmerged	M	fix(antigravity): close questions and approvals the agent drops
+13386	merged	M	fix(acp): keep one answer when a running tool reports progress
+13417	closed-unmerged	M	fix(mobile): keep the typed answer when an option is tapped
+13424	closed-unmerged	M	fix(server): settle and snooze see open questions after a restart
+13472	open	XS	fix(web): task durations over an hour no longer wrap in the tasks panel
+13500	closed-unmerged	M	fix(server): validate user-input answers before adapters consume them
+13517	merged	XXL	test(server): record Claude background task and subagent lifecycles live
+13596	closed-unmerged	L	fix(server): continue threads whose background tasks outlived the turn
+13621	closed-unmerged	L	fix(server): continue threads whose background tasks outlived the turn
+13639	closed-unmerged	L	fix(server): continue threads whose background tasks outlived the turn
+13732	merged	L	fix(server): Grok's Auto mode asks you about commands its classifier blocks
+13779	closed-unmerged	L	fix(server): omit empty AskUserQuestion question in thread snapshot
+13786	merged	XS	fix(server): Claude asks before commands in Auto-accept edits
+13788	closed-unmerged	L	fix: suppress completion alert when a background task finishes and the agent resumes
+13865	open	M	fix(web): keep a typed question answer when you open a new thread
+13892	closed-unmerged	S	fix(web): align the question panel without an empty icon gutter
+13906	closed-unmerged	L	fix(cursor): show Task subagents in the Agents panel
+13933	closed-unmerged	L	fix(server): hold background liveness until a waking task resumes
+13938	merged	M	fix(server): parents keep getting woken for every delegated task that finishes
+14019	closed-unmerged	XS	fix(tasks): classify artifact watchers as monitors
+14023	closed-unmerged	M	fix(mobile): explain queued task sync state
+14030	closed-unmerged	L	fix(server): reopen delegated tasks for child follow-ups
+14035	closed-unmerged	L	fix(web): preserve pending question drafts across navigation
+14058	closed-unmerged	L	fix(mobile): show the composer draft after answering a question
+14064	closed-unmerged	S	fix(server): give Claude's usage read time to answer
+14124	closed-unmerged	M	fix(mobile): image-only messages ask the agent to respond, like desktop
+14144	closed-unmerged	S	fix(server): retain open approvals and native questions past the activity cap
+14238	closed-unmerged	L	fix(claude): render AskUserQuestion option previews
+14250	closed-unmerged	M	fix(mobile): make links in user input questions tappable
+14337	closed-unmerged	L	fix(server): Claude 5 task lists show up on orchestrator v2
+14341	closed-unmerged	M	fix(web): unfinished task lists stay in the composer after the turn ends
+14354	closed-unmerged	XXL	feat(server): restrict scheduled tasks to days, hours, and run caps
+14372	open	XS	fix(web): keep attachment errors above question replies
+14407	merged	XXL	feat(server): OpenCode 2 approvals, questions and every runtime mode
+14416	merged	XS	fix(server): delegate_task explains that supervised runtime modes pause the child
+14423	closed-unmerged	L	feat(server): tell the parent when a delegated task pauses on a request
+14496	open	L	fix(server): show when an answer's delivery to the provider fails
+14640	open	M	fix(device): explain a Command Line Tools-only xcode-select instead of asking for a runtime
+14714	closed-unmerged	XXL	feat(server): restrict scheduled tasks to days, hours, and run caps
+14778	open	XS	fix(web): copied task lists keep their nested items and code blocks
+14791	closed-unmerged	L	fix(opencode): keep tool-call progress out of assistant answers
+14845	closed-unmerged	M	fix(web): a collapsed question no longer stops the composer from resting on scroll
+14884	open	M	fix(server): reject unusable user-input answers before the request resolves
+14895	closed-unmerged	L	fix(claude): surface approval-only MCP elicitations
+14964	merged	L	fix(server): Claude 5 task lists reach the tasks drawer
+15040	open	XL	fix(server): restricted agents can no longer rewrite full-access scheduled tasks, plus 13 server fixes
+15046	merged	XS	fix(web): repo/task breadcrumb no longer bounces when the sidebar collapses
+15083	open	S	fix(mobile): open pending tasks from the iPad sidebar
+15085	merged	XXL	feat(server): scheduled tasks can run on a webhook
+15115	merged	S	fix(server): keep delegated review rounds on the task API
+15147	closed-unmerged	M	feat(web): choose scheduled task interval units
+15167	closed-unmerged	L	feat(scheduled-tasks): optionally settle threads on completion
+15170	closed-unmerged	L	fix(orchestration): reconcile held delegated tasks after child completion
+15201	open	M	fix(orchestration): reconcile stale delegated task and held queue state
+15317	open	S	fix(server): blank question option descriptions no longer fail the run
+15320	closed-unmerged	L	fix(chat): align messages and questions with their text direction
+15323	merged	XL	fix(server): restarts keep delegated tasks, queued threads, and stops intact
+15331	open	S	fix(server): Stop on a completion-wake run also disposes the tasks it delegated
+15338	closed-unmerged	S	fix(preview): keep browsers that answer at their own deadline
+15340	open	XS	fix(web): pending question text keeps its line breaks
+15360	open	M	fix(server): Claude Auto mode asks before commands it escalates
+15374	open	S	fix(acp): request ids stay within signed 32-bit so Kotlin agents answer
+15377	closed-unmerged	L	fix(server): Claude 5 task lists show up on orchestrator v2
+15430	open	S	fix(clients): async questions keep a running thread Working
+15519	closed-unmerged	L	fix(web): an incoming question no longer takes over the message you're typing
+15537	merged	XS	fix(web): attachments on an open question are visible again
+15538	open	L	fix(web): SnapShots taken during a question attach to that question
+15622	open	S	fix(mcp): return delegated task handles before client timeouts
+15633	open	L	fix(claude): show question option previews
+15680	closed-unmerged	S	fix(docs): document recurring orchestration tasks
+15699	closed-unmerged	M	fix(docs): document recurring orchestration tasks
+15768	open	XS	fix(server): keep scheduled-task intervals on elapsed time across DST
+15816	open	S	fix(server): Claude wake runs no longer end empty while Claude is still answering
+15907	merged	XXL	feat: agents ask the user for a secret through a private card
+15926	closed-unmerged	XL	feat(server): support multi-select elicitation forms and opt in Antigravity chat
+15965	closed-unmerged	M	fix(web): the desktop browser host answers every request that arrives together, not only the last
+16002	merged	XL	fix(server): Stop also stops delegated tasks and pull request watches
+16064	open	M	fix(server): keep a user's approval answer when Pi, OpenCode or Muse confirm it
+16074	merged	L	fix(acp): preserve typed form answers across clients
+16156	closed-unmerged	M	fix(web): ask before Close with comment closes a pull request
+16213	closed-unmerged	L	fix(clients): waiting rows say what the task waits on
+16215	closed-unmerged	M	fix(server): scheduled tasks start fresh threads from the repository's default branch
+16252	open	M	fix(mobile): keep the sent model visible while new tasks close
+16312	closed-unmerged	L	fix(terminal): answer startup queries so fish doesn't stall 10s
+16392	closed-unmerged	XS	fix(scheduled-tasks): preserve stable task order on status updates and toggles
+16437	closed-unmerged	S	fix(client): late answers no longer vanish when only part of a thread is loaded
+16480	merged	M	fix(mobile): image-only messages ask the agent to respond, like desktop
+16499	closed-unmerged	L	fix(grok): show shell tasks and monitors during an active turn
+16592	closed-unmerged	L	feat(web): choose reasoning, speed, and permissions for scheduled tasks
+16634	merged	L	fix(chat): surface pending subagent questions on parents
+16719	open	XXL	feat(server): delegate_task to a linked environment
+16726	closed-unmerged	L	fix(server): agent scheduled tasks reuse one thread instead of one per run
+16785	closed-unmerged	M	fix(server): keep delegated tasks waiting for background commands
+16807	closed-unmerged	L	fix(mcp): admit delegated tasks using known provider cooldowns
+16832	closed-unmerged	L	feat(mobile): display environment machine name on project selection for new tasks
+16875	open	S	fix(server): schedule_task no longer tells agents every run returns to their thread
+16882	closed-unmerged	L	fix(server): subagent file reads stop asking under full access
+17028	merged	M	fix(server): held queued wakes no longer keep delegated tasks running
+17134	merged	M	fix(server): settle every OpenCode subagent call one report answers
+17206	merged	L	fix(server): Pi editor dialogs prefill the answer composer
+17227	closed-unmerged	L	fix(web): keep submitted answers visible as user replies
+17235	open	L	feat: HTML renders can send the reader's answer to the thread
+17257	closed-unmerged	L	feat(web): schedule tasks without a project
+17320	open	S	fix(server): ambient Claude tasks no longer keep a thread running
+17364	merged	S	fix(web): cancel question auto-advance after navigation
+17409	merged	S	fix(mobile): allow starting a task with only an image
+17410	closed-unmerged	L	feat(mobile): Paste button and iOS password AutoFill for secret requests
+17451	open	M	fix(server): scheduled tasks for No project launch in a scratch folder
+17458	open	S	fix(server): run_scheduled_task_now returns the thread the run launched
+17673	open	L	fix(web): a question no longer traps the message you were writing
+17696	merged	L	fix(server): track resumed subagent follow-ups as separate tasks
+17793	closed-unmerged	L	fix(provider-acp): keep Grok's wake reply after another task was read in the turn
+17885	open	M	fix(server): Claude background-task wakes start when the queue is held
+17893	closed-unmerged	L	feat: scheduled tasks can run in the background
+17921	open	L	fix(claude): settle stopped tasks after session replacement
+17930	closed-unmerged	XXL	feat: task graphs for parallel agent work across worktrees and machines
+17963	open	S	fix(claude): Plan mode asks before writes in Auto and Full access
+18065	merged	M	fix(server): delegated Muse tasks no longer ask approval for every command
+18100	closed-unmerged	L	fix(server): background notifications wait for a human answer instead of interrupting the thread
+18101	open	L	fix(server): an approval answered before its card arrives no longer stays pending
+18175	open	M	fix(web): ask before Close with comment closes a pull request
+18232	open	M	fix(server): threads no longer settle after merging PRs they were asked to merge
+18243	open	XXL	feat(web): side chats let you ask about a thread without interrupting it
+18255	open	L	fix(web): preserve thread mentions in question answers
+18256	closed-unmerged	M	fix(web): @ picker hides threads while answering a question
+18283	closed-unmerged	S	fix(server): reject cloud task launch arguments for local Codex
+18374	open	L	fix(mobile): the preparing pill shows what a new task is waiting on
+18390	closed-unmerged	L	test(server): replay fixture for Claude 5 task lists
+18392	open	M	fix(web): Claude task lists stay in the composer between turns
+18394	closed-unmerged	XL	fix(server): subagent task updates reach Claude task lists
+18398	open	M	fix(server): Claude task lists survive a server restart
+18399	closed-unmerged	XS	docs: Claude task lists need CLAUDE_CODE_ENABLE_TODO_TOOLS
+18455	merged	S	fix(mobile): Forgejo change requests ask for the summary they require
+18459	open	M	fix(server): a cancelled delegated task no longer shows its child's question
+18460	open	L	fix(web): render Markdown in pending question cards
+18467	open	XS	fix(server): thread-bound scheduled tasks run on the thread's current provider
+18493	open	M	fix(client): show Input when a hidden subagent needs an answer
+18517	open	XL	fix(mobile): render Markdown in pending questions
+18544	open	L	fix(web,mobile): answered questions are readable in the transcript
+18653	open	M	fix(web): scheduled task times name the server's timezone
+18764	open	L	fix(server): Codex runs fail and recover instead of hanging when the app-server dies or stops answering
+18771	open	XS	fix(provider-grok): give ACP initialize enough time to answer
+18772	open	M	fix(grok): a Homebrew-installed Grok updates through brew and is compared against the cask
+18789	merged	L	fix(web): attach dropped threads to pending answers
+18940	merged	XS	fix(web): scheduled task model picker no longer shifts the dialog
+19019	open	S	fix(server): a steered send no longer leaves a subagent task running
+19058	open	S	fix(server): take a delegated task's result from its newest turn item
+19102	merged	L	feat(server): run delegated tasks in separate worktrees
+19139	closed-unmerged	L	feat(web): question tabs show answers and clicks never send
+19143	open	L	fix(server): agents can choose the model for a scheduled task
+19176	closed-unmerged	L	feat(desktop): keep Windows tasks running after window close
+19197	merged	M	fix(chat): make links in agent questions clickable
+19214	closed-unmerged	L	fix(client): links in agent questions open when clicked
+19229	open	M	fix(server): agent questions stay answerable after a server restart
+19281	open	S	fix(mobile): keep the composer's draft and typing after answering a question
+19285	closed-unmerged	L	feat(desktop): ask before websites use camera or microphone
+19350	merged	M	fix(web): an unsaved citation comment survives a question or approval
+19372	merged	M	fix(ssh): SSH launch no longer picks a port another server answers on
+19373	open	L	fix(clients): scheduled task editors no longer default to a missing main branch
+19381	closed-unmerged	XL	feat(scheduled-tasks): cron schedules, and runs no longer stack while the agent is busy
+19472	closed-unmerged	L	fix(desktop): ask before closing or quitting while threads are working
+19483	open	S	fix(web): deleted answer chips no longer return after picking an option
+19521	open	L	fix(server): a delegated task's question now wakes its parent agent
+19538	open	M	fix(server): a delegated task's question ends the parent's blocking wait
+19558	merged	M	fix(muse): Supervised threads ask before commands again
+19598	closed-unmerged	M	fix(server): "Always allow this session" stops Codex asking for every command
+19635	merged	M	fix(server): "Always allow this session" stops Codex asking for every command
+19659	open	XXL	fix(acp): preserve native form questions and typed answers

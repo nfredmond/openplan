@@ -1,0 +1,324 @@
+302	closed-unmerged		Fix settings toggle restore behavior
+753	closed-unmerged		fix(web): restore terminal shortcuts in terminal
+894	merged	M	fix(web): restore pointer cursors for sidebar actions
+1026	closed-unmerged	M	fix restore diff sidebar width after resize
+1045	closed-unmerged	M	fix(ws,sidebar): structured error payload and prevent horizontal overflow on project import
+1134	closed-unmerged	XXL	feat: restore agent view and fix Claude model picker
+1170	closed-unmerged	L	fix(desktop): persist window size and restore macOS fullscreen exits cleanly
+1281	closed-unmerged	XXL	feat(web): restore user prompt to composer input on revert
+1282	closed-unmerged	S	feat(web): restore user prompt to composer input on revert
+1710	merged	M	fix: show restore defaults only on General settings
+2210	merged	M	Expand leading ~ in Codex home paths before exporting CODEX_HOME
+2220	closed-unmerged	L	fix(web): restore manual sort drag and keep per-group expand state
+2221	merged	L	fix(web): restore manual sort drag and keep per-group expand state
+2232	closed-unmerged	L	fix(web): revalidate restored sidebar widths
+2255	merged	XS	fix(server): restore CODEX_HOME tilde expansion for Codex launches
+2257	closed-unmerged	XS	fix(server): restore fast mode for nightly GPT-5 models
+2457	closed-unmerged	S	fix: retain first turn messages and restore last user message to composer on revert
+2841	closed-unmerged	M	fix(web): restore sidebar access in zoomed empty state
+2884	closed-unmerged	M	fix(web): restore sidebar access in zoomed empty state
+2912	closed-unmerged	L	fix: restore missing settings variable in ChatView
+3074	closed-unmerged	XS	Fix @pierre/diffs import path to resolve Vite build error
+3207	merged	S	[codex] Use namespace imports for desktop core services
+3230	closed-unmerged	XXL	[fix/feat:ui] Restore changed files card layout
+3238	merged	XL	[codex] Enforce canonical Node namespace imports
+3407	merged	L	[codex] Structure OTLP export diagnostics
+3492	merged	L	[codex] Restore T3 Connect account controls
+3501	merged	S	[codex] fix: restore pending input keyboard activation
+3531	merged	XS	[codex] Fix provider update checks restore defaults
+3555	merged	XS	Restore right panel inset when maximized
+3587	merged	XXL	Restore chat scroll affordances and add timeline minimap
+3597	closed-unmerged	L	feat (desktop): persist window size and restore macOS fullscreen exits cleanly
+3625	merged	S	Restore the ultrathink frame border effect
+3647	closed-unmerged	L	fix(mobile): restore header blur and reliable swipe-back on new iOS versions
+3673	closed-unmerged	L	feat: persist and restore main window size and position
+3711	closed-unmerged	XXL	feat(linear): import Linear issues into threads + deep two-way integration (#3703)
+3860	merged	XXL	[orchestrator-v2] fix(orchestrator): Restore Claude session continuity for resume, wake, and idle release
+3929	merged	XS	fix: restore CLAUDE.md symlink target
+4025	merged	M	fix(mobile): restore iOS home screen branding
+4157	closed-unmerged	XL	fix: restore missing revert actions and chat layout after resize
+4161	merged	L	Restore Copy Link in chat link context menu
+4165	merged	L	Add portable mobile app testing guidance
+4282	merged	L	Restore grouped project filtering in Sidebar V2
+4373	merged	L	[codex] restore Sidebar V2 project actions
+4375	merged	M	fix(web): restore dark composer toolbar styling
+4450	merged	M	Restore model picker layout and retain iterative test state
+4563	closed-unmerged	M	fix(web): restore thread ID copy in the default sidebar
+4617	closed-unmerged	XXL	feat(orchestration): import an existing Claude Code or Codex session by ID
+4711	closed-unmerged	M	fix(mobile): restore native search text after navigation
+4712	merged	M	fix(web): restore sidebar v2 thread actions and terminal icon
+4753	closed-unmerged	XXL	Restore remote vscode open
+4809	merged	S	fix(desktop): restore T3 Connect sign-in
+4862	merged	L	fix(mobile): restore iOS Threads branding
+4985	merged	S	fix(server): restore PR detection without HOME
+5146	closed-unmerged	XXL	feat(codex): import existing sessions
+5176	merged	XL	fix(orchestration-v2): restore generated thread titles
+5309	merged	M	fix(server): restore worktree branch naming in the v2 orchestrator
+5362	merged	XXL	feat(web): first-run welcome wizard with agent setup and project import
+5375	closed-unmerged	L	fix(oxlint-plugin): catch platform and arch reads through node:process namespace imports
+5382	merged	L	fix(web): restore terminal link hover styles
+5385	merged	L	fix(mobile): restore Android tablet thread controls, clean up header
+5499	closed-unmerged	XXL	feat(orchestration-v2): import an existing Claude Code or Codex session by id, with two-way transcript sync
+5541	closed-unmerged	XS	fix(web): restore horizontal scrolling in right panel tabs
+5552	closed-unmerged	L	fix/restore thread scroll position
+5860	merged	XS	fix(web): match create theme and import theme buttons to the standard outline style
+5928	merged	XS	fix(web): enable restore defaults after theme mix changes
+5964	merged	XS	fix(web): use import/export-appropriate icons for theme buttons
+5984	closed-unmerged	XXL	feat(server): import external provider threads
+5996	closed-unmerged	M	fix(web): prevent Windows titlebar shift after restore
+6044	closed-unmerged	L	fix(web): restore reverted messages to composer
+6090	merged	L	fix(swift-ios): restore thread scrolling and back swipe
+6172	merged	L	fix(web): restore typography font sizes to defaults
+6186	closed-unmerged	M	fix(web): restore composer stage artwork
+6250	closed-unmerged	S	fix(desktop): restore Linux dock icon association
+6255	closed-unmerged	XS	fix(web): distinguish imported theme variant previews
+6272	closed-unmerged	M	fix(terminal): restore CTRL+V paste on Windows and context menus
+6274	closed-unmerged	M	Restore project thread trees and align desktop update versions
+6382	closed-unmerged	L	feat(server): surface portable .agents/skills across provider snapshots
+6434	closed-unmerged	L	fix(web): restore stashed prompts with composer undo
+6491	closed-unmerged	M	fix(web): restore desktop update download progress
+6526	merged	M	fix(web): restore the Archive action in the default sidebar thread menu
+6535	merged	L	fix(web): restore default stage artwork colors
+6571	closed-unmerged	XL	fix(theme): apply imported syntax colors
+6583	closed-unmerged	XL	[codex] feat(docker): add portable agent environment
+6617	closed-unmerged	XXL	feat(mobile): themes with appearance override and custom import
+6663	merged	XS	fix(web): restore dark theme palette
+6665	merged	XS	fix(web): restore selected themes in dark mode
+7065	closed-unmerged	XXL	feat(linear): import Linear issues into new thread drafts
+7135	closed-unmerged	XXL	Draft: teleport backend — import/export engine
+7141	merged	M	fix(server): run the CLI on Node versions without import.meta.main
+7160	closed-unmerged	XXL	feat: add multi-provider chat imports
+7171	merged	XS	docs: point CLAUDE.md at AGENTS.md with an @import instead of a symlink
+7213	merged	XS	fix(ssh): restore user PATH for remote servers
+7222	closed-unmerged	S	fix(web): restore terminal Ctrl+A and Ctrl+E
+7255	merged	XXL	feat(desktop): import browser cookies into a profile
+7260	merged	XXL	feat(desktop): import from Chrome, Edge, Brave, Vivaldi, Opera, Arc and Firefox
+7262	merged	XL	feat(desktop): import cookies from Safari
+7323	merged	L	fix(desktop): improve browser cookie import detection
+7415	closed-unmerged	L	fix(web): restore a submitted message to the composer when its turn fails
+7580	merged	L	fix(web): polish theme library buttons, search, and import dialog
+7642	merged	XS	fix(web): import dependency-heavy Open VSX themes
+7708	closed-unmerged	XXL	feat(server): export and import threads between T3 state directories
+7718	merged	S	revert(web): restore sparse hourly usage breakdown
+7829	open	S	fix(desktop): restore missing Start Menu shortcut
+7848	closed-unmerged	L	fix(codex): restore pre-registration child liveness
+7963	closed-unmerged	XL	refactor(web): route all icon imports through one barrel
+8016	merged	S	fix(web): restore right panel toggle clicks after closing on desktop
+8054	closed-unmerged	XL	feat(codex): import conversations created outside T3 Code
+8063	closed-unmerged	L	fix(web): harden Open VSX theme imports
+8066	merged	XXL	feat(web): import recent Codex and Claude threads during onboarding
+8089	merged	M	feat(web): settle and restore threads with a keyboard shortcut
+8097	closed-unmerged	L	fix(web): restore composer tasks after relaunch
+8131	closed-unmerged	XXL	fix(mobile): edit project tasks and restore selection
+8419	closed-unmerged	XXL	feat(web): import themes from local .vsix extension packages
+8596	merged	L	fix: restore automatic thread settling defaults
+8597	merged	M	fix(mobile): restore composer glass and rounded shadows
+8703	open	XXL	feat(mcp): restore durable checkpoints
+8733	merged	XXL	revert(web): restore previous composer banners
+8734	merged	XXL	fix(web): restore unified activity logs and composer banners
+8819	closed-unmerged	L	Fix/opencode stop restore
+8957	closed-unmerged	L	fix(preview): restore browser tab recording via display media handler
+9001	merged	XL	fix(preview): restore recording and macOS rendering after Electron 43
+9010	merged	XS	fix(client): use package import for markdown image helpers
+9031	closed-unmerged	XS	fix(claude): restore plan updates for Claude 5 sessions
+9061	merged	S	fix(web): restore file comment focus in editable preview
+9115	closed-unmerged	M	fix(server): allow disabling the span exporter
+9164	merged	L	fix(models): restore sticky new-thread selections
+9338	closed-unmerged	XXL	fix(providers): restore VibeProxy model options
+9403	closed-unmerged	S	fix(server): unset the allow-scripts policy npx exports before installing the pinned runtime
+9477	closed-unmerged	L	fix(web): invisible toggles and focus rings from imported themes
+9485	merged	XS	fix(desktop): restore second-press quit fallback
+9516	merged	L	fix(desktop): address the browser import review left over from the stack
+9539	merged	S	fix(web): restore composer controls as space becomes available
+9568	merged	S	test(desktop): make path fixtures and timeouts host-portable
+9572	merged	M	test(server): keep provider fixture directories host-portable
+9589	merged	S	test(scripts): keep Windows packaging checks host-portable
+9591	merged	S	fix(desktop): restore panel titlebar interactions
+9603	closed-unmerged	M	fix(web): name imported browser profiles clearly
+9777	merged	M	fix(web): restore the running tool label shine
+9782	merged	L	fix(web): restore composer expansion after tool calls
+9799	merged	XL	fix: restore UX after performance improvements
+9828	merged	M	fix(mobile): hide changed-files navigator and restore refresh in raw diff fallback
+9849	closed-unmerged	L	fix(web): restore renderer focus after preview presses
+9874	closed-unmerged	XL	fix(web): restore file scroll position
+9949	closed-unmerged	XL	fix(terminal): restore copying from Claude Code’s fullscreen TUI
+10012	merged	S	ci: reject unused tailscale exports with Knip
+10023	merged	S	fix(web): restore settled PR colors on hover
+10036	merged	XS	ci: reject unused Codex client exports with Knip
+10145	merged	XS	ci: reject unused SSH exports with Knip
+10165	merged	M	refactor(acp): keep protocol implementation exports private
+10166	merged	L	refactor(shared): remove unused runtime helpers and exports
+10167	merged	L	refactor(client-runtime): remove unused runtime exports and helpers
+10168	merged	L	refactor(contracts): keep RPC implementation exports private
+10169	merged	S	refactor(contracts): trim unused client API runtime exports
+10170	merged	M	refactor(contracts): keep unused settings and relay exports private
+10171	merged	L	ci: enforce runtime exports while allowing types and schemas
+10173	merged	M	fix(mobile): restore live tool shimmer and add a Thinking row
+10184	merged	M	fix(web): resume imported custom-provider threads
+10222	closed-unmerged	L	refactor(web): remove unused overlay components and exports
+10225	merged	L	refactor(web): remove unused runtime wrappers and exports
+10228	merged	S	ci: enforce unused runtime exports in the web app
+10265	merged	M	refactor(desktop): classify backend exports
+10266	merged	S	refactor(desktop): classify electron exports
+10267	merged	S	refactor(desktop): classify app exports
+10268	merged	S	refactor(desktop): classify preview exports
+10269	merged	XS	ci(knip): enforce desktop exports
+10274	merged	M	refactor(server): classify runtime exports
+10275	merged	M	refactor(server): classify orchestration exports
+10276	merged	S	refactor(server): classify service exports
+10277	merged	S	refactor(server): classify telemetry exports
+10278	merged	M	refactor(server): classify provider exports
+10279	merged	M	refactor(server): classify source control exports
+10281	merged	S	refactor(server): classify preview toolkit exports
+10282	merged	XS	ci(knip): enforce server exports
+10309	open	XS	fix(desktop): restore WSL resource monitor execute permissions
+10340	closed-unmerged	L	fix(web): restore thread scroll position
+10387	closed-unmerged	M	fix(server): restore Windows file reveal and browser launches
+10430	merged	L	fix(server): import transcripts with oversized tool records
+10450	merged	L	fix(marketing): restore continuous endorsement scrolling
+10454	merged	L	Revert "fix(marketing): restore continuous endorsement scrolling"
+10476	closed-unmerged	XXL	feat(import): import Cursor and OpenCode projects
+10491	merged	S	fix(mobile): restore assistant message bottom padding
+10493	merged	XL	feat(web): group onboarding project import by repository
+10521	closed-unmerged	S	fix(server): derive imported Codex titles from user requests
+10522	closed-unmerged	M	fix(server): derive Codex import titles from visible prompts
+10547	merged	M	fix(web): tolerate servers that predate git identity in project import
+10598	merged	L	fix(mobile): restore brand artwork in the Android adaptive icon
+10608	closed-unmerged	XXL	fix(server): serialize checkpoint restores with pending turns
+10609	merged	M	fix(web): restore pr list diff counts to the top right
+10611	closed-unmerged	XXL	fix(server): restore queued turn identity after restart
+10631	closed-unmerged	XXL	feat(web): import individual Claude sessions from a project
+10667	merged	XS	fix(desktop): defer keyring loading until macOS cookie import
+10673	merged	S	fix(desktop): restore layout control hit targets
+10730	closed-unmerged	S	fix(web): expand skipped domains in browser import results
+10797	closed-unmerged	M	feat(desktop): import cookies from Zen Browser
+10813	closed-unmerged	S	feat(desktop): import cookies from Dia
+10817	closed-unmerged	M	fix(desktop): restore native macOS fullscreen on restart
+10821	merged	XS	fix(web): restore text-only draft project title
+10950	closed-unmerged	M	fix(server): skip imports of native agent sessions
+11060	closed-unmerged	M	fix(mobile): restore Android composer skill pills
+11298	closed-unmerged	XS	fix(client): restore authenticated device stream tickets
+11338	merged	XL	fix: restore provider history and prompts when rewinding
+11453	closed-unmerged	XXL	feat(server): import Claude Code and Codex history automatically
+11470	merged	M	fix(web): move viewer controls outside media and restore arrow navigation
+11495	closed-unmerged	L	fix(desktop): restore SnapShot shortcuts after portal restarts
+11513	closed-unmerged	L	fix(ci): register the live background verifier and drop dead v2 exports
+11631	open	M	fix(web): restore diff scroll position when switching threads
+11726	closed-unmerged	L	feat(web): add export conversation to Markdown
+11741	merged	S	fix(desktop): restore Node discovery for WSL providers
+11807	closed-unmerged	L	fix(server): prevent duplicate and subagent history imports
+11884	merged	M	fix(web): restore composer focus after closing option menus
+11919	closed-unmerged	L	fix(server): preserve Codex titles on import
+11963	merged	S	fix(server): restore hub limits updates in V2
+12022	closed-unmerged	M	perf(shared): cache EdDSA key imports for relay JWT
+12069	open	XS	fix(server): restore Claude subscription usage through proxies
+12090	closed-unmerged	M	feat(web): restore per-checkout grouping in project settings
+12222	closed-unmerged	M	fix(web): complete thread position restore only against the switched thread's rows
+12263	closed-unmerged	M	fix(server): restore worktree paths on git without worktree list -z
+12292	open	S	fix(server): keep Claude renames when importing sessions
+12338	closed-unmerged	M	fix(server): reject overlapping v2 checkpoint restore workspaces
+12342	closed-unmerged	M	feat(web): reopen the welcome wizard to import projects and conversations
+12380	merged	M	perf(mobile): isolate iOS Live Activity imports
+12393	closed-unmerged	S	fix(server): restore Windows file-manager actions
+12435	closed-unmerged	XS	fix(build): restore msgpackr build permission
+12487	merged	L	fix(server): restore secrets when settings persistence fails
+12488	merged	M	fix(build): parse executable imports without matching source strings
+12493	merged	L	feat(server): export log records over OTLP
+12520	merged	L	feat(desktop): export main process telemetry over OTLP
+12538	merged	L	feat(web): configure OpenTelemetry exports in diagnostics
+12540	merged	M	chore(desktop): leave main process metrics export off until a metric exists
+12548	merged	M	fix(preview): restore v2 sizing and project access
+12552	merged	XS	fix(web): restore providers settings heading
+12645	closed-unmerged	S	fix(server): restore merge actions on hosts without the stacks API
+12657	merged	M	refactor(observability): hold OTLP export settings per signal
+12669	closed-unmerged	XXL	feat(desktop): brutal Keep Awake toggle with save/restore and crash recovery
+12674	closed-unmerged	XS	fix(desktop): restore Command-V paste in browser tabs
+12845	open	S	fix(desktop): import Chromium cookies while open
+12851	closed-unmerged	XS	fix(web): point V2LifecycleRow's AgentElapsed import at its new module
+12873	closed-unmerged	L	fix(web): restore parent queries after nested search
+12982	merged	XXL	chore(lint): report className restyling of components/ui exports
+13095	closed-unmerged	S	fix(desktop): restore maximized windows on their last display
+13152	closed-unmerged	M	refactor(mobile): add a robust @/ import alias for apps/mobile/src
+13207	merged	L	refactor(web): app code stops restyling sidebar, popover, table and misc ui exports
+13328	merged	M	fix(providers): restore compatibility ranges for every harness
+13348	open	S	fix(desktop): restore visible Google sign-in popups in previews
+13486	merged	XS	chore(server): unexport OpenCode capabilities left unused by test removal
+13488	closed-unmerged	XXL	[DO NOT MERGE] feat(server): export agent runs as OpenTelemetry GenAI spans
+13510	closed-unmerged	M	fix(web): import agent sessions from project settings after onboarding
+13528	merged	S	fix(relay): export tunnel cleanup counters to Axiom
+13665	merged	XS	fix(mobile): restore compact iPad trackpad scrolling
+13700	merged	S	fix(web): restore compact provider instance badges
+13736	merged	M	feat(observability): honor OTEL_*_EXPORTER=none per signal
+13910	closed-unmerged	M	fix(web): restore sidebar thread list and row actions for NVDA
+13927	merged	L	fix(server): restore Windows terminal startup after node-pty upgrade
+13935	merged	M	fix(web): continue onboarding after incomplete history imports
+13963	closed-unmerged	M	Removed dead code and unused imports across web, mobile, server and packages
+14018	merged	M	refactor(server): quarantine the V1 importer
+14057	closed-unmerged	M	fix(web): restore the scroll position when returning to a thread
+14097	closed-unmerged	M	fix(server): restore terminal startup on Windows
+14104	merged	S	fix(orchestration-v2): restore earlier app agent transcript pages
+14150	closed-unmerged	M	fix(desktop): restore the Linux window icon
+14254	open	XXL	feat(screenshots): export Pen App Store layouts from mobile captures
+14370	merged	M	fix(server): reject overlapping v2 checkpoint restore workspaces
+14385	merged	XXL	refactor(server): import Effect services as namespaces
+14387	merged	XXL	refactor(orchestration-v2): import Effect services as namespaces
+14389	merged	XL	refactor(clients): import Effect services as namespaces
+14498	merged	L	fix(web): imported themes keep switches and focus rings visible
+14499	merged	S	fix(web): Dark+ and Light+ themes import instead of colliding with built-in ids
+14502	merged	XS	fix(server): checkpoint restore ignores the cwd of a provider session shared across threads
+14520	closed-unmerged	L	fix(server): service updates no longer stop the server when the database backup cannot fit
+14584	merged	XS	fix(web): welcome wizard says where imported projects come from
+14682	closed-unmerged	M	fix(desktop): restore native macOS fullscreen on reopen
+14734	merged	XL	fix(mobile): update Expo 58 to restore widgets and Live Activities
+14811	merged	XS	fix(web): keep branch restore action inline in narrow composers
+14853	closed-unmerged	L	fix(server): replaced transcripts import on Windows with large file IDs
+14874	merged	XS	fix(server): checkpoint restore keeps a nested workspace on Windows
+14881	closed-unmerged	L	feat(web): restore maximized thread tab on orchestrator v2
+14906	closed-unmerged	L	fix(server): preserve imported Codex titles in orchestrator V2
+15030	open	L	fix(mobile): restore lost iOS race fixes and Android keyboard parity
+15072	merged	XL	fix(desktop): V2 imports stashed prompts and drafts from the V1 profile
+15376	open	M	fix(server): imported Claude Code sessions resume on their first follow-up
+15490	merged	S	fix(web): restore project action preview opening
+15495	open	M	fix(server): a restart no longer resends imported history to a session that already has it
+15559	closed-unmerged	XXL	fix(workflows): restore native Claude phases and member conversations
+15634	open	M	fix(server): skip native sessions during bulk import
+15837	closed-unmerged	XS	fix(server): the server starts again after a duplicate Option import
+15847	merged	XS	fix(server): drop the duplicate Option import that breaks main CI
+16019	merged	XS	fix(mobile): restore QR scanning in iPad pairing sheet
+16164	closed-unmerged		feat(server): import Pi chat history with native continuation
+16267	merged	L	refactor(server): import service modules as namespaces, not aliased layers
+16307	merged	S	refactor(relay): import HookInboxObject once, as a namespace
+16315	merged	M	refactor(web): import connection storage as a namespace in its test
+16326	closed-unmerged	S	chore(lint): import Effect modules from their subpaths
+16382	merged	M	fix(relay): export traces through one tracer, one request span each
+16386	closed-unmerged	M	fix(web): restore thread details tooltip and add shortcut
+16415	merged	XS	fix: restore desktop and server typechecks on main
+16495	merged	XS	fix: restore service references breaking ci
+16604	closed-unmerged	M	fix(server): restore the checkpoint before rolling back the provider
+16607	closed-unmerged	L	fix(connect): Restore the pinned relay client before connecting
+16608	merged	XS	test(web): allow cold timeline imports on CI
+16662	open	S	fix(server): session import skips Codex subagent sessions
+16731	open	XL	feat(server): t3_thread_import, conversation only
+16863	open	L	fix(server): restore the checkpoint before rolling back the provider
+17073	merged	L	fix(mobile): restore file viewer insets and glass header
+17259	merged	XS	fix(web): keep incremental highlighter return type portable
+17356	closed-unmerged	M	fix(acp): restore empty-valued default agent choices
+17361	merged	L	fix(mobile): restore chat image previews in the v5 stack
+17375	merged	L	refactor(providers): namespace-import service modules in core, Muse, Pi, and testing
+17493	open	M	fix(server): restore input for desktop browser streams
+17778	merged	M	fix(server): restore auto resume for wrapped Claude gateway rate limits
+17810	merged	XS	fix(server): restore OpenCode adapter test typecheck
+17865	open	M	fix(codex): restore reasoning controls for ChatGPT account models
+18059	open	L	fix(desktop): restore SnapShot shortcuts after portal restarts
+18198	open	M	fix(server): import agent sessions from a project's linked worktrees
+18423	open	S	fix(web): reveal folded imported responses when opening citations
+18507	merged	M	fix(mobile): restore native scroll-edge effects on forms and PRs
+18633	open	L	fix(server): service launcher reports and aborts its pre-update database backup
+18850	open	S	fix(web): restore palette focus when no composer is mounted
+19161	open	L	fix(server): import long Claude sessions that are mostly tool records
+19171	open	M	fix(bitbucket): restore reviewer lookup and guide token setup
+19370	open	S	fix(server): OTLP exports say which machine and build they came from
+19392	closed-unmerged	XL	feat(mobile): import custom JSON themes
+19509	closed-unmerged	S	fix(server): restore Windows File Explorer reveal launches
+19604	merged	XS	fix(desktop): import CA trust variables from the login shell
+19687	open	S	fix(clients): allow portable provider handoffs after detach

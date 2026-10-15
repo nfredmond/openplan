@@ -1,0 +1,9 @@
+{
+  "number": 13198,
+  "title": "fix(server): background PR sync reads summaries in batches",
+  "html_url": "https://github.com/pingdotgg/t3code/pull/13198",
+  "bodyOmitted": true,
+  "rawResponseSha256": "c23174bed41066273376e9788bf8056a53428eeaa3cf52c3519a5bc25fc1371c",
+  "rawResponseRetainedAt": "/home/nathaniel/.local/state/openplan/t3code-opus-research-20261015/evidence/body-repair/13198.json",
+  "scope": "Metadata-only receipt of the read-only body re-fetch. Original source text remains in the retained research package."
+}

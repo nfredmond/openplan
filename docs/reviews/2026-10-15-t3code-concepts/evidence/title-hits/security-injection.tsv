@@ -1,0 +1,138 @@
+164	merged		fix(desktop): prevent Electron dev process leaks on restart
+666	merged		fix(web): polyfill crypto.randomUUID for non-secure HTTP contexts
+675	closed-unmerged		apps/server: Fix potential command injection on Windows
+949	merged		fix: clean up timeout in PlanSidebar to prevent memory leaks
+1217	merged	XS	Use secret release app ID in release workflow
+1339	closed-unmerged	M	chore(security): update github actions and pin to commit sha
+1398	merged	L	fix(security): send sensitive config over a bootstrap fd
+1464	closed-unmerged	XXL	feat: Fly Code — Jira, SECDESK, standup, command tray & security hardening
+1674	closed-unmerged	XXL	Fix copy button placement and hover leak in agent messages
+1725	closed-unmerged	XXL	Add vault secrets and prompt variable support
+1761	closed-unmerged	L	Git Sync Settings - Credential Prompt Control
+1782	closed-unmerged	S	security: add HTTP security headers, CSP, and core dump gitignore
+1868	merged	XXL	Persist client settings and saved environment secrets
+1874	closed-unmerged	XS	Mitigate Windows GH CLI command injection
+1891	merged	L	Harden secret store and resolve catalog overrides
+2026	closed-unmerged	M	Clean up leaked tmp_pack files after failed status refresh
+2042	merged	L	Fix Claude Process leak[MEMORY INTENSIVE], archiving, and stale claude session monitoring.
+2051	merged	XS	fix: prevent user-input activities from leaking into pending approvals projection
+2145	closed-unmerged	XS	Security: Session identifiers appear to be persisted as raw bearer secrets
+2178	closed-unmerged	L	fix(server): kill managed probe opencode processes (mem leak)
+2359	merged	S	fix(opencode): Memory Leak - Stop OpenCode refresh from leaking serve processes
+2657	closed-unmerged	L	Harden OpenCode probe teardown to avoid leaked processes
+2687	closed-unmerged	XS	fix(security): remove shell injection vector in Windows process spawning
+2916	merged	XL	fix(desktop): Niri/Hyprland - Linux secret storage backend
+2920	merged	M	fix(ssh): Surface redacted stdout for failed commands
+3110	merged	L	Use idiomatic Effect options for server secret reads
+3172	merged	XL	Harden preview ownership and option-based secret handling
+3239	merged	L	[codex] Structure desktop persisted credential errors
+3243	merged	XL	[codex] structure server secret store errors
+3345	merged	M	[codex] Structure mobile secure storage failures
+3349	merged	L	[codex] add session context to credential errors
+3402	closed-unmerged	XXL	Clean up cloud secret error mappings
+3405	merged	L	[codex] Sanitize client error log diagnostics
+3410	merged	M	[codex] Redact agent awareness relay diagnostics
+3411	merged	M	[codex] Sanitize client runtime failure diagnostics
+3412	merged	M	[codex] Redact SSH tunnel diagnostics
+3414	merged	M	[codex] sanitize provider runtime failure diagnostics
+3416	merged	M	[codex] sanitize VCS refresh diagnostics
+3417	merged	L	[codex] sanitize ACP native event diagnostics
+3427	merged	S	[codex] Sanitize YAML schema diagnostics
+3430	closed-unmerged	S	[codex] Sanitize Bitbucket API failures
+3431	merged	XS	[codex] Sanitize text generation CLI errors
+3434	closed-unmerged	M	[codex] Sanitize provider config decode diagnostics
+3508	closed-unmerged	XXL	fix(server): stop garbled escape sequences leaking into the terminal
+3516	closed-unmerged	XS	[codex] fix: reject credentials in advertised endpoint URLs
+3537	closed-unmerged	L	[codex] Prevent background Git fetches from leaking temp packs
+3766	closed-unmerged	M	Add "Disable browser WebSecurity" toggle to the preview browser
+4189	closed-unmerged	S	fix(mcp): revoke credentials by provider session
+4424	closed-unmerged	L	fix(server): resolve monorepo favicons and sanitize SVGs
+4467	closed-unmerged	M	Carry a redacted stderr excerpt on git command failures
+4659	merged	L	Keep MCP credentials alive across provider turns
+4692	merged	L	Fix relay credential lookup for unlinked environments
+5105	closed-unmerged	S	fix(desktop): skip unreadable legacy credentials during migration
+5124	closed-unmerged	S	fix(server): prevent MCP traffic from extending credentials
+5563	merged	M	fix(mobile): invisible T3 Connect devices can now be seen and removed
+5896	closed-unmerged	M	fix(web): remove inline style schema allowance for markdown security
+6188	closed-unmerged	S	fix(shared): parse owner/repo from credentialed and ssh-port GitHub remotes
+7413	closed-unmerged	L	fix(server): unwrap JSON envelope leaking into generated titles
+7483	open	XXL	feat(desktop): sign in through the browser, sharing the t3 connect credential
+7953	merged	S	fix(clients): reconnect after credentials fail during remote server updates
+8005	merged	XS	fix(web): treat configured urls with uppercase schemes as secure
+8187	merged	L	perf(server): cut idle CPU use and stop provider event leaks
+8256	closed-unmerged	L	fix(desktop): preview cookies no longer leak across projects
+8848	closed-unmerged	M	fix(relay): stop reporting environment credential rejections as unreachable
+9022	closed-unmerged	S	fix(desktop): forward Bitbucket credentials from the login shell
+9178	merged	M	fix(connect): refresh relay credentials before expiry
+9246	closed-unmerged	L	fix(desktop): app no longer opens a blank window when the Linux credential store is locked
+9477	closed-unmerged	L	fix(web): invisible toggles and focus rings from imported themes
+9523	merged	M	fix(auth): keep pairing credentials out of access read models
+9594	merged	XXL	fix(connect): refresh HTTP credentials without reconnecting
+9628	closed-unmerged	M	fix(server): respawn Claude sessions after re-login on expired credentials
+10054	merged	S	fix(server): preserve inline provider secrets on redacted saves
+10090	closed-unmerged	M	fix(claude): keep MCP credentials out of process arguments
+10147	merged	S	refactor(mobile): remove unused pairing redaction wrapper
+10303	merged	XS	docs: link the repository security reporting policy
+10579	open	S	fix(server): publish complete secrets atomically
+10865	closed-unmerged	XS	test(server): match V2 tool output redaction in retention coverage
+10998	merged	M	fix(mobile): prevent text leaking through Android glass
+11462	closed-unmerged	XXL	fix(auth): explain expired environment credentials instead of offering a dead reconnect
+11729	closed-unmerged	M	fix(server): add sanitized hints for common VCS command failures
+11760	merged	XXL	ci(desktop): sign fork PR macOS previews without exposing signing secrets
+12023	closed-unmerged	M	perf(relay): reuse one Clerk OAuth client per credential pair
+12024	closed-unmerged	M	fix(server): fail fast when stored CLI credential has no refresh token
+12413	closed-unmerged	L	chore(deps): pin vulnerable transitive dependencies to patched versions
+12417	merged	XL	chore(deps): bump parents that carry vulnerable transitive dependencies
+12437	closed-unmerged	S	fix(git): recognize GitHub remotes with credentials and ports
+12487	merged	L	fix(server): restore secrets when settings persistence fails
+12728	closed-unmerged	XS	fix(server): dedupe identical AGENTS.md and CLAUDE.md convention inject
+12983	merged	XL	feat(auth): share provider sign-in flows and credential bindings
+13074	closed-unmerged	L	fix(provider/antigravity): suppress background task <system_message> leak from assistant text (#11432)
+13137	closed-unmerged	L	fix(acp): prevent assistant message fragmentation on background tool updates & filter leaked harness telemetry
+13232	closed-unmerged	L	fix(server): revoke Claude MCP credentials when the previous adapter is gone
+13318	closed-unmerged	XXL	Possible postgres pool leak
+13491	merged	M	fix(accessibility): correct control announcements and sidebar traversal
+13687	open	M	fix(client): a slow server no longer mints a new relay credential on every reconnect
+13695	merged	M	fix(server): prune expired replay-protection files from the secrets directory
+14080	closed-unmerged	M	fix(server): keep MCP credentials alive while provider sessions run
+14103	merged	XL	feat: save Bitbucket credentials from Source Control settings
+14128	merged	XS	fix(server): print pairing credential expiry as ISO timestamp
+14209	merged	M	fix(shared): merge OpenCode Go limits by credential
+14373	closed-unmerged	M	fix(server): read pull request summaries under their own workspace's credential
+14386	merged	XXL	feat(server): OpenCode 2 text generation, MCP injection and restart reconciliation
+14601	merged	S	fix(desktop): markdown pages no longer render invisible in the dark-mode browser
+14727	merged	M	fix(desktop): markdown no longer loads invisible in new dark-mode browser tabs
+14886	closed-unmerged	S	fix(server): t3-code MCP credential survives a turn that waits over 24 hours
+15907	merged	XXL	feat: agents ask the user for a secret through a private card
+16050	open	XXL	feat(server): typed plugin settings, write-only secrets and plugin storage
+16214	merged	L	chore(deps): bump cursor sdk and astro to clear vulnerable transitives
+16257	closed-unmerged	S	fix(server): a desktop left running past a day keeps its local backend credential
+16273	merged	L	fix(web): a rejected desktop-local credential is not retried every poll
+16409	merged	S	fix(server): avoid scanning completed history for pending secrets
+16467	closed-unmerged	M	fix(pull-requests): don't check out a PR into a project that only lent its credentials
+16605	open	M	fix(server): read OpenCode Go limits key from OpenCode 2's credential database
+16860	closed-unmerged	M	fix(server): clone and fetch explain missing HTTPS credentials
+16950	merged	L	fix(web): file previews handle downloads, in-page links, and repo paths, and favicons stop leaking internal hosts
+17410	closed-unmerged	L	feat(mobile): Paste button and iOS password AutoFill for secret requests
+17920	closed-unmerged	L	fix(codex): refresh managed credentials during active turns
+18154	closed-unmerged	S	fix(provider-cursor): Cursor text generation no longer leaks SQLite file handles on every call
+18289	merged	XS	perf(github): resolve credentials once per GraphQL request
+18505	merged	XL	refactor(settings): centralize schema-declared secrets and inputs
+18509	merged	L	fix(server): consolidate browser credential handling
+18738	closed-unmerged	S	fix(deps): MCP orchestration no longer runs on a vulnerable SDK
+18739	closed-unmerged	L	fix(deps): marketing site images no longer render with a vulnerable sharp
+18741	closed-unmerged	S	fix(deps): Express no longer resolves client addresses with a vulnerable proxy-addr
+18742	closed-unmerged	S	fix(deps): web serialization no longer runs on a vulnerable seroval
+18743	closed-unmerged	S	fix(deps): Devtools no longer quotes shell paths with a vulnerable shell-quote
+18744	closed-unmerged	S	fix(deps): web builds no longer map sources with a vulnerable source-map-js
+18745	closed-unmerged	S	fix(deps): build config TOML no longer parses with a vulnerable smol-toml
+18746	closed-unmerged	S	fix(deps): Xcode project generation no longer uses a vulnerable uuid
+18747	closed-unmerged	S	fix(deps): D-Bus introspection no longer parses XML with a vulnerable xml2js
+18749	closed-unmerged	S	fix(deps): the lockfile no longer resolves an unused, vulnerable Valibot
+18780	open	M	fix(server): pull requests load for credentials that cannot read /user
+18829	open	M	fix(relay): concurrent links no longer revoke both environment credentials
+19302	closed-unmerged	M	fix(github): back off transient credential probe failures
+19310	merged	S	fix(provider-cursor): Cursor text generation no longer leaks SQLite file handles on every call
+19321	merged	S	fix(server): stalled OAuth token requests no longer block credential calls
+19499	open	L	fix(connect): preserve rotated credentials during shutdown
+19615	open	L	feat(mcp): manage pairing credentials and trusted clients

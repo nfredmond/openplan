@@ -1,0 +1,641 @@
+169	merged		Limit composer arrow-key mention jumps to adjacent mention boundaries
+362	closed-unmerged		Add Codex rate limit API and show usage in provider picker
+387	closed-unmerged		Refactor CSS design tokens to use OKLch color space
+533	closed-unmerged		TODO.md - Implement all items: scroll, thread limit, archiving, project…
+667	closed-unmerged		feat: add weekly usage limit pill in sidebar
+669	closed-unmerged		feat: add weekly/Session usage limit pill in sidebar
+880	closed-unmerged		feat: add weekly/session usage limit pill in sidebar
+1046	closed-unmerged	XL	Context Limit Viewer
+1175	merged	S	Use GitHub App token when checking out main in release workflow
+1351	merged	L	Surface context window usage in the UI
+1605	closed-unmerged	XL	feat: track provider usage and project weekly quota
+1732	closed-unmerged	XXL	feat: display provider usage limits in settings
+1838	merged	XS	[codex] Reject websocket tokens after session expiry
+1943	merged	M	fix: Align token usage metrics for both Claude and Codex
+2033	closed-unmerged	L	Add rate limit display to ui
+2149	merged	S	Use GitHub App token for release uploads
+2155	closed-unmerged	L	Add an account limit meter to the chat composer
+2193	closed-unmerged	L	feat: surface provider rate limit usage in composer
+2197	closed-unmerged	XXL	Add refresh button to sidebar usage limits card
+2201	closed-unmerged	XXL	Codex/sidebar usage refresh
+2204	merged	XL	reduce startup time by ~47% and memory usage by up to 150-300MB
+2222	merged	M	fix(web): show friendly error for invalid pairing token
+2235	closed-unmerged	XXL	Implement provider usage sidebar
+2273	closed-unmerged	XXL	fix(cost): Opus-accurate context ring + cost ledger + stop button
+2412	closed-unmerged	M	Clamp Claude token usage to selected context window
+2484	closed-unmerged	XL	Add Codex usage indicator
+2551	closed-unmerged	M	Fix Claude context usage normalization for UI meter, Fixes #2034
+2908	closed-unmerged	XS	fix(opencode): limit SSE reconnection attempts to prevent infinite hang
+2925	closed-unmerged	XXL	feat(relay): enforce resource limits
+2930	closed-unmerged	L	Make SSH Effect usage more idiomatic
+3073	merged	M	Improve idiomatic Effect usage in config and Tailscale paths
+3148	closed-unmerged	L	Refactor filesystem and VCS config Effect usage
+3162	merged	XL	Unify mobile typography tokens across the app
+3249	merged	L	[codex] Structure cloud CLI token errors
+3309	merged	M	[codex] Structure mobile relay token-store failures
+3541	closed-unmerged	XXL	Fix/pr panel rate limit resilience
+3678	closed-unmerged	M	fix(auth): keep MCP sessions authorized past token expiry
+3825	closed-unmerged	XL	perf: reduce CPU usage in event replay, projections, and sidebar
+4016	closed-unmerged	XXL	Reduce archived conversation disk usage with cold storage
+4073	closed-unmerged	XXL	feat(web): show provider usage
+4141	closed-unmerged	XXL	Improve provider usage tracking across Codex, Claude, and Grok
+4326	closed-unmerged	XL	feat: show Codex and Claude usage limits
+4343	closed-unmerged	M	fix(desktop): recover zoom from the upper limit
+4449	closed-unmerged	XXL	[WIP] feat(usage): local usage analytics — ledger, RPC, settings page
+4469	merged	S	Limit physical key fallback to non-Latin layout output
+4482	closed-unmerged	L	Fix sidebar resize limit after window growth
+4504	closed-unmerged	XXL	Proposal: interface review remediation for apps/web (a11y, contrast, design tokens)
+4527	closed-unmerged	XXL	feat: auto reasoning effort with bounded limits and per-message model attribution
+4530	merged	L	feat(relay): limit managed tunnels per user
+4572	closed-unmerged	L	feat(opencode): report context window usage
+4611	closed-unmerged	XL	feat(sidebar): show provider quota usage in the sidebar footer
+4635	merged	XXL	Add managed tunnel limits migration
+4655	merged	S	Fix live sidebar resize limits and defer Alchemy runtime context
+5077	closed-unmerged	XL	Show provider usage-limit stops in the UI instead of failing silently
+5184	closed-unmerged	S	fix(server): ignore malformed Claude model usage
+5394	merged	S	fix(ci): isolate releases from shared API rate limits
+5405	closed-unmerged	L	fix(grok): surface context window usage in the composer
+5423	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5473	closed-unmerged	L	fix(server): type the account rate-limit runtime payload
+5503	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5619	closed-unmerged	XXL	feat(web): usage page showing what your agents actually cost
+5664	merged	L	feat(web): fold plan mode and token-by-token output into Legacy features
+5673	merged	M	fix(server): stop PR status lookups amplifying GitHub rate limits
+5684	merged	XXL	feat(usage): usage page reading provider transcripts across environments
+5697	merged	L	fix(web): usage chart no longer makes Claude look like the bigger spender
+5700	closed-unmerged	M	fix(usage): keep the richest copy of a deduped usage record
+5701	closed-unmerged	M	fix(usage): stop counting replayed codex rollout heads
+5704	closed-unmerged	XL	feat(usage): add Grok and OpenCode reporting
+5705	closed-unmerged	S	fix(web): make usage titlebar draggable
+5730	closed-unmerged	M	fix(web): usage window controls no longer overlap native titlebar buttons
+5735	closed-unmerged	L	fix(usage): scan every provider instance home and split usage per home
+5736	closed-unmerged	L	Feat/token usage analytics
+5738	closed-unmerged	XL	feat(usage): split usage per provider instance home
+5739	closed-unmerged	XXL	feat(usage): show 5h/weekly rate limits on the usage page and sidebar hover
+5743	merged	XL	Add cross-platform mobile usage dashboard
+5756	merged	M	fix(web): usage page loses the cost quality panel, gains a back button
+5765	closed-unmerged	XL	feat(usage): show usage costs in a currency you pick
+5772	merged	L	fix(web): usage totals no longer jump while devices report in
+5806	closed-unmerged	L	fix(usage): usage no longer misses custom provider-instance homes
+5810	closed-unmerged	L	fix(server): keep usage pricing aliases distinct
+5811	closed-unmerged	L	fix(server): exclude inherited Codex fork usage
+5812	closed-unmerged	L	fix(server): report incomplete usage scans
+5814	closed-unmerged	L	fix(server): reconcile Codex cumulative usage
+5823	merged	M	fix(web): unify usage page chrome
+5825	closed-unmerged	L	fix(web): wait for usage refresh completion
+5826	closed-unmerged	L	feat(usage): filter dashboard by device
+5827	closed-unmerged	L	fix(usage): distinguish unpriced usage from zero cost
+5828	closed-unmerged	XL	fix(usage): handle unavailable environments
+5830	closed-unmerged	L	feat(usage): add Grok reports to desktop and mobile
+5883	closed-unmerged	S	fix(web): make usage titlebar draggable
+5887	merged	M	fix(server): usage no longer double-counts forked Codex sessions
+5897	merged	XS	fix(web): match usage titlebar text styling
+5920	closed-unmerged	L	fix(usage): unreachable environments no longer block the usage tab
+5921	closed-unmerged	XXL	feat(usage): add Cursor usage tracking
+5929	merged	L	Add settings and usage breadcrumbs
+5933	merged	XXL	feat(swift-ios): add usage analytics
+5945	closed-unmerged	XXL	feat(composer): show provider account usage in the input area
+5947	closed-unmerged	M	fix(web): usage page says when model rates are unavailable
+5992	merged	L	fix(swift-ios): keep usage refresh truthful
+6014	closed-unmerged	XL	feat(usage): add OpenCode provider priced from models.dev
+6031	merged	M	feat(web): add back buttons for the pull requests and usage pages in the sidebar footer
+6040	closed-unmerged	L	feat(usage): add OpenCode usage reporting
+6046	closed-unmerged	XL	feat(usage): add Cursor to the Usage page
+6051	closed-unmerged	L	feat(usage): include Grok Build in the usage view
+6057	closed-unmerged	XXL	feat(usage): scan Cursor, Grok, and OpenCode alongside Claude and Codex
+6080	closed-unmerged	XXL	feat(composer): show provider account usage in the composer
+6094	closed-unmerged	L	fix(usage): only show enabled providers
+6113	closed-unmerged	XXL	fix(mobile): match desktop usage views
+6164	closed-unmerged	L	feat(usage): add one day usage stats
+6170	merged	XL	Add hourly past-24-hour usage view
+6264	closed-unmerged	L	feat(web): show remaining limits beside usage
+6312	closed-unmerged	M	fix(usage): resolve transcript dirs from providerInstances
+6357	closed-unmerged	XXL	feat(usage): add subscription allowance reporting
+6383	closed-unmerged	XL	feat(server): Grok Build effort, auth, rewind, and usage [WIP - for content]
+6396	closed-unmerged	M	fix(server): show Grok usage limit errors
+6455	closed-unmerged	M	fix(usage): exclude offline environments from pending totals
+6557	closed-unmerged	XXL	feat(usage): show live provider limits
+6569	closed-unmerged	XL	feat(web): theme diffs and code from VS Code tokenColors
+6578	closed-unmerged	XL	fix(grok): show reasoning and context usage in the composer
+6586	closed-unmerged	M	fix(claude): subagent usage no longer fills the context meter
+6596	closed-unmerged	L	fix(server): usage counts every configured provider profile
+6603	closed-unmerged	L	fix(usage): aggregate transcripts from every provider instance
+6639	closed-unmerged	L	fix(claude): surface usage-limit pauses
+6640	closed-unmerged	XL	feat(claude): auto-continue after usage limits
+6669	merged	M	fix(web): improve Codex usage graph contrast
+6670	merged	S	fix(shared): degrade an unknown system time zone to UTC in usage windows
+7070	closed-unmerged	XXL	feat(grok): Grok Build workflows, usage, rewind — supersedes #6383
+7072	closed-unmerged	L	feat(server): show OpenCode session context window usage
+7096	closed-unmerged	M	fix(server): include archived Codex sessions in usage totals
+7133	closed-unmerged	XL	fix(usage): attribute account limits per provider instance
+7147	merged	XL	feat(web): redesign usage insights
+7165	merged	L	fix(claude): surface usage-limit pauses in the thread
+7177	closed-unmerged	M	fix(usage): do not scan ~/projects when Claude transcripts are missing
+7181	closed-unmerged	L	fix(usage): say when cost is unavailable instead of $0.00
+7219	merged	S	fix(web): show all usage breakdown periods
+7221	closed-unmerged	XL	feat: add OpenCode usage statistics
+7238	closed-unmerged	L	fix(server): exclude inherited Codex child usage
+7265	closed-unmerged	M	fix(server): bound usage transcript lines
+7296	merged	XS	fix(web): center the context usage meter
+7308	closed-unmerged	L	fix(codex): recover turns after usage limits
+7350	closed-unmerged	XL	feat(usage): add OpenCode usage
+7374	closed-unmerged	XL	feat(web): show provider subscription limits
+7386	closed-unmerged	XXL	Reduce archived conversation disk usage with cold storage
+7419	closed-unmerged	L	fix(server): count every provider instance on the Usage page
+7420	merged	XS	refactor(web): move limitsFormat into @t3tools/shared
+7520	closed-unmerged	L	fix(server): bound Claude subagent usage
+7563	merged	M	fix(web): show only providers with usage in usage views
+7578	closed-unmerged	L	feat(web): optional always-visible token count on the context meter
+7595	merged	S	fix(web): usage hourly breakdown lists every hour chronologically
+7616	closed-unmerged	L	feat(server): report OpenCode token usage for the context window meter
+7623	closed-unmerged	S	feat(usage): add OpenCode to usage contract and provider presentation
+7638	closed-unmerged	XXL	fix(grok): skills, reasoning, plan mode, usage, and stalled turns
+7645	closed-unmerged	L	fix: hide disabled providers from usage
+7681	closed-unmerged	S	fix(web): show context usage percent on the meter
+7718	merged	S	revert(web): restore sparse hourly usage breakdown
+7753	closed-unmerged	S	fix(server): price Daybreak usage aliases
+7802	closed-unmerged	S	fix(server): price Daybreak models under their LiteLLM alias
+7877	closed-unmerged	L	feat(usage): include ZCode activity
+7898	closed-unmerged	M	fix(ci): shrink release app token lifetime in manual mobile builds
+7904	closed-unmerged	XL	feat(usage): include MCode activity
+7936	closed-unmerged	XL	feat(usage): include Kimi Code activity
+7939	closed-unmerged	XL	feat(usage): include OpenCodex activity
+7964	closed-unmerged	S	fix(usage): drop zero-token Claude transcript records
+8108	merged	S	fix(web): sort usage models by token count
+8111	merged	S	fix(web): align usage page skeleton layout
+8127	closed-unmerged	XS	feat(connect): raise device limit to five
+8138	closed-unmerged	L	feat(web): prototype plan usage indicator in sidebar
+8144	merged	XL	feat(claude): compact old threads before they burn through usage
+8196	closed-unmerged	L	fix: usage totals no longer wait forever on offline devices
+8208	merged	M	fix(usage): identify client version mismatches
+8260	closed-unmerged	L	feat(usage): add OpenCode as a usage provider
+8267	closed-unmerged	XL	feat(providers): show subscription usage limits
+8276	closed-unmerged	L	fix(usage): scan transcripts for every configured provider instance
+8327	closed-unmerged	XXL	feat(usage): show subscription limits
+8358	merged	XXL	fix(grok): improve skills, plans, usage, and turn reliability
+8411	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8417	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8445	closed-unmerged	L	feat(web): show current-provider usage in the chat box
+8456	closed-unmerged	XL	feat(usage): add OpenCode usage reporting
+8470	closed-unmerged	L	fix(server): usage counts every configured provider instance
+8474	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8485	closed-unmerged	XXL	feat(server): show Kimi For Coding plan limits for Claude instances
+8515	closed-unmerged	XXL	feat(usage): add subscription limit reporting for Claude, Codex, Grok, and OpenCode
+8529	closed-unmerged	M	fix(server): usage no longer overprices cached Claude tokens
+8540	merged	S	fix(server): preserve usage cache outside walked roots
+8548	closed-unmerged	S	fix(usage): canonical LiteLLM keys must win rate-table collisions
+8577	closed-unmerged	XXL	feat: resume threads after usage limits reset
+8606	merged	L	feat(server): add reusable auth token for dev worktrees
+8610	merged	M	fix(server): stop querying Claude context usage after turns
+8617	closed-unmerged	XS	fix(server): preserve Claude context over cumulative result usage
+8659	closed-unmerged	XL	feat(opencode): surface context-window usage and session cost on the meter
+8694	merged	XXL	fix(mobile): reduce dev-client reload and Metro startup cost
+8730	closed-unmerged	L	feat(mcp): expose environment usage summary
+8766	open	S	fix(terminal): mitigate limited Ghostty scrollback
+8806	merged	M	fix(server): stop overpricing cached Claude tokens
+8838	closed-unmerged	M	feat(connect): print stored oauth access token
+8897	merged	M	fix(codex): accept rate limit errors on thread resume
+8918	closed-unmerged	XL	fix(usage): show opencode tokens and models on usage page
+9012	closed-unmerged	L	feat(web,mobile): snooze a thread until provider limits reset
+9014	closed-unmerged	L	feat(web): zoom usage charts and select custom date ranges
+9015	closed-unmerged	XXL	feat(usage): break down usage by project
+9016	closed-unmerged	XXL	feat(usage): add thread and subagent breakdown
+9017	closed-unmerged	XXL	feat(web): link usage rows to their threads
+9018	closed-unmerged	XXL	feat(usage): surface estimated cache-write cost
+9019	closed-unmerged	XXL	fix(usage): correct Claude cost accounting
+9020	closed-unmerged	XXL	feat(usage): refresh incrementally every thirty minutes
+9024	merged	XL	perf(server): scan only appended transcript bytes for usage summaries
+9108	closed-unmerged	L	feat(usage): add month-to-date range
+9132	merged	XXL	feat(server): measure provider turn token usage
+9136	closed-unmerged	XXL	feat(web): show thread API cost in composer
+9181	closed-unmerged	XXL	feat(providers): switch accounts mid-thread and track usage limits
+9202	merged	L	fix(usage): price new models without waiting a day for the rate table
+9206	closed-unmerged	L	fix(grok): show context-window usage in the composer
+9215	closed-unmerged	L	fix(server): raise review diff preview limit
+9226	closed-unmerged	S	fix(server): scan Codex's archived_sessions for usage accounting
+9236	closed-unmerged	M	fix(codex): treat usage-limit stops as quota, not errors
+9263	closed-unmerged	XXL	feat(usage): show provider subscription limits on the usage page
+9308	closed-unmerged	XXL	perf(usage): serve durable snapshots during background refresh
+9342	closed-unmerged	L	feat(usage): track OpenCode sessions on the usage page
+9358	merged	XS	fix(web): stop usage summary requests reporting slow RPCs
+9421	closed-unmerged	XXL	feat(usage): Limits tab with provider quota windows and Codex banked resets
+9434	merged	S	feat(web): add usage page keybinding
+9439	closed-unmerged	M	fix(usage): keep the largest output count in a Claude dedupe group
+9507	merged	XXL	feat(usage): show Codex and Claude subscription limits on a Limits tab
+9532	closed-unmerged	XL	feat(usage): read Cursor and Grok plan quota from their TUIs
+9534	merged	XL	feat(usage): redeem Codex reset credits from the Limits tab
+9584	merged	L	fix(usage): deduplicate CLI proxy subscription accounts
+9598	closed-unmerged	M	feat(web): show usage limits and reset credits in provider settings
+9599	merged	L	refactor(web): move usage provider controls to settings
+9629	closed-unmerged	L	feat(web): add provider usage pill
+9649	closed-unmerged	L	feat(web): optional toggle to show rate limits in sidebar
+9667	closed-unmerged	L	feat(usage): warn before reset credits expire
+9674	closed-unmerged	S	fix(web): remember the last selected usage tab
+9691	merged	S	perf(clients): avoid waiting to read cached relay tokens
+9742	closed-unmerged	M	fix(mobile): show high usage limit fills
+9774	merged	XL	feat(usage): support custom model prices
+9775	merged	L	feat(mobile): split the usage page into Usage and Limits tabs
+9784	merged	M	fix: address usage limits and merge settlement regressions
+9790	merged	L	feat(auth): separate diagnostics and usage permissions
+9796	closed-unmerged	XXL	feat(web): add provider usage pill
+9820	closed-unmerged	S	fix(usage): keep offline providers from hiding live limits
+9860	merged	L	fix(web): render and filter usage as environments respond
+9861	merged	XL	feat(web): edit usage prices across selected environments
+9875	merged	XL	feat: show provider usage limits with /usage-limits
+9876	merged	S	fix(mobile): keep usage tabs below the header when switching
+9889	merged	M	feat(usage): show remaining quota instead of used
+9937	closed-unmerged	M	fix(server): retain OpenCode V2 per-turn token usage
+9993	merged	S	refactor(web): test the live usage column builder
+10017	merged	S	refactor(server): remove test-only pricing normalizer
+10055	closed-unmerged	XL	feat(mobile): add subscription usage home screen widgets
+10062	merged	M	refactor(mobile): remove obsolete native diff token stream
+10076	merged	S	fix(usage): tolerate newer provider variants
+10094	closed-unmerged	L	feat(web): show advisory daily usage budget alerts
+10095	closed-unmerged	L	feat(server): enforce configurable thread context limits
+10109	closed-unmerged	L	fix(web): limit stored pull request details
+10151	merged	M	refactor(client-runtime): remove unused relay token waiter
+10158	merged	XL	feat(web): add keyboard navigation for usage
+10160	closed-unmerged	L	fix(usage): show Claude spending budgets on the Limits view
+10189	merged	M	fix(web): remember usage page selection
+10300	merged	XXL	feat(usage): pool subscription limits per provider across accounts and environments
+10308	merged	XS	fix(server): preserve Codex reset credits during usage updates
+10310	open	S	fix(server): honor disabled usage hub polling
+10315	merged	S	fix(shared): keep the newest shared usage scan
+10317	closed-unmerged	XS	fix(server): canonicalize usage transcript sources
+10321	merged	L	fix(claude): name the expired login or usage limit instead of a generic API error
+10330	merged	L	chore(web): remove usage limits demo fixtures
+10334	merged	XL	feat(mobile): pool usage limits across selected environments
+10384	closed-unmerged	M	feat(web): show provider usage limits and reset credits in settings
+10393	closed-unmerged	L	fix(web): go back with Escape from Usage and Pull Requests
+10395	merged	XL	fix(usage): read and redeem hub reset credits through CLIProxyAPI
+10399	closed-unmerged	L	fix(web): make Escape return from PRs and Usage pages
+10409	merged	XXL	feat(usage): read cursor, opencode, and antigravity history
+10445	closed-unmerged	M	fix(codex): fall back to Spark after usage exhaustion
+10458	merged	S	fix(codex): keep Spark limits from replacing the main allowance
+10473	merged	L	fix(codex): name the usage limit and its reset instead of relaying "out of credits"
+10488	closed-unmerged	M	fix(server): include Claude advisor calls in usage totals
+10546	closed-unmerged	S	fix(claude): name the usage limit on retried turns too
+10549	merged	XS	fix(claude): report usage limits on retried turns
+10550	closed-unmerged	L	feat(threads): show a usage-limit stop as Limited instead of Failed
+10597	closed-unmerged	XS	fix(claude): keep limits when the usage fetch fails
+10601	merged	M	fix(usage): make unavailable account limits more visible
+10651	closed-unmerged	L	feat(web): preview spend and subscription limits from the sidebar footer
+10662	closed-unmerged	L	feat(usage): add an all-time period
+10668	merged	M	fix: hide email-bearing account labels in usage limits
+10690	merged	M	fix(usage): keep account columns aligned across limit rows
+10695	closed-unmerged	XL	feat(usage): report Antigravity conversations in usage
+10700	open	M	fix(usage): deduplicate native subscription accounts
+10703	closed-unmerged	M	fix(usage): clarify pace labels and account reset details
+10707	closed-unmerged	L	feat(web): show remaining usage limits in the sidebar footer
+10735	closed-unmerged	M	fix(swift-ios): preserve literal plus signs in pairing tokens
+10743	closed-unmerged	M	fix(swift-ios): preserve pairing link tokens and fragment precedence
+10802	closed-unmerged	L	feat(web): show provider usage limits below chat
+10812	closed-unmerged	M	fix(usage): keep cached usage-limits commands local
+10841	closed-unmerged	L	feat(web): preview provider limits from the Usage icon
+10845	closed-unmerged	M	fix(usage): keep same-email Codex subscriptions apart when their plans differ
+10850	merged	XS	fix(mobile): respect notification permission when tokens rotate
+10873	closed-unmerged	L	fix(usage): identify Codex quotas by workspace account
+10876	closed-unmerged	L	fix(usage): distinguish Codex workspaces by account ID
+10877	closed-unmerged	XS	fix(server): omit native quota for custom Codex providers
+10878	open	XS	fix(usage): recover missing Codex hub plans from auth metadata
+10903	closed-unmerged	XL	fix(server): probe Google Antigravity quota summary buckets
+10904	closed-unmerged	XL	feat(web): show OpenRouter credit balance in Usage → Limits
+10920	closed-unmerged	M	fix(web): persist usage page environment selection
+10926	closed-unmerged	L	feat(usage): add OpenCode usage and tokens
+11021	merged	M	fix(usage): flag unpriced model activity instead of showing $0.00
+11056	closed-unmerged	XS	fix(server): raise the macOS service open-file limit above the launchd default
+11063	closed-unmerged	L	feat(usage): mark the even-pace point on pooled limit bars
+11095	closed-unmerged	L	feat(usage): show reserve and deficit pace on Limits
+11178	closed-unmerged	L	feat(server): report Z.ai coding quota through OpenCode
+11187	merged	S	fix(web): refresh usage limit countdowns without switching tabs
+11205	closed-unmerged	S	fix(desktop): local desktop builds crash when a GitHub token is in the shell
+11215	closed-unmerged	XXL	feat(usage-limit): recover gracefully when a subscription runs out
+11243	closed-unmerged	L	feat(web): show provider usage limits in the composer
+11261	merged	S	feat(web): open Usage on the Limits tab by default
+11273	closed-unmerged	S	fix(server): support GitHub App tokens in pull request viewer
+11284	closed-unmerged	M	fix(server): report Grok context window usage
+11321	closed-unmerged	L	fix(usage): report incomplete transcript scans
+11322	open	L	fix(server): reconcile Codex usage counters
+11368	merged	XS	fix(server): usage hubs with a host-less URL no longer vanish from Limits
+11385	closed-unmerged	S	perf(server): limit Windows process details to tracked processes
+11391	merged	M	fix(usage): model shares and order follow the selected metric
+11450	closed-unmerged	S	feat(web): show processed tokens below the composer
+11472	closed-unmerged	XL	feat(server): report OpenCode usage alongside Codex and Claude Code
+11473	closed-unmerged	M	fix(usage): correct proxy quotas and show Claude Fable first
+11482	closed-unmerged	L	fix(server): report Claude Team and Enterprise usage limits
+11485	merged	M	fix(usage): respect provider account homes
+11506	merged	XL	feat(mobile): add pooled subscription usage widgets
+11589	closed-unmerged	L	fix(usage): refresh stale subscription limits when viewed
+11625	closed-unmerged	M	fix(server): correctly report usage limits with multi-account Codex routing
+11669	merged	M	fix(mobile): keep usage widget rows consistently sized
+11678	merged	L	feat(settings): choose how responses stream, with a warning on legacy token mode
+11692	merged	XXL	feat(swift-ios): show pooled subscription limits in widgets
+11783	closed-unmerged	XL	feat(usage): report OpenCode history and Go quota
+11881	open	L	fix(usage): show each account's own mark in the Limits bar
+11888	merged	L	fix: reduce GitHub quota use with sharing enabled
+11890	closed-unmerged	L	feat(web): opt-in usage limits meter in the composer
+11896	closed-unmerged	M	fix(server): include Codex archived_sessions in usage scan
+11922	merged	XS	fix(desktop): declare macOS local network usage
+11928	merged	L	fix(usage): refresh limits when the tab opens
+11963	merged	S	fix(server): restore hub limits updates in V2
+12024	closed-unmerged	M	fix(server): fail fast when stored CLI credential has no refresh token
+12069	open	XS	fix(server): restore Claude subscription usage through proxies
+12076	closed-unmerged	L	feat(usage): add today window
+12081	closed-unmerged	L	feat(usage): show Grok weekly plan usage on the Usage page
+12115	merged	L	feat(usage): show OpenCode Go, Cursor, and Grok subscription limits
+12128	merged	S	perf(mobile): limit thread model options to its provider
+12192	closed-unmerged	XXL	feat(provider): integrate Muse Code SDK and usage
+12211	merged	M	feat(web): command palette finds the pull requests and usage pages
+12235	closed-unmerged	S	fix(server): stop GitHub quota probe cwd/failure from blocking PR reads
+12254	closed-unmerged	L	feat(usage): report OpenCode spend and tokens from its local store
+12264	closed-unmerged	M	fix(web): prevent overlapping usage limit popovers
+12266	closed-unmerged	S	fix(server): stop probing Codex usage for accounts without a subscription
+12289	open	S	fix(web): keep thread notification tags within the Windows toast limit
+12294	closed-unmerged	S	fix(server): keep a failed usage probe marked when a sparse update lands
+12299	closed-unmerged	S	fix(server): allow stable usage host IDs in containers
+12304	merged	L	fix(usage): preserve saved totals after transcript cleanup
+12436	closed-unmerged	S	fix(server): reparse usage entries with corrupt record metadata
+12441	closed-unmerged	L	fix(antigravity): show Gemini session and weekly limits
+12442	merged	L	perf(pr): reduce quota use when refreshing workspace checks
+12444	closed-unmerged	L	fix(antigravity): show Gemini session and weekly limits
+12445	closed-unmerged	L	fix(antigravity): show Gemini session and weekly limits
+12458	closed-unmerged	XL	feat: continue a stopped thread when its usage limit resets
+12486	merged	M	fix(bitbucket): preserve rate limits from optional PR reads
+12576	closed-unmerged	S	feat(web): warn when usage limits run low
+12588	merged	M	fix(server): report the Grok account email so usage limits merge across environments
+12677	merged	XL	feat(v2): show provider limit stops as Limited
+12686	merged	L	feat(v2): resume limited threads when usage resets
+12687	merged	L	feat(v2): snooze limited threads until usage resets
+12695	closed-unmerged	M	fix(mobile): hide disabled providers from subscription usage widget
+12700	closed-unmerged	S	fix(server): keep usage-limits incomplete after sparse post-probe updates
+12702	closed-unmerged	XXL	feat: reduce archived conversation disk usage with cold storage
+12714	closed-unmerged	S	fix(web): shorten Windows notification tags under platform limit
+12740	closed-unmerged	XL	feat: block composer sends when the selected provider is out of tokens
+12795	merged	L	refactor(server): share scheduling for tasks and limit recovery
+12799	merged	S	fix(server): Grok accounts with no usage yet no longer vanish from Limits
+12831	closed-unmerged	XXL	feat(server): continue threads after usage limits reset
+12953	merged	M	feat(server): let t3.json limit or disable submodule init in new worktrees
+13089	closed-unmerged	L	fix(usage): keep one email in two Claude orgs as two accounts
+13104	merged	S	test(web): cover usage model ordering without static markup
+13111	closed-unmerged	M	fix(usage): weight pooled limits by plan capacity
+13126	closed-unmerged	L	feat(auth): make pairing token ttl configurable
+13127	closed-unmerged	L	fix(usage): include connected hosts in slash command limits
+13189	merged	M	fix(server): background PR checks spend less GitHub quota
+13202	closed-unmerged	L	fix(server): v2 background GitHub checks spend less quota
+13224	closed-unmerged	L	fix(server): show usage limits for every Claude instance
+13230	open	M	fix(provider): scope Antigravity Linux seccomp workaround to zero realtime limits
+13261	closed-unmerged	S	fix: allow 100 MB file uploads without raising native media limits
+13276	closed-unmerged	M	fix(usage): say the pooled refill returns a share of the pool
+13371	merged	L	fix(web): web colors come from theme tokens
+13397	merged	XL	fix(web): appearance classes use theme tokens and scale values
+13410	closed-unmerged	M	feat(usage): show when a limit window runs dry at the current rate
+13458	closed-unmerged	L	feat(settings): allow disabling usage analytics
+13474	merged	L	fix(mobile): make Android subscription usage widgets scrollable
+13539	merged	S	fix(server): Claude wake turns keep the rejected limit's reset time
+13586	closed-unmerged	L	feat(server): show Z.ai GLM Coding Plan limits on Claude relay instances
+13587	closed-unmerged	L	feat(server): show Kimi Code plan limits on Claude relay instances
+13588	closed-unmerged	L	feat(server): show OpenRouter key credit limits on OpenCode instances
+13599	merged	M	fix(usage): price Claude fast-mode requests at the fast rate
+13650	merged	L	fix(server): preserve usage in oversized transcript records
+13659	closed-unmerged	L	fix(server): the context meter must only consume per-request usage evidence
+13675	open	M	fix(usage): weight pooled limits by plan size
+13677	closed-unmerged	M	fix(usage): price Claude 1-hour cache writes at the 1-hour rate
+13714	merged	M	fix(usage): hide the Cursor keychain prompt when Cursor isn't set up
+13731	merged	S	fix(usage): price Cursor cache savings by base model
+13760	closed-unmerged	M	fix(observability): span events no longer pile up without limit
+13809	open	M	fix(server): price Antigravity Gemini Flash effort variants
+13820	merged	XS	fix(usage): omit Cursor warning when no login is saved
+13830	closed-unmerged	XS	fix(usage): price Cursor Claude model aliases
+13841	closed-unmerged	M	fix(pull-requests): PR detail reads no longer drain the GitHub quota
+13843	closed-unmerged	M	fix(clients): surface reset credits after provider usage limits
+13846	closed-unmerged	L	feat(web): offer reset usage prompt when provider usage limits are reached (codex/claude)
+13861	merged	S	test(usage): assert contract mismatch details
+13877	merged	XL	fix(server): preserve queued messages after usage limits
+13902	closed-unmerged	M	fix(usage): skip unchanged Antigravity databases on repeat scans
+13920	open	L	feat(cli): add read-only usage commands
+13973	closed-unmerged	M	fix(usage): include archived Codex sessions
+13974	closed-unmerged	L	fix(server): normalize Codex child token usage
+13984	closed-unmerged	M	fix(usage): persist stable host fingerprint
+13989	closed-unmerged	M	fix(usage): dedupe shared Windows and WSL sources
+13991	merged	M	fix(web): prevent usage summary shift for unpriced records
+14064	closed-unmerged	S	fix(server): give Claude's usage read time to answer
+14079	closed-unmerged	M	feat(web): opt-in account names in pooled usage limits
+14081	closed-unmerged	M	feat(web): opt-in account names for hub accounts in Limits
+14117	open	XS	fix(server): hide ChatGPT limits when Codex uses a custom provider
+14136	closed-unmerged	S	fix(server): bound OAuth token HTTP calls with a 10s timeout
+14205	closed-unmerged	L	fix(claude): apply and display custom model context limits correctly
+14209	merged	M	fix(shared): merge OpenCode Go limits by credential
+14214	open	L	fix(server): Codex turns fall back to Luna Reserve when ordinary quota runs out
+14223	closed-unmerged	L	fix(usage): distinguish subagent context from cumulative tokens
+14270	merged	L	feat(server): report OpenCode 2 usage, context windows, models and history
+14283	open	L	fix(mobile): explain unavailable usage instead of showing zero
+14292	closed-unmerged	M	fix(usage): keep one email's organizations as separate accounts
+14318	open	S	fix(web): prevent overlapping usage breakdown columns
+14384	closed-unmerged	S	fix(usage): Cursor account history loads about 4x faster
+14396	closed-unmerged	L	feat(web): redesign usage limits screen
+14441	open	M	fix(server): update all Claude unified usage windows
+14456	closed-unmerged	XS	fix(server): skip the transcript scan in the Claude usage probe
+14469	open	L	feat(client): choose remaining or used limit display
+14472	closed-unmerged	XS	fix(server): PR comments load on GitHub Enterprise without rate limits
+14477	open	M	feat(usage): show even-pace marks on Limits bars
+14657	open	S	fix(server): show Codex Enterprise monthly credit limits
+14672	open	S	fix(usage): Claude usage no longer lists a `<synthetic>` model
+14731	closed-unmerged	S	fix(server): Grok no longer shows as logged out while its access token refreshes
+14750	closed-unmerged	L	fix(usage): keep one email in two Claude orgs as two accounts
+14751	closed-unmerged	M	feat(web): show each pooled limits account on its own row
+14841	closed-unmerged	M	feat(mobile): add usage shortcut to thread list headers
+14889	closed-unmerged	M	fix(server): Codex usage-limit stops take the reset time shown in Limits
+14908	merged	XS	fix(server): Codex auth tokens are an omitted key, never undefined
+14911	closed-unmerged	L	fix(usage): show Claude spending budgets on the Limits view
+14995	closed-unmerged	XS	docs(relay): document the account-token creation permission
+15101	merged	L	fix(usage): Codex Fast and Ultrafast now cost what they bill
+15105	closed-unmerged	L	fix(server): recover Claude proxy quota limits
+15108	merged	XL	feat(usage): show cost by token type, speed, and model detail
+15110	closed-unmerged	M	fix(server): retain Claude reset times across usage-limit retries
+15116	open	S	fix(server): a mid-turn usage update no longer hides a failed probe
+15134	closed-unmerged	M	fix(client): snoozed limited threads no longer wake on unrelated activity
+15141	closed-unmerged	L	fix(client): snoozed limited threads no longer wake on unrelated activity
+15142	merged	S	fix(mobile): Android usage widget no longer sticks on "Loading widget" in release builds
+15149	merged	L	perf(usage): cut warm usage scans from seconds to milliseconds on large histories
+15151	closed-unmerged	L	fix(client): keep limited threads snoozed until reset
+15176	open	M	fix(clients): a thread snoozed until a limit reset stays snoozed until the reset
+15198	closed-unmerged	L	feat(antigravity): report subscription usage limits
+15209	open	S	fix: allow 100 MB file uploads without raising native media limits
+15233	closed-unmerged	L	fix(server): record ACP prompt response turn usage
+15275	open	L	fix(usage): recover missing initial Codex service tiers
+15284	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15296	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15299	closed-unmerged	L	feat(usage): Antigravity reports weekly limits for each model group
+15333	merged	L	feat(usage): fold preview model IDs into the model they belong to
+15396	open	L	feat(usage): separate recorded thinking tokens
+15443	closed-unmerged	XS	fix(server): Claude stays in Usage limits when its usage read comes back empty
+15446	open	M	fix(claude): subagent token usage shows again in lineage tooltips
+15451	open	XS	fix(usage): include archived Codex sessions in scans
+15498	merged	XS	fix(web): improve usage scanning indicator alignment
+15552	merged	XS	fix(web): Usage breadcrumb stays centered on small viewports
+15553	open	L	feat(clients): show scheduled usage-limit recovery in thread lists
+15575	open	M	fix(web): Usage hourly labels follow the Time format setting
+15599	open	S	fix(shared): token counts never read 1000K
+15602	merged	XS	fix(mobile): keep usage-limit notice opaque
+15626	open	S	fix(usage): persist host fingerprints across container recreates
+15632	open	M	fix(web): rank usage provider rows by the selected metric
+15640	closed-unmerged	L	fix(opencode): report context window usage in v2 threads
+15661	merged	M	fix(server): report incomplete transcript usage scans
+15664	merged	XS	docs(usage): OpenCode Go limits need a Go API key
+15690	closed-unmerged	S	fix(usage): fill the available width of limit bars
+15694	closed-unmerged	S	fix(server): preserve known Claude usage-limit resets
+15697	closed-unmerged	L	fix(server): preserve known Claude usage-limit resets
+15793	closed-unmerged	L	feat(usage): count Pi turns toward the subscription they ran on
+15794	open	M	fix(server): enforce history page limits at turn boundaries
+15836	open	M	fix(server): stop caching failed or signed-out Claude usage probes
+15863	closed-unmerged	S	fix(mobile): round usage chart bars at the top instead of the bottom
+15889	closed-unmerged	XXL	feat(usage): count Pi sessions and group usage by model family
+15902	open	XXL	feat(usage): break usage down by project, thread, account and environment
+15909	closed-unmerged	M	fix(server): Usage names Cursor instances whose account it cannot read
+15952	closed-unmerged	XS	fix(web): usage title lines up with the titlebar on narrow windows
+16171	closed-unmerged	L	fix(pull-requests): pull request detail opens when the token cannot read checks
+16203	merged	M	fix(server): PR sync waits out a GitHub rate limit pause instead of failing every PR
+16208	merged	L	fix(server): PR watches stop burning GitHub's rate limit and giving up
+16217	closed-unmerged	M	fix(server): subagents stop burning tokens on pull request watch wakes
+16274	closed-unmerged	L	feat(auth): desktop-local sessions renew without the bootstrap token
+16275	merged	L	feat(desktop): the renderer's bootstrap token rotates every 12 hours
+16280	merged	M	fix(pull-requests): PR detail reads no longer drain the GitHub quota
+16319	merged	XL	feat(server): GitHub API transport that uses gh only for the token
+16322	merged	XXL	feat: choose the GitHub account per host, save a GitHub token, and fewer reads per PR action
+16358	merged	XS	fix(server): Claude limits load again for users with large transcript histories
+16376	closed-unmerged	XXL	perf(usage): the usage page loads in a fraction of a second and dims only what is still updating
+16394	merged	XS	fix(server): a Claude usage limit no longer resets the context meter to 0%
+16481	closed-unmerged	L	feat(web): show provider usage limits in the sidebar
+16562	merged	M	docs(marketing): disclose product usage data in the privacy policy
+16564	merged	M	feat(web): note anonymous usage data in onboarding and link the privacy policy
+16593	closed-unmerged	L	fix: select named provider accounts and fall back on exhausted quotas
+16605	open	M	fix(server): read OpenCode Go limits key from OpenCode 2's credential database
+16653	open	L	feat(server): /mcp narrows a client's modes from T3-Mode-Limit
+16677	closed-unmerged	XXL	feat(proxy): add built-in OAuth account routing and quota management
+16730	merged	XS	fix(server): pairing tokens work on Node versions that cannot bind booleans
+16777	closed-unmerged	M	fix(usage): manual limits refresh bypasses provider caches
+16830	closed-unmerged	M	fix(web): 7-day usage chart shows hourly variation
+16847	closed-unmerged	XXL	Test limit revdoc
+16849	open	M	fix(server): managed Codex conversations recover after ChatGPT token renewal
+16889	closed-unmerged	M	feat(web): continue a usage-limited thread with the newly picked model
+16922	open	L	fix(server): usage prices Claude 1-hour cache writes at their own rate
+16936	open	M	fix(web,mobile): limit bars use each provider's chart color
+16937	open	M	fix(web,mobile): limit bars keep the even-spending tick visible
+16970	merged	L	feat(web): filter the Usage page to just the providers you want
+16986	merged	L	refactor(server): GitHub rate limits read the response headers
+16994	closed-unmerged	XS	fix(web): usage-limit notice keeps showing the thread is snoozed
+17055	open	XS	fix(server): preserve Codex sign-in guidance in usage notices
+17062	closed-unmerged	M	fix(server): report actionable Grok usage-limit probe failures
+17097	open	XS	fix(server): Claude subagents keep their model after a usage-limit notice
+17127	merged	L	feat(web): compact-before-send is a chip that shows the token count
+17139	merged	M	fix(usage): repeat usage scans no longer decode unchanged Antigravity databases
+17140	merged	S	fix(usage): Cursor account history loads about 4x faster
+17147	merged	XXL	perf(usage): the Usage page shows numbers in under a second and dims only what is still loading
+17151	closed-unmerged	XL	feat(providers): show Muse Code subscription usage in Limits
+17175	merged	XS	fix(mobile): usage reset icon lines up with its row
+17189	open	XS	fix(server): omit unstarted Claude session usage windows
+17219	closed-unmerged	L	feat(mcp): expose cached provider usage limits
+17222	open	L	fix(usage): show Codex workspace quotas separately
+17254	merged	S	perf(usage): usage scans skip OpenCode legacy messages older than the window
+17255	merged	M	perf(usage): the first usage scan skips decoding transcript lines that carry no usage
+17389	merged	XS	fix(provider-cursor): a skill tree deeper than the scan limit no longer hides every skill
+17391	closed-unmerged	L	fix(usage): unchanged Antigravity databases are not decoded again after a restart
+17400	open	M	fix(usage): count each Antigravity call once
+17408	merged	S	fix(server): keep the Claude MCP token out of process arguments
+17457	open	S	fix(web): usage limit recovery errors no longer crush the composer banner
+17501	open	M	fix(server): classify Codex 429 retry exhaustion as a usage limit
+17530	merged	L	feat(provider-antigravity): support subscription quota and usage limits
+17539	merged	XS	fix(web): context meter no longer reads 1000k just under a million tokens
+17551	closed-unmerged	XL	feat(antigravity): display Gemini and third-party Claude/GPT rate limits
+17553	merged	XS	test(usage): v4 cache upgrade test waits for the migrated cache write
+17576	merged	XXL	refactor(usage): transcript readers come from their drivers
+17577	merged	L	refactor(usage): OpenCode usage comes from provider-opencode
+17578	merged	XL	refactor(usage): Cursor account usage comes from provider-cursor
+17579	merged	L	refactor(usage): Antigravity usage is a reader on its driver
+17615	merged	XL	refactor(usage): usage readers use Effect FileSystem and SqlClient
+17636	merged	S	test(usage): usage service tests keep their state directory until cache writes land
+17638	merged	M	perf(usage): OpenCode legacy walk stats entries before checking for symlinks
+17676	open	XS	fix(web): stop offering a provider update that cannot clear a limited-support warning
+17686	open	L	fix(usage): preserve saved totals after transcript cleanup
+17705	closed-unmerged	L	feat(usage): show ChatGPT credit balances for Codex
+17711	merged	L	fix(usage): keep one email in two workspaces as two accounts
+17725	merged	M	fix(azure-devops): list pull requests with token sign-in and check out into worktrees
+17753	closed-unmerged	XXL	feat(orchestration): support auto and specific fallback AI agent on usage limits with integrated model selection panel
+17759	open	S	fix(opencode): read usage from each instance data directory
+17769	open	S	fix(antigravity): read usage from each instance data directory
+17778	merged	M	fix(server): restore auto resume for wrapped Claude gateway rate limits
+17833	closed-unmerged	M	fix(web): usage limit rows center their reset countdown and credits
+17841	closed-unmerged	M	feat(server): option to stop Claude turns instead of using extra usage
+17848	merged	L	feat(pi): include native sessions in usage reports
+17861	closed-unmerged	L	feat(usage): 180-day and 1-year periods that tell missing history from zero
+17862	closed-unmerged	L	fix(server): limited threads resume after background wakes that did nothing
+17866	open	L	fix(server): usage-limited threads on a pooling proxy now resume when the pool recovers
+17869	merged	XS	fix(usage): say resets momentarily in the final minute
+17882	closed-unmerged	L	fix(web): show pending usage reset credit feedback
+17887	closed-unmerged	M	fix(server): keep the Claude MCP token out of the child environment
+17890	open	XXL	feat(android): configure subscription usage widgets
+17900	open	M	fix(mobile): check for server updates without GitHub's API rate limit
+17901	merged	XXL	feat(source-control): host settings live on each host's definition, with a GitCafe token
+17938	merged	S	fix(web): the Usage page sends a signed-out browser to pairing
+17961	merged	M	fix(usage): bound OpenCode history reads to prevent backend OOM
+18076	open	M	fix(web): usage limits show one account popover at a time
+18097	closed-unmerged	S	fix(web): Usage page remembers which environments you picked
+18114	closed-unmerged	S	fix(web): Usage page remembers which environments you picked
+18156	closed-unmerged	M	fix(mobile): stop striking through ~$ prices and ~/ paths, match web behavior
+18168	open	M	fix(server): a Limits hub failure names its TLS, HTTP, or timeout cause
+18177	open	M	fix(web): 7-day usage chart shows hourly variation
+18197	closed-unmerged	L	feat(web): custom date ranges and drag-to-zoom on Usage
+18203	open	S	fix(mobile): usage chart legend wraps instead of pushing the end date off-screen
+18254	closed-unmerged	XL	feat(usage): group usage by model family
+18262	closed-unmerged	M	perf(usage): reduce memory and stalls in cold Antigravity reads
+18266	open	L	fix(server): Muse turns stopped by the subscription quota are Limited, not failed
+18274	open	L	fix(server): Muse Code's subscription usage shows in Usage → Limits
+18292	closed-unmerged	L	fix(ssh): slow SSH hosts connect without stacking retries and pairing tokens
+18299	closed-unmerged	L	fix(server): bill Claude turn usage across steered segments
+18304	closed-unmerged	L	feat(web): opt-in tokens-per-second readout under finished responses
+18315	open	S	fix(opencode): OpenCode Go quota stops show as usage limits
+18384	open	S	fix(desktop): renew the local bearer token before its session expires
+18446	closed-unmerged	XS	fix(pi): usage reader uses usageMarkers so main typechecks again
+18470	closed-unmerged	XL	feat(usage): show model usage by recorded reasoning effort
+18570	closed-unmerged	S	fix(web): polish pooled usage limit display
+18579	open	XS	fix(web): hide the empty reset badge on unstarted limit windows
+18580	merged	XS	fix(web): center the pace icon on the limit card's "left" label
+18622	open	M	fix(server): custom Codex providers no longer report native quota
+18624	open	XS	fix(server): a Claude account with no rate-limit data no longer stays unsupported
+18657	open	S	fix(mobile): usage chart legend no longer hides the period's end date
+18721	open	M	fix(server): Codex usage-limit stops keep their reset time
+18723	open	M	fix(server): older probes no longer overwrite live usage limits
+18737	open	XS	fix(server): Codex usage is unsupported without an account
+18815	closed-unmerged	L	feat(provider-muse): show Muse subscription limits in Usage limits
+18817	open	M	fix(gitlab): show authentication and rate-limit errors from activity reads
+18818	open	S	perf(usage): back off failed pricing fetches
+18872	closed-unmerged	L	fix(provider-muse): Muse Code's subscription usage shows in Usage limits
+18895	open	M	fix(usage): separate Claude hub Team and Max subscriptions that share an email address
+18919	open	M	fix(web): usage limit banner no longer hides behind waiting subagents
+18937	open	M	fix(server): inactivity auto-settle waits for an armed usage-limit auto-resume
+18973	closed-unmerged	L	fix(usage): unchanged Antigravity databases are not decoded again after a restart
+19031	open	S	fix(mobile): resize quota bars when filtering environments
+19103	merged	S	fix(server): GitHub App tokens can merge and use other write actions
+19108	closed-unmerged	M	fix(usage): keep same-email Claude wrapper accounts separate
+19135	open	L	perf(mobile): streamed chunks cost about 8x less JS on long threads
+19140	open	L	feat(usage): Limits card shows pace and refill beside the number
+19152	closed-unmerged	L	fix(usage): accounts at their weekly limit no longer inflate pooled limits
+19159	closed-unmerged	L	fix(server): read GLM Coding Plan limits for ACP instances
+19171	open	M	fix(bitbucket): restore reviewer lookup and guide token setup
+19207	merged	M	fix(usage): show one Antigravity account once, not once per machine
+19245	open	S	fix(web): custom model price cells take only numbers
+19258	closed-unmerged	L	perf(server): offload cold usage parsing
+19277	open	XS	fix(desktop): local desktop builds no longer crash when a GitHub token is in the shell
+19314	merged	M	fix(server): steered Claude turns no longer undercount token usage
+19317	merged	L	perf(server): Codex plan streaming no longer commits every token
+19321	merged	S	fix(server): stalled OAuth token requests no longer block credential calls
+19336	open	XS	fix(usage): a CLIProxyAPI hub served under a path keeps its path
+19361	merged	S	fix(client-runtime): a new WSL backend no longer shows Limited permissions until reload
+19416	open	L	fix(server): read Claude context usage from stream message deltas
+19433	open	M	fix(claude): map monthly account spending limits
+19446	merged	M	fix(usage): cold usage scans no longer stall the server
+19453	open	S	fix(server): clear systemd start limits before repairing services
+19507	open	S	fix(cli): use GitHub tokens when checking for updates
+19543	open	S	fix(server): preserve buffered Claude usage-limit failures
+19578	open	M	fix(usage): Cursor limits show again after signing in through T3
+19583	open	M	fix(server): a /compact stopped by the Claude usage limit now fails
