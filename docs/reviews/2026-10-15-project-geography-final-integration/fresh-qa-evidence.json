@@ -1,0 +1,136 @@
+{
+  "source": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "lockSha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+  "commands": [
+    {
+      "name": "prior-failures",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-final-qa-20261015/full.config.mts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "src/test/planner-copy-says-the-plain-thing.test.ts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "src/test/engagement-synthesis-generation-worker.test.ts",
+        "src/test/mammoth-cli-compatibility.test.ts",
+        "src/test/engagement-synthesis-thematic-worker-authority.test.ts",
+        "src/test/engagement-synthesis-thematic-worker-job.test.ts",
+        "--outputFile=/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-final-qa-20261015/prior-failures.json"
+      ],
+      "exitCode": 0,
+      "seconds": 163.715
+    },
+    {
+      "name": "lint",
+      "command": [
+        "npm",
+        "run",
+        "lint"
+      ],
+      "exitCode": 0,
+      "seconds": 97.181
+    },
+    {
+      "name": "deadcode",
+      "command": [
+        "npm",
+        "run",
+        "deadcode"
+      ],
+      "exitCode": 0,
+      "seconds": 3.213
+    },
+    {
+      "name": "tests",
+      "command": [
+        "npm",
+        "test",
+        "--",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-final-qa-20261015/full.config.mts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-final-qa-20261015/tests.json"
+      ],
+      "exitCode": 0,
+      "seconds": 1995.414
+    },
+    {
+      "name": "provider-connector",
+      "command": [
+        "npm",
+        "run",
+        "test:provider-connector"
+      ],
+      "exitCode": 0,
+      "seconds": 8.197
+    },
+    {
+      "name": "rls-gate-optout",
+      "command": [
+        "node",
+        "scripts/ops/rls-gate.mjs"
+      ],
+      "exitCode": 0,
+      "seconds": 0.02
+    },
+    {
+      "name": "dependency-audit",
+      "command": [
+        "npm",
+        "run",
+        "audit:dependencies"
+      ],
+      "exitCode": 0,
+      "seconds": 1.208
+    },
+    {
+      "name": "direction",
+      "command": [
+        "npm",
+        "run",
+        "product:direction:check"
+      ],
+      "exitCode": 0,
+      "seconds": 0.453
+    }
+  ],
+  "assertions": {
+    "passed": 22931,
+    "skipped": 1662,
+    "failed": 0,
+    "unresolved": 0
+  },
+  "files": {
+    "passed": 1662,
+    "skipped": 106,
+    "total": 1768
+  },
+  "resources": {
+    "memory.max": "6442450944",
+    "memory.peak": "3270344704",
+    "memory.swap.max": "0",
+    "memory.swap.peak": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "privateProof": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-final-qa-20261015",
+  "proofSha256": {
+    "run_qa.py": "37ce3b124ae3b504a05baa6a9964467f041f653838d048242735d04f4f734905",
+    "full.config.mts": "768bec5e62d2484006110f0f63395ab527b237cba651c554bb1097a9c98f3e49",
+    "qa-result.json": "360a68410a784e9dc9c6bd2fa49d8898b9df20e84b87c17eb0a4efcd5141caf1",
+    "tests.json": "9ac4bc937e781e0e2ff45c67ea8bd5c4328cd0aa0d7324cf750d98db7b90e3c9",
+    "tests.log": "70ee70afd76406d83caac97defeb4a6bfa7755a8502038e4b8ef0bcefd677358",
+    "prior-failures.json": "f4d6379ec989d9633a1ed13bd7974d241585a4ce2840768c44d5e66652808c1c",
+    "service.log": "b50144fb7fa957f17224d6376955ade315ae9d26ef2d232f5b212a216b0244c3"
+  },
+  "scope": "Fresh npm ci in owned checkout; serial local QA with one test worker and CI placeholders. Live RLS remains opt-out. Production build runs separately. No browser, hosted, live database or scientific acceptance.",
+  "laterScannerFullQaNotClaimed": true,
+  "pendingWorkbookFormattingAbsent": true
+}
