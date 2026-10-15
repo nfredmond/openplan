@@ -178,4 +178,4 @@ The failed trials remain evidence of their own limits, not screenshots of succes
 The old preview, retained native proof database, source anchor, demo and canonical
 three unrelated entries remain protected. No new PR, main merge, hosted change,
 release, scientific acceptance or practitioner acceptance occurs in this record.
-The current geography artifact review and integration checks remain pending.
+The [current geography artifact review](../2026-10-15-v6-actual-project-geography-artifact-review/README.md) finds no P1 or P2 within its three frozen pairs. Root reads its complete report, checker and controls, and checks eight input hashes, eight source bindings and the checker hash before joining it. One harmless control survives and 16 targeted faults fail, with exact copy restoration. All three packages preserve identical area geometry, including its hole, and the exact saved point and line. Integration CI remains pending.

@@ -36,7 +36,16 @@
     "Immediate resize captures jurisdiction-unresolved-390.png and declared-corrected-desktop.png include navigation transition displacement. Use declared-corrected-390.png and declared-settled-desktop.png for settled declaration views.",
     "Initial overlap selector used invalid value overlapping; parent erroneously continued and saved sovereign twice. Wrong trial preserved. Parent corrected second entry through UI using actual value overlap."
   ],
-  "geometryArtifactReview": "pending",
+  "geometryArtifactReview": {
+    "status": "complete; bounded noP1/P2",
+    "sourceCommit": "01c35811ebc9ca6409e8e22ad335a2013a77560a",
+    "join": "46bab44aa",
+    "parentReadFullReportCheckerControls": true,
+    "eightInputsEightSourceBindingsMatch": true,
+    "harmlessSurvivors": 1,
+    "targetedFaultsDetected": 16,
+    "copiesRestored": true
+  },
   "workbookArtifactReviewCommit": "2b3353a4246c430d6f963427e6ba67447c145e18",
   "humanNativeApplicationScientificHostedAcceptance": false
 }

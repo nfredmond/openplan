@@ -192,4 +192,6 @@ count is detected. No stage is retried or guard weakened.
 
 The original SERVICES reset, old build failures, T3 capture failures and intermediate
 parent jurisdiction-entry error remain retained. The separate new geography
-artifact review is pending. No main merge, hosted mutation or release is claimed.
+artifact review completes with no P1 or P2 in its three frozen pairs, one harmless
+survivor and 16 detected faults. Root reads its full report and checks input/source
+bindings before joining it. No main merge, hosted mutation or release is claimed.
