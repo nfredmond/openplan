@@ -57,6 +57,7 @@ import { presentRunSummary } from "@/lib/analysis/run-summary-presentation";
 import type { FrozenReportAerialOrthoSnapshotV1 } from "@/lib/reports/aerial-ortho-evidence";
 import { buildEvidenceDescriptor, type EvidenceDescriptorV1 } from "@/lib/evidence/evidence-descriptor";
 import type { JurisdictionReadinessPayload, ProjectJurisdictionReadinessPayload, ProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { ReportProjectJurisdictionSchemaPendingPayload } from "./project-jurisdiction";
 
 /**
  * The disclosure label rendered over every included AI narrative block.
@@ -228,7 +229,7 @@ export type ReportGenerationData = {
   modelingEvidence: ReportModelingEvidence[];
   evidenceDescriptors?: EvidenceDescriptorV1[];
   /** The exact sparse registry reading frozen into this packet. */
-  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload;
+  jurisdictionReadiness?: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | ReportProjectJurisdictionSchemaPendingPayload;
   /**
    * The crash evidence attached to this project, or null when the read FAILED.
    * Optional so existing callers keep working — but `undefined` and `null` mean
@@ -372,8 +373,14 @@ function listMarkup(items: ProjectItem[], emptyMessage: string): string {
     .join("")}</ul>`;
 }
 
-function jurisdictionReadinessMarkup(payload: JurisdictionReadinessPayload | ProjectJurisdictionReadinessPayload | ProjectJurisdictionReadinessExportPayload | undefined): string {
+function jurisdictionReadinessMarkup(payload: ReportGenerationData["jurisdictionReadiness"]): string {
   if (!payload) return "";
+
+  if (payload.schema === "openplan.report-project-jurisdiction-schema-pending.v1") {
+    return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
+      <p>Project revision: ${esc(payload.projectRevision ?? "Unavailable")}. Readiness payload SHA-256: ${esc(payload.payloadSha256)}.</p>
+      <p>Payload schema: ${esc(payload.schema)}. Scope: ${esc(payload.scope)}. Registry SHA-256: ${esc(payload.registrySha256)}. Study geography read state: ${esc(payload.studyAreaReadState)}.</p></section>`;
+  }
 
   if (payload.schema === "openplan.project-jurisdiction-readiness-response.v2" || payload.schema === "openplan.project-jurisdiction-readiness-export.v3") {
     return `<section id="project-jurisdiction-context"><h2>Project jurisdiction context</h2><p>${esc(payload.disclosure)}</p>
