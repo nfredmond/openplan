@@ -78,7 +78,7 @@ beforeEach(() => {
     membership: { workspace_id: WORKSPACE_ID, role: "viewer" },
     workspace: { name: "OpenPlan QA" },
   });
-  buildPortfolioRoundTripWorkbookMock.mockReturnValue(new Uint8Array([1, 2, 3]));
+  buildPortfolioRoundTripWorkbookMock.mockResolvedValue(new Uint8Array([1, 2, 3]));
 });
 
 describe("GET /api/projects/export/workbook", () => {
@@ -94,6 +94,8 @@ describe("GET /api/projects/export/workbook", () => {
     const response = await GET(new NextRequest("http://localhost/api/projects/export/workbook"));
 
     expect(response.status, "viewer export must remain successful").toBe(200);
+    expect(new Uint8Array(await response.arrayBuffer()), "awaited serializer bytes reach response").toEqual(new Uint8Array([1, 2, 3]));
+    expect(audit.info).toHaveBeenCalledWith("portfolio_workbook_exported", expect.objectContaining({ bytes: 3 }));
     expect(response.headers.get("content-type")).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     expect(response.headers.get("content-disposition")).toContain("openplan-openplan-qa-projects-2026-08-26.xlsx");
     expect(response.headers.get("cache-control")).toBe("private, no-store");
@@ -111,6 +113,15 @@ describe("GET /api/projects/export/workbook", () => {
         COLUMNS.split(", ").map((column) => [column, (row as Row)[column]])
       )),
     }));
+  });
+
+  it("catches an asynchronous serializer failure before logging or sending a workbook", async () => {
+    createClientMock.mockResolvedValue(fakeClient({ data: [], error: null }).client);
+    buildPortfolioRoundTripWorkbookMock.mockRejectedValueOnce(new Error("formatting failed"));
+    const response = await GET(new NextRequest("http://localhost/api/projects/export/workbook"));
+    expect(response.status, "async formatting failure is handled").toBe(500);
+    expect(audit.info, "failed formatting is not an export").not.toHaveBeenCalled();
+    expect(audit.error).toHaveBeenCalledWith("portfolio_workbook_export_failed", expect.objectContaining({ code: "Error" }));
   });
 
   it("stops before a project read when the user has no active workspace", async () => {

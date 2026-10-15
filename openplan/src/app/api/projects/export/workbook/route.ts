@@ -86,7 +86,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
     const generatedAt = new Date();
     const workspaceName = workspace.name?.trim() || "Workspace";
-    const bytes = buildPortfolioRoundTripWorkbook({
+    const bytes = await buildPortfolioRoundTripWorkbook({
       workspaceId: membership.workspace_id,
       workspaceName,
       projects,
