@@ -1,0 +1,38 @@
+[
+  {
+    "name": "baseline",
+    "exitCode": 0,
+    "expectedDiagnostic": null,
+    "accepted": true
+  },
+  {
+    "name": "page-projection-harmless",
+    "exitCode": 0,
+    "expectedDiagnostic": null,
+    "accepted": true
+  },
+  {
+    "name": "page-projection-fault",
+    "exitCode": 1,
+    "expectedDiagnostic": "project page must read the complete geography and jurisdiction projection",
+    "accepted": true
+  },
+  {
+    "name": "legacy-null-harmless",
+    "exitCode": 0,
+    "expectedDiagnostic": null,
+    "accepted": true
+  },
+  {
+    "name": "legacy-null-fault",
+    "exitCode": 1,
+    "expectedDiagnostic": "successful legacy-null reads must show zero unavailable disclosures",
+    "accepted": true
+  },
+  {
+    "name": "restored",
+    "exitCode": 0,
+    "expectedDiagnostic": null,
+    "accepted": true
+  }
+]

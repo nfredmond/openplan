@@ -1,0 +1,20 @@
+{
+  "guards": [
+    {
+      "guard": "resource",
+      "baseline": "pass",
+      "harmless": "survived",
+      "fault": "remove refusal",
+      "failure": "resource: intended precondition refusal"
+    },
+    {
+      "guard": "restoration",
+      "baseline": "pass",
+      "harmless": "survived",
+      "fault": "remove refusal",
+      "failure": "restoration: intended precondition refusal"
+    }
+  ],
+  "restoredSha256": "39cd3058da0288e09155cf21b6b1602e1eb2df1cb60d93fda02a05bde0a84c6e",
+  "scope": "Actual guard AST statements, in memory. Does not rerun application controls or prove cgroup enforcement."
+}

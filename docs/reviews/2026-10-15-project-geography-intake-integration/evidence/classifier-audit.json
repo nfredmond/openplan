@@ -1,0 +1,22 @@
+{
+  "retainedTrialsAccepted": 6,
+  "refusals": [
+    "runtime-suite",
+    "unhandled",
+    "errors",
+    "wrong-file",
+    "empty-selection",
+    "wrong-name",
+    "wrong-diagnostic",
+    "extra-active",
+    "extra-failure",
+    "wrong-count",
+    "wrong-status",
+    "inconsistent-success",
+    "startup-exit",
+    "todo"
+  ],
+  "harmless": "survived",
+  "vacuousClassifierFault": "classifier refusal: runtime-suite",
+  "restoredSha256": "78715213cc201b7d848b5feb2e627fd565d9cf92094d35b890745aa91913aa3b"
+}

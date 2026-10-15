@@ -1,0 +1,40 @@
+{
+  "extends": "../../../openplan/tsconfig.json",
+  "compilerOptions": {
+    "incremental": false,
+    "types": [
+      "node",
+      "react",
+      "geojson",
+      "vitest/globals",
+      "@testing-library/jest-dom"
+    ],
+    "typeRoots": [
+      "../../../openplan/node_modules/@types",
+      "../../../openplan/node_modules"
+    ],
+    "baseUrl": "../../../openplan"
+  },
+  "include": [
+    "../../../openplan/next-env.d.ts",
+    "../../../openplan/src/lib/projects/project-jurisdiction.ts",
+    "../../../openplan/src/lib/jurisdiction-readiness/payload.ts",
+    "../../../openplan/src/lib/jurisdiction-readiness/evidence-bundle.ts",
+    "../../../openplan/src/components/projects/project-jurisdiction-editor.tsx",
+    "../../../openplan/src/test/project-jurisdiction*.ts",
+    "../../../openplan/src/test/project-jurisdiction*.tsx",
+    "../../../openplan/src/test/jurisdiction-readiness-routes.test.ts",
+    "../../../openplan/src/components/projects/project-saved-map.tsx",
+    "../../../openplan/src/lib/cartographic/saved-geometry-frame.ts",
+    "../../../openplan/src/test/project-saved-map.test.tsx",
+    "../../../openplan/src/test/saved-geometry-frame.test.ts",
+    "../../../openplan/src/app/api/projects/import/route.ts",
+    "../../../openplan/src/test/project-portfolio-import-route.test.ts",
+    "../../../openplan/src/app/api/projects/export/workbook/route.ts",
+    "../../../openplan/src/test/project-portfolio-export-route.test.ts",
+    "../../../openplan/src/test/project-workbook-export-pagination.test.ts"
+  ],
+  "exclude": [
+    "../../../openplan/node_modules"
+  ]
+}

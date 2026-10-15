@@ -1,0 +1,80 @@
+[
+  {
+    "commit": "39f2846103f8241e61ff62f2d8a8c42928b02f1f",
+    "parents": "b259d73e56d22d4935ef2789874cf69901786b33",
+    "subject": "fix(projects): draw saved project geography on the project page",
+    "source": "92eaacf51bd111d3de37cf72943301aba0f7acde"
+  },
+  {
+    "commit": "a548c607122beaa06e360df533c33348219913ad",
+    "parents": "39f2846103f8241e61ff62f2d8a8c42928b02f1f",
+    "subject": "fix(projects): frame saved date-line geometry without cropping broad areas",
+    "source": "ffd21964f38fb9a391e26e89a4cb705d409af6f8"
+  },
+  {
+    "commit": "f192e2433b479117e97a4a92069e895a5fd54cfa",
+    "parents": "a548c607122beaa06e360df533c33348219913ad",
+    "subject": "docs(review): approve saved-map framing correction within source bounds",
+    "source": "9518779879f351be9dab5d7a71f4d42bd586100b"
+  },
+  {
+    "commit": "8cd52d490ed4976b2ab253fc3d8fa58292e73355",
+    "parents": "f192e2433b479117e97a4a92069e895a5fd54cfa",
+    "subject": "docs: design independent project jurisdiction context",
+    "source": "e211afedbad8b70b816fb2169de5c7da27a6bbf6"
+  },
+  {
+    "commit": "ab0f3d3d750cbc87740d877e121fbf84a06b0687",
+    "parents": "8cd52d490ed4976b2ab253fc3d8fa58292e73355",
+    "subject": "feat: separate project jurisdiction from study geometry",
+    "source": "53485a708512de34443e63ee38132a4f5991f36e"
+  },
+  {
+    "commit": "3742504053f6ebe3f0d208342b87faf4fbb95320",
+    "parents": "ab0f3d3d750cbc87740d877e121fbf84a06b0687",
+    "subject": "fix(projects): preserve jurisdiction draft scope and export custody",
+    "source": "f18ea8cd51d12168ec2766e1fc5cc34eeb775df2"
+  },
+  {
+    "commit": "87108b7d3671d9a58c5b7b9f5e9b836878d1f425",
+    "parents": "3742504053f6ebe3f0d208342b87faf4fbb95320",
+    "subject": "docs: independently review jurisdiction correction f18ea8cd",
+    "source": "8216af41a889ce0a5ef561858eedb6a9acdd7fc1"
+  },
+  {
+    "commit": "83d38c4c09dcb250c240de537ea7ba84c4e146a7",
+    "parents": "87108b7d3671d9a58c5b7b9f5e9b836878d1f425",
+    "subject": "test(projects): prove native jurisdiction upgrade and custody",
+    "source": "8d6f85e9c7b3354dd3559238da2b857538fb8d44"
+  },
+  {
+    "commit": "2b51ae4a2b9a479299a8273f17d6bca4b9cebb6a",
+    "parents": "83d38c4c09dcb250c240de537ea7ba84c4e146a7",
+    "subject": "fix(projects): complete portfolio import duplicate checks",
+    "source": "536d4ccbd6e1028a3632e85b41ae7c655fcac21a"
+  },
+  {
+    "commit": "f05e11a2c7f1f21915a6a2677a23389504a78c9a",
+    "parents": "2b51ae4a2b9a479299a8273f17d6bca4b9cebb6a",
+    "subject": "docs(review): accept bounded portfolio import correction",
+    "source": "206376538796f48198d2bc33000c3724a621d0f2"
+  },
+  {
+    "commit": "faf672c14112adf8f74ca7eba3576c5d6b539f3e",
+    "parents": "f05e11a2c7f1f21915a6a2677a23389504a78c9a",
+    "subject": "Fix capped project workbook exports with bounded pagination",
+    "source": "702ee1270de23cb9e469711398c580d9a977878b"
+  },
+  {
+    "commit": "426466d28caba1541ca181b20eab999a25b55c5f",
+    "parents": "faf672c14112adf8f74ca7eba3576c5d6b539f3e",
+    "subject": "Adapt legacy workbook export tests to paginated reads",
+    "source": "54537205a4f7c47f1f68f0827209bbf55de505d9"
+  },
+  {
+    "commit": "c9d9e9f2d3576262fa1ca7a06b9bb4110cad0cfe",
+    "parents": "426466d28caba1541ca181b20eab999a25b55c5f",
+    "subject": "docs: independently review workbook export pagination",
+    "source": "dec06621eb1ec0b4a2ce5588249424c638801567"
+  }
+]

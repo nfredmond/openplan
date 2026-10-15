@@ -1,0 +1,63 @@
+[
+  {
+    "name": "tests",
+    "command": [
+      "node",
+      "--max-old-space-size=640",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--configLoader",
+      "runner",
+      "--config",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/docs/reviews/2026-10-15-project-geography-intake-integration/vitest.config.mts",
+      "src/test/geometry-bbox.test.ts",
+      "src/test/jurisdiction-readiness-evidence-bundle.test.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/portfolio-import-review.test.ts",
+      "src/test/portfolio-price-year.test.ts",
+      "src/test/portfolio-workbook-export.test.ts",
+      "src/test/portfolio-workbook-import.test.ts",
+      "src/test/project-detail-page.test.tsx",
+      "src/test/project-evidence-bundle-route.test.ts",
+      "src/test/project-evidence-generated-pagination.test.ts",
+      "src/test/project-geography-upload.test.tsx",
+      "src/test/project-geopackage-reachability.test.tsx",
+      "src/test/project-geopackage-route.test.ts",
+      "src/test/project-geopackage.test.ts",
+      "src/test/project-identity-editor.test.tsx",
+      "src/test/project-jurisdiction-artifacts.test.ts",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction-export-corrections.test.ts",
+      "src/test/project-jurisdiction-picker.test.tsx",
+      "src/test/project-jurisdiction-route.test.ts",
+      "src/test/project-jurisdiction.test.ts",
+      "src/test/project-map-presence-routes.test.ts",
+      "src/test/project-portfolio-export-route.test.ts",
+      "src/test/project-portfolio-import-route.test.ts",
+      "src/test/project-portfolio-importer.test.tsx",
+      "src/test/project-record-route.test.ts",
+      "src/test/project-saved-map.test.tsx",
+      "src/test/project-workbook-export-pagination.test.ts",
+      "src/test/refused-project-jurisdiction-action.test.ts",
+      "src/test/refused-project-portfolio-import-action.test.ts",
+      "src/test/report-generate-route.test.ts",
+      "src/test/saved-geometry-frame.test.ts",
+      "src/test/study-area-picker.test.tsx",
+      "src/test/wgs84-bounds.test.ts",
+      "--reporter=json",
+      "--outputFile=/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/docs/reviews/2026-10-15-project-geography-intake-integration/evidence/combined-01/tests.json"
+    ],
+    "exitCode": 0
+  },
+  {
+    "name": "types",
+    "command": [
+      "node",
+      "--max-old-space-size=768",
+      "node_modules/typescript/bin/tsc",
+      "-p",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/docs/reviews/2026-10-15-project-geography-intake-integration/tsconfig.json"
+    ],
+    "exitCode": 2
+  }
+]
