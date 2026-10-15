@@ -129,5 +129,11 @@ retained target. It does not test Storage bytes, HTTP route recomputation,
 simultaneous commits, current approval freshness, whole-installation recovery,
 native workbook/GIS rendering, practitioner use or scientific validity. The
 original browser failure remains unresolved until an identified corrected
-installation completes the actual desktop and 390px journey. Independent
-readback of this native proof is the next gate.
+installation completes the actual desktop and 390px journey.
+
+The subsequent [round-two independent readback](../2026-10-15-portfolio-skip-invalid-independent-review-round2/README.md),
+commit `98d293e8c7ce5e3742bb1ecdedbf71defe1b2b07`, reads the actual logs, SQL,
+inventories and diagnosis. It finds no new P1/P2 issue within this native scope,
+confirms the exact repeat inventory and retains the warning and first catalog
+difference. The parent reads its complete report and checks 25 current evidence
+bindings before joining it. Browser acceptance remains pending.
