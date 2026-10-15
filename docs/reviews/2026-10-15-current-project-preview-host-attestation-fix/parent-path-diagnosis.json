@@ -1,0 +1,17 @@
+{
+  "finding": "Actual unchanged attestor would next refuse npm-expanded PATH",
+  "mismatchedExpectedKeys": [
+    "PATH"
+  ],
+  "expectedKeyCount": 22,
+  "PATHExpected": "/usr/bin:/bin",
+  "PATHActual": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan/node_modules/.bin:/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/node_modules/.bin:/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/node_modules/.bin:/home/nathaniel/.local/state/openplan/node_modules/.bin:/home/nathaniel/.local/state/node_modules/.bin:/home/nathaniel/.local/node_modules/.bin:/home/nathaniel/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/usr/bin:/bin",
+  "sealedAppValuesAllMatch": true,
+  "environmentSha256": "e01f8862797c560ebc302feb7fabff25ba6c53c3157fb6be41ac12a224707c21",
+  "processCwd": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan",
+  "npmSetPathSource": "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/set-path.js",
+  "npmSetPathSha256": "bc023d0c2d0840074c9e81ac0bda0fed0ef75e64623fa670437a7706d05d3542",
+  "boundary": "Read-only comparison, not actual attestor execution. Expected deterministic PATH construction follows the inspected installed npm source; actual-helper parity and mutations remain correction work.",
+  "actualAttestationExecuted": false,
+  "hostRunner384Executed": false
+}
