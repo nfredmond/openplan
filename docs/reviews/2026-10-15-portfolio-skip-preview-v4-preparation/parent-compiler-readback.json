@@ -1,0 +1,88 @@
+{
+  "source": "Parent receipts read during this preparation; compiler not rerun by child.",
+  "rootHead": "f44251ef4da5345bb2d639ef55b8ad5d3e416e45",
+  "appBindingHead": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "sameOpenplanSubtree": true,
+  "exitCode": 0,
+  "seconds": 206.31230882700766,
+  "before": {
+    "head": "f44251ef4da5345bb2d639ef55b8ad5d3e416e45",
+    "status": "",
+    "resources": {
+      "memory.max": "8589934592",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.peak": "16764928",
+      "memory.swap.current": "0",
+      "cpu.max": "50000 100000"
+    }
+  },
+  "after": {
+    "head": "f44251ef4da5345bb2d639ef55b8ad5d3e416e45",
+    "status": "",
+    "resources": {
+      "memory.max": "8589934592",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.peak": "6021246976",
+      "memory.swap.current": "0",
+      "cpu.max": "50000 100000"
+    }
+  },
+  "command": [
+    "/usr/bin/bwrap",
+    "--die-with-parent",
+    "--unshare-net",
+    "--ro-bind",
+    "/",
+    "/",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/portfolio-skip-full-types-20261015-02",
+    "/home/nathaniel/.local/state/openplan/portfolio-skip-full-types-20261015-02",
+    "--tmpfs",
+    "/tmp",
+    "--dev",
+    "/dev",
+    "--proc",
+    "/proc",
+    "--chdir",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+    "/usr/bin/env",
+    "-i",
+    "PATH=/usr/bin:/bin",
+    "HOME=/home/nathaniel/.local/state/openplan/portfolio-skip-full-types-20261015-02/home",
+    "NODE_OPTIONS=--max-old-space-size=6144",
+    "XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/portfolio-skip-full-types-20261015-02/cache",
+    "/usr/bin/node",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/node_modules/typescript/bin/tsc",
+    "--project",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/tsconfig.json",
+    "--noEmit",
+    "--incremental",
+    "false",
+    "--pretty",
+    "false"
+  ],
+  "tsconfigSHA256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+  "generatedTypeCount": 446,
+  "generatedTypesFromAccepted215Build": true,
+  "newBuildStarted": false,
+  "stoppedAttempt01Retained": true,
+  "readback": {
+    "at": "2026-10-15T14:13:14.698392+00:00",
+    "receiptSHA256": "5530135a87cc7b7a6730220ec78044ccbc0ee7a9f097b025d9c94d85ddc464a0",
+    "preparationSHA256": "5231dfbe2f50821525cb7a31f8f30e85a77e017a6486177033a6897dffa5767b",
+    "all446DeclarationInputsStillMatch": true,
+    "tsconfigUnchanged": true,
+    "rootHeadUnchangedAndCleanDuringCompiler": true,
+    "appTreeMatches49": true,
+    "routesUnchangedSinceActual215DeclarationProducer": true,
+    "compilerLogEmptyAndHashed": true
+  },
+  "hashes": {
+    "result.json": "5530135a87cc7b7a6730220ec78044ccbc0ee7a9f097b025d9c94d85ddc464a0",
+    "preparation.json": "5231dfbe2f50821525cb7a31f8f30e85a77e017a6486177033a6897dffa5767b",
+    "parent-readback.json": "8f9b65c1655a884c5252c326e97b0b00cbdcb7de8a0f50de5085280da02422ab"
+  },
+  "limits": "Full compiler evidence uses 446 retained actual 215 declarations. It is not a new 49 build or a corrected-import journey."
+}

@@ -1,0 +1,144 @@
+
+# V4 additions use only this new target. Old operational entrypoints are absent.
+FROZEN = Path('/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015')
+DUMP_SHA = '181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398'
+MIG_SHA = 'b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b'
+TARGET = 'openplan_project_portfolio_preview_8f43260b95a071cc4e6d2b90'
+FUNCTION = 'public.commit_project_portfolio_import_v2(uuid,uuid,uuid,uuid,text,text,text,jsonb,jsonb)'
+
+
+def retained_dump():
+    f=FROZEN/'source-private.dump'
+    p.exact({'regular':True,'bytes':16232305,'sha256':DUMP_SHA},
+        {'regular':f.is_file() and not f.is_symlink(),'bytes':f.stat().st_size,'sha256':sha(f)},'retained-dump')
+
+
+def fresh_target():
+    plan=read('plan-private.json')
+    p.exact({'target':TARGET},{'target':plan['target']},'fixed-target')
+    existing=json.loads(sql('postgres',"SELECT coalesce(jsonb_agg(datname),'[]') FROM pg_database;"))
+    p.exact({'fresh':True},{'fresh':TARGET not in existing},'target-reserved')
+    names=[json.loads(line) for line in run(['docker','ps','-a','--format','{{json .Names}}']).decode().splitlines()]
+    p.exact({'fresh':True},{'fresh':not set(names).intersection(plan['names'].values())},'helper-reserved')
+    p.exact({'clean':True},{'clean':not any((OUT/n).exists() or (OUT/n).is_symlink() for n in
+        ['clone-intent.json','target-identity.json','services-intent.json','candidate'])},'operation-reserved')
+
+
+def preserve():
+    for name,expected in read('preservation-files.json').items():
+        f=Path(name)
+        p.exact({'regular':True,'mode':expected['mode'],'sha256':expected['sha256']},
+            {'regular':f.is_file() and not f.is_symlink(),'mode':f.stat().st_mode&0o777,'sha256':sha(f)},'old-packet')
+    protected_web()
+    # Full live protected helper configurations are captured by parent preflight.
+    if (OUT/'protected-runtime-before.json').exists():
+        frozen=read('protected-runtime-before.json')
+        for identity,expected in frozen['helpers'].items():
+            i=inspect(identity)
+            current={k:i[k] for k in ['Id','Name','Image','Config','HostConfig','Mounts']}
+            p.exact({'sha256':expected},{'sha256':p.digest(current)},'protected-helper')
+        for database,expected in frozen['databases'].items():
+            p.exact({'snapshot':expected},{'snapshot':snapshot(database)},'protected-database')
+
+
+
+def protected_web():
+    unit='openplan-current-project-preview-app-21510042e-v3-web.service'
+    text=run(['/usr/bin/systemctl','--user','show',unit,'--property=ActiveState,InvocationID,MainPID,ControlGroup']).decode()
+    properties=dict(line.split('=',1) for line in text.splitlines())
+    p.exact({'ActiveState':'active','InvocationID':'34615ba06b554482b0f79c90fe999a61'},properties,'protected-web')
+    receipt=json.loads(Path('/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/runtime-start-attestation.json').read_text())
+    rows=run(['/usr/bin/ss','-H','-ltnp','sport = :3585']).decode().splitlines()
+    pid=receipt['listenerPid']
+    p.exact({'socket':True},{'socket':len(rows)==1 and rows[0].split()[3]=='127.74.19.10:3585' and 'pid='+pid+',' in rows[0]},'protected-web')
+    proc=Path('/proc')/pid
+    p.exact({'cwd':str(Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan')),
+        'cgroup':'0::'+properties['ControlGroup']},
+        {'cwd':str((proc/'cwd').resolve()),'cgroup':(proc/'cgroup').read_text().strip()},'protected-web')
+    environment=dict(item.split('=',1) for item in (proc/'environ').read_bytes().decode().split('\0') if '=' in item)
+    p.exact({'digest':receipt['processEnvironmentDigest']},{'digest':p.digest(environment)},'protected-web-env')
+
+
+def preflight():
+    pinned_files();retained_dump();source_check();unchanged_inputs();free_ports();fresh_target()
+    p.exact({'disk':True},{'disk':shutil.disk_usage(OUT).free>=8*1024**3},'preflight')
+    # Read only receipts; inspect IDs directly. Never invoke old launcher actions.
+    original=json.loads((FROZEN/'rest-uri-recovery-01/active-service-receipts-private.json').read_text())
+    helpers={}
+    for receipt in original.values():
+        i=inspect(receipt['id'])
+        p.exact({'running':True},{'running':i['State']['Running']},'protected-active')
+        helpers[i['Id']]=p.digest({k:i[k] for k in ['Id','Name','Image','Config','HostConfig','Mounts']})
+    databases={database:snapshot(database) for database in read('protected-databases.json')}
+    write('protected-runtime-before.json',{'helpers':helpers,'databases':databases})
+    write('preflight-ready.json',{'target':TARGET,'sourceAnchor':p.SOURCE_ANCHOR,'dumpSHA256':DUMP_SHA})
+
+
+def upgrade_state():
+    target_check()
+    return json.loads(sql(TARGET,"SELECT jsonb_build_object('database',current_database(),'historyCount',(SELECT count(*) FROM supabase_migrations.schema_migrations),'latest',(SELECT max(version) FROM supabase_migrations.schema_migrations),'versions',(SELECT jsonb_agg(version ORDER BY version) FROM supabase_migrations.schema_migrations),'body',(SELECT prosrc FROM pg_proc WHERE oid="+literal(FUNCTION)+"::regprocedure),'statusConstraint',(SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.project_portfolio_import_rows'::regclass AND conname='project_portfolio_import_rows_resolved_status_check'),'phaseConstraint',(SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.project_portfolio_import_rows'::regclass AND conname='project_portfolio_import_rows_resolved_delivery_phase_check'),'priorHistoryDigest',(SELECT md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),'')) FROM supabase_migrations.schema_migrations t WHERE version<>'20261017000017'),'historySQL',(SELECT statements FROM supabase_migrations.schema_migrations WHERE version='20261017000017'));"))
+
+
+def upgraded(actual):
+    expected=read('upgrade-expectations.json')
+    p.exact({'database':TARGET,'historyCount':420,'latest':'20261017000017','versions':sorted(expected['versions']+['20261017000017']),
+        'body':expected['newBody'],'priorHistoryDigest':expected['history']['digest'],'historySQL':[(OUT/'candidate17.sql').read_text()]},actual,'upgrade-state')
+    # The receipt below pins the exact server-normalized CHECK definitions too.
+    for key in ['statusConstraint','phaseConstraint']:
+        p.exact({'check':True},{'check':isinstance(actual.get(key),str) and "decision <> 'create'::text" in actual[key]},'upgrade-'+key)
+
+
+def upgrade_ready():
+    receipt=read('upgrade-ready.json')
+    p.exact({'target':TARGET,'migrationSHA256':MIG_SHA},{'target':receipt['target'],'migrationSHA256':receipt['migrationSHA256']},'upgrade-receipt')
+    actual=upgrade_state();upgraded(actual)
+    p.files(receipt['state'],actual)
+
+
+def upgrade_sql():
+    expected=read('upgrade-expectations.json')
+    p.exact({'sha256':MIG_SHA},{'sha256':sha(OUT/'candidate17.sql')},'candidate17')
+    hist=expected['history']
+    return "\n".join([
+        'BEGIN;', "SET LOCAL ROLE postgres;", "SET LOCAL statement_timeout='60s';", "SET LOCAL lock_timeout='3s';", "SET LOCAL idle_in_transaction_session_timeout='60s';", "SET LOCAL work_mem='16MB';",
+        'SELECT pg_advisory_xact_lock(20261017,17);',
+        'LOCK TABLE supabase_migrations.schema_migrations IN EXCLUSIVE MODE;',
+        "DO $exclusive$ BEGIN IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()) THEN RAISE EXCEPTION 'upgrade-target-connections'; END IF; END $exclusive$;",
+        "DO $ready$ BEGIN IF current_database()<>"+literal(TARGET)+" OR (SELECT count(*) FROM supabase_migrations.schema_migrations)<>419 OR (SELECT max(version) FROM supabase_migrations.schema_migrations)<>'20261017000016' OR EXISTS(SELECT 1 FROM supabase_migrations.schema_migrations WHERE version='20261017000017') THEN RAISE EXCEPTION 'upgrade-history419-target'; END IF;",
+        "IF (SELECT md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),'')) FROM supabase_migrations.schema_migrations t)<>"+literal(hist['digest'])+" THEN RAISE EXCEPTION 'upgrade-history-bytes'; END IF;",
+        "IF (SELECT prosrc FROM pg_proc WHERE oid="+literal(FUNCTION)+"::regprocedure) IS DISTINCT FROM "+literal(expected['oldBody'])+" THEN RAISE EXCEPTION 'upgrade-original-body'; END IF; END $ready$;",
+        (OUT/'candidate17.sql').read_text(),
+        "INSERT INTO supabase_migrations.schema_migrations(version,name,statements) VALUES ('20261017000017','portfolio_skip_invalid_classifications',ARRAY["+literal((OUT/'candidate17.sql').read_text())+"]::text[]);",
+        "DO $after$ BEGIN IF (SELECT count(*) FROM supabase_migrations.schema_migrations)<>420 OR (SELECT max(version) FROM supabase_migrations.schema_migrations)<>'20261017000017' THEN RAISE EXCEPTION 'upgrade-history420'; END IF; END $after$;",
+        "NOTIFY pgrst, 'reload schema';", 'COMMIT;'])
+
+
+def upgrade():
+    pinned_files();retained_dump();source_check();unchanged_inputs();target_check()
+    p.exact({'target':TARGET},{'target':read('clone-ready.json')['target']},'restored-readiness')
+    p.exact({'target':TARGET},{'target':read('preflight-ready.json')['target']},'preflight-readiness')
+    before=snapshot(TARGET)
+    projection=lambda rows:[x for x in rows if 'table' in x or 'versions' in x or 'sequences' in x or 'properties' in x]
+    p.exact({'data':projection(read('source-binding-private.json')['snapshot'])},{'data':projection(before)},'upgrade-original-data')
+    statement=upgrade_sql()
+    write('upgrade-intent.json',{'target':TARGET,'migrationSHA256':MIG_SHA,'SQLSHA256':hashlib.sha256(statement.encode()).hexdigest()})
+    run(['docker','exec','-i',p.DB_ID,'psql','-Xq','-U','supabase_admin','-d',TARGET,'-v','ON_ERROR_STOP=1'],data=statement.encode(),log='upgrade-private.log')
+    state=upgrade_state();upgraded(state)
+    # All original rows, auth data and sequences stay exact. Only migration history differs.
+    unchanged=lambda rows:[x for x in rows if ('table' in x and x['table']!='supabase_migrations.schema_migrations') or 'sequences' in x or 'properties' in x]
+    p.exact({'data':unchanged(before)},{'data':unchanged(snapshot(TARGET))},'upgrade-data-preserved')
+    source_check();unchanged_inputs()
+    write('upgrade-ready.json',{'target':TARGET,'migrationSHA256':MIG_SHA,'state':state})
+
+
+def main():
+    os.umask(0o077)
+    os.environ.clear();os.environ.update(PATH='/usr/bin:/bin',HOME=str(OUT/'tmp'),PYTHONDONTWRITEBYTECODE='1',XDG_RUNTIME_DIR='/run/user/'+str(os.getuid()))
+    p.exact({'root':p.ROOT},{'root':str(Path(__file__).resolve().parent)},'launcher-root')
+    operations={'preflight':preflight,'restore':restore,'upgrade':upgrade,'services':services,'verify-services':verify_services}
+    if len(sys.argv)!=2 or sys.argv[1] not in operations:raise ValueError('unknown-operation')
+    try:operations[sys.argv[1]]()
+    except BaseException as error:
+        write('failure-'+sys.argv[1]+'-'+secrets.token_hex(6)+'.json',{'phase':sys.argv[1],'type':type(error).__name__,'reason':str(error) if type(error) is ValueError else 'See private logs; preserve partial state.'})
+        print('REFUSED '+sys.argv[1]+'; retained private evidence.',file=sys.stderr);raise SystemExit(1)
+if __name__=='__main__':main()
