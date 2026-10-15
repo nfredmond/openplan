@@ -1,0 +1,486 @@
+{
+  "scope": "Synthetic acquisition with HTTP/tool boundaries replaced; no live Docker, DB, HTTP, build or browser proof.",
+  "total": 607,
+  "outcomes": {
+    "survived": 99,
+    "intended_refusal": 508
+  },
+  "historical": {
+    "sourceCommit": "c636b7eecbd66970217421da7bead960f262323b",
+    "retainedRows": 567,
+    "outcomes": {
+      "survived": 93,
+      "intended_refusal": 474
+    },
+    "snapshotFile": "historical-controls.json",
+    "semanticRevision": "17 existing health rows now call policy.health instead of a None-only comparator. Identical serialized row labels/outcomes do not mean unchanged test semantics. The other 550 row checks retain their meaning.",
+    "alwaysRefusesBlindSpotReproduced": true
+  },
+  "addedAcquisitionRows": 40,
+  "addedAcquisitionOutcomes": {
+    "survived": 6,
+    "intended_refusal": 34
+  },
+  "namedRefusals": {
+    "app-env-binding:sha256": 3,
+    "app-env:otherEnv": 3,
+    "app-env:sha256": 3,
+    "app-values:api": 3,
+    "app-values:gtfs": 3,
+    "app-values:head": 3,
+    "app-values:values": 3,
+    "app-values:web": 3,
+    "app:clean": 3,
+    "app:head": 3,
+    "app:path": 3,
+    "build-budget:memory.max": 3,
+    "build-budget:memory.swap.max": 3,
+    "build-headroom:disk": 3,
+    "build-headroom:memory": 3,
+    "build:returncode": 3,
+    "candidate-migrations:versions": 3,
+    "checkout:head": 3,
+    "clone-ready:target": 3,
+    "clone:disk": 3,
+    "clone:fresh": 3,
+    "command:allowed": 4,
+    "configuration:appHead": 1,
+    "configuration:appKeysMatch": 1,
+    "configuration:appOrigin": 1,
+    "configuration:appSet": 5,
+    "configuration:auth": 1,
+    "configuration:cloudAbsent": 5,
+    "configuration:cors": 1,
+    "configuration:endpoints": 1,
+    "configuration:gtfs": 1,
+    "configuration:jwtShared": 1,
+    "configuration:mailAbsent": 1,
+    "configuration:optionalHelpersAbsent": 3,
+    "configuration:rest": 1,
+    "configuration:storage": 1,
+    "configuration:upstreams": 1,
+    "configuration:webOrigin": 1,
+    "created-service:networkIdValid": 1,
+    "database:Id": 3,
+    "database:Image": 3,
+    "database:Name": 3,
+    "database:networkId": 3,
+    "database:project": 3,
+    "database:running": 3,
+    "dump-bytes:sha256": 3,
+    "dump:ok": 3,
+    "file-set:keys": 1,
+    "files:a": 3,
+    "files:configured-source-private.json": 1,
+    "health:auth": 9,
+    "health:oldOrigin": 11,
+    "health:ownOrigin": 11,
+    "health:rest": 9,
+    "health:storage": 9,
+    "helper-uri:hasPassword": 3,
+    "helper-uri:host": 3,
+    "helper-uri:port": 3,
+    "helper-uri:query": 3,
+    "helper-uri:role": 3,
+    "helpers:kinds": 3,
+    "kong-upstream:host": 3,
+    "launch:absentAI": 3,
+    "launch:api": 3,
+    "launch:app": 3,
+    "launch:bounded": 3,
+    "launch:build": 3,
+    "launch:buildHash": 3,
+    "launch:clean": 3,
+    "launch:disabledGTFS": 3,
+    "launch:envHash": 3,
+    "launch:freePort": 3,
+    "launch:head": 3,
+    "launch:noOom": 3,
+    "launch:receiptHash": 3,
+    "launch:services": 3,
+    "launch:sourceHash": 3,
+    "launch:web": 3,
+    "launcher-root:root": 3,
+    "old-helper:Id": 3,
+    "old-helper:Image": 3,
+    "optional-allowlist:allowed": 4,
+    "optional-app:values": 17,
+    "optional-source-file:private": 1,
+    "optional-source-file:regular": 2,
+    "optional-source-hash:sha256": 3,
+    "optional-source-values:values": 6,
+    "optional-source:path": 1,
+    "optional-source:syntax": 3,
+    "optional-source:unique": 3,
+    "optional-values:valid": 15,
+    "plan:api": 3,
+    "plan:dbId": 3,
+    "plan:head": 3,
+    "plan:root": 3,
+    "plan:source": 3,
+    "plan:web": 3,
+    "prior-helper:sha256": 3,
+    "prior-input:sha256": 3,
+    "properties:collate": 3,
+    "properties:connectionLimit": 3,
+    "properties:ctype": 3,
+    "properties:encoding": 3,
+    "properties:localeProvider": 3,
+    "properties:owner": 3,
+    "receipt:database": 3,
+    "receipt:name": 3,
+    "restore:returncode": 3,
+    "restored-data:data": 3,
+    "service:bindings": 4,
+    "service:binds": 4,
+    "service:capAdd": 4,
+    "service:cpus": 4,
+    "service:database": 3,
+    "service:environment": 4,
+    "service:extraHosts": 4,
+    "service:id": 4,
+    "service:image": 4,
+    "service:labels": 4,
+    "service:memory": 4,
+    "service:mounts": 4,
+    "service:name": 4,
+    "service:network": 4,
+    "service:networkMode": 4,
+    "service:networkNames": 4,
+    "service:pidMode": 4,
+    "service:pids": 4,
+    "service:privileged": 4,
+    "service:readOnlyRoot": 4,
+    "service:running": 5,
+    "service:swap": 4,
+    "source-anchor:sha256": 2,
+    "source-dump:argv": 13,
+    "source-fingerprint:sha256": 5,
+    "source:cron": 3,
+    "source:database": 3,
+    "source:databaseSettings": 3,
+    "source:delegatedGrantors": 3,
+    "source:foreignTables": 3,
+    "source:historyCount": 3,
+    "source:latest": 3,
+    "source:readonly": 3,
+    "source:subscriptions": 3,
+    "target-identity:database": 3,
+    "target-identity:oid": 3,
+    "target-identity:owner": 3,
+    "target:valid": 5
+  },
+  "newAcquisitionControls": [
+    {
+      "control": "health-http:baseline-fixed-configured",
+      "outcome": "survived"
+    },
+    {
+      "control": "health-http:harmless-response-header",
+      "outcome": "survived"
+    },
+    {
+      "control": "health-http:old-header-absent",
+      "outcome": "survived"
+    },
+    {
+      "control": "health-http:auth-status-201",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:auth-status-204",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:auth-status-503",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:auth-status-'200'",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:auth-status-None",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:auth-status-True",
+      "outcome": "intended_refusal",
+      "reason": "health:auth"
+    },
+    {
+      "control": "health-http:rest-status-201",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:rest-status-204",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:rest-status-503",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:rest-status-'200'",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:rest-status-None",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:rest-status-True",
+      "outcome": "intended_refusal",
+      "reason": "health:rest"
+    },
+    {
+      "control": "health-http:storage-status-201",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:storage-status-204",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:storage-status-503",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:storage-status-'200'",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:storage-status-None",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:storage-status-True",
+      "outcome": "intended_refusal",
+      "reason": "health:storage"
+    },
+    {
+      "control": "health-http:own-header-absent",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-old",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-wildcard",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-unrecognized",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-trailing-slash",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-null",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-empty",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:own-header-origin-list",
+      "outcome": "intended_refusal",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "control": "health-http:old-header-reflected",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-wildcard",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-unrecognized",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-trailing-slash",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-null",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-empty",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:old-header-origin-list",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "control": "health-http:verify-services-baseline",
+      "outcome": "survived"
+    },
+    {
+      "control": "health-http:verify-services-reflected-old",
+      "outcome": "intended_refusal",
+      "reason": "health:oldOrigin"
+    },
+    {
+      "control": "health-http:verify-services-restoration",
+      "outcome": "survived"
+    }
+  ],
+  "mutations": [
+    {
+      "mutation": "baseline",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "harmless-comment",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "harmless-comment:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "always-refuses",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:named-fault:health-always-refuses"
+    },
+    {
+      "mutation": "always-refuses:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-health-policy",
+      "outcome": "killed",
+      "reason": "health-control:auth-status-201:expected-refusal:health:auth"
+    },
+    {
+      "mutation": "skip-health-policy:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-health-request",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:request-0"
+    },
+    {
+      "mutation": "skip-health-request:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-old-request",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "skip-old-request:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "skip-verify-services-health",
+      "outcome": "killed",
+      "reason": "health-control:verify-services-baseline:requests-not-acquired"
+    },
+    {
+      "mutation": "skip-verify-services-health:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "old-none-only-regression",
+      "outcome": "killed",
+      "reason": "health-control:baseline-fixed-configured:unexpected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "old-none-only-regression:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "allow-reflected-old",
+      "outcome": "killed",
+      "reason": "health-control:old-header-reflected:expected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "allow-reflected-old:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "allow-wildcard-old",
+      "outcome": "killed",
+      "reason": "health-control:old-header-wildcard:expected-refusal:health:oldOrigin"
+    },
+    {
+      "mutation": "allow-wildcard-old:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "ignore-own-origin",
+      "outcome": "killed",
+      "reason": "health-control:own-header-absent:expected-refusal:health:ownOrigin"
+    },
+    {
+      "mutation": "ignore-own-origin:exact-restoration",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "classifier:unrelated-runtime",
+      "outcome": "unclassified-runtime-error"
+    },
+    {
+      "mutation": "classifier:unrelated-value",
+      "outcome": "unclassified-runtime-error"
+    },
+    {
+      "mutation": "final-exact-restoration",
+      "outcome": "survived"
+    }
+  ],
+  "restoration": {
+    "functions": true,
+    "controlRows": true,
+    "templateBytes": true,
+    "templateSha256": {
+      "controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+      "launcher.py": "6c23a4888b4a4a1a2395dddf2faa5d6264d3a74d5fc1de450fd093066ac144ba",
+      "policy.py": "be78f468864ac7ff639fb70816917f9f9d0089745f874476edefe025fa9ccd49"
+    }
+  }
+}
