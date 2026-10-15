@@ -1,0 +1,195 @@
+{
+  "candidate": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+  "parent": "702ee1270de23cb9e469711398c580d9a977878b",
+  "fetchedMain": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "privateCopy": "/tmp/openplan-workbook-independent-p3pacqrh",
+  "focusedCases": 75,
+  "independentBoundaryCases": 17,
+  "restoredCases": 22,
+  "controls": [
+    {
+      "label": "harmless",
+      "classification": "SURVIVED",
+      "failures": []
+    },
+    {
+      "label": "success-status",
+      "classification": "KILLED",
+      "failures": [
+        {
+          "test": "independent boundary count=0 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=1 cap=1",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=999 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=1000 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=1001 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=137",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=1",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=3000",
+          "diagnostic": "AssertionError: boundary status: expected 201 to be 200 // Object.is equality"
+        }
+      ]
+    },
+    {
+      "label": "refusal-status",
+      "classification": "KILLED",
+      "failures": [
+        {
+          "test": "independent boundary count=2001 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=3500 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2001 cap=137",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2001 cap=1",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        }
+      ]
+    },
+    {
+      "label": "failure-status",
+      "classification": "KILLED",
+      "failures": [
+        {
+          "test": "independent later failure error",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure null",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure throw",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure error-with-data",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        }
+      ]
+    },
+    {
+      "label": "truncate-first-page",
+      "classification": "KILLED",
+      "failures": [
+        {
+          "test": "independent boundary count=1 cap=1",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 2 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=999 cap=1000",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 2 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=1000 cap=1000",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 2 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=1001 cap=1000",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 3 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=1000",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 3 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2001 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=3500 cap=1000",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=137",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 16 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2001 cap=137",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=1",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 2001 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2001 cap=1",
+          "diagnostic": "AssertionError: boundary status: expected 200 to be 409 // Object.is equality"
+        },
+        {
+          "test": "independent boundary count=2000 cap=3000",
+          "diagnostic": "AssertionError: independent exact termination: expected 1 to be 3 // Object.is equality"
+        },
+        {
+          "test": "independent later failure error",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure null",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure throw",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        },
+        {
+          "test": "independent later failure error-with-data",
+          "diagnostic": "AssertionError: independent no partial workbook: expected 200 to be 500 // Object.is equality"
+        }
+      ]
+    },
+    {
+      "label": "fake-projection",
+      "classification": "KILLED",
+      "test": "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+      "marker": "legacy workbook must retain ordered scoped original metadata",
+      "viewerSurvives": false
+    },
+    {
+      "label": "fake-inclusive-row",
+      "classification": "KILLED",
+      "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+      "marker": "legacy over-limit export must refuse without a workbook",
+      "viewerSurvives": true
+    }
+  ],
+  "restoredRouteSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+  "restoredLegacySha256": "4cfa8720b9382ebbd83a49e459e4db175bc8c6c7d87612774960e80f27e223c9",
+  "candidateImportCorrectionIntegrated": false,
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "414097408",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  }
+}

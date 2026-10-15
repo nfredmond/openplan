@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-ffbdeb11/docs/reviews/2026-10-15-project-workbook-export-independent/run_review.py", line 237, in <module>
+    main()
+    ~~~~^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-ffbdeb11/docs/reviews/2026-10-15-project-workbook-export-independent/run_review.py", line 163, in main
+    evidence_audit(private)
+    ~~~~~~~~~~~~~~^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-ffbdeb11/docs/reviews/2026-10-15-project-workbook-export-independent/run_review.py", line 125, in evidence_audit
+    ctrl.classifier_controls()
+    ~~~~~~~~~~~~~~~~~~~~~~~~^^
+  File "/tmp/openplan-workbook-independent-9wwq8ssm/docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py", line 91, in classifier_controls
+    test_file = str(LEGACY.relative_to(APP))
+                    ~~~~~~~~~~~~~~~~~~^^^^^
+  File "/usr/lib/python3.14/pathlib/__init__.py", line 489, in relative_to
+    raise ValueError(f"{str(self)!r} is not in the subpath of {str(other)!r}")
+ValueError: '/tmp/openplan-workbook-independent-9wwq8ssm/openplan/src/test/project-portfolio-export-route.test.ts' is not in the subpath of '/home/nathaniel/.t3/worktrees/openplan/t3-32433c82/openplan'
