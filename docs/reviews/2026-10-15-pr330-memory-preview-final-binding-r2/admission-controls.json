@@ -1,0 +1,51 @@
+{
+  "preparedOnly": true,
+  "controls": [
+    {
+      "case": "absent final admission",
+      "result": "refused without operation"
+    },
+    {
+      "case": "admission head",
+      "result": "named refusal"
+    },
+    {
+      "case": "admission appTree",
+      "result": "named refusal"
+    },
+    {
+      "case": "admission acceptedByParent",
+      "result": "named refusal"
+    },
+    {
+      "case": "admission capacityAdmitted",
+      "result": "named refusal"
+    },
+    {
+      "case": "admission packetSealSHA256",
+      "result": "named refusal"
+    },
+    {
+      "case": "admission reviewCommit",
+      "result": "named refusal"
+    },
+    {
+      "case": "harmless exact copied admission",
+      "result": "survived in private fixture only"
+    },
+    {
+      "case": "packet source independently differs",
+      "result": "final-packet-source refusal"
+    },
+    {
+      "case": "fake user-manager stop",
+      "result": "actual supplied status and stream hashes retained, without service launch"
+    }
+  ],
+  "realAdmissionCreated": false,
+  "exactRestoration": true,
+  "blindCategories": [
+    "fixture admission values are not independent review acceptance",
+    "stop environment is supplied by a stand-in, not an actual web unit"
+  ]
+}

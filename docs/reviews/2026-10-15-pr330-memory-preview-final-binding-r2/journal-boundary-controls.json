@@ -1,0 +1,26 @@
+{
+  "preparedOnly": true,
+  "controls": [
+    {
+      "case": "journal-private-directory",
+      "result": "harmless survivor; intended refusal; removed guard accepts fault"
+    },
+    {
+      "case": "journal-record-name",
+      "result": "harmless survivor; intended refusal; removed guard accepts fault"
+    },
+    {
+      "case": "journal-operation-name",
+      "result": "harmless survivor; intended refusal; removed guard accepts fault"
+    },
+    {
+      "case": "journal-cli",
+      "result": "harmless survivor; intended refusal; removed guard accepts fault"
+    }
+  ],
+  "exactRestoration": true,
+  "blindCategories": [
+    "private paths and /usr/bin/true stand-in only",
+    "no operating journal, DB, application or helper"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "preparedOnly": true,
+  "healthy": "journal/receipt writes succeed; durable seal write EROFS",
+  "faults": [
+    "missing journal bind refuses needed write",
+    "whole durable-root bind exposes seal and is detected"
+  ],
+  "sourceUnchanged": true,
+  "boundary": "Tiny namespace stand-ins only. No real controller stage or DB/helper/app."
+}

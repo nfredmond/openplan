@@ -1,0 +1,45 @@
+{
+  "preparedOnly": true,
+  "controls": [
+    {
+      "case": "R1 exact tracked link plus donor",
+      "result": "archive/readback accepts literal targets without dereference; harmless survives"
+    },
+    {
+      "case": "R1 tracked-target",
+      "result": "archive-link refusal"
+    },
+    {
+      "case": "R1 donor-target",
+      "result": "archive-link refusal"
+    },
+    {
+      "case": "R1 unowned",
+      "result": "archive-link refusal"
+    },
+    {
+      "case": "R1 removed tracked map",
+      "result": "positive acceptance assertion fails at archive-link"
+    },
+    {
+      "case": "R2 build",
+      "result": "four controller/seal writes EROFS; candidate/execution/tmp writes succeed; writable-root fault detected"
+    },
+    {
+      "case": "R2 start",
+      "result": "four controller/seal writes EROFS; candidate/execution/tmp writes succeed; writable-root fault detected"
+    },
+    {
+      "case": "old FIFO custody",
+      "result": "metadata capture completes; removed special branch misclassifies"
+    }
+  ],
+  "exactRestoration": true,
+  "storageSHA256": "3394539b5468dfbf866ee1b53a3df23a0e25ad33a6b43d52bb6d9d6f10f825fb",
+  "appBindingSHA256": "438a1e00dee836e6e4c089dc6a3ac6b0a3d8a070cc22d8e100d62eb4fce6a5f7",
+  "blindCategories": [
+    "namespace probes bind disk fixtures; no real tmpfs candidate or application/native addon",
+    "archive readback is not extraction/recovery",
+    "no DB/helper/start/build/browser operation"
+  ]
+}

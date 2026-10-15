@@ -1,0 +1,52 @@
+{
+  "preparedOnly": true,
+  "controls": [
+    {
+      "case": "harmless journal comment",
+      "result": "survived"
+    },
+    {
+      "case": "mutator before durable intent",
+      "result": "intended ordering assertion fails when barrier removed"
+    },
+    {
+      "case": "mutator before intent file fsync",
+      "result": "intended ordering assertion fails when barrier removed"
+    },
+    {
+      "case": "mutator before intent directory fsync",
+      "result": "intended ordering assertion fails when barrier removed"
+    },
+    {
+      "case": "allocation retry",
+      "result": "durable exclusive directory refuses before effect"
+    },
+    {
+      "case": "failed/lost acknowledgement",
+      "result": "intent/failure retained; retry refused"
+    },
+    {
+      "case": "real stand-in controller os._exit",
+      "result": "durable intent survives missing acknowledgement/result and bars retry"
+    },
+    {
+      "case": "failed native stand-in",
+      "result": "exact stdout/stderr/exit retained durably"
+    },
+    {
+      "case": "returned OID/helper ID",
+      "result": "actual helper writer persists/fyncs receipt before next fake mutator; removed mirror detected"
+    },
+    {
+      "case": "composed mutator callsites/start archive identity",
+      "result": "all fixed DB/helper/git/build/exec/unit/observer barriers present; missing DB barrier/archive binding detected"
+    }
+  ],
+  "exactRestoration": true,
+  "journalSHA256": "4000b973c52a61b9137e4be59627844e86dc9acc3bac7aaaa7240dd434daa905",
+  "blindCategories": [
+    "fake file/process mutators only, no DB/helper/build/start",
+    "fsync ordering is not power-loss/reboot testing",
+    "callsite census protects named current syntax; independent final review must inspect semantics"
+  ]
+}
