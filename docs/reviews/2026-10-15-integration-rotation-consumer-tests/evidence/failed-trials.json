@@ -1,0 +1,150 @@
+[
+  {
+    "trial": "trial1",
+    "fault": "no-previous-secret-read",
+    "controllerOutcome": "REJECTED",
+    "reason": "Promise assertion omits the required named diagnostic. Replaced with a caught error and direct named assertion.",
+    "report": {
+      "numTotalTestSuites": 2,
+      "numPassedTestSuites": 0,
+      "numFailedTestSuites": 2,
+      "numPendingTestSuites": 0,
+      "numTotalTests": 2,
+      "numPassedTests": 1,
+      "numFailedTests": 1,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "snapshot": {
+        "added": 0,
+        "failure": false,
+        "filesAdded": 0,
+        "filesRemoved": 0,
+        "filesRemovedList": [],
+        "filesUnmatched": 0,
+        "filesUpdated": 0,
+        "matched": 0,
+        "total": 0,
+        "unchecked": 0,
+        "uncheckedKeysByFile": [],
+        "unmatched": 0,
+        "updated": 0,
+        "didUpdate": false
+      },
+      "startTime": 1792044076696,
+      "success": false,
+      "testResults": [
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "rotation consumer chains"
+              ],
+              "fullName": "rotation consumer chains prepares then verifies the original workspace selection across rotation",
+              "status": "failed",
+              "title": "prepares then verifies the original workspace selection across rotation",
+              "duration": 171.919963,
+              "failureMessages": [
+                "Error: promise rejected \"Error: translation_credential_unavailable { code: '\u2026' }\" instead of resolving\n    at _Assertion.__VITEST_RESOLVES__ (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/expect/dist/index.js:1710:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/src/test/integration-rotation-consumer-chain.test.ts:73:82\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+              ],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "rotation consumer chains"
+              ],
+              "fullName": "rotation consumer chains rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+              "status": "passed",
+              "title": "rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+              "duration": 159.95996300000002,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            }
+          ],
+          "startTime": 1792044077032,
+          "endTime": 1792044077363.96,
+          "status": "failed",
+          "message": "",
+          "name": "/home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/src/test/integration-rotation-consumer-chain.test.ts"
+        }
+      ]
+    },
+    "retainedDirectory": "/home/nathaniel/.local/state/openplan/rotation-consumer-proof-095307b4-20261015/trial1",
+    "sourceRestored": true
+  },
+  {
+    "trial": "trial2",
+    "fault": "ignore-outer-api-configuration-hash",
+    "controllerOutcome": "REJECTED",
+    "reason": "Controller expects a later decrypt-spy assertion, but removing the outer comparison already returns the key and fails the preceding refusal assertion. Corrected expected diagnostic to that earlier behavior assertion.",
+    "report": {
+      "numTotalTestSuites": 2,
+      "numPassedTestSuites": 0,
+      "numFailedTestSuites": 2,
+      "numPendingTestSuites": 0,
+      "numTotalTests": 2,
+      "numPassedTests": 1,
+      "numFailedTests": 1,
+      "numPendingTests": 0,
+      "numTodoTests": 0,
+      "snapshot": {
+        "added": 0,
+        "failure": false,
+        "filesAdded": 0,
+        "filesRemoved": 0,
+        "filesRemovedList": [],
+        "filesUnmatched": 0,
+        "filesUpdated": 0,
+        "matched": 0,
+        "total": 0,
+        "unchecked": 0,
+        "uncheckedKeysByFile": [],
+        "unmatched": 0,
+        "updated": 0,
+        "didUpdate": false
+      },
+      "startTime": 1792044111081,
+      "success": false,
+      "testResults": [
+        {
+          "assertionResults": [
+            {
+              "ancestorTitles": [
+                "rotation consumer chains"
+              ],
+              "fullName": "rotation consumer chains prepares then verifies the original workspace selection across rotation",
+              "status": "passed",
+              "title": "prepares then verifies the original workspace selection across rotation",
+              "duration": 371.502438,
+              "failureMessages": [],
+              "meta": {},
+              "tags": []
+            },
+            {
+              "ancestorTitles": [
+                "rotation consumer chains"
+              ],
+              "fullName": "rotation consumer chains rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+              "status": "failed",
+              "title": "rejects a substituted API destination with a recomputed outer hash after previous-secret decrypt",
+              "duration": 141.28031599999997,
+              "failureMessages": [
+                "AssertionError: Stale outer hash refuses before envelope decryption: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/src/test/integration-rotation-consumer-chain.test.ts:126:62\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+              ],
+              "meta": {},
+              "tags": []
+            }
+          ],
+          "startTime": 1792044111396,
+          "endTime": 1792044111909.2803,
+          "status": "failed",
+          "message": "",
+          "name": "/home/nathaniel/.t3/worktrees/openplan/t3-095307b4/openplan/src/test/integration-rotation-consumer-chain.test.ts"
+        }
+      ]
+    },
+    "retainedDirectory": "/home/nathaniel/.local/state/openplan/rotation-consumer-proof-095307b4-20261015/trial2",
+    "sourceRestored": true
+  }
+]
