@@ -1,0 +1,86 @@
+{
+  "priorPacketCommit": "9d7b8edc9fd851905e01c23c2aa2e5cbaa37a21b",
+  "assignedTreeBase": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "candidate": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-preview-configured-20261015",
+  "sourceDatabase": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "plannedTargetDatabase": "openplan_project_combined_preview_02edd1c162e1c09a5d05b95c",
+  "postgresContainerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "postgresContainerName": "supabase_db_openplan-restore-target-2026091050",
+  "schema": {
+    "migrations": 419,
+    "latest": "20261017000016"
+  },
+  "api": "http://127.74.19.10:29948",
+  "web": "http://127.74.19.10:3585",
+  "templateSha256": {
+    "launcher.py": "bae393bedfb11725362909f96baead46aa2633841799e3fd7af3a42013b1c544",
+    "controls.py": "0e232c379716753106e175bafc5f06ba96b727d91b1029c2f4202ab032f7c6f9",
+    "policy.py": "b84952d06c88095cd102d75bd431d255b9cb6b79955ed8c193b59a8ef7bcea28"
+  },
+  "templateBindingManifestSha256": "c98f1904574c4afc52b8945a6646a175e5a59be83787bd7d8d1a5abd2ad00c79",
+  "privateBindingManifestSha256": "62a42f6f24478036a084a969a6292a38ed9abd500824eddc02cc8dc4759bc4e7",
+  "sourceLogicalFingerprintSha256": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "configuredSource": {
+    "path": "/home/nathaniel/.local/state/openplan/project-map-integration-20261015/openplan/.env.local",
+    "selectedKeys": [
+      "CENSUS_API_KEY",
+      "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+      "OPENPLAN_INTEGRATION_KEY_SECRET"
+    ],
+    "valuesAndSourceHash": "Private only; configured-source-private.json is included in the frozen private manifest.",
+    "allThreePresent": true,
+    "existingAuthorizedConfiguration": true
+  },
+  "syntheticControls": {
+    "total": 567,
+    "survived": 93,
+    "intended_refusal": 474,
+    "priorRowsPreserved": 478
+  },
+  "operationallyProved": false,
+  "executedPhases": [
+    "private configuration preparation from exact prior bindings, with fresh local JWT/API keys",
+    "check (read-only), two configured runs",
+    "controls (synthetic in-memory), two successful trials",
+    "syntax (AST parse)",
+    "read-only planned-resource absence checks"
+  ],
+  "notExecuted": [
+    "capture / source rebaseline",
+    "clone",
+    "checkout",
+    "services",
+    "dependency installation",
+    "build",
+    "start",
+    "browser",
+    "full suite",
+    "provider requests",
+    "PR",
+    "push",
+    "merge"
+  ],
+  "absenceChecks": {
+    "targetDatabaseExists": false,
+    "ownedHelperContainers": 0,
+    "candidateCheckoutExists": false,
+    "dumpExists": false
+  },
+  "preservation": {
+    "priorPacketFilesByteAndModeIdentical": true,
+    "originalSourceBindingByteIdentical": true,
+    "sourceFingerprintUnchanged": true,
+    "privateDirectoryMode": "0700",
+    "privateFileMode": "0600",
+    "parentQACheckoutUntouched": true
+  },
+  "newFailedTrials": [
+    {
+      "trial": "public credential scan 1",
+      "result": "AssertionError",
+      "cause": "Conservative substring scan matched existing public identifiers also present in exact prior templates.",
+      "restoration": "Corrected complete-key and complete-URI scan accepts harmless text, refuses nine injected values, and accepts exact restoration. No credential printed."
+    }
+  ]
+}
