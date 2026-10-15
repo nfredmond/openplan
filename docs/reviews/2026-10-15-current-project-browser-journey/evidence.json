@@ -207,10 +207,22 @@
     "errorCategory": "import HTTP409"
   },
   "limits": [
-    "independent artifact review pending",
     "no native QGIS or Excel acceptance",
     "no measured or current service finding",
     "no scientific validation",
     "no hosted changes or release"
-  ]
+  ],
+  "independentArtifactReview": {
+    "sourceCommit": "b61e316c6e5db0a87dde122e31c2a30887279955",
+    "joinedAs": "0d926f652",
+    "report": "../2026-10-15-current-browser-download-artifact-review/README.md",
+    "scope": "offline seven downloaded files; no confirmed artifact defect",
+    "harmlessSurvivors": 1,
+    "targetedFaultsDetected": 23,
+    "originalsUnchanged": true,
+    "copiesRestored": true,
+    "parentReadFullReportProbeEvidence": true,
+    "parentFreshBindings": 21,
+    "parentReadbackSha256": "355a26c7fd584b7a850087abfc1716b856090f899c00935f2ceaf57fa394406c"
+  }
 }

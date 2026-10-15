@@ -65,7 +65,7 @@ packets are not targets for these writes.
   checks the visible labels, not the validity of derived service counts or a
   completed service-coverage analysis.
 
-## Actual downloads and pending independent artifact review
+## Actual downloads and completed offline artifact review
 
 The parent downloads GeoPackages, jurisdiction assessment JSON and a portfolio
 workbook through visible links. The first pair precedes Clear to unresolved,
@@ -75,11 +75,20 @@ overwritten in the private download packet.
 
 The private packet is
 `/home/nathaniel/.local/state/openplan/current-project-preview-browser-fallback-20261015/`.
-Its `downloads/` directory holds the immutable artifacts. A separate Sol-high
-child checks their SQLite/geometry, canonical jurisdiction and workbook bytes.
-That review is pending at this checkpoint. Download success does not establish
-QGIS or Excel rendering, accessibility, privacy under populated engagement data,
-or exact geometry parity. The workbook precedes the later declaration edits.
+Its `downloads/` directory holds the immutable artifacts. The completed Sol-high
+[independent artifact review](../2026-10-15-current-browser-download-artifact-review/README.md),
+source commit `b61e316c6e5db0a87dde122e31c2a30887279955`, finds no confirmed
+artifact defect within its scope. All three matching pairs preserve canonical
+parity and identical geometry bytes. The point and corridor preserve the supplied
+coordinates and order. The workbook preserves its unresolved snapshot's lineage,
+literal cell types and leading-zero place reference. Known fixture-account values
+are absent from the inspected content. One harmless change survives and 23
+targeted artifact faults fail at their intended diagnostics. Originals remain
+unchanged and copied artifacts are restored. The parent reads the full report,
+probe and evidence, then freshly checks 21 artifact/copy/source/probe/result
+bindings before joining the report. These checks do not establish native QGIS
+or Excel rendering, accessibility or privacy under populated engagement data.
+The workbook precedes the later declaration edits.
 
 The `journey-01/` snapshot retains 55 files and a manifest with SHA-256
 `0ba0e819b98650c8a130b89b03c9d6de112d1bce9ae1413966b23479fc950ec5`.
@@ -127,4 +136,5 @@ service finding, full installation recovery, hosted migration, mainline merge,
 version bump or new release follows from this journey. The immutable older full
 QA, current compiler/build evidence and this browser failure retain their
 separate scopes. Import correction, native proof, independent review and the
-corrected identified-build journey remain open.
+corrected identified-build journey remain open. The artifact review resolves
+only the bounded offline download inspection described above.
