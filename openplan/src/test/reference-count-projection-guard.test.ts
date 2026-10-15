@@ -175,6 +175,26 @@ describe("reference count projections", () => {
     }
   });
 
+  it.each([
+    { kind: "function", expression: 'function COLUMNS() { db.from("projects").select(COLUMNS); }' },
+    { kind: "class", expression: 'class COLUMNS { read() { db.from("projects").select(COLUMNS); } }' },
+  ])("keeps a named $kind expression's self-binding unknown", ({ expression }) => {
+    const directory = mkdtempSync(path.join(tmpdir(), "openplan-projection-shadow-"));
+    const file = path.join(directory, "reader.ts");
+    try {
+      writeFileSync(path.join(directory, "columns.ts"), 'export const COLUMNS = "id, jurisdiction_context";');
+      writeFileSync(file, `
+        import { COLUMNS } from "./columns";
+        const read = ${expression};
+      `);
+      const sites = collectSupabaseSelectSites({ files: [file] });
+      expect(sites).toHaveLength(1);
+      expect(sites[0]).toMatchObject({ table: "projects", projectionExpression: "COLUMNS", projection: null });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("never names a column on a table it cannot see", () => {
     const missing = checkableSites().flatMap((site) =>
       projectionColumns(site.projection as string)

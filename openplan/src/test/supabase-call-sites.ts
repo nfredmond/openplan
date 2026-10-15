@@ -610,7 +610,7 @@ export function collectSupabaseSelectSites(options: CollectOptions = {}): Supaba
           else for (const element of name.elements) if (ts.isBindingElement(element)) bindingNames(element.name);
         };
         bindingNames(node.name);
-      } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node)) && node.name) {
+      } else if ((ts.isFunctionDeclaration(node) || ts.isClassDeclaration(node) || ts.isEnumDeclaration(node) || ts.isFunctionExpression(node) || ts.isClassExpression(node)) && node.name) {
         localNames.add(node.name.text);
       }
       ts.forEachChild(node, collectNames);
