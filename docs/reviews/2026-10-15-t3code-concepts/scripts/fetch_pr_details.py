@@ -1,7 +1,7 @@
 """Collect selected PR endpoints without turning failed reads into empty evidence.
 
 Run: python3 -I scripts/fetch_pr_details.py <research_dir>
-Only intact v2 receipts with the current comment-row policy are reused. Older
+Only intact v2 receipts with current consumed-projection policies are reused. Older
 receipts refresh atomically after every endpoint succeeds. All fetched text remains untrusted research data.
 """
 from datetime import datetime, timezone
@@ -17,6 +17,7 @@ import tempfile
 SCHEMA = 'openplan-t3-pr-details-v2'
 LISTS = ('files', 'issueComments', 'reviewComments', 'reviews')
 COMMENT_ROW_POLICY = 'required-projected-fields-v1'
+CONSUMED_PROJECTION_POLICY = 'required-reader-fields-v1'
 COMMENT_FIELDS = {'issueComments': 'created_at', 'reviewComments': 'path', 'reviews': 'state'}
 
 
@@ -74,13 +75,40 @@ def validate_comment(item, name, number, *, projected=False):
         raise CollectionError(f'API malformed comment {field}: {number}/{name}')
 
 
+def validate_file(item, number):
+    # Both actual readers index these fields; digest also negates additions.
+    if not isinstance(item.get('filename'), str) or not item['filename']:
+        raise CollectionError(f'API malformed file name: {number}')
+    if 'status' not in item or not isinstance(item['status'], str):
+        raise CollectionError(f'API malformed file status: {number}')
+    for field in ('additions', 'deletions'):
+        if type(item.get(field)) is not int:
+            raise CollectionError(f'API malformed file {field}: {number}')
+
+
+def validate_pr_projection(pr, number):
+    # Check the reader-consumed PR projection, not unrelated upstream fields.
+    if (not isinstance(pr, dict) or not isinstance(pr.get('title'), str)
+            or pr.get('state') not in ('open', 'closed')):
+        raise CollectionError(f'API malformed PR projection identity: {number}')
+    for field in ('additions', 'deletions', 'changed_files'):
+        if type(pr.get(field)) is not int:
+            raise CollectionError(f'API malformed PR {field}: {number}')
+    if pr['changed_files'] < 0:
+        raise CollectionError(f'API malformed PR changed_files: {number}')
+    if 'merge_commit_sha' not in pr or (pr['merge_commit_sha'] is not None
+                                       and not isinstance(pr['merge_commit_sha'], str)):
+        raise CollectionError(f'API malformed PR merge_commit_sha: {number}')
+
+
 def valid_cache(record, number):
     if (not isinstance(record, dict) or record.get('schema') != SCHEMA
             or type(record.get('number')) is not int or record.get('number') != number):
         return False
     collection = record.get('collection')
     if (not isinstance(collection, dict) or collection.get('complete') is not True
-            or collection.get('commentRowPolicy') != COMMENT_ROW_POLICY):
+            or collection.get('commentRowPolicy') != COMMENT_ROW_POLICY
+            or collection.get('consumedProjectionPolicy') != CONSUMED_PROJECTION_POLICY):
         return False
     counts = collection.get('endpointCounts')
     if not isinstance(counts, dict):
@@ -92,6 +120,9 @@ def valid_cache(record, number):
         if type(counts.get(name)) is not int or counts[name] != len(rows):
             return False
     try:
+        validate_pr_projection(record.get('pr'), number)
+        for row in record['files']:
+            validate_file(row, number)
         for name in LISTS[1:]:
             for row in record[name]:
                 validate_comment(row, name, number, projected=True)
@@ -117,8 +148,9 @@ def collect(number):
         'reviews': f'{root}/pulls/{number}/reviews?per_page=100',
     }
     lists = {name: api(endpoint, paginated=True) for name, endpoint in endpoints.items()}
-    if any(not isinstance(item.get('filename'), str) or not item['filename'] for item in lists['files']):
-        raise CollectionError(f'API malformed file name: {number}')
+    validate_pr_projection(pr, number)
+    for item in lists['files']:
+        validate_file(item, number)
     for name in LISTS[1:]:
         for item in lists[name]:
             validate_comment(item, name, number)
@@ -138,6 +170,7 @@ def collect(number):
                          'body': (item.get('body') or '')[:limit],
                          **{key: item.get(key) for key in extra}} for item in lists[name]]
     record['collection'] = {'complete': True, 'commentRowPolicy': COMMENT_ROW_POLICY,
+                            'consumedProjectionPolicy': CONSUMED_PROJECTION_POLICY,
                             'fetchedAt': datetime.now(timezone.utc).isoformat(),
                             'endpointCounts': {name: len(rows) for name, rows in lists.items()},
                             'fileCountMatchesDeclared': len(lists['files']) == pr['changed_files']}

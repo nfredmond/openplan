@@ -22,6 +22,7 @@ def response(payload, code=0):
 
 def pr():
     return {'number': 3699, 'title': 'Synthetic research PR', 'state': 'closed', 'changed_files': 190,
+            'additions': 190, 'deletions': 0, 'merge_commit_sha': None,
             'user': {'login': 'synthetic'}, 'base': {'sha': 'a'*40}, 'head': {'sha': 'b'*40}}
 
 
@@ -35,6 +36,39 @@ def payloads():
 
 COMMENT_ENDPOINTS = ((2, 'issueComments', 'created_at'),
                      (3, 'reviewComments', 'path'), (4, 'reviews', 'state'))
+
+
+MISSING = object()
+
+
+def consumed_defects():
+    # Each row starts from a valid surrounding fixture, then changes one field.
+    for scope, fields in (('files', ('filename', 'status', 'additions', 'deletions')),
+                          ('pr', ('title', 'state', 'additions', 'deletions',
+                                  'changed_files', 'merge_commit_sha'))):
+        for field in fields:
+            bad_values = [MISSING, None, True, False, [], {}]
+            if field in ('additions', 'deletions', 'changed_files'):
+                bad_values += ['one', '0', 1.0, float('nan'), float('inf')]
+            else:
+                bad_values += [7]
+            if field == 'merge_commit_sha':
+                bad_values.remove(None)
+            if field == 'changed_files':
+                bad_values += [-1]
+            if field == 'filename':
+                bad_values += ['']
+            if field == 'state':
+                bad_values += ['unavailable']
+            for bad in bad_values:
+                yield scope, field, bad
+
+
+def alter_field(row, field, bad):
+    if bad is MISSING:
+        del row[field]
+    else:
+        row[field] = bad
 
 
 class CollectorTests(unittest.TestCase):
@@ -122,7 +156,7 @@ class CollectorTests(unittest.TestCase):
                     collector.collect(3699)
 
     def test_malformed_row_is_not_dropped(self):
-        for position, bad, diagnostic in [(1, {'filename': None}, 'file name'),
+        for position, bad, diagnostic in [(1, {'filename': None, 'status': 'modified', 'additions': 1, 'deletions': 0}, 'file name'),
                                           (2, {'body': {}, 'user': None, 'created_at': '2026-10-15T00:00:00Z'}, 'comment body'),
                                           (3, {'body': 'text', 'user': 'bad-author', 'path': 'file.ts'}, 'comment author')]:
             values = payloads()
@@ -336,6 +370,143 @@ class CollectorTests(unittest.TestCase):
             self.assertEqual(record[name][2]['body'], '', 'empty review bodies must remain empty strings')
             self.assertEqual(len(record[name][0]['body']), 4000 if name == 'issueComments' else 2500,
                              'reader text must retain existing truncation limits')
+
+
+    def test_consumed_source_fields_are_refused_before_signing(self):
+        for scope, field, bad in consumed_defects():
+            values = payloads()
+            row = values[1][0][0] if scope == 'files' else values[0]
+            alter_field(row, field, bad)
+            with self.subTest(scope=scope, field=field, bad=repr(bad)):
+                with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                    with patch.object(collector, 'digest', wraps=collector.digest) as sign:
+                        with self.assertRaisesRegex(collector.CollectionError, 'malformed (file|PR)',
+                                                   msg='malformed consumed source field must refuse before signing'):
+                            collector.collect(3699)
+                        sign.assert_not_called()
+
+    def test_consumed_cache_fields_refuse_even_with_recomputed_digest(self):
+        record, _ = self.collect()
+        for scope, field, bad in consumed_defects():
+            broken = copy.deepcopy(record)
+            alter_field(broken['files'][0] if scope == 'files' else broken['pr'], field, bad)
+            broken['receiptSha256'] = collector.digest(broken)
+            with self.subTest(scope=scope, field=field, bad=repr(bad)):
+                self.assertFalse(collector.valid_cache(broken, 3699),
+                                 'malformed consumed cache field must refuse despite recomputed digest')
+        broken = copy.deepcopy(record)
+        broken['pr'] = None
+        broken['receiptSha256'] = collector.digest(broken)
+        self.assertFalse(collector.valid_cache(broken, 3699), 'missing PR projection must refuse')
+
+    def test_prior_consumed_projection_policy_requires_refresh(self):
+        record, _ = self.collect()
+        for policy in (MISSING, None, 'obsolete'):
+            broken = copy.deepcopy(record)
+            alter_field(broken['collection'], 'consumedProjectionPolicy', policy)
+            # Old projection erased missing merge SHA into valid-looking null.
+            broken['pr']['merge_commit_sha'] = None
+            broken['receiptSha256'] = collector.digest(broken)
+            self.assertFalse(collector.valid_cache(broken, 3699),
+                             'prior consumed projection policy must refresh erased distinctions')
+
+    def test_consumed_bad_refresh_preserves_history_and_recovers(self):
+        record, _ = self.collect()
+        for scope, field, bad in consumed_defects():
+            with self.subTest(scope=scope, field=field, bad=repr(bad)), tempfile.TemporaryDirectory() as directory:
+                root = self.root(directory)
+                old = copy.deepcopy(record)
+                alter_field(old['files'][0] if scope == 'files' else old['pr'], field, bad)
+                old['receiptSha256'] = collector.digest(old)
+                path = root/'pr-details/3699.json'
+                original = (json.dumps(old, indent=1) + '\n').encode()
+                path.write_bytes(original)
+                values = payloads()
+                alter_field(values[1][0][0] if scope == 'files' else values[0], field, bad)
+                output = io.StringIO()
+                with contextlib.redirect_stdout(output):
+                    with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                        with self.assertRaisesRegex(collector.CollectionError, 'malformed (file|PR)',
+                                                   msg='malformed source must refuse refresh before publication'):
+                            collector.main(root)
+                self.assertTrue(path.exists(), 'consumed refusal must preserve historical path')
+                self.assertEqual(path.read_bytes(), original, 'consumed refusal must preserve historical bytes')
+                self.assertEqual(output.getvalue(), '', 'consumed refusal must print no success line')
+                self.assertEqual(list(path.parent.glob('*.tmp')), [])
+                with contextlib.redirect_stdout(io.StringIO()):
+                    with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in payloads()]) as run:
+                        collector.main(root)
+                self.assertEqual(run.call_count, 5, 'recovery must collect all endpoints')
+                self.assertNotEqual(path.read_bytes(), original, 'recovery must replace malformed bytes')
+                self.assertTrue(collector.valid_cache(json.loads(path.read_text()), 3699),
+                                'recovery must publish a current valid receipt')
+
+    def test_actual_both_readers_accept_zero_ordinary_deleted_empty(self):
+        for count in (0, 3):
+            values = payloads()
+            for row in [values[0]] + values[1][0] + values[1][1]:
+                row['additions'] = count
+                row['deletions'] = count
+            values[0]['changed_files'] = count
+            values[0]['merge_commit_sha'] = None if count == 0 else 'synthetic-sha'
+            for position, _, _ in COMMENT_ENDPOINTS:
+                values[position][0][0]['user'] = None
+                values[position][0].append({**values[position][0][0], 'body': ''})
+            with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                try:
+                    record = collector.collect(3699)
+                except collector.CollectionError as error:
+                    self.fail('valid zero/ordinary counts and deleted/empty comments must collect: ' + str(error))
+            self.assertTrue(collector.valid_cache(record, 3699), 'valid zero counts must remain reusable')
+            with tempfile.TemporaryDirectory() as directory:
+                root = self.root(directory)
+                collector.publish(root/'pr-details/3699.json', record)
+                (root/'pull-requests.jsonl').write_text(json.dumps({
+                    'number': 3699, 'title': 'Synthetic both readers', 'state': 'closed',
+                    'body': 'Synthetic complete body', 'merged_at': None}) + '\n')
+                for reader_name in ('digest.py', 'full_text.py'):
+                    args = [sys.executable, '-I', '-B', str(Path(__file__).with_name(reader_name)), str(root)]
+                    if reader_name == 'digest.py':
+                        args.append('3699')
+                    result = subprocess.run(args, capture_output=True, text=True, timeout=10)
+                    self.assertEqual(result.returncode, 0, 'both actual readers must accept valid zero/ordinary data: ' + result.stderr)
+                    text = result.stdout if reader_name == 'digest.py' else (root/'scratch/full/batch-01.txt').read_text()
+                    self.assertIn('file-0.ts(+' + str(count), text, 'both readers must retain actual file counts')
+                    self.assertIn('issue-one', text, 'both readers must retain deleted-author text')
+                    self.assertIn('review-comment', text, 'both readers must retain deleted review text')
+
+    def test_actual_readers_expose_historical_malformed_input_after_refusal(self):
+        cases = [('additions', 'one', 1, 0), ('filename', MISSING, 1, 1),
+                 ('deletions', MISSING, 0, 1)]
+        for field, bad, digest_exit, full_exit in cases:
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as directory:
+                root = self.root(directory)
+                path = root/'pr-details/3699.json'
+                values = payloads()
+                alter_field(values[1][0][0], field, bad)
+                with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                    with self.assertRaises(collector.CollectionError,
+                                           msg='malformed source cannot publish before actual reader probe'):
+                        collector.main(root)
+                self.assertFalse(path.exists(), 'malformed source must not publish reader input')
+                # Bypass publication only to measure unchanged historical readers.
+                record, _ = self.collect()
+                alter_field(record['files'][0], field, bad)
+                path.write_text(json.dumps(record))
+                (root/'pull-requests.jsonl').write_text(json.dumps({
+                    'number': 3699, 'title': 'Synthetic malformed history', 'state': 'closed',
+                    'body': 'Synthetic', 'merged_at': None}) + '\n')
+                for name, expected in (('digest.py', digest_exit), ('full_text.py', full_exit)):
+                    args = [sys.executable, '-I', '-B', str(Path(__file__).with_name(name)), str(root)]
+                    if name == 'digest.py':
+                        args.append('3699')
+                    result = subprocess.run(args, capture_output=True, text=True, timeout=10)
+                    self.assertEqual(result.returncode, expected,
+                                     'actual historical reader behavior must remain visible: ' + result.stderr)
+                    if expected:
+                        self.assertIn('TypeError' if field == 'additions' else 'KeyError', result.stderr,
+                                      'reader failure must identify malformed input')
+
 
 
 if __name__ == '__main__':

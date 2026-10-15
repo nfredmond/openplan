@@ -119,6 +119,56 @@ def main(output):
          "'user': (item.get('user') or {}).get('login') or 'invented-author'",
          'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'deleted authors must retain null identity'),
 
+        ('allow-file-status', "raise CollectionError(f'API malformed file status: {number}')", 'pass',
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-file-additions', "if type(item.get(field)) is not int:",
+         "if field != 'additions' and type(item.get(field)) is not int:",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-file-deletions', "if type(item.get(field)) is not int:",
+         "if field != 'deletions' and type(item.get(field)) is not int:",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-boolean-file-counts', "type(item.get(field)) is not int", "not isinstance(item.get(field), int)",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-pr-additions', "if type(pr.get(field)) is not int:",
+         "if field != 'additions' and type(pr.get(field)) is not int:",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-pr-deletions', "if type(pr.get(field)) is not int:",
+         "if field != 'deletions' and type(pr.get(field)) is not int:",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-boolean-cache-pr-changed-files', "if type(pr.get(field)) is not int:",
+         "if (field != 'changed_files' or type(pr.get(field)) is not bool) and type(pr.get(field)) is not int:",
+         'test_consumed_cache_fields_refuse_even_with_recomputed_digest', 'malformed consumed cache field must refuse despite recomputed digest'),
+        ('allow-boolean-pr-counts', "type(pr.get(field)) is not int", "not isinstance(pr.get(field), int)",
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('allow-negative-cache-file-census', "if pr['changed_files'] < 0:", 'if False:',
+         'test_consumed_cache_fields_refuse_even_with_recomputed_digest', 'malformed consumed cache field must refuse despite recomputed digest'),
+        ('allow-pr-merge-sha', "raise CollectionError(f'API malformed PR merge_commit_sha: {number}')", 'pass',
+         'test_consumed_source_fields_are_refused_before_signing', 'malformed consumed source field must refuse before signing'),
+        ('skip-file-cache-validation', 'validate_file(row, number)', 'pass',
+         'test_consumed_cache_fields_refuse_even_with_recomputed_digest', 'malformed consumed cache field must refuse despite recomputed digest'),
+        ('skip-pr-cache-validation', "validate_pr_projection(record.get('pr'), number)", 'pass',
+         'test_consumed_cache_fields_refuse_even_with_recomputed_digest', 'malformed consumed cache field must refuse despite recomputed digest'),
+        ('reuse-old-consumed-policy', "collection.get('consumedProjectionPolicy') != CONSUMED_PROJECTION_POLICY", 'False',
+         'test_prior_consumed_projection_policy_requires_refresh', 'prior consumed projection policy must refresh erased distinctions'),
+        ('reject-zero-file-counts', "if type(item.get(field)) is not int:",
+         "if type(item.get(field)) is not int or item.get(field) == 0:",
+         'test_actual_both_readers_accept_zero_ordinary_deleted_empty', 'valid zero/ordinary counts and deleted/empty comments must collect'),
+        ('corrupt-counts-for-readers', "    record['collection'] =",
+         "    record['files'][0]['additions'] = 999\n    record['collection'] =",
+         'test_actual_both_readers_accept_zero_ordinary_deleted_empty', 'both readers must retain actual file counts'),
+        ('consumed-erase-before-refresh', 'record = collect(number)',
+         "path.write_text('erased')\n        record = collect(number)",
+         'test_consumed_bad_refresh_preserves_history_and_recovers', 'consumed refusal must preserve historical bytes'),
+        ('consumed-unlink-before-refresh', 'record = collect(number)',
+         "path.unlink(missing_ok=True)\n        record = collect(number)",
+         'test_consumed_bad_refresh_preserves_history_and_recovers', 'consumed refusal must preserve historical path'),
+        ('consumed-success-before-refresh', 'record = collect(number)',
+         "print('success')\n        record = collect(number)",
+         'test_consumed_bad_refresh_preserves_history_and_recovers', 'consumed refusal must print no success line'),
+        ('consumed-skip-recovery-publication', '        publish(path, record)', '        pass',
+         'test_consumed_bad_refresh_preserves_history_and_recovers', 'recovery must replace malformed bytes'),
+        ('allow-malformed-source-before-reader-probe', "if type(item.get(field)) is not int:", 'if False:',
+         'test_actual_readers_expose_historical_malformed_input_after_refusal', 'malformed source cannot publish before actual reader probe'),
     ]
 
     def run(label, mutated, method=None, needle=None):
@@ -138,7 +188,7 @@ def main(output):
                     and 'SyntaxError' not in text and '\nERROR:' not in text
                     and 'FAILED (failures=' in text)
         else:
-            good = result.returncode == 0 and 'Ran 19 tests' in text and '\nOK\n' in text
+            good = result.returncode == 0 and 'Ran 25 tests' in text and '\nOK\n' in text
         records.append({'case': label, 'exitCode': result.returncode, 'expected': 'targeted_failure' if method else 'survived',
                         'method': method, 'requiredDiagnostic': needle, 'matched': good})
         if not good:
@@ -166,6 +216,12 @@ def main(output):
         mutant = body.replace(raw_validation, '').replace('    return record\n', raw_validation + '    return record\n')
         run('validate-after-signing', mutant.encode(), 'test_nested_comment_authors_are_refused_before_signing',
             "Expected 'digest' to not have been called")
+        consumed_validation = "    validate_pr_projection(pr, number)\n    for item in lists['files']:\n        validate_file(item, number)\n"
+        if body.count(consumed_validation) != 1:
+            raise AssertionError('Collector fault anchor differs: consumed-validate-after-signing')
+        mutant = body.replace(consumed_validation, '').replace('    return record\n', consumed_validation + '    return record\n')
+        run('consumed-validate-after-signing', mutant.encode(),
+            'test_consumed_source_fields_are_refused_before_signing', "Expected 'digest' to not have been called")
         run('final-restored', original)
     finally:
         source.write_bytes(original)
@@ -174,6 +230,8 @@ def main(output):
                    'sourceSha256': hashlib.sha256(original).hexdigest(),
                    'pythonVersion': sys.version, 'pythonExecutable': sys.executable,
                    'readerSha256': hashlib.sha256((directory/'full_text.py').read_bytes()).hexdigest(),
+                   'digestReaderSha256': hashlib.sha256((directory/'digest.py').read_bytes()).hexdigest(),
+                   'fullCohortMethods': 25,
                    'controllerSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                    'testsSha256': hashlib.sha256(tests.read_bytes()).hexdigest(),
                    'blindCategories': ['Mocked transport cannot prove live GitHub completeness or rate-limit behavior.',
