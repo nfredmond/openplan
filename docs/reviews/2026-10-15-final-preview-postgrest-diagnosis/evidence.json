@@ -1,0 +1,272 @@
+{
+  "reviewDate": "2026-10-15",
+  "appAnchor": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "branch": "t3/preview-postgrest-503-diagnosis",
+  "privateProofRoot": "/home/nathaniel/.local/state/openplan/final-preview-postgrest-diagnosis-20261015-3fc0f4d1",
+  "packet": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "target": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+  "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "restImage": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+  "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "packetFileHashes": {
+    "launcher.py": "830cda6f8bae69b46e5e6108ba22a82236817b340fe783ec4b4118e7c9ed36fb",
+    "policy.py": "9c63235a3505a4301cb7e0a7cc90c53fd6ddf796a101047a9f53ce3c4f4c214f",
+    "private-bindings.json": "eba8c9af486fcdbe4c16ff68345db8f39dd7c9c4047c5cc2f2ed9c85da54010a",
+    "template-binding.json": "522594cb0ab70af1cce07f148d73e2f385519ead46c9f334af57207f836b6f04",
+    "envs-private.json": "7327047a321a8f1c811fad24a86e395d0199236ccac10dc7a66acf40b61b5f7d",
+    "rest-private.env": "9d90e53f85c618595c9f54946be095c613dfa66268b1bd34a448eadd9e530fd2",
+    "source-binding-private.json": "830556658900e5cf65645114a8643663951a689d0ac98c6d86fee4f2b8b4f084",
+    "clone-ready.json": "ec2aeffb6297cf5bf21e8450442309cd75a8e44ee4e2c342993e233993e89d50",
+    "dump-result.json": "bcb9263fc0014484f0609c2f91046b7c19cd473ff92d161102563145572d2088",
+    "target-identity.json": "09b7bc53867f2ed20e0df045ab0e52ffe4878c9e35709172f32c4caee5128e04",
+    "service-receipts-private.json": "80585fc4cbf3e4767685d401412dd7be9c697ef2771abeb4cc0e0abf657f91c7",
+    "rest-receipt-private.json": "0192eeb72e0a4c45f2a1ba2e64fd348372fa64af60c2ba6b56dfa1223df81767",
+    "failure-services-f38121e32f02.json": "9894ddde310a7260a3029dd036f0ce3f622ddba90b12d4a47aba005c1c983d56",
+    "failure-verify-services-3d9a155a8014.json": "5ae16dfc7a51d142dae65bd84b43493f1a5a98a53d5491c99a560eb8a817c970",
+    "parent-helper-diagnostic-01.json": "f49a0f0906de1aabc979fe257e7a715e2dec28012bc14420480180fd03bfd8b1",
+    "rest-initial-http-error-private.bin": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "monitoring-debugging-parent-readonly.txt": "277b7f272388653fad4dddcb5712c0dd60fb9b4ebe62f601d7ee75dc4c054495",
+    "supabase-changelog-parent-readonly.txt": "15b3d0d1a7dc3b3f2c0af4788e49acfdf2d2edbd2613f22de0705fa43b1cf58b"
+  },
+  "sourceDump": {
+    "bytes": 16232305,
+    "sha256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398"
+  },
+  "cloneReady": {
+    "target": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+    "dumpSha256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398",
+    "sourceSha256": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+    "targetDataSha256": "415cf6764eb584e444cd69ce5b95f01654c43da28d03f1ecb88a586c59bd5139",
+    "storageSha256": "ed38addbe10bd9b4ccc9ae8b1ce137ef8973c95dd8913f6c67e771b97c5c94a8"
+  },
+  "http": [
+    {
+      "method": "HEAD",
+      "url": "http://127.74.19.10:29948/rest/v1/projects?select=id&limit=0",
+      "status": 503,
+      "bytes": 0,
+      "bodySha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitizedBody": ""
+    },
+    {
+      "method": "GET",
+      "url": "http://127.74.19.10:29948/rest/v1/projects?select=id&limit=0",
+      "status": 503,
+      "bytes": 119,
+      "bodySha256": "107e1a89a72826b2133db156785c784b47f5b3e46882ed0b08b8fde6dab39ff8",
+      "sanitizedBody": "{\"code\":\"PGRST002\",\"details\":null,\"hint\":null,\"message\":\"Could not query the database for the schema cache. Retrying.\"}"
+    }
+  ],
+  "reproduction": {
+    "newRawQuery": "options=-c+search_path%3Dpublic%2Cextensions",
+    "oldRawQuery": "",
+    "sameRawQuery": false,
+    "sameFormDecodedOptions": false,
+    "sameCredential": true,
+    "fixedRawQuery": "options=-c%20search_path%3Dpublic%2Cextensions",
+    "credentialUnchangedByFix": true,
+    "targetUnchangedByFix": true,
+    "results": [
+      {
+        "case": "exact-pinned",
+        "returncode": 2,
+        "unrecognizedPlusSearchPath": true
+      },
+      {
+        "case": "rfc3986-space",
+        "returncode": 0,
+        "observed": {
+          "user": "authenticator",
+          "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+          "projects": "projects",
+          "readonly": "on",
+          "searchPath": "public,extensions"
+        }
+      },
+      {
+        "case": "harmless-option-punctuation",
+        "returncode": 2,
+        "unrecognizedPlusSearchPath": false
+      },
+      {
+        "case": "literal-plus-regression",
+        "returncode": 2,
+        "unrecognizedPlusSearchPath": true
+      }
+    ]
+  },
+  "confirmation": {
+    "utc": "2026-10-15T08:52:07Z",
+    "cases": [
+      {
+        "case": "harmless-percent-hex-case",
+        "returncode": 0,
+        "formDecodedOptions": [
+          [
+            "options",
+            "-c search_path=public,extensions"
+          ]
+        ],
+        "observed": {
+          "user": "authenticator",
+          "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f",
+          "readonly": "on",
+          "searchPath": "public,extensions"
+        }
+      },
+      {
+        "case": "broken-form-plus",
+        "returncode": 2,
+        "formDecodedOptions": [
+          [
+            "options",
+            "-c search_path=public,extensions"
+          ]
+        ],
+        "expectedPlusSearchPathError": true
+      }
+    ],
+    "earlierMalformedPunctuationTrial": {
+      "returncode": 2,
+      "extraSeparatorError": true,
+      "invalidUriParameterError": false
+    },
+    "packetUnchanged": false
+  },
+  "configurationPolicyObservations": [
+    {
+      "case": "pinned-plus",
+      "outcome": "accepted"
+    },
+    {
+      "case": "harmless-percent-hex-case",
+      "outcome": "accepted"
+    },
+    {
+      "case": "broken-pool",
+      "outcome": "configuration:rest"
+    }
+  ],
+  "oldRestConfigMatchesBoundHash": true,
+  "finalServiceObservations": {
+    "rest": {
+      "id": "cb8cfc278c910f934f495007a85748a740e3b274f977e00e12fe3cc2fa7add16",
+      "bindingUnchanged": true,
+      "running": true,
+      "oomKilled": false,
+      "sameStartedAt": true,
+      "restartCount": 0
+    },
+    "auth": {
+      "id": "174ab2d834b744022f4388f754cddfb2e75db0c449b712bc4032006c5a2d2984",
+      "bindingUnchanged": true,
+      "running": true,
+      "oomKilled": false,
+      "sameStartedAt": true,
+      "restartCount": 0
+    },
+    "storage": {
+      "id": "f11687449419ad9e3e97677fde125c07755a92d4e354d1a2de62488546b4d932",
+      "bindingUnchanged": true,
+      "running": true,
+      "oomKilled": false,
+      "sameStartedAt": true,
+      "restartCount": 0
+    },
+    "gateway": {
+      "id": "9df8243592d037ee9189cd74cb116824d5ae45166d20b7bde4e88109610b709f",
+      "bindingUnchanged": true,
+      "running": true,
+      "oomKilled": false,
+      "sameStartedAt": true,
+      "restartCount": 0
+    }
+  },
+  "packetByteAndModeInventoryUnchanged": false,
+  "directionCheck": {
+    "exitCode": 0,
+    "unit": "openplan-postgrest-direction-20261015-01",
+    "retainedReminders": [
+      "expired jurisdiction/registry/matrix dates",
+      "review version 0.66.0 versus package 0.68.0",
+      "intervening substantive changes"
+    ]
+  },
+  "unitAccounting": [
+    {
+      "unit": "openplan-postgrest-direction-20261015-01",
+      "peak": "72.6M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-postgrest-collect-20261015-01",
+      "peak": "512M",
+      "swap": "0B",
+      "oom": 0,
+      "note": "File inventory reached memory.max; no OOM or incomplete result."
+    },
+    {
+      "unit": "openplan-postgrest-detail-20261015-01",
+      "peak": "28.5M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-postgrest-reproduce-20261015-01",
+      "peak": "25.3M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-postgrest-confirm-20261015-01",
+      "peak": "375.6M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-postgrest-finalize-20261015-01",
+      "peak": "33.8M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-postgrest-inventory-20261015-01",
+      "peak": "41.8M",
+      "swap": "0B"
+    }
+  ],
+  "resourceEnvelope": {
+    "memoryMax": 536870912,
+    "memorySwapMax": 0,
+    "cpuQuota": "50%",
+    "serial": true
+  },
+  "blindCategories": [
+    "Native libpq connection success does not prove PostgREST schema-cache load or REST authorization.",
+    "Docker running state does not prove readiness.",
+    "Byte and mode inventories do not establish database/global/Storage logical preservation.",
+    "No successful REST 200, app build, browser, live RLS, provider or whole-product acceptance is claimed."
+  ],
+  "packetInventoryDelta": {
+    "added": [
+      "parent-preservation-after-helpers-01.json",
+      "parent-preservation-after-helpers-01.py"
+    ],
+    "removed": [],
+    "changed": [],
+    "initialCount": 16865,
+    "finalCount": 16867
+  },
+  "privateScriptHashes": {
+    "reproduce.py": "0942a2d68b38b30b2b30f2030a688e5f8c398423f7c083d581ac76c19a17cbc4",
+    "collect.py": "08518613490f2b40797ced307ae8952312d352d6441349056f824d3adadda94e",
+    "inventory_delta.py": "717ce01a35048a020a49eb07822880b0b8038ab3a3619d6d5c1dd927038084fc",
+    "verify_report.py": "cc1a956fac8b400657f238ff5575a8873ef708fed0fc2b69d0684fd669d23e13",
+    "finalize_evidence.py": "f351b612abd43297968f493dd43518d0cf3c1e1eac4ae15b9844d7d001d9cfe5",
+    "confirm.py": "161f9ebd2a0a74e284b4819d9f55097ee04a43c47b277e1e127d2e5a22368f34",
+    "detail.py": "eb42ff6167d0da258b2c694fb73e537e23e29e249f12d5a9301e9b97181f3727"
+  },
+  "privateResultHashes": {
+    "collection-summary.json": "4151a4b29cce3643ccfd03362fb54c471e85b828a949f7f4237fd248efe138e2",
+    "detail-summary.json": "5267231c7178e95ed951ef379fbcf136133f2fe5eec8ca592f33436eae41e022",
+    "reproduction-summary.json": "a570701cc340e0fcb65175aa8f570115c8f527a2295e50bc6924b556441964f9",
+    "confirmation-summary.json": "c9a50a2cf178e13274724846b1900df9311c1c84f697828ebc04164ecb96f702",
+    "packet-delta-private.json": "74ea96ef391b4d196fb9be26d17231a774e7c891d9687d6494d88cc08c904a8c"
+  }
+}
