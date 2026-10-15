@@ -543,3 +543,26 @@ Current source, native and default-operation boundaries stay separate. Full
 application receiver/Storage, older-root adoption, independent-host recovery,
 planner usefulness and scientific quality remain open. No requirement grade
 changes. M3 and M5b.2 remain the active roadmap homes.
+
+## October 15, 2026 mapping: T3 Code operating patterns
+
+The [disposition record](../reviews/2026-10-15-t3-roadmap/PROPOSAL.md) places
+reviewed [T3 Code research](../reviews/2026-10-15-t3code-concepts/REPORT.md)
+into existing milestones as rows T1 to T16 of the
+[MILESTONES amendment](MILESTONES.md#october-15-2026-amendment-operating-patterns-from-the-t3-code-review).
+This is mapping only. The rows are engineering proof additions from dated
+research, not new or recovered Nathaniel requirements. No requirement grade
+changes and no behavior is claimed implemented.
+
+| Existing requirement | Amendment rows | Mapping note |
+|---|---|---|
+| CORE-AGENT-01 | T1, T14, T15 | Tested CLI versions, honest usage limits and unreported usage for the proven project task; September 4 direction keeps this early. |
+| CORE-AGENTIC-01 | T2, T3, T4, T14 | Caller authority before MCP; durable Stop, recovery and visible waits, reusing unmerged PR 327 once verified. Exact approval custody unchanged. |
+| CORE-INCLUSIVE-01, ORG-01 | T16, T5 | Bounded web draft recovery and script-aware text inspection. ORG-02 tribal data needs its own case. |
+| CORE-ENG-01, CORE-ENG-03 | T5, T16 | Hidden-character display in moderation; participant draft continuity (KL-2026-09-04-020). |
+| CORE-DAILYWORK-01 | T4, T9 | Waits shown in My Work; notification decisions recorded with reasons. |
+| CORE-RTP-02, CORE-OWP-01, CORE-DOCUMENTS-01 | T6 | Complete computed differences between versions; optional narration is never review or approval. |
+| CORE-GRANTPURSUIT-01 | T7 | Deadline and amendment watches create review items; unknown stays unknown. |
+| CORE-GEO-01, CORE-US-PROCEDURES-01 | T11, T7 | Visible rule provenance; source-currency watches under G1a. |
+| CORE-HOST-01, CORE-SERVICES-01 | T8, T10, T13, T15 | License notices, redacted triage, upgrade preflight and usage records. Separate-host restore stays open. |
+| CORE-PLATFORM-01 | T12 | Effective-permission visibility under M4. |

@@ -40,6 +40,12 @@ the [evidence log](archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md).
 The header's `reviewed_commit` still names the October 6 direction review.
 This page is not a new review. The M3 and M5b rows were updated October 14 from
 the October 11 to 14 recovery and aerial evidence, also kept in the evidence log.
+A dated amendment on October 15, 2026 (UTC) placed the reviewed
+[T3 Code research](reviews/2026-10-15-t3code-concepts/README.md) into existing
+milestones. It replaced the next-three list and the A0, A1a and A1b next
+actions. It changed no status. The [disposition record](reviews/2026-10-15-t3-roadmap/PROPOSAL.md)
+gives each decision and its review state; [MILESTONES.md](product/MILESTONES.md#october-15-2026-amendment-operating-patterns-from-the-t3-code-review)
+holds scope and proof.
 
 ## Destination
 
@@ -105,9 +111,9 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
-| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md) | Choice for broad chat (C8) |
-| A1a | Truthful, scoped agent actions | Later, partial | [Sep 10](reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md) | Recovery for remaining writes |
-| A1b | One durable agent assignment | Later (C8) | Audit | Not started |
+| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md) | Tested CLI versions and honest usage limits for the proven project task (A0b); broad chat later (C8) |
+| A1a | Truthful, scoped agent actions | Later, partial | [Sep 10](reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md) | Recovery for remaining writes; declare caller authority for every agent-reachable read and proposal before any MCP surface |
+| A1b | One durable agent assignment | Later (C8) | Audit | Not started; design Stop, recovery and visible waits on PR 327 once verified |
 | A1c | Agent jobs across modules | Later | Audit | Waits on A1b |
 | A1d | Sustained use and outside clients | Later | Audit | MCP server (ADR-004) |
 | V1 | Independent whole-product proof | Later (D) | Audit | Not started |
@@ -117,19 +123,42 @@ The Maps module (PR 189, "M17" in the cutover record) and the UI overhaul
 (PRs 186 to 188 and 193) have no milestone ID. [VERIFY: assign IDs at the next
 direction review.]
 
-## Next three, October 12, 2026
+## Next three, October 15, 2026
 
-1. Land the Stage A2 defect fixes in PRs 242 to 245, 252 and 253: county run
-   grading, money records, public input abuse, deadlines, comment counts and
-   unknowns shown as zero. Check the merge hold first.
-2. Give the live site its operating basics (Stage A1): health checks (PR 254),
-   error tracking, a CI check for unapplied migrations, usage caps and a
-   signup bot check.
-3. Rerun the twelve first-week journeys against current main (Stage A3). The
-   last full run was September 6. The result is the Stage B baseline.
+The October 12 list is kept in the evidence log. Current next actions use main
+`1b2fefe0f0e98f99700fc77e99146fe697b43ee7`; the dated issue register is evidence,
+not a fresh deployment audit.
 
-Refill this list when an item closes. Change a table row only when its status
-changes. Release notes go in the changelog; evidence stays in pull requests.
+1. **Close Stage A operations (A1).** Main includes PR 326's protected deep
+   health, migration-drift check and optional error reports. Finish their
+   configuration and operational verification; implementation does not prove
+   they are enabled. Retain cron failure alerts, signup bot protection and
+   operator run-cap follow-ups. Shared-key AI metering already refuses when
+   metering fails; verify its configured production behavior rather than
+   reopening the old universal fail-open claim. Two separate unmerged
+   candidates remain: [PR 327](https://github.com/nfredmond/openplan/pull/327)
+   (Node worker process observations; migration 20261017000015 goes first under
+   the coordination file) and [PR 328](https://github.com/nfredmond/openplan/pull/328)
+   (previous integration secret for rotation). Finish each through its own
+   verification and the existing merge rules. A process observation does not
+   establish job completion. Keep Nathaniel's deferred operator actions and
+   required authorizations visible; this amendment sets no production values.
+2. **Finish the twelve first-week journeys against current main (A3).** In
+   progress; retain partial and failed attempts, inspected artifacts and the
+   identified build. Report Stage A outcomes, remaining operator actions and
+   blockers to Nathaniel before Stage B. Recording a gap does not waive it or
+   establish release acceptance. The journey result is the Stage B baseline.
+3. **Keep the proven Planner Agent task usable (A0b, early lane).** Under
+   Nathaniel's September 4 direction this does not wait for Stage C or broad
+   chat. Extend exact-version acceptance with a dated record of tested
+   versions backed by replayed protocol frames, and show a usage limit as
+   limited until a reported reset, not as a failure (MILESTONES T1, T15). It
+   runs beside items 1 and 2 without displacing them. Recording fixtures uses
+   the recording account's allowance; ask Nathaniel before using his.
+
+Refill this list when an item closes. Update a row when its status, evidence or
+next action changes, with a dated source. A next-action change does not promote
+its status. Release notes go in the changelog; evidence stays in pull requests.
 
 ## Four stages to v1
 
@@ -149,6 +178,23 @@ stages. Its version numbers are indicative.
 - **Stage D, proof for v1.0 (section 8).** All 50 states and DC, untouched
   model validation, observed planners and the public, WCAG 2.2 AA, and every
   capability cell proven on one commit.
+
+**October 15, 2026 amendment.** For the items this paragraph names, this dated
+amendment governs sequencing over the two-month plan, which remains evidence. A0 work on
+already-proven tasks is an early lane, not part of C8; broad chat stays in C8.
+Stage B adds language-aware hidden-character inspection for AI-bound untrusted
+text (M9b first), dependency license notices (M0), grant deadline-change watches
+(B4, M13e), a notification decision journal (M2c) and bounded web draft
+recovery, starting with participant comments (M9a). Stage C adds caller
+authority declarations before any MCP surface (A1a), durable Stop, recovery and
+visible waits after PR 327 is verified (A1b), complete document differences
+with optional narration (C1, M2d, C10) and visible rule provenance (M1, C6).
+Redacted read-only triage and upgrade/restore preflight accompany M3/M15
+operation, before the relevant upgrade or recovery trial. Effective permissions
+accompany M4 and recipient roles, and transcript accessibility accompanies each
+agent interface change. Stage D consolidates their independent proof.
+MILESTONES rows T1 to T16 hold scope and proof. Version numbers stay indicative
+and never cap scope.
 
 Section 9 keeps the post-v1 list, including Buzz agentic control.
 

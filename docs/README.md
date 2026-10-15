@@ -71,6 +71,10 @@ Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before inte
   document extraction and human-reviewed use in a plan.
 - [Architecture decisions](ADRs/): dated design rationale, including modeling,
   crash-source acquisition and the future MCP server boundary.
+- [T3 Code research](reviews/2026-10-15-t3code-concepts/README.md) and its
+  [approved roadmap disposition](reviews/2026-10-15-t3-roadmap/PROPOSAL.md): October 15
+  decisions placing useful agent-operation patterns in existing milestones. The
+  roadmap remains the queue.
 - [Operations records index](ops/README.md): source contracts, release evidence,
   migration proof and historical handoffs.
 - [Human observation protocol](product/PLANNER_OBSERVATION_PROTOCOL.md): actual planner/recipient and public-participant research, separate from simulated users.
