@@ -185,3 +185,8 @@ Private source, raw receipts, caches and controllers remain at
 ## Later workbook layout checkpoint, October 15
 
 The [dated workbook join](../2026-10-15-project-workbook-layout-join/STATUS.md) records reviewed formatter69d, dependency/history closure805, independent reviewa4b and fresh checks on67828c17c. Earlier frozen06a QA remains separate. Exactmainced6 delivery is verified in [the dated follow-up](../2026-10-15-main329-delivery-readback/DELIVERY_VERIFIED.md). Preview REST recovery review and a current application-only build binding remain pending. No release or browser acceptance is declared.
+
+
+## REST readiness follow-up, October 15
+
+The [dated parent operation](../2026-10-15-final-preview-rest-operation/STATUS.md) records the reviewed single-use replacement, real Auth/REST/Storage200, CORS and immutable input/source preservation. The failed original REST remains retained. Old build/start recipe finding F1 remains open; a separate exact678 application packet and independent review precede any build. No visible-workflow acceptance is added.
