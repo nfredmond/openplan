@@ -1,0 +1,522 @@
+[
+  {
+    "label": "harmless comment survivor",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "distinguishes invalid or unread context",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "strict input provenance",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}],\"recordedBy\":\"22222222-2222-4222-8222-222222222222\"}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "bounded declaration count",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}]}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "reference guard",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"not-namespaced\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}]}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "resolver metadata",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "resolves exact supported identity",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction resolves exact supported identity without copying geometry",
+        "messages": [
+          "AssertionError: expected [ { label: 'Resolved county', \u2026(6) } ] to deeply equal [ { label: 'Resolved county', \u2026(6) } ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:27:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "resolver identity match",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "refuses failed or mismatched resolver",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction refuses failed or mismatched resolver identities",
+        "messages": [
+          "Error: promise resolved \"{ version: 1, state: 'declared', \u2026(3) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:37:188\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "unread projection",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "distinguishes invalid or unread context",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction distinguishes invalid or unread context from explicit legacy null",
+        "messages": [
+          "AssertionError: expected [Function] to throw error including 'not read' but got 'Saved project jurisdiction is invalid.'\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:43:47\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "stored metadata strictness",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "distinguishes invalid or unread context",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction distinguishes invalid or unread context from explicit legacy null",
+        "messages": [
+          "AssertionError: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:42:289\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "explicit unresolved suppresses fallback",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "suppresses study-place fallback",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction suppresses study-place fallback for explicit unresolved",
+        "messages": [
+          "AssertionError: expected [ { declaration: null, \u2026(3) } ] to deeply equal []\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:49:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "staff declaration cannot become supported",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "preserves multistate territory",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction preserves multistate territory sovereign overlap and international declarations independently",
+        "messages": [
+          "AssertionError: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:61:118\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "resolved administrative guidance",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "resolves exact supported identity",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction resolves exact supported identity without copying geometry",
+        "messages": [
+          "AssertionError: expected null to be 'US-CA' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:31:60\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "retain every context",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "preserves multistate territory",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction preserves multistate territory sovereign overlap and international declarations independently",
+        "messages": [
+          "AssertionError: expected [ { declaration: { \u2026(7) }, \u2026(3) } ] to have a length of 9 but got 1\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1389:20)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:59:29\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "freeze same revision",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "freezes identical same-revision",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction freezes identical same-revision context and payload hashes without changing old bytes",
+        "messages": [
+          "AssertionError: expected null to be '2026-10-15T00:00:00.000Z' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:70:37\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "payload hash",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "freezes identical same-revision",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction freezes identical same-revision context and payload hashes without changing old bytes",
+        "messages": [
+          "AssertionError: expected 'a505bdea56d5ee1718d4712cadbe2440433bc\u2026' to be '378d4ac7b533b9d6d4ce9285d1544b21ecc68\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:72:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "server actor provenance",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "writes only jurisdiction",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route writes only jurisdiction with trusted actor and exact workspace revision predicates",
+        "messages": [
+          "AssertionError: expected \"vi.fn()\" to be called with arguments: [ { jurisdiction_context: { \u2026(5) } } ]\u001b[90m\n\nReceived:\n\n\u001b[1m  1st vi.fn() call:\n\n\u001b[22m\u001b[33m@@ -10,12 +10,12 @@\u001b[90m\n\u001b[2m            \"reference\": \"nation:staff-reference\",\u001b[22m\n\u001b[2m            \"scope\": \"sovereign\",\u001b[22m\n\u001b[2m            \"subdivisionCode\": null,\u001b[22m\n\u001b[2m          },\u001b[22m\n\u001b[2m        ],\u001b[22m\n\u001b[32m-       \"recordedAt\": Any<String>,\u001b[90m\n\u001b[32m-       \"recordedBy\": \"22222222-2222-4222-8222-222222222222\",\u001b[90m\n\u001b[31m+       \"recordedAt\": \"2026-10-15T05:20:12.681Z\",\u001b[90m\n\u001b[31m+       \"recordedBy\": \"11111111-1111-4111-8111-111111111111\",\u001b[90m\n\u001b[2m        \"state\": \"declared\",\u001b[22m\n\u001b[2m        \"version\": 1,\u001b[22m\n\u001b[2m      },\u001b[22m\n\u001b[2m    },\u001b[22m\n\u001b[2m  ]\u001b[22m\n\u001b[39m\u001b[90m\n\nNumber of calls: \u001b[1m1\u001b[22m\n\u001b[39m\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:34:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "CAS predicate",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "writes only jurisdiction",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route writes only jurisdiction with trusted actor and exact workspace revision predicates",
+        "messages": [
+          "AssertionError: expected [ [ 'id', \u2026(1) ], \u2026(2) ] to deeply equal [ [ 'id', \u2026(1) ], \u2026(2) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:35:33\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "workspace write predicate",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "writes only jurisdiction",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route writes only jurisdiction with trusted actor and exact workspace revision predicates",
+        "messages": [
+          "AssertionError: expected [ [ 'id', \u2026(1) ], \u2026(2) ] to deeply equal [ [ 'id', \u2026(1) ], \u2026(2) ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:35:33\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "write projection",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "writes only jurisdiction",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route writes only jurisdiction with trusted actor and exact workspace revision predicates",
+        "messages": [
+          "AssertionError: expected \"vi.fn()\" to be called with arguments: [ Array(1) ]\u001b[90m\n\nReceived:\n\n\u001b[1m  1st vi.fn() call:\n\n\u001b[22m\u001b[2m  [\u001b[22m\n\u001b[32m-   \"id, updated_at, jurisdiction_context\",\u001b[90m\n\u001b[31m+   \"id, updated_at\",\u001b[90m\n\u001b[2m  ]\u001b[22m\n\u001b[39m\u001b[90m\n\nNumber of calls: \u001b[1m1\u001b[22m\n\u001b[39m\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1487:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:36:26\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "independent command boundary",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "rejects forged provenance",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route rejects forged provenance and mixed geometry commands before writing",
+        "messages": [
+          "AssertionError: expected 200 to be 400 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:40:62\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "assistant execution refusal",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "refuses assistant execution headers",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route refuses assistant execution headers on the actual write path",
+        "messages": [
+          "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:46:91\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "browser origin refusal",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "requires matching browser origin",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route requires matching browser origin account and workspace",
+        "messages": [
+          "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:52:73\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "expected account refusal",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "requires matching browser origin",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route requires matching browser origin account and workspace",
+        "messages": [
+          "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:52:73\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "expected workspace refusal",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "requires matching browser origin",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route requires matching browser origin account and workspace",
+        "messages": [
+          "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:52:73\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "role authorization",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "refuses forbidden roles",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route refuses forbidden roles before the service seam",
+        "messages": [
+          "AssertionError: expected 200 to be 403 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:58:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "preflight revision conflict",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "returns 409 on stale",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route returns 409 on stale or concurrently changed revisions without overwriting",
+        "messages": [
+          "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:61:128\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "concurrent revision conflict",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "returns 409 on stale",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route returns 409 on stale or concurrently changed revisions without overwriting",
+        "messages": [
+          "AssertionError: expected 200 to be 409 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:64:53\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "failed identity HTTP status",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "returns unavailable on failed lookup",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route returns unavailable on failed lookup and writes nothing",
+        "messages": [
+          "AssertionError: expected 200 to be 503 // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:68:60\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "geometry preservation boundary",
+    "source": "src/app/api/projects/[projectId]/route.ts",
+    "suite": "project-jurisdiction-route.test.ts",
+    "test": "clears explicitly without changing",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "project jurisdiction human route clears explicitly without changing study geometry and preserves jurisdiction during upload or clear",
+        "messages": [
+          "AssertionError: expected [ 'jurisdiction_context', \u2026(1) ] to deeply equal [ 'jurisdiction_context' ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-route.test.ts:72:56\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "cancel local only",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "cancels a local jurisdiction",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "cancels a local jurisdiction draft without writing",
+        "messages": [
+          "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\u001b[90m\n\nReceived:\n\n\u001b[1m  1st vi.fn() call:\n\n\u001b[22m    Array [\n      \"/api/projects/project\",\n      Object {\n        \"body\": \"{\"expectedRevision\":\"2026-10-15T00:00:00.000Z\",\"jurisdiction\":{\"version\":1,\"state\":\"unresolved\",\"entries\":[]}}\",\n        \"headers\": Object {\n          \"content-type\": \"application/json\",\n          \"x-openplan-expected-user\": \"user\",\n          \"x-openplan-expected-workspace\": \"workspace\",\n        },\n        \"method\": \"PATCH\",\n      },\n    ]\n\u001b[39m\u001b[90m\n\nNumber of calls: \u001b[1m1\u001b[22m\n\u001b[39m\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-editor.test.tsx:13:21\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "editor exact revision",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "saves references independently",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "saves references independently with account workspace and captured revision",
+        "messages": [
+          "AssertionError: expected { \u2026(2) } to deeply equal { \u2026(2) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-editor.test.tsx:20:47\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "retain conflict draft",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains the draft on conflict",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": false,
+    "failures": [
+      {
+        "name": "retains the draft on conflict and clears only to explicit unresolved",
+        "messages": [
+          "TestingLibraryElementError: Unable to find an element with the text: /county 06045/. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.\n\nIgnored nodes: comments, script, style\n\u001b[36m<body>\u001b[39m\n  \u001b[36m<div>\u001b[39m\n    \u001b[36m<section\u001b[39m\n      \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n      \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n    \u001b[36m>\u001b[39m\n      \u001b[36m<h3\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mProject jurisdiction context\u001b[0m\n      \u001b[36m</h3>\u001b[39m\n      \u001b[36m<p\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<p>\u001b[39m\n        \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n      \u001b[36m</p>\u001b[39m\n      \u001b[36m<div\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mSearch currently covers US Census counties, cities, CDPs and metro areas. Other contexts, including sovereign, overlapping and international jurisdictions, require an unverified staff declaration.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button>\u001b[39m\n          \u001b[0mResolve jurisdiction\u001b[0m\n        \u001b[36m</button>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mAdded search identity: \u001b[0m\n          \u001b[0mSearch label\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<ol />\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend>\u001b[39m\n            \u001b[0mUnverified staff declaration\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mJurisdiction label\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"200\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSource-defined kind\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"80\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mContext scope\u001b[0m\n            \u001b[36m<select>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"other\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mOther or unclassified\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"administrative\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mAdministrative geography\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"sovereign\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mSovereign jurisdiction\u001b[0m\n              \u001b[36m</option>\u001b[39m\n              \u001b[36m<option\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"overlap\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mOverlapping jurisdictions\u001b[0m\n              \u001b[36m</option>\u001b[39m\n            \u001b[36m</select>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mISO country code, optional\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"2\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSubdivision code, optional\u001b[0m\n            \u001b[36m<input\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n              \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n              \u001b[33mmaxlength\u001b[39m=\u001b[32m\"16\"\u001b[39m\n              \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n            \u001b[36m/>\u001b[39m\n          \u001b[36m</label>\u001b[39m\n          \u001b[36m<label\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mNamespaced source reference, optional\u001b[0m\n            \u001b[36m<input\u001b[39m\n             ...\n    at Object.getElementError (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:37:19)\n    at /home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:76:38\n    at /home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:52:17\n    at /home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/query-helpers.js:95:19\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction-editor.test.tsx:26:51\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  }
+]

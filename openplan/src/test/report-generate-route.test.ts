@@ -755,6 +755,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
         delivery_phase: "analysis",
         created_at: "2026-03-13T00:00:00.000Z",
         updated_at: "2026-03-14T01:00:00.000Z",
+        jurisdiction_context: null,
         place_label: "Nevada County, California",
         place_country_code: "US",
         place_subdivision_code: "CA",
@@ -1535,6 +1536,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       artifactId: "artifact-1",
       format: "html",
     });
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
     expect(artifactsInsertMock).toHaveBeenCalledWith(
       expect.objectContaining({
         report_id: "11111111-1111-4111-8111-111111111111",
@@ -1545,13 +1547,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
             jurisdictionReadiness: expect.objectContaining({
-              jurisdiction: expect.objectContaining({ id: "US-CA" }),
-              reports: expect.arrayContaining([
-                expect.objectContaining({
-                  job: expect.objectContaining({ id: "project-evidence-handoff" }),
-                  status: "supported",
+              schema: "openplan.project-jurisdiction-readiness-response.v2",
+              contextSource: "legacy_study_place",
+              payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+              entries: expect.arrayContaining([expect.objectContaining({
+                assessment: expect.objectContaining({
+                  jurisdiction: expect.objectContaining({ id: "US-CA" }),
+                  reports: expect.arrayContaining([expect.objectContaining({ job: expect.objectContaining({ id: "project-evidence-handoff" }), status: "supported" })]),
                 }),
-              ]),
+              })]),
             }),
             evidenceChainSummary: expect.objectContaining({
               linkedRunCount: 1,

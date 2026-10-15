@@ -1,5 +1,7 @@
 "use client";
 
+import { ProjectJurisdictionEditor } from "./project-jurisdiction-editor";
+
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -71,6 +73,7 @@ type ProjectRecord = {
    * RSC boundary; `placeIdentityOnly` names that omission at the call site.
    */
   place: PlaceOfRecord;
+  jurisdiction?: { context: unknown; revision: string; userId: string; workspaceId: string };
 };
 
 type DeleteBlocker = {
@@ -336,6 +339,7 @@ export function ProjectIdentityEditor({
 
   return (
     <article id="project-identity" className="module-section-surface scroll-mt-24">
+      {project.jurisdiction && <ProjectJurisdictionEditor projectId={project.id} context={project.jurisdiction.context} revision={project.jurisdiction.revision} userId={project.jurisdiction.userId} workspaceId={project.jurisdiction.workspaceId} canWrite={canWrite} />}
       <div className="module-section-header">
         <div className="flex items-center gap-3">
           <span className="flex h-11 w-11 items-center justify-center rounded-[0.5rem] bg-[color:var(--pine)]/10 text-[color:var(--pine)]">

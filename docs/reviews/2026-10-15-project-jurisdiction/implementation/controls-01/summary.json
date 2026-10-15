@@ -1,0 +1,97 @@
+[
+  {
+    "label": "harmless comment survivor",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "distinguishes invalid or unread context",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "strict input provenance",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}],\"recordedBy\":\"22222222-2222-4222-8222-222222222222\"}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "bounded declaration count",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"},{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"agency:region-1\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}]}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "reference guard",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "bounds and strictly validates",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction bounds and strictly validates declaration metadata and client provenance",
+        "messages": [
+          "AssertionError: {\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"staff\",\"label\":\"Declared context\",\"kind\":\"source:region\",\"reference\":\"not-namespaced\",\"countryCode\":\"US\",\"subdivisionCode\":\"CA\",\"scope\":\"administrative\"}]}: expected true to be false // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:20:98\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "resolver metadata",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "resolves exact supported identity",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "independent project jurisdiction resolves exact supported identity without copying geometry",
+        "messages": [
+          "AssertionError: expected [ { label: 'Resolved county', \u2026(6) } ] to deeply equal [ { label: 'Resolved county', \u2026(6) } ]\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:27:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "resolver identity match",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "refuses failed or mismatched resolver",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": false,
+    "failures": [
+      {
+        "name": "independent project jurisdiction refuses failed or mismatched resolver identities",
+        "messages": [
+          "Error: promise resolved \"{ version: 1, state: 'declared', \u2026(3) }\" instead of rejecting\n    at _Assertion.__VITEST_REJECTS__ (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1747:17)\n    at _Assertion.propertyGetter (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1570:27)\n    at Reflect.get (<anonymous>)\n    at Object.proxyGetter [as get] (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1659:22)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan/src/test/project-jurisdiction.test.ts:37:188\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  }
+]

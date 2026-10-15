@@ -57,6 +57,7 @@ describe("jurisdiction readiness APIs", () => {
     projectReadMock.mockResolvedValue({
       data: {
         id: PROJECT_ID,
+        jurisdiction_context: null,
         place_label: "Puerto Rico",
         place_country_code: "US",
         place_subdivision_code: "PR",
@@ -95,8 +96,10 @@ describe("jurisdiction readiness APIs", () => {
     const body = await response.json();
 
     expect(response.status).toBe(200);
-    expect(body.jurisdiction.id).toBe("US-PR");
-    expect(body.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
+    expect(body.schema).toBe("openplan.project-jurisdiction-readiness-response.v2");
+    expect(selectMock).toHaveBeenCalledWith("projects", "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code");
+    expect(body.entries[0].assessment.jurisdiction.id).toBe("US-PR");
+    expect(body.entries[0].assessment.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
       .toMatchObject({ status: "unavailable", adapterIds: [] });
   });
 

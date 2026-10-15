@@ -1,0 +1,9 @@
+Running as unit: openplan-jurisdiction-final-checks-01.service; invocation ID: 890381ff34124b39b18ef7cfbe213b56
+types 0
+lint 0
+tests 0
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 21.338s
+             CPU time consumed: 33.512s
+                   Memory peak: 749.4M (swap: 0B)

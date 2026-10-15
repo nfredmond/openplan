@@ -658,6 +658,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     : null;
   const jurisdictionReadinessFile = buildJurisdictionReadinessEvidenceFile(
     projectRecord as ProjectScope & {
+      jurisdiction_context?: unknown;
       place_label?: string | null;
       place_country_code?: string | null;
       place_subdivision_code?: string | null;

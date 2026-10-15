@@ -136,7 +136,7 @@ import type {
   PacketGeographyCorridor,
   PacketGeographyReadState,
 } from "@/lib/reports/geography-figure";
-import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 
 /**
@@ -180,6 +180,7 @@ import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readines
  * database answers the narrow re-query, which carries none of it.
  */
 type PacketProjectRow = {
+  jurisdiction_context?: unknown;
   id: string;
   workspace_id: string;
   name: string;
@@ -1522,7 +1523,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
         // missing-column error, which the narrow re-query below recovers from —
         // the same shape the `report_runs` typed-evidence fallback uses.
         .select(
-          `id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, created_at, updated_at, latitude, longitude, ${PROJECT_PLACE_COLUMNS}`
+          `id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, created_at, updated_at, latitude, longitude, jurisdiction_context, ${PROJECT_PLACE_COLUMNS}`
         )
         .eq("id", report.project_id)
         .maybeSingle(),
@@ -1765,14 +1766,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
-    const jurisdictionReadiness = buildJurisdictionReadinessPayload(
-      {
-        countryCode: projectRow.place_country_code ?? null,
-        subdivisionCode: projectRow.place_subdivision_code ?? null,
-        label: projectRow.place_label ?? null,
-      },
-      jurisdictionReadinessRegistrySha256(),
-    );
+    const jurisdictionReadiness = buildProjectJurisdictionReadinessPayload(projectRow, jurisdictionReadinessRegistrySha256());
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
       // The recorded FK is the source of this estimate. Portfolio imports are

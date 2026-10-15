@@ -27,6 +27,7 @@ const PROJECT_EXPORT_COLUMNS = [
   "longitude",
   "created_at",
   "updated_at",
+  "jurisdiction_context",
   PROJECT_PLACE_COLUMNS,
 ].join(", ");
 

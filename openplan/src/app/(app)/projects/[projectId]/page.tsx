@@ -163,7 +163,7 @@ export default async function ProjectDetailPage({
   const projectResult = await supabase
     .from("projects")
     .select(
-      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
+      "id, workspace_id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, rtp_posture, rtp_posture_updated_at, jurisdiction_context, latitude, longitude, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at"
     )
     .eq("id", projectId)
     .single();
@@ -1334,6 +1334,7 @@ export default async function ProjectDetailPage({
             planType: project.plan_type,
             deliveryPhase: project.delivery_phase,
             place: placeIdentityOnly(projectPlaceOfRecord),
+            jurisdiction: { context: project.jurisdiction_context, revision: project.updated_at, userId: user.id, workspaceId: project.workspace_id },
           }}
           canWriteIdentity={!isReadOnlyWorkspaceRole(membership.role)}
           workspaceHomeGeographyLabel={workspaceHomeGeographyLabel ?? ""}

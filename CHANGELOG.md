@@ -22,6 +22,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 **Node queue process observations, candidate:** eight existing queue commands record private process states under one captured instance and build. Deep health keeps missing, stale, stopped and unavailable observations separate from job completion. Candidate migration `20261017000015_node_queue_process_observations.sql` must precede deployment; hosted application is pending. Existing worker handlers retain shutdown ownership. The caller checker allows 30 seconds for three serial probes. See the [scope and proof limits](docs/reviews/2026-10-14-node-queue-observation/STATUS.md).
 
+**Project jurisdiction context, candidate:** the existing project editor separates
+human-declared jurisdictions from study geometry. Multiple declarations and explicit
+unresolved state carry through project readiness, new reports and evidence exports.
+Workspace readiness keeps its single-place contract. Candidate migration
+`20261017000016_project_jurisdiction_context.sql` is additive and unapplied by this
+lane. Isolated native authorization, upgrade/restore, build and browser evidence
+remain required before rollout. See the [implementation record](docs/reviews/2026-10-15-project-jurisdiction/implementation/STATUS.md).
+
 **Explicit owned worker command, candidate:** private operator settings, credential
 roles and preset options start the existing owned service through
 `workers/odm_worker/runtime_service_cli.py`. The command preserves original

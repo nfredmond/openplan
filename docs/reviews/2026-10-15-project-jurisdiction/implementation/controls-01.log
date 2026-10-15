@@ -1,0 +1,17 @@
+Running as unit: openplan-jurisdiction-controls-01.service; invocation ID: 15bf119333e34ffe8edc317012b933f4
+harmless comment survivor: SURVIVED as expected
+strict input provenance: ASSERTION FAILED as expected
+bounded declaration count: ASSERTION FAILED as expected
+reference guard: ASSERTION FAILED as expected
+resolver metadata: ASSERTION FAILED as expected
+resolver identity match: ASSERTION FAILED UNEXPECTED
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/prove.py", line 102, in <module>
+    if not valid: raise RuntimeError('Unexpected mutation outcome ' + c['label'])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unexpected mutation outcome resolver identity match
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 5.998s
+             CPU time consumed: 7.921s
+                   Memory peak: 215M (swap: 0B)
