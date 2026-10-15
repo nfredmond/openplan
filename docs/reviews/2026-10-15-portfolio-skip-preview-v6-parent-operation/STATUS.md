@@ -134,3 +134,62 @@ The old 215/419 preview, retained native 419 proof, source anchor and demo recei
 no mutation from these operations. Fresh application build/runtime, corrected
 desktop/390px import, console/artifacts and final preservation remain pending. No hosted migration,
 provider setting, pull request, main merge or release occurs here.
+
+## Actual build and start request
+
+The single build finishes with exit zero, invocation
+`382d4e9515014dc393e79e8f3d0046e3`. The compiler runs for 503.608 seconds;
+the controller runs for 569.658 seconds. BUILD_ID is
+`7X3x8RgohlUwVf_lPZa5r`, with 2,587 saved files totaling 1,872,149,963 bytes.
+The generated manifest contains all 420 migrations, latest `20261017000017`.
+The controller and matching terminal journal report peak memory of
+6,774,874,112 bytes under a 10 GiB cap and zero swap. Recorded memory events
+after npm exits are zero; final whole-controller event counters were not acquired.
+
+Root reads the full independent [build observation](../2026-10-15-portfolio-skip-preview-v6-build-observation/STATUS.md),
+its 13 comparisons and fresh source-file hash bindings. They match the actual
+receipts. The parent build readback SHA-256 is
+`105269a0df14c7e82252934e70f983d2b7d58ac7d3a119c148a6341215a359ec`.
+This establishes the bounded build result. It does not establish runtime or UI behavior.
+
+Root requests one reviewed start. The accepted web invocation is
+`acf6a83fa77a43dea46314247a00d95a`, under a 512 MiB cap, zero swap and
+50 percent CPU quota. Start acceptance precedes the controller's full output
+revalidation, listener readiness and strict runtime attestation. Those checks
+remain pending at this checkpoint. No repeated build or start occurs.
+
+## Strict runtime and final preservation succeed
+
+The one start completes its full build inventory check and serves the expected
+APP49 health identity. The strict attestation exits zero under invocation
+`bb2d12f05aeb47c49d7a75d993c29330`, after 65.287 seconds. Its receipt SHA-256 is
+`1700d98c21249705d1eb6c355a2151799c9e05a4db8598144beff5abc49f1fb7`.
+Root reads the actual process, built-byte, environment, helper, target and source
+bindings before the browser journey.
+
+The [new identified-build journey](../2026-10-15-v6-current-project-browser-journey/STATUS.md)
+repeats the previously failing exact CSV and approved preview. HTTP 201 creates
+one valid project and retains the invalid skipped row. The repeat preview locks
+the created identity. Native readback confirms both audit rows, owner authorship,
+EUR 125,000 with null price year, and no inferred project geography. Saved area,
+site and corridor render at desktop and 390px. Jurisdiction and source-status
+limits remain visible. Artifact and practitioner evidence stay separate.
+
+Root then executes the reviewed post-journey stage once. Invocation
+`235969ecd0ad4cabbebbe292115a31ba` exits zero after 31.538 seconds. Receipt
+`f09ae98bddf25c150cdef74cbb792eb1589b28ce85c99c37fdeae389e38b8607`
+matches the protected source anchor, two old database snapshots, original four
+helper IDs/configuration/typed active states, old web invocation, retained packets,
+Storage and unchanged inputs. It verifies new helpers again. It excludes intended
+new-preview database writes. Rounded unit peak is 90.7 MiB with zero swap;
+no event counters were acquired. These are observations at acquisition.
+
+A parent-only readback initially compares raw baseline snapshot lists to the
+receipt's digest strings. That bookkeeping assertion fails and is retained.
+The corrected comparison uses the unchanged pinned canonical digest definition;
+raw snapshots are not recaptured. Whitespace survives and a changed snapshot
+count is detected. No stage is retried or guard weakened.
+
+The original SERVICES reset, old build failures, T3 capture failures and intermediate
+parent jurisdiction-entry error remain retained. The separate new geography
+artifact review is pending. No main merge, hosted mutation or release is claimed.
