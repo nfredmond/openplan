@@ -1,0 +1,6 @@
+{
+  "root": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/workbook-live-pagination-20261015",
+  "directories": "0700",
+  "regularFiles": "0600",
+  "sharedDependencySymlinksExcluded": true
+}

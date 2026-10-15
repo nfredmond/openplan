@@ -1,0 +1,69 @@
+{
+  "controls": [
+    {
+      "guard": "database allowlist",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse database allowlist",
+      "restored": "passed"
+    },
+    {
+      "guard": "cluster identity",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse cluster identity",
+      "restored": "passed"
+    },
+    {
+      "guard": "runner bounds",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse runner bounds",
+      "restored": "passed"
+    },
+    {
+      "guard": "owned helper identity",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse owned helper identity",
+      "restored": "passed"
+    },
+    {
+      "guard": "owned helper target",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse owned helper target",
+      "restored": "passed"
+    },
+    {
+      "guard": "helper bounds",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse helper bounds",
+      "restored": "passed"
+    },
+    {
+      "guard": "loopback no mounts",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse loopback no mounts",
+      "restored": "passed"
+    },
+    {
+      "guard": "helper URI target exact",
+      "baseline": "passed",
+      "harmless": "survived",
+      "targetedOmission": "killed",
+      "failure": "safety must refuse helper URI target exact",
+      "restored": "passed"
+    }
+  ],
+  "blind": "Pure metadata controls do not start a wrong helper or connect to an unauthorized database."
+}

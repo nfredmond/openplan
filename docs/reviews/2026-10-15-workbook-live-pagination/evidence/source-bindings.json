@@ -1,0 +1,80 @@
+[
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+    "blob": "3450738a603e2a2bb5fa2d26c3570efdb94c0901",
+    "sha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/src/lib/projects/portfolio-export.ts",
+    "blob": "030b599aec4a9bfe46cd565c7909a1c08b0b7161",
+    "sha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+    "blob": "84e8f917f9b21194b621b2bb9109d40f04174fcf",
+    "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/src/lib/projects/portfolio-workbook.ts",
+    "blob": "c6dfbdab91569fcc7a7f700e66e677ee07b6f85b",
+    "sha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/src/lib/projects/project-place.ts",
+    "blob": "0bef59faabfc3518b8faf59db4b7ad0442c5d3af",
+    "sha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "openplan/supabase/config.toml",
+    "blob": "e28ba83878e53242188c82f465628724c14c2724",
+    "sha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "docs/reviews/2026-10-15-project-workbook-export-pagination/STATUS.md",
+    "blob": "88157ce61cf52a611cf3086ab573c23b474ef315",
+    "sha256": "d1fe5eb2cfafd5736f90a8eb1063fdaa7c5c4c0a96e63efdeb4f6adcd2a8c36c"
+  },
+  {
+    "commit": "54537205a4f7c47f1f68f0827209bbf55de505d9",
+    "path": "docs/reviews/2026-10-15-project-workbook-export-integration/STATUS.md",
+    "blob": "e43153b9be58e073d0142d4d9e1359356be89970",
+    "sha256": "7c61cdf792de4a7d278e733b2ef52b11c1884556aa99ccdf3cfaed65e20924fd"
+  },
+  {
+    "commit": "dec06621eb1ec0b4a2ce5588249424c638801567",
+    "path": "docs/reviews/2026-10-15-project-workbook-export-independent/REVIEW.md",
+    "blob": "ce08e7ce756d48c84b596d54228713623bc88d62",
+    "sha256": "39e8bb1fcbbf800a1aa51df906ce7c1c82b9e4a0a8845114962619b38496420e"
+  },
+  {
+    "commit": "b259d73e56d22d4935ef2789874cf69901786b33",
+    "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+    "blob": "1798a3ddf0feb31aa94b3eb5c51c5bffa1f51ddd",
+    "sha256": "110a5bb8181b18ebd1d13307c6d38427d4f0b07fab6f7f47438f161891659cb7"
+  },
+  {
+    "commit": "8d6f85e9c7b3354dd3559238da2b857538fb8d44",
+    "path": "docs/reviews/2026-10-15-project-jurisdiction-native/native_proof.py",
+    "blob": "971dd60a13d73149bd72212ae9686c358b7c4710",
+    "sha256": "4f48445c0c69d0bb3ef52a3ea2101ad22de2d8a0210ff8800f043c789bc6d8ea"
+  },
+  {
+    "commit": "8d6f85e9c7b3354dd3559238da2b857538fb8d44",
+    "path": "docs/reviews/2026-10-15-project-jurisdiction-native/transport_proof.py",
+    "blob": "7b2386f1c18fd014925761a35e9b0babd06c0e47",
+    "sha256": "78a5af9bc65de7da05007a44cd26ee6fab4419267f04707df14f67fcdad61c33"
+  },
+  {
+    "commit": "8d6f85e9c7b3354dd3559238da2b857538fb8d44",
+    "path": "docs/reviews/2026-10-15-project-jurisdiction-native/REPORT.md",
+    "blob": "c40d0a87ad8045c07d314e2ce7a03aa948da13b7",
+    "sha256": "dfe12f92edf03ceb6ffc2370ae4f604f195327614394f9f4496cd750c0ed91bc"
+  }
+]

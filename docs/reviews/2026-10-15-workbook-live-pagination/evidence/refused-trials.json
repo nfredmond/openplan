@@ -1,0 +1,44 @@
+[
+  {
+    "directory": "earlier-cap-1000-78c36cfb",
+    "trial": "fault-first-page-end",
+    "outcome": "refused",
+    "reason": "classifier exact assertion diagnostic",
+    "exit": 1,
+    "actual": [
+      {
+        "title": "portfolio-2000",
+        "status": "failed",
+        "firstDiagnostic": "AssertionError: native page count must include final empty page or bounded sentinel: expected 2 to be 3 // Object.is equality"
+      }
+    ]
+  },
+  {
+    "directory": "earlier-cap-1000-d55f8d69",
+    "trial": "fault-short-page-end",
+    "outcome": "refused",
+    "reason": "classifier exact one failure",
+    "exit": 0,
+    "actual": [
+      {
+        "title": "portfolio-2000",
+        "status": "passed",
+        "firstDiagnostic": null
+      }
+    ]
+  },
+  {
+    "directory": "earlier-cap-137-4a715dc5",
+    "trial": "fault-short-page",
+    "outcome": "refused",
+    "reason": "classifier exact selected tests",
+    "exit": 1,
+    "actual": [
+      {
+        "title": "portfolio-2000",
+        "status": "failed",
+        "firstDiagnostic": "AssertionError: live read must retain all supported rows or exact sentinel: expected 137 to be 2000 // Object.is equality"
+      }
+    ]
+  }
+]

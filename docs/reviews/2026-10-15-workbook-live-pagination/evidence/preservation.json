@@ -1,0 +1,24 @@
+{
+  "sourceUnchanged": true,
+  "sourceSha256": "2c4c300a93013e4694f4ee8aea60ffbbbaa243938058d6d94a980520a9935639",
+  "clusterMemory": 0,
+  "clusterMemorySwap": 0,
+  "runnerMax": "1073741824",
+  "runnerSwapMax": "0",
+  "runnerPeak": "81575936",
+  "runnerEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "targetRowsUnchanged": true,
+  "targetHistory": {
+    "count": 419,
+    "latest": "20261017000016",
+    "exactRows": true
+  },
+  "preservationOracle": {
+    "harmless": "survived",
+    "corruptedProject": "killed",
+    "corruptedHistory": "killed",
+    "corruptedRoles": "killed",
+    "corruptedMemberships": "killed",
+    "blind": "Corrupted in-memory readback controls, not actual source or archive damage."
+  }
+}
