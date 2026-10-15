@@ -1,0 +1,39 @@
+{
+  "scope": "Independent copied-code/pure controls only. No operating stages or real transport.",
+  "failedTrial": {
+    "unit": "openplan-portfolio-v4-independent-review-1eb9-controls-01",
+    "invocation": "420593c335e1406ab3be1356dab9a223",
+    "exit": 1,
+    "reason": "R2 fixture env mapping omitted rest key; KeyError: rest. No pass attributed.",
+    "runtimeMs": 274,
+    "roundedMemoryPeak": "24.4M",
+    "swap": "0B",
+    "retainedSource": "private proof root failed-controls-01.py",
+    "retainedSourceSHA256": "f344c9494f90d95dade7d87c64c6784fd15e2cd381b969b9a220e4b40f964f12"
+  },
+  "finalTrial": {
+    "unit": "openplan-portfolio-v4-independent-review-1eb9-controls-02",
+    "invocation": "1028ea7ac6714448a0eb64483c184122",
+    "exit": 0,
+    "runtimeMs": 247,
+    "roundedMemoryPeak": "21M",
+    "swap": "0B",
+    "cases": 23,
+    "survived": 16,
+    "refused": 7
+  },
+  "limits": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": 0,
+    "CPUQuota": "50%",
+    "lock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "privateHomeCache": true,
+    "pythonBytecode": false,
+    "fullEventCounters": "not captured"
+  },
+  "findings": {
+    "R1": "P2 imported observer loses user-bus environment",
+    "R2": "P2 final verifier omits preservation and retained result",
+    "R3": "P2 initial readback permits weakened CHECK definitions"
+  }
+}
