@@ -1,0 +1,95 @@
+{
+  "permittedScope": "Old-web read-only observation only. Future DB/helper/body inputs are stand-ins. Actual outer wrapper and fixed host transport run. No new runtime attestation.",
+  "parentObserverContextSHA256": "51d4f36c34966d36839d2f9d14d73b7acab7748408cbcc4c7b0d2a601ac30fea",
+  "actualContexts": [
+    {
+      "scope": "Actual old-web read-only host observer through actual cleared main and outer bwrap. Future DB/helper acquisitions are stand-ins; no new-preview runtime is claimed.",
+      "entrypoint": "app",
+      "callerUserNamespace": "user:[4026540332]",
+      "observerUserNamespace": "user:[4026531837]",
+      "boundaryEnvironment": {
+        "hasXDG": false,
+        "hasDBus": false
+      },
+      "request": "e24def675380db3a87e42f7ee9e61666db41a7c8215d00f33ddb4f70b580ae75",
+      "oldWebObservation": {
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-current-project-preview-app-21510042e-v3-web.service",
+        "cwd": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan",
+        "invocation": "34615ba06b554482b0f79c90fe999a61",
+        "listenerPid": "4104299",
+        "mainPid": "4101689",
+        "observerSHA256": "5e133acdae0ae91cc18d9e73c887d7e1c4dfea4ec278e60e2c884670a8a0c966",
+        "observerUserNamespace": "user:[4026531837]",
+        "processEnvironmentDigest": "07d92fce76fa3f92b051cf0c932ec0294be9eb4669cbc80563bdc1e37eca5aa5",
+        "request": "e24def675380db3a87e42f7ee9e61666db41a7c8215d00f33ddb4f70b580ae75",
+        "resources": {
+          "cpu.max": "50000 100000",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.max": "536870912",
+          "memory.swap.current": "0",
+          "memory.swap.max": "0"
+        },
+        "schema": 1,
+        "unit": "openplan-current-project-preview-app-21510042e-v3-web.service"
+      },
+      "readonlyProtectedPaths": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4/operation-files.sha256",
+          "writeOpenErrno": 30,
+          "sha256": "87f96cec8f07cb737c82ff93907619cc3e8aa9306efb0a578eed29f2ebbb7856"
+        },
+        {
+          "path": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/next/package.json",
+          "writeOpenErrno": 30,
+          "sha256": "6da8fc4823b66b8f2906d150002618e3f3e0d2446ebf3823b2a2f7efe73a46a4"
+        }
+      ],
+      "scriptSHA256": "ab5c827da9e4466924751bd8676433b4287c2b3dabeef7e873caf0ce975ea502"
+    },
+    {
+      "scope": "Actual old-web read-only host observer through actual cleared main and outer bwrap. Future DB/helper acquisitions are stand-ins; no new-preview runtime is claimed.",
+      "entrypoint": "attestor",
+      "callerUserNamespace": "user:[4026540330]",
+      "observerUserNamespace": "user:[4026531837]",
+      "boundaryEnvironment": {
+        "hasXDG": false,
+        "hasDBus": false
+      },
+      "request": "1bb6a933c279444a3f44a4d01f0085e33e74f3480cba5f09509240a13aabddc4",
+      "oldWebObservation": {
+        "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-current-project-preview-app-21510042e-v3-web.service",
+        "cwd": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan",
+        "invocation": "34615ba06b554482b0f79c90fe999a61",
+        "listenerPid": "4104299",
+        "mainPid": "4101689",
+        "observerSHA256": "5e133acdae0ae91cc18d9e73c887d7e1c4dfea4ec278e60e2c884670a8a0c966",
+        "observerUserNamespace": "user:[4026531837]",
+        "processEnvironmentDigest": "07d92fce76fa3f92b051cf0c932ec0294be9eb4669cbc80563bdc1e37eca5aa5",
+        "request": "1bb6a933c279444a3f44a4d01f0085e33e74f3480cba5f09509240a13aabddc4",
+        "resources": {
+          "cpu.max": "50000 100000",
+          "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+          "memory.max": "536870912",
+          "memory.swap.current": "0",
+          "memory.swap.max": "0"
+        },
+        "schema": 1,
+        "unit": "openplan-current-project-preview-app-21510042e-v3-web.service"
+      },
+      "readonlyProtectedPaths": [
+        {
+          "path": "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4/operation-files.sha256",
+          "writeOpenErrno": 30,
+          "sha256": "87f96cec8f07cb737c82ff93907619cc3e8aa9306efb0a578eed29f2ebbb7856"
+        },
+        {
+          "path": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/next/package.json",
+          "writeOpenErrno": 30,
+          "sha256": "6da8fc4823b66b8f2906d150002618e3f3e0d2446ebf3823b2a2f7efe73a46a4"
+        }
+      ],
+      "scriptSHA256": "ab5c827da9e4466924751bd8676433b4287c2b3dabeef7e873caf0ce975ea502"
+    }
+  ],
+  "unexecutedOperatingStages": true
+}

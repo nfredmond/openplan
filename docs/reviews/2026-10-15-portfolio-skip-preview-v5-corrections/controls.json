@@ -1,0 +1,287 @@
+{
+  "scope": "Selected R1/R2/R3 in-memory/code-fault and future-observation stand-ins. No DB, Docker, HTTP, helper, build or browser transport. Actual R1 context tests have separate records.",
+  "cases": [
+    {
+      "case": "new-sealed-pure-inputs",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-harmless-note",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-statusConstraint-same-phrase-OR-true",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-statusConstraint-allowlist",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-statusConstraint-operator",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-statusConstraint-null",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-statusConstraint-normalization",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-statusConstraint-missing",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-same-phrase-OR-true",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-allowlist",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-operator",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-null",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-normalization",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-phaseConstraint-missing",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:phaseConstraint"
+    },
+    {
+      "case": "R3-remove-full-definition-guard",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-remove-full-definition-guard",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R3-weak-first-receipt-refuses",
+      "outcome": "REFUSED",
+      "reason": "upgrade-checks:statusConstraint"
+    },
+    {
+      "case": "R1-transport-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-request",
+      "outcome": "REFUSED",
+      "reason": "transport-result-freshness"
+    },
+    {
+      "case": "R1-observerSHA256",
+      "outcome": "REFUSED",
+      "reason": "transport-observer-identity"
+    },
+    {
+      "case": "R1-observerUserNamespace",
+      "outcome": "REFUSED",
+      "reason": "transport-observer-identity"
+    },
+    {
+      "case": "R1-listenerPid",
+      "outcome": "REFUSED",
+      "reason": "transport-old-pid"
+    },
+    {
+      "case": "R1-cwd",
+      "outcome": "REFUSED",
+      "reason": "transport-old-process"
+    },
+    {
+      "case": "R1-processEnvironmentDigest",
+      "outcome": "REFUSED",
+      "reason": "transport-old-environment"
+    },
+    {
+      "case": "R1-remove-fresh-result-guard",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-remove-fresh-result-guard",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:transport-result-freshness"
+    },
+    {
+      "case": "R1-fixed-bus-spy",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-missing-bus-codefault",
+      "outcome": "REFUSED",
+      "reason": "fixed-user-bus-environment"
+    },
+    {
+      "case": "R1-resource-memory.max",
+      "outcome": "REFUSED",
+      "reason": "observer-memory"
+    },
+    {
+      "case": "R1-resource-memory.swap.max",
+      "outcome": "REFUSED",
+      "reason": "observer-memory"
+    },
+    {
+      "case": "R1-resource-memory.swap.current",
+      "outcome": "REFUSED",
+      "reason": "observer-memory"
+    },
+    {
+      "case": "R1-resource-cpu.max",
+      "outcome": "REFUSED",
+      "reason": "observer-cpu"
+    },
+    {
+      "case": "R1-resource-memory.events",
+      "outcome": "REFUSED",
+      "reason": "observer-memory-events"
+    },
+    {
+      "case": "R1-remove-observer-memory",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-remove-observer-memory",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:observer-memory"
+    },
+    {
+      "case": "R1-remove-observer-cpu",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-remove-observer-cpu",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:observer-cpu"
+    },
+    {
+      "case": "R1-remove-observer-memory-events",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-remove-observer-memory-events",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:observer-memory-events"
+    },
+    {
+      "case": "R1-remove-transport-file-seal",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-remove-transport-file-seal",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:old-web-transport-seal:sha256"
+    },
+    {
+      "case": "R2-post-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R2-source-drift",
+      "outcome": "REFUSED",
+      "reason": "source-drift"
+    },
+    {
+      "case": "R2-protected-drift",
+      "outcome": "REFUSED",
+      "reason": "protected-drift"
+    },
+    {
+      "case": "R2-omit-source",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:source-drift"
+    },
+    {
+      "case": "R2-omit-protected",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:protected-drift"
+    },
+    {
+      "case": "V4-inventory-harmless-read",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "V4-inventory-bytes",
+      "outcome": "REFUSED",
+      "reason": "files:"
+    },
+    {
+      "case": "V4-inventory-mode",
+      "outcome": "REFUSED",
+      "reason": "files:"
+    },
+    {
+      "case": "V4-full-preserve-consumer-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "V4-full-preserve-consumes-drift",
+      "outcome": "REFUSED",
+      "reason": "files:"
+    },
+    {
+      "case": "V4-remove-complete-inventory-guard",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:files:"
+    },
+    {
+      "case": "R2-durable-writer-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R2-duplicate-result-refuses",
+      "outcome": "REFUSED",
+      "reason": "FileExistsError"
+    },
+    {
+      "case": "R2-new-preview-data-exclusion",
+      "outcome": "REFUSED",
+      "reason": "post-new-database-excluded:excluded"
+    }
+  ],
+  "count": 55,
+  "finallyRestored": true,
+  "sealedFilesUnchanged": true,
+  "noOperatingStage": true,
+  "blindCategories": [
+    "No PostgreSQL parsing or target normalization verified. Fixed expected definitions fail closed.",
+    "Future post-journey DB/helper/Storage acquisitions are stand-ins.",
+    "User-manager, host tools and same-user code custody remain trust assumptions."
+  ]
+}
