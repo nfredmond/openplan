@@ -1,0 +1,82 @@
+{
+  "at": "2026-10-15T13:01:13.240183+00:00",
+  "exit": 0,
+  "seconds": 24.285,
+  "peakRounded": "59.4M",
+  "swap": "0B",
+  "receipt": "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/runtime-start-attestation.json",
+  "receiptSha256": "f86e9f4dd5d2f5104a85f2d42e96ddb771e9b938cf6d954989fa64458485b8d4",
+  "attestation": {
+    "schema": 1,
+    "unit": "openplan-current-project-preview-app-21510042e-v3-web.service",
+    "mainPid": "4101689",
+    "listenerPid": "4104299",
+    "app": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "environmentSha256": "a283c64f3002d46ad879ea313f618166b94ff7712e3c9d7fd8dba11f977b69f9",
+      "migrationDigest": "1f7ce06758c8a3e64d4a89cb4359d4035a38ffb5f18f9ce84c552876906c8ad4",
+      "dependencyBindingSha256": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c"
+    },
+    "active": {
+      "activeReceiptSha256": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+      "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+      "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+      "clusterId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+      "target": {
+        "oid": "6118831",
+        "owner": "postgres",
+        "database": "openplan_project_combined_preview_0752bc2e8104b7a40faab27f"
+      },
+      "images": {
+        "rest": "sha256:2f8e7b656f09db697a8875177694b417b35cb76c21370de07fc54e711e902326",
+        "auth": "sha256:2b352c02adf11a2025cd5993c246ef85db73743553c39194d2b1862d1cc4d1fd",
+        "storage": "sha256:a4846b3329f3afd52cd2ae31b89a0c1ae841221e9d3a22d55db65f9dca2a72b6",
+        "gateway": "sha256:1b53405d8680a09d6f44494b7990bf7da2ea43f84a258c59717d4539abf09f6d"
+      }
+    },
+    "resources": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "191774720",
+      "memory.swap.current": "0"
+    },
+    "health": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-15T12:59:30.343Z",
+      "deployment": {
+        "commit": "21510042e94b",
+        "version": "0.68.0",
+        "migrations": {
+          "expected": 419,
+          "latest": "20261017000016"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "processEnvironmentDigest": "07d92fce76fa3f92b051cf0c932ec0294be9eb4669cbc80563bdc1e37eca5aa5",
+    "buildInventoryDigest": "fe3a11d7cf20e11e927f3e2c8ca04d37db1121fe2d0815c5ab1b4c9cf78dab55",
+    "buildResultSha256": "ea1708fc7a766797a9e2fc1c019f2ed3de602dafc76e17b9330fc88766b00f72",
+    "startIntentSha256": "a254af2b2339b94c4857aad06bf0f2bae9c77c6fe20edc108af13069551cea3b",
+    "attestorSha256": "c9439e729583c4312c2c8b2d5e96e6981fb81d485f8a7a639f9956f1c28e3002",
+    "appBindingSha256": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+    "npmSourceHashes": {
+      "/usr/lib/node_modules/npm/lib/commands/run.js": "86080ad381490dd347b5cde5071a8d2444c1f471e795f4a88957e4726fca20ab",
+      "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js": "daceffb5ae860499cc8e0696c8c33ef5d705f62f597974858b6472fcd1215f79",
+      "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js": "94dea9ff50028869f4f88c4ec5e520d56fa7c2f6cc03422a9f06c44d291a0c34",
+      "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/make-spawn-args.js": "d1647624f0ce227e5cff1c4570f3e754e0eaaf08041db354102ec2bdbbd721df",
+      "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/set-path.js": "bc023d0c2d0840074c9e81ac0bda0fed0ef75e64623fa670437a7706d05d3542"
+    },
+    "derivedNpmPathSha256": "ad753e22e76a38f64d18b5e4eceb9ce3d5ff73e58c7e0ef9b4b9e119566b794a",
+    "boundary": "Identified HTTP/process readback only. Desktop, 390px, console, artifacts and human acceptance remain unproved."
+  },
+  "boundary": "Identified runtime only; no browser acceptance",
+  "originalReceiptAbsent": true,
+  "newAttemptRetained": true
+}
