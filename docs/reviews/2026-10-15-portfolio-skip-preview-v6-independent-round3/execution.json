@@ -1,0 +1,54 @@
+{
+  "scope": "Independent file and synthetic N1 review only. No operating stage or live service observation.",
+  "units": [
+    {
+      "unit": "openplan-v6-round3-files-before-4cefaf52.service",
+      "invocation": "a099800e163646c2b063796d0d605c16",
+      "exit": 0,
+      "runtime": "604ms",
+      "cpu": "326ms",
+      "roundedMemoryPeak": "36.2M",
+      "swap": "0B",
+      "sourceSHA256": "202dab796539d1a10693a03836b5eabdf2b597290159106cb0b264fb14e3199e",
+      "privateRawSHA256": "ba15075000f37321127e9b18c7be08cede1cb0e4d6fe999ab7b3c8e86371974d",
+      "purpose": "Before controls: exact pins, mechanical bindings and bounded file custody."
+    },
+    {
+      "unit": "openplan-v6-round3-controls-4cefaf52.service",
+      "invocation": "fc71632d66ab4a30855a737e64bb7b2c",
+      "exit": 0,
+      "runtime": "201ms",
+      "cpu": "129ms",
+      "roundedMemoryPeak": "25.1M",
+      "swap": "0B",
+      "sourceSHA256": "be3f103cce74392c5d9617059f033f47723b8ef0ce272af3292861ef6d30b7d6",
+      "privateRawSHA256": "c8023e3bccbcc7dcd937448a71e84a5844460f7b1b021364b101402d8a8653f6",
+      "purpose": "Independent copied-function N1 final/preflight controls and five code faults."
+    },
+    {
+      "unit": "openplan-v6-round3-files-after-4cefaf52.service",
+      "invocation": "a5965f1db8364ff48f224139b3259f52",
+      "exit": 0,
+      "runtime": "601ms",
+      "cpu": "322ms",
+      "roundedMemoryPeak": "36.8M",
+      "swap": "0B",
+      "sourceSHA256": "202dab796539d1a10693a03836b5eabdf2b597290159106cb0b264fb14e3199e",
+      "privateRawSHA256": "2bdef8e71cc7bd3327a76ce228d5a8deec575a2d30a4a8d864c0c661a304bd3f",
+      "purpose": "After controls: complete V6 subject and bounded prior custody."
+    }
+  ],
+  "requestedLimits": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": "0",
+    "CPUQuota": "50%",
+    "UMask": "0077",
+    "flock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "privateHomeAndCache": true,
+    "python": "-B and PYTHONDONTWRITEBYTECODE=1"
+  },
+  "limits": "systemd-run summaries report rounded peaks and swap. Event counters not collected. Requested caps are not a claim of hostile-host confinement.",
+  "operatingStages": 0,
+  "push": false,
+  "pullRequest": false
+}
