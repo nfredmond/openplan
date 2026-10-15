@@ -1,0 +1,613 @@
+{
+  "recordedAt": "2026-10-15T04:52:11.673040+00:00",
+  "reviewType": "independent source and retained-evidence review; no local suite or hosted operation",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-be4a2e1f",
+  "branch": "t3/review-pr327-node-queue-rollout",
+  "baseCommit": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "initialCommit": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "initialStatus": "clean",
+  "fastForwardOnly": true,
+  "pullRequest": {
+    "baseRefOid": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+    "headRefName": "work/node-queue-heartbeats-20261014",
+    "headRefOid": "031e01f1ff9645fbd8c10935ab205baff6484307",
+    "number": 327,
+    "state": "OPEN",
+    "statusCheckRollup": [
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T02:19:16Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695131/job/116197027905",
+        "name": "odm-worker",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "Aerial worker custody regression"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T02:00:19Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695086/job/116197028082",
+        "name": "verify (qa gate)",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:35:00Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695143/job/116197028395",
+        "name": "node-process-observations",
+        "startedAt": "2026-10-15T01:26:56Z",
+        "status": "COMPLETED",
+        "workflowName": "Node queue process observations"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T02:18:17Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695110/job/116197345003",
+        "name": "live RLS isolation",
+        "startedAt": "2026-10-15T01:28:02Z",
+        "status": "COMPLETED",
+        "workflowName": "RLS Isolation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T02:19:48Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695113/job/116197028085",
+        "name": "restore-drill",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "Restore Drill"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:27:59Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695098/job/116197028378",
+        "name": "focused-workers",
+        "startedAt": "2026-10-15T01:26:56Z",
+        "status": "COMPLETED",
+        "workflowName": "Worker security and cancellation"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:45:33Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695086/job/116197028332",
+        "name": "order independence (shuffled vitest)",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:28:15Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695086/job/116197028276",
+        "name": "modeling scripts (python unit tests)",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:28:11Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695086/job/116197028382",
+        "name": "ops scripts (python unit tests)",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:28:44Z",
+        "conclusion": "SUCCESS",
+        "detailsUrl": "https://github.com/nfredmond/openplan/actions/runs/38665695086/job/116197028370",
+        "name": "worker (python unit tests)",
+        "startedAt": "2026-10-15T01:26:55Z",
+        "status": "COMPLETED",
+        "workflowName": "CI"
+      },
+      {
+        "__typename": "CheckRun",
+        "completedAt": "2026-10-15T01:26:52Z",
+        "conclusion": "NEUTRAL",
+        "detailsUrl": "https://vercel.com/github",
+        "name": "Vercel Agent Review",
+        "startedAt": "2026-10-15T01:26:52Z",
+        "status": "COMPLETED",
+        "workflowName": ""
+      }
+    ],
+    "url": "https://github.com/nfredmond/openplan/pull/327"
+  },
+  "detailedCiRuns": [
+    {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "031e01f1ff9645fbd8c10935ab205baff6484307",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38665695143"
+    },
+    {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "031e01f1ff9645fbd8c10935ab205baff6484307",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38665695113"
+    },
+    {
+      "conclusion": "success",
+      "event": "pull_request",
+      "headSha": "031e01f1ff9645fbd8c10935ab205baff6484307",
+      "url": "https://github.com/nfredmond/openplan/actions/runs/38665695110"
+    }
+  ],
+  "ciCheckoutCommit": "a3cdbfd3069140763ed85aa72eb01f64a4fefdfb",
+  "reviewedHeadTree": "4921f96d4392e42ef41f3e6c6f68667488cb680c",
+  "ciCheckoutTree": "4921f96d4392e42ef41f3e6c6f68667488cb680c",
+  "ciSourceTreesEqual": true,
+  "proofReports": [
+    {
+      "report": "source-controls.json",
+      "privateRun": "source-06",
+      "sha256": "28cf1f7f0103995f438bcb45303e06f3a46e43b74e1de910d42de5e0cfcf8ef3",
+      "blindCategory": "Process lifecycle, actual entry-body startup children with replaced imports, AST wiring and actual preparation CLI with synthetic HTTP replies. No live business database, provider or job acceptance.",
+      "actualSha256": "28cf1f7f0103995f438bcb45303e06f3a46e43b74e1de910d42de5e0cfcf8ef3",
+      "matches": true
+    },
+    {
+      "report": "reader-controls.json",
+      "privateRun": "reader-controls-03",
+      "sha256": "18feba19e163bd5868d673a4fea9d25d642b0e55c8b6bca86adab70830e169ba",
+      "blindCategory": "Report shape, exact microseconds, producer state/count consistency. Does not observe a database or business worker.",
+      "actualSha256": "18feba19e163bd5868d673a4fea9d25d642b0e55c8b6bca86adab70830e169ba",
+      "matches": true
+    },
+    {
+      "report": "health-transport-controls.json",
+      "privateRun": "health-controls-01",
+      "sha256": "b8e2f7ee4f15d7e4c7ff78f90067ce8541a7aa4f5cc1569f2dfdeac8104b4dd2",
+      "blindCategory": "Installed SDK and owned loopback sockets, before response headers. Does not prove stalled response-body reading.",
+      "actualSha256": "b8e2f7ee4f15d7e4c7ff78f90067ce8541a7aa4f5cc1569f2dfdeac8104b4dd2",
+      "matches": true
+    },
+    {
+      "report": "health-route-controls.json",
+      "privateRun": "health-route-controls-01",
+      "sha256": "f9500fb82be9b266958e0f6c60dcd09f2ff9000f460a7adcc3b7b5ad8c25655c",
+      "blindCategory": "Fake SDK route reporting and dedicated RPC arguments, not provider operation.",
+      "actualSha256": "f9500fb82be9b266958e0f6c60dcd09f2ff9000f460a7adcc3b7b5ad8c25655c",
+      "matches": true
+    },
+    {
+      "report": "checker-controls.json",
+      "privateRun": "checker-controls-01",
+      "sha256": "4601258412bdd1cc88edba4e4a2005a64225102224c9da7a7e30f730109f5748",
+      "blindCategory": "Configured caller deadline and fake fetch, not elapsed hosted timing.",
+      "actualSha256": "4601258412bdd1cc88edba4e4a2005a64225102224c9da7a7e30f730109f5748",
+      "matches": true
+    },
+    {
+      "report": "schema-controls.json",
+      "privateRun": "schema-controls-01",
+      "sha256": "1baf9be1af46416eaf7d5e989e0c36bc950e80e3cfcd3f2242a966de5629e0fd",
+      "blindCategory": "Source schema census and accounted SQL field. Does not establish live grants.",
+      "actualSha256": "1baf9be1af46416eaf7d5e989e0c36bc950e80e3cfcd3f2242a966de5629e0fd",
+      "matches": true
+    },
+    {
+      "report": "native-sql-controls.json",
+      "privateRun": "native-06",
+      "sha256": "9e3a04acaed488e03f9531ad320d1b15505e436aa6f466220b74e199f1c3d4ef",
+      "blindCategory": "Selected retained415 logical fixture to417 then418. Actual SQL/RLS and synthetic query load, not whole-installation restore or business capacity.",
+      "actualSha256": "9e3a04acaed488e03f9531ad320d1b15505e436aa6f466220b74e199f1c3d4ef",
+      "matches": true
+    },
+    {
+      "report": "native-http-controls.json",
+      "privateRun": "native-http-05",
+      "sha256": "eefa20c32edc86dfbe2247201ad650de9e4e165c01abbce6c16fc6045951bbd1",
+      "blindCategory": "Owned actual PostgREST/SQL three-role operations and blocked late writes. No actual Auth signup, hosted, Storage or business queue.",
+      "actualSha256": "eefa20c32edc86dfbe2247201ad650de9e4e165c01abbce6c16fc6045951bbd1",
+      "matches": true
+    },
+    {
+      "report": "idle-cli-controls.json",
+      "privateRun": "idle-cli-01",
+      "sha256": "8b9a4124fbedc29ea58d54ddb5a6f91ad57a97656295545e699c4853f1355c29",
+      "blindCategory": "Actual preparation CLI idle-signal request census against synthetic HTTP. No live queue recovery.",
+      "actualSha256": "8b9a4124fbedc29ea58d54ddb5a6f91ad57a97656295545e699c4853f1355c29",
+      "matches": true
+    }
+  ],
+  "sourceBindings": [
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/checker-controls-bindings.json",
+      "source": "openplan/scripts/ops/check-deep-health.mjs",
+      "expectedSha256": "797339e703a722119c0822ab8b99ea5837aa8aab8b9aaffcc2b00d9943460d23",
+      "actualSha256": "797339e703a722119c0822ab8b99ea5837aa8aab8b9aaffcc2b00d9943460d23",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/checker-controls-bindings.json",
+      "source": "openplan/src/test/deep-health-check-script.test.ts",
+      "expectedSha256": "e56b3f36e150fc98551a761170e88e42a433200ec1fa598d16857032fb680198",
+      "actualSha256": "e56b3f36e150fc98551a761170e88e42a433200ec1fa598d16857032fb680198",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/health-route-controls-bindings.json",
+      "source": "openplan/src/app/api/health/deep/route.ts",
+      "expectedSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "actualSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/health-route-controls-bindings.json",
+      "source": "openplan/src/test/deep-health-route.test.ts",
+      "expectedSha256": "4f4b437a4cab1fdbc48ffa284ab5f74e52da211a4324a16df7e295b0a129c0a8",
+      "actualSha256": "4f4b437a4cab1fdbc48ffa284ab5f74e52da211a4324a16df7e295b0a129c0a8",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/health-transport-controls-bindings.json",
+      "source": "openplan/src/app/api/health/deep/route.ts",
+      "expectedSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "actualSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/health-transport-controls-bindings.json",
+      "source": "openplan/src/test/deep-health-transport.test.ts",
+      "expectedSha256": "9a56aafaaaf3be325f352cc4c172a5cfb87284bc26bd76e32ac67bc1f5707db9",
+      "actualSha256": "9a56aafaaaf3be325f352cc4c172a5cfb87284bc26bd76e32ac67bc1f5707db9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/reader-controls-bindings.json",
+      "source": "openplan/src/lib/ops/node-queue-observation-reader.ts",
+      "expectedSha256": "d4d89b6c5dac38366bff109e1c3718434067e6d745bd6dad42d32c16885a820a",
+      "actualSha256": "d4d89b6c5dac38366bff109e1c3718434067e6d745bd6dad42d32c16885a820a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/reader-controls-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-reader.test.ts",
+      "expectedSha256": "a810f9bad3e4728d0550dfca32510d623f31cc54329f7858274de2cd7beae9cf",
+      "actualSha256": "a810f9bad3e4728d0550dfca32510d623f31cc54329f7858274de2cd7beae9cf",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/lib/ops/node-queue-observation.ts",
+      "expectedSha256": "86cd1cae6b312098c25422e764b673432338aad9d0fc83aca0879b505cd6d070",
+      "actualSha256": "86cd1cae6b312098c25422e764b673432338aad9d0fc83aca0879b505cd6d070",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/node-queue-observation.test.ts",
+      "expectedSha256": "527ee6d74ddfdccd8693c5160772c8fa2fddf546447bb6b1b251882ac196e13a",
+      "actualSha256": "527ee6d74ddfdccd8693c5160772c8fa2fddf546447bb6b1b251882ac196e13a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-wiring.test.ts",
+      "expectedSha256": "626a0ea9c446169b73c3740537a92bef47528c3f0155cb0332304a91bd26d078",
+      "actualSha256": "626a0ea9c446169b73c3740537a92bef47528c3f0155cb0332304a91bd26d078",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-startup.test.ts",
+      "expectedSha256": "b817e785d6d1497d4997aa7426c85f9d94fa5de6b855ba81ff66b1fbe6647ff8",
+      "actualSha256": "b817e785d6d1497d4997aa7426c85f9d94fa5de6b855ba81ff66b1fbe6647ff8",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/document-exports.ts",
+      "expectedSha256": "9fd6ddf54548cc2a97de073cb33c6f7956242be48fbc4490c3c21492aed4081a",
+      "actualSha256": "9fd6ddf54548cc2a97de073cb33c6f7956242be48fbc4490c3c21492aed4081a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/engagement-email.ts",
+      "expectedSha256": "dc68b5e3f07d006a0ae648a8c1a91f6fae56b025238a6ecdd35af1b794da2a7e",
+      "actualSha256": "dc68b5e3f07d006a0ae648a8c1a91f6fae56b025238a6ecdd35af1b794da2a7e",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/provider-api.ts",
+      "expectedSha256": "bb90653b67b2f80d2720c1b88279dcc9eda3fa2b20e24b750d9d86ca46f7d01e",
+      "actualSha256": "bb90653b67b2f80d2720c1b88279dcc9eda3fa2b20e24b750d9d86ca46f7d01e",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/translation-generation.ts",
+      "expectedSha256": "cdcf5bedc1796005b27c4cf324181bb5073910a7d976dab25aebd677fe05b8b9",
+      "actualSha256": "cdcf5bedc1796005b27c4cf324181bb5073910a7d976dab25aebd677fe05b8b9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/synthesis-preparation.ts",
+      "expectedSha256": "7642afbbd4964e5a3b15a04dafe226f55f7403413bb13256f2e66bda3b8bd7a6",
+      "actualSha256": "7642afbbd4964e5a3b15a04dafe226f55f7403413bb13256f2e66bda3b8bd7a6",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/synthesis-execution.ts",
+      "expectedSha256": "66be62117283b007fec410e31239b5ad56f6945171d2e4c38f3cbf29224ba0f3",
+      "actualSha256": "66be62117283b007fec410e31239b5ad56f6945171d2e4c38f3cbf29224ba0f3",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/contract-calculations.ts",
+      "expectedSha256": "db2ec697434ea98025770e75c1880b118e9a6e823e5ba3c4404bfdffb6a88590",
+      "actualSha256": "db2ec697434ea98025770e75c1880b118e9a6e823e5ba3c4404bfdffb6a88590",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/workers/gtfs-ingestion.ts",
+      "expectedSha256": "12d58cbab31519c85fc9c190f60c51f3b39bcf8347a4c1fa17cb64c5a6ab0de1",
+      "actualSha256": "12d58cbab31519c85fc9c190f60c51f3b39bcf8347a4c1fa17cb64c5a6ab0de1",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/lib/ops/node-queue-observation-reader.ts",
+      "expectedSha256": "d4d89b6c5dac38366bff109e1c3718434067e6d745bd6dad42d32c16885a820a",
+      "actualSha256": "d4d89b6c5dac38366bff109e1c3718434067e6d745bd6dad42d32c16885a820a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-reader.test.ts",
+      "expectedSha256": "a810f9bad3e4728d0550dfca32510d623f31cc54329f7858274de2cd7beae9cf",
+      "actualSha256": "a810f9bad3e4728d0550dfca32510d623f31cc54329f7858274de2cd7beae9cf",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/app/api/health/deep/route.ts",
+      "expectedSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "actualSha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/deep-health-transport.test.ts",
+      "expectedSha256": "9a56aafaaaf3be325f352cc4c172a5cfb87284bc26bd76e32ac67bc1f5707db9",
+      "actualSha256": "9a56aafaaaf3be325f352cc4c172a5cfb87284bc26bd76e32ac67bc1f5707db9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/deep-health-route.test.ts",
+      "expectedSha256": "4f4b437a4cab1fdbc48ffa284ab5f74e52da211a4324a16df7e295b0a129c0a8",
+      "actualSha256": "4f4b437a4cab1fdbc48ffa284ab5f74e52da211a4324a16df7e295b0a129c0a8",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/scripts/ops/check-deep-health.mjs",
+      "expectedSha256": "797339e703a722119c0822ab8b99ea5837aa8aab8b9aaffcc2b00d9943460d23",
+      "actualSha256": "797339e703a722119c0822ab8b99ea5837aa8aab8b9aaffcc2b00d9943460d23",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/deep-health-check-script.test.ts",
+      "expectedSha256": "e56b3f36e150fc98551a761170e88e42a433200ec1fa598d16857032fb680198",
+      "actualSha256": "e56b3f36e150fc98551a761170e88e42a433200ec1fa598d16857032fb680198",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/supabase/migrations/20261017000015_node_queue_process_observations.sql",
+      "expectedSha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+      "actualSha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/migrations/inventory.test.ts",
+      "expectedSha256": "8bc642c62aebd0d6a96e0f7acd8e8dd9919f1cdfd36749931ab6e05894347ee9",
+      "actualSha256": "8bc642c62aebd0d6a96e0f7acd8e8dd9919f1cdfd36749931ab6e05894347ee9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "expectedSha256": "fbb7d3564ccfd6358fddfcdfcde5e37d3a5b5f5bb8ed12d3e4435374c1fe5ca0",
+      "actualSha256": "fbb7d3564ccfd6358fddfcdfcde5e37d3a5b5f5bb8ed12d3e4435374c1fe5ca0",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/restored-source-bindings.json",
+      "source": "openplan/src/test/engagement-synthesis-preparation-cli-process.test.ts",
+      "expectedSha256": "a9d2c4745c5676df2685efcf9e3a322f5d1acdf4e2ca675110f27cb3a07f6cdc",
+      "actualSha256": "a9d2c4745c5676df2685efcf9e3a322f5d1acdf4e2ca675110f27cb3a07f6cdc",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/schema-controls-bindings.json",
+      "source": "openplan/supabase/migrations/20261017000015_node_queue_process_observations.sql",
+      "expectedSha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+      "actualSha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/schema-controls-bindings.json",
+      "source": "openplan/src/test/migrations/inventory.test.ts",
+      "expectedSha256": "8bc642c62aebd0d6a96e0f7acd8e8dd9919f1cdfd36749931ab6e05894347ee9",
+      "actualSha256": "8bc642c62aebd0d6a96e0f7acd8e8dd9919f1cdfd36749931ab6e05894347ee9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/schema-controls-bindings.json",
+      "source": "openplan/src/test/a-column-nothing-reads-is-a-question.test.ts",
+      "expectedSha256": "fbb7d3564ccfd6358fddfcdfcde5e37d3a5b5f5bb8ed12d3e4435374c1fe5ca0",
+      "actualSha256": "fbb7d3564ccfd6358fddfcdfcde5e37d3a5b5f5bb8ed12d3e4435374c1fe5ca0",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/src/lib/ops/node-queue-observation.ts",
+      "expectedSha256": "86cd1cae6b312098c25422e764b673432338aad9d0fc83aca0879b505cd6d070",
+      "actualSha256": "86cd1cae6b312098c25422e764b673432338aad9d0fc83aca0879b505cd6d070",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/src/test/node-queue-observation.test.ts",
+      "expectedSha256": "527ee6d74ddfdccd8693c5160772c8fa2fddf546447bb6b1b251882ac196e13a",
+      "actualSha256": "527ee6d74ddfdccd8693c5160772c8fa2fddf546447bb6b1b251882ac196e13a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-wiring.test.ts",
+      "expectedSha256": "626a0ea9c446169b73c3740537a92bef47528c3f0155cb0332304a91bd26d078",
+      "actualSha256": "626a0ea9c446169b73c3740537a92bef47528c3f0155cb0332304a91bd26d078",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/src/test/node-queue-observation-startup.test.ts",
+      "expectedSha256": "b817e785d6d1497d4997aa7426c85f9d94fa5de6b855ba81ff66b1fbe6647ff8",
+      "actualSha256": "b817e785d6d1497d4997aa7426c85f9d94fa5de6b855ba81ff66b1fbe6647ff8",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/src/test/engagement-synthesis-preparation-cli-process.test.ts",
+      "expectedSha256": "a9d2c4745c5676df2685efcf9e3a322f5d1acdf4e2ca675110f27cb3a07f6cdc",
+      "actualSha256": "a9d2c4745c5676df2685efcf9e3a322f5d1acdf4e2ca675110f27cb3a07f6cdc",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/document-exports.ts",
+      "expectedSha256": "9fd6ddf54548cc2a97de073cb33c6f7956242be48fbc4490c3c21492aed4081a",
+      "actualSha256": "9fd6ddf54548cc2a97de073cb33c6f7956242be48fbc4490c3c21492aed4081a",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/engagement-email.ts",
+      "expectedSha256": "dc68b5e3f07d006a0ae648a8c1a91f6fae56b025238a6ecdd35af1b794da2a7e",
+      "actualSha256": "dc68b5e3f07d006a0ae648a8c1a91f6fae56b025238a6ecdd35af1b794da2a7e",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/provider-api.ts",
+      "expectedSha256": "bb90653b67b2f80d2720c1b88279dcc9eda3fa2b20e24b750d9d86ca46f7d01e",
+      "actualSha256": "bb90653b67b2f80d2720c1b88279dcc9eda3fa2b20e24b750d9d86ca46f7d01e",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/translation-generation.ts",
+      "expectedSha256": "cdcf5bedc1796005b27c4cf324181bb5073910a7d976dab25aebd677fe05b8b9",
+      "actualSha256": "cdcf5bedc1796005b27c4cf324181bb5073910a7d976dab25aebd677fe05b8b9",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/synthesis-preparation.ts",
+      "expectedSha256": "7642afbbd4964e5a3b15a04dafe226f55f7403413bb13256f2e66bda3b8bd7a6",
+      "actualSha256": "7642afbbd4964e5a3b15a04dafe226f55f7403413bb13256f2e66bda3b8bd7a6",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/synthesis-execution.ts",
+      "expectedSha256": "66be62117283b007fec410e31239b5ad56f6945171d2e4c38f3cbf29224ba0f3",
+      "actualSha256": "66be62117283b007fec410e31239b5ad56f6945171d2e4c38f3cbf29224ba0f3",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/contract-calculations.ts",
+      "expectedSha256": "db2ec697434ea98025770e75c1880b118e9a6e823e5ba3c4404bfdffb6a88590",
+      "actualSha256": "db2ec697434ea98025770e75c1880b118e9a6e823e5ba3c4404bfdffb6a88590",
+      "matches": true
+    },
+    {
+      "binding": "docs/reviews/2026-10-14-node-queue-observation/source-controls-bindings.json",
+      "source": "openplan/scripts/workers/gtfs-ingestion.ts",
+      "expectedSha256": "12d58cbab31519c85fc9c190f60c51f3b39bcf8347a4c1fa17cb64c5a6ab0de1",
+      "actualSha256": "12d58cbab31519c85fc9c190f60c51f3b39bcf8347a4c1fa17cb64c5a6ab0de1",
+      "matches": true
+    }
+  ],
+  "directionCheck": {
+    "command": "npm run product:direction:check",
+    "exitCode": 0,
+    "cwd": "openplan/",
+    "remindersRetained": true
+  },
+  "observedSourceControlLogCounts": {
+    "source": {
+      "survivors": 4,
+      "intendedFailures": 54
+    },
+    "reader": {
+      "survivors": 4,
+      "intendedFailures": 28
+    },
+    "healthTransport": {
+      "survivors": 4,
+      "intendedFailures": 12
+    },
+    "healthRoute": {
+      "survivors": 4,
+      "intendedFailures": 5
+    },
+    "checker": {
+      "survivors": 4,
+      "intendedFailures": 1
+    },
+    "schema": {
+      "survivors": 4,
+      "intendedFailures": 3
+    },
+    "idleCli": {
+      "stepConclusion": "success",
+      "countsNotPrintedInLog": true
+    }
+  },
+  "ciRlsAndRestoreSuite": {
+    "passedEach": 1559,
+    "skippedEach": 125,
+    "migration15AppearsInBothLogs": true,
+    "restoreMode": "--full-archive",
+    "artifactsNotReplayedByReviewer": true
+  },
+  "hostedState": {
+    "migration15": "recorded_unapplied",
+    "source": "parent restart-continuation-20261015.json and PR body",
+    "independentlyQueried": false
+  },
+  "sourceEdited": false,
+  "testsOrGuardsChanged": false,
+  "localSuitesRun": false,
+  "browserUsed": false,
+  "hostedMutation": false,
+  "githubMutation": false
+}
