@@ -1,0 +1,578 @@
+{
+  "preparedOnly": true,
+  "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "frozenPreexistingFiles": 18485,
+  "frozenChanged": 0,
+  "parentRecoveryAddedFiles": 17,
+  "consumerControls": [
+    {
+      "case": "baseline actual build consumer",
+      "outcome": "survived"
+    },
+    {
+      "case": "baseline actual start consumer",
+      "outcome": "survived"
+    },
+    {
+      "case": "duplicate start intent",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/fixtures-05/execution/start-intent.json'"
+    },
+    {
+      "case": "wrong local HEAD",
+      "outcome": "refused",
+      "reason": "app-head"
+    },
+    {
+      "case": "dirty checkout",
+      "outcome": "refused",
+      "reason": "app-dirty"
+    },
+    {
+      "case": "HTTP REST 503",
+      "outcome": "refused",
+      "reason": "health:rest"
+    },
+    {
+      "case": "CORS old origin",
+      "outcome": "refused",
+      "reason": "health:ownOrigin"
+    },
+    {
+      "case": "wrong helper observed ID",
+      "outcome": "refused",
+      "reason": "service:id"
+    },
+    {
+      "case": "source preservation failure",
+      "outcome": "refused",
+      "reason": "fixture-source-preservation"
+    },
+    {
+      "case": "prior input preservation failure",
+      "outcome": "refused",
+      "reason": "fixture-unchanged-inputs"
+    },
+    {
+      "case": "build nonzero",
+      "outcome": "refused",
+      "reason": "build-exit"
+    },
+    {
+      "case": "lost build acknowledgement",
+      "outcome": "refused",
+      "reason": "fixture-lost-build-ack"
+    },
+    {
+      "case": "lost build retry",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/fixtures-05/execution/build-intent.json'"
+    },
+    {
+      "case": "wrong memory",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "swap enabled",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "current swap",
+      "outcome": "refused",
+      "reason": "cgroup-memory"
+    },
+    {
+      "case": "unbounded CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-format"
+    },
+    {
+      "case": "zero CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "zero CPU period",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "excess CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-bound"
+    },
+    {
+      "case": "bad CPU",
+      "outcome": "refused",
+      "reason": "cgroup-cpu-format"
+    },
+    {
+      "case": "missing OOM",
+      "outcome": "refused",
+      "reason": "cgroup-events"
+    },
+    {
+      "case": "OOM observed",
+      "outcome": "refused",
+      "reason": "cgroup-events"
+    },
+    {
+      "case": "duplicate OOM",
+      "outcome": "refused",
+      "reason": "cgroup-events-format"
+    },
+    {
+      "case": "peak exceeds cap",
+      "outcome": "refused",
+      "reason": "cgroup-peak"
+    },
+    {
+      "case": "bounded CPU200 survives",
+      "outcome": "survived"
+    },
+    {
+      "case": "wrong env bytes",
+      "outcome": "refused",
+      "reason": "app-env-file"
+    },
+    {
+      "case": "migration byte change",
+      "outcome": "refused",
+      "reason": "migration-bytes"
+    },
+    {
+      "case": "dependency metadata change",
+      "outcome": "refused",
+      "reason": "deps-input-hash"
+    },
+    {
+      "case": "wrong private binding head",
+      "outcome": "refused",
+      "reason": "binding-identity"
+    },
+    {
+      "case": "wrong private env delta",
+      "outcome": "refused",
+      "reason": "binding-sha:app-env-private.json"
+    },
+    {
+      "case": "wrong target OID",
+      "outcome": "refused",
+      "reason": "target-identity:oid"
+    },
+    {
+      "case": "wrong replacement receipt ID",
+      "outcome": "refused",
+      "reason": "files:rest"
+    },
+    {
+      "case": "missing replacement start",
+      "outcome": "refused",
+      "reason": "replacement-started:running"
+    },
+    {
+      "case": "wrong pinned active hash",
+      "outcome": "refused",
+      "reason": "active-pin-hashes"
+    },
+    {
+      "case": "unowned environment",
+      "outcome": "refused",
+      "reason": "unowned-env"
+    },
+    {
+      "case": "old build receipt active hash",
+      "outcome": "refused",
+      "reason": "build-receipt-binding"
+    },
+    {
+      "case": "occupied web refuses only at start",
+      "outcome": "refused",
+      "reason": "fixture-web-occupied"
+    },
+    {
+      "case": "changed build inventory",
+      "outcome": "refused",
+      "reason": "build-inventory"
+    },
+    {
+      "case": "exclusive intent retry",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/fixtures-05/execution/exclusive-fixture.json'"
+    },
+    {
+      "case": "existing checkout refuses creation",
+      "outcome": "refused",
+      "reason": "checkout-exists"
+    },
+    {
+      "case": "lost checkout acknowledgement",
+      "outcome": "refused",
+      "reason": "fixture-lost-clone-ack"
+    },
+    {
+      "case": "lost checkout duplicate refuses",
+      "outcome": "refused",
+      "reason": "[Errno 17] File exists: '/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/fixtures-05/execution/checkout-intent.json'"
+    },
+    {
+      "case": "changed helper SHA",
+      "outcome": "refused",
+      "reason": "helper-sha:rest_uri_recovery_01_policy.py"
+    },
+    {
+      "case": "wrong helper module root",
+      "outcome": "refused",
+      "reason": "helper-module-root"
+    },
+    {
+      "case": "wrong launcher root",
+      "outcome": "refused",
+      "reason": "launcher-root"
+    },
+    {
+      "case": "actual bubblewrap argv and clean environment",
+      "outcome": "survived"
+    }
+  ],
+  "consumerMutations": [
+    {
+      "mutation": "harmless comment",
+      "outcome": "survived"
+    },
+    {
+      "mutation": "remove app HEAD guard",
+      "outcome": "detected",
+      "reason": "wrong local HEAD:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "remove dirty guard",
+      "outcome": "detected",
+      "reason": "dirty checkout:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove acquisition HTTP",
+      "outcome": "detected",
+      "reason": "actual HTTP HEAD acquisition"
+    },
+    {
+      "mutation": "remove source acquisition",
+      "outcome": "detected",
+      "reason": "actual source acquisition"
+    },
+    {
+      "mutation": "remove unchanged inputs",
+      "outcome": "detected",
+      "reason": "actual unchanged inputs acquisition"
+    },
+    {
+      "mutation": "remove memory budget",
+      "outcome": "detected",
+      "reason": "wrong memory:unexpected:ValueError:invalid literal for int() with base 10: 'max'"
+    },
+    {
+      "mutation": "remove OOM guard",
+      "outcome": "detected",
+      "reason": "missing OOM:accepted-broken-behavior"
+    },
+    {
+      "mutation": "wrong start active receipt",
+      "outcome": "detected",
+      "reason": "old build receipt active hash:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove env bytes guard",
+      "outcome": "detected",
+      "reason": "wrong env bytes:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "remove migration comparison",
+      "outcome": "detected",
+      "reason": "migration byte change:unexpected:ValueError:checkout-receipt"
+    },
+    {
+      "mutation": "overwrite exclusive intents",
+      "outcome": "detected",
+      "reason": "duplicate start intent:accepted-broken-behavior"
+    },
+    {
+      "mutation": "remove active pin hashes",
+      "outcome": "detected",
+      "reason": "wrong pinned active hash:accepted-broken-behavior"
+    },
+    {
+      "mutation": "bare npm bypasses confinement",
+      "outcome": "detected",
+      "reason": "baseline actual build consumer:unexpected:AssertionError:"
+    }
+  ],
+  "attestation": {
+    "cases": [
+      {
+        "case": "identified readback baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "unready HTTP",
+        "outcome": "refused",
+        "reason": "attest-http-status"
+      },
+      {
+        "case": "wrong HTTP commit",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "wrong listener address",
+        "outcome": "refused",
+        "reason": "attest-listener"
+      },
+      {
+        "case": "no listener owner",
+        "outcome": "refused",
+        "reason": "attest-listener-pid"
+      },
+      {
+        "case": "wrong process cwd",
+        "outcome": "refused",
+        "reason": "attest-process-cwd"
+      },
+      {
+        "case": "wrong process cgroup",
+        "outcome": "refused",
+        "reason": "attest-process-cgroup"
+      },
+      {
+        "case": "wrong process commit",
+        "outcome": "refused",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "ambient provider credential",
+        "outcome": "refused",
+        "reason": "attest-ambient-environment"
+      },
+      {
+        "case": "inactive unit",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "zero main PID",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "wrong unit group",
+        "outcome": "refused",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "runtime OOM",
+        "outcome": "refused",
+        "reason": "cgroup-events"
+      },
+      {
+        "case": "changed built server bytes",
+        "outcome": "refused",
+        "reason": "attest-built-bytes"
+      },
+      {
+        "case": "runtime cache change survives",
+        "outcome": "survived"
+      },
+      {
+        "case": "old start receipt active hash",
+        "outcome": "refused",
+        "reason": "attest-inputs"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "harmless comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "remove HTTP identity",
+        "outcome": "detected",
+        "reason": "wrong HTTP commit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove process cwd",
+        "outcome": "detected",
+        "reason": "wrong process cwd:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove process env",
+        "outcome": "detected",
+        "reason": "wrong process commit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove unit identity",
+        "outcome": "detected",
+        "reason": "inactive unit:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove immutable built bytes",
+        "outcome": "detected",
+        "reason": "changed built server bytes:accepted-broken-behavior"
+      }
+    ],
+    "restored": true
+  },
+  "boundary": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "observed": {
+        "readonlyReads": 3,
+        "readonlyRefusals": 3,
+        "ownedWrites": 3,
+        "cache": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/boundary-specimens-02/execution/npm-cache",
+        "dockerSocketHidden": true
+      }
+    },
+    {
+      "case": "harmless comment",
+      "outcome": "survived",
+      "observed": {
+        "readonlyReads": 3,
+        "readonlyRefusals": 3,
+        "ownedWrites": 3,
+        "cache": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/boundary-specimens-02/execution/npm-cache",
+        "dockerSocketHidden": true
+      }
+    },
+    {
+      "case": "writable dependencies",
+      "outcome": "detected",
+      "reason": "read-only-write-allowed:original"
+    },
+    {
+      "case": "writable environment",
+      "outcome": "detected",
+      "reason": "read-only-write-allowed:.env.local"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived",
+      "observed": {
+        "readonlyReads": 3,
+        "readonlyRefusals": 3,
+        "ownedWrites": 3,
+        "cache": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015/boundary-specimens-02/execution/npm-cache",
+        "dockerSocketHidden": true
+      }
+    }
+  ],
+  "smallGuards": {
+    "cases": [
+      {
+        "case": "headroom baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "insufficient RAM",
+        "outcome": "refused",
+        "reason": "build-headroom"
+      },
+      {
+        "case": "insufficient disk",
+        "outcome": "refused",
+        "reason": "build-headroom"
+      },
+      {
+        "case": "private file baseline",
+        "outcome": "survived"
+      },
+      {
+        "case": "public file refuses",
+        "outcome": "refused",
+        "reason": "private-file:private-file"
+      },
+      {
+        "case": "symlink refuses",
+        "outcome": "refused",
+        "reason": "private-file:link"
+      },
+      {
+        "case": "invalid CLI refuses",
+        "outcome": "refused",
+        "reason": "operation"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "harmless comment",
+        "outcome": "survived"
+      },
+      {
+        "mutation": "remove headroom guard",
+        "outcome": "detected",
+        "reason": "insufficient RAM:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove file privacy guard",
+        "outcome": "detected",
+        "reason": "public file refuses:accepted-broken-behavior"
+      },
+      {
+        "mutation": "inherit outer provider",
+        "outcome": "detected",
+        "reason": "outer ambient environment retained"
+      }
+    ],
+    "restored": true,
+    "actualPythonCgroup": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "16715776",
+      "memory.swap.current": "0"
+    }
+  },
+  "privacy": {
+    "knownSecrets": 9,
+    "harmlessSurvives": true,
+    "allKnownValueInjectionsDetected": true,
+    "blindCategory": "Unknown secrets, short shared identifiers, external files and uncommitted future artifacts."
+  },
+  "scriptHashes": {
+    "audit_packet.py": "6dc7635ec4bec7b275cabb8c46a068edf57caaf5935d079c4e826a562fb728ff",
+    "finalize.py": "552c5b1f5c73b1bb859ca80bba61f81680c1283a2e0dd87b14216cd80503821c",
+    "prepare.py": "9b4840e7d3f322cac58de9dd429ed2d339588b473580a8ae193c627e2facb331",
+    "templates/app_binding_v1.py": "407e85754e9f075318dff36d0f4d6e79462fd13ee7a12874a547391a90f206cc",
+    "templates/attest_start_v1.py": "f65afb51641f76962d0d80ce1d42b666f75a6d95b4ecceafd5ffe130ae52fcf7",
+    "verify_attestation.py": "be257495bc204d6f107228dc4c7926af008293e38237e666c4eeab4abc89e98f",
+    "verify_boundary.py": "5a0fbf975c5a372d58f136a757d88df99c010a4ca1f7bf26f286b39b9e7dcd18",
+    "verify_controls.py": "9262919d45a6930bce43a567662216e929c503ace4c5fff1df9f47c9b45ef98c",
+    "verify_small_guards.py": "127d250c64a69dcd126f0b0fd6002c1110e92060385f487df74107d959534435"
+  },
+  "privateArtifactHashes": {
+    "controls-baseline-05.json": "c3da416f39fd37b861ac0a65222231ea985c54efd40c558b762d71da48c5a73d",
+    "controls-restored-05.json": "c3da416f39fd37b861ac0a65222231ea985c54efd40c558b762d71da48c5a73d",
+    "mutations-05.json": "fd965c965dcb421429fafa8a27ea32a97828c199437eef88b0aaca1ee2b3b624",
+    "attestation-controls-01.json": "f57fa0f06f946184a1732f3ea5165b68f439baa48de5617314dcf15995f79d20",
+    "boundary-controls-02.json": "0ff433a2b41b3fb600a99b368d483fe94d674f28355362ff118b9acb9a6ea1b1",
+    "small-guard-controls-01.json": "813429e56daaf72f19582143bf59626d2d041cc86ecfce0b725996448fcf3cca",
+    "verify_controls-tested-04.py": "e38d4cf0e1c39888e5c96526a4b763961afdef8f8d469375505467e74f873992",
+    "preparation-private.json": "e0caf9c28edb7c3d91cb64b5ae1a230ec617edbee732e48e844dcf2514fb51a6",
+    "final-binding-preparation-01.json": "3f8d8580f4510886884245ccfafd5b048a98cbe50c073da2b84cb2b670ccbb03",
+    "frozen-final-audit-private.json": "7fbf557eaa74d78a000249b7a31dea3ce80071a01e804a2832cf9c1632dc67f2"
+  },
+  "headroomObservation": {
+    "freeDisk": 30384185344,
+    "availableRAM": 18411626496
+  },
+  "limits": [
+    "No actual application checkout/build/start",
+    "No new live HTTP/Docker/SQL acquisition by child",
+    "No browser/desktop/390px/console/native/human acceptance",
+    "Independent review required before execution",
+    "Old 06a full QA does not cover current app",
+    "Fixture provenance is not hostile same-user tamper resistance"
+  ]
+}
