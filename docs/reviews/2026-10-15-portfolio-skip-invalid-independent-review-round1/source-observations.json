@@ -1,0 +1,93 @@
+{
+  "candidate": "aa93a3916e4a1464c774dd30a43ae2f7a4824311",
+  "sourceHashes": {
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql": {
+      "expected": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+      "observed": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b"
+    },
+    "openplan/src/test/portfolio-skip-invalid-transaction-migration.test.ts": {
+      "expected": "51d80855e6a2802f7d02afee2062144b12b388b42f50d5536983c78b7089c22f",
+      "observed": "51d80855e6a2802f7d02afee2062144b12b388b42f50d5536983c78b7089c22f"
+    },
+    "openplan/src/test/project-portfolio-import-route.test.ts": {
+      "expected": "ba66b9f6a694a83fe68d503567a835317a9294515c98e6373d71ece6d564c601",
+      "observed": "ba66b9f6a694a83fe68d503567a835317a9294515c98e6373d71ece6d564c601"
+    },
+    "openplan/src/test/fixtures/portfolio-import/skipped-invalid-status.csv.b64": {
+      "expected": "4bce2ce64dd2417f6a8dfdecaab9f96cf2a24d5c9d138e8dbc67fb205178e989",
+      "observed": "4bce2ce64dd2417f6a8dfdecaab9f96cf2a24d5c9d138e8dbc67fb205178e989"
+    },
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/prepare_native_probe.py": {
+      "expected": "33200c20c186f9e090b2e4e4f5ae2db7dc8cac297fc7c2d909b4e22aa5b0b680",
+      "observed": "33200c20c186f9e090b2e4e4f5ae2db7dc8cac297fc7c2d909b4e22aa5b0b680"
+    },
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/verify_controls.py": {
+      "expected": "3a93b6ee7d4dabb8f795067f5724f37c3b250adb516ab6b0ac517d212a90f713",
+      "observed": "3a93b6ee7d4dabb8f795067f5724f37c3b250adb516ab6b0ac517d212a90f713"
+    },
+    "docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/frozen-rpc-input.json": {
+      "expected": "488d6f5dab1ceb58cc60b34e29e37cd5d54a168e9187e247664dc91264f6706e",
+      "observed": "488d6f5dab1ceb58cc60b34e29e37cd5d54a168e9187e247664dc91264f6706e"
+    }
+  },
+  "frozenFailureHashes": {
+    "import-confirm-error-console.txt": {
+      "expected": "11e14670bac8f13f63aa1d5f86f531d08f78a4cc53a4aebef80893f408a2cffc",
+      "observed": "11e14670bac8f13f63aa1d5f86f531d08f78a4cc53a4aebef80893f408a2cffc"
+    },
+    "import-confirm-request.json": {
+      "expected": "a1dfa3548b02dcbeb134d4e9053238c06778624537d40f82e9db53b664199de7",
+      "observed": "a1dfa3548b02dcbeb134d4e9053238c06778624537d40f82e9db53b664199de7"
+    },
+    "import-confirm-response.json": {
+      "expected": "ce1026ea090fc8416cfd06571223a03866e8c33e77ecf7a6b6cfdbce3a91d780",
+      "observed": "ce1026ea090fc8416cfd06571223a03866e8c33e77ecf7a6b6cfdbce3a91d780"
+    },
+    "import-confirmed-390.yml": {
+      "expected": "b391e6dd48b7f6885ab5849dbfb59bd650b159c4fbdf200c029c1fcf8ca641e0",
+      "observed": "b391e6dd48b7f6885ab5849dbfb59bd650b159c4fbdf200c029c1fcf8ca641e0"
+    },
+    "import-review-390-layout.json": {
+      "expected": "510a98fae8adc7e32958a24dec25a0b91e3d7f31e6aab75b374b919faaf2e153",
+      "observed": "510a98fae8adc7e32958a24dec25a0b91e3d7f31e6aab75b374b919faaf2e153"
+    },
+    "import-review-390.png": {
+      "expected": "ffa4f44b6087695bcaef54deff3647a32aeb20c4028e311ba218a577fa1fa461",
+      "observed": "ffa4f44b6087695bcaef54deff3647a32aeb20c4028e311ba218a577fa1fa461"
+    },
+    "import-review-response.json": {
+      "expected": "f190b046b028a7f16e47201afe0ea6bd3b18e952996eedb27378cd88296ccbd1",
+      "observed": "f190b046b028a7f16e47201afe0ea6bd3b18e952996eedb27378cd88296ccbd1"
+    },
+    "synthetic-project-import.csv": {
+      "expected": "b6c01c67c37506a56301c37301f0eb84d9d21dcacb415a4988c21f0e00e7e0a7",
+      "observed": "b6c01c67c37506a56301c37301f0eb84d9d21dcacb415a4988c21f0e00e7e0a7"
+    }
+  },
+  "migrationCount": 420,
+  "latestMigration": "20261017000017_portfolio_skip_invalid_classifications.sql",
+  "duplicateVersions": [],
+  "functionDiffMatchesCandidatePacket": true,
+  "generatedSqlLines": 2209,
+  "expectedErrorCalls": 32,
+  "nativeExecuted": false,
+  "standInSqlSha256": "868d9725aaa38b945eb5d16292cff5cba00c73d890b1ad3fcf4654e019cf2e21",
+  "literalPgTempGrantCount": 1,
+  "dollarTagCounts": {
+    "$error$": 2,
+    "$fixture$": 2,
+    "$counts$": 2,
+    "$workbook$": 2,
+    "$restored$": 2,
+    "$preflight$": 2,
+    "$success$": 2,
+    "$skip$": 2,
+    "$outsider$": 2,
+    "$status_control$": 2,
+    "$member$": 2,
+    "$anon$": 2,
+    "$call$": 2,
+    "$$": 8
+  },
+  "appTestsRerun": false
+}
