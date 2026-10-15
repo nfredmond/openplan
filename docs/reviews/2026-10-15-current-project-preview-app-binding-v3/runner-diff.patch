@@ -1,0 +1,14 @@
+--- 807c89/run_stage_v2.sh
++++ v3/run_stage_v3.sh
+@@ -5 +5 @@
+-ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2
++ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3
+@@ -10 +10 @@
+-    exec /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-678-v1-build \
++    exec /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-21510042e-v3-build \
+@@ -15 +15 @@
+-    exec /usr/bin/systemd-run --user --unit=openplan-current-project-preview-app-678-v1-web \
++    exec /usr/bin/systemd-run --user --unit=openplan-current-project-preview-app-21510042e-v3-web \
+@@ -26 +26 @@
+-    exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-current-project-preview-app-678-v1-$stage" \
++    exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-current-project-preview-app-21510042e-v3-$stage" \
