@@ -1,0 +1,174 @@
+492	closed-unmerged		[codex] add steer and queue composer controls
+512	closed-unmerged		T3code/queue or send while generating
+553	closed-unmerged		Fix implement-plan follow-ups and markdown heading rendering
+680	closed-unmerged		fix(web): queue websocket requests until connect
+1424	closed-unmerged	XXL	[codex] recover queued follow-up dispatch from stale pending turns
+1479	closed-unmerged	XXL	feat(web): add configurable queue/steer follow-up behavior
+2016	closed-unmerged	XS	Enables image attachments in plan follow-ups
+2417	closed-unmerged	M	Enables image attachments in plan follow-up messages
+2724	closed-unmerged	XXL	Add queued thread turn orchestration
+3326	merged	M	[codex] Structure APNs delivery queue errors
+3578	merged	XXL	[orchestrator-v2] fix(orchestrator): Harden Grok v2 settlement, background task lifecycle, steer visibility, and images
+3617	merged	L	fix(opencode): resume the OpenCode session on follow-ups instead of starting an empty one
+3642	closed-unmerged	L	fix(orchestration): show follow-up assistant replies after Cursor session resume
+3865	closed-unmerged	L	fix(orchestrator): keep stop and steer responsive
+3903	closed-unmerged	L	Fix repeated steering and reliable stop
+4245	closed-unmerged	XXL	feat(orchestrator): queue follow-up messages during active turns, with explicit steer
+4453	merged	XXL	feat(web): prompt stash — cmd+S saves the composer to a per-provider queue
+4498	merged	M	follow-up normalization after #4700.
+4547	closed-unmerged	XL	fix(orchestrator): Keep agent output attached after a mid-turn steer
+4730	merged	L	Fix Android showcase capture and rebuild v2 queued rows
+4800	closed-unmerged	M	fix(orchestrator): Keep active web timeline visible while work is queued
+5033	closed-unmerged	XS	fix(orchestrator): preserve queued_turn intent when promoting queued runs
+5459	closed-unmerged	XXL	fix(orchestrator): Keep Home, steers, and errors honest when work ends
+5564	closed-unmerged	XL	fix: connection-resilience RFC follow-ups (#5561 + review fixes)
+5762	merged	M	fix(server): stop Codex threads with queued follow-ups
+5795	closed-unmerged	XL	feat(server): steer Codex mid-turn instead of starting a phantom turn
+6269	merged	L	fix(desktop): refresh queued updates before install
+6530	closed-unmerged	M	fix(provider): deliver OpenCode steers at the next tool boundary
+6543	merged	M	fix(mobile): steer active turns by default
+7582	closed-unmerged	M	fix(web): show queued state on messages sent while a turn is running
+7897	merged	L	fix(chat): stop pushing follow-up messages to the top
+8068	merged	M	fix(web): stop follow-ups from leaving giant blank space
+8547	closed-unmerged	S	fix(chat): avoid stalled pending follow-ups
+8699	closed-unmerged	XXL	feat(mcp): manage queued thread work
+8850	merged	M	fix(web): address composer banner review follow-ups
+9620	closed-unmerged	L	fix(server): queue messages sent during context compaction
+9928	merged	M	fix(web): preserve file attachments when editing queued runs
+9944	closed-unmerged	L	feat(web): add an agent attention queue shortcut
+10096	closed-unmerged	M	fix(server): send messages queued during context compaction
+10132	closed-unmerged	XXL	feat: start queued prompts when provider capacity returns
+10245	merged	S	fix(mobile): keep pending tasks queued when a send fails in flight
+10404	merged	M	feat(mobile): queue a message while its attachment is still uploading
+10555	merged	L	feat(mcp): expose existing queued message commands
+10611	closed-unmerged	XXL	fix(server): restore queued turn identity after restart
+10734	closed-unmerged	M	fix(swift-ios): start queued uploads before draft persistence completes
+10746	closed-unmerged	M	fix(swift-ios): preserve unsupported saved message queues
+10756	closed-unmerged	L	fix(swift-ios): preserve queued messages during incomplete hydration
+10760	closed-unmerged	L	fix(swift-ios): show queued messages until server acceptance
+10849	merged	M	fix(relay): recheck queued iOS alerts and retain fast completions
+10859	merged	XS	fix(relay): use current APNs registration routing for queued jobs
+10880	merged	S	test(web): cancel queued animation frames during worker cleanup
+10989	closed-unmerged	XS	chore: add stack test follow-up marker
+11107	merged	L	fix(server): queue messages during context compaction
+11190	closed-unmerged	L	fix(chat): split work folds at steering messages
+11336	closed-unmerged	S	fix(web): show Send beside Stop for desktop follow-ups
+11355	closed-unmerged	L	fix(chat): render Codex follow-up suggestions
+11628	closed-unmerged	M	feat(antigravity): queue follow-up turns sequentially instead of cancelling active prompt
+11673	merged	XL	feat(web): queue messages sent client-side while the agent is working
+11828	merged	S	fix(web): keep the active-run header with the prompt that started it on steer
+11959	closed-unmerged	M	feat(web): edit and remove queued messages
+11964	merged	L	feat(web): choose queue or steer for follow-up messages
+11978	closed-unmerged	XL	feat(web): move queued messages above the composer
+12034	closed-unmerged	XXL	feat(voice): GPT Live voice agent with fast commands, existing-thread follow-ups, and integrated voice UX
+12054	closed-unmerged	XXL	fix: keep queued messages working after closing the app
+12075	merged	L	feat(web): add send shortcut and follow-up controls
+12119	closed-unmerged	L	fix(web): wait for the turn to finish before sending queued messages
+12167	merged	S	fix(web): align follow-up and license settings controls
+12226	merged	XL	fix(orchestrator): defer queued provider handoff until delivery
+12232	merged	L	fix(mobile): preview queued message order during drag
+12318	closed-unmerged	L	fix(web): render queued message attachments
+12345	merged	M	fix(server): keep tool payloads out of completion queues
+12403	merged	XS	fix(web): render citations in queued messages
+12423	closed-unmerged	S	fix(web): queued messages render quotes as chips instead of raw links
+12466	closed-unmerged	L	feat(server): wake Codex threads so externally queued messages run
+12497	closed-unmerged	XL	feat(server): wake Codex sessions for queued work
+12541	closed-unmerged	L	fix(claude): steer interrupts the running turn instead of queueing behind it
+12599	merged	M	feat(web): edit the last queued message with Option+Up
+12710	closed-unmerged	XL	fix: allow repeated steering and reliable stop
+12820	merged	XS	fix(web): hide raw image markup in queue previews
+12824	open	L	fix(v2): queue messages sent while context compaction runs
+12892	closed-unmerged	L	feat(web): navigate queued messages without losing unsaved edits
+12916	closed-unmerged	L	fix(pr): show GitHub merge queue status
+13122	closed-unmerged	L	fix(web): send queued messages in background threads
+13201	merged	XS	test(server): stop ACP soft-steer tests racing the prompt settle
+13308	closed-unmerged	M	fix(server): stop retaining queued Codex diff snapshots
+13369	closed-unmerged	XL	fix(web): dispatch queued follow-ups after leaving the thread
+13382	closed-unmerged	XL	fix(web): dispatch queued follow-ups after leaving the thread
+13393	closed-unmerged	XL	fix(web): dispatch queued follow-ups after leaving the thread
+13423	closed-unmerged	S	fix(cursor): Stop no longer runs a queued steer
+13453	closed-unmerged	M	fix(web): up arrow edits the newest queued message
+13535	merged	XXL	fix(server): keep a Claude wake reply off the user's queued message
+13764	merged	XL	fix(web): queued messages send while their thread is not open
+13877	merged	XL	fix(server): preserve queued messages after usage limits
+14023	closed-unmerged	M	fix(mobile): explain queued task sync state
+14030	closed-unmerged	L	fix(server): reopen delegated tasks for child follow-ups
+14065	closed-unmerged	S	feat(web): steer follow-ups by default
+14129	closed-unmerged	XS	fix(shared): don't count dropped post-shutdown enqueues toward drain
+14168	closed-unmerged	S	fix(web): Cmd+Enter on an edited queued message steers immediately
+14468	merged	XXL	feat(server): OpenCode 2 native steering, fork and rollback
+14546	merged	M	fix(clients): stop stranded thinking after a steer
+14547	merged	L	fix(server): a Claude-initiated turn no longer ends a queued /compact early
+14565	closed-unmerged	M	fix(server): preserve Claude sessions for equivalent follow-ups
+14586	closed-unmerged	L	fix: Cursor steering no longer waits for the turn to finish
+14615	merged	M	fix(server): Claude steers no longer fail when only next-turn options differ
+14616	merged	L	fix(clients): a paused queue no longer shows the thread as working
+14617	open	M	feat(web): resume a paused queue from the queue itself
+14646	closed-unmerged	L	fix(web): queue messages while environments reconnect
+14725	merged	S	fix(server): steers keep the newest next-turn selection
+14732	open	L	fix(server): a delegated result whose steer never landed wakes the parent after it settles
+14859	open	L	fix(server): coalesce queued shell updates for slow clients
+14934	merged	XS	fix(mobile): round Android queued message sheet corners
+15004	closed-unmerged	XXL	fix(orchestration): deliver results from subagent follow-ups
+15192	open	L	fix(mobile): the send button's queue/steer menu opens after a short hold
+15201	open	M	fix(orchestration): reconcile stale delegated task and held queue state
+15252	closed-unmerged	L	fix(chat): Codex follow-up suggestions render as chips instead of raw markup
+15293	merged	XS	fix(web): keep queued threads subscribed
+15323	merged	XL	fix(server): restarts keep delegated tasks, queued threads, and stops intact
+15334	merged	M	fix(web): subagents sent a follow-up show as running in Lineage
+15376	open	M	fix(server): imported Claude Code sessions resume on their first follow-up
+15417	merged	S	fix(mobile): make queued message removal tappable
+15421	closed-unmerged	L	fix(clients): a steer splits the settled work fold
+15612	closed-unmerged	L	fix(queue): hold queued messages while editing
+15653	closed-unmerged	M	fix(server): Claude completion notices preserve queued tools
+15687	open	S	fix(server): Claude follow-ups no longer fail in Auto on models without Auto
+15691	open	XS	fix(server): auto-delivered messages queue between provider turns
+15799	closed-unmerged	M	fix(claude): Steer reaches the agent while a command is running
+15800	closed-unmerged	L	feat(pr): show Queued for pull requests in GitHub's merge queue
+15851	merged	L	fix(prs): queue fast actions and close batches by dragging
+15868	open	M	fix(server): Claude steer interrupts a running command instead of waiting for it
+15880	closed-unmerged	L	fix(server): Stop returns an unread Claude steer to the queue
+15892	merged	M	fix(server): queue background notifications during active tools
+15911	closed-unmerged	S	fix(web): preserve the active queued-message edit
+16011	open	XS	fix(client): default follow-up to queue so queued prompts wait
+16400	merged	M	fix(web): queued messages no longer split the composer notice stack
+16783	open	XS	fix(server): queue automatic messages between provider turns
+16926	open	XS	fix(server): a message promoted into a stopping run stays queued
+16941	open	M	fix(server): queued preview actions no longer start after their deadline, except recording stop
+17028	merged	M	fix(server): held queued wakes no longer keep delegated tasks running
+17388	closed-unmerged	M	fix(client): show queued runs that drain after newer turns
+17589	open	XXL	fix(server): restarts keep queued steering and continue every thread
+17654	merged	L	fix: worktree threads keep their worktree when the agent starts, and messages sent during setup queue
+17696	merged	L	fix(server): track resumed subagent follow-ups as separate tasks
+17761	merged	M	fix(web): a finished reply replaced by a steer is no longer labeled partial
+17763	open	L	fix(orchestration): fork from a response a steer cut off
+17764	merged	M	fix(client-runtime): queued runs that start after a steer show up in the thread
+17773	open	S	fix(server): queued messages land after a resume that ran before them
+17885	open	M	fix(server): Claude background-task wakes start when the queue is held
+17941	closed-unmerged	M	test(server): promoting a queued message into a running Claude turn succeeds
+18094	open	L	fix(server): queued runs land on the timeline where they started
+18226	closed-unmerged	XS	fix(client): steer follow-up messages by default
+18299	closed-unmerged	L	fix(server): bill Claude turn usage across steered segments
+18429	open	L	fix(server): slow terminal clients no longer queue unbounded output
+18491	closed-unmerged	S	feat(web): Enter in an empty composer steers the next queued message
+18631	open	XL	fix(queue): hold queued messages while editing
+18639	merged	M	fix(pi): queue turn-start prompts when native work is running
+18641	open	M	fix(claude): Steer reaches Claude at once while a command runs, without killing it
+18707	closed-unmerged	L	feat(orchestration): optional steering for messages between agents
+18792	open	S	fix(server): a held queue no longer strands later queued messages
+18809	closed-unmerged	M	fix: sending after Stop no longer strands held queued messages
+18822	closed-unmerged	M	fix(server): a message sent after Stop no longer strands the queued one
+18834	open	XS	fix(mobile): keep queued-edit context in its draft
+18846	open	XS	fix(mobile): lock the composer while a queued edit saves
+18999	open	XS	fix(web): queued follow-ups show the quoted text instead of the citation link
+19007	open	XS	fix(mobile): show assistant quotes as text in the queue sheet
+19019	open	S	fix(server): a steered send no longer leaves a subagent task running
+19020	closed-unmerged	L	feat: squash queued messages into one
+19021	closed-unmerged	XL	feat: unsquash a squashed queued message
+19099	merged	L	fix(server): snoozed threads allow queued automatic wakes
+19210	open	L	fix(server): steering no longer ends running subagents
+19225	closed-unmerged	L	fix(server): failed Codex turns no longer reject follow-up messages
+19314	merged	M	fix(server): steered Claude turns no longer undercount token usage
+19352	open	M	fix(server): a follow-up promoted to Steer no longer reads as stopped
+19388	open	M	fix(opencode): retain queued native child continuation output
+19401	merged	M	fix(chat): Codex follow-up suggestions show their label instead of raw markup

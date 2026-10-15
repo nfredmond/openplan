@@ -1,0 +1,25 @@
+{
+  "checkedAt": "2026-10-15T01:45:49.375246+00:00",
+  "githubTotalAtVerification": 13200,
+  "uniquePrRows": 13199,
+  "allFetchedPages": 132,
+  "metadataCaptureStartedNoLaterThan": "2026-10-15T01:43:13.543889+00:00",
+  "collectorResumeInterval": {
+    "start": "2026-10-15T01:44:01.270841+00:00",
+    "end": "2026-10-15T01:44:53.504602+00:00"
+  },
+  "documentationInventoryUnique": 1014,
+  "capturedThroughPr": 19702,
+  "newPrsAfterCapture": [
+    {
+      "number": 19703,
+      "createdAt": "2026-10-15T01:45:00Z"
+    }
+  ],
+  "limits": [
+    "Not an atomic GitHub snapshot. Corpus captures all states through PR19702; PR19703 was created after collection ended.",
+    "Metadata/bodies are not complete discussions or patches.",
+    "Documentation inventory includes non-prose assets and markdown outside docs; classify these before claiming document counts.",
+    "Earlier pages were reused on collector resume; earliest retained page timestamp precedes resumed collector interval."
+  ]
+}

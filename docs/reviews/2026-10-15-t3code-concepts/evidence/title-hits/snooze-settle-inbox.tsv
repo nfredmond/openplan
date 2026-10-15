@@ -1,0 +1,402 @@
+104	merged		Add “Mark unread” thread action in sidebar context menu
+893	closed-unmerged	L	fix: show unread error state in thread prefixes
+1099	closed-unmerged	XS	fix: unpack native node modules from asar archive
+1339	closed-unmerged	M	chore(security): update github actions and pin to commit sha
+1393	closed-unmerged		fix(web): reset send phase when latest turn settles
+1542	closed-unmerged	L	Reset stuck send phase after turns settle
+1561	merged	M	Show archive action on hover with confirm focus
+1663	closed-unmerged	XXL	Move archived threads off the main read path
+1685	closed-unmerged	L	feat(settings): bulk select and actions for archived threads
+1702	merged	M	Clean up terminal state when threads are archived
+1896	closed-unmerged	M	Fix archived-only project deletion (superseded)
+1897	closed-unmerged	M	Fix archived-only project deletion
+1903	closed-unmerged	S	Fix archived-only project deletion
+2039	closed-unmerged	L	Fix project deletion being blocked by archived threads
+2043	closed-unmerged	XXL	Add diff viewer, question tool, archive, and store fixes
+2044	closed-unmerged	XXL	Add diff viewer, question tool, archive, and store fixes
+2045	closed-unmerged	L	Add swipe-to-archive on mobile thread list
+2213	closed-unmerged	XS	feat(web): add archive action to thread context menu
+2423	merged	M	fix(web): make thread archive button always visible on mobile
+2517	closed-unmerged	M	Keep active turns running until session settles
+2593	merged	XL	perf: Add archived shell snapshot support
+2666	closed-unmerged	L	reconcile provider session state and settle stuck turns
+2699	closed-unmerged	M	Add a shortcut to archive a thread
+2758	closed-unmerged	L	Add archive search and project collapse
+2782	closed-unmerged	S	archive threads with middle click
+3098	closed-unmerged	S	fix(orchestration): allow deleting a project whose only threads are archived (#2866)
+3155	merged	XXL	Add archived threads and mobile file viewer
+3451	merged	S	[codex] Structure thread archive blocked error
+3552	closed-unmerged	XXL	Refine archive management UX across web and mobile
+3578	merged	XXL	[orchestrator-v2] fix(orchestrator): Harden Grok v2 settlement, background task lifecycle, steer visibility, and images
+3614	closed-unmerged	L	feat(settings): add archived thread bulk actions
+3615	closed-unmerged	L	feat(settings): add archived thread bulk actions
+3878	closed-unmerged	XXL	feat(orchestrator): archive and delete owned subagent subtrees
+3894	closed-unmerged	M	Archive selected threads from the context menu
+3895	merged	L	Archive selected threads from the context menu
+3913	closed-unmerged	XXL	feat(sidebar): pin chats within projects
+3960	closed-unmerged	XXL	[WIP] Sidebar v2 beta: flat adaptive-density thread list with settled lifecycle
+4016	closed-unmerged	XXL	Reduce archived conversation disk usage with cold storage
+4026	merged	XXL	Sidebar v2 beta: flat thread list with a server-backed settled lifecycle
+4047	closed-unmerged	XL	feat(sidebar): pin chats within projects
+4135	closed-unmerged	L	ci: SHA-pin actions in pr-size workflow and drop dead job
+4243	merged	XXL	Sidebar v2: server-backed settled lifecycle (settledAt)
+4274	merged	L	fix(web): sidebar v2 polish — jump hints, working duration, in-flight fade, settled sort
+4277	closed-unmerged	XXL	Add shortcut to settle the open thread
+4279	merged	M	fix(web): use message-square icon for settled icon-less project threads in sidebar v2
+4309	merged	M	fix(client-runtime): keep a warm thread un-settled despite a merged/closed PR
+4329	closed-unmerged	L	Fix manual unread state handling
+4384	closed-unmerged	XL	Add complete archive workflows to the default sidebar
+4413	merged	L	fix(web): keep settled threads reachable when opened directly
+4417	closed-unmerged	XXL	WIP: "review unsettled threads" view that summarizes in-progress work
+4418	merged	L	fix(web): ui fixes on snooze
+4421	closed-unmerged	M	fix(server): settle stale running provider sessions on startup
+4438	merged	M	fix: respect time format for sidebar snooze
+4451	merged	S	Color settled PR labels on hover
+4455	closed-unmerged	XL	fix(mobile): replace v2 swipe delete with snooze
+4499	merged	L	fix(orchestrator): Wake settled parents when delegated children finish
+4501	closed-unmerged	L	Mark newly discovered completed threads unread
+4539	closed-unmerged	XS	Fix woke status overlap after snooze menu closes
+4541	closed-unmerged	XS	Fix Sidebar V2 status overlap after snooze dismissal
+4573	closed-unmerged	S	fix(web): persist the Settled shelf's collapsed state
+4574	merged	S	fix(web): stop settle controls overlapping the status label
+4580	closed-unmerged	XS	fix(server): keep the last completed turn when a session settles
+4593	closed-unmerged	L	fix(web): reconcile client state when a settle does not land
+4677	closed-unmerged	L	Add custom snooze times
+4684	closed-unmerged	L	feat(terminal): close thread terminals when a thread settles
+4704	merged	S	Settle merged PR threads immediately
+4708	closed-unmerged	L	Make merged PR settle delay configurable on mobile
+4826	closed-unmerged	M	fix(web): stop the status label stacking on the row's settle actions
+4875	closed-unmerged	S	fix(web): fix Mark unread that was immediately reseting on the active thread
+4876	closed-unmerged	M	feat(web): add thread.settle keyboard shortcut (mod+shift+s)
+4905	merged	XS	fix(web): settle button now works on hover, not just right-click
+4961	closed-unmerged	L	fix(mobile): show done for unread completions
+5007	closed-unmerged	M	fix(web): distinguish merged PR settlement
+5016	closed-unmerged	M	fix(web): distinguish merged PR settlement
+5023	closed-unmerged	L	fix(mobile): pin the workspace status above the thread list
+5037	closed-unmerged	S	fix(server): let archived-only projects delete without force
+5056	merged	L	feat(mobile): make settled threads collapsible
+5105	closed-unmerged	S	fix(desktop): skip unreadable legacy credentials during migration
+5121	closed-unmerged	M	fix(web): settle the connection database open when IndexedDB reports "blocked"
+5127	merged	S	fix(server): settle pending user-input requests when a Claude session stops
+5141	closed-unmerged	L	feat(clients): add PR auto-settle toggle
+5151	merged	XS	fix: threads with open PRs no longer auto-settle
+5155	merged	M	test(mobile): seed snoozed showcase threads
+5187	closed-unmerged	XL	fix: wait for PR status before inactivity auto-settle
+5205	closed-unmerged	XXL	feat(mobile): make archives one-swipe and recoverable
+5290	closed-unmerged	L	fix: keep auto-settle policy consistent across clients
+5333	closed-unmerged	XS	fix(web): align sidebar settle hit area
+5379	merged	M	fix(server): settle snoozed threads immediately
+5388	closed-unmerged	XXL	fix(orchestration): Preserve Claude subagent attribution after settle
+5402	closed-unmerged	XXL	fix(server): persist automatic thread settlement
+5443	closed-unmerged	L	feat(web): add create PR and archive thread keybindings
+5455	closed-unmerged	L	fix(cursor): settle requests before turn completion
+5462	closed-unmerged	XXL	refactor(server): settled state is now server-authored, ending client drift
+5464	closed-unmerged	M	fix(web): clean up archived thread worktrees
+5553	merged	XS	fix(server): let stopped threads settle immediately
+5568	merged	M	fix(server): settle stopped Claude subagents
+5578	merged	M	feat(web): click the pin icon to unpin a thread
+5640	closed-unmerged	M	fix(mobile): add long-press unarchive menu to archived thread rows
+5643	closed-unmerged	L	fix(threads): make completed-PR auto-settle configurable
+5658	closed-unmerged	M	feat(mobile): unarchive from the archived-thread row menu
+5689	closed-unmerged	M	feat(web): add a Clear all action to the settled shelf
+5774	merged	M	fix(server): settle no longer leaves monitors and dev servers running
+5809	closed-unmerged	M	feat(web): pin the current thread from the command palette
+5842	closed-unmerged	L	fix(threads): make completed-PR auto-settle configurable
+5880	merged	L	feat: allow disabling auto-settle on merge
+5912	closed-unmerged	L	feat(web): add configurable compact inbox mode
+5913	closed-unmerged	L	feat(web): add configurable compact inbox mode
+5914	merged	S	feat: add three-hour snooze option
+5940	closed-unmerged	M	feat(web): add configurable settle shortcut
+5974	closed-unmerged	XL	feat(swift-ios): make settle the primary thread swipe action
+6001	closed-unmerged	L	feat(threads): pin a thread from the row quick actions
+6002	closed-unmerged	L	feat(threads): empty-inbox block with a new-thread button
+6018	closed-unmerged	S	fix(server): settle aborted provider turns
+6082	closed-unmerged	XL	feat(client): schedule custom snooze times
+6135	closed-unmerged	XXL	feat(swift-ios): add thread snooze presets
+6192	closed-unmerged	L	feat(clients): add thread auto-settle modes
+6215	merged	XS	fix(web): align the snoozed thread wake icon
+6225	closed-unmerged	L	fix(web): remove projects with archived threads
+6226	closed-unmerged	M	fix(web): hide archive confirmation in settings with new sidebar
+6329	closed-unmerged	S	fix(web): give the Woke pill room next to snooze
+6380	closed-unmerged	M	fix(web): allow collapsing the settled threads tail
+6446	closed-unmerged	M	feat(web): add settle thread shortcut
+6526	merged	M	fix(web): restore the Archive action in the default sidebar thread menu
+6630	closed-unmerged	S	fix(web): keep settled shelf collapsed when closed
+6652	closed-unmerged	M	feat(web): add unread notification badge to sidebar toggle button
+6662	closed-unmerged	XXL	feat: sync thread unread state across clients
+7093	closed-unmerged	XS	fix(web): indent auto-settle inactivity setting
+7096	closed-unmerged	M	fix(server): include archived Codex sessions in usage totals
+7131	closed-unmerged	L	fix(opencode): settle pending questions before teardown
+7173	closed-unmerged	L	fix(opencode): settle pending approvals on session teardown
+7178	closed-unmerged	S	fix(threads): do not auto-settle closed unmerged pull requests
+7179	closed-unmerged	M	fix(threads): keep snoozed threads hidden when work finishes
+7183	closed-unmerged	L	fix(web): do not reuse archived thread ids as new drafts
+7195	closed-unmerged	L	fix(web): allow new threads when unsettled env is offline
+7227	closed-unmerged	S	fix(web): merged PR threads settle without polling delay
+7276	merged	XS	fix(mobile): rotate snoozed and settled shelf chevrons
+7282	closed-unmerged	L	feat(web): filter archived threads by project
+7315	closed-unmerged	L	fix(server): settle orphaned provider sessions at startup
+7342	merged	XL	feat(swift-ios): settle thread rows with a full swipe
+7376	closed-unmerged	M	fix(server): settle turns when provider interrupts fail
+7386	closed-unmerged	XXL	Reduce archived conversation disk usage with cold storage
+7387	closed-unmerged	XXL	Make large archives easier to manage across web and mobile
+7454	merged	L	fix(threads): a merged PR settles its thread only once
+7723	merged	M	fix(clients): keep opening responses visible after turns settle
+7734	closed-unmerged	M	fix(web): stop dimming unread in-flight sidebar rows
+7735	closed-unmerged	XS	fix(server): pin the Claude CLI verbose setting for text generation
+7796	merged	XS	fix(web): give sidebar un-settle button a tooltip
+7854	closed-unmerged	S	fix(server): settle error session exits
+7969	merged	L	fix(clients): move settled pinned threads into the settled section
+8015	closed-unmerged	S	fix(server): automatic activity unsettle no longer clears a user's "active" pin
+8021	closed-unmerged	XL	fix(web): clear dead space after chat turns settle
+8031	closed-unmerged	L	fix(web): mark newly discovered completed threads unread
+8075	closed-unmerged	M	fix(web,mobile): keep substantive assistant prose outside the settled-turn fold
+8089	merged	M	feat(web): settle and restore threads with a keyboard shortcut
+8231	merged	L	fix(app): un-settled threads return to the top of the list
+8360	merged	S	fix(web): stop highlighter freezes and worker spin by using the Oniguruma WASM engine
+8440	merged	M	feat(web): toggle a thread's pin from the keyboard
+8441	closed-unmerged	L	fix(opencode): settle pending requests during teardown
+8600	merged	XXL	fix(server): settle threads server-side
+8741	merged	XS	fix(web,mobile): snooze menu no longer offers the same wake time twice
+8771	closed-unmerged	L	feat(server): clean worktree build artifacts when threads settle
+8798	merged	S	fix(web): remove projects with archived threads
+8926	closed-unmerged	S	fix(server): load archived threads by exact id
+8942	closed-unmerged	XL	feat(web): make archived threads easier to manage
+8980	closed-unmerged	S	fix(web): keep settled thread notice compact
+9011	closed-unmerged	M	fix(clients): respect locale for next-week snooze
+9012	closed-unmerged	L	feat(web,mobile): snooze a thread until provider limits reset
+9033	merged	M	fix(web): align un-settle banner action
+9043	closed-unmerged	L	fix(server): settle threads at startup without waiting on GitHub
+9081	closed-unmerged	S	fix(server): stop stale settlement notifications
+9116	closed-unmerged	L	fix(web): clean up worktrees when deleting archived threads
+9147	merged	L	fix(settings): sync auto-settle and other shared preferences across environments
+9226	closed-unmerged	S	fix(server): scan Codex's archived_sessions for usage accounting
+9250	merged	XS	fix(release): pin patched expo-sharing version
+9254	merged	L	fix(server): preserve automatic settlement timestamps
+9314	merged	M	fix(sidebar): collapse settled and snoozed shelves by default
+9366	merged	XS	fix(web): settled sidebar rows use the project fallback icon
+9391	closed-unmerged	XL	fix(server): settle background agents the provider stopped reporting
+9455	closed-unmerged	XS	fix(web): settled banner un-settles threads again
+9482	merged	M	fix(web): settle the resting composer layout with a pixel of slack
+9528	merged	M	fix(server): settle branch threads immediately on pull request merge
+9570	merged	S	test(server): pin git config for fixtures and compare native realpaths
+9601	merged	XS	fix(web): snooze menu no longer overlaps thread details
+9610	merged	XS	fix(server): settle inactive threads with open PRs
+9623	merged	M	fix(web,mobile): fold context compaction under settled turn folds
+9651	merged	M	feat(web): unpin threads from the sidebar multi-select menu
+9680	merged	XL	fix(swift-ios): make swipe-to-settle removal smooth
+9784	merged	M	fix: address usage limits and merge settlement regressions
+9836	closed-unmerged	XL	feat(web): pin a thread's terminal drawer for a project or all projects
+9903	merged	XS	fix(server): keep old failures from waking snoozed V2 threads
+9930	merged	XS	fix(mobile): use the archive eligibility guard when dispatching
+9934	merged	L	fix(server): settle threads using actual pull request terminal timestamps
+10023	merged	S	fix(web): restore settled PR colors on hover
+10077	closed-unmerged	L	fix(web): mark new background completions unread
+10103	merged	M	fix(server): settle inactive threads without a PR lookup
+10150	closed-unmerged	L	feat(web): pin turn diff baselines
+10313	closed-unmerged	XS	fix(server): skip disabled settlement lookups
+10342	closed-unmerged	XXL	fix(server): prune worktree artifacts when chats settle
+10345	merged	L	fix(mobile): slide settled threads out before collapsing
+10424	merged	XS	fix(server): skip disabled settlement lookups
+10505	closed-unmerged	S	fix(server): resume archived Codex sessions
+10590	closed-unmerged	S	test(web): derive the snooze weekday assertion from the machine locale
+10766	closed-unmerged	XXL	fix(swift-ios): record thread receipts and keep tool history chronological
+10795	closed-unmerged	S	fix(contracts): tolerate an unreadable snap-shot source on persisted image attachments
+10946	open	S	fix(server): pin GitLab merges to current SHA
+10975	closed-unmerged	M	fix(server): repair legacy client settlement timestamps
+11040	closed-unmerged	L	feat(desktop): show unread completion badges
+11061	closed-unmerged	M	fix(server): pin background service to a stable Node path
+11097	closed-unmerged	M	Fixed pin error text and cleaned up copied mobile helpers
+11101	merged	M	fix: quiet settled threads and simplify PR badges
+11240	merged	XS	fix(cli): pin shared Effect dependency for npm installs
+11248	closed-unmerged	S	feat(web): add mark unread keyboard shortcut
+11317	merged	XXL	ci(release): build, sign, and publish self-contained CLI archives
+11318	merged	XL	feat(server): install preview runtimes from release archives
+11319	merged	L	feat(ssh): run preview builds on remotes from the release archive
+11343	closed-unmerged	XL	feat(web): pin a skill as a composer mode with option+enter
+11377	closed-unmerged	L	feat(swift-ios): pin and snooze threads from the same swipe
+11415	closed-unmerged	M	test(web): pin pull-request stats delta on paginated scroll
+11426	merged	XS	fix(mobile): pin expo-audio so the release smoke patch stays in use
+11510	merged	XL	feat(server): manage runtimes as release archives only, never from npm
+11511	merged	XL	feat(desktop): run the WSL backend from the Linux CLI archive
+11518	merged	L	fix(mobile): pin expo-audio so the release smoke patch stays in use
+11605	merged	L	ci(release): build CLI archives for five targets, each on its own architecture
+11635	open	XXL	fix(server): pause scheduled tasks bound to archived threads
+11651	closed-unmerged	L	feat(web): add configurable thread archive and delete shortcuts
+11677	closed-unmerged	M	fix(server): OpenCode turns no longer settle before OpenCode starts the prompt
+11712	closed-unmerged	L	feat(settings): pinned threads stay active unless auto-settle pinned threads is on
+11800	merged	XXL	feat: add custom snooze dates and durations
+11804	merged	XS	fix(web): avoid reopening settled threads when adding projects
+11827	closed-unmerged	XS	fix(web): keep Settled shelf following task list (#11752)
+11846	merged	L	feat(threads): add per-thread auto-settle switch
+11896	closed-unmerged	M	fix(server): include Codex archived_sessions in usage scan
+11905	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+11948	closed-unmerged	L	fix(server): require fresh verification before settlement
+12088	closed-unmerged	L	feat(clients): reschedule a snoozed thread from its menu
+12122	closed-unmerged	L	feat(server): run a teardown script when a thread settles
+12161	merged	L	fix(server): propagate linked pr changes and settle threads immediately
+12176	merged	XS	fix(server): settle cancelled worktree setup before rollback
+12216	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+12258	closed-unmerged	L	feat(settings): exclude PR-linked threads from inactivity settlement
+12399	merged	L	refactor(mobile): share archived thread header configuration
+12413	closed-unmerged	L	chore(deps): pin vulnerable transitive dependencies to patched versions
+12420	merged	XS	fix(mobile): keep archived threads visible during iOS search
+12421	closed-unmerged	M	fix(web): use NumberField for auto-settle inactivity days
+12440	closed-unmerged	L	fix(web): style custom snooze time picker like the calendar
+12463	closed-unmerged	XL	feat(mobile): show a settled agent plan with an implement action
+12512	merged	L	fix(mobile): use native settings and snooze controls
+12525	closed-unmerged	S	fix(server): grant woken snoozed threads a fresh auto-settle window
+12568	merged	S	fix(server): settle V2 threads after linked PR merges
+12687	merged	L	feat(v2): snooze limited threads until usage resets
+12702	closed-unmerged	XXL	feat: reduce archived conversation disk usage with cold storage
+12703	closed-unmerged	XL	feat(web): add archive controls for settled threads
+12708	closed-unmerged	XXL	feat(settings): make large archives easier to manage
+12726	closed-unmerged	S	fix(server): pin agent lifecycle rows so remote Agents count matches host
+12745	merged	M	fix(web): the custom snooze calendar starts the week where the locale does
+12788	closed-unmerged	L	feat(settings): port PR-aware inactivity settlement to orchestration v2
+12832	closed-unmerged	L	feat(web): add keybinding to toggle thread read/unread
+12848	merged	XXL	feat(web): undo settle, snooze and archive, with a mod+z shortcut
+12957	closed-unmerged	M	feat(web): add shortcut to unsettle the last thread
+12958	open	M	feat(web): add shortcut to unsettle the last thread
+12974	merged	L	fix(orchestration): settle subagent statuses and activation timers
+13136	closed-unmerged	S	fix(server): refresh session settings when resuming settled threads
+13149	merged	XL	perf(mobile): recycle the default v2 home list and scope the snooze minute tick
+13196	closed-unmerged	XL	feat: snooze running threads until done
+13201	merged	XS	test(server): stop ACP soft-steer tests racing the prompt settle
+13259	closed-unmerged	L	feat(storage): clean up settled thread worktrees
+13424	closed-unmerged	M	fix(server): settle and snooze see open questions after a restart
+13476	merged	S	fix(server): merged PRs update and auto-settle threads again
+13489	merged	S	feat(mcp): expose thread settlement in t3_thread_list and t3_thread_read
+13615	closed-unmerged	M	fix(threads): settle keep-active threads when PR merges
+13619	merged	M	fix(server): startup recovery settles native subagent threads
+13657	closed-unmerged	L	feat(threads): auto-archive settled threads
+13691	merged	M	perf(server): per-thread settlement and PR checks no longer rebuild the whole thread list
+13759	merged	M	perf(clients): sort projects and settled threads without re-parsing dates per comparison
+13765	merged	M	perf(server): background sweeps only read threads that can still settle
+13792	merged	S	fix(server): Stop ends a Claude thread's background work after the turn settles
+13901	merged	L	feat(server): continue settled threads that lost background work in a restart
+13936	closed-unmerged	L	feat(web): unarchive or delete all archived threads at once
+13939	closed-unmerged	L	fix(web): threads can be marked read again, not just unread
+13967	closed-unmerged	M	fix(mobile): pin fbjni to React Native version
+13973	closed-unmerged	M	fix(usage): include archived Codex sessions
+14061	closed-unmerged	XL	fix(mobile): smooth Android scrolling through long settled threads
+14068	closed-unmerged	XXL	fix(mobile): smooth Android scrolling through long settled threads
+14077	closed-unmerged	XXL	fix(mobile): smooth Android scrolling through long settled threads
+14088	closed-unmerged	L	fix(server): settle stuck starting runs and offer Stop
+14204	closed-unmerged	M	fix(server): one unreadable old message no longer stops the server from starting
+14240	closed-unmerged	M	fix(server): stop provider sessions after thread archive
+14328	closed-unmerged	L	feat(mcp): let agents archive their own thread
+14447	closed-unmerged	M	fix(server): clear the persisted active turn when it settles
+14495	closed-unmerged	XL	feat(sidebar): settle a running thread once the agent finishes
+14509	closed-unmerged	S	fix(server): re-snoozing to the same wake time restamps snoozedAt
+14598	merged	XS	fix(ssh): record the archive lock owner's real PID
+14642	merged	M	feat(settings): inactivity auto-settle can keep threads with a PR
+14659	merged	XS	fix(ci): pin eas-cli so mobile PR previews deploy again
+14661	closed-unmerged	L	fix(mobile): background work can be stopped after the turn settles
+14729	open	XL	fix(server): a restart that never starts settles the work its run inherited
+14732	open	L	fix(server): a delegated result whose steer never landed wakes the parent after it settles
+14768	merged	L	feat(web): sweep sidebar buttons to settle, un-settle, and wake threads
+14846	open	M	fix(mobile): stop background work after the turn settles
+14873	closed-unmerged	M	fix(server): woken snoozed threads get a fresh auto-settle window
+14876	closed-unmerged	L	test(server): ACP adapter tests no longer race the prompt settle
+14907	closed-unmerged	XS	fix(server): archived threads no longer start work after setup finishes
+15024	merged	M	fix(server): threads settle as soon as an agent merges their PR
+15058	closed-unmerged	S	feat(web): mark the active thread unread from the keyboard
+15093	open	L	feat(chat): show where unread messages start
+15134	closed-unmerged	M	fix(client): snoozed limited threads no longer wake on unrelated activity
+15141	closed-unmerged	L	fix(client): snoozed limited threads no longer wake on unrelated activity
+15151	closed-unmerged	L	fix(client): keep limited threads snoozed until reset
+15167	closed-unmerged	L	feat(scheduled-tasks): optionally settle threads on completion
+15174	open	L	fix(client-runtime): threads archived by agents now show in Settings → Archive
+15176	open	M	fix(clients): a thread snoozed until a limit reset stays snoozed until the reset
+15208	open	L	feat(storage): clean up settled thread worktrees
+15242	closed-unmerged	XS	fix(mobile): archived threads start at the settings content inset
+15298	closed-unmerged	XL	fix(server): Stop ends a run whose turn its adapter already settled
+15307	closed-unmerged	L	fix(server): settle runs when provider event streams stop
+15330	merged	L	test(server): ACP adapter tests no longer race the prompt settle
+15363	closed-unmerged	M	fix(server): a thread cannot be archived while its turn is running
+15375	closed-unmerged	L	feat(packaging): add lightweight container and Linux Node archives
+15388	merged	M	fix(server): merged threads settle even after the agent wakes on its own
+15389	merged	S	fix(codex): resume archived native sessions
+15421	closed-unmerged	L	fix(clients): a steer splits the settled work fold
+15425	merged	S	fix(web): unpin button shows the pin-off icon on hover
+15428	closed-unmerged	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15445	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15451	open	XS	fix(usage): include archived Codex sessions in scans
+15464	open	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15465	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15546	merged	XS	fix(server): Stop ends a Codex command after its thread was settled
+15556	merged	XS	fix(web): unpin preview dragging on narrow chat canvases
+15604	merged	M	fix(server): keep settled threads asleep after restarts
+15607	open	S	fix(server): mark unvisited thread completions unread
+15648	closed-unmerged	L	feat(threads): settle working threads once idle on V2
+15679	closed-unmerged	XL	feat(clients): save your own snooze presets, like "In 3 days" or "Friday 9 AM"
+15688	closed-unmerged	S	feat(web): settle the thread with mod+w on desktop
+15783	open	S	fix(server): automatically settle empty inactive threads
+15805	closed-unmerged	XS	fix(server): settle background work after inactive interrupts
+15880	closed-unmerged	L	fix(server): Stop returns an unread Claude steer to the queue
+15934	closed-unmerged	L	feat(web): choose the hours snooze presets wake at
+15948	open	L	fix(server): threads swept by old desktop builds show their real settled time again
+15990	open	XXL	feat: pin favorite projects and archive old ones
+15991	closed-unmerged	L	feat(server): run a project action when a thread settles
+16029	closed-unmerged	S	fix(server): settling a snoozed thread removes it from Snoozed
+16081	closed-unmerged	L	feat(clients): reschedule a snoozed thread from its menu
+16172	closed-unmerged		fix(web): mod+z undoes a settle even when the composer has focus
+16181	closed-unmerged	M	fix(server): settle a turn when its provider session closes
+16204	merged	M	fix(threads): threads watching a PR stay in Working instead of bouncing to the inbox
+16290	merged	L	feat(server): run a project action when a worktree thread settles
+16292	open	M	fix(server): a merge mid-reply no longer settles the thread
+16307	merged	S	refactor(relay): import HookInboxObject once, as a namespace
+16362	open	L	feat(web): save custom snooze durations as favorites
+16369	merged	M	perf(mobile): reuse the settled sort when settled rows are unchanged
+16416	closed-unmerged	M	fix(client): float inbox threads on recent activity instead of creation order
+16448	open	M	fix(server): settle OpenCode model catalog before caching it
+16473	open	S	fix(server): storage cleanup reaches archived threads' worktrees
+16517	open	M	fix(threads): snoozed threads no longer wake early after background updates
+16555	closed-unmerged	M	fix(server): a child killed with unread input no longer crashes the server on html_render
+16674	merged	S	fix(server): restart inactivity after snoozed threads wake
+16761	merged	M	fix(server): threads settle as soon as a client sees their PR merge
+16762	merged	S	fix(server): settled threads stop polling their pull requests
+16782	merged	L	feat(server,web,mobile): agents see snooze state and link to threads
+16841	merged	XS	fix(web): center project monograms in settled rows
+16878	merged	M	fix(clients): running subagent cards stay visible after their parent turn settles
+16994	closed-unmerged	XS	fix(web): usage-limit notice keeps showing the thread is snoozed
+17118	open	M	fix(threads): preserve snooze when the current run completes
+17134	merged	M	fix(server): settle every OpenCode subagent call one report answers
+17145	merged	M	fix(server): an agent can settle its own thread when its turn ends
+17148	merged	M	fix(server): threads settle as soon as branch status sees their PR merge
+17191	merged	XS	fix(web): settled and snoozed lines line up with the messages above them
+17258	merged	S	fix(server): say why a thread can't be settled
+17265	open	M	fix(codex): settle compaction items when turns end
+17337	closed-unmerged	L	fix(server): deliver deferred child results when their spawning run settles
+17425	closed-unmerged	L	fix(server): archived threads cannot send or start message turns
+17547	open	S	fix(server): clear snooze when settling threads
+17626	closed-unmerged	S	server, docs: hold auto-settle while a background command runs
+17789	open	S	fix(server): an interrupted run no longer starts the settle timer on a snoozed thread
+17891	open	L	fix(pi): settle handled prompts and correlate replies
+17914	open	M	fix(mobile): thread menu can mark a thread unread, like desktop
+17921	open	L	fix(claude): settle stopped tasks after session replacement
+18062	closed-unmerged	S	server, docs: hold auto-settle while a background command runs
+18140	open	S	fix(server): settling a snoozed thread removes it from Snoozed
+18170	open	L	feat(clients): reschedule a snoozed thread from its menu
+18232	open	M	fix(server): threads no longer settle after merging PRs they were asked to merge
+18606	open	XL	feat(threads): file working threads and settle quietly when idle
+18611	open	M	feat(web): settle the current thread from the command palette
+18668	closed-unmerged	L	feat(server): archive and unarchive cascade to subagent threads
+18689	closed-unmerged	XL	feat(mobile): hover settle button and drag-to-settle on iPad
+18714	open	M	fix(web): mod+z undoes a settle even when the composer has focus
+18715	closed-unmerged	L	perf(server): background settlement and PR sync stop re-checking every thread each minute
+18838	open	S	fix(relay): stop held webhook deliveries when the inbox is cleared
+18937	open	M	fix(server): inactivity auto-settle waits for an armed usage-limit auto-resume
+19049	open	L	fix(mobile): Pulls page shows one line for unreadable repositories instead of one per repo
+19099	merged	L	fix(server): snoozed threads allow queued automatic wakes
+19125	closed-unmerged	L	feat(web): group sidebar inbox threads under collapsible projects
+19132	closed-unmerged	L	feat(web): sidebar shelf for open pull requests linked to unsettled threads
+19151	open	M	fix(server): pin Antigravity ACP runtime to 1.4.0 so Gemini 4 Argon is listed
+19196	open	M	fix(server): a Claude wake run settles when Claude never opens the wake turn
+19328	merged	M	fix(web): settle shortcut moves to the next thread like the sidebar
+19355	merged	L	fix(server): settled and idle-released threads no longer stay Waiting
+19464	open	XS	fix(server): settle Claude background agents when their process exits
+19482	closed-unmerged	L	fix(bitbucket): recover terminal timestamps for thread settlement
+19585	open	L	fix(acp): bound unread raw notification retention
+19665	open	M	fix(server): subagent threads settle with their parent instead of sweeping on their own

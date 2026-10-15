@@ -1,0 +1,131 @@
+186	merged		Add Shift+Tab shortcut to toggle composer plan mode
+494	closed-unmerged		Allow same-thread plan mode to reuse the latest plan
+508	closed-unmerged		fix(web): compact plan questionnaire navigation buttons
+529	closed-unmerged		fix: preserve cursor behavior in plan question mode
+533	closed-unmerged		TODO.md - Implement all items: scroll, thread limit, archiving, project…
+553	closed-unmerged		Fix implement-plan follow-ups and markdown heading rendering
+574	closed-unmerged		feat(web): auto-show plan mode suggestion when user mentions plan
+596	merged		fix: plan mode ui overhaul
+621	merged	XS	fix: block image uploads during plan mode questions
+706	merged		Fix plan composer layout by preventing flex overflow in chat/sidebar
+751	merged		Defer proposed plan markdown rendering until users expand in ChatView
+760	closed-unmerged		fix(web): render user markdown and shorten implement-plan messages
+819	closed-unmerged	L	Implement approved plans in new worktrees
+828	closed-unmerged		Visually distinguish plan mode from chat mode in composer
+862	closed-unmerged		Expire stale pending plan questions on cold app startup
+867	merged		fix: improve business logic in prompt editor and fix cursor bugs in Plan mode
+921	closed-unmerged		Persist pending plan-mode answers across thread re-entry
+1073	closed-unmerged	L	Add collapsible header control to the active plan container
+1095	closed-unmerged	S	chore: remove stale TODO file
+1117	closed-unmerged	XL	fix: clear 'Plan Ready' on implementation in a new thread
+1133	merged	XL	fix: consume plans on implementation
+1137	closed-unmerged	XL	fix(web): persist pending plan input drafts and stabilize preset answers
+1186	closed-unmerged	L	Fix plan mode thread state desync
+1198	merged	L	fix(web): prevent composer controls overlap on narrow windows (make plan sidebar responsive)
+1203	merged	XS	fix(web): consume plans on new-thread implementation
+1319	closed-unmerged	XL	Support deferred plan implementation in draft threads
+1387	closed-unmerged	L	fix(claude): map TodoWrite updates to plan events
+1438	closed-unmerged	L	feat(plan-sidebar): add drag-to-resize with localStorage persistence
+1439	closed-unmerged	L	feat(plan-sidebar): add drag-to-resize with localStorage persistence
+1448	closed-unmerged	XS	fix(web): Differentiate duplicate "Plan" button labels
+1452	closed-unmerged	M	feat(claude): Reflect Claude’s autonomous plan transitions to the UI
+1541	merged	L	fix(claude): emit plan events for TodoWrite during input streaming
+1620	merged	S	Add copy-to-clipboard action for proposed plan card
+1954	closed-unmerged	XS	fix(ui): prevent input overflow in plan mode
+2016	closed-unmerged	XS	Enables image attachments in plan follow-ups
+2050	closed-unmerged	M	fix(web): use atomic bootstrap for plan implementation in new thread
+2064	closed-unmerged	XS	feat: handle openai prolite plan in UI and spark availability
+2205	closed-unmerged	L	fix(web): make plan sidebar resizable like diff panel
+2417	closed-unmerged	M	Enables image attachments in plan follow-up messages
+2422	closed-unmerged	M	fix(web): match plan sheet width to inline sidebar width
+2597	closed-unmerged	L	fix(server): show Implement button more reliably for Claude plan mode
+2598	closed-unmerged	L	fix(web): make plan sidebar resizable like diff panel
+2865	closed-unmerged	XL	[RFC] Plan review annotations
+2877	closed-unmerged	XXL	add codex goal command support
+3007	closed-unmerged	M	Optimize chat plan catalog selector
+3027	merged	XL	Misc chrome polish: header badges, plan sidebar, diff panel, empty state
+3118	merged	L	Render the plan surface in the inline right panel
+3696	closed-unmerged	L	fix(orchestrator): Claude plan-mode plan proposals + real provider error causes
+3805	closed-unmerged	XXL	Add profile-scoped tool access and plan goal mode
+3937	closed-unmerged	XXL	Refresh engineering plans for current architecture
+4233	closed-unmerged	L	fix(grok): show Grok plan-mode plans and handle plan approvals over ACP
+4260	closed-unmerged	XXL	Add OpenAI goal support
+4865	closed-unmerged	L	fix(web): persist closed plan sidebar state
+4942	closed-unmerged	L	fix(cursor): implement the latest refined plan
+5073	merged	XS	fix(server): use a Cursor todo's title when its content is blank
+5409	closed-unmerged	L	fix(grok): surface plan mode approval in proposed plan cards
+5423	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5424	closed-unmerged	XXL	feat(grok): plan mode via /plan text mapping
+5484	merged	M	fix(web): closed plan sidebar stays closed when returning to a thread
+5503	closed-unmerged	XXL	feat(grok): native ACP parity (catalog, effort, usage, plan, multi-agent, compact)
+5536	closed-unmerged	XS	fix(web): preserve closed plan panel state
+5549	closed-unmerged	S	FEAT: add Plan tab to right panel picker
+5551	merged	M	feat(web): remove Build/Plan toggle from the composer
+5558	merged	XXL	fix(web): plans stop hijacking the UI, fold into chat instead
+5664	merged	L	feat(web): fold plan mode and token-by-token output into Legacy features
+5776	merged	S	fix(web): sidebar rows show the branch again, not a truncated plan step
+6007	closed-unmerged	M	fix(web): keep active plan visible above composer
+6212	closed-unmerged	M	feat(web): show plan progress in sidebar
+6420	merged	L	fix(web): hide opencode's plan agent when legacy plan mode is off
+6431	closed-unmerged	L	fix(grok): surface autonomous plan mode proposals
+6614	closed-unmerged	XXL	feat(mobile): plan mode (legacy) toggle with cross-client sync
+7263	closed-unmerged	M	fix(server): Claude plan mode never shows Implement
+7264	closed-unmerged	L	fix(mobile): display proposed plans in thread feed
+7266	closed-unmerged	L	feat(mobile): add Plan Mode to new task settings
+7319	closed-unmerged	XXL	feat: /goal Objectives that keep a Thread working until done
+7320	closed-unmerged	XXL	feat: /goal Objectives that keep a Thread working until done
+7638	closed-unmerged	XXL	fix(grok): skills, reasoning, plan mode, usage, and stalled turns
+7665	merged	XXL	chore: move implementation plans out of repository
+7935	closed-unmerged	XL	feat(codex): add native Goal lifecycle controls
+8116	closed-unmerged	XXL	feat(server): add ZCode provider for Z.AI coding-plan models
+8138	closed-unmerged	L	feat(web): prototype plan usage indicator in sidebar
+8233	closed-unmerged	S	fix(web): Keep plan task counts visible
+8294	closed-unmerged	L	fix(codex): accept current ChatGPT workspace plans
+8358	merged	XXL	fix(grok): improve skills, plans, usage, and turn reliability
+8411	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8417	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8447	merged	M	fix(codex): accept Codex 0.150 account plans
+8474	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8485	closed-unmerged	XXL	feat(server): show Kimi For Coding plan limits for Claude instances
+8581	closed-unmerged	M	docs: Z.AI GLM Coding Plan setup for Claude providers
+8615	closed-unmerged	L	feat(codex): surface active goals in thread status
+9031	closed-unmerged	XS	fix(claude): restore plan updates for Claude 5 sessions
+9532	closed-unmerged	XL	feat(usage): read Cursor and Grok plan quota from their TUIs
+10115	closed-unmerged	L	perf(server): skip plan bodies in thread summaries
+10341	merged	L	perf(server): skip plan bodies in thread summaries
+10439	merged	XXL	feat(web): find messages and plans in the current thread
+10447	closed-unmerged	M	fix(server): pause Codex goals before stopping turns
+10845	closed-unmerged	M	fix(usage): keep same-email Codex subscriptions apart when their plans differ
+10878	open	XS	fix(usage): recover missing Codex hub plans from auth metadata
+11170	closed-unmerged	L	fix(cursor): map ACP updateTodos tool calls onto the Tasks panel
+11516	closed-unmerged	XXL	feat(goals): track native provider goals across clients
+12081	closed-unmerged	L	feat(usage): show Grok weekly plan usage on the Usage page
+12463	closed-unmerged	XL	feat(mobile): show a settled agent plan with an implement action
+13111	closed-unmerged	M	fix(usage): weight pooled limits by plan capacity
+13370	closed-unmerged	L	fix(server): Codex /goal clear removes the persisted goal
+13546	merged	L	fix(server): Codex V2 threads show todo lists again
+13586	closed-unmerged	L	feat(server): show Z.ai GLM Coding Plan limits on Claude relay instances
+13587	closed-unmerged	L	feat(server): show Kimi Code plan limits on Claude relay instances
+13675	open	M	fix(usage): weight pooled limits by plan size
+13775	merged	S	fix(server): Implement starts a run from a proposed plan again
+13793	merged	XS	fix(server): Codex plans offer Implement again
+14374	merged	XL	feat(server): OpenCode 2 compaction, plan mode and workspace inventory
+14741	closed-unmerged	L	fix(server): Codex /goal clear removes the persisted goal
+14748	closed-unmerged	L	fix(server): Codex /goal clear removes the persisted goal
+15224	merged	M	fix(server): Claude threads no longer stay stuck in plan mode Claude entered itself
+15569	closed-unmerged	XS	fix(server): Cursor status says when the account's plan is rejected
+15592	merged	XXL	feat: native /goal for Codex and Claude, with goal status in the UI
+15855	open	M	fix(server): a $skill mention no longer swallows a leading Claude /goal
+16216	closed-unmerged	L	feat: OpenCode proposed plan cards and plan citations
+16313	closed-unmerged	XXL	Keep plan implementation work in the background
+16598	open	M	fix(server): a Claude /goal no longer reads as complete while a background subagent runs
+16953	open	S	fix(server): long Codex goals no longer fail before starting
+17248	closed-unmerged	L	feat: recognize proposed plans from OpenCode plan mode
+17249	closed-unmerged	M	feat: cite text from proposed plans
+17963	open	S	fix(claude): Plan mode asks before writes in Auto and Full access
+18399	closed-unmerged	XS	docs: Claude task lists need CLAUDE_CODE_ENABLE_TODO_TOOLS
+18513	closed-unmerged	S	fix(mcp): expose native goal state in thread read and list
+18912	open	M	fix(server): Codex /compact no longer adopts a goal turn that starts first
+19159	closed-unmerged	L	fix(server): read GLM Coding Plan limits for ACP instances
+19317	merged	L	perf(server): Codex plan streaming no longer commits every token
+19494	closed-unmerged	L	fix(server): Claude /goal shows complete only when Claude judges it met

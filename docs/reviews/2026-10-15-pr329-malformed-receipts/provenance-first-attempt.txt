@@ -1,0 +1,1 @@
+The first provenance check requested nonexistent VALIDATION.md and refused at git show. The actual approved artifact is VALIDATION.json. No failed first-attempt provenance result counts as acceptance. The corrected check compares all eight actual paths against both exact candidate 7193478d81ce39887f552be2e5530ebdcdd3354c and approval 52e308404b2e2d5dcb90a3de6266da1ca0c8b58b.

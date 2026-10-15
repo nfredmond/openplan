@@ -1,0 +1,134 @@
+{
+  "sourceUrl": "https://raw.githubusercontent.com/github/rest-api-description/507b88ecbdccb4789ce77228fa2f2fde4bdeaf1f/descriptions/api.github.com/api.github.com.json",
+  "sourceCommit": "507b88ecbdccb4789ce77228fa2f2fde4bdeaf1f",
+  "sourceSha256": "2d18c7b121c209aa40a5c92ea462af1f7955603fc3ec530ab0466549498d14cf",
+  "schemas": {
+    "issue-comment": {
+      "required": [
+        "id",
+        "node_id",
+        "html_url",
+        "issue_url",
+        "user",
+        "url",
+        "created_at",
+        "updated_at"
+      ],
+      "nullable": false,
+      "properties": {
+        "user": {
+          "$ref": "#/components/schemas/nullable-simple-user"
+        },
+        "body": {
+          "description": "Contents of the issue comment",
+          "example": "What version of Safari were you using when you observed this bug?",
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2011-04-14T16:00:49Z"
+        }
+      }
+    },
+    "pull-request-review-comment": {
+      "required": [
+        "url",
+        "id",
+        "node_id",
+        "pull_request_review_id",
+        "diff_hunk",
+        "path",
+        "commit_id",
+        "original_commit_id",
+        "user",
+        "body",
+        "created_at",
+        "updated_at",
+        "html_url",
+        "pull_request_url",
+        "author_association",
+        "_links"
+      ],
+      "nullable": false,
+      "properties": {
+        "user": {
+          "$ref": "#/components/schemas/nullable-simple-user"
+        },
+        "body": {
+          "description": "The text of the comment.",
+          "example": "We should probably include a check for null values here.",
+          "type": "string"
+        },
+        "created_at": {
+          "type": "string",
+          "format": "date-time",
+          "example": "2011-04-14T16:00:49Z"
+        },
+        "path": {
+          "description": "The relative path of the file to which the comment applies.",
+          "example": "config/database.yaml",
+          "type": "string"
+        }
+      }
+    },
+    "pull-request-review": {
+      "required": [
+        "id",
+        "node_id",
+        "user",
+        "body",
+        "state",
+        "commit_id",
+        "html_url",
+        "pull_request_url",
+        "_links",
+        "author_association"
+      ],
+      "nullable": false,
+      "properties": {
+        "user": {
+          "$ref": "#/components/schemas/nullable-simple-user"
+        },
+        "body": {
+          "description": "The text of the review.",
+          "example": "This looks great.",
+          "type": "string"
+        },
+        "state": {
+          "type": "string",
+          "example": "CHANGES_REQUESTED"
+        }
+      }
+    },
+    "nullable-simple-user": {
+      "required": [
+        "avatar_url",
+        "events_url",
+        "followers_url",
+        "following_url",
+        "gists_url",
+        "gravatar_id",
+        "html_url",
+        "id",
+        "node_id",
+        "login",
+        "organizations_url",
+        "received_events_url",
+        "repos_url",
+        "site_admin",
+        "starred_url",
+        "subscriptions_url",
+        "type",
+        "url"
+      ],
+      "nullable": true,
+      "properties": {
+        "login": {
+          "type": "string",
+          "example": "octocat"
+        }
+      }
+    }
+  }
+}

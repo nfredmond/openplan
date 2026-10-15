@@ -1,0 +1,371 @@
+12	merged		Add native context menu to delete threads
+50	merged		Add project deletion from sidebar context menu
+104	merged		Add “Mark unread” thread action in sidebar context menu
+142	merged		Add Lexical-based composer editor with file mention pills
+169	merged		Limit composer arrow-key mention jumps to adjacent mention boundaries
+280	closed-unmerged	XL	Fix desktop context menu rendering
+450	closed-unmerged		Add Codex context window indicator to ChatView
+500	merged		feat(desktop): add spellcheck suggestions to context menu
+574	closed-unmerged		feat(web): auto-show plan mode suggestion when user mentions plan
+587	closed-unmerged		Add desktop editable context menu for typo fixes and copy/paste (right click)
+666	merged		fix(web): polyfill crypto.randomUUID for non-secure HTTP contexts
+703	closed-unmerged		Feature: add link actions to context menu (#677)
+772	closed-unmerged		Feature: add link actions to context menu
+775	closed-unmerged		Quote cwd when building editor command args
+873	merged	M	fix: Prevent sidebar project dragging when using macos control+click to open context menu
+926	closed-unmerged	L	fix: mention ping detection
+938	closed-unmerged		Show context window status in branch toolbar
+998	closed-unmerged	L	Add Open in T3 Code to Windows context menu and project launch
+1003	closed-unmerged	XXL	Comment on diff to give agent context
+1036	closed-unmerged	L	refactor: shorten file mentions in thread titles
+1046	closed-unmerged	XL	Context Limit Viewer
+1052	merged	XS	feat(desktop): add "Copy Image" to right-click context menu
+1091	closed-unmerged	L	fix(web): migrate legacy editor preference storage
+1172	closed-unmerged	L	feat(web): enhance sidebar thread interaction with new row button and context menu options
+1200	closed-unmerged	XXL	feat: add memory system for persistent context across conversations
+1285	closed-unmerged	M	fix(web): fix composer mention menu highlight and scroll
+1287	closed-unmerged	XXL	Terminal mentions and context
+1331	closed-unmerged	XS	fix: quote editor launch args with spaces on Windows
+1351	merged	L	Surface context window usage in the UI
+1422	merged	L	Add Claude context window selection support
+1457	merged	L	Support `gh pr checkout` pull request references
+1518	merged	XXL	Move worktree bootstrap to the server and persist terminal launch context
+1519	closed-unmerged	M	fix: fetch remote base branch before PR range context to prevent stale diffs
+1521	closed-unmerged	XS	fix: filter already-merged commits from PR range context
+1536	closed-unmerged	XS	Add contextWindow to ClaudeModelOptionsPatch
+1556	merged	XL	Make provider model lists dynamic based on auth context
+1608	closed-unmerged	L	Fix Windows shell escaping for CLI arguments containing double quotes
+1731	closed-unmerged	XS	fix(web): preserve menu context for disabled git actions
+1749	merged	XS	[codex] Canonicalize PR number references
+1805	merged	S	fix: quote editor launch args on Windows to support paths with spaces
+1944	merged	L	feat(web): add tooltip to composer file mention pill
+2091	closed-unmerged	L	Insert non-image file references on drop/paste
+2213	closed-unmerged	XS	feat(web): add archive action to thread context menu
+2247	closed-unmerged	L	Fix Claude context window fallback accounting
+2273	closed-unmerged	XXL	fix(cost): Opus-accurate context ring + cost ledger + stop button
+2412	closed-unmerged	M	Clamp Claude token usage to selected context window
+2436	merged	XS	README: Add OpenCode to first mention of supported agents
+2551	closed-unmerged	M	Fix Claude context usage normalization for UI meter, Fixes #2034
+2570	merged		feat(web): mention skills in composer placeholder
+2620	closed-unmerged	L	[codex] fix desktop context menu zoom positioning
+2625	merged	M	fix(composer): support spaces in file mentions
+2664	merged	L	Refactor composer refs and context providers
+2690	closed-unmerged	M	fix(server): force Claude 200k context when selected/(default)
+2743	closed-unmerged	XXL	Add collapsible sidebar and inline diff context comments
+2799	closed-unmerged	XL	feat(web): expand context meter into a session context tab
+2868	closed-unmerged	XS	Fix worktree branch selection context
+2902	merged	XXL	chore: add vendored reference repo subtree sync tooling
+2903	closed-unmerged	L	Add "Context menu style" setting
+2918	merged	XXL	chore: add Alchemy reference repo subtree
+3018	merged	L	Composer polish: focus ring, send/stop buttons, command menu, context meter, answer panel
+3025	merged	L	Polish web context menu fallback and sidebar icon actions
+3116	merged	L	Add right-panel bulk close and tab context menu actions
+3128	closed-unmerged	L	Optimize chat composer context updates
+3204	merged	S	[codex] Inline contracts request-context service shapes
+3240	merged	XXL	[codex] improve server auth error context
+3245	merged	XL	[codex] Audit managed endpoint error context
+3281	merged	L	[codex] Structure reference repo sync failures
+3349	merged	L	[codex] add session context to credential errors
+3367	merged	M	[codex] Preserve terminal preview link failure context
+3378	merged	M	[codex] Add structured asset access context
+3428	merged	M	[codex] Preserve native SQLite failure context
+3469	merged	S	[codex] Preserve child process termination context
+3475	merged	L	[codex] Preserve APNs delivery failure context
+3527	merged	XS	[codex] fix: show standalone element-pick context
+3663	closed-unmerged	XXL	[codex] Fix section context delivery
+3671	closed-unmerged	XXL	Add quote replies and fix diff comments
+3795	merged	XXL	feat(client): persist offline environment data and mobile preferences
+3868	closed-unmerged	M	fix(desktop): stop Linux context menus from activating an item on open
+3877	merged	XS	fix: prevent initial right-click from selecting a context menu item
+3894	closed-unmerged	M	Archive selected threads from the context menu
+3895	merged	L	Archive selected threads from the context menu
+3918	closed-unmerged	XS	Preserve checkout context when creating threads
+3950	closed-unmerged	M	feat(server): default Claude context window to 1M
+4010	closed-unmerged	XL	feat: reference other threads from the composer
+4054	merged	L	feat: file explorer mention actions and zoom-aware context menus
+4115	closed-unmerged	XXL	feat: Linear integration — attach issue context from the composer
+4161	merged	L	Restore Copy Link in chat link context menu
+4167	merged	XS	[codex] keep scoped package references as text
+4212	closed-unmerged	XXL	feat(server): add workspace context harness
+4240	merged	L	fix: better defaults — Claude 1M context, Codex gpt-5.6, worktrees from origin main
+4293	closed-unmerged	L	feat(web): add project removal context menu
+4297	closed-unmerged	XXL	feat(cursor): discover FS skills and apply $mentions on send
+4404	merged	L	Fix composer context strip alignment and glass shell
+4408	closed-unmerged	XXL	Persist desktop preferences across builds and restarts
+4458	closed-unmerged	XXL	feat(sidebar-v2): add task tabs and context forks
+4572	closed-unmerged	L	feat(opencode): report context window usage
+4594	closed-unmerged	M	feat(web): open context menus with a long press on touch
+4653	merged	S	Fix Relay Worker RuntimeContext wiring
+4655	merged	S	Fix live sidebar resize limits and defer Alchemy runtime context
+4657	merged	M	fix(web): constrain branch toolbar context
+4772	merged	M	fix(web): show selected model in context window tooltip
+4791	merged	L	perf(server): trim stale context-window rows and drop dead replay RPC
+5064	merged	L	fix(mobile): server model, worktree, and origin preferences now apply to new tasks
+5390	closed-unmerged	L	Insert file mentions when non-image files are dropped on the composer
+5405	closed-unmerged	L	fix(grok): surface context window usage in the composer
+5543	closed-unmerged	L	feat(web): insert path mentions for non-image file drops and pastes
+5546	merged		feat: expand pull request review context and panel tabs
+5574	merged	M	feat(web): add Copy Thread ID to the sidebar and chat header thread context menu
+5703	merged	M	fix(web): keep the composer glass aligned with the context strip at any interface font size
+5923	merged	XL	Move project settings to contextual project routes
+5939	closed-unmerged	L	feat(swift-ios): expose thread controls in context
+5956	closed-unmerged	L	feat(desktop): add local file mentions
+6103	closed-unmerged	L	feat(web): render Codex file-citation chips
+6203	closed-unmerged	L	feat(desktop): add local file mentions
+6213	closed-unmerged	XL	feat(orchestration): hand off provider context
+6272	closed-unmerged	M	fix(terminal): restore CTRL+V paste on Windows and context menus
+6289	closed-unmerged	L	feat(web): file references open the file and lines they name
+6291	merged	XS	docs: mention Bitbucket user read scope needed by auth probe
+6297	merged	L	fix(web): open the file a bare filename reference names
+6298	closed-unmerged	L	feat(web): file references can name a span of lines
+6299	closed-unmerged	L	feat(web): clicking a composer mention chip opens the file
+6336	closed-unmerged	L	feat(web): open skill mentions in file panel
+6348	merged	L	fix(gitlab): submit review comments on context lines
+6407	closed-unmerged	L	feat(web): quote reply to pull request comments
+6440	closed-unmerged	L	fix(web): theme context menus on Windows and Linux
+6482	merged	M	fix(mobile): extend blockquotes across wrapped lines
+6484	closed-unmerged	M	feat(desktop): add stash to composer context menu
+6578	closed-unmerged	XL	fix(grok): show reasoning and context usage in the composer
+6586	closed-unmerged	M	fix(claude): subagent usage no longer fills the context meter
+7072	closed-unmerged	L	feat(server): show OpenCode session context window usage
+7101	closed-unmerged	XL	feat(web): add cross-provider model handoff with structured context
+7190	closed-unmerged	M	feat(codex): add 1M context for supported models
+7204	closed-unmerged	L	feat(web): allow customizing topbar header controls visibility via context menu
+7205	closed-unmerged	M	docs: fix stale commands and references
+7243	closed-unmerged	S	fix(web): wrap phase rail dots and center the context meter ring
+7249	closed-unmerged	XL	fix(server): refresh Claude context meter after compact
+7280	closed-unmerged	L	feat(web): terminal link context menu actions
+7296	merged	XS	fix(web): center the context usage meter
+7544	closed-unmerged	M	fix(shared): strip stray quotes from the repaired Windows PATH
+7578	closed-unmerged	L	feat(web): optional always-visible token count on the context meter
+7616	closed-unmerged	L	feat(server): report OpenCode token usage for the context window meter
+7681	closed-unmerged	S	fix(web): show context usage percent on the meter
+7960	closed-unmerged	L	fix(web): quiet theme editor and align context controls
+7998	closed-unmerged	XL	fix(web,desktop): unify themed context menus with icons, warning tones, and text actions
+8096	closed-unmerged	L	feat(mobile): show the context window ring in the thread composer
+8102	closed-unmerged	L	feat(web): open skill mentions in file panel
+8119	closed-unmerged	L	feat(web): link GitHub references in pull request markdown
+8197	closed-unmerged	L	feat(codex): show context compaction while it runs
+8306	closed-unmerged	XS	fix(clients): render Codex file citations as links
+8409	closed-unmerged	M	fix: make Claude 200k context window selection take effect
+8422	closed-unmerged	M	fix(web): do not persist terminal context chips
+8453	closed-unmerged	L	fix(server): scope the Claude context meter to the parent session
+8458	closed-unmerged	L	feat(web): add explicit context-menu layout and focus options
+8459	closed-unmerged	L	fix(web): make terminal context-menu actions reliable
+8570	closed-unmerged	M	fix(clients): show the right app name and thread context
+8584	merged	XL	fix(web,mobile): render Codex citations and artifact templates
+8610	merged	M	fix(server): stop querying Claude context usage after turns
+8617	closed-unmerged	XS	fix(server): preserve Claude context over cumulative result usage
+8659	closed-unmerged	XL	feat(opencode): surface context-window usage and session cost on the meter
+8697	closed-unmerged	L	feat(mcp): merge back conversation context
+8728	closed-unmerged	L	feat(mcp): update environment preferences
+8746	merged	S	fix(windows): strip quotes from repaired PATH
+8808	merged	XL	feat(providers): add context compaction across harnesses
+8812	merged	L	feat(pull-requests): link GitHub references in markdown
+8837	closed-unmerged	L	fix(clients): inherit model preferences for unconfigured projects
+8994	merged	L	feat(shortcuts): copy active thread reference
+9146	merged	XXL	feat(web): cite assistant responses with inline citations
+9147	merged	L	fix(settings): sync auto-settle and other shared preferences across environments
+9185	closed-unmerged	M	fix(server): refuse worktree removal while another thread references it
+9190	merged	M	feat(web): make context window indicator opt-in
+9206	closed-unmerged	L	fix(grok): show context-window usage in the composer
+9258	merged	L	feat(mobile): long-press file references for path and open actions
+9284	merged	XL	Revert "feat(providers): add context compaction across harnesses"
+9293	merged	XXL	feat(providers): add context compaction command
+9307	merged	M	fix(web): send cited messages with Cmd+Enter
+9385	merged	L	feat(marketing): put named-developer quotes on the landing page
+9418	closed-unmerged	M	feat(web): filter threads by project from context menu
+9430	merged	S	fix(web): show context meter in compact composer
+9494	closed-unmerged	L	fix(codex): send skill mentions as typed skill input
+9533	closed-unmerged	M	feat(web): open HTML files in the browser from the files context menu
+9605	open	XL	fix(chat): render Codex source citations
+9620	closed-unmerged	L	fix(server): queue messages sent during context compaction
+9623	merged	M	fix(web,mobile): fold context compaction under settled turn folds
+9815	closed-unmerged	S	fix(web): recognize dead-key Backquote shortcuts
+9846	merged	XS	fix(web): keep worktree origin preference visible
+9856	merged	M	fix(server): quote copied native provider update commands
+9990	merged	XS	refactor(shared): remove unused mention path serializer
+10009	merged	M	refactor(web): remove unused terminal context preview formatter
+10095	closed-unmerged	L	feat(server): enforce configurable thread context limits
+10096	closed-unmerged	M	fix(server): send messages queued during context compaction
+10100	merged	S	fix(web): preserve original mention text in the composer
+10112	merged	M	refactor(server): let adapters declare context compaction
+10233	closed-unmerged	XXL	feat(context): persist typed inline context references
+10234	closed-unmerged	XXL	feat(web): move composer context into inline references
+10235	closed-unmerged	XXL	feat(context): preserve references across copy paste and stash
+10236	closed-unmerged	XXL	feat(web): unify context chip presentation and previews
+10237	closed-unmerged	XXL	feat(web): autocomplete repository pull request references
+10328	closed-unmerged	L	fix(settings): preview shared preference differences before applying
+10339	closed-unmerged	S	fix(web): allow editing invalid stored preferences
+10368	closed-unmerged	XXL	feat(mobile): bring inline context to native composer and chat
+10381	closed-unmerged	M	fix(web): discard new citations when cancelled
+10391	closed-unmerged	L	fix(web): make message link context menus usable with screen readers
+10419	closed-unmerged	XL	feat(claude): show what fills the context window in the composer meter
+10497	closed-unmerged	XL	feat(mobile): drag iOS threads from their context menus
+10504	closed-unmerged	M	fix(desktop): show icons in thread context menus
+10518	merged	S	fix(web): remove inserted citations on cancel
+10560	merged	L	feat(mcp): expose selected environment preferences
+10637	merged	L	fix(web): add context menu to draft threads in the sidebar
+10653	merged	XXL	chore(refs): sync Effect reference to rc.112
+10654	merged	XXL	chore(refs): sync Alchemy reference to beta.76
+10666	closed-unmerged	M	fix(web): make Composer pull request context clickable
+10670	merged	M	fix(desktop): enable context menus in the browser
+10770	closed-unmerged	M	fix(chat): render Claude insight fences as blockquotes
+10831	merged	M	fix(web): keep citation comment when popover is dismissed
+11103	merged	L	fix(web): preserve drafts when compacting context
+11107	merged	L	fix(server): queue messages during context compaction
+11284	closed-unmerged	M	fix(server): report Grok context window usage
+11294	merged	M	fix(acp): accept SDK elicitation requests
+11327	closed-unmerged	XXL	feat(context): persist typed inline context references
+11328	closed-unmerged	XXL	feat(web): move composer context into inline references
+11329	closed-unmerged	XXL	feat(context): preserve references across copy paste and stash
+11330	closed-unmerged	XXL	feat(web): unify context chip presentation and previews
+11331	closed-unmerged	L	feat(web): autocomplete repository pull request references
+11332	closed-unmerged	XXL	feat(mobile): bring inline context to native composer and chat
+11351	closed-unmerged	XXL	chore(refs): sync Effect and Alchemy references to rc.115 and the preview commit
+11425	merged	XS	fix(shared): preserve final quoted empty CSV records
+11638	closed-unmerged	L	feat(web): quote selected markdown preview text into chat composer
+11694	merged	XXL	feat(swift-ios): preserve message context and fold large pastes
+11701	merged	XXL	feat(swift-ios): preserve context when copying between messages
+11779	closed-unmerged	L	fix(web): preserve syntax context in diff highlighting
+11842	merged	L	feat(web): open diff files from a right-click context menu
+11859	closed-unmerged	L	fix(web): file link chips use the shared file context menu
+11885	closed-unmerged	XL	feat: expose thread context and activation for external apps
+12013	closed-unmerged	L	feat(web): show subagent context in Agents panel
+12095	closed-unmerged	M	fix(web): move context window indicator out of legacy settings
+12101	closed-unmerged	M	fix(web): show the context window meter by default and keep it a normal setting
+12243	merged	XS	fix(clients): keep backslashes in copied Codex citations
+12280	open	M	feat(web): add project settings context menu to the draft headline
+12281	closed-unmerged	XL	feat(web): add link actions to the terminal context menu
+12296	merged	XL	feat(composer): attach threads as context
+12310	closed-unmerged	XL	fix(web): resolve pasted PR references with a loading chip
+12327	merged	XXL	chore(refs): sync Effect and Alchemy references to rc.115 and beta.78
+12333	merged	L	chore(review): keep review bots out of the vendored .repos references
+12357	merged	L	refactor(web): share composer context labels
+12403	merged	XS	fix(web): render citations in queued messages
+12423	closed-unmerged	S	fix(web): queued messages render quotes as chips instead of raw links
+12430	closed-unmerged	M	fix(ssh): discover hosts from quoted Include paths
+12644	closed-unmerged	S	fix(web): prevent duplicate quotes from dead keys
+12661	closed-unmerged	M	docs: define consistent clock preferences
+12739	closed-unmerged	S	fix(server): send Codex browser guidance as application context
+12794	closed-unmerged	XXL	feat(web): add temporary side chats with context snapshots
+12824	open	L	fix(v2): queue messages sent while context compaction runs
+12827	closed-unmerged	XL	feat(chat): mention connected machines with @
+12867	closed-unmerged	L	fix(web): honor clock preferences in detail views
+12869	closed-unmerged	L	fix(web): expose shared file actions on composer mentions
+13059	closed-unmerged	M	fix(web): context strip labels no longer loop between compact and expanded
+13062	closed-unmerged	XL	feat(chat): show Claude context reports above the composer
+13192	merged	XL	refactor(web): context chips render through one ContextChip component
+13258	closed-unmerged	L	fix(models): defer effort and context to provider settings
+13323	merged	M	fix(web): handle thread details context clicks
+13336	closed-unmerged	L	fix(web): an unsaved citation comment survives a provider question
+13377	closed-unmerged	XL	feat(web): cite image regions from the image preview
+13378	closed-unmerged	XXL	feat(mobile): cite image regions from image menus
+13379	closed-unmerged	XXL	feat(web): cite a region of a video frame
+13450	merged	M	fix(web): return focus to the composer after saving a citation note
+13477	closed-unmerged	M	fix(server): Grok rewrites $skill mentions into /skill invocations
+13642	open	M	fix(web): composer context strip no longer counts its padding as free space
+13659	closed-unmerged	L	fix(server): the context meter must only consume per-request usage evidence
+13871	merged	M	fix(server): preserve context occupancy across model handoffs
+14205	closed-unmerged	L	fix(claude): apply and display custom model context limits correctly
+14223	closed-unmerged	L	fix(usage): distinguish subagent context from cumulative tokens
+14263	open	S	fix(server): t3 run from a T3 terminal no longer trips on the service's launcher context
+14270	merged	L	feat(server): report OpenCode 2 usage, context windows, models and history
+14297	closed-unmerged	M	fix(mobile): text selection now spans paragraphs inside a blockquote
+14560	closed-unmerged	L	feat(web): support code blocks and blockquotes in the composer
+14562	closed-unmerged	L	feat(web): support code blocks and blockquotes in the composer
+14628	closed-unmerged	M	fix(mobile): select across quoted paragraphs on iOS
+14780	closed-unmerged	M	fix(shared): keep review comment text inside its context block
+14787	open	L	fix(web): show Bitbucket mention names without changing editable source
+14895	closed-unmerged	L	fix(claude): surface approval-only MCP elicitations
+14957	closed-unmerged	M	fix(web): move context window indicator out of legacy settings
+14988	closed-unmerged	L	fix(server): the Claude 200k context window selection takes effect
+15092	closed-unmerged	L	fix(chat): merging a fork back shows a pending-context notice
+15157	open	L	fix(composer): keep mention searches open across spaces
+15206	open	L	fix(models): defer effort and context to provider settings
+15217	open	XXL	feat(chat): reuse context reports across providers
+15269	open	XS	fix(web): allow Working threads to be dragged into chat as references
+15337	closed-unmerged	XS	fix(mcp): allow environment preference updates
+15640	closed-unmerged	L	fix(opencode): report context window usage in v2 threads
+15643	open	XXL	fix(preview): keep scroll context and read loaded text in memory
+15703	merged	L	feat(web): quote chips show what you said about the quote
+15742	closed-unmerged	L	fix(clients): show the right app name and thread context
+15806	closed-unmerged	L	fix(web): context menus are keyboard and screen reader accessible
+15818	open	M	fix(web): the Cite button comes back once the timeline stops scrolling
+15841	open	M	fix(mobile): agent-spawned threads can be mentioned from the @ picker
+15855	open	M	fix(server): a $skill mention no longer swallows a leading Claude /goal
+15884	open	M	fix(server): honor Cursor long-context selections
+15926	closed-unmerged	XL	feat(server): support multi-select elicitation forms and opt in Antigravity chat
+15956	closed-unmerged	L	fix(server): lower Grok $skill mentions to slash commands
+15980	closed-unmerged	L	fix(server): send a leading Grok $skill mention as /skill
+16063	open	XXL	feat(server,web,mobile): let plugins add context to the turns you send
+16170	merged		chore(refs): sync Effect and Alchemy references to 4.0.1 and beta.80
+16210	merged	XXL	fix(server): Pi thread titles use linked PR context
+16216	closed-unmerged	L	feat: OpenCode proposed plan cards and plan citations
+16244	closed-unmerged	XS	fix(server): defer context handoffs that cannot fit instead of failing every turn
+16266	merged	S	fix(server): a T3 Connect preferences save finishes even if the client disconnects
+16389	open	M	fix(server): cited assistant quotes reach providers expanded again
+16394	merged	XS	fix(server): a Claude usage limit no longer resets the context meter to 0%
+16398	merged	M	fix(contracts): a context record that cannot be encoded no longer fails the send
+16495	merged	XS	fix: restore service references breaking ci
+16579	open	M	fix(server): Codex turns know the context window of models already used
+16624	merged	M	fix(web): messages with quotes or links no longer collapse when short
+16670	open	S	fix(desktop): Linux URL handler quotes the Exec path only when it must
+16696	closed-unmerged	L	feat(server): guard child dispatch with an opt-in context budget
+16732	closed-unmerged	L	fix(claude): apply custom model context allowances in the current adapter
+16776	merged	XS	fix(web): context menus no longer scroll when they fit the window
+16828	merged	M	fix(web): cancelling a new citation no longer leaves a stray space
+16908	merged	L	fix(server): Claude 5-series models always run 1M context
+17008	open	M	fix(ssh): read quoted Include paths in host discovery
+17017	merged	L	fix(server,web,mobile): thread links reference the thread id, not a baked title
+17023	open	XL	fix(web): cite text inside inline HTML renders
+17081	closed-unmerged	L	feat(preview): add automatic browser control preference
+17130	open	XL	feat(web,mobile): @-mention a machine as a context chip
+17199	open	L	feat(desktop): add styled right-click menus via nativeContextMenus setting
+17249	closed-unmerged	M	feat: cite text from proposed plans
+17373	merged	XS	fix(web): drop sidebar context before cancelling pointer drag
+17462	open	M	fix(provider-cursor): use the selected context window for handoff budgets
+17505	closed-unmerged	XS	fix(server): expose thread executor to environment preferences
+17539	merged	XS	fix(web): context meter no longer reads 1000k just under a million tokens
+17562	merged	XS	fix(web): composer context strip pads both edges evenly
+17628	merged	L	refactor: home directory comes from a HostProcessHomeDirectory reference
+17641	merged	XL	refactor(shared): host process references live in a HostProcess module
+17650	merged	S	fix(web): Cite button stays anchored to the selected text
+17713	merged	S	fix(web): cite works on responses that end before a tool call
+17749	merged	S	fix(server): refuse editor paths with line breaks or quotes when the editor is a Windows command shim
+17770	merged	L	refactor(source-control): reference parsing and project matching are host resolvers
+18103	closed-unmerged	M	feat(web): add Styled Context Menu toggle for desktop
+18137	closed-unmerged	L	fix(server): send a leading Grok $skill mention as /skill
+18255	open	L	fix(web): preserve thread mentions in question answers
+18291	open	M	fix(server): include thread context in generated pull requests
+18332	open	S	fix(claude): context meter shows the configured auto-compact threshold
+18367	closed-unmerged	XS	fix(shared): composer context check matches non-BMP letters on Electron's V8
+18369	merged	L	feat(chat): show pending context handoff when selecting a model
+18423	open	S	fix(web): reveal folded imported responses when opening citations
+18440	open	M	fix(web): preserve snapshot thumbnail context and detail
+18442	open	L	fix(clients): show the right app name and thread context
+18581	open	M	fix(web,mobile): stop the model preferences migration from looping on older servers
+18620	closed-unmerged	XXL	fix(server): deferred context handoffs are retried after ordinary turns
+18685	closed-unmerged	M	fix(server): honor Cursor long-context selections
+18700	open	M	fix(server): honor Cursor long-context selections
+18743	closed-unmerged	S	fix(deps): Devtools no longer quotes shell paths with a vulnerable shell-quote
+18796	closed-unmerged	XL	feat(mobile): cite assistant text in the composer
+18834	open	XS	fix(mobile): keep queued-edit context in its draft
+18843	open	S	fix(web): keep thread context when stashing prompts
+18876	open	L	fix(web): context menus are keyboard and screen reader accessible
+18945	closed-unmerged	L	fix(web): context chip icons no longer touch the chip's edges
+18999	open	XS	fix(web): queued follow-ups show the quoted text instead of the citation link
+19007	open	XS	fix(mobile): show assistant quotes as text in the queue sheet
+19098	merged	XS	fix(web): let context handoff details use the available width
+19118	merged	XS	fix(desktop): stop unsolicited Messages code autofill
+19326	open	XS	fix(web): a prompt link opened from a thread no longer lands in that thread
+19350	merged	M	fix(web): an unsaved citation comment survives a question or approval
+19371	open	XS	fix(shared): keep quoted Git file names intact
+19414	open	M	fix(server): a handoff too large for the context window no longer wedges the thread
+19416	open	L	fix(server): read Claude context usage from stream message deltas
+19450	open	M	fix(web): a comment under a composer quote no longer joins the quote
+19477	closed-unmerged	XXL	feat(web): quotes from replies become numbered cards in the composer
+19525	open	XS	fix(shared): preserve escaped quotes in launch arguments
+19537	open	S	fix(acp): send slash commands without an extra context block
+19547	open	XS	fix(web): citation pills line up with the other composer chips
+19697	open	XS	fix(web): Working threads can be dragged into chat as references again

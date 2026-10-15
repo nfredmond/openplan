@@ -1,0 +1,199 @@
+3107	closed-unmerged	XXL	feat(server): add Codex thread start MCP tool
+3113	merged	L	Add DELETE-based MCP session termination
+3114	merged	S	fix(server): use bound host for MCP endpoint
+3121	merged	L	Improve inline panel, file preview, and MCP session handling
+3297	closed-unmerged	XL	[codex] add browser, terminal, and thread-management MCP tools
+3368	merged	M	[codex] Structure OAuth scope encoding failures
+3423	merged	M	[codex] Structure MCP snapshot failures
+3678	closed-unmerged	M	fix(auth): keep MCP sessions authorized past token expiry
+3754	merged	XL	Add worktree handoff and status tools to the t3-code MCP server
+3862	merged	M	fix(orchestrator): scope Claude MCP tool pre-approval
+3872	merged	L	feat(orchestrator): pass model options through MCP thread targets
+3904	closed-unmerged	M	fix(grok): support Grok 4.5 OAuth sessions
+4015	merged	M	fix(claude): isolate capability probe from user MCP servers
+4104	merged	S	Share MCP OAuth locks across Codex shadow homes
+4174	closed-unmerged	L	feat: add Codex OAuth voice-to-text input
+4186	merged	XS	Pass CLI OAuth config to hosted web deploy
+4189	closed-unmerged	S	fix(mcp): revoke credentials by provider session
+4634	closed-unmerged	XXL	Add cross-harness MCP server manager
+4659	merged	L	Keep MCP credentials alive across provider turns
+4871	closed-unmerged	XL	feat(server): expose terminal control to agents over MCP
+5124	closed-unmerged	S	fix(server): prevent MCP traffic from extending credentials
+5128	merged	S	fix(mcp): unblock Kimi models in OpenCode with preview tools
+5227	closed-unmerged	XXL	feat(settings): list the MCP servers Claude Code loads
+5481	closed-unmerged	M	fix(server): bound mcp tool payloads on the wire
+5482	merged	L	perf(server): stop shipping full MCP tool results in thread payloads
+5720	closed-unmerged	XS	fix(web): Brand Grok ACP T3 MCP tools with product icons
+6285	merged	L	fix(connect): preserve CLI OAuth parameters through browser sign-in
+6365	closed-unmerged	M	fix: load Cursor plugin MCP servers
+6620	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+7479	merged	M	fix(desktop): upgrade Clerk OAuth transport
+7542	closed-unmerged	L	fix(server): load MCP servers declared by Claude plugins
+8030	closed-unmerged	M	fix(server): classify successful MCP results correctly
+8413	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+8435	merged	M	fix(desktop): oauth popups open from the browser preview
+8676	closed-unmerged	L	feat(mcp): organize thread state
+8677	closed-unmerged	XXL	feat(mcp): add project management tools
+8678	closed-unmerged	XXL	feat(mcp): target thread launches by project
+8680	closed-unmerged	XXL	feat(mcp): let agents change thread workspaces
+8683	closed-unmerged	XL	feat(mcp): defer thread organization safely
+8685	closed-unmerged	XL	feat(mcp): expose thread workspace inventory
+8690	merged	L	feat(mcp): update thread metadata
+8695	closed-unmerged	XXL	feat(mcp): configure existing conversations
+8696	closed-unmerged	XL	feat(mcp): fork existing conversations
+8697	closed-unmerged	L	feat(mcp): merge back conversation context
+8699	closed-unmerged	XXL	feat(mcp): manage queued thread work
+8700	closed-unmerged	XL	feat(mcp): support thread attachments
+8702	closed-unmerged	XL	feat(mcp): inspect durable checkpoints
+8703	open	XXL	feat(mcp): restore durable checkpoints
+8707	closed-unmerged	XXL	feat(mcp): control managed terminals
+8714	open	XL	feat(mcp): run saved project scripts
+8716	closed-unmerged	XXL	feat(mcp): answer delegated user-input requests
+8722	closed-unmerged	L	feat(mcp): expose thread search
+8724	closed-unmerged	XL	feat(mcp): list and close preview tabs
+8726	closed-unmerged	L	feat(mcp): expose current environment diagnostics
+8728	closed-unmerged	L	feat(mcp): update environment preferences
+8730	closed-unmerged	L	feat(mcp): expose environment usage summary
+8731	closed-unmerged	XL	feat(mcp): run scheduled tasks immediately
+8737	closed-unmerged	L	fix(providers): reconnect MCP servers on demand
+8838	closed-unmerged	M	feat(connect): print stored oauth access token
+8911	closed-unmerged	L	fix(claude): classify MCP tool lifecycle events
+9261	closed-unmerged	L	feat(mcp): save preview snapshots to disk on request
+9423	closed-unmerged	XXL	feat: add shared agents and MCP chat controls
+9986	merged	XS	test(server): remove static OAuth page snapshots
+10090	closed-unmerged	M	fix(claude): keep MCP credentials out of process arguments
+10139	closed-unmerged	M	fix(server): probe Claude capabilities under an enterprise MCP config
+10232	merged	S	fix(mcp): allow text-only preview snapshots
+10501	merged	L	fix(mcp): keep preview snapshots usable by the agent and let it save them
+10554	merged	L	feat(mcp): expose thread organization commands
+10555	merged	L	feat(mcp): expose existing queued message commands
+10556	merged	L	feat(mcp): expose pending user questions
+10557	merged	M	feat(mcp): expose thread model selection
+10558	merged	L	feat(mcp): expose fork and merge-back commands
+10559	merged	M	feat(mcp): expose preview list and close
+10560	merged	L	feat(mcp): expose selected environment preferences
+10561	merged	M	feat(mcp): expose the existing thread search query
+10562	merged	M	feat(mcp): expose scheduled task run-now
+10563	merged	L	feat(mcp): expose project service operations
+10564	merged	L	feat(mcp): expose attachment upload and send
+10565	merged	L	feat(mcp): expose project thread launch service
+10566	merged	M	feat(mcp): expose branch-backed workspace discovery
+10627	closed-unmerged	XXL	feat(agents): share agent workflows and MCP chat controls
+11123	closed-unmerged	XL	feat: add macOS iOS simulator MCP toolkit
+11360	closed-unmerged	XXL	feat(mcp): add t3_thread_start for handing work to a new thread
+11400	closed-unmerged	L	feat(opencode): include MCP, LSP, and plugin inventory in provider snapshot
+11560	closed-unmerged	L	feat(mcp): let agents hand a thread off to a worktree they created
+11578	merged	M	fix(server): align MCP delegation support with live provider adapter registry
+11795	closed-unmerged	XL	feat(server): add V2 create_threads to the T3 MCP
+11864	closed-unmerged	XL	feat(server): agents list and create threads via the t3-code MCP toolkit
+11976	closed-unmerged	XXL	fix(source-control): seed GitHub OAuth subscriptions
+11997	closed-unmerged	L	fix(mcp): bound delegation waits and recover completion delivery
+12023	closed-unmerged	M	perf(relay): reuse one Clerk OAuth client per credential pair
+12104	closed-unmerged	XXL	fix(source-control): bound GitHub OAuth flow lifetime
+12312	closed-unmerged	S	fix(mcp): default preview_snapshot to text-only output
+12747	merged	S	fix(server): start ACP MCP bridge in self-contained runtime
+13232	closed-unmerged	L	fix(server): revoke Claude MCP credentials when the previous adapter is gone
+13489	merged	S	feat(mcp): expose thread settlement in t3_thread_list and t3_thread_read
+13558	merged	M	fix(mcp): preview snapshots fit in the agent's tool output again
+13559	merged	S	fix(mcp): preview errors tell agents what to do instead
+13784	closed-unmerged	XXL	feat(server): upgrade the ACP runtime and bridge T3 MCP to ACP agents
+13840	closed-unmerged	L	fix(server): wait for Codex MCP startup before sending turns
+14080	closed-unmerged	M	fix(server): keep MCP credentials alive while provider sessions run
+14136	closed-unmerged	S	fix(server): bound OAuth token HTTP calls with a 10s timeout
+14277	closed-unmerged	L	fix(server): Claude MCP tools show their names and icons
+14313	closed-unmerged	L	fix(server): share MCP tool presentation across providers
+14328	closed-unmerged	L	feat(mcp): let agents archive their own thread
+14386	merged	XXL	feat(server): OpenCode 2 text generation, MCP injection and restart reconciliation
+14419	open	XS	fix(server): abort ACP MCP fetches when calls are interrupted
+14420	open	XS	fix(server): discard failed ACP MCP disconnect bodies
+14431	closed-unmerged	M	fix(server): accept CR-framed ACP MCP events
+14432	closed-unmerged	XS	fix(server): cap concurrent ACP MCP connections
+14860	merged	L	fix(server): Claude MCP tools show their names and icons
+14886	closed-unmerged	S	fix(server): t3-code MCP credential survives a turn that waits over 24 hours
+14895	closed-unmerged	L	fix(claude): surface approval-only MCP elicitations
+14945	closed-unmerged	L	fix(server): share MCP tool presentation across providers
+15033	merged	L	perf: cheaper shell refreshes, one copy of Codex streaming text, no MCP wait polling
+15219	merged	XXL	feat(server): T3 MCP tools take explicit thread and project targets
+15220	closed-unmerged	XXL	feat(server): outside agents sign in to the T3 MCP server with OAuth
+15222	closed-unmerged	M	feat(web): copy an environment's MCP URL for outside agents
+15273	closed-unmerged	L	feat(server): launch t3-code MCP through a stdio wrapper
+15337	closed-unmerged	XS	fix(mcp): allow environment preference updates
+15428	closed-unmerged	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15445	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15464	open	L	feat(server): MCP tools for an inbox, approvals, thread diffs, and more thread actions
+15465	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15475	merged	L	fix(server): share MCP tool presentation across providers
+15528	closed-unmerged	L	fix(server): wait for Codex MCP startup before the turn snapshot
+15617	merged	XS	fix(mcp): mark declared tool failures as errors
+15622	open	S	fix(mcp): return delegated task handles before client timeouts
+15627	merged	S	fix(mcp): preserve thread command rejection reasons
+15839	open	S	fix(codex): launch-arg MCP servers survive the thread's t3-code server
+15875	merged	XS	fix(server): preserve ambient Cursor MCP servers
+15879	closed-unmerged	M	fix(server): Pi now sees screenshots returned by T3 MCP tools
+15904	open	XXL	feat(mcp): agents can launch threads on another connected environment
+15913	open	XL	feat(server): count which T3 MCP tools agents use
+15947	merged	M	docs(mcp): thread tools reach threads in any project
+15961	merged	XS	feat(server): one access gate for every T3 MCP tool
+15970	closed-unmerged	L	fix(server): wait for Codex MCP startup before the turn snapshot
+15995	open	S	fix(desktop): register Windows OAuth callbacks with the app entry point
+16005	closed-unmerged	L	fix(server): wait for Codex MCP startup before the turn snapshot
+16049	open	XXL	feat(server): let agents list and call plugin tools through MCP
+16142	merged	S	fix(server): OpenCode 2 threads get T3 Code's MCP tools
+16196	merged	M	refactor: HTML render frames speak the MCP Apps bridge protocol
+16236	merged	XXL	feat: MCP apps render and run inline in threads
+16335	merged	XXL	feat(server): every T3 MCP tool declares who may call it
+16336	merged	XXL	feat(server): outside agents sign in to the T3 MCP server with OAuth
+16337	merged	M	feat(web): copy an environment's MCP URL for outside agents
+16466	closed-unmerged	XXL	feat(mcp): shared MCP servers reach every agent session
+16653	open	L	feat(server): /mcp narrows a client's modes from T3-Mode-Limit
+16677	closed-unmerged	XXL	feat(proxy): add built-in OAuth account routing and quota management
+16718	merged	M	feat(server): hosted agents like ChatGPT can sign in to the T3 MCP server
+16741	merged	L	docs: connect Claude Code, Codex, ChatGPT and bots over MCP
+16752	merged	XS	fix(mcp): agent HTML pages stop painting slab backgrounds
+16807	closed-unmerged	L	fix(mcp): admit delegated tasks using known provider cooldowns
+16909	merged	M	fix(web): Copy MCP URL shows up for environments reached over plain http
+16919	closed-unmerged	M	fix(web): copy the local MCP URL through T3 Connect when available
+17026	merged	M	fix(client): apply host color scheme to saved MCP apps
+17027	merged	S	fix(client): tolerate blocked cookies in MCP app sandboxes
+17038	open	S	fix(server): MCP thread reads skip the item scan they filter to nothing
+17040	merged	M	fix(mobile): size inline MCP apps to their content
+17058	merged	L	fix(server): Codex titles and branch names no longer start the user's MCP servers
+17101	open	XXL	feat: manage skills and MCP servers in Settings → Tools
+17174	closed-unmerged	XXL	feat(providers): manage MCP servers across agents
+17219	closed-unmerged	L	feat(mcp): expose cached provider usage limits
+17277	closed-unmerged	S	fix(server): MCP tool calls work when a client omits MCP-Protocol-Version
+17408	merged	S	fix(server): keep the Claude MCP token out of process arguments
+17446	merged	L	refactor(provider-core): MCP provider sessions live in a McpProviderSessions service
+17454	open	M	fix(server): MCP thread list and read report every linked pull request
+17599	merged	S	fix(client): load earlier turns works for MCP threads over T3 Connect
+17727	closed-unmerged	M	fix(server): use project roots for MCP schedules in non-Git projects
+17772	merged	M	fix(server): check the specific scope for scripts, preview input, and full-access MCP grants
+17790	closed-unmerged	M	test(client): cover delegated MCP thread ids in signed relay URLs
+17824	closed-unmerged	L	Return MCP parameter validation errors as tool results
+17887	closed-unmerged	M	fix(server): keep the Claude MCP token out of the child environment
+17898	merged	M	fix(server): send Claude MCP servers over the control channel
+17957	closed-unmerged	L	fix(providers): keep the MCP bearer out of ACP and Pi child environments
+17962	merged	S	fix(web): MCP app permission prompts no longer overflow the screen
+18098	closed-unmerged	L	fix(mcp): return parameter validation errors as tool results
+18105	closed-unmerged	XL	feat(clients): MCP app approvals say what the tool does instead of printing raw JSON
+18125	closed-unmerged	L	fix(mcp): decode tool inputs with their advertised JSON codec
+18143	merged	L	feat(mcp): agents can write and read pull request review guides
+18194	closed-unmerged	XS	fix(mcp): t3_thread_read tells agents which thread sent a message
+18257	closed-unmerged	L	feat(server): support an operator-selected MCP stdio wrapper
+18339	closed-unmerged	XXL	feat(providers): shared MCP servers, skills, hooks and plugins
+18490	open	XS	fix(mcp): negotiate MCP 2025-11-25 so clients see invalid-argument errors
+18513	closed-unmerged	S	fix(mcp): expose native goal state in thread read and list
+18540	open	XS	fix(mcp): default t3_thread_wait to 50 seconds so clients don't time out first
+18548	open	M	fix(client): MCP apps can no longer trap you in full screen; it opens only after a tap
+18706	merged	M	fix(server): Claude works next to an enterprise managed-mcp.json
+18738	closed-unmerged	S	fix(deps): MCP orchestration no longer runs on a vulnerable SDK
+18884	closed-unmerged	XXL	fix(server): refresh MCP clients when reusing a provider session
+19045	closed-unmerged	M	fix(server): MCP plugin servers die with the Claude CLI's process group
+19133	closed-unmerged	L	feat(connections): guide Grok Bot MCP setup
+19321	merged	S	fix(server): stalled OAuth token requests no longer block credential calls
+19322	merged	M	fix(server): closing a Claude session no longer leaves plugin MCP servers running
+19333	closed-unmerged	M	fix(server): external MCP launches use the environment's default model
+19368	merged	M	fix(server): new Codex threads no longer miss slow MCP servers' tools
+19380	open	M	fix(server): external MCP calls inherit the environment default model
+19387	open	XS	fix(mcp): read event streams with mixed-case content types
+19615	open	L	feat(mcp): manage pairing credentials and trusted clients

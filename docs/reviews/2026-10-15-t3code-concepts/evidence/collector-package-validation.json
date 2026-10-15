@@ -1,0 +1,78 @@
+{
+  "checkedAt": "2026-10-15T04:05:01.551350+00:00",
+  "classificationRows": 13199,
+  "selectedPrs": 72,
+  "findings": 72,
+  "originalCorpusSha256": "2852de23041366abdbec9c9b6fd3e8470bdf67b9ca3a2c26bb2db9225bc8a16f",
+  "reportPinnedSourceLinks": 75,
+  "leadPinnedSourceLinks": 2,
+  "controls": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "pinnedReportPaths": 75
+    },
+    {
+      "case": "harmless-metadata",
+      "outcome": "survived",
+      "pinnedReportPaths": 75
+    },
+    {
+      "case": "restored",
+      "outcome": "survived",
+      "pinnedReportPaths": 75
+    },
+    {
+      "case": "missing-row",
+      "outcome": "intended_failure",
+      "reason": "complete-pr-identities"
+    },
+    {
+      "case": "duplicate-row",
+      "outcome": "intended_failure",
+      "reason": "complete-pr-identities"
+    },
+    {
+      "case": "wrong-pr-id",
+      "outcome": "intended_failure",
+      "reason": "complete-pr-identities"
+    },
+    {
+      "case": "wrong-selected-id",
+      "outcome": "intended_failure",
+      "reason": "selected-findings-identities"
+    },
+    {
+      "case": "wrong-corpus-hash",
+      "outcome": "intended_failure",
+      "reason": "original-corpus-hash"
+    },
+    {
+      "case": "missing-reference",
+      "outcome": "intended_failure",
+      "reason": "missing-reference"
+    },
+    {
+      "case": "wrong-source-pin",
+      "outcome": "intended_failure",
+      "reason": "pinned-source-path"
+    },
+    {
+      "case": "missing-local-artifact",
+      "outcome": "intended_failure",
+      "reason": "missing-local-artifact"
+    }
+  ],
+  "knownFileCensusDiscrepancy": [
+    12296
+  ],
+  "initialPackageFinding": "One addendum record was missing from the compact copy; corrected with a metadata-only record bound to the retained original response.",
+  "blindCategories": [
+    "Source semantics and whether prose supports an inference",
+    "Heading and line anchors or remote HTTP accessibility",
+    "Complete patch/comment review, execution and acceptance",
+    "Researcher reading claims beyond retrieved-file census"
+  ],
+  "collectorCorrectionSourceSha256": "1975c3e462d45bbf06d456473939914caa2985d0f738ae307a5d17007df169f7",
+  "correctedReportSha256": "646048c29fad9ec93b30c51a5ac63db640b79f79dd7dcd6b1345843bbbbfdc6b"
+}

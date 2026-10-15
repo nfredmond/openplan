@@ -1,0 +1,10 @@
+[
+  {
+    "pr": 12296,
+    "title": "feat(composer): attach threads as context",
+    "state": "closed",
+    "mergedAt": "2026-09-17T19:36:32Z",
+    "declaredFiles": 0,
+    "retainedFiles": 4
+  }
+]

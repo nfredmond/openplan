@@ -1,0 +1,786 @@
+48	closed-unmerged		Update cached branch list immediately after checkout
+63	closed-unmerged		Add provider checkpoints and thread rollback across server, contracts, and chat UI
+66	closed-unmerged		Persist chat image previews and migrate web persistence schema to v8
+69	closed-unmerged		Migrate web keyboard shortcuts to TanStack hotkeys manager
+84	closed-unmerged		Livestore sync engine migration
+111	merged		.github/workflows: Migrate workflows to Blacksmith runners
+138	merged		Add desktop auto-update flow and publish updater metadata assets
+148	merged		Scope git checkout effects and update Effect/Node dependency set
+162	merged		Migrate dev runner to TypeScript and centralize NetService in shared package
+173	closed-unmerged		Migrate server entrypoint to Effect CLI runtime modules
+196	merged		Add production favicon assets and update marketing page icon links
+235	closed-unmerged		Correct installation command for T3 Code
+242	closed-unmerged		test: fix CheckpointReactor rollback assertions for threadId
+275	closed-unmerged		Add packaging/install scaffolding for Arch Linux and macOS
+337	closed-unmerged		Fix Linux Codex PATH resolution and tagged desktop artifact version
+341	closed-unmerged		feat: sort sidebar projects by latest thread update
+404	merged		Enforce minimum Codex CLI version (≥0.37.0) before starting sessions
+446	merged		fix: properly emit update metadata for intel macs
+482	closed-unmerged		Add linuxbrew support for codex installation.
+555	closed-unmerged		docs: add Homebrew install method to README
+565	closed-unmerged		Move desktop update status into the sidebar footer
+591	closed-unmerged		feat: interactive install wizard + CI/release fixes
+605	merged		Add checkout and Node setup to updater publish workflow job
+609	closed-unmerged	L	fix(server): soften Codex CLI version enforcement
+611	merged		fix(ci): handle draft PR conversions in pr-vouch
+639	closed-unmerged		Docs/codex installation guide
+641	merged		Fix users who installed intel builds on arm macs
+691	closed-unmerged		fix: Update project name styling in chat header for better readability
+712	closed-unmerged		feat(web): display installed version in settings
+720	merged		Display application version in sidebar and settings
+741	closed-unmerged		fix: use thread updatedAt for sidebar activity ordering
+833	closed-unmerged		feat(desktop): add AppImage update metadata packaging
+837	closed-unmerged		fix: update installation command in README to use npx t3@alpha
+933	merged		chore(release): align package versions before building artifacts
+955	merged		fix(desktop): show dialog after "Check for Updates" menu action
+956	merged	M	chore: update actions/checkout and actions/github-script
+957	closed-unmerged		fix(web): prefer desktop runtime version in desktop UI
+981	merged		update project removal copy
+999	closed-unmerged	M	chore: update vite to v8.0.0 stable
+1002	merged	L	chore: update @vitejs/plugin-react to 6.0.0
+1005	merged	L	chore: Upgrade marketing app to Astro 6
+1009	closed-unmerged	L	Update the switch default thread branch settings ui
+1010	merged	M	Upgrade oxfmt and oxlint tooling versions
+1061	closed-unmerged	M	feat(web): add docsUrl for providers to install from
+1089	closed-unmerged	M	feat(sidebar): show update time instead of creation time
+1091	closed-unmerged	L	fix(web): migrate legacy editor preference storage
+1101	closed-unmerged	L	fix(web): use runtime app version in desktop UI
+1116	closed-unmerged	L	feat: move update button to sidebar footer as dismissable pill
+1123	closed-unmerged	L	feat(desktop): add manual "Check for Updates" button in web settings
+1124	closed-unmerged	L	feat: make check for updates menu item dynamic
+1144	closed-unmerged	M	Fix empty content_block_stop handler to finalize tool input and emit item.updated
+1180	merged	L	feat: add mock update server
+1185	closed-unmerged	XL	Update Codex provider banner when Codex path settings change
+1224	closed-unmerged	XXL	chore: bump version to 0.0.13-dev.1
+1246	merged	XS	fix(ChatView): update scroll button styles to improve user interaction
+1248	merged	XS	fix(web): update add-project toggle label in cancel state
+1274	closed-unmerged	XXL	Merge updates with T3 Code
+1306	closed-unmerged	XXL	Add plugin host runtime and migrate codex composer
+1339	closed-unmerged	M	chore(security): update github actions and pin to commit sha
+1340	closed-unmerged	XL	Add optional Linux installer bundle for AppImage releases
+1387	closed-unmerged	L	fix(claude): map TodoWrite updates to plan events
+1405	closed-unmerged	M	fix: add migration for claudeCode to claudeAgent provider rename
+1427	closed-unmerged	L	Improve desktop update button with status-based visuals
+1450	closed-unmerged	XXL	fix: trust node-pty install scripts on linux
+1451	merged	XS	fix: trust node-pty install scripts on linux
+1461	merged	XS	fix(desktop): ensure all windows are destroyed before launching the NSIS installer during update process
+1493	closed-unmerged	XL	feat(web): upgrade project and thread deep linking
+1505	merged	L	Update system overhaul
+1564	merged	M	Document T3 Code install methods
+1565	merged	S	Update README.md
+1593	closed-unmerged	XXL	Publish server settings schema with release versions
+1616	closed-unmerged	XXL	Migrate build and test pipeline to vite-plus
+1621	closed-unmerged	S	[codex] migrate Effect.fn in apps/server/scripts/cli.ts
+1622	merged	XS	[codex] migrate Effect.fn in apps/server/src/checkpointing/Layers/CheckpointDiffQuery.ts
+1623	merged	S	[codex] migrate Effect.fn in apps/server/src/checkpointing/Layers/CheckpointStore.ts
+1624	merged	S	[codex] migrate Effect.fn in apps/server/src/git/Layers/CodexTextGeneration.ts
+1625	merged	S	[codex] migrate Effect.fn in apps/server/src/git/Layers/ClaudeTextGeneration.ts
+1626	closed-unmerged	XS	[codex] migrate Effect.fn in apps/server/src/keybindings.ts
+1627	closed-unmerged	XS	[codex] migrate Effect.fn in apps/server/src/open.ts
+1628	closed-unmerged	M	[codex] migrate Effect.fn in apps/server/src/orchestration/Layers/OrchestrationEngine.ts
+1629	merged	XS	[codex] migrate Effect.fn in apps/server/src/orchestration/Layers/ProviderCommandReactor.ts
+1630	closed-unmerged	L	[codex] migrate Effect.fn in apps/server/src/orchestration/projector.ts
+1631	merged	S	[codex] migrate Effect.fn in apps/server/src/persistence/Layers/Sqlite.ts
+1632	merged	XS	[codex] migrate Effect.fn in apps/server/src/persistence/Migrations.ts
+1633	merged	S	[codex] migrate Effect.fn in apps/server/src/persistence/NodeSqliteClient.ts
+1634	merged	XS	[codex] migrate Effect.fn in apps/server/src/provider/Layers/ClaudeProvider.ts
+1635	merged	XS	[codex] migrate Effect.fn in apps/server/src/provider/Layers/CodexProvider.ts
+1636	merged	M	[codex] migrate Effect.fn in apps/server/src/provider/Layers/EventNdjsonLogger.ts
+1637	merged	XS	[codex] migrate Effect.fn in apps/server/src/provider/Layers/ProviderAdapterRegistry.ts
+1638	merged	S	[codex] migrate Effect.fn in apps/server/src/provider/Layers/ProviderRegistry.ts
+1639	merged	M	[codex] migrate Effect.fn in apps/server/src/provider/Layers/ProviderService.ts
+1640	merged	S	[codex] migrate Effect.fn in apps/server/src/provider/makeManagedServerProvider.ts
+1641	closed-unmerged	XS	[codex] migrate Effect.fn in apps/server/src/telemetry/Identify.ts
+1642	merged	XS	[codex] migrate Effect.fn in apps/server/src/telemetry/Layers/AnalyticsService.ts
+1643	closed-unmerged	XS	[codex] migrate Effect.fn in apps/server/src/terminal/Layers/Manager.ts
+1645	closed-unmerged	XS	[codex] migrate Effect.fn in packages/shared/src/DrainableWorker.ts
+1668	merged	XXL	Normalize sidebar thread state for faster updates
+1733	closed-unmerged	XXL	Migrate Codex and Claude runtimes to ACP adapters
+1756	closed-unmerged	L	refactor: migrate claude adapter to the-coding-sdk
+1763	merged	XXL	Stream git status updates over WebSocket
+1770	closed-unmerged	L	feat: implement more friendly updater errors
+1808	merged	M	fix: don't let un-updateable builds check for an update
+1827	closed-unmerged	XXL	chore(release): add Linux packaging and stable install path
+1828	closed-unmerged	M	fix: intellij not being visible even though it's installed
+1892	closed-unmerged	XS	fix: trim publisherName to prevent Windows auto-update signature
+1900	merged	M	Fix worktree base branch updates for active draft
+1953	merged	XXL	Migrate chat scrolling and branch lists to LegendList
+1961	closed-unmerged	XS	fix(server): distinguish missing cwd from missing binary in codex version check
+2047	closed-unmerged	M	Respect installed desktop update channel
+2049	merged	L	Default nightly desktop builds to the nightly update channel
+2074	closed-unmerged	XXL	fix(desktop): speed up cold start and repair auto-update flow
+2100	merged	XS	ci(release): install deps before finalize version bump
+2102	closed-unmerged	M	Install Spectre MSVC libs for Windows release builds
+2110	merged	XS	Update workflow to use ubuntu-24.04 runner
+2117	closed-unmerged	XS	Update Electron to 41.2.1
+2131	closed-unmerged	XL	Refine desktop update checking and labels
+2176	merged	XS	fix: updated UI "add project" icon to match the command pallete icon
+2200	closed-unmerged	XXL	Codex/update upstream 20260418
+2208	merged	S	Devcontainer / IDE updates
+2215	closed-unmerged	M	Update Claude agent SDK integration
+2223	closed-unmerged	S	fix(build): Update desktop launcher and toolchain deps
+2225	closed-unmerged	L	fix(build): Update desktop launcher and toolchain deps
+2229	closed-unmerged	S	fix(build): Update desktop launcher and toolchain deps
+2312	merged	XXL	provider update advisories
+2332	closed-unmerged	M	fix(desktop): standard Linux AppImage icons for AppImageLauncher
+2409	merged	S	Narrow the right sidebar and update task panel and diff panel
+2427	merged	S	fix: bump `electron` version to v40.9.3 and add it to our trusted dependencies
+2449	merged	S	[codex] fix Discord release version flag
+2454	closed-unmerged	L	feat(desktop): show toast with release notes link when app updates to a new version
+2460	closed-unmerged	S	fix: allow downgrade from nightly to stable by not overriding autoUpdater.allowDowngrade
+2490	merged	XS	fix version test
+2497	merged	S	Fix repeated effect-language-service prepare hooks during bun install
+2502	merged	M	Add collapsible file diffs + @pierre/diffs version update.
+2520	closed-unmerged	L	Add desktop update release notes tooltip
+2609	closed-unmerged	M	Fix Windows provider startup and update issues
+2610	merged	XS	Update deployment command in release workflow
+2655	closed-unmerged	XS	hide update toast action while running and complete
+2669	merged	S	Constrain provider update popover overflow
+2673	closed-unmerged	S	Fix OpenCode events on versions greater than 1.14.40
+2717	closed-unmerged	M	[Fix]: Update cursor logo on marketing site
+2755	closed-unmerged	M	Clear stale provider update toast CTA
+2781	closed-unmerged	XS	fix(server): Provider updates always fail on Windows
+2802	closed-unmerged	L	Reduce provider update pill rerenders
+2805	closed-unmerged	L	[codex] fix remote terminal live event updates
+2821	closed-unmerged	XXL	feat(pwa): one-QR install + pair + reconnect flow
+2840	merged	XL	[codex] Bump Effect to beta.73 and migrate compatibility APIs
+2851	merged	XXL	Migrate TypeScript checks to Effect TSGo
+2861	merged	XS	Ensure Electron runtime is installed in release workflow
+2899	merged	XXL	Migrate workspace to Vite+ and pnpm
+2936	merged	M	ci: let setup-vp install dependencies
+2941	merged	S	fix(release): install dependency closures in partial jobs
+2949	merged	XS	fix(release): install hosted web workspace closure
+2961	merged	XS	[codex] fix release finalize install
+2964	merged	XL	Migrate tests to vite-plus test APIs
+2974	closed-unmerged	M	Use Effect scheduling for relay install locks
+2983	closed-unmerged	M	Make relay install lock use idiomatic Effect policies
+2992	closed-unmerged	L	fix(desktop): upgrade electron-builder to 26.15.1, use FUSE-free AppI…
+3002	closed-unmerged	M	feat: update 0.0.25
+3084	merged	M	Guard VCS status updates against stale targets
+3092	merged	XXL	Migrate desktop auth to Clerk bridge
+3103	merged	S	[codex] fix: show nightly badge from primary web server version
+3128	closed-unmerged	L	Optimize chat composer context updates
+3130	merged	L	feat: allow disabling provider update checks
+3145	closed-unmerged	XXL	Gemini account switching, Antigravity approvals, and other main updates
+3146	closed-unmerged	XL	[codex] Add PATCH.md fork upgrade workflow
+3169	merged	XXL	Add diff scope switching and provider update settings
+3171	closed-unmerged	XS	fix(server): resolve provider update command spawns
+3177	closed-unmerged	XXL	feat(vcs): add actionable Version Control to web and mobile
+3186	merged	XL	[codex] Migrate server source control Effect services
+3194	merged	L	[codex] Migrate desktop shell and SSH Effect services
+3202	merged	M	[codex] Refactor desktop window and update Effect services
+3261	merged	L	[codex] Structure desktop update persistence errors
+3280	merged	M	[codex] Structure Electron updater errors
+3293	merged	L	[codex] Structure update manifest failures
+3365	merged	M	[codex] Structure relay install confirmation conflicts
+3370	merged	M	[codex] Preserve desktop update state read failures
+3382	closed-unmerged	M	[codex] Structure legacy connection migration errors
+3449	merged	S	[codex] Migrate desktop app errors to Schema
+3468	merged	M	[codex] Structure release package updater failures
+3473	merged	XS	[codex] Preserve desktop update state causes
+3531	merged	XS	[codex] Fix provider update checks restore defaults
+3545	merged	XL	[codex] Upgrade Legend List chat scrolling
+3563	closed-unmerged	XS	Remove update button from provider toast while updating
+3574	merged	XL	Fix native composer lag with revision-gated updates
+3621	merged	M	fix(desktop): Validate WSL node version against engine range after probe success
+3626	closed-unmerged	XL	Use codex update for standalone installs
+3637	closed-unmerged	XS	Update README.md
+3647	closed-unmerged	L	fix(mobile): restore header blur and reliable swipe-back on new iOS versions
+3672	closed-unmerged	XXL	[codex] Use updated web splash icon
+3679	merged	XL	Upgrade Vite Plus and enable bundled dev opt-in
+3699	closed-unmerged	XXL	feat: runtime plugin system — capability host, marketplace, install lifecycle (server + web)
+3731	closed-unmerged	XXL	Plugin system (7/8): marketplace + install lifecycle
+3740	merged	L	fix(server): resolve Claude SDK executable path on Windows npm installs
+3741	closed-unmerged	XS	fix(server): stop surfacing Claude 'task_updated' messages as work-log errors
+3770	closed-unmerged	L	Optimize provider update pill renders
+3781	merged	M	fix(release): stage pnpm 11 allowBuilds for desktop installs
+3785	merged	L	Upgrade Clerk toolchain to latest versions
+3802	closed-unmerged	XL	feat(mobile): add Android Live Update mock preview
+3809	closed-unmerged	L	feat(source-control): package-manager-aware `gh` upgrade command
+3811	closed-unmerged	L	Optimize provider update pill renders
+3821	merged	L	[codex] Upgrade Clerk stack
+3832	merged	L	feat: show nightly update changelog tooltip
+3835	closed-unmerged	L	Optimize sidebar provider update pill renders
+3888	closed-unmerged	L	Optimize provider update pill renders
+3902	merged	XS	Fix worktree removal timing out on large install trees
+3915	closed-unmerged	L	Optimize provider update sidebar pill renders
+3941	closed-unmerged	L	Optimize provider update pill rerenders
+3956	closed-unmerged	XXL	fix(codex): use `codex update` for standalone installer installs
+4037	merged	L	fix(mobile): Stabilize native stack option updates
+4048	closed-unmerged	M	feat(provider): preflight conversation rollback support
+4065	closed-unmerged	L	Use the native Codex update command for supported versions
+4072	closed-unmerged	L	T3code/apk GitHub release update
+4088	merged	XS	Update marketing GitHub star count
+4102	merged	M	Preserve T3 Code identity in macOS development launcher
+4113	merged	L	Finale: upgrade changed files card to fix various UI issues
+4143	closed-unmerged	S	Repair legacy shell summary migrations
+4166	merged	S	fix(web): improve dev sidebar backdrop contrast & remove version pills
+4185	closed-unmerged	M	Use codex update for standalone installs
+4215	closed-unmerged	XXL	Worktree updates
+4286	merged	XXL	Add remote server updates and standalone service management
+4290	closed-unmerged	S	fix(ssh): restart managed server after runner update
+4306	merged	S	fix(web): add web app manifest so installed app keeps its scope
+4332	merged	M	Fix Android adaptive launcher icon
+4341	closed-unmerged	M	fix(web): roll back timed-out preview resizes
+4350	merged	S	fix(web): warn before silent Windows updates
+4371	closed-unmerged	M	fix(cursor): reject desktop launcher forwarders
+4389	merged	XS	fix(server): parse CLI version in update preflight
+4400	merged	XXL	feat: migrate v1 state into orchestrator v2
+4430	closed-unmerged	S	fix(web): align remote server update action
+4440	merged	L	Upgrade Clerk packages and Expo integration
+4485	closed-unmerged	XL	fix: clean up the remote server update reconnect flow
+4566	closed-unmerged	XXL	Review and worktree updates
+4569	closed-unmerged	XS	fix(windows): discover Cursor Agent CLI install dir
+4570	closed-unmerged	S	fix(server): survive client resets on WebSocket upgrade sockets
+4614	closed-unmerged	XXL	Fixes migrations
+4635	merged	XXL	Add managed tunnel limits migration
+4643	merged	XXL	[codex] Upgrade Effect and Alchemy betas
+4651	closed-unmerged	XS	fix(web): clear stale provider update toast action
+4675	merged	XXL	fix(mobile): match react version to react-native 0.85.3 vendored renderer (19.2.3)
+4676	merged	XS	Clear provider update actions while updating
+4686	merged	L	Add OTA update checks to mobile settings
+4721	merged	S	fix(desktop): allow updater-controlled relaunch
+4731	merged	S	fix(web): align remote server update action
+4743	closed-unmerged	M	fix(desktop): link downloaded update release notes
+4756	closed-unmerged	L	optimize thread shell summary updates
+4771	merged	M	fix(desktop): link release notes from the update downloaded toast
+4777	closed-unmerged	L	fix(desktop): reduce update restart time
+4796	merged	XS	fix(release): skip scripts during Vercel installs
+4824	merged	M	build(desktop): reduce installed app size by ~300MB
+4832	merged	XS	Update model version from claude-opus-4-8 to claude-opus-5
+4835	closed-unmerged	M	docs(claude): update multi-account setup for CLAUDE_CONFIG_DIR
+4857	closed-unmerged	M	fix(server): update Codex through its CLI
+4903	merged	XL	fix(web): show server update progress through reconnect
+4904	closed-unmerged	M	fix(web): clarify update track mismatch guidance
+4910	closed-unmerged	M	fix(server): brew upgrade the installed formula, not the configured one
+4936	closed-unmerged	L	fix(web): treat server update restart as expected
+4937	closed-unmerged	L	fix(web): treat server update restart as expected
+4956	closed-unmerged	L	fix(server): keep installed editors visible when discovery times out
+4958	merged	L	Check for mobile app updates on launch
+4992	merged	L	fix(web): server updates no longer look like warnings
+5012	closed-unmerged	S	fix(server): pass the explicit user to loginctl enable-linger (fixes WSL2 service install)
+5027	merged	XS	feat(shared): support shorthand (major-only) versions in the semver helpers
+5030	closed-unmerged	XXL	chore(mobile): upgrade Expo SDK 56 to 57 (React Native 0.86)
+5074	merged	XS	fix(shell): add ~/.local/bin to the Windows CLI resolver so native-installed providers are found
+5095	merged	S	fix(server): self-update no longer rolls itself back on restart
+5105	closed-unmerged	S	fix(desktop): skip unreadable legacy credentials during migration
+5122	closed-unmerged	XXL	perf(desktop): unblock Windows startup and shrink the installer
+5132	merged	S	fix(ssh): surface a failed remote t3 install instead of a silent 0-byte server.log
+5171	closed-unmerged	XL	fix(server): supervise background service updates
+5172	closed-unmerged	M	chore(ci): bump GitHub Actions to latest versions
+5181	merged	XXL	fix(server): make remote updates rollback-safe
+5185	closed-unmerged	XS	fix(desktop): make nightly updates less noisy
+5217	merged	S	fix(server): stop npx service updates from silently leaving the old server running
+5254	closed-unmerged	L	fix(web): offer Update client when the app is behind the server
+5268	closed-unmerged	L	feat(terminal): select installed shell for new sessions
+5302	merged	L	fix(server): prevent accidental service downgrades
+5331	merged	XL	Upgrade Effect to beta.103
+5344	closed-unmerged	L	perf(client): batch large thread sync updates
+5374	merged	L	fix(server): allow remote updates with database migrations
+5404	merged	M	fix: reconnect faster after remote server updates
+5422	closed-unmerged	L	feat(server): ACP sessionUpdate parity for Grok clients
+5470	merged	L	fix: smooth remote server updates
+5483	merged	L	fix(server): drop superseded tool updates from snapshots
+5502	closed-unmerged	L	feat(server): ACP sessionUpdate parity for Grok clients
+5547	merged	XS	fix(web): update tooltip no longer dismisses when scrolling release notes
+5570	merged	M	fix(web): stop the "requests are slow" warning from firing on every provider update
+5588	merged	XS	Bump mobile app version to 1.0.2
+5595	merged	M	fix(web): live background-work banner no longer hides behind the update notice
+5630	closed-unmerged	M	fix(server): update standalone Codex installs with codex update
+5646	merged	S	fix(server): allow install scripts in npm-global provider updates
+5678	closed-unmerged	L	fix(server): resolve Claude launcher shims from pnpm and space-containing Windows installs
+5752	closed-unmerged	XXL	fix(server): recover provider lifecycle across updates
+5773	merged	XL	feat(server): vp run migrate-dev-db seeds worktree dev dbs with real data
+5790	closed-unmerged	L	feat(ios): show app and environment versions
+5938	merged	S	fix(web): update pills use readable theme foregrounds
+5970	closed-unmerged	L	fix(swift-ios): prevent approved device build downgrades
+5998	closed-unmerged	XXL	fix(desktop): verified update teardown on Windows+WSL, install integrity check, and resilient WSL readiness handshake
+6039	merged	XXL	feat(web): pull request surfaces — filters & qualifiers, all-server listing, update branch, reactions, in-place editing, smarter diffs
+6042	closed-unmerged	M	fix(ssh): adopt installed service without session env
+6104	closed-unmerged	L	fix(web): stop terminal scrollback from jumping to the live prompt
+6169	merged	XXL	perf(desktop): speed up Windows update installation
+6177	merged	M	fix(mobile): guard App Store release versions
+6201	merged	L	feat(desktop): add signal macOS DMG installer background
+6204	closed-unmerged	S	fix(web): disable server update Button until connected
+6221	closed-unmerged	L	fix(server): installed editors no longer go undetected on Windows
+6239	closed-unmerged	L	fix(desktop): theme update status dialogs
+6247	closed-unmerged	M	fix(server): upgrade the actually-installed Homebrew formula
+6269	merged	L	fix(desktop): refresh queued updates before install
+6274	closed-unmerged	M	Restore project thread trees and align desktop update versions
+6284	closed-unmerged	XS	fix(server): skip killing completed provider updates
+6308	closed-unmerged	XXL	feat(web): notify agent updates with Web Push
+6322	merged	XS	fix(web): align update toast release notes link
+6324	merged	XL	fix(mobile): prevent OTA update restart crashes
+6334	closed-unmerged	M	fix(web): complete fast update check rotation
+6356	closed-unmerged	M	fix(server): pick up newly installed provider CLIs on Windows refresh
+6436	closed-unmerged	XXL	fix(server): use the correct installer for provider updates
+6453	closed-unmerged	L	fix(claude): discover skills from installed plugins
+6467	closed-unmerged	L	feat(web): show update download progress in sidebar
+6491	closed-unmerged	M	fix(web): restore desktop update download progress
+6501	closed-unmerged	M	feat(desktop): show update download progress
+6504	merged	L	fix(web): clarify desktop update status
+6544	merged	M	fix(web): hide provider Update toast action while an update is running
+6549	merged	XS	fix(web): simplify the desktop-managed server update banner copy
+6554	merged	XXL	feat(desktop): update the desktop app on remote Macs from the Update button
+6563	merged	XL	feat(cli): npx t3 triage hands broken installs to your own coding agent
+6598	closed-unmerged	M	feat(web): show desktop update progress
+6605	closed-unmerged	S	fix(web): hide the server update banner when this app is older
+6623	closed-unmerged	M	fix(web): restart from downloaded update toast
+6627	closed-unmerged	M	feat(web): restart from downloaded update toast
+6637	closed-unmerged	S	fix(web): hide the server update banner when this app is older
+6675	merged	S	perf(server): persist the wire projection for streaming tool.updated data
+7130	closed-unmerged	M	fix(mobile): prevent excessive updates while dragging font-size sliders
+7138	merged	S	fix(mobile): improve font-size slider performance and prevent maximum update depth errors
+7141	merged	M	fix(server): run the CLI on Node versions without import.meta.main
+7167	closed-unmerged	XL	fix(web): refresh pull request diff after updates
+7206	merged	XL	fix(swift-ios): preserve live updates during thread loading
+7208	merged	S	fix(web): align Windows update confirmation copy
+7209	merged	XL	feat(lint): ban native title tooltips and migrate to styled Tooltip
+7256	closed-unmerged	S	fix(desktop): --version segfaults without a display
+7271	closed-unmerged	S	feat(web): show server versions on remote connections
+7279	merged	L	fix(grok): bound cumulative tool output updates
+7379	closed-unmerged	L	fix(web): keep provider update prompts visible in development
+7421	merged	S	fix(packaging): install AUR launcher icons where icon themes look
+7426	closed-unmerged	XXL	feat(server): open a project in any installed application
+7468	closed-unmerged	XS	fix(server): status-free task updates no longer revive an idle task
+7479	merged	M	fix(desktop): upgrade Clerk OAuth transport
+7503	closed-unmerged	XL	feat(web): automatically update idle servers
+7521	merged	XS	fix(web): align version text with its label
+7534	closed-unmerged	L	feat(server): open a project in any installed application
+7579	merged	M	fix(web): compare client and server versions as semver, not strings
+7646	closed-unmerged	M	fix(service): make install reconcile current service
+7658	merged	XS	Update user count in AGENTS.md
+7668	closed-unmerged	XS	fix(desktop): Linux windows bind to the launcher instead of a generic icon
+7731	closed-unmerged	M	fix(server): check Homebrew for provider updates on Homebrew installs
+7761	merged	M	fix(web): remove duplicate provider update progress
+7794	merged	S	fix(web): launcher shortcuts no longer hijack the empty composer
+7804	closed-unmerged	L	feat(desktop): coordinate remote server updates
+7852	closed-unmerged	M	fix(codex): tolerate launcher stdout preambles
+7876	closed-unmerged	L	fix(web): update release notes stay open for interaction
+7880	closed-unmerged	L	fix(web): replace the update tooltip with a changelog popover
+7914	closed-unmerged	XXL	chore(deps): update Effect to 4.0.0-rc.111
+7953	merged	S	fix(clients): reconnect after credentials fail during remote server updates
+8000	merged	XS	fix(web): keep server update banners flush with the composer
+8018	merged	M	perf(desktop): skip duplicate browser updates
+8083	merged	XS	fix(web): stop update notices showing through the composer
+8163	merged	XS	fix(deps): stop pnpm installs from changing the lockfile
+8169	merged	M	feat(mobile): track device models and OS versions
+8176	merged	L	fix(server): keep previously used providers working after upgrades
+8177	merged	S	docs(release): verify remote updates with database migrations
+8179	closed-unmerged	M	fix(mobile): publish missed updates after native builds finish
+8208	merged	M	fix(usage): identify client version mismatches
+8247	closed-unmerged	XS	fix(server): one-click provider updates no longer wedge brew-installed Codex on macOS
+8354	closed-unmerged	L	fix(server): use Codex native updater
+8363	closed-unmerged	XS	fix(server): pnpm-global provider updates no longer leave a broken CLI
+8368	merged	L	perf(server): cut chatty tool-update frames by 90%
+8370	closed-unmerged	XS	fix(server): honor the provider update opt-out when settings cannot be read
+8379	closed-unmerged	XS	fix(server): recover collided thread migration
+8381	closed-unmerged	L	fix(web): unify desktop update progress in sidebar
+8424	closed-unmerged	M	fix(web): roll back file editor when save fails
+8429	closed-unmerged	S	fix(desktop): keep windows if update install fails
+8431	closed-unmerged	M	fix(server): snapshot service-update databases with VACUUM INTO
+8463	closed-unmerged	XS	fix(web): name providers in multi-provider update toasts
+8498	closed-unmerged	S	fix(server): roll back failed service installs
+8536	closed-unmerged	XS	fix(web): name providers in multi-provider update toasts
+8563	closed-unmerged	XXL	chore(terminal): upgrade libghostty-vt to Ghostty 76e568b
+8595	closed-unmerged	XS	fix(web): match update button radius to sidebar controls
+8609	merged	XXL	chore(mobile): upgrade to Expo SDK 57
+8668	open	S	fix(desktop): support Linux distro protocol launchers
+8690	merged	L	feat(mcp): update thread metadata
+8728	closed-unmerged	L	feat(mcp): update environment preferences
+8750	merged	S	fix(server): bound OpenCode version probes
+8766	open	S	fix(terminal): mitigate limited Ghostty scrollback
+8767	closed-unmerged	XXL	fix(terminal): retain intended Ghostty scrollback
+8793	merged	XXL	feat(mobile): update tool summaries and chat transitions
+8858	closed-unmerged	M	fix(server): background service no longer crash-loops on Linux npm 12 installs
+8870	closed-unmerged	L	fix(web): show update changelog in downloaded toast
+8976	closed-unmerged	XXL	feat(desktop): support custom update release sources
+9031	closed-unmerged	XS	fix(claude): restore plan updates for Claude 5 sessions
+9063	merged	M	fix(web): mute routine notices and update actions
+9135	merged	L	fix(server): update Claude Agent SDK to 0.3.260
+9155	merged	XXL	chore: bump vendored GhosttyKit and update terminal integration
+9162	closed-unmerged	M	feat(web): make the hosted app installable from Chrome
+9167	merged	XL	feat(updates): continue active threads across server restarts
+9225	closed-unmerged	M	fix(server): update mise-managed providers through mise
+9232	open	M	fix(desktop): find user-installed CLIs when shell probing fails
+9248	merged	S	chore(mobile): update Expo Sharing to 57.0.17
+9250	merged	XS	fix(release): pin patched expo-sharing version
+9255	merged	XS	fix(web): line up the titlebar wordmark label and version pill
+9279	merged	M	fix(web): offer browser profiles from the empty-panel launcher
+9285	merged	S	fix(desktop): detect installed Spectre libs for Windows builds
+9312	closed-unmerged	M	fix(server): heal skipped 045 and warn on migration slot collisions
+9325	merged	XL	fix(server): only run provider updates through the installer that owns the binary
+9327	merged	XXL	chore: upgrade vite-plus to 0.3.0
+9357	closed-unmerged	L	perf(server): make terminal history updates incremental
+9403	closed-unmerged	S	fix(server): unset the allow-scripts policy npx exports before installing the pinned runtime
+9411	closed-unmerged	XS	fix(desktop): close windows before installing updates
+9419	merged	M	fix(web): avoid duplicate Antigravity install status
+9489	closed-unmerged	L	fix(web): copy an update command that matches how the server is installed
+9509	merged	M	fix(antigravity): update managed runtime to 1.1.1
+9543	merged	M	fix(dev): keep shared dev reloads and hot updates working
+9546	closed-unmerged	M	fix(server): update Chocolatey OpenCode on Windows
+9552	closed-unmerged	L	fix(antigravity): preserve discovered workspace skills across session updates
+9574	merged	M	test(server): run the Antigravity install harness for the host platform
+9716	merged	M	perf(client): reduce thread-list update work
+9744	merged	S	fix(web): refine server update notice
+9850	merged	XS	fix(server): preserve native provider executable paths during updates
+9856	merged	M	fix(server): quote copied native provider update commands
+9859	merged	XS	fix(release): install the correct Windows Spectre component
+9863	closed-unmerged	L	ci: publish a Windows arm64 desktop installer
+9867	open	M	fix(web): paint synchronized terminal updates atomically
+9880	merged	XS	fix(shared): validate cloudflared with the version subcommand
+9888	merged	M	fix(web): copy provider update commands from compact rows
+9900	closed-unmerged	L	fix(server): reconcile historical V2 migration manifests
+9922	closed-unmerged	M	fix(cursor): fall back to session models on older cli versions
+9923	merged	S	fix(server): install pinned runtime when pnpm node lacks npm
+9931	merged	S	fix(mobile): throttle streaming thread visit updates
+9946	closed-unmerged	S	fix(desktop): keep Linux AppImage filename stable across updates
+10014	merged	S	refactor(web): remove unused desktop update visibility helper
+10015	merged	M	refactor(web): remove obsolete provider update helpers
+10030	merged	XS	refactor(server): remove unused startup heartbeat launcher
+10088	merged	XS	fix(ssh): report remote package installation failures accurately
+10231	closed-unmerged	XXL	feat: add thread provenance and selective agent rollback
+10263	closed-unmerged	XXL	feat(skills): browse installed skills by environment and project
+10291	closed-unmerged	M	refactor(server): preserve pending operation kind on upgrade
+10308	merged	XS	fix(server): preserve Codex reset credits during usage updates
+10325	closed-unmerged	XXL	fix(orchestration): preserve conversation order across clock rollback
+10343	closed-unmerged	L	feat(web): offer provider updates for remote environments above the composer
+10370	closed-unmerged	XXL	feat(server): support Scoop and WinGet provider updates
+10402	merged	M	fix(web): onboarding installs agents without needing Node or npm
+10413	merged	M	perf(web): keep the sidebar responsive during bulk thread updates
+10441	merged	XS	fix(server): follow placeholder branches after checkout updates
+10509	merged	XS	docs: add Scoop as Windows installation method
+10520	closed-unmerged	S	fix(server): prevent worktree pairing from falling back to the live install
+10578	merged	M	refactor(project): share create and update inputs
+10585	merged	XS	fix(shared): release relay install locks on cancellation
+10596	merged	L	fix(web): update machines together in auto balance
+10624	closed-unmerged	L	fix(desktop): reopen the current thread after an app update
+10632	merged	L	feat(desktop): refresh macOS installer with aurora artwork
+10643	closed-unmerged	XXL	fix(terminal): retain intended Ghostty scrollback
+10652	merged	XXL	chore(deps): upgrade Effect to rc.112 and Alchemy to beta.76
+10663	merged	XL	chore: upgrade to TypeScript 7.0.2
+10664	closed-unmerged	M	fix(providers): preserve harness update ownership and failures
+10687	closed-unmerged	M	fix(server): build native dependencies before activating updates
+10782	closed-unmerged	L	fix(desktop): preserve AppImages when updates fail
+10803	closed-unmerged	XXL	feat(server): open preview tabs in installed gecko, webkit, and blink engines
+10819	merged	S	fix(desktop): use official logo in macOS installer
+10820	merged	M	fix(desktop): neutral artwork for stable macOS installer
+10895	open	XS	fix(desktop): Group Linux windows under the installed launcher
+10971	closed-unmerged	M	fix(shared): detect Windows CLIs installed after the app's PATH snapshot
+11034	merged	S	fix(web): fit provider update text inside sidebar notices
+11065	closed-unmerged	M	fix(server): run the background service through a Homebrew Node path that survives upgrades
+11093	closed-unmerged	XS	fix(server): give slow OpenCode version probes more time
+11117	merged	L	fix(pr): update labels and reviewers without redundant reloads
+11126	open	M	fix(shared): detect Windows CLIs installed after the app's PATH snapshot
+11146	merged	XS	chore(marketing): update to 300k users and 22k stars
+11165	closed-unmerged	XS	fix(server): retry a failed provider version lookup on the next probe
+11170	closed-unmerged	L	fix(cursor): map ACP updateTodos tool calls onto the Tasks panel
+11232	closed-unmerged	L	fix(server): apply Effect overrides at pinned-runtime install root
+11237	closed-unmerged	S	fix(ssh): resolve user-installed t3 without changing PATH
+11240	merged	XS	fix(cli): pin shared Effect dependency for npm installs
+11318	merged	XL	feat(server): install preview runtimes from release archives
+11326	closed-unmerged	XS	docs: update user count to 400k
+11340	open	M	fix(server): a rollback blocked by Git's index lock says so instead of a generic error
+11350	closed-unmerged	XXL	chore(deps): upgrade Effect to rc.115 and Alchemy to its rc.115 preview build
+11413	merged	XS	docs: update user count in AGENTS.md
+11451	merged	XL	feat(cli): add t3 update for self-contained installs
+11457	closed-unmerged	M	feat(mobile): expose Android Live Update chips and settings
+11475	closed-unmerged	XXL	feat(providers): install Codex, Claude, and OpenCode from settings
+11557	merged	M	fix(server): roll back question attachment copies when respond preparation fails
+11583	closed-unmerged	M	feat(desktop): group update release notes
+11607	merged	XL	feat(release): publish npx t3 as a launcher over per-platform executable packages
+11639	merged	M	test(server): prove v1 to v2 cutover on a copied database and flag divergent migration ids
+11659	merged	L	feat(cli): add t3 uninstall for self-contained installs
+11675	open	M	fix(server): optimistic update for git branch switch
+11696	merged	L	docs: make the standalone installer the primary way to get the CLI
+11702	merged	L	feat(cli): add t3 service restart and make t3 update repoint the service eagerly
+11732	merged	M	fix(release): preserve updates from npm-based services
+11738	merged	XS	fix(server): parse CLI versions with a "v" prefix
+11753	merged	S	fix(desktop): keep preview releases out of the nightly update changelog
+11901	open	S	fix(desktop): preserve WSL runtime installation errors
+11909	closed-unmerged	L	fix(server): roll back failed relay configuration
+11940	merged	XS	fix(server): block updates under legacy service launchers
+11956	merged	L	chore(deps): bump Clerk stack to latest stable versions
+11957	merged	L	fix(mobile): update Reanimated and Worklets
+11963	merged	S	fix(server): restore hub limits updates in V2
+12006	merged	M	fix(desktop): desktop updates reconnect in seconds, not minutes
+12029	closed-unmerged	S	perf(relay): skip aggregate serialization on cheaply-decided updates
+12044	merged	L	feat(cli): show installer and update download progress
+12045	merged	XXL	chore(mobile): upgrade to Expo SDK 58 and React Native 0.88 RC
+12127	merged	XL	perf(mobile): ignore irrelevant config updates in thread lists
+12176	merged	XS	fix(server): settle cancelled worktree setup before rollback
+12200	merged	XS	chore(mobile): bump app version to 1.2.1
+12294	closed-unmerged	S	fix(server): keep a failed usage probe marked when a sparse update lands
+12301	closed-unmerged	M	fix(desktop): preserve explicit Linux display scaling across updates
+12326	merged	XXL	chore(deps): upgrade Effect to rc.115 and Alchemy to beta.78
+12379	merged	L	perf(mobile): isolate Material You conversion on Android
+12410	closed-unmerged	XS	fix(client-runtime): refresh linked pull requests from shell updates
+12411	merged	XXL	chore(deps): bump the npm_and_yarn group across 1 directory with 3 updates
+12412	closed-unmerged	XS	chore(deps): bump the npm_and_yarn group across 2 directories with 5 updates
+12413	closed-unmerged	L	chore(deps): pin vulnerable transitive dependencies to patched versions
+12416	closed-unmerged	XS	fix(client-runtime): refresh linked pull requests from shell updates
+12439	merged	L	fix: detect installed editors outside PATH
+12509	merged	XS	fix(antigravity): accept supported legacy handshake versions
+12607	closed-unmerged	L	feat(web): defer desktop updates until agents are idle
+12629	closed-unmerged	M	fix(server): the service no longer crash-loops after t3 update crosses a launcher protocol
+12633	closed-unmerged	M	fix(server): merge T3-home service.env into the background launcher
+12655	closed-unmerged	M	fix(swift-ios): defer composer focus until after view updates
+12676	merged	S	fix(server): preserve provider history across repeated rollbacks
+12693	open	S	fix(cli): explain missing libatomic dependency during Linux installation
+12699	closed-unmerged	L	fix(relay): deliver Live Activity updates on phase change
+12700	closed-unmerged	S	fix(server): keep usage-limits incomplete after sparse post-probe updates
+12701	closed-unmerged	M	fix(server): tolerate slow OpenCode version probes
+12704	closed-unmerged	XXL	feat(vcs): add actionable version control on web and mobile
+12722	closed-unmerged	M	fix(server): Antigravity Linux ARM64 install + custom path resolve
+12744	closed-unmerged	M	feat(web): allow hiding composer server update banners
+12768	open	L	fix(desktop): align bundled versions with the artifact version
+12809	merged	XS	chore(server): bump device tooling versions
+12816	merged	L	feat(devices): show installed and running tool versions per host
+12817	merged	L	feat(devices): show automatic update progress and host retry
+12818	merged	L	feat(devices): add read-only update discovery and remote ownership
+12819	merged	L	fix(devices): safely reclaim obsolete managed tool versions
+12877	merged	L	feat(devices): offer manual updates in tool version details
+12890	closed-unmerged	L	fix(web): make provider update icons do the same thing
+12960	closed-unmerged	L	fix(codex): stop phantom "Worked for 1ms" tool updates
+13008	closed-unmerged	XXL	feat(opencode): migrate provider to native v2
+13016	closed-unmerged	S	fix(opencode): report the installed CLI version when the owned server lags behind
+13079	closed-unmerged	XL	feat(web): offer provider updates for connected remote environments
+13083	merged	M	fix(web): stop mistaking offline servers for updates
+13106	closed-unmerged	S	fix(web): prevent composer label measurement update loops
+13131	closed-unmerged	L	feat(server): flag incompatible provider versions from the model manifest
+13137	closed-unmerged	L	fix(acp): prevent assistant message fragmentation on background tool updates & filter leaked harness telemetry
+13177	closed-unmerged	XXL	feat(release): ship .deb and .rpm packages that update through apt and dnf
+13178	closed-unmerged	M	fix(desktop): tell apt, dnf, and AUR users how to update
+13179	closed-unmerged	M	fix(cli): t3 update points apt and dnf installs to their package manager
+13257	closed-unmerged	XS	fix(settings): explain that provider update checks also fetch model catalog updates
+13302	merged	XL	feat(mobile): manage environment and provider updates
+13342	merged	L	fix(web): avoid blocking image preparation conversions
+13361	closed-unmerged	L	fix(cli): distinguish triage CLI version from the running server
+13383	closed-unmerged	L	fix(cli): report the running server version from t3 triage
+13394	closed-unmerged	L	fix(cli): report the running server version from t3 triage
+13441	closed-unmerged	M	fix(server): install Antigravity without Node in standalone builds
+13445	closed-unmerged	M	fix(server): install Antigravity without Node in standalone builds
+13476	merged	S	fix(server): merged PRs update and auto-settle threads again
+13485	closed-unmerged	S	fix(server): disabling provider update checks no longer freezes model lists
+13505	merged	L	test(server): record the Codex thread rollback fixture live on 0.156.1
+13523	merged	M	feat(grok): offer one-click updates through `grok update`
+13557	merged	M	fix(server): Grok monitor updates stay running until Grok says they finished
+13575	merged	L	feat(release): ship a Linux .deb that updates itself
+13611	merged	S	fix: update OpenAI logo to current brand asset
+13669	merged	M	fix(server): installed editors no longer vanish when discovery is slow
+13672	closed-unmerged	S	feat(web): open projects in px0 when installed
+13770	closed-unmerged	XL	feat(web): show release notes when the server can be updated
+13784	closed-unmerged	XXL	feat(server): upgrade the ACP runtime and bridge T3 MCP to ACP agents
+13787	merged	L	fix(server): Codex rollback works after the app-server restarts
+13794	open	L	fix(install): launch t3 by absolute path
+13797	merged	XL	fix(server): Pi rollback works past a turn you stopped
+13804	closed-unmerged	S	fix(server): launcher preflight and service install explain which t3 ran
+13821	closed-unmerged	XXL	feat(server): install environment extensions and serve their APIs
+13827	closed-unmerged	XXL	feat(extensions): add first-party Version Control extension
+13884	merged	S	fix(web): skip unchanged shortcut modifier updates - 195x typing latency improvement
+13887	merged	L	fix(server): a failed rollback shows an error instead of hanging
+13911	merged	M	fix(server): harden the rollback failure marker
+13916	closed-unmerged	M	docs(triage): stop treating the triage CLI version as the user's build
+13927	merged	L	fix(server): restore Windows terminal startup after node-pty upgrade
+13967	closed-unmerged	M	fix(mobile): pin fbjni to React Native version
+14008	closed-unmerged	S	fix(desktop): updater failures log the error code and exit status
+14009	closed-unmerged	XL	fix: chat images keep the version from when the message was written
+14022	closed-unmerged	M	perf(mobile): stop git refreshes on activity updates
+14033	closed-unmerged	XS	fix(mobile): stop user messages subscribing to thread updates
+14047	closed-unmerged	M	fix(server): replay shell updates after projection read failures
+14063	closed-unmerged	L	fix(server): increase ACP process kill grace period and preserve install error details
+14078	closed-unmerged	L	fix(settings): let users turn version control off
+14087	closed-unmerged	L	fix(settings): let users turn version control off
+14091	closed-unmerged	L	fix(settings): let users turn version control off
+14151	closed-unmerged	XS	fix(server): hide Claude models the installed CLI is too old for
+14170	open	XS	fix(server): only offer claude update for native Claude installs
+14202	closed-unmerged	M	fix(server): a migration id clash stops startup with a clear error instead of a crash loop
+14206	closed-unmerged	S	fix(server): a thread with an unknown event type can still be resynced after a downgrade
+14256	closed-unmerged	M	fix(server): tell users how to update an install T3 cannot update
+14263	open	S	fix(server): t3 run from a T3 terminal no longer trips on the service's launcher context
+14276	open	M	fix(desktop): close SSH forwards before installing an update
+14295	open	S	fix(server): install the advertised version for pnpm-global provider updates
+14319	open	M	fix(server): refresh provider discovery after CLI updates
+14323	merged	XS	test(server): stop pinning codex install advisory to a release range
+14361	open	L	fix(server): `t3 update` and `t3 service restart` run from inside T3 no longer leave the service stopped
+14382	closed-unmerged	XS	fix(desktop): give a cold WSL distro time to boot before wslpath conversion
+14390	closed-unmerged	M	fix(server): check provider latest versions through npm so .npmrc applies
+14421	open	M	fix(desktop): preserve Linux device scale across updates
+14441	open	M	fix(server): update all Claude unified usage windows
+14468	merged	XXL	feat(server): OpenCode 2 native steering, fork and rollback
+14471	open	M	fix(desktop): Install Linux theme icons named after the app id
+14513	closed-unmerged	M	fix(web): PR code tab no longer reloads when turns finish or the PR updates
+14520	closed-unmerged	L	fix(server): service updates no longer stop the server when the database backup cannot fit
+14537	closed-unmerged	L	fix(server): update fff to stop runaway watcher rescans
+14539	open	L	fix(web): PR code tab no longer reloads when turns finish or the PR updates
+14543	merged	L	fix(server): update fff to stop runaway watcher rescans
+14549	closed-unmerged	S	fix(server): refresh model catalog without CLI update checks
+14563	closed-unmerged	XXL	chore(deps): upgrade Effect to stable 4.0.0
+14575	closed-unmerged	L	fix(server): keep a ready OpenCode provider through a slow version probe
+14597	merged	XXL	fix(mobile): upgrade Uniwind and remove local patch
+14608	closed-unmerged	XXL	fix(mobile): keep agent widgets updated in the background
+14678	merged	L	feat(web): update providers on every machine with one click
+14710	merged	XS	fix: remove outdated restart setting update advice
+14728	closed-unmerged	S	fix(web): sidebar update pill shows updates on non-default provider instances
+14734	merged	XL	fix(mobile): update Expo 58 to restore widgets and Live Activities
+14745	open	S	fix(web): sidebar update pill shows updates on non-default provider instances
+14790	open	M	fix(web): Connections no longer says "Up to date" while a desktop update is pending
+14829	closed-unmerged	M	fix(client): project icons update after a turn rewrites them
+14840	closed-unmerged	S	fix(shared): install the T3 Connect relay client on Windows ARM64
+14848	closed-unmerged	XXL	fix(mobile): keep agent widgets updated in the background
+14859	open	L	fix(server): coalesce queued shell updates for slow clients
+14861	open	XXL	fix(mobile): keep agent widgets updated in the background
+14863	merged	M	fix(server): released builds keep the OpenCode policy for their own version
+14864	closed-unmerged	L	test(provider-core): latest-version lookups retry a miss after a minute
+14875	open	M	fix(server): self-update moves the t3 command to the new runtime
+14903	merged	S	fix(server): API-key Codex installs no longer warn on every start
+14914	closed-unmerged	XXL	chore(deps): upgrade Effect to stable 4.0.0
+14928	open	S	fix(server): disabling provider update checks no longer freezes model lists
+14942	open	S	fix(server): opening a folder without Git installed no longer shows a spawn error
+14949	closed-unmerged	XXL	feat(server): support updates for mise-managed providers
+15002	merged	L	fix(web): outdated servers can be updated even when the client can't connect
+15012	closed-unmerged	L	fix(server): t3_project_update writes the settings new threads read
+15116	open	S	fix(server): a mid-turn usage update no longer hides a failed probe
+15261	open	XL	fix(server): recover Stable history missing after V2 migration
+15337	closed-unmerged	XS	fix(mcp): allow environment preference updates
+15345	closed-unmerged	XS	fix(desktop): install the Electron test runtime once, not per worker
+15386	open	L	fix(desktop): report updater install failures on the first click
+15416	merged	L	fix(server): offer one-click provider updates for every install
+15440	merged	S	fix(desktop): print version before initializing the app
+15501	merged	L	fix(web): open provider update details from both icons
+15526	closed-unmerged	XXL	chore: update development skills and preview workflows
+15539	merged	L	fix(server): match manual update commands to installed cli
+15568	closed-unmerged	S	fix(client-runtime): Update clears the block on a host that is already compatible
+15662	open	L	fix(claude): discover enabled installed plugin skills
+15705	merged	M	fix(mobile): pause hidden home thread list updates
+15732	merged	XS	docs(install): polish binary install destination phrasing
+15893	merged	S	fix(mobile): stop refreshing Git status on streamed thread updates
+15925	merged	M	fix(server): a migration id clash stops startup with a clear error instead of crash-looping
+15937	merged	M	fix(server): a thread with an event type from a newer build can still resync after a downgrade
+15960	closed-unmerged	M	fix(web): right-panel launcher letters work while a closed menu stays mounted
+16054	open	XXL	feat(server): install plugins from npm with integrity checks and staged updates
+16057	open	XXL	feat(web,mobile): install and update plugins from npm in Settings
+16075	merged	S	fix(acp): preserve tool metadata across partial updates
+16102	merged	L	fix(server): enforce one database owner and guard update rollback
+16138	merged	XXL	chore(deps): upgrade Effect to stable 4.0.1
+16246	merged	S	fix(shared): find versioned JetBrains macOS app bundles
+16277	closed-unmerged	M	feat(desktop): update button hover shows version and why checks are off
+16330	merged	L	fix(mobile): update the iOS Git header menu when status changes
+16352	closed-unmerged	S	fix(server): keep app-bundled provider executables manual-only for updates
+16360	merged	XL	chore(deps): upgrade @effect/tsgo to 0.46.1
+16383	closed-unmerged	S	fix(build): desktop artifacts resolve versioned override selectors
+16392	closed-unmerged	XS	fix(scheduled-tasks): preserve stable task order on status updates and toggles
+16411	merged	S	fix(release): resolve version-qualified catalog overrides
+16436	closed-unmerged	XS	fix(server): main's external launcher tests compile again
+16517	open	M	fix(threads): snoozed threads no longer wake early after background updates
+16644	merged	XL	chore(deps): upgrade @pierre/diffs to 1.5.2 and @pierre/trees to beta.6
+16676	merged	L	fix(desktop): setup prompts name a t3 that runs on desktop installs
+16682	merged	M	perf(server): ACP tool updates no longer persist a snapshot per streamed chunk
+16683	merged	L	feat(desktop): install the t3 command from Settings
+16715	closed-unmerged	S	fix(shared): install the relay client on Windows ARM64
+16730	merged	XS	fix(server): pairing tokens work on Node versions that cannot bind booleans
+16772	merged	S	fix(server): disabled providers stop checking for CLI updates
+16775	open	XS	perf(server): OpenCode 2 stops writing unchanged session status updates
+16879	closed-unmerged	XS	fix(server): disable Grok startup updates during health checks
+16958	merged	L	fix(settings): provider updates show live progress instead of a bare spinner
+16998	merged	M	fix(shared): relay client install waits out a brief Windows file lock
+17079	merged	S	fix(server): a message sent during a rollback no longer undoes it
+17091	merged	L	feat(web): improve terminal scrollback navigation and snapshots
+17237	closed-unmerged	M	fix(devices): run Android SDK launchers on Windows hosts
+17275	merged	L	fix(connect): relay client updates itself and skips incompatible cloudflared
+17277	closed-unmerged	S	fix(server): MCP tool calls work when a client omits MCP-Protocol-Version
+17307	merged	L	feat(models): tell users when a CLI update unlocks a new model
+17308	closed-unmerged	M	fix(server): T3 Connect devices get new permissions after an update
+17342	closed-unmerged	S	feat(desktop): packaged builds honor T3CODE_DESKTOP_REMOTE_DEBUGGING_PORT, which only the dev launcher reads today
+17351	merged	M	fix(desktop): the t3 command warns instead of installing behind another t3
+17366	merged	M	fix(server): relay client updates no longer drop the host off T3 Connect
+17396	merged	S	fix(web): find update settings from the command palette
+17434	merged	L	refactor(provider-core): latest-version lookups go through a ProviderLatestVersions service
+17494	open	XS	fix(desktop): WSL runtime install reports why t3 cannot run
+17515	closed-unmerged	XXL	feat: agent instructions, new skills, updates and tidy up on the Skills page (skills 3/3)
+17524	closed-unmerged	XS	fix(web): the right-panel launcher no longer steals focus from the composer
+17550	open	M	fix(ssh): pair reused servers with their own CLI version
+17552	open	M	fix(web): disable update track control when auto-updates are unavailable
+17553	merged	XS	test(usage): v4 cache upgrade test waits for the migrated cache write
+17569	open	S	fix(web): device tool update failures show the server error, not network advice
+17570	open	M	fix(cli): install missing fonts during browser setup
+17571	merged	XL	chore(deps): upgrade Effect to 4.0.2
+17584	open	XXL	feat(dev): add an update lab for multi-environment update testing
+17585	open	XL	feat(server): install provider CLI updates in the background
+17586	open	L	feat(server): background services update themselves
+17588	open	M	feat(desktop): download updates in the background and install them on quit
+17676	open	XS	fix(web): stop offering a provider update that cannot clear a limited-support warning
+17691	open	XXL	feat: install skills from a source, view their files, and let agents change Tools
+17707	merged	M	perf(server): run Git for Windows' real git.exe, not its launcher
+17783	merged	XS	docs: update user count to 500k
+17836	merged	S	docs(pi): update installation and remote login guidance
+17875	open	M	fix(server): Windows npm installs keep one-click updates with a direct binary path
+17900	open	M	fix(mobile): check for server updates without GitHub's API rate limit
+17933	open	M	fix(web): server update banner only offers details when its text is clipped
+17959	merged	S	fix(server): threads without a project no longer need Git installed
+17966	closed-unmerged	S	fix(server): check mise ownership before the native-installer match
+18053	merged	XL	feat(web): one sidebar click updates every machine and provider
+18075	open	XS	fix(server): Grok health checks no longer start Grok's updater
+18095	open	L	fix(desktop): restart prompt returns after relaunching with a downloaded update
+18110	open	M	fix(server): tell users how to update an install T3 cannot update
+18121	merged	M	fix(server): sync device tool license versions with installer pins
+18127	merged	M	fix(mobile): license generation works with filtered installs
+18132	open	M	fix(web): right-panel launcher letters work while a closed menu stays mounted
+18135	closed-unmerged	L	fix(relay): deliver Live Activity updates on phase change
+18208	merged	S	docs(settings): explain that provider update checks also gate the model catalog
+18269	open	M	fix(web): make hosted clients installable on Android
+18394	closed-unmerged	XL	fix(server): subagent task updates reach Claude task lists
+18401	merged	XS	fix(web): update toast download badge no longer hides behind the provider logo
+18404	open	M	fix(desktop): explain why the update button is disabled
+18414	open	M	fix(desktop): keep disabled backends stopped after failed updates
+18419	merged	S	fix(mobile): preserve browser prompt replies across control updates
+18452	closed-unmerged	L	feat(web): update everything counts interrupted threads and offers to continue them
+18472	open	M	fix(server): Antigravity installs on Windows ARM
+18508	closed-unmerged	XL	perf(windows): optimize Windows on ARM performance and native update support
+18520	open	L	fix(desktop): Windows on ARM installs no longer pull x64 updates
+18523	open	M	fix(server): Windows Codex install uses system tar and retries rename
+18525	open	L	fix(web): stop SnapShotCoordinator from polling pending captures on every thread update
+18561	open	M	fix(opencode): verify updates using the installed CLI version
+18563	open	S	fix(client-runtime): Update clears the block on a host that is already compatible
+18581	open	M	fix(web,mobile): stop the model preferences migration from looping on older servers
+18623	open	M	fix(web): an installed provider with unchecked sign-in no longer reads Needs attention
+18633	open	L	fix(server): service launcher reports and aborts its pre-update database backup
+18679	merged	S	fix(mobile): installs skip the Enriched math download again
+18709	merged	XS	fix(web): update everything includes npm-installed servers again
+18740	merged	L	fix: expose running terminals and prevent setup install stalls
+18751	closed-unmerged	XS	fix(web): match idle update button radius to sidebar controls
+18760	closed-unmerged	M	fix(device): explain npm installation failures
+18772	open	M	fix(grok): a Homebrew-installed Grok updates through brew and is compared against the cask
+18773	closed-unmerged	M	fix(server): Homebrew-installed Grok updates through brew
+18813	open	M	fix(bitbucket): advance pull request pages through tied updates
+18828	closed-unmerged	XS	fix(web): sidebar update button no longer hugs the bottom edge
+18864	merged	M	fix(desktop): preserve updater failure causes in diagnostics
+18923	merged	M	fix(server): only Claude progress updates before a tool call show as text
+18931	closed-unmerged	S	fix(web): update everything updates remote servers again
+18951	closed-unmerged	M	fix(server): keep a remote server update running if the client disconnects
+18980	open	M	fix(server): keep a remote server update running when the client disconnects
+19016	closed-unmerged	S	perf(server): avoid loading the full CLI in the service launcher
+19129	open	L	fix(server): migrate legacy thread pull request links
+19157	open	S	fix(providers): respect mise ownership in native install locations
+19175	open	XS	fix(web): name the web app manifest so Chrome offers to install it
+19178	closed-unmerged	L	fix(desktop): keep Linux deb update restarts responsive
+19251	open	L	fix(clients): computers no longer get stuck Off after a host update
+19253	open	M	fix(server): Update all can update Codex when accounts share one install
+19291	merged	XXL	fix: update all no longer runs agents twice or loses background work
+19311	merged	L	fix(server): service updates no longer fail on full disks or large databases
+19331	merged	S	fix(mobile): incompatible environments now say whether to update the app or the host
+19343	closed-unmerged	S	fix(server): turning off provider update checks no longer hides new models
+19359	merged	L	fix(cli): t3 triage reports the server's version, not its own, as the user's build
+19412	open	L	fix(provider-cursor): list skills from installed Cursor plugins
+19429	merged	S	perf(server): unchanged node updates no longer write to SQLite
+19449	open	M	fix(server): migrate compatible legacy service install state
+19486	open	M	fix(server): preserve service environment across updates
+19507	open	S	fix(cli): use GitHub tokens when checking for updates
+19517	open	S	fix(server): keep WinGet Claude installs manual-only instead of running claude update
+19580	open	L	fix(server): pnpm provider updates only offer versions pnpm will install
+19581	open	L	fix(server): Homebrew installs no longer run brew info with update checks off
+19619	open	M	perf(server): streamed projection updates no longer rewrite unchanged index entries
+19620	open	M	fix(antigravity): update the managed runtime for Gemini 4 Argon
+19625	open	XXL	fix(web): provider updates no longer pop a launch toast
+19649	open	M	fix(server): a slow server update download no longer fails at a 10-minute cap
+19652	open	L	fix(server): a remote update points the service unit at the runtime it committed

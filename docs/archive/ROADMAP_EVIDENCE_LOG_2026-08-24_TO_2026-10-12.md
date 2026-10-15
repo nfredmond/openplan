@@ -446,3 +446,33 @@ Milestone grades do not change.
 
 **October 14 Node queue process observation candidate.**
 [Process observations and review corrections](../reviews/2026-10-14-node-queue-observation/STATUS.md) support existing M3 and StageA monitoring. The candidate keeps process facts separate from queue outcomes, preserves worker signal ownership and rejects contradictory report time/state/count facts. Selected-schema SQL/HTTP and source fault reports preserve their boundaries. Migration 15 and hosted rollout remain pending. M3 and whole-product grades do not change.
+
+## October 15, 2026 roadmap amendment: T3 Code concepts
+
+_Dated entry written for this log, not text moved from the roadmap._
+
+The roadmap's next-three list, the A0, A1a and A1b next actions and a stage
+amendment paragraph were updated from the reviewed
+[T3 Code research](../reviews/2026-10-15-t3code-concepts/REPORT.md). The
+[disposition record](../reviews/2026-10-15-t3-roadmap/PROPOSAL.md) gives each
+decision. Opus drafted it; [Codex approved the corrected plan](../reviews/2026-10-15-t3-roadmap/REVIEW.md). MILESTONES rows T1 to T16 hold
+scope and proof. No milestone status, `reviewed_commit`, `review_by` or
+`current_release` changed. PR 327 and PR 328 remain separate unmerged work.
+No implementation, browser, provider, practitioner or scientific evidence is
+added by this entry.
+
+The replaced list, verbatim from `docs/ROADMAP.md` before the amendment:
+
+> ## Next three, October 12, 2026
+>
+> 1. Land the Stage A2 defect fixes in PRs 242 to 245, 252 and 253: county run
+>    grading, money records, public input abuse, deadlines, comment counts and
+>    unknowns shown as zero. Check the merge hold first.
+> 2. Give the live site its operating basics (Stage A1): health checks (PR 254),
+>    error tracking, a CI check for unapplied migrations, usage caps and a
+>    signup bot check.
+> 3. Rerun the twelve first-week journeys against current main (Stage A3). The
+>    last full run was September 6. The result is the Stage B baseline.
+
+The replaced next actions were: A0 "Choice for broad chat (C8)"; A1a "Recovery
+for remaining writes"; A1b "Not started".

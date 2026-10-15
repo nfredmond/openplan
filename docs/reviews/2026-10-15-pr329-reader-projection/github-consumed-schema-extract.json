@@ -1,0 +1,125 @@
+{
+  "sourceUrl": "https://raw.githubusercontent.com/github/rest-api-description/507b88ecbdccb4789ce77228fa2f2fde4bdeaf1f/descriptions/api.github.com/api.github.com.json",
+  "sourceSha256": "2d18c7b121c209aa40a5c92ea462af1f7955603fc3ec530ab0466549498d14cf",
+  "schemas": {
+    "diff-entry": {
+      "required": [
+        "additions",
+        "blob_url",
+        "changes",
+        "contents_url",
+        "deletions",
+        "filename",
+        "raw_url",
+        "sha",
+        "status"
+      ],
+      "properties": {
+        "filename": {
+          "type": "string",
+          "example": "file1.txt"
+        },
+        "status": {
+          "type": "string",
+          "enum": [
+            "added",
+            "removed",
+            "modified",
+            "renamed",
+            "copied",
+            "changed",
+            "unchanged"
+          ],
+          "example": "added"
+        },
+        "additions": {
+          "type": "integer",
+          "example": 103
+        },
+        "deletions": {
+          "type": "integer",
+          "example": 21
+        }
+      }
+    },
+    "pull-request": {
+      "required": [
+        "_links",
+        "assignee",
+        "labels",
+        "base",
+        "body",
+        "closed_at",
+        "comments_url",
+        "commits_url",
+        "created_at",
+        "diff_url",
+        "head",
+        "html_url",
+        "id",
+        "node_id",
+        "issue_url",
+        "merge_commit_sha",
+        "merged_at",
+        "milestone",
+        "number",
+        "patch_url",
+        "review_comment_url",
+        "review_comments_url",
+        "statuses_url",
+        "state",
+        "locked",
+        "title",
+        "updated_at",
+        "url",
+        "user",
+        "author_association",
+        "auto_merge",
+        "additions",
+        "changed_files",
+        "comments",
+        "commits",
+        "deletions",
+        "mergeable",
+        "mergeable_state",
+        "merged",
+        "maintainer_can_modify",
+        "merged_by",
+        "review_comments"
+      ],
+      "properties": {
+        "title": {
+          "description": "The title of the pull request.",
+          "example": "Amazing new feature",
+          "type": "string"
+        },
+        "state": {
+          "description": "State of this Pull Request. Either `open` or `closed`.",
+          "enum": [
+            "open",
+            "closed"
+          ],
+          "example": "open",
+          "type": "string"
+        },
+        "additions": {
+          "type": "integer",
+          "example": 100
+        },
+        "deletions": {
+          "type": "integer",
+          "example": 3
+        },
+        "changed_files": {
+          "type": "integer",
+          "example": 5
+        },
+        "merge_commit_sha": {
+          "type": "string",
+          "example": "e5bd3914e2e596debea16f433f57875b5b90bcd6",
+          "nullable": true
+        }
+      }
+    }
+  }
+}

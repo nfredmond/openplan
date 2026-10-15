@@ -1,0 +1,83 @@
+{
+  "taskId": "node:delegated-task:command%3Amcp%3A3f015e30-501a-44ae-80ba-38a5ed25d5ba%3Adelegate-task%3Asol-pr329-malformed-comment-fix-20261015-round1",
+  "candidate": "7193478d81ce39887f552be2e5530ebdcdd3354c",
+  "mainAtFetch": "1b2fefe0f0e98f99700fc77e99146fe697b43ee7",
+  "branch": "t3/pr329-collector-malformed-receipt-fix",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-cb7792cb",
+  "sourceBindings": {
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/fetch_pr_details.py": "0e58585d5259eb2a3a79ddf3ee844efb4cc47f51b9dd7e1ff9bdb7c52a4f3a77",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/test_fetch_pr_details.py": "1bdf4936077f95f52d3620b709a633b47b93924a9c49f0d86a332d00fe360409",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/verify_collector_controls.py": "703b61b33fe4f4f784bf3f2a3257e01f0ec8626723eb77c68e68678f42179350",
+    "docs/reviews/2026-10-15-t3code-concepts/scripts/full_text.py": "1e859aa5c66833d4e6744c3fb22a80579aa2c20d49324c15863adb5216b17fb6",
+    "docs/reviews/2026-10-15-pr329-malformed-receipts/verify_controller_classifier.py": "7d833baf3c1d220c621df531cc4f3650c9e517b1676f8ec052625f33490c8c40"
+  },
+  "originalMethodCount": 12,
+  "currentMethodCount": 19,
+  "unchangedOriginalMethods": [
+    "test_all_pages_are_flattened_in_order",
+    "test_empty_page_is_available_not_failed",
+    "test_timeout_is_unavailable_without_publication",
+    "test_duplicate_selection_is_not_collected",
+    "test_api_failure_is_never_cached_at_any_endpoint",
+    "test_malformed_transport_is_refused",
+    "test_wrong_pr_identity_is_refused",
+    "test_legacy_cache_refreshes_and_failed_refresh_preserves_history",
+    "test_only_intact_complete_current_cache_is_reused",
+    "test_upstream_file_census_discrepancy_stays_explicit",
+    "test_failed_atomic_publication_preserves_previous_record"
+  ],
+  "originalFixtureCorrection": [
+    "test_malformed_row_is_not_dropped"
+  ],
+  "originalFaultTuplesPreserved": 22,
+  "originalSpecialAuthorFaultPreserved": true,
+  "approvedArtifacts": [
+    {
+      "path": "docs/ROADMAP.md",
+      "sha256": "37824b7ef62898ebc42e1347717a8f6193cb93c36c7e4be2fab4142be03b7b1f",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/product/MILESTONES.md",
+      "sha256": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/product/CORE_REQUIREMENTS_LEDGER.md",
+      "sha256": "543d7c3c822db5bff4d3d68ab3f4a47530a7ff6252b16b39cc66b1ce7352a78e",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/README.md",
+      "sha256": "93e01ba7f40310e49395a444c7b2f8f466e5d9e4bb1d0d900be69ca83369e279",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md",
+      "sha256": "9d11d4407a3a68300e38a0d54c7dada01d8dcc1d0d4d147d62ecc238009cf59b",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/PROPOSAL.md",
+      "sha256": "acae03fc31af72a3cfa9affcdbb46f9a2222c8140d91b8371775af18837a8efd",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/REVIEW.md",
+      "sha256": "6a19f931b5cd7068218eb8756935ced2a3040596c7588e077d376db92ccf8a8d",
+      "matchesCandidateAndApproval": true
+    },
+    {
+      "path": "docs/reviews/2026-10-15-t3-roadmap/VALIDATION.json",
+      "sha256": "b90c0a6f9cf2cf482d159e6ccb7b8fd9995a1cdaaae38999788a3892814c7321",
+      "matchesCandidateAndApproval": true
+    }
+  ],
+  "independentReviewSha256": "e15dc8bcad96adf4590bc55a9b6838656d48e062d47123b969bf3eb9b9e0b649",
+  "originalReviewUnchanged": true,
+  "consumerUnchanged": true,
+  "currentCampaigns": [
+    "campaign-06-python311",
+    "campaign-07-python314"
+  ]
+}
