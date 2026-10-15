@@ -16,7 +16,7 @@ const WORKSPACE = "22222222-2222-4222-8222-222222222222";
 const USER = "11111111-1111-4111-8111-111111111111";
 const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, estimated_cost_recorded_at, created_at, updated_at, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_set_at";
 type Row = PortfolioRoundTripProject & { workspace_id: string };
-type Query = { table: string; columns: string; filters: [string, unknown][]; orders: [string, boolean][]; range: [number, number]; limit: number };
+type Query = { table: string; columns: string; filters: [string, unknown][]; cursors: [string, string][]; orders: [string, boolean][]; range: [number, number]; limit: number };
 
 function projects(count: number): Row[] {
   return Array.from({ length: count }, (_, index) => ({
@@ -34,26 +34,29 @@ function projects(count: number): Row[] {
   }));
 }
 
-// Apply workspace filters, projection, stable multi-column ordering and inclusive
-// ranges before the API cap. A thenable also reproduces the original limit query.
-function database(rows: Row[], options: { cap?: number; failFrom?: number; nullFrom?: number; anonymous?: boolean } = {}) {
+// Apply workspace filters, ID cursors, projection, ordering and inclusive ranges
+// before the API cap. Retain offset support to reproduce the previous reader.
+function database(rows: Row[], options: { cap?: number; failFrom?: number; nullFrom?: number; anonymous?: boolean; beforePage?: (page: number) => void } = {}) {
   const queries: Query[] = [];
   const client = {
     auth: { getUser: vi.fn(async () => ({ data: { user: options.anonymous ? null : { id: USER } } })) },
     from: vi.fn((table: string) => {
-      const query: Query = { table, columns: "", filters: [], orders: [], range: [0, Infinity], limit: Infinity };
+      const query: Query = { table, columns: "", filters: [], cursors: [], orders: [], range: [0, Infinity], limit: Infinity };
       const chain = {
         select(columns: string) { query.columns = columns; return chain; },
         eq(column: string, value: unknown) { query.filters.push([column, value]); return chain; },
+        gt(column: string, value: string) { query.cursors.push([column, value]); return chain; },
         order(column: string, settings: { ascending: boolean }) { query.orders.push([column, settings.ascending]); return chain; },
         limit(limit: number) { query.limit = limit; return chain; },
         range(from: number, to: number) { query.range = [from, to]; return chain; },
         then(resolve: (result: { data: Record<string, unknown>[] | null; error: { code: string } | null }) => unknown) {
+          options.beforePage?.(queries.length);
           queries.push(query);
           const [from, to] = query.range;
-          if (from >= (options.failFrom ?? Infinity)) return Promise.resolve(resolve({ data: null, error: { code: "42501" } }));
-          if (from >= (options.nullFrom ?? Infinity)) return Promise.resolve(resolve({ data: null, error: null }));
-          const selected = rows.filter((row) => query.filters.every(([key, value]) => row[key as keyof Row] === value));
+          if (queries.length - 1 >= (options.failFrom ?? Infinity)) return Promise.resolve(resolve({ data: null, error: { code: "42501" } }));
+          if (queries.length - 1 >= (options.nullFrom ?? Infinity)) return Promise.resolve(resolve({ data: null, error: null }));
+          const selected = rows.filter((row) => query.filters.every(([key, value]) => row[key as keyof Row] === value)
+            && query.cursors.every(([key, value]) => String(row[key as keyof Row]) > value));
           selected.sort((a, b) => {
             for (const [key, ascending] of query.orders) {
               const left = String(a[key as keyof Row] ?? ""), right = String(b[key as keyof Row] ?? "");
@@ -114,10 +117,11 @@ it("scopes and projects every ordered page for a read-only workspace member", as
   const foreign = { ...projects(1)[0], workspace_id: "foreign", id: "foreign" };
   const fake = database([...projects(2000), foreign]);
   await request();
-  expect(fake.queries.map(({ limit: _limit, ...query }) => query), "every page must retain scope projection stable order and bounded ranges").toEqual(
-    [[0, 999], [1000, 1999], [2000, 2000]].map((range) => ({
+  expect(fake.queries, "every page must retain workspace projection ID cursor and bounded limit").toEqual(
+    [null, "project-00999", "project-01999"].map((cursor, index) => ({
       table: "projects", columns: COLUMNS, filters: [["workspace_id", WORKSPACE]],
-      orders: [["updated_at", false], ["id", true]], range,
+      cursors: cursor === null ? [] : [["id", cursor]], orders: [["id", true]],
+      range: [0, Infinity], limit: index === 2 ? 1 : 1000,
     }))
   );
   expect(state.membership).toHaveBeenCalledWith(fake.client, USER);
@@ -139,7 +143,7 @@ it("refuses 2001 projects explicitly instead of generating a partial workbook", 
 });
 
 it("refuses a later page error instead of exporting the earlier rows", async () => {
-  database(projects(2000), { failFrom: 1000 });
+  database(projects(2000), { failFrom: 1 });
   const response = await request();
   expect(response.status, "later page read failure must not export a partial workbook").toBe(500);
   expect(await response.json()).toEqual({ error: "Failed to read the project portfolio" });
@@ -147,7 +151,7 @@ it("refuses a later page error instead of exporting the earlier rows", async () 
 });
 
 it("keeps an unavailable page distinct from an empty portfolio", async () => {
-  database(projects(2000), { nullFrom: 1000 });
+  database(projects(2000), { nullFrom: 1 });
   const response = await request();
   expect(response.status, "unavailable data must not become a successful empty page").toBe(500);
   expect(await response.json()).toEqual({ error: "Failed to read the project portfolio" });
@@ -171,4 +175,41 @@ it("stops callers without active membership before project reads", async () => {
   state.membership.mockResolvedValue({ membership: null, workspace: null });
   const response = await request();
   expect([response.status, fake.queries.length], "missing membership must stop before portfolio access").toEqual([404, 0]);
+});
+
+// Mutate the unread row at the second query, after the first page was copied.
+// Offset paging still returns the expected count, but repeats one ID and omits it.
+it("retains each project exactly once when an unread project is updated between pages", async () => {
+  const rows = projects(4);
+  let changed = false;
+  database(rows, { cap: 2, beforePage(page) {
+    if (page === 1) {
+      rows[2].updated_at = "2026-10-15T00:00:00Z";
+      changed = true;
+    }
+  } });
+  const response = await request();
+  expect(response.status).toBe(200);
+  const actual = (await grid(response)).rows.slice(1);
+  expect(changed, "the concurrent update must actually run").toBe(true);
+  expect(actual).toHaveLength(rows.length);
+  expect(actual.map((row) => row[1]).sort(), "mutable update must not omit or duplicate a project").toEqual(rows.map((row) => row.id));
+  expect(actual, "presentation must sort the received values by update time then ID").toEqual([
+    rows[2], rows[0], rows[1], rows[3],
+  ].map(expectedRow));
+});
+
+it("sorts presentation by timestamp instant and breaks ties by ID after cursor reads", async () => {
+  const rows = projects(5);
+  rows[0].updated_at = "2026-10-01T00:00:00Z";
+  rows[1].updated_at = "2026-10-01T02:00:00+02:00";
+  rows[2].updated_at = "2026-10-01T00:00:00.000500Z";
+  rows[3].updated_at = "2026-10-15T00:00:00Z";
+  rows[4].updated_at = "2026-10-01T00:00:00.000501Z";
+  database([...rows].reverse(), { cap: 2 });
+  const response = await request();
+  expect(response.status).toBe(200);
+  expect((await grid(response)).rows.slice(1), "presentation must use descending instants and ascending IDs for ties").toEqual([
+    rows[3], rows[4], rows[2], rows[0], rows[1],
+  ].map(expectedRow));
 });

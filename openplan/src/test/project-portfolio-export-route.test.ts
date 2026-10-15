@@ -26,11 +26,11 @@ const COLUMNS = "id, name, summary, status, plan_type, delivery_phase, estimated
 type Row = Record<string, unknown>;
 type ReadResult = { data: Row[] | null; error: { code?: string; message: string } | null };
 type Query = {
-  table: string; columns: string; filters: Array<[string, unknown]>;
+  table: string; columns: string; filters: Array<[string, unknown]>; cursors: Array<[string, string]>;
   orders: Array<[string, boolean]>; range: [number, number]; limit: number;
 };
 
-// Each read applies its own scope, ordering, inclusive range and projection.
+// Each read applies its own scope, ID cursor, ordering, limit and projection.
 // Preserve the API cap so a single limit read cannot masquerade as pagination.
 function fakeClient(result: ReadResult) {
   const queries: Query[] = [];
@@ -39,11 +39,12 @@ function fakeClient(result: ReadResult) {
     client: {
       auth: { getUser: vi.fn().mockResolvedValue({ data: { user: { id: USER_ID } } }) },
       from: vi.fn((table: string) => {
-        const query: Query = { table, columns: "", filters: [], orders: [], range: [0, Infinity], limit: Infinity };
+        const query: Query = { table, columns: "", filters: [], cursors: [], orders: [], range: [0, Infinity], limit: Infinity };
         const read = async (): Promise<ReadResult> => {
           queries.push(query);
           if (result.error || !result.data) return result;
-          const rows = result.data.filter((row) => query.filters.every(([column, value]) => row[column] === value));
+          const rows = result.data.filter((row) => query.filters.every(([column, value]) => row[column] === value)
+            && query.cursors.every(([column, value]) => String(row[column]) > value));
           rows.sort((left, right) => {
             for (const [column, ascending] of query.orders) {
               const a = String(left[column] ?? ""), b = String(right[column] ?? "");
@@ -60,6 +61,7 @@ function fakeClient(result: ReadResult) {
         const chain = {
           select: (columns: string) => { query.columns = columns; return chain; },
           eq: (column: string, value: unknown) => { query.filters.push([column, value]); return chain; },
+          gt: (column: string, value: string) => { query.cursors.push([column, value]); return chain; },
           order: (column: string, settings: { ascending: boolean }) => {
             query.orders.push([column, settings.ascending]); return chain;
           },
@@ -99,9 +101,10 @@ describe("GET /api/projects/export/workbook", () => {
     expect(response.headers.get("content-type")).toBe("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
     expect(response.headers.get("content-disposition")).toContain("openplan-openplan-qa-projects-2026-08-26.xlsx");
     expect(response.headers.get("cache-control")).toBe("private, no-store");
-    expect(fake.queries, "every legacy read must preserve projection scope order and inclusive range").toEqual(
-      [[0, 999], [3, 1002]].map((range) => ({ table: "projects", columns: COLUMNS,
-        filters: [["workspace_id", WORKSPACE_ID]], orders: [["updated_at", false], ["id", true]], range, limit: Infinity }))
+    expect(fake.queries, "every legacy read must preserve projection scope ID cursor and limit").toEqual(
+      [null, "project-2"].map((cursor) => ({ table: "projects", columns: COLUMNS,
+        filters: [["workspace_id", WORKSPACE_ID]], cursors: cursor === null ? [] : [["id", cursor]],
+        orders: [["id", true]], range: [0, Infinity], limit: 1000 }))
     );
     expect(loadCurrentWorkspaceMembershipMock).toHaveBeenCalledWith(fake.client, USER_ID);
     expect(buildPortfolioRoundTripWorkbookMock).toHaveBeenCalledTimes(1);
