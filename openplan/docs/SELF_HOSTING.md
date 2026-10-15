@@ -62,7 +62,8 @@ configuration.
 | `NEXT_PUBLIC_SITE_URL` | Canonical origin. Match Supabase Auth Site URL and allowed callback/reset redirects. The checked-in local Auth configuration uses `http://127.0.0.1:3000`; use one consistent origin and test actual links. |
 | `NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN` | Public `pk.` token for map surfaces. The legacy `NEXT_PUBLIC_MAPBOX_TOKEN` alias is accepted. A secret `sk.` token is refused. The maps listed under "Maps without a Mapbox key" below can instead use a MapLibre style. Check the visible map and browser console, not token shape alone. |
 | `CENSUS_API_KEY` | Demographic/source requests and travel-model inputs. Activate the key and confirm the required source data can be retrieved for the selected geography. A configured key does not establish data coverage. |
-| `OPENPLAN_INTEGRATION_KEY_SECRET` | High-entropy secret for stored per-workspace integration keys. Generate securely, preserve with recovery configuration, and restrict access. Changing it invalidates existing encrypted keys. |
+| `OPENPLAN_INTEGRATION_KEY_SECRET` | Primary high-entropy secret for stored workspace keys and sealed worker credentials. Generate securely, preserve with recovery configuration, and restrict access. New ciphertext uses this secret. Follow [integration secret rotation](#rotate-the-integration-encryption-secret) before changing it. |
+| `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Optional second secret for reading retained ciphertext during rotation. It does not enable storage without a usable primary. Reads preserve the stored bytes. Web and every worker that decrypts credentials need the same two secrets during a rolling transition. |
 | `ANTHROPIC_API_KEY` | Optional cloud AI requests. Inspect the material being sent and the provider cost before enabling. Model overrides are listed in the environment template. |
 | `OPENPLAN_SHARED_AI_KEY` | Set to `allow` so a production build lets workspaces without their own key use `ANTHROPIC_API_KEY`. Set it for a single-agency installation. Leave it unset on any deployment with public signup; each workspace then adds its own key. |
 | `RESEND_API_KEY`, `RESEND_FROM_EMAIL` | Optional outbound application email. Without these, teammate invitations use a copyable link. Supabase Auth email delivery is configured separately. Test invitation and password-reset flows independently. |
@@ -100,6 +101,54 @@ before admitting traffic. A linked managed project uses
 `npm exec -- supabase migration up --linked` after linking that project; this
 is not the command for an independently self-hosted Supabase deployment.
 The latter's migration/role/extension setup still needs a tested OpenPlan recipe.
+
+## Rotate the integration encryption secret
+
+This procedure changes the secret that encrypts provider credentials. It does
+not change the provider's API key. Keep a protected copy of both secrets with
+the database and worker-journal backups. Do not put either value in a command
+argument, report, log or public environment variable.
+
+1. Deploy the version with second-secret support to the web app and every
+   worker that reads sealed credentials. Keep the existing primary secret.
+   Before replacing an already configured distinct second secret, establish
+   that no required record, request, journal or restore point needs it. If it
+   is still needed, stop this rotation and retain both existing secrets.
+   Two slots cannot preserve three required secrets. This procedure supplies
+   no automatic inventory or migration to retire an occupied slot.
+2. Generate a new high-entropy secret. Keep the old primary, and set
+   `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` to the new secret on every reader.
+   Restart or redeploy each process. Although named "previous", this setting
+   can prepare the next secret for reading. Confirm every reader has this
+   configuration before proceeding. An old process with only the old secret
+   cannot read new ciphertext.
+3. Change each process to the new primary with the old secret in
+   `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`. Restart or redeploy each one.
+   During this transition, prepared processes can read writes from either
+   primary. New writes use that process's configured primary.
+4. Check an existing workspace key and a new save through the normal workflow.
+   Check retained worker requests separately, without dispatching an uncertain
+   provider request again. A successful key save does not prove queue recovery.
+
+Reads do not re-encrypt workspace rows or sealed request envelopes. Rewriting
+them can change the ciphertext fingerprints that protect queued requests.
+Before an app or worker rollback, establish that the candidate readers support
+every secret needed by required records. Once required records need both
+secrets, keep the web app and credential-reading workers on a build with
+second-secret support. Schema compatibility alone does not make an older
+single-secret build safe. Do not rewrite retained rows or queued envelopes
+to fit it. Use a compatible roll-forward fix if compatibility is uncertain.
+See the [hosted rollback procedure](ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app).
+There is no automatic inventory or bulk re-encryption command. Keep the old
+secret until an inventory establishes that no required live record, retained
+request, journal or restore point still needs it. Saving a workspace key again
+does not update older queued envelopes or backups. Removing the second secret
+makes ciphertext written with it unreadable. A missing or short primary still
+disables key storage and decryption, even with a usable second secret.
+
+This read compatibility is not provider-key revocation or a complete response
+to a disclosed encryption secret. Plan those actions separately. No hosted
+secret rotation is implied by shipping this code.
 
 ## Local compute and document processing
 

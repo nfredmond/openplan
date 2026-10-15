@@ -1,0 +1,12 @@
+{
+  "positiveControls": 2,
+  "refusedFaults": [
+    "runner-error",
+    "false-success",
+    "wrong-census",
+    "extra-failure",
+    "missing-case",
+    "wrong-case",
+    "wrong-diagnostic"
+  ]
+}
