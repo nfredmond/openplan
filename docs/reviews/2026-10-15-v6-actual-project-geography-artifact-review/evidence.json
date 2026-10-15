@@ -1,0 +1,445 @@
+{
+  "inputs_before": {
+    "inventory.json": {
+      "bytes": 1006,
+      "sha256": "8c8e1519fbc707aa06b8d92726ead9359529805c22e8d4ee730c0995bc572cb7"
+    },
+    "legacy-jurisdiction.json": {
+      "bytes": 10482,
+      "sha256": "8faf159c9d4e7aa48a6f35a4b51b395cd8fbb39c71827a946eca4d6bc7fdebe0"
+    },
+    "legacy-three-shapes.gpkg": {
+      "bytes": 139264,
+      "sha256": "3b3721820a91cb75821dece212875ad6be8e9601fc909469e0dce18e866c7ec5"
+    },
+    "unresolved-jurisdiction.json": {
+      "bytes": 888,
+      "sha256": "19c1d635c310d13eba1999bd9089e13d1dea5dde0b3eadd586c54fd65eb12d86"
+    },
+    "unresolved-three-shapes.gpkg": {
+      "bytes": 131072,
+      "sha256": "069eebf7b2315c1b39f9497ddb41022de9a4b6ca6395461744a8ede091552554"
+    },
+    "declared-corrected-jurisdictions.json": {
+      "bytes": 13944,
+      "sha256": "a1e36c7f53dcac43363960ea562a5aaff873c537499d2778a52992fa67d66a9b"
+    },
+    "declared-corrected-three-shapes.gpkg": {
+      "bytes": 143360,
+      "sha256": "76b19db61830eed25008000bbbbf26b2e85e024ba4e459c98d9956462edc2ee2"
+    },
+    "declared-jurisdictions.json": {
+      "bytes": 13948,
+      "sha256": "5a223505d4fb67b0eb12f40226f858fa8278b06abf8d7955c9cc4a23ed8b6ab7"
+    }
+  },
+  "inputs_after": {
+    "inventory.json": {
+      "bytes": 1006,
+      "sha256": "8c8e1519fbc707aa06b8d92726ead9359529805c22e8d4ee730c0995bc572cb7"
+    },
+    "legacy-jurisdiction.json": {
+      "bytes": 10482,
+      "sha256": "8faf159c9d4e7aa48a6f35a4b51b395cd8fbb39c71827a946eca4d6bc7fdebe0"
+    },
+    "legacy-three-shapes.gpkg": {
+      "bytes": 139264,
+      "sha256": "3b3721820a91cb75821dece212875ad6be8e9601fc909469e0dce18e866c7ec5"
+    },
+    "unresolved-jurisdiction.json": {
+      "bytes": 888,
+      "sha256": "19c1d635c310d13eba1999bd9089e13d1dea5dde0b3eadd586c54fd65eb12d86"
+    },
+    "unresolved-three-shapes.gpkg": {
+      "bytes": 131072,
+      "sha256": "069eebf7b2315c1b39f9497ddb41022de9a4b6ca6395461744a8ede091552554"
+    },
+    "declared-corrected-jurisdictions.json": {
+      "bytes": 13944,
+      "sha256": "a1e36c7f53dcac43363960ea562a5aaff873c537499d2778a52992fa67d66a9b"
+    },
+    "declared-corrected-three-shapes.gpkg": {
+      "bytes": 143360,
+      "sha256": "76b19db61830eed25008000bbbbf26b2e85e024ba4e459c98d9956462edc2ee2"
+    },
+    "declared-jurisdictions.json": {
+      "bytes": 13948,
+      "sha256": "5a223505d4fb67b0eb12f40226f858fa8278b06abf8d7955c9cc4a23ed8b6ab7"
+    }
+  },
+  "originals_unchanged": true,
+  "findings": {
+    "legacy": {
+      "revision": "2026-10-15T16:14:55.35322+00:00",
+      "payload_sha256": "b98fae47d9a9554ead2106d175efdc323f23b2c128ba0457ad7a9a4045065465",
+      "context_source": "legacy_study_place",
+      "context_state": null,
+      "entries": 1,
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ],
+          "polygon_ring_vertex_counts": [
+            [
+              2020,
+              528
+            ]
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ],
+          "polygon_ring_vertex_counts": null
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ],
+          "polygon_ring_vertex_counts": null
+        }
+      },
+      "engagement_rows": 0
+    },
+    "unresolved": {
+      "revision": "2026-10-15T16:15:41.710681+00:00",
+      "payload_sha256": "d49f1ddc0c3ed5b6879ca1225560c2a5007ae3b2b6876d17bd470bdc13614082",
+      "context_source": "project_declaration",
+      "context_state": "unresolved",
+      "entries": 0,
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ],
+          "polygon_ring_vertex_counts": [
+            [
+              2020,
+              528
+            ]
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ],
+          "polygon_ring_vertex_counts": null
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ],
+          "polygon_ring_vertex_counts": null
+        }
+      },
+      "engagement_rows": 0
+    },
+    "declared": {
+      "revision": "2026-10-15T16:17:10.778243+00:00",
+      "payload_sha256": "209dbb9bce4158831bef1efb2c17a524b3799fff964b0e20f0c271950ee0b7a1",
+      "context_source": "project_declaration",
+      "context_state": "declared",
+      "entries": 2,
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ],
+          "polygon_ring_vertex_counts": [
+            [
+              2020,
+              528
+            ]
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ],
+          "polygon_ring_vertex_counts": null
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ],
+          "polygon_ring_vertex_counts": null
+        }
+      },
+      "engagement_rows": 0
+    }
+  },
+  "controls": [
+    {
+      "name": "harmless JSON whitespace",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "stored CHECK violation",
+      "outcome": "sqlite: integrity"
+    },
+    {
+      "name": "missing manifest table",
+      "outcome": "metadata: required tables"
+    },
+    {
+      "name": "wrong feature SRS",
+      "outcome": "metadata: geometry registrations"
+    },
+    {
+      "name": "manifest omission count",
+      "outcome": "metadata: manifest coverage"
+    },
+    {
+      "name": "unavailable replaced with zero",
+      "outcome": "metadata: unavailable stays nonnumeric"
+    },
+    {
+      "name": "point shifted with matching extent",
+      "outcome": "geometry: exact saved point"
+    },
+    {
+      "name": "line vertex order reversed",
+      "outcome": "geometry: exact saved line"
+    },
+    {
+      "name": "area hole deleted without extent loss",
+      "outcome": "geometry: exact retained area including holes"
+    },
+    {
+      "name": "checksum corruption",
+      "outcome": "jurisdiction: canonical checksum"
+    },
+    {
+      "name": "explicit unresolved gains legacy source",
+      "outcome": "jurisdiction: explicit source"
+    },
+    {
+      "name": "failed fixture substituted as corrected",
+      "outcome": "jurisdiction: exact unverified declarations"
+    },
+    {
+      "name": "US-CA staff declaration support promoted",
+      "outcome": "jurisdiction: no authority promotion"
+    },
+    {
+      "name": "embedded JSON replaced",
+      "outcome": "parity: embedded canonical payload context"
+    },
+    {
+      "name": "embedded revision changed",
+      "outcome": "parity: manifest identity revision source hash"
+    },
+    {
+      "name": "actor field inserted",
+      "outcome": "privacy: geometry only engagement schema"
+    },
+    {
+      "name": "known fixture identity inserted",
+      "outcome": "privacy: known fixture accounts"
+    }
+  ],
+  "copies_restored": true,
+  "fixture_account_sets_checked": 3,
+  "retained_failed_trial": {
+    "file": "declared-jurisdictions.json",
+    "scopes": [
+      "sovereign",
+      "sovereign"
+    ],
+    "accepted_pair": false
+  },
+  "sqlite_version": "3.46.1",
+  "checker_sha256": "283337791d97a7d900fd80df82d9e03ea268b0f65c83292c2889a8c2d8d9cc0d",
+  "review": {
+    "date_utc": "2026-10-15T16:25:38.952547+00:00",
+    "review_head": "864974054d187e92e2cd3ab5525c0ae545215d62",
+    "branch": "t3/v6-project-geography-artifact-review",
+    "app_commit": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+    "application_tree": "bdd3096b04212d944844c063fd33ad1fb4a2c957",
+    "model": "gpt-6.1-sol",
+    "reasoning": "high",
+    "runtime_contacted": false,
+    "browser_operated": false,
+    "live_database_contacted": false,
+    "source_executed": false,
+    "source_edited": false,
+    "pair_count": 3,
+    "harmless_survivors": 1,
+    "targeted_faults_detected": 16
+  },
+  "parent_attestation": {
+    "input": {
+      "bytes": 3705,
+      "sha256": "1700d98c21249705d1eb6c355a2151799c9e05a4db8598144beff5abc49f1fb7"
+    },
+    "head": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+    "health_database": "not_checked",
+    "build_id_from_brief": "7X3x8RgohlUwVf_lPZa5r",
+    "target_oid_from_brief": 6150036,
+    "expected_migrations": 420,
+    "latest": "20261017000017",
+    "independently_reattested": false
+  },
+  "read_authority": {
+    "AGENTS.md": {
+      "bytes": 15766,
+      "sha256": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6"
+    },
+    "COORDINATION.md_private_snapshot": {
+      "bytes": 337259,
+      "sha256": "a4aec4834370bf9351f2aa708dd664ad8cf76d918af48549fa44ae602be7d121"
+    }
+  },
+  "source_context_at_app49": {
+    "openplan/src/lib/projects/project-geopackage.ts": {
+      "bytes": 48209,
+      "sha256": "7a0d199b888db1a33f8790223c4f24bd53aa2a510db19b5dc87932d031b0d2de"
+    },
+    "openplan/src/lib/jurisdiction-readiness/payload.ts": {
+      "bytes": 4933,
+      "sha256": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c"
+    },
+    "openplan/src/lib/jurisdiction-readiness/registry.ts": {
+      "bytes": 5126,
+      "sha256": "3b7c7be55afc5f3db76deaa75785a995cdee0e1c1dd464c2908fca554dee428f"
+    },
+    "openplan/src/lib/jurisdiction-readiness/registry.v1.json": {
+      "bytes": 17089,
+      "sha256": "fc0e8ef1f129fc19df9df88618e3534a74d218fc54566941fb63463e3abab384"
+    },
+    "openplan/src/lib/jurisdiction-readiness/custody.ts": {
+      "bytes": 311,
+      "sha256": "98f73ab6f402de0dc256bbc87b3f976a8a3707388d861ffd74b66353ae28c292"
+    },
+    "openplan/src/lib/runtime/action-metadata.ts": {
+      "bytes": 9050,
+      "sha256": "6bcb15a4e2ba59f29211ef7121ea8789d9b87e8986be5d89e967ca4a2050efae"
+    },
+    "openplan/src/lib/project-evidence-bundles/engagement-export-privacy.ts": {
+      "bytes": 4522,
+      "sha256": "b25eb96e1c6106463983741a671f303c00b90c5f8ca1e7c7abc0e5ce881def2b"
+    },
+    "openplan/src/app/api/projects/[projectId]/export/geopackage/route.ts": {
+      "bytes": 5463,
+      "sha256": "ced063ccf67658a70c343b94de8d72d560fb1bd4a5699412fc39e6de13425d82"
+    }
+  },
+  "prior_reports": {
+    "docs/reviews/2026-10-15-current-browser-download-artifact-review/README.md": {
+      "bytes": 12941,
+      "sha256": "983e734994aa9a9299f641eddc225d24bbc61e42181104e2d3fc4213ea3f35e0"
+    },
+    "docs/reviews/2026-10-15-current-browser-download-artifact-review/evidence.json": {
+      "bytes": 10614,
+      "sha256": "d2b84ced2105889cba3a715173e19df741cb6eea5661d2ed1a404b93ccf36401"
+    },
+    "docs/reviews/2026-10-15-current-browser-download-artifact-review/inspect_downloads.py": {
+      "bytes": 27534,
+      "sha256": "ec5011917fdc18a7a90f667082334b79be9470d9ee76997521f9fbe57062aa95"
+    },
+    "docs/reviews/2026-10-15-project-jurisdiction-correction-independent/REVIEW.md": {
+      "bytes": 15981,
+      "sha256": "5b320c766f576b1db2acb5378baa62af5c5f1d4a6beef5345b5a4ba32e5552d8"
+    },
+    "docs/reviews/2026-10-15-project-jurisdiction-native/REPORT.md": {
+      "bytes": 17659,
+      "sha256": "dfe12f92edf03ceb6ffc2370ae4f604f195327614394f9f4496cd750c0ed91bc"
+    },
+    "docs/reviews/2026-10-15-project-saved-map-correction-review/REVIEW.md": {
+      "bytes": 12649,
+      "sha256": "0af9096d6544482553102b1dc4323723a764e97a813994013e503371bb295114"
+    }
+  },
+  "registry_parsed_object_sha256": "531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158",
+  "study_place_properties_observed_all_pairs": {
+    "place_label": "Oakland",
+    "place_source": "tigerweb",
+    "place_kind": "city",
+    "place_ref": "0653000",
+    "country_code": "US",
+    "subdivision_code": "CA",
+    "authors_jurisdiction": false
+  },
+  "fixture_input": {
+    "path_reference": "browser-acceptance-02/fixtures-private.json",
+    "sha256": "6427fd2b1674bdb2675e42e9f749a657c8a44b79a6f93cef68949d91fbfdad99",
+    "account_sets": 3,
+    "values_published": false
+  },
+  "private_execution": {
+    "run-01.log": {
+      "bytes": 250,
+      "sha256": "73bfb2ab1169a3827560769a74cd9bec95da356324d6e60747c5c599368cca63"
+    },
+    "run-02.log": {
+      "bytes": 250,
+      "sha256": "73bfb2ab1169a3827560769a74cd9bec95da356324d6e60747c5c599368cca63"
+    },
+    "results.json": {
+      "bytes": 9058,
+      "sha256": "87891aef8772330e720ada2b84ffc65c9d8af3d3ff5c562edb38a5bb4d058c08"
+    }
+  },
+  "limits": [
+    "Frozen bytes, not independent browser collection or runtime attestation",
+    "SQLite/WKB metadata and exact geometry, not full OGC conformance or topology",
+    "Exact declaration representation, not legal/authority/adoption validation",
+    "Empty engagement and known accounts, not general privacy-filter enforcement or approved-public inclusion",
+    "No QGIS, Excel, practitioner, public-participant, hosted, scientific, release or complete-product acceptance"
+  ]
+}
