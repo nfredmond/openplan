@@ -8,4 +8,9 @@ The package includes the all-state PR classification, selected findings, documen
 
 Reproduction commands in the report run from that complete package. They require the retained corpus and T3 checkout; they do not run unchanged from this compact documentation directory. A fresh collection can differ because GitHub PRs change. The immutable original corpus hash is recorded in `inventory.json`.
 
+The [collector correction](COLLECTOR_CORRECTION.md) records two valid GitHub
+review findings, their corrected error/pagination/cache handling, and a separate
+fresh audit that matches all 72 original projected PR records. It preserves the
+historical capture and its limits. Synthetic fault controls now run in CI.
+
 No application code, migration, operational setting or roadmap item changes here. No browser, provider, practitioner, scientific or independent-host acceptance is claimed.

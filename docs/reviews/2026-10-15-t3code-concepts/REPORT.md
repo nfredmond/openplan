@@ -41,6 +41,19 @@ Separate coverage levels; they are not interchangeable (details in Appendix A):
 
 Patch hunks were not read for any PR, and no comments were read for the 13,127 PRs outside the deep-review set. My first deep-review pass used bounded digests ([`scripts/digest.py`](scripts/digest.py): body prefixes, finally 900 characters; top 14 files; at most 3 human comments and 2 review comments of 350 characters). I then read the complete bodies and file lists for all 72 and rechecked each finding; this refined details (noted in [`evidence/deep-review-findings.jsonl`](evidence/deep-review-findings.jsonl)) but changed no recommendation. One API discrepancy: [#12296] declares 0 changed files while its files endpoint returns 4, fewer than its body describes, so its file census is incomplete. [#8962]'s upstream body is itself a GitHub rate-limit error string (confirmed by re-fetch). The 17 relevance upgrades in the full-body supplement are web UI, terminal and source-control PRs (for example [#4700], [#6218], [#18068]); I checked their titles and theme deltas and none changes a recommendation. Documentation: 117 first-party T3 paths (13,938 lines) were retrieved, which the script verifies; that I read them in full is my declaration, which the script cannot verify. The other 897 inventory paths are external upstream library docs under `.repos/` (alchemy-effect and effect-smol), not T3 product prose; they were path-screened only. Machine-readable outputs: [`evidence/pr-classification.tsv`](evidence/pr-classification.tsv), [`evidence/deep-review-selection.tsv`](evidence/deep-review-selection.tsv), [`evidence/deep-review-findings.jsonl`](evidence/deep-review-findings.jsonl), [`evidence/documentation-coverage.tsv`](evidence/documentation-coverage.tsv), [`evidence/coverage.json`](evidence/coverage.json).
 
+### Collector review follow-up, October 15, 2026
+
+GitHub review identifies two defects in the original selected-PR collector.
+Failed CLI calls can become empty evidence, and paginated arrays can be
+misread or discarded. The [correction](COLLECTOR_CORRECTION.md) now refuses
+failed reads, preserves every page and refreshes legacy caches only after
+complete collection. A separate fresh collection of the same 72 selected PRs
+matches every original projected PR record and list exactly, including all
+190 files for PR 3699. The upstream discrepancy for PR 12296 remains.
+No original capture is overwritten, and no recommendation changes. This
+later comparison does not recreate the earlier server state or establish
+complete patches, untruncated comments or runtime acceptance.
+
 ## 3. Comparison table
 
 Reuse class: **Inspiration** (design idea only), **MIT reuse** (copy a small file or function with attribution), **Integration** (connect an external open-source tool), **Lesson** (a failure mode to test for).
@@ -229,11 +242,16 @@ Recommendations only. The [roadmap][op-roadmap] remains the sole queue and is no
 
 ## Appendix B. Reproduction
 
+Run these commands in a working copy of the complete research package. Preserve
+the original capture. Stop on a failed collection; retained legacy files do not
+establish a successful refresh.
+
 ```sh
+set -e
 python3 -I scripts/doc_coverage.py "$PWD"
 python3 -I scripts/classify_prs.py "$PWD"
 python3 -I scripts/title_hits.py "$PWD"
-python3 -I scripts/fetch_pr_details.py "$PWD"   # read-only gh api; skips cached files
+python3 -I scripts/fetch_pr_details.py "$PWD"   # read-only gh api; reuses only intact v2 receipts
 python3 -I scripts/write_findings.py "$PWD"
 python3 -I scripts/full_text.py "$PWD"        # complete reading texts for the 72 selected PRs
 python3 -I scripts/digest.py "$PWD" 16335 18124  # reading digest for any PR numbers

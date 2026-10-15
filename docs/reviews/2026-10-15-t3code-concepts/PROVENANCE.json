@@ -8,7 +8,7 @@
     "exitCode": 0
   },
   "originalReportSha256": "6e1768becaa1f4ed4f628272e505dedf59e1cdb58165cd1797504fad26b9fe1f",
-  "repositoryReportSha256": "9f7490c2472f997c9b894a019b76d20cf238822b7502a20778f3f522d88fdeda",
+  "repositoryReportSha256": "646048c29fad9ec93b30c51a5ac63db640b79f79dd7dcd6b1345843bbbbfdc6b",
   "editorialChange": "Codex changed the method lead-in from Four separate coverage levels to Separate coverage levels because the revised table contains six levels. Recommendations unchanged. Codex product-fit disagreement is separate in LEAD_REVIEW.md.",
   "localResearchPackage": "/home/nathaniel/.local/state/openplan/t3code-opus-research-20261015",
   "omittedInputs": [
@@ -31,5 +31,14 @@
   "sourceViewFormatting": {
     "rows": 6,
     "change": "Trimmed trailing whitespace in six public title-view TSV rows after git diff --check identified it. Source capture and original researcher files remain unchanged; classification inputs and conclusions are unchanged."
+  },
+  "repositoryReportSha256BeforeCollectorCorrection": "9f7490c2472f997c9b894a019b76d20cf238822b7502a20778f3f522d88fdeda",
+  "collectorCorrection": {
+    "record": "COLLECTOR_CORRECTION.md",
+    "audit": "evidence/collector-recapture-audit.json",
+    "controls": "evidence/collector-controls.json",
+    "originalProjectedRecordsMatched": 72,
+    "recommendationsChanged": false,
+    "originalCapturesOverwritten": false
   }
 }

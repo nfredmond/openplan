@@ -200,6 +200,16 @@
     },
     "L4_pinned_source_inspection": {
       "note": "Separate from PR retrieval. 36 T3 paths at the pinned commit were checked for existence and specific lines (git cat-file/git show + grep); several small files (for example promptLinks.ts, handoffBudget.ts, McpToolAccess.ts, EffectOutbox.ts excerpts) were read around the cited lines. No T3 code was run or built."
+    },
+    "L3b_collector_review_recap": {
+      "selectedPrs": 72,
+      "verifiedV2Receipts": 72,
+      "allProjectedListsIdentical": 72,
+      "upstreamFileCountDiscrepancies": [
+        12296
+      ],
+      "audit": "evidence/collector-recapture-audit.json",
+      "limits": "Later complete endpoint retrieval, not recreation of original server state, reading or patch/runtime acceptance. Original study remains frozen."
     }
   },
   "documentation": {
