@@ -4,6 +4,6 @@
     "wrong expected digest",
     "altered source bytes"
   ],
-  "filesMatched": 22,
-  "boundary": "Read-only current source hash comparisons and in-memory fault controls. Does not run the application."
+  "filesMatched": 23,
+  "boundary": "Read-only current source hashes and in-memory faults. No application execution."
 }

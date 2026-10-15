@@ -16,6 +16,10 @@ function invokesObserver(source: string, kind: string) {
     && statement.importClause?.namedBindings && ts.isNamedImports(statement.importClause.namedBindings)
     && statement.importClause.namedBindings.elements.some(binding => !binding.propertyName && binding.name.text === "observeNodeQueue"));
   let wrappers = 0, direct = 0;
+  const wrapsMain = (call: ts.Node) => ts.isCallExpression(call) && ts.isIdentifier(call.expression)
+    && call.expression.text === "observeNodeQueue" && call.arguments.length === 2
+    && ts.isStringLiteral(call.arguments[0]) && call.arguments[0].text === kind
+    && ts.isIdentifier(call.arguments[1]) && call.arguments[1].text === "main";
   for (const statement of tree.statements) {
     if (!ts.isExpressionStatement(statement) || !ts.isVoidExpression(statement.expression)) continue;
     const outer = statement.expression.expression;
@@ -23,16 +27,34 @@ function invokesObserver(source: string, kind: string) {
     const call = outer.expression.expression;
     if (!ts.isCallExpression(call) || !ts.isIdentifier(call.expression)) continue;
     if (call.expression.text === "main") direct++;
-    if (call.expression.text === "observeNodeQueue" && call.arguments.length === 2
-      && ts.isStringLiteral(call.arguments[0]) && call.arguments[0].text === kind
-      && ts.isIdentifier(call.arguments[1]) && call.arguments[1].text === "main") wrappers++;
+    if (wrapsMain(call)) wrappers++;
+    if (call.expression.text === "start" && call.arguments.length === 0 && kind === "synthesis-preparation") {
+      const start = tree.statements.find(node => ts.isFunctionDeclaration(node) && node.name?.text === "start");
+      if (!start || !ts.isFunctionDeclaration(start) || !start.body || start.parameters.length !== 0) continue;
+      const statements = start.body.statements;
+      const preflight = statements[0];
+      const variables = preflight && ts.isVariableStatement(preflight) ? preflight.declarationList.declarations : [];
+      const options = variables.length === 1 ? variables[0] : undefined;
+      const returned = statements[1];
+      const nestedMain = statements[2];
+      if (statements.length === 3 && options && ts.isIdentifier(options.name) && options.name.text === "options"
+        && options.initializer?.getText(tree) === "synthesisPreparationOptions(process.argv.slice(2), process.env)"
+        && returned && ts.isReturnStatement(returned) && returned.expression && wrapsMain(returned.expression)
+        && nestedMain && ts.isFunctionDeclaration(nestedMain) && nestedMain.name?.text === "main") wrappers++;
+    }
   }
   return imported && wrappers === 1 && direct === 0;
 }
 
 function notifiesFromWorkerHandlers(source: string) {
   const tree = ts.createSourceFile("worker.ts", source, ts.ScriptTarget.Latest, true, ts.ScriptKind.TS);
-  const main = tree.statements.find(value => ts.isFunctionDeclaration(value) && value.name?.text === "main");
+  const mains: ts.FunctionDeclaration[] = [];
+  const findMain = (node: ts.Node) => {
+    if (ts.isFunctionDeclaration(node) && node.name?.text === "main") mains.push(node);
+    ts.forEachChild(node, findMain);
+  };
+  findMain(tree);
+  const main = mains.length === 1 ? mains[0] : undefined;
   if (!main || !ts.isFunctionDeclaration(main) || !main.body || main.parameters.length !== 1
     || !ts.isIdentifier(main.parameters[0].name) || main.parameters[0].name.text !== "noticeStopping") return false;
   const arrows = new Map<string, ts.ArrowFunction>();

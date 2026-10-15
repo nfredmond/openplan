@@ -24,6 +24,7 @@ async function fixture(){
   }else if(path.endsWith("/claim_engagement_synthesis_preparation")){
    claimReached.resolve();if(options.holdClaim)await release.promise;
    if(options.claimError){res.statusCode=503;res.end('{"message":"PRIVATE claim detail"}');}else res.end("null");
+  }else if(path==="/rest/v1/rpc/record_node_queue_process_observation"){res.end("true");
   }else{res.statusCode=404;res.end("{}");}
  });
  await new Promise<void>(resolve=>server.listen(0,"127.0.0.1",resolve));cleanup.push(async()=>{release.resolve();server.closeAllConnections();await new Promise<void>((resolve,reject)=>server.close(e=>e?reject(e):resolve()));});
@@ -34,11 +35,15 @@ async function fixture(){
   const ended=new Promise<{code:number|null;signal:NodeJS.Signals|null;stdout:string;stderr:string}>((resolve,reject)=>{child.once("error",reject);child.once("exit",(code,signal)=>resolve({code,signal,stdout,stderr}));});
   cleanup.push(async()=>{if(child.exitCode===null&&child.signalCode===null)child.kill("SIGKILL");await ended;});return{child,ended,reported:reported.promise};
  }
- return{root,target,directory,requests,options,start,claimReached:claimReached.promise,release:()=>release.resolve(),journal:async()=>JSON.parse(await readFile(join(directory,"pending.json"),"utf8"))};
+ return{root,target,directory,requests,get businessRequests(){return requests.filter(row=>row.path!=="/rest/v1/rpc/record_node_queue_process_observation");},options,start,claimReached:claimReached.promise,release:()=>release.resolve(),journal:async()=>JSON.parse(await readFile(join(directory,"pending.json"),"utf8"))};
 }
 describe("preparation CLI processes",()=>{
  it("runs one bounded empty pass and creates private target custody",async()=>{
-  const f=await fixture(),result=await f.start().ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("0 pending custody records");expect(result.stdout).toContain("not full queue completion");expect((await f.journal()).target).toBe(f.target);expect(f.requests).toHaveLength(1);
+  const f=await fixture(),result=await f.start().ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("0 pending custody records");expect(result.stdout).toContain("not full queue completion");expect((await f.journal()).target).toBe(f.target);expect(f.businessRequests,"A bounded empty pass makes one business inventory read").toHaveLength(1);
+  expect(f.businessRequests[0].path).toBe("/rest/v1/engagement_synthesis_preparation_jobs");
+  const observations=f.requests.filter(row=>row.path==="/rest/v1/rpc/record_node_queue_process_observation");
+  expect(observations.length,"An actual worker exit must attempt its private stopped observation").toBeGreaterThan(0);
+  expect(observations.at(-1)?.body?.p_state,"An actual worker exit must attempt its private stopped observation").toBe("stopped");
  });
  it("retains unknown claims and reuses their exact token in a fresh process",async()=>{
   const f=await fixture();f.options.queued=true;f.options.claimError=true;const first=await f.start().ended;expect(first.code,first.stderr).toBe(2);expect(first.stdout).toContain("1 pending custody records");expect(first.stdout+first.stderr).not.toContain("PRIVATE");const saved=await f.journal();expect(saved.pending).toHaveLength(1);
@@ -51,12 +56,12 @@ describe("preparation CLI processes",()=>{
   const result=await running.ended;expect(result.code,result.stderr).toBe(code);expect(result.stdout).toContain("worker stopped");expect((await f.journal()).pending).toHaveLength(1);expect(result.stdout).not.toContain("attempts acknowledged");f.release();
  });
  it("stops the continuous worker during its idle delay",async()=>{
-  const f=await fixture(),running=f.start([]);await Promise.race([running.reported,running.ended.then(r=>{throw new Error(r.stderr);})]);running.child.kill("SIGTERM");const result=await running.ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("worker stopped");expect(f.requests).toHaveLength(1);
+  const f=await fixture(),running=f.start([]);await Promise.race([running.reported,running.ended.then(r=>{throw new Error(r.stderr);})]);running.child.kill("SIGTERM");const result=await running.ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("worker stopped");expect(f.businessRequests,"Idle shutdown cannot repeat a business pass").toHaveLength(1);
  });
  it("returns one for an unavailable inventory and keeps private errors out of output",async()=>{
   const f=await fixture();f.options.readError=true;const result=await f.start().ended;expect(result.code).toBe(1);expect(result.stderr).toContain("pass could not finish");expect(result.stdout+result.stderr).not.toContain("PRIVATE");expect((await f.journal()).pending).toEqual([]);
  });
- it.each([["--unknown"],["--once","--once"],["--help","--once"]].map(argv=>({argv})))("rejects invalid arguments before HTTP $argv",async({argv})=>{const f=await fixture(),result=await f.start(argv).ended;expect(result.code).toBe(1);expect(f.requests).toHaveLength(0);});
+ it.each([["--unknown"],["--once","--once"],["--help","--once"]].map(argv=>({argv})))("rejects invalid arguments before HTTP $argv",async({argv})=>{const f=await fixture(),result=await f.start(argv).ended;expect(f.requests,"Invalid arguments cannot start an HTTP request").toHaveLength(0);expect(result.code).toBe(1);});
  it("prints help without database configuration",async()=>{const f=await fixture(),result=await f.start(["--help"],{NEXT_PUBLIC_SUPABASE_URL:"",SUPABASE_SERVICE_ROLE_KEY:""}).ended;expect(result.code,result.stderr).toBe(0);expect(result.stdout).toContain("Usage:");expect(f.requests).toHaveLength(0);});
  it.each([{NEXT_PUBLIC_SUPABASE_URL:"http://user:PRIVATE@localhost:29821"},{OPENPLAN_SYNTHESIS_PREPARATION_WORK_DIR:"relative"},{SUPABASE_SERVICE_ROLE_KEY:""}])("refuses invalid startup configuration without requests",async environment=>{const f=await fixture(),result=await f.start(["--once"],environment).ended;expect(result.code).toBe(1);expect(result.stderr).toContain("could not run");expect(result.stdout+result.stderr).not.toContain("PRIVATE");expect(f.requests).toHaveLength(0);});
 });

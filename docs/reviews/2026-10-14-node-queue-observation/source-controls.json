@@ -2,17 +2,17 @@
   {
     "control": "baseline",
     "outcome": "survived",
-    "cases": 20
+    "cases": 33
   },
   {
     "control": "harmless",
     "outcome": "survived",
-    "cases": 20
+    "cases": 33
   },
   {
     "control": "restored-after-harmless",
     "outcome": "survived",
-    "cases": 20
+    "cases": 33
   },
   {
     "control": "work-result",
@@ -219,6 +219,12 @@
     "reason": "Queue gtfs-ingestion must invoke its observer around main"
   },
   {
+    "control": "preflight-order",
+    "test": "invokes the observer at every actual declared entry point",
+    "outcome": "intended_failure",
+    "reason": "Queue synthesis-preparation must invoke its observer around main"
+  },
+  {
     "control": "dead-caller",
     "test": "invokes the observer at every actual declared entry point",
     "outcome": "intended_failure",
@@ -315,8 +321,26 @@
     "reason": "Signal observations keep monotone process state"
   },
   {
+    "control": "actual-cli-business-inventory",
+    "test": "runs one bounded empty pass and creates private target custody",
+    "outcome": "intended_failure",
+    "reason": "A bounded empty pass makes one business inventory read"
+  },
+  {
+    "control": "actual-cli-stopped",
+    "test": "runs one bounded empty pass and creates private target custody",
+    "outcome": "intended_failure",
+    "reason": "An actual worker exit must attempt its private stopped observation"
+  },
+  {
+    "control": "actual-cli-preflight",
+    "test": "rejects invalid arguments before HTTP [ '--unknown' ]",
+    "outcome": "intended_failure",
+    "reason": "Invalid arguments cannot start an HTTP request"
+  },
+  {
     "control": "restored-final",
     "outcome": "survived",
-    "cases": 20
+    "cases": 33
   }
 ]

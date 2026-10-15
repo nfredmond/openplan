@@ -32,7 +32,8 @@ def run(repo,out):
         'synthesis-preparation','synthesis-execution','contract-calculations','gtfs-ingestion']
     scripts={kind:app/'scripts/workers'/(kind+'.ts') for kind in kinds}
     startup=app/'src/test/node-queue-observation-startup.test.ts'
-    original={path:path.read_bytes() for path in (subject,test,wiring,startup,*scripts.values())}
+    cli=app/'src/test/engagement-synthesis-preparation-cli-process.test.ts'
+    original={path:path.read_bytes() for path in (subject,test,wiring,startup,cli,*scripts.values())}
     oracle_controls(out)
     def swap(text,before,after):
         if text.count(before)!=1:raise ValueError('Node observation mutation anchor must be unique: '+before)
@@ -69,7 +70,9 @@ def run(repo,out):
     ]
     title='invokes the observer at every actual declared entry point'
     for kind,path in scripts.items():
-        cases.append(('caller-'+kind,path,title,change('void observeNodeQueue("'+kind+'", main).catch','void main().catch'),'Queue '+kind+' must invoke its observer around main'))
+        before,after=(('return observeNodeQueue("synthesis-preparation", main);','return main(() => {});') if kind=='synthesis-preparation' else ('void observeNodeQueue("'+kind+'", main).catch','void main().catch'))
+        cases.append(('caller-'+kind,path,title,change(before,after),'Queue '+kind+' must invoke its observer around main'))
+    cases.append(('preflight-order',scripts['synthesis-preparation'],title,change('  const options = synthesisPreparationOptions(process.argv.slice(2), process.env);\n  return observeNodeQueue("synthesis-preparation", main);','  return observeNodeQueue("synthesis-preparation", main);\n  const options = synthesisPreparationOptions(process.argv.slice(2), process.env);'),'Queue synthesis-preparation must invoke its observer around main'))
     path=scripts['provider-api']
     cases.extend([
         ('dead-caller',path,title,change('void observeNodeQueue("provider-api", main).catch','if (false) void observeNodeQueue("provider-api", main).catch'),'Queue provider-api must invoke its observer around main'),
@@ -86,11 +89,20 @@ def run(repo,out):
                 'Startup signal must keep default termination before worker handlers'))
     cases.append(('stop-callback',subject,'records stopping on the next pulse with an increasing sequence',
         change('return await work(notice);','return await work(() => {});'),'Signal observations keep monotone process state'))
+    cases.append(('actual-cli-business-inventory',subject,'runs one bounded empty pass and creates private target custody',
+        change('client.rpc("record_node_queue_process_observation"','client.rpc("unexpected_node_observation"'),
+        'A bounded empty pass makes one business inventory read'))
+    cases.append(('actual-cli-stopped',subject,'runs one bounded empty pass and creates private target custody',
+        change('    await send("stopped", ++sequence, AbortSignal.timeout(REQUEST_MS));','    // Deliberately omit the final observation.'),
+        'An actual worker exit must attempt its private stopped observation'))
+    cases.append(('actual-cli-preflight',scripts['synthesis-preparation'],"rejects invalid arguments before HTTP [ '--unknown' ]",
+        change('  const options = synthesisPreparationOptions(process.argv.slice(2), process.env);\n  return observeNodeQueue("synthesis-preparation", main);','  return observeNodeQueue("synthesis-preparation", main);\n  const options = synthesisPreparationOptions(process.argv.slice(2), process.env);'),
+        'Invalid arguments cannot start an HTTP request'))
     def restore():
         for path,raw in original.items():path.write_bytes(raw)
     def execute(label,title=None):
         result_path=out/(label+'.json')
-        args=['npm','exec','--','vitest','run',str(test.relative_to(app)),str(wiring.relative_to(app)),str(startup.relative_to(app)),'--maxWorkers=1','--no-file-parallelism',
+        args=['npm','exec','--','vitest','run',str(test.relative_to(app)),str(wiring.relative_to(app)),str(startup.relative_to(app)),str(cli.relative_to(app)),'--maxWorkers=1','--no-file-parallelism',
             '--reporter=json','--outputFile='+str(result_path)]
         if title:args+=['--testNamePattern',re.escape(title)]
         result=subprocess.run(args,cwd=app,capture_output=True,text=True,timeout=50,
@@ -102,8 +114,8 @@ def run(repo,out):
     records=[]
     def positive(label):
         code,data,failed=execute(label)
-        if code or not data['success'] or failed or data['numPassedTests']!=20:raise AssertionError(label+' positive differs')
-        records.append({'control':label,'outcome':'survived','cases':20});print(label+' survived',flush=True)
+        if code or not data['success'] or failed or data['numPassedTests']!=33:raise AssertionError(label+' positive differs')
+        records.append({'control':label,'outcome':'survived','cases':33});print(label+' survived',flush=True)
     try:
         positive('baseline')
         for path in (subject,*scripts.values()):path.write_bytes(original[path]+b'\n// Harmless node observation recovery note.\n')

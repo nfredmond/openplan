@@ -1,6 +1,6 @@
 # Node queue process observations, candidate
 
-This separate candidate adds private process observations for eight existing Node queues. It does not change job outcomes, authorize work, measure queue progress or activate a new worker. Candidate migration `20261017000015` remains unapplied to hosted production. The combined original-worker PR #323 stays frozen separately at `13aa8c2d4`.
+This separate candidate adds private process observations for eight existing Node queues. It does not change job outcomes, authorize work, measure queue progress or activate a new worker. Candidate migration `20261017000015` remains unapplied to hosted production. The combined original-worker PR #323 merged as `1b2fefe0f0e98f99700fc77e99146fe697b43ee7`; its production verification remains separate.
 
 ## Behavior
 
@@ -30,6 +30,35 @@ There is no hosted migration 15 application, worker deployment, browser journey,
 
 Private evidence lives under `~/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/node-queue-observation-20261014/`. Do not publish credentials, fixture environments or raw private logs.
 
-The [proof index](proof-index.json) records each source or native report and its blind category. The [operator instructions](OPERATIONS.md) describe the unreleased rollout. Review findings and corrections are preserved in [REVIEW.md](REVIEW.md). Dedicated CI repeats source, reader, transport, route, checker and schema fault controls serially. Its new workflow has not run on GitHub yet.
+The [proof index](proof-index.json) records each source or native report and its blind category. The [operator instructions](OPERATIONS.md) describe the unreleased rollout. Review findings and corrections are preserved in [REVIEW.md](REVIEW.md). Dedicated CI repeats source, reader, transport, route, checker and schema fault controls serially. That workflow passes on the earlier `0f1fdf508693` head; the corrected source still requires fresh exact-head CI.
 
 The first PR QA job fails on one unused fixture binding because local lint omitted the warning cap. [The correction record](CI_CORRECTION.md) preserves that failure. Source 05 repeats all lifecycle controls after removing the binding. The final local command uses `eslint --max-warnings=0` across the complete PR source diff and passes. Fresh exact-head GitHub CI remains required.
+
+## October 15 CI integration correction
+
+The later `0f1fdf508693` QA and shuffled jobs each fail six assertions in the
+same two files. Five actual preparation CLI cases expose an observation/request
+census change and premature diagnostic HTTP before invalid startup refusal.
+The sixth requires the full migration filename in the changelog. The failing
+shuffle seed is 256781. These failures are retained, not retried as flakes.
+
+Preparation arguments and target/directory configuration now validate before
+the observer starts. A valid pass still records diagnostics, and its test counts
+the one business inventory request separately. Invalid invocations retain the
+original zero-HTTP boundary. The actual stopped-write attempt and idle signal
+path remain checked. The AST guard accepts the explicit validated entry and
+still refuses a bypass or reordered validation. The changelog names the full
+candidate migration filename.
+
+Source 06 passes four 33-case cohorts and 54 intended faults. An additional idle
+CLI campaign passes four positive runs and one intended wrong-target fault.
+All 23 restored source hashes match, with three positive and two digest faults.
+Scoped types, full changed-file strict lint, 126 related shuffled cases under
+seed 256781 and direction check pass. The final 1 GiB service reports a
+688.9 MiB peak. Its first narrow type configuration omitted the global GeoJSON
+definitions needed by the newly included worker transitive imports; adding the
+actual installed type declarations resolves that scope error. No application
+type errors are suppressed. Full application CI remains required.
+
+The native SQL and HTTP report bytes are unchanged. These CLI corrections do
+not qualify live queue recovery, hosted observations or browser acceptance.

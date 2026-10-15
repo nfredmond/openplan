@@ -1,9 +1,9 @@
 [
   {
     "report": "source-controls.json",
-    "privateRun": "source-05",
-    "sha256": "832bed6f412dd68450df664b5063deb20ba5d7e5445b0f55e3c8badd53c10c8b",
-    "blindCategory": "Process lifecycle, actual entry-body startup children with replaced imports, registry and AST wiring. Does not execute business queues or providers."
+    "privateRun": "source-06",
+    "sha256": "28cf1f7f0103995f438bcb45303e06f3a46e43b74e1de910d42de5e0cfcf8ef3",
+    "blindCategory": "Process lifecycle, actual entry-body startup children with replaced imports, AST wiring and actual preparation CLI with synthetic HTTP replies. No live business database, provider or job acceptance."
   },
   {
     "report": "reader-controls.json",
@@ -46,5 +46,11 @@
     "privateRun": "native-http-05",
     "sha256": "eefa20c32edc86dfbe2247201ad650de9e4e165c01abbce6c16fc6045951bbd1",
     "blindCategory": "Owned actual PostgREST/SQL three-role operations and blocked late writes. No actual Auth signup, hosted, Storage or business queue."
+  },
+  {
+    "report": "idle-cli-controls.json",
+    "privateRun": "idle-cli-01",
+    "sha256": "8b9a4124fbedc29ea58d54ddb5a6f91ad57a97656295545e699c4853f1355c29",
+    "blindCategory": "Actual preparation CLI idle-signal request census against synthetic HTTP. No live queue recovery."
   }
 ]
