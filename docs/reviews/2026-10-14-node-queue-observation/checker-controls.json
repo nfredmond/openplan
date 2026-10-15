@@ -1,0 +1,28 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 12
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 12
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 12
+  },
+  {
+    "control": "caller-deadline",
+    "test": "allows the three serial backend probe budgets before its client deadline",
+    "outcome": "intended_failure",
+    "reason": "Checker budget must cover three eight-second server probes"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 12
+  }
+]

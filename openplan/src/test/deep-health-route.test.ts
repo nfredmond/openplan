@@ -1,5 +1,6 @@
 import { readdirSync } from "node:fs";
 import path from "node:path";
+import { unobservedNodeQueues } from "./helpers/node-process-observation";
 import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -22,6 +23,10 @@ const bucketResult: { current: { data: unknown[] | null; error: { message: strin
   current: { data: [], error: null },
 };
 const selected: string[] = [];
+const rpcCalls: Array<{ name: string; parameters: unknown }> = [];
+const processResult: { current: { data: unknown; error: { message: string } | null } } = {
+  current: { data: unobservedNodeQueues(), error: null },
+};
 
 vi.mock("@/lib/supabase/server", () => ({
   createServiceRoleClient: () => ({
@@ -32,6 +37,7 @@ vi.mock("@/lib/supabase/server", () => ({
       },
     }),
     storage: { listBuckets: () => Promise.resolve(bucketResult.current) },
+    rpc: (name: string, parameters?: unknown) => { rpcCalls.push({ name, parameters: parameters ?? {} }); return Promise.resolve(processResult.current); },
   }),
 }));
 
@@ -84,6 +90,7 @@ describe("GET /api/health/deep", () => {
   beforeEach(() => {
     selected.length = 0;
     heartbeatResult.current = { data: [], error: null };
+    rpcCalls.length = 0; processResult.current = { data: unobservedNodeQueues(), error: null };
     bucketResult.current = { data: [{ id: "a" }, { id: "b" }], error: null };
     vi.stubEnv("OPENPLAN_BUILD_MIGRATION_VERSIONS", "20261017000013,20261017000010");
   });
@@ -128,6 +135,9 @@ describe("GET /api/health/deep", () => {
     expect(payload.status).toBe("ok");
     expect(payload.checks.database.state).toBe("ok");
     expect(payload.checks.storage).toMatchObject({ state: "ok", buckets: 2 });
+    expect(rpcCalls, "Node observations use their dedicated reader").toEqual([{ name: "read_node_queue_process_observations", parameters: {} }]);
+    expect(payload.checks.nodeQueueProcesses, "Process availability remains separate from completed work")
+      .toMatchObject({ state: "ok", scope: "process_only", jobCompletion: "unassessed", queues: unobservedNodeQueues().queues });
     expect(payload.checks.modelingWorkers).toEqual([
       { kind: "aequilibrae", ageSeconds: 30, fresh: true },
       { kind: "activitysim", ageSeconds: 3600, fresh: false },
@@ -150,6 +160,23 @@ describe("GET /api/health/deep", () => {
     expect(text).not.toContain("db-7.private");
   });
 
+  it("keeps an unavailable Node observation distinct from no workers", async () => {
+    vi.stubEnv("OPENPLAN_HEALTH_TOKEN", TOKEN);
+    processResult.current = { data: null, error: { message: "private-node-observation-sentinel" } };
+    const response = await GET(request(TOKEN)); const text = await response.text();
+    expect(response.status, "Unavailable Node observation must fail deep health").toBe(503);
+    const body = JSON.parse(text);
+    expect(body.checks.nodeQueueProcesses).toEqual({ state: "failed", ms: expect.any(Number), scope: "process_only", jobCompletion: "unassessed" });
+    expect(body.checks.nodeQueueProcesses, "Unavailable observations cannot become zero workers").not.toHaveProperty("queues");
+    expect(text).not.toContain("private-node-observation-sentinel");
+  });
+  it("refuses malformed Node observations instead of forwarding a completion claim", async () => {
+    vi.stubEnv("OPENPLAN_HEALTH_TOKEN", TOKEN);
+    processResult.current = { data: { ...unobservedNodeQueues(), jobCompletion: "approved" }, error: null };
+    const response = await GET(request(TOKEN));
+    expect(response.status, "Malformed process facts cannot pass deep health").toBe(503);
+    expect((await response.json()).checks.nodeQueueProcesses).not.toHaveProperty("queues");
+  });
   it("answers 503 when the database read fails", async () => {
     vi.stubEnv("OPENPLAN_HEALTH_TOKEN", TOKEN);
     heartbeatResult.current = { data: null, error: { message: "relation does not exist" } };

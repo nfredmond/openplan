@@ -1,0 +1,40 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 37
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 37
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 37
+  },
+  {
+    "control": "unaccounted-table",
+    "test": "reads every relation the migrations declare",
+    "outcome": "intended_failure",
+    "reason": "have a length of 324"
+  },
+  {
+    "control": "disabled-rls",
+    "test": "reads every relation the migrations declare",
+    "outcome": "intended_failure",
+    "reason": "have a length of 310"
+  },
+  {
+    "control": "unaccounted-build",
+    "test": "finds no unread column that is not accounted for",
+    "outcome": "intended_failure",
+    "reason": "these columns exist and nothing in the application ever names them"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 37
+  }
+]

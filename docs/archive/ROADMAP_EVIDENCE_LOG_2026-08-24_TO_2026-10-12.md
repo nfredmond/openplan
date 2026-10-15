@@ -439,3 +439,6 @@ and UUID-token scrubbing checks, four six-case cohorts and six faults. This
 unmerged PR #326 correction supports existing M3/M15a. Hosted backend access,
 workflow delivery, real Sentry receipt and planner acceptance remain open.
 Milestone grades do not change.
+
+**October 14 Node queue process observation candidate.**
+[Process observations and review corrections](../reviews/2026-10-14-node-queue-observation/STATUS.md) support existing M3 and StageA monitoring. The candidate keeps process facts separate from queue outcomes, preserves worker signal ownership and rejects contradictory report time/state/count facts. Selected-schema SQL/HTTP and source fault reports preserve their boundaries. Migration 15 and hosted rollout remain pending. M3 and whole-product grades do not change.

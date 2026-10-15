@@ -3,7 +3,8 @@
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-const REQUEST_TIMEOUT_MS = 20_000;
+// Three serial server probes each allow eight seconds, plus response overhead.
+const REQUEST_TIMEOUT_MS = 30_000;
 const MANAGEMENT_API = "https://api.supabase.com";
 
 function usage() {

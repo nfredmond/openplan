@@ -1,0 +1,190 @@
+[
+  {
+    "control": "baseline",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "harmless",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "restored-after-harmless",
+    "outcome": "survived",
+    "cases": 18
+  },
+  {
+    "control": "reject-valid",
+    "test": "keeps a complete missing-observation report distinct from unreadable data",
+    "outcome": "intended_failure",
+    "reason": "A valid unobserved census must remain readable"
+  },
+  {
+    "control": "duplicate",
+    "test": "refuses a duplicated kind that hides another queue",
+    "outcome": "intended_failure",
+    "reason": "Every declared queue needs its own observation"
+  },
+  {
+    "control": "extra",
+    "test": "refuses a duplicated kind that hides another queue",
+    "outcome": "intended_failure",
+    "reason": "An extra duplicate cannot expand the declared census"
+  },
+  {
+    "control": "time",
+    "test": "refuses a foreign queue or missing time",
+    "outcome": "intended_failure",
+    "reason": "Observation time must remain readable"
+  },
+  {
+    "control": "kind",
+    "test": "refuses a foreign queue or missing time",
+    "outcome": "intended_failure",
+    "reason": "Unknown queues cannot replace declared observations"
+  },
+  {
+    "control": "negative-count",
+    "test": "refuses negative fractional and unsafe instance counts",
+    "outcome": "intended_failure",
+    "reason": "Unreadable instance counts cannot imply process availability"
+  },
+  {
+    "control": "fraction-count",
+    "test": "refuses negative fractional and unsafe instance counts",
+    "outcome": "intended_failure",
+    "reason": "Unreadable instance counts cannot imply process availability"
+  },
+  {
+    "control": "unsafe-count",
+    "test": "refuses negative fractional and unsafe instance counts",
+    "outcome": "intended_failure",
+    "reason": "Unreadable instance counts cannot imply process availability"
+  },
+  {
+    "control": "scope",
+    "test": "cannot promote process facts to accepted work",
+    "outcome": "intended_failure",
+    "reason": "Process observations cannot approve work"
+  },
+  {
+    "control": "completion",
+    "test": "cannot promote process facts to accepted work",
+    "outcome": "intended_failure",
+    "reason": "Process observations cannot approve work"
+  },
+  {
+    "control": "running",
+    "test": "refuses a running claim without a matching count",
+    "outcome": "intended_failure",
+    "reason": "A running observation needs at least one observed instance"
+  },
+  {
+    "control": "unobserved",
+    "test": "refuses an unobserved claim carrying an instance or timestamp",
+    "outcome": "intended_failure",
+    "reason": "Unobserved cannot carry an observed timestamp"
+  },
+  {
+    "control": "stale",
+    "test": "refuses stale or stopped claims carrying live instances",
+    "outcome": "intended_failure",
+    "reason": "Stale cannot carry a live instance count"
+  },
+  {
+    "control": "stopped",
+    "test": "refuses stale or stopped claims carrying live instances",
+    "outcome": "intended_failure",
+    "reason": "A stopped observation must actually record stopped"
+  },
+  {
+    "control": "consistent",
+    "test": "keeps consistent stopping stale stopped and unknown facts readable",
+    "outcome": "intended_failure",
+    "reason": "Consistent process observations must remain readable"
+  },
+  {
+    "control": "stopping-empty",
+    "test": "refuses a stopping claim with no stopping instance or a live running instance",
+    "outcome": "intended_failure",
+    "reason": "Stopping requires an observed stopping instance"
+  },
+  {
+    "control": "stopping-running",
+    "test": "refuses a stopping claim with no stopping instance or a live running instance",
+    "outcome": "intended_failure",
+    "reason": "Stopping cannot hide an observed running instance"
+  },
+  {
+    "control": "activity-time",
+    "test": "refuses activity claims with missing or unreadable time and state",
+    "outcome": "intended_failure",
+    "reason": "Activity requires a readable observation time"
+  },
+  {
+    "control": "states",
+    "test": "refuses unsupported summary states instead of treating them as assessed",
+    "outcome": "intended_failure",
+    "reason": "Unsupported process states cannot be promoted"
+  },
+  {
+    "control": "extra-fields",
+    "test": "refuses an unknown field rather than forwarding it",
+    "outcome": "intended_failure",
+    "reason": "Operational reports cannot accept unknown fields"
+  },
+  {
+    "control": "extra-row-fields",
+    "test": "refuses an unknown field rather than forwarding it",
+    "outcome": "intended_failure",
+    "reason": "Operational reports cannot accept unknown fields"
+  },
+  {
+    "control": "micro-boundary",
+    "test": "keeps exact microsecond freshness and future boundaries",
+    "outcome": "intended_failure",
+    "reason": "Exact producer time boundaries must remain readable"
+  },
+  {
+    "control": "future-running",
+    "test": "refuses producer time and state contradictions",
+    "outcome": "intended_failure",
+    "reason": "Inconsistent producer facts cannot pass operational health"
+  },
+  {
+    "control": "latest-running",
+    "test": "requires each fresh latest instance to contribute to its own state count",
+    "outcome": "intended_failure",
+    "reason": "Fresh latest instances must contribute to their own state count"
+  },
+  {
+    "control": "latest-stopping",
+    "test": "requires each fresh latest instance to contribute to its own state count",
+    "outcome": "intended_failure",
+    "reason": "Fresh latest instances must contribute to their own state count"
+  },
+  {
+    "control": "mixed-running",
+    "test": "keeps mixed instances readable when the latest row has another state",
+    "outcome": "intended_failure",
+    "reason": "Mixed latest and active instance states must remain readable"
+  },
+  {
+    "control": "mixed-stopping",
+    "test": "keeps mixed instances readable when the latest row has another state",
+    "outcome": "intended_failure",
+    "reason": "Mixed latest and active instance states must remain readable"
+  },
+  {
+    "control": "precision",
+    "test": "refuses unsupported timestamp precision without rounding it into a claim",
+    "outcome": "intended_failure",
+    "reason": "Unsupported producer precision must remain unavailable"
+  },
+  {
+    "control": "restored-final",
+    "outcome": "survived",
+    "cases": 18
+  }
+]
