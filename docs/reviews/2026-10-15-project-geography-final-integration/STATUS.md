@@ -207,3 +207,8 @@ The [read-only diagnosis](../2026-10-15-project-preview-capture-diagnosis/README
 The [independent f299 review](../2026-10-15-current-project-preview-app-binding-independent/REVIEW.md), exact `bcd47064b87306fc742704a742c24ceeb873f25c`, finds two P2 blockers. R1 shows the documented outer-to-inner bubblewrap arrangement refuses namespace creation before its child runs. R2 independently confirms the parent F2 health-prefix mismatch. Prior F1's dependency and private-cache protections pass at the inner boundary, but that does not make the nested recipe executable.
 
 The parent reads the full report and carries both findings into the existing new-version correction task. The correction must demonstrate the complete parent launch path with stand-ins, retain actual npm confinement and leave host protections unchanged. It must also test the actual health producer against the attestation consumer. No application checkout, build or start executes. Original packets and the completed REST recovery remain unchanged. The corrected packet requires a new independent review before execution.
+
+
+## Actual current-app build fails TypeScript
+
+The [retained failed build](../2026-10-15-current-project-preview-parent-operation/FAILED_BUILD.md) records successful Webpack compilation followed by seven TypeScript diagnostics in the project row type and one report test. No accepted build or startup exists. Two isolated repairs run; full-project TypeScript must pass before a new build binding and attempt. The failed v2 state remains frozen.
