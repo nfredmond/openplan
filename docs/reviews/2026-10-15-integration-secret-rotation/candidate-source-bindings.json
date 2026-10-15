@@ -1,0 +1,18 @@
+{
+  "openplan/src/lib/integrations/key-crypto.ts": "298f8b2218e578af8c6e6c050011d7839002c801aa68daf25df1411b42a7d274",
+  "openplan/src/test/integration-key-rotation.test.ts": "bcdf738f9c0b4e77d89c78670e329f6bd6226beacb4b25384debfb2e7db5850e",
+  "openplan/src/lib/integrations/translation-credentials.ts": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
+  "openplan/src/lib/integrations/provider-api-credentials.ts": "102a3c27c161ab83bb5f5d91c5dfc3f6cb40ee13c2f90b9c851ef82106aded3e",
+  "openplan/.env.example": "4542892421bb5811690d197d14dde2ae29c11948d26d028759542cd73d84b386",
+  "openplan/docs/SELF_HOSTING.md": "e1b41e9ae3e27bebf4f0d95ecede8c881307891530a46b402507ec186096351f",
+  "openplan/docs/ops/HOSTED_OPERATIONS.md": "5ce19925801010d235574fe739d2c21f00dc339209b9d8cd279cd26b467c78f8",
+  "workers/hosted-node/DEPLOY.md": "9175b73a58e46187c978058ccc3b717f9aecd581da31d38365029c33a101a3ac",
+  ".github/workflows/integration-secret-rotation.yml": "17577fbffb58613a2ede7ed9500d89e3ccb6e332d8b9e16c0fed5d74b0111a98",
+  "CHANGELOG.md": "90848f60dc84bc865d3380d718ca8643f215158e6e79cce1d8da05f6758dd863",
+  "docs/README.md": "2215bdb4a7ff14c88905492489a72088e2ffc330f88cd791e2fe44229c00c37c",
+  "docs/ROADMAP.md": "47dd6b090e8746c30ce835c03f80c1520fe2a45a8c25386e1eb37fdb96a54209",
+  "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md": "8778128ca120b595153c88b31ad50e466d30ceecafd793dc905edfb8770c488b",
+  "docs/reviews/2026-10-15-integration-secret-rotation/verify_controls.py": "6ef0eae00dffd7734b5869eb8a8a41f6bd40f61ff8406e0ce7049e1d4a52678c",
+  "docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md": "994610c580b3a24e0bb0b7a759fc71f489f9956a154c3fefea11a5ebe06d5ecb",
+  "docs/reviews/2026-10-15-integration-secret-rotation/REVIEW.md": "68db67ce8eab082be37bc7a2bc6060be41083a85819be09b162ae47b2567c7a0"
+}

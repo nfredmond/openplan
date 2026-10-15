@@ -72,7 +72,7 @@ works, then revoke the old value. Set Railway values with
 | `ANTHROPIC_API_KEY` | Create a key in the Anthropic Console, set it in Vercel, redeploy, revoke the old key. Workspace-owned keys are separate and belong to each workspace. |
 | `RESEND_API_KEY` | Create a sending key in Resend; set it in Vercel and the Railway application workers; restart; revoke the old key. Supabase Auth's SMTP uses its own key, set in the Supabase dashboard. |
 | `CRON_SECRET` | Set a new random value in Vercel and redeploy. Vercel's scheduler sends it automatically. |
-| `OPENPLAN_INTEGRATION_KEY_SECRET` | Changing it makes every stored workspace key unreadable; each workspace must enter its keys again. There is no second-key support yet. Rotate only after a leak, in Vercel and the Railway application workers together. |
+| `OPENPLAN_INTEGRATION_KEY_SECRET`, `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` | Follow the staged [integration secret rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret). Prepare both secrets on Vercel and every credential-reading worker before changing the primary. Preserve both with database and journal backups. Reads do not re-encrypt retained records; no hosted rotation has been performed by this change. |
 | `OPENPLAN_KB_OCR_WORKER_TOKEN`, `OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN` | Set the same new values in Vercel and the Railway OCR service. Document extraction fails between the two changes. |
 | `CENSUS_API_KEY` | Request a new key from the Census Bureau, activate it, set it in Vercel and the Railway model host. |
 | `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY` (offsite backup) | Create new bucket credentials in Railway, set them on the `offsite-backup` service, confirm the next capture. |
@@ -87,7 +87,7 @@ Names only. "Vercel" means the `openplan` project's Production environment.
   `NEXT_PUBLIC_SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_ROLE_KEY`,
   `NEXT_PUBLIC_SITE_URL`, the four Mapbox names above, `ANTHROPIC_API_KEY`,
   `RESEND_API_KEY`, `RESEND_FROM_EMAIL`, `CRON_SECRET`,
-  `OPENPLAN_INTEGRATION_KEY_SECRET`, `CENSUS_API_KEY`,
+  `OPENPLAN_INTEGRATION_KEY_SECRET`, optional `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`, `CENSUS_API_KEY`,
   `OPENPLAN_MODELING_WORKER`, `OPENPLAN_HOSTED_ARTIFACT_MIRROR`,
   `OPENPLAN_KB_OCR_WORKER_URL`, `OPENPLAN_KB_OCR_WORKER_TOKEN`,
   `OPENPLAN_KB_OCR_CALLBACK_URL`, `OPENPLAN_KB_OCR_CALLBACK_BEARER_TOKEN`,
@@ -110,7 +110,8 @@ Names only. "Vercel" means the `openplan` project's Production environment.
   them there or in the Vercel dashboard after confirming nothing outside this
   repository uses them.
 - **Railway application workers:** Supabase URL, publishable key and service
-  role, site URL, `OPENPLAN_INTEGRATION_KEY_SECRET` and the Resend sending key
+  role, site URL, `OPENPLAN_INTEGRATION_KEY_SECRET`, the optional second secret
+  during rotation, and the Resend sending key
   ([deployment record](../../../workers/hosted-node/DEPLOY.md)).
 - **Railway model host:** Supabase URL and service role, `CENSUS_API_KEY`
   ([deployment record](../../../workers/hosted-models/DEPLOY.md)).

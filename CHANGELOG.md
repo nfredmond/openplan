@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Integration secret rotation, candidate:** the optional private
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained workspace keys and
+sealed worker credentials while new writes use the primary. Prepare both
+secrets on every reader before switching the primary. Do not overwrite an
+occupied second slot while retained records need it. Reads do not re-encrypt
+records, and no hosted secret is changed. Follow the
+[rotation procedure](openplan/docs/SELF_HOSTING.md#rotate-the-integration-encryption-secret)
+and retain the [verification limits](docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md).
+
 **Explicit owned worker command, candidate:** private operator settings, credential
 roles and preset options start the existing owned service through
 `workers/odm_worker/runtime_service_cli.py`. The command preserves original
