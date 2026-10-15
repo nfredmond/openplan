@@ -41,3 +41,37 @@ Private readback:
 The existing preview, retained databases, original failures and canonical
 unrelated files remain outside this write scope. No corrected browser import,
 new build, hosted migration, main merge or release is claimed.
+
+## Completed review requires three corrections
+
+The parent reads the complete independent review
+`b037efc892359dcbd5350eb64438604610713ca5`, its control driver, 23 observations
+and execution records. It joins as `172695e47` with changes required. The parent
+accepts all three P2 findings: the imported user-bus environment, the absent
+post-journey preservation/result path, and the initial constraint comparator
+that accepts an unconditional expression retaining the required phrase.
+
+The three public/private review files match, and all 36 recorded immediate V4
+files remain hash-identical. The 16 surviving observations include deliberate
+hazard specimens. They are findings, not a clean acceptance score. No independent
+campaign is rerun by the parent.
+
+The parent also tests the unresolved observer context with read-only commands.
+With the fixed current-uid runtime path, both the host and exact outer wrapper
+read the original active web invocation. The host sees listener PID 4104299 and
+can read its environment. The wrapper sees the listening socket without a PID,
+and the environment read fails with `PermissionError`, errno 13. Their user
+namespaces differ. Fixing the runtime path alone therefore cannot resolve the
+imported observer's complete call chain.
+
+The context record is `observer-context.json`, SHA-256
+`51d4f36c34966d36839d2f9d14d73b7acab7748408cbcc4c7b0d2a601ac30fea`.
+The review readback is `round1-readback.json`, SHA-256
+`8577d398dffb851103ccb8d0fede251357eb62619735e2db42abc48bf2253c1a`.
+Both sit beside the original private readback.
+
+The original preparation agent owns a new V5 correction packet only. Its scope
+requires a fixed host observer while retaining strict process checks and the
+outer read-only confinement, an explicit final preservation receipt, and complete
+independently bound CHECK definitions before the first upgrade receipt. V4 stays
+unchanged. Fresh independent review precedes operating execution.
