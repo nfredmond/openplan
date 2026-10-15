@@ -1,0 +1,32 @@
+{
+  "head": "75931937aa85950da68577abef1246d7f3c8ff13",
+  "appTree": "c89e9ec4eeddfc973641e8683df7bc9d38113838",
+  "files": {
+    "src/app/api/projects/export/workbook/route.ts": {
+      "gitBlob": "3846ee7bcb06ea6b15bf88b9e2c4446a77a68978",
+      "sha256": "05d66697f949a34058c36fd3598ba2ce0e5bb1ce5876d3ed8028d8201b485045"
+    },
+    "src/lib/projects/portfolio-export.ts": {
+      "gitBlob": "93188c467389b1bb832487e2dddf99b47536a540",
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c"
+    },
+    "src/lib/projects/portfolio-workbook.ts": {
+      "gitBlob": "c6dfbdab91569fcc7a7f700e66e677ee07b6f85b",
+      "sha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89"
+    },
+    "src/lib/projects/portfolio-round-trip-contract.ts": {
+      "gitBlob": "84e8f917f9b21194b621b2bb9109d40f04174fcf",
+      "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec"
+    },
+    "src/lib/projects/project-place.ts": {
+      "gitBlob": "0bef59faabfc3518b8faf59db4b7ad0442c5d3af",
+      "sha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344"
+    },
+    "src/lib/export/review-workbook-layout.ts": {
+      "gitBlob": "db6034da0b43c09425cd63e05b2b4116970a64a5",
+      "sha256": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68"
+    }
+  },
+  "fullPrivateManifestSha256": "000b495ff321ae007ddf427bf843e195436f946fc73d8b0ea9d2f4b82d91b596",
+  "fullPrivateFileCount": 962
+}

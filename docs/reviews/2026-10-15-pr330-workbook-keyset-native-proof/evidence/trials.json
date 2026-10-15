@@ -1,0 +1,189 @@
+[
+  {
+    "label": "fault-header",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-0"
+    ],
+    "diagnostic": "workbook response must remain private no-store",
+    "exit": 1,
+    "reportSha256": "e40b77d04f32a93d76aa41feba948a56b47fc3fa5c8e1d8b18fbfda6b727bdb8",
+    "trial": "cap-1000/fault-header"
+  },
+  {
+    "label": "fault-inclusive",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-2000"
+    ],
+    "diagnostic": "strict cursor must use last received native UUID",
+    "exit": 1,
+    "reportSha256": "574709da71d6d208d932a7d1e11b5108c8cbe93733449a7c673142b6bcb071e9",
+    "trial": "cap-1000/fault-inclusive"
+  },
+  {
+    "label": "fault-partial-error",
+    "outcome": "killed",
+    "tests": [
+      "later-page-error"
+    ],
+    "diagnostic": "route refusal must retain exact HTTP status",
+    "exit": 1,
+    "reportSha256": "237c3d2456e7d300c9f861b588ee7ab03bb21a7297861375b6d9108ae8e29865",
+    "trial": "cap-1000/fault-partial-error"
+  },
+  {
+    "label": "fault-sentinel",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-2001"
+    ],
+    "diagnostic": "request must retain bounded sentinel limit",
+    "exit": 1,
+    "reportSha256": "8357ca1c3c2a6bc0d9cb6a0e26907204e555fc682958a0fa63ab9a185d0802cd",
+    "trial": "cap-1000/fault-sentinel"
+  },
+  {
+    "label": "fault-serializer",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-2000"
+    ],
+    "diagnostic": "serializer must receive every original projected row",
+    "exit": 1,
+    "reportSha256": "d23b0a604fd60a0313296e181726d2bd864df6d32cf0772b7b13c99570477b73",
+    "trial": "cap-1000/fault-serializer"
+  },
+  {
+    "label": "fault-short",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-2000"
+    ],
+    "diagnostic": "live read must retain all supported rows or exact sentinel",
+    "exit": 1,
+    "reportSha256": "8fdd4ea91fec78dcde27498273b615e3e6549b1d69862cfa5b5528aab8d8b72c",
+    "trial": "cap-1000/fault-short"
+  },
+  {
+    "label": "baseline",
+    "outcome": "survived",
+    "tests": [
+      "portfolio-0",
+      "portfolio-2000",
+      "portfolio-2001",
+      "later-page-error",
+      "inaccessible-rls"
+    ],
+    "diagnostic": null,
+    "exit": 0,
+    "reportSha256": "45ebd83ec6777bc5dd013eaeb7e0ecc3ba9f00dc5feb24b9a92e796948d74cdf",
+    "trial": "cap-137/baseline"
+  },
+  {
+    "label": "fault-old-offset",
+    "outcome": "killed",
+    "tests": [
+      "concurrent-edit"
+    ],
+    "diagnostic": "concurrent exact original UUIDs once",
+    "exit": 1,
+    "reportSha256": "be1f839a86a97831946304050360756335410ba634f479495ba702fe472e9f4c",
+    "trial": "cap-2/fault-old-offset"
+  },
+  {
+    "label": "harmless",
+    "outcome": "survived",
+    "tests": [
+      "concurrent-edit"
+    ],
+    "diagnostic": null,
+    "exit": 0,
+    "reportSha256": "15408c7d3b3116aa9817278c1e4d6b4f7047edc972fdc3dbc336e4a2af411949",
+    "trial": "cap-2/harmless"
+  },
+  {
+    "label": "restored",
+    "outcome": "survived",
+    "tests": [
+      "concurrent-edit"
+    ],
+    "diagnostic": null,
+    "exit": 0,
+    "reportSha256": "2a03c62cca7a81e8e52ee3ef7a1789b459ed4c3f565010e3f726f6f4cd36804d",
+    "trial": "cap-2/restored"
+  },
+  {
+    "outcome": "refused",
+    "reason": "classifier nonempty exact names",
+    "exit": 1,
+    "trial": "failed-attempt-01-cap-1000/baseline"
+  },
+  {
+    "outcome": "refused",
+    "reason": "classifier suite failure",
+    "exit": 1,
+    "trial": "failed-attempt-02-cap-1000/baseline"
+  },
+  {
+    "label": "fault-limit",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-0"
+    ],
+    "diagnostic": "request must retain bounded sentinel limit",
+    "exit": 1,
+    "reportSha256": "96d82536f0a74f00db4ba78f137100124b9d575a9852c64c2f6161b48e1a16c4",
+    "trial": "failed-attempt-03-cap-1000/fault-limit"
+  },
+  {
+    "label": "fault-order",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-0"
+    ],
+    "diagnostic": "native UUID ascending order",
+    "exit": 1,
+    "reportSha256": "fa4d9f5cb9be49e8d4c442cad8054fcd4d7877b3ab1f04f2dc0c597f77df069b",
+    "trial": "failed-attempt-03-cap-1000/fault-order"
+  },
+  {
+    "label": "fault-projection",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-0"
+    ],
+    "diagnostic": "native exact projection",
+    "exit": 1,
+    "reportSha256": "63a971b340398e3a27e2f0c84032e3640f65a88a4d5d0b3d3420503b3cd0dd42",
+    "trial": "failed-attempt-03-cap-1000/fault-projection"
+  },
+  {
+    "label": "fault-scope",
+    "outcome": "killed",
+    "tests": [
+      "portfolio-0"
+    ],
+    "diagnostic": "native selected workspace predicate",
+    "exit": 1,
+    "reportSha256": "f36f87f1021dd987ff6e35ca21a93bf9cd63433b5686cfb09b7b464036efad37",
+    "trial": "failed-attempt-03-cap-1000/fault-scope"
+  },
+  {
+    "outcome": "refused",
+    "reason": "classifier exact diagnostic",
+    "exit": 1,
+    "trial": "failed-attempt-03-cap-1000/fault-short"
+  },
+  {
+    "label": "remaining-rls",
+    "outcome": "survived",
+    "tests": [
+      "inaccessible-rls"
+    ],
+    "diagnostic": null,
+    "exit": 0,
+    "reportSha256": "c37085557d251df2cf7eba738ebea036244ce4497c59c550e4bf09254d8fb589",
+    "trial": "failed-attempt-03-cap-1000/remaining-rls"
+  }
+]

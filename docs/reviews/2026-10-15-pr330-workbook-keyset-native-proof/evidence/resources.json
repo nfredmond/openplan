@@ -1,0 +1,56 @@
+[
+  {
+    "trial": "cap-1000",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "349675520",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  },
+  {
+    "trial": "cap-137",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "409456640",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  },
+  {
+    "trial": "cap-2",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "206135296",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  },
+  {
+    "trial": "failed-attempt-01-cap-1000",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "152883200",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  },
+  {
+    "trial": "failed-attempt-02-cap-1000",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "413831168",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  },
+  {
+    "trial": "failed-attempt-03-cap-1000",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "peak": "270159872",
+    "events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "dbMemory": 0,
+    "dbMemorySwap": 0
+  }
+]

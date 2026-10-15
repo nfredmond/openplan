@@ -1,0 +1,38 @@
+[
+  {
+    "harmless": "survived",
+    "refused": [
+      "wrong-file",
+      "wrong-name",
+      "empty",
+      "wrong-exit",
+      "runtime",
+      "wrong-diagnostic"
+    ],
+    "blind": "JSON classifier cannot establish SQL fixture fidelity or replace native execution"
+  },
+  {
+    "harmless": "survived",
+    "refused": [
+      "wrong-file",
+      "wrong-name",
+      "empty",
+      "wrong-exit",
+      "runtime",
+      "wrong-diagnostic"
+    ],
+    "blind": "JSON classifier cannot establish SQL fixture fidelity or replace native execution"
+  },
+  {
+    "harmless": "survived",
+    "refused": [
+      "wrong-file",
+      "wrong-name",
+      "empty",
+      "wrong-exit",
+      "runtime",
+      "wrong-diagnostic"
+    ],
+    "blind": "JSON classifier cannot establish SQL fixture fidelity or replace native execution"
+  }
+]

@@ -1,0 +1,33 @@
+{
+  "protected": {
+    "openplan_workbook_native_f022913ef7654f40b2795c55": "bb20765a6e21a30e7594888222a9126002e1b151b5b317cddce7365bf0cff17b",
+    "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up": "b4d8317f071cd0340d7dd7545120956b5df4ad0b39e45b6275dd16a0e9ebb8d0",
+    "openplan_project_portfolio_preview_8f43260b95a071cc4e6d2b90": "835814730a00131fc1fe0cc15f248799658fe552393fa5e59e7d35885a51e916",
+    "openplan_project_combined_preview_0752bc2e8104b7a40faab27f": "bb1e4154858416eb9fd61ef8f6a98e782cea08e7c7cf3a7c4bdd9175f9b0d6ac",
+    "openplan_portfolio_skip_137003c3b2dc1aa54af843e5": "d9bb2eca9d091d57118df93f5826fc74efc12f03df964fb754d479e1605a4d4a"
+  },
+  "protectedFullFingerprintsEqual": true,
+  "protectedFileCount": 22633,
+  "protectedFilesSha256": "89bb32d43222b2996f07a5d612083c8e80ec8d85cc9904fea57a81eaf7a64da0",
+  "targetAllTableRowsSettingsDatabaseEqual": true,
+  "targetOtherCapturedCatalogsEqual": true,
+  "targetFullCatalogAccepted": false,
+  "targetCatalogDifference": [
+    "catalog.pg_class"
+  ],
+  "beforePgClass": {
+    "digest": "82632a2c0d59b9177997e1d8d16362bd"
+  },
+  "afterPgClass": {
+    "digest": "1d6f0e7bad3a8e6c3525f3c175173d75"
+  },
+  "cause": "Undetermined. Only the before digest was retained; current statistics cannot identify changed fields.",
+  "sourceAndExtractedFilesExact": 962,
+  "fingerprintControls": {
+    "harmless": "survived",
+    "changedProtectedRows": "refused",
+    "changedFixtureRows": "refused",
+    "restored": true
+  },
+  "blind": "The source/fixture fingerprint controls alter copied readbacks, not real source data. No crash recovery or blanket process-preservation acceptance."
+}
