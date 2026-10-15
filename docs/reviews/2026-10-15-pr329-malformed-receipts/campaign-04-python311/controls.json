@@ -1,0 +1,345 @@
+{
+  "checkedAt": "2026-10-15T05:07:42.902353+00:00",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "restored-after-harmless",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "ignore-api-failure",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_api_failure_is_never_cached_at_any_endpoint",
+      "requiredDiagnostic": "API unavailable",
+      "matched": true
+    },
+    {
+      "case": "omit-slurp",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_all_pages_are_flattened_in_order",
+      "requiredDiagnostic": "CLI must slurp every list endpoint",
+      "matched": true
+    },
+    {
+      "case": "discard-pages",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_all_pages_are_flattened_in_order",
+      "requiredDiagnostic": "all 190 files must survive pagination",
+      "matched": true
+    },
+    {
+      "case": "ignore-json-failure",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-list-as-object",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-missing-pages",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-malformed-page",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "ignore-pr-identity",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_wrong_pr_identity_is_refused",
+      "requiredDiagnostic": "malformed PR identity",
+      "matched": true
+    },
+    {
+      "case": "allow-missing-filename",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_row_is_not_dropped",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-malformed-body",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_row_is_not_dropped",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "reuse-legacy-cache",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_legacy_cache_refreshes_and_failed_refresh_preserves_history",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "ignore-cache-schema",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "altered cache must be rejected",
+      "matched": true
+    },
+    {
+      "case": "ignore-cache-number",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "altered cache must be rejected",
+      "matched": true
+    },
+    {
+      "case": "allow-boolean-cache-number",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "cache identity cannot be boolean",
+      "matched": true
+    },
+    {
+      "case": "ignore-cache-completion",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "altered cache must be rejected",
+      "matched": true
+    },
+    {
+      "case": "ignore-cache-counts",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "altered cache must be rejected",
+      "matched": true
+    },
+    {
+      "case": "ignore-cache-receipt",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_only_intact_complete_current_cache_is_reused",
+      "requiredDiagnostic": "altered cache must be rejected",
+      "matched": true
+    },
+    {
+      "case": "erase-before-publish",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_failed_atomic_publication_preserves_previous_record",
+      "requiredDiagnostic": "failed publication must preserve the previous cache path",
+      "matched": true
+    },
+    {
+      "case": "hide-upstream-census",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_upstream_file_census_discrepancy_stays_explicit",
+      "requiredDiagnostic": "True is not false",
+      "matched": true
+    },
+    {
+      "case": "omit-api-deadline",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_all_pages_are_flattened_in_order",
+      "requiredDiagnostic": "API calls need a bounded deadline",
+      "matched": true
+    },
+    {
+      "case": "ignore-timeout-classification",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_timeout_is_unavailable_without_publication",
+      "requiredDiagnostic": "API deadline exceeded",
+      "matched": true
+    },
+    {
+      "case": "allow-duplicate-selection",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_duplicate_selection_is_not_collected",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-absent-comment-body",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_required_comment_fields_are_not_invented",
+      "requiredDiagnostic": "missing comment fields must be refused before projection",
+      "matched": true
+    },
+    {
+      "case": "allow-null-comment-body",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_comment_field_types_are_refused",
+      "requiredDiagnostic": "comment fields must retain their declared string type",
+      "matched": true
+    },
+    {
+      "case": "allow-nested-login",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_nested_comment_authors_are_refused_before_signing",
+      "requiredDiagnostic": "nested author must be refused before signing",
+      "matched": true
+    },
+    {
+      "case": "allow-missing-comment-metadata",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_required_comment_fields_are_not_invented",
+      "requiredDiagnostic": "missing comment fields must be refused before projection",
+      "matched": true
+    },
+    {
+      "case": "allow-null-comment-metadata",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_comment_field_types_are_refused",
+      "requiredDiagnostic": "comment fields must retain their declared string type",
+      "matched": true
+    },
+    {
+      "case": "skip-projected-row-validation",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_projected_cache_rows_are_validated_even_with_new_digest",
+      "requiredDiagnostic": "malformed projected cache row must be rejected despite matching digest",
+      "matched": true
+    },
+    {
+      "case": "reuse-old-comment-policy",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_prior_v2_policy_is_not_reused",
+      "requiredDiagnostic": "prior v2 receipt must refresh under the explicit comment policy",
+      "matched": true
+    },
+    {
+      "case": "erase-before-malformed-refresh",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_bad_v2_failed_refresh_preserves_bytes_without_success",
+      "requiredDiagnostic": "malformed refresh must preserve old bytes",
+      "matched": true
+    },
+    {
+      "case": "claim-success-before-refresh",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_bad_v2_failed_refresh_preserves_bytes_without_success",
+      "requiredDiagnostic": "malformed refresh must not claim fresh success",
+      "matched": true
+    },
+    {
+      "case": "reject-deleted-authors",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_actual_full_text_reads_valid_deleted_and_empty_rows",
+      "requiredDiagnostic": "deleted authors must remain collectable",
+      "matched": true
+    },
+    {
+      "case": "reject-empty-review-body",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_actual_full_text_reads_valid_deleted_and_empty_rows",
+      "requiredDiagnostic": "empty review bodies must remain collectable",
+      "matched": true
+    },
+    {
+      "case": "remove-comment-truncation",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_actual_full_text_reads_valid_deleted_and_empty_rows",
+      "requiredDiagnostic": "reader text must retain existing truncation limits",
+      "matched": true
+    },
+    {
+      "case": "numeric-projection-breaks-actual-reader",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_actual_full_text_reads_valid_deleted_and_empty_rows",
+      "requiredDiagnostic": "actual full_text.py must read valid/deleted/empty rows",
+      "matched": true
+    },
+    {
+      "case": "drop-malformed-author",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_row_is_not_dropped",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-absent-author",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_required_comment_fields_are_not_invented",
+      "requiredDiagnostic": "missing comment fields must be refused before projection",
+      "matched": true
+    },
+    {
+      "case": "final-restored",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "0e58585d5259eb2a3a79ddf3ee844efb4cc47f51b9dd7e1ff9bdb7c52a4f3a77",
+  "pythonVersion": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "pythonExecutable": "/home/nathaniel/.local/bin/python3.11",
+  "readerSha256": "1e859aa5c66833d4e6744c3fb22a80579aa2c20d49324c15863adb5216b17fb6",
+  "controllerSha256": "db3eb914adc1d19b2e676197cdb61b6811a07628f1e7f73816bbb1aa2cbb8c67",
+  "testsSha256": "1bdf4936077f95f52d3620b709a633b47b93924a9c49f0d86a332d00fe360409",
+  "blindCategories": [
+    "Mocked transport cannot prove live GitHub completeness or rate-limit behavior.",
+    "CLI flags are asserted; no new live corpus recapture runs in this correction.",
+    "Captured comments remain truncated; no patch or semantic reading proof."
+  ]
+}

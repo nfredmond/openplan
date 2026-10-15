@@ -1,9 +1,12 @@
 """Exercise the collector transport, complete-page handling and cache boundary."""
+import contextlib
 import copy
+import io
 import importlib.util
 import json
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -25,9 +28,13 @@ def pr():
 def payloads():
     files = [{'filename': f'file-{i}.ts', 'status': 'modified', 'additions': 1, 'deletions': 0} for i in range(190)]
     return [pr(), [files[:100], files[100:]],
-            [[{'user': {'login': 'human'}, 'body': 'issue-one'}], [{'user': None, 'body': 'issue-two'}]],
+            [[{'user': {'login': 'human'}, 'body': 'issue-one', 'created_at': '2026-10-15T00:00:00Z'}], [{'user': None, 'body': 'issue-two', 'created_at': '2026-10-15T00:00:01Z'}]],
             [[{'user': {'login': 'reviewer'}, 'path': 'file-189.ts', 'body': 'review-comment'}]],
             [[{'user': {'login': 'reviewer'}, 'state': 'COMMENTED', 'body': 'review'}]]]
+
+
+COMMENT_ENDPOINTS = ((2, 'issueComments', 'created_at'),
+                     (3, 'reviewComments', 'path'), (4, 'reviews', 'state'))
 
 
 class CollectorTests(unittest.TestCase):
@@ -116,8 +123,8 @@ class CollectorTests(unittest.TestCase):
 
     def test_malformed_row_is_not_dropped(self):
         for position, bad, diagnostic in [(1, {'filename': None}, 'file name'),
-                                          (2, {'body': {}}, 'comment body'),
-                                          (3, {'body': 'text', 'user': 'bad-author'}, 'comment author')]:
+                                          (2, {'body': {}, 'user': None, 'created_at': '2026-10-15T00:00:00Z'}, 'comment body'),
+                                          (3, {'body': 'text', 'user': 'bad-author', 'path': 'file.ts'}, 'comment author')]:
             values = payloads()
             values[position] = [[bad]]
             with self.subTest(position=position), patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
@@ -181,6 +188,154 @@ class CollectorTests(unittest.TestCase):
             self.assertTrue(path.exists(), 'failed publication must preserve the previous cache path')
             self.assertEqual(path.read_bytes(), b'historical')
             self.assertEqual(list(path.parent.glob('*.tmp')), [])
+
+
+    def test_required_comment_fields_are_not_invented(self):
+        for position, name, extra in COMMENT_ENDPOINTS:
+            for field in ('body', 'user', extra, 'all'):
+                values = payloads()
+                row = values[position][0][0]
+                if field == 'all':
+                    row.clear()
+                else:
+                    del row[field]
+                diagnostic = 'body' if field == 'all' else 'author' if field == 'user' else field
+                with self.subTest(endpoint=name, missing=field):
+                    with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                        with self.assertRaisesRegex(collector.CollectionError, 'malformed comment ' + diagnostic,
+                                                   msg='missing comment fields must be refused before projection'):
+                            collector.collect(3699)
+
+    def test_nested_comment_authors_are_refused_before_signing(self):
+        for position, name, _ in COMMENT_ENDPOINTS:
+            for author in ({}, {'login': 7}, {'login': None}, {'login': {}}, {'login': []}, {'login': True}):
+                values = payloads()
+                values[position][0][0]['user'] = author
+                with self.subTest(endpoint=name, author=author):
+                    with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                        with patch.object(collector, 'digest', wraps=collector.digest) as sign:
+                            with self.assertRaisesRegex(collector.CollectionError, 'malformed comment author',
+                                                       msg='nested author must be refused before signing'):
+                                collector.collect(3699)
+                            sign.assert_not_called()
+
+    def test_comment_field_types_are_refused(self):
+        for position, name, extra in COMMENT_ENDPOINTS:
+            for field in ('body', extra):
+                for bad in (None, 7, {}, [], True):
+                    values = payloads()
+                    values[position][0][0][field] = bad
+                    with self.subTest(endpoint=name, field=field, value=bad):
+                        with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+                            with self.assertRaisesRegex(collector.CollectionError, 'malformed comment ' + field,
+                                                       msg='comment fields must retain their declared string type'):
+                                collector.collect(3699)
+
+    def test_projected_cache_rows_are_validated_even_with_new_digest(self):
+        record, _ = self.collect()
+        for _, name, extra in COMMENT_ENDPOINTS:
+            for field, bad in [('user', 7), ('user', {}), ('body', None), (extra, None)]:
+                broken = copy.deepcopy(record)
+                broken[name][0][field] = bad
+                broken['receiptSha256'] = collector.digest(broken)
+                with self.subTest(endpoint=name, field=field, value=bad):
+                    self.assertFalse(collector.valid_cache(broken, 3699),
+                                     'malformed projected cache row must be rejected despite matching digest')
+            for field in ('user', 'body', extra):
+                broken = copy.deepcopy(record)
+                del broken[name][0][field]
+                broken['receiptSha256'] = collector.digest(broken)
+                with self.subTest(endpoint=name, missing=field):
+                    self.assertFalse(collector.valid_cache(broken, 3699),
+                                     'missing projected cache field must be rejected despite matching digest')
+
+    def test_prior_v2_policy_is_not_reused(self):
+        record, _ = self.collect()
+        for policy in (None, 'obsolete'):
+            broken = copy.deepcopy(record)
+            if policy is None:
+                del broken['collection']['commentRowPolicy']
+            else:
+                broken['collection']['commentRowPolicy'] = policy
+            broken['receiptSha256'] = collector.digest(broken)
+            self.assertFalse(collector.valid_cache(broken, 3699),
+                             'prior v2 receipt must refresh under the explicit comment policy')
+
+    def test_bad_v2_failed_refresh_preserves_bytes_without_success(self):
+        record, _ = self.collect()
+        for position, name, extra in COMMENT_ENDPOINTS:
+            for defect in ('missing', 'author'):
+                old = copy.deepcopy(record)
+                del old['collection']['commentRowPolicy']
+                old[name] = ([{'user': None, 'body': '', extra: None}] if defect == 'missing' else
+                             [{'user': 7, 'body': 'old malformed', extra: 'retained'}])
+                old['collection']['endpointCounts'][name] = 1
+                old['receiptSha256'] = collector.digest(old)
+                with self.subTest(endpoint=name, defect=defect), tempfile.TemporaryDirectory() as directory:
+                    root = self.root(directory)
+                    path = root/'pr-details/3699.json'
+                    original = (json.dumps(old, indent=1) + '\n').encode()
+                    path.write_bytes(original)
+                    values = payloads()
+                    values[position][0] = [{}] if defect == 'missing' else [
+                        {**values[position][0][0], 'user': {'login': 7}}]
+                    output = io.StringIO()
+                    with contextlib.redirect_stdout(output):
+                        with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]) as run:
+                            with self.assertRaisesRegex(collector.CollectionError, 'malformed comment',
+                                                       msg='bad v2 cache must attempt and refuse malformed refresh'):
+                                collector.main(root)
+                    self.assertEqual(run.call_count, 5, 'invalid cache must refetch all five endpoints')
+                    self.assertTrue(path.exists(), 'malformed refresh must preserve historical path')
+                    self.assertEqual(path.read_bytes(), original, 'malformed refresh must preserve old bytes')
+                    self.assertEqual(output.getvalue(), '', 'malformed refresh must not claim fresh success')
+                    self.assertEqual(list(path.parent.glob('*.tmp')), [])
+                    with contextlib.redirect_stdout(io.StringIO()):
+                        with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in payloads()]):
+                            collector.main(root)
+                    self.assertTrue(collector.valid_cache(json.loads(path.read_text()), 3699),
+                                    'valid retry must replace bad v2 with a validated receipt')
+
+    def test_actual_full_text_reads_valid_deleted_and_empty_rows(self):
+        values = payloads()
+        for position, name, extra in COMMENT_ENDPOINTS:
+            metadata = {'created_at': '2026-10-15T00:00:00Z', 'path': 'file-189.ts', 'state': 'COMMENTED'}[extra]
+            values[position] = [[
+                {'user': {'login': 'human-' + name}, 'body': 'kept-' + name, extra: metadata},
+                {'user': None, 'body': 'deleted-' + name, extra: metadata},
+                {'user': {'login': 'empty-' + name}, 'body': '', extra: metadata},
+            ]]
+        values[2][0][0]['body'] += 'x' * 5000
+        values[3][0][0]['body'] += 'y' * 3000
+        values[4][0][0]['body'] += 'z' * 3000
+        with patch.object(collector.subprocess, 'run', side_effect=[response(p) for p in values]):
+            try:
+                record = collector.collect(3699)
+            except collector.CollectionError as error:
+                self.fail('deleted authors must remain collectable; empty review bodies must remain collectable: ' + str(error))
+        with tempfile.TemporaryDirectory() as directory:
+            root = self.root(directory)
+            collector.publish(root/'pr-details/3699.json', record)
+            corpus = {'number': 3699, 'title': 'Synthetic consumer PR', 'state': 'closed',
+                      'merged_at': None, 'body': 'Synthetic complete body'}
+            (root/'pull-requests.jsonl').write_text(json.dumps(corpus) + '\n')
+            reader = Path(__file__).with_name('full_text.py')
+            result = subprocess.run([sys.executable, '-I', '-B', str(reader), str(root)],
+                                    capture_output=True, text=True, timeout=10)
+            self.assertEqual(result.returncode, 0, 'actual full_text.py must read valid/deleted/empty rows: ' + result.stderr)
+            text = (root/'scratch/full/batch-01.txt').read_text()
+            for _, name, _ in COMMENT_ENDPOINTS:
+                self.assertIn('kept-' + name, text, 'actual reader must retain human comment text')
+                self.assertIn('deleted-' + name, text, 'actual reader must retain deleted-author text')
+            self.assertIn('file-189.ts(+1/-0)', text)
+            self.assertEqual(json.loads((root/'scratch/full/manifest.json').read_text()), {'3699': 1})
+
+        self.assertTrue(collector.valid_cache(record, 3699), 'valid deleted authors and empty bodies must remain reusable')
+        for _, name, _ in COMMENT_ENDPOINTS:
+            self.assertIsNone(record[name][1]['user'], 'deleted authors must retain null identity')
+            self.assertEqual(record[name][2]['body'], '', 'empty review bodies must remain empty strings')
+            self.assertEqual(len(record[name][0]['body']), 4000 if name == 'issueComments' else 2500,
+                             'reader text must retain existing truncation limits')
 
 
 if __name__ == '__main__':

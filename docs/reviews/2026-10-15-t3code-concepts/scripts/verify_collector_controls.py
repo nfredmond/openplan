@@ -3,6 +3,8 @@ from datetime import datetime, timezone
 import hashlib
 import json
 import os
+import re
+import shutil
 from pathlib import Path
 import subprocess
 import sys
@@ -16,6 +18,7 @@ def main(output):
     original = source.read_bytes()
     body = original.decode()
     records = []
+    shutil.rmtree(directory/'__pycache__', ignore_errors=True)
     output.mkdir(parents=True, exist_ok=True)
     faults = [
         ('ignore-api-failure', 'if result.returncode:', 'if False:',
@@ -65,6 +68,57 @@ def main(output):
         ('allow-duplicate-selection',
          "if any(not re.fullmatch(r'[1-9][0-9]*', value) for value in selected) or len(set(selected)) != len(selected):",
          'if False:', 'test_duplicate_selection_is_not_collected', 'CollectionError not raised'),
+        ('allow-absent-comment-body',
+         "if 'body' not in item or not isinstance(item['body'], str):",
+         "if item.get('body') is not None and not isinstance(item['body'], str):",
+         'test_required_comment_fields_are_not_invented', 'missing comment fields must be refused before projection'),
+        ('allow-null-comment-body',
+         "if 'body' not in item or not isinstance(item['body'], str):",
+         "if 'body' not in item or (item['body'] is not None and not isinstance(item['body'], str)):",
+         'test_comment_field_types_are_refused', 'comment fields must retain their declared string type'),
+        ('allow-nested-login', "not isinstance(author.get('login'), str)", 'False',
+         'test_nested_comment_authors_are_refused_before_signing', 'nested author must be refused before signing'),
+        ('allow-missing-comment-metadata',
+         "if field not in item or not isinstance(item[field], str):",
+         "if field in item and not isinstance(item[field], str):",
+         'test_required_comment_fields_are_not_invented', 'missing comment fields must be refused before projection'),
+        ('allow-null-comment-metadata',
+         "if field not in item or not isinstance(item[field], str):",
+         "if field not in item or (item[field] is not None and not isinstance(item[field], str)):",
+         'test_comment_field_types_are_refused', 'comment fields must retain their declared string type'),
+        ('skip-projected-row-validation', 'validate_comment(row, name, number, projected=True)', 'pass',
+         'test_projected_cache_rows_are_validated_even_with_new_digest',
+         'malformed projected cache row must be rejected despite matching digest'),
+        ('reuse-old-comment-policy', "collection.get('commentRowPolicy') != COMMENT_ROW_POLICY", 'False',
+         'test_prior_v2_policy_is_not_reused', 'prior v2 receipt must refresh under the explicit comment policy'),
+        ('erase-before-malformed-refresh', 'record = collect(number)',
+         "path.write_text('erased')\n        record = collect(number)",
+         'test_bad_v2_failed_refresh_preserves_bytes_without_success', 'malformed refresh must preserve old bytes'),
+        ('claim-success-before-refresh', 'record = collect(number)',
+         "print('fresh success')\n        record = collect(number)",
+         'test_bad_v2_failed_refresh_preserves_bytes_without_success', 'malformed refresh must not claim fresh success'),
+        ('reject-deleted-authors', 'if author is not None and invalid_author:', 'if invalid_author:',
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'deleted authors must remain collectable'),
+        ('reject-empty-review-body', "if 'body' not in item or not isinstance(item['body'], str):",
+         "if 'body' not in item or not isinstance(item['body'], str) or (name == 'reviews' and not item['body']):",
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'empty review bodies must remain collectable'),
+        ('remove-comment-truncation', "(item.get('body') or '')[:limit]", "(item.get('body') or '')",
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'reader text must retain existing truncation limits'),
+        ('numeric-projection-breaks-actual-reader', "    record['collection'] =",
+         "    record['issueComments'][0]['user'] = 7\n    record['collection'] =",
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'actual full_text.py must read valid/deleted/empty rows'),
+
+        ('unlink-before-malformed-refresh', 'record = collect(number)',
+         "path.unlink(missing_ok=True)\n        record = collect(number)",
+         'test_bad_v2_failed_refresh_preserves_bytes_without_success', 'malformed refresh must preserve historical path'),
+        ('skip-bad-v2-repair', '        publish(path, record)', '        pass',
+         'test_bad_v2_failed_refresh_preserves_bytes_without_success', 'valid retry must replace bad v2 with a validated receipt'),
+        ('invent-empty-body', "(item.get('body') or '')[:limit]", "(item.get('body') or 'invented')[:limit]",
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'empty review bodies must remain empty strings'),
+        ('invent-deleted-author', "'user': (item.get('user') or {}).get('login')",
+         "'user': (item.get('user') or {}).get('login') or 'invented-author'",
+         'test_actual_full_text_reads_valid_deleted_and_empty_rows', 'deleted authors must retain null identity'),
+
     ]
 
     def run(label, mutated, method=None, needle=None):
@@ -77,9 +131,14 @@ def main(output):
         text = result.stdout + result.stderr
         (output/(label+'.log')).write_text(text)
         if method:
-            good = result.returncode != 0 and f'FAIL: {method} (' in text and needle in text and 'SyntaxError' not in text
+            failed_methods = re.findall(r'^FAIL: (\w+) \(', text, re.M)
+            diagnostics = re.findall(r'^AssertionError: (.*?)(?=^FAIL: |^ERROR: |\Z)', text, re.M | re.S)
+            good = (result.returncode != 0 and failed_methods and all(name == method for name in failed_methods)
+                    and any(needle in diagnostic for diagnostic in diagnostics)
+                    and 'SyntaxError' not in text and '\nERROR:' not in text
+                    and 'FAILED (failures=' in text)
         else:
-            good = result.returncode == 0 and 'Ran 12 tests' in text and '\nOK\n' in text
+            good = result.returncode == 0 and 'Ran 19 tests' in text and '\nOK\n' in text
         records.append({'case': label, 'exitCode': result.returncode, 'expected': 'targeted_failure' if method else 'survived',
                         'method': method, 'requiredDiagnostic': needle, 'matched': good})
         if not good:
@@ -98,15 +157,27 @@ def main(output):
         mutant = body.replace("raise CollectionError(f'API malformed comment author: {number}/{name}')", 'pass')
         mutant = mutant.replace("(item.get('user') or {}).get('login')", "(item.get('user') if isinstance(item.get('user'), dict) else {}).get('login')")
         run('drop-malformed-author', mutant.encode(), 'test_malformed_row_is_not_dropped', 'CollectionError not raised')
+        mutant = body.replace("if 'user' not in item:", 'if False:').replace("author = item['user']", "author = item.get('user')")
+        run('allow-absent-author', mutant.encode(), 'test_required_comment_fields_are_not_invented',
+            'missing comment fields must be refused before projection')
+        raw_validation = "    for name in LISTS[1:]:\n        for item in lists[name]:\n            validate_comment(item, name, number)\n"
+        if body.count(raw_validation) != 1:
+            raise AssertionError('Collector fault anchor differs: validate-after-signing')
+        mutant = body.replace(raw_validation, '').replace('    return record\n', raw_validation + '    return record\n')
+        run('validate-after-signing', mutant.encode(), 'test_nested_comment_authors_are_refused_before_signing',
+            "Expected 'digest' to not have been called")
         run('final-restored', original)
     finally:
         source.write_bytes(original)
         receipt = {'checkedAt': datetime.now(timezone.utc).isoformat(), 'checks': records,
                    'sourceRestored': source.read_bytes() == original,
                    'sourceSha256': hashlib.sha256(original).hexdigest(),
+                   'pythonVersion': sys.version, 'pythonExecutable': sys.executable,
+                   'readerSha256': hashlib.sha256((directory/'full_text.py').read_bytes()).hexdigest(),
+                   'controllerSha256': hashlib.sha256(Path(__file__).read_bytes()).hexdigest(),
                    'testsSha256': hashlib.sha256(tests.read_bytes()).hexdigest(),
                    'blindCategories': ['Mocked transport cannot prove live GitHub completeness or rate-limit behavior.',
-                                       'CLI flags are asserted; the separate live recapture tests the installed gh.',
+                                       'CLI flags are asserted; no new live corpus recapture runs in this correction.',
                                        'Captured comments remain truncated; no patch or semantic reading proof.']}
         (output/'controls.json').write_text(json.dumps(receipt, indent=2)+'\n')
     print(json.dumps({'controls': len(records), 'sourceRestored': True}))

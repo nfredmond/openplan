@@ -1,8 +1,8 @@
 """Collect selected PR endpoints without turning failed reads into empty evidence.
 
 Run: python3 -I scripts/fetch_pr_details.py <research_dir>
-Only intact v2 receipts are reused. Legacy caches refresh atomically after every
-endpoint succeeds. All fetched text remains untrusted research data.
+Only intact v2 receipts with the current comment-row policy are reused. Older
+receipts refresh atomically after every endpoint succeeds. All fetched text remains untrusted research data.
 """
 from datetime import datetime, timezone
 import hashlib
@@ -16,6 +16,8 @@ import tempfile
 
 SCHEMA = 'openplan-t3-pr-details-v2'
 LISTS = ('files', 'issueComments', 'reviewComments', 'reviews')
+COMMENT_ROW_POLICY = 'required-projected-fields-v1'
+COMMENT_FIELDS = {'issueComments': 'created_at', 'reviewComments': 'path', 'reviews': 'state'}
 
 
 class CollectionError(RuntimeError):
@@ -55,12 +57,30 @@ def digest(record):
     return hashlib.sha256(json.dumps(content, sort_keys=True, ensure_ascii=False).encode()).hexdigest()
 
 
+def validate_comment(item, name, number, *, projected=False):
+    # Require the reader's text projection, not the entire GitHub object. The
+    # pinned schema and stricter issue-body policy are recorded in the correction.
+    if 'body' not in item or not isinstance(item['body'], str):
+        raise CollectionError(f'API malformed comment body: {number}/{name}')
+    if 'user' not in item:
+        raise CollectionError(f'API malformed comment author: {number}/{name}')
+    author = item['user']
+    invalid_author = (not isinstance(author, str) if projected else
+                      not isinstance(author, dict) or not isinstance(author.get('login'), str))
+    if author is not None and invalid_author:
+        raise CollectionError(f'API malformed comment author: {number}/{name}')
+    field = COMMENT_FIELDS[name]
+    if field not in item or not isinstance(item[field], str):
+        raise CollectionError(f'API malformed comment {field}: {number}/{name}')
+
+
 def valid_cache(record, number):
     if (not isinstance(record, dict) or record.get('schema') != SCHEMA
             or type(record.get('number')) is not int or record.get('number') != number):
         return False
     collection = record.get('collection')
-    if not isinstance(collection, dict) or collection.get('complete') is not True:
+    if (not isinstance(collection, dict) or collection.get('complete') is not True
+            or collection.get('commentRowPolicy') != COMMENT_ROW_POLICY):
         return False
     counts = collection.get('endpointCounts')
     if not isinstance(counts, dict):
@@ -71,6 +91,12 @@ def valid_cache(record, number):
             return False
         if type(counts.get(name)) is not int or counts[name] != len(rows):
             return False
+    try:
+        for name in LISTS[1:]:
+            for row in record[name]:
+                validate_comment(row, name, number, projected=True)
+    except CollectionError:
+        return False
     pr = record.get('pr')
     return (isinstance(pr, dict) and isinstance(pr.get('title'), str)
             and pr.get('state') in ('open', 'closed')
@@ -95,10 +121,7 @@ def collect(number):
         raise CollectionError(f'API malformed file name: {number}')
     for name in LISTS[1:]:
         for item in lists[name]:
-            if item.get('body') is not None and not isinstance(item['body'], str):
-                raise CollectionError(f'API malformed comment body: {number}/{name}')
-            if item.get('user') is not None and not isinstance(item['user'], dict):
-                raise CollectionError(f'API malformed comment author: {number}/{name}')
+            validate_comment(item, name, number)
     fields = ('title', 'state', 'merged_at', 'merge_commit_sha', 'additions', 'deletions',
               'changed_files', 'commits', 'created_at', 'closed_at', 'user', 'base', 'head')
     record = {'schema': SCHEMA, 'number': number, 'pr': {key: pr.get(key) for key in fields}}
@@ -114,7 +137,8 @@ def collect(number):
         record[name] = [{'user': (item.get('user') or {}).get('login'),
                          'body': (item.get('body') or '')[:limit],
                          **{key: item.get(key) for key in extra}} for item in lists[name]]
-    record['collection'] = {'complete': True, 'fetchedAt': datetime.now(timezone.utc).isoformat(),
+    record['collection'] = {'complete': True, 'commentRowPolicy': COMMENT_ROW_POLICY,
+                            'fetchedAt': datetime.now(timezone.utc).isoformat(),
                             'endpointCounts': {name: len(rows) for name, rows in lists.items()},
                             'fileCountMatchesDeclared': len(lists['files']) == pr['changed_files']}
     record['receiptSha256'] = digest(record)
