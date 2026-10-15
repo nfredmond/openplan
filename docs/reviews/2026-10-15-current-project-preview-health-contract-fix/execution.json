@@ -1,0 +1,216 @@
+[
+  {
+    "unit": "openplan-health-v2-prepare-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-prepare-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/env PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/prepare_v2.py.",
+      "openplan-health-v2-prepare-01.service: Consumed 4.984s CPU time over 9.996s wall clock time, 512M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-controls-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-controls-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_controls.py.",
+      "openplan-health-v2-controls-01.service: Consumed 57.552s CPU time over 1min 55.104s wall clock time, 44.7M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-attestation-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-attestation-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/cache npm_config_cache=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache npm_config_logs_dir=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache/_logs PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_attestation.py.",
+      "openplan-health-v2-attestation-01.service: Consumed 2min 14.896s CPU time over 4min 29.793s wall clock time, 96M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-small-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-small-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/cache npm_config_cache=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache npm_config_logs_dir=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache/_logs PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_small_guards.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-boundary-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-boundary-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/cache npm_config_cache=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache npm_config_logs_dir=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache/_logs PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_boundary.py.",
+      "openplan-health-v2-boundary-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-boundary-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-boundary-02.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-boundary-02.service - [systemd-run] /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_boundary.py.",
+      "openplan-health-v2-boundary-02.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-boundary-02.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-boundary-03.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-boundary-03.service - [systemd-run] /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_boundary.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-direction-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-direction-01.service - [systemd-run] /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp --chdir /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/openplan /usr/bin/env -i PATH=/usr/bin:/bin HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/home XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/cache npm_config_cache=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache npm_config_logs_dir=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/npm-cache/_logs NODE_OPTIONS=--max-old-space-size=640 /usr/bin/npm run product:direction:check.",
+      "openplan-health-v2-direction-01.service: Consumed 849ms CPU time over 1.709s wall clock time, 85.1M memory peak."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-nested-probe-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-nested-probe-01.service - [systemd-run] /usr/bin/bwrap --unshare-user --uid 0 --gid 0 --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/bwrap --ro-bind / / --dev /dev --proc /proc --unshare-net /usr/bin/true.",
+      "openplan-health-v2-nested-probe-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-nested-probe-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-nested-probe-02.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-nested-probe-02.service - [systemd-run] /usr/bin/bwrap --unshare-user --uid 0 --gid 0 --cap-add CAP_SYS_ADMIN --die-with-parent --ro-bind / / --dev /dev --proc /proc --unshare-net --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2 --bind /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2/tmp /tmp /usr/bin/bwrap --ro-bind / / --dev /dev --proc /proc --unshare-net /usr/bin/true.",
+      "openplan-health-v2-nested-probe-02.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-nested-probe-02.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-direct-probe-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-direct-probe-01.service - [systemd-run] /usr/bin/bwrap --ro-bind / / --dev /dev --proc /proc --unshare-net /usr/bin/true."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-01.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-01.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py.",
+      "openplan-health-v2-composition-controller-01.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-composition-controller-01.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-02.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-02.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-03.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-03.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-04.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-04.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-05.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-05.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-06.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-06.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py.",
+      "openplan-health-v2-composition-controller-06.service: Main process exited, code=exited, status=1/FAILURE",
+      "openplan-health-v2-composition-controller-06.service: Failed with result 'exit-code'."
+    ]
+  },
+  {
+    "unit": "openplan-health-v2-composition-controller-07.service",
+    "configured": {
+      "MemoryMax": "512M",
+      "MemorySwapMax": "0",
+      "CPUQuota": "50%"
+    },
+    "messages": [
+      "Started openplan-health-v2-composition-controller-07.service - [systemd-run] /usr/bin/python3 -B /home/nathaniel/.t3/worktrees/openplan/t3-f129cb09/docs/reviews/2026-10-15-current-project-preview-health-contract-fix/verify_composition.py."
+    ]
+  }
+]
