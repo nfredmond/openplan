@@ -168,3 +168,45 @@ The parent still needs the unfinished RLS result and subsequent identified
 exact-main web and seven-worker delivery evidence with actual process
 observations. This task does not wait for those states or release the hold.
 The report commit is the only repository change handed back for review.
+
+## Parent delivery follow-up at 07:11 UTC
+
+The parent reads the completed RLS workflow separately. Run 38690748137 is now
+`completed/success`, updated at `2026-10-15T06:59:34Z`. This supersedes the
+earlier unfinished result without changing that historical reading.
+
+At `2026-10-15T07:11:05.856Z`, public health reports commit `b259d73e56d2`,
+version `0.68.0`, and 418 expected migrations through `20261017000015`.
+Database health remains `not_checked`; this response is build identity evidence.
+Railway reports deployment `2a577f7f-bca7-4186-a3e8-c2e41a5a3428` as `SUCCESS`
+with the exact full pinned main commit. The preceding deployment is `REMOVED`.
+
+An explicit log read for that deployment finds all seven declared supervisor
+startup messages at `07:00:47.951773673Z` through `07:00:47.951809573Z`.
+The process RPC at `07:11:06.110294Z` reports one running instance for each of
+those seven kinds, with observations between `07:10:50` and `07:10:57`.
+GTFS remains unobserved and is not enabled by this verification.
+
+A direct table read at `07:11:31.125483Z` returns exactly seven rows. All have
+state `running`, sequence 22 and null `build_sha`. Thus individual observation
+rows do not independently attest a commit. Exact worker delivery is correlated
+through Railway's commit-labelled successful deployment and its seven startup
+messages, alongside the fresh database observations. A stronger direct runtime
+source-hash read is unavailable: the SSH command refuses before connection with
+`No SSH keys found in your SSH agent or ~/.ssh/`. No key or configuration is
+created to overcome that refusal. The first unfiltered 100-line log read omits
+startup messages; the focused startup filter returns the seven named records.
+Neither the initial empty selection nor the SSH refusal counts as acceptance.
+
+Sanitized responses and raw private transport evidence remain in the original
+private rollout directory, under `delivery-after-rls.json`,
+`worker-build-observations-after-rls.json`, `worker-startup-filtered.json` and
+the corresponding private log files. The parent performs only read operations.
+
+The parent releases the sequential main-delivery hold for the next separately
+reviewed change, PR328. This is a technical rollout decision based on the stated
+provider correlation boundary. It does not establish job completion, provider
+request success, throughput, whole-installation recovery, practitioner
+acceptance, scientific validity or general production readiness. Migration16
+remains unapplied hosted. A new main change requires fresh CI and delivery
+verification before another merge.
