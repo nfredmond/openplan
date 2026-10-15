@@ -160,7 +160,7 @@ else describe("real native capped workbook", () => {
       expect(actual.workspaceName, "serializer must retain selected workspace name").toBe(p.name);
       expect(canonical(actual.projects), "serializer must receive every original projected row").toEqual(canonical(originalRows(p)));
       expect(r.response.headers.get("content-disposition"), "workbook must retain exact attachment filename").toBe(`attachment; filename="${portfolioRoundTripFilename(p.name, actual.generatedAt)}"`);
-      const expected = await buildPortfolioRoundTripWorkbook({ ...actual, workspaceId: p.workspace, workspaceName: p.name, projects: originalRows(p) as unknown as PortfolioRoundTripProject[] });
+      const expected = buildPortfolioRoundTripWorkbook({ ...actual, workspaceId: p.workspace, workspaceName: p.name, projects: originalRows(p) as unknown as PortfolioRoundTripProject[] });
       expect(Buffer.from(r.bytes).equals(Buffer.from(expected)), "download material must equal actual serializer from original SQL rows").toBe(true);
       const wb = XLSX.read(r.bytes, { type: "array" });
       expect(wb.SheetNames, "workbook must retain Projects and Read me sheets").toEqual(["Projects", "Read me"]);

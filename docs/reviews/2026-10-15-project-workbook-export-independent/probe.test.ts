@@ -98,7 +98,7 @@ for (const [count, cap] of [[0, 1000], [1, 1], [999, 1000], [1000, 1000], [1001,
     }
     const expected = source.sort((a, b) => Date.parse(b.updated_at) - Date.parse(a.updated_at) || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
     const actual = new Uint8Array(await response.arrayBuffer());
-    const prior = await buildPortfolioRoundTripWorkbook({ workspaceId: W, workspaceName: "Probe workspace", generatedAt: NOW, projects: expected });
+    const prior = buildPortfolioRoundTripWorkbook({ workspaceId: W, workspaceName: "Probe workspace", generatedAt: NOW, projects: expected });
     expect(Buffer.from(actual).equals(Buffer.from(prior)), "independent complete byte parity").toBe(true);
     const workbook = XLSX.read(actual, { type: "array" });
     expect(workbook.SheetNames).toEqual(["Projects", "Read me"]);
