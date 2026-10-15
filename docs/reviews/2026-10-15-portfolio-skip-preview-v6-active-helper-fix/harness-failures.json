@@ -1,0 +1,18 @@
+{
+  "attempts": [
+    {
+      "unit": "openplan-portfolio-v6-file-audit-01.service",
+      "invocation": "9fc1db25c7fa42b2a0d2b89bfeeb3560",
+      "exit": 1,
+      "reason": "Comparison harness normalizes full private root but omits bare policy packet-name literal. Operating bytes unchanged; no pass.",
+      "failedSourceSHA256": "8e8b68b41ec2a512399be20626890be2aa721001d4e13d09f3a95405f1a91d90",
+      "rawEvidence": "Retained failed source and before/after inventories under new V6 root.",
+      "runtimeMs": 346,
+      "cpuMs": 191,
+      "roundedMemoryPeak": "18.4M",
+      "swap": "0B",
+      "retainedToolOutputSHA256": "6c7f3f02952e60966718b67a04de714c9052d90bb921103e41a061415444f272"
+    }
+  ],
+  "historicalV4V5Failures": "Preserved unchanged within both frozen packets. Not rerun or promoted."
+}

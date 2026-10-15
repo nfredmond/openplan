@@ -1,0 +1,13 @@
+{
+  "preparedOnly": true,
+  "reviewCommit": "0257e77b1a4d76d42e9bdb621e05374b83db613e",
+  "sixReviewFilesMatchCommit": true,
+  "V5ReviewedPublicFiles": 36,
+  "V5ReviewedSealedPrivateFiles": 30,
+  "independentV5BindingsExact": true,
+  "bindingHarmlessFaultAndDisabledComparatorControlsPass": true,
+  "V6SealedInputsExact": true,
+  "currentPublicKnownValueScreenPass": true,
+  "operatingStages": 0,
+  "scope": "File hashes and retained independent bindings only. No live preservation, operating transport or acceptance result."
+}

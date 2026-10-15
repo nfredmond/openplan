@@ -1,0 +1,17 @@
+{
+  "reviewCommit": "0257e77b1a4d76d42e9bdb621e05374b83db613e",
+  "reviewRoot": "/home/nathaniel/.t3/worktrees/openplan/t3-78ca8e4a/docs/reviews/2026-10-15-portfolio-skip-preview-v5-independent-round2",
+  "files": {
+    "README.md": "a1e50f79c60e278406c52dc6bb0f45464461da445f1e3b1b0c783724f12a928e",
+    "controls.json": "9ee39f13c05e7b66eb353e5842f0003abf6f312c892743a0d33a2ef045dbc50b",
+    "execution.json": "5eafcd8eb205f6b33170cf1b3a8b22a4c32602577fecccf2b22dc1463b4f8557",
+    "final_readback.py": "1e4e7d504a0f1554064eee9547df2d6cfea809ebfb22ef6852b08d4d655e5124",
+    "review_controls.py": "ca5abe3991ae654ac66aeeac96503fb8a9dac129979fca33691b465c315e5259",
+    "source-bindings.json": "4d2e73d61dc9d53f46cc6ccd05a44259880166c5f5ce898196f94b576d5dfc6c"
+  },
+  "allSixReadInFull": true,
+  "parentReportedRootHead": "d5851ae688454c2e55a0cb8f7d0f5ad4ec8a8cd0",
+  "localBase": "e33ad511e1e98f9ee4cfa59a32d13f23ef1debcc",
+  "appHead": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "freshRound3Pending": true
+}
