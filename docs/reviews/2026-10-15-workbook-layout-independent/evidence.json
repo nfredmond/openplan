@@ -1,0 +1,343 @@
+{
+  "disposition": "bounded_review_complete_no_new_runtime_findings_conditional_integration_only",
+  "candidate": "69d52fe4e31a9cd6bea030c2a06ea657435473ec",
+  "base": "783fd24c230a1e640543e51fcef6cd5d70db0bb0",
+  "appAncestor": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "newFindings": [],
+  "knownIntegrationConditions": [
+    {
+      "id": "C1",
+      "condition": "Declare exact already-locked @xmldom/xmldom 0.8.15 directly in package.json and root lock metadata without graph or version changes.",
+      "resolvedByThisReview": false
+    },
+    {
+      "id": "C2",
+      "condition": "Restore both dated historical probe.test.ts files to base bytes and retain async adaptations in a new dated directory.",
+      "resolvedByThisReview": false
+    }
+  ],
+  "checks": {
+    "focused": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "restored": {
+      "passed": 27,
+      "failed": 0,
+      "skipped": 0
+    },
+    "independent-route": {
+      "passed": 17,
+      "failed": 0,
+      "skipped": 0
+    }
+  },
+  "direction": {
+    "exitCode": 0,
+    "gitArchiveAttemptFailed": true,
+    "correctedAssignedNestedCheckout": true,
+    "remindersPreserved": true
+  },
+  "sourceBindings": [
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "sha256": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/lib/engagement/review-export.ts",
+      "sha256": "5cf61fcc3ae95287085c4c6e2e1983497381d165d0caf7f429b8ccee2865c019",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/lib/export/review-workbook-layout.ts",
+      "sha256": "134ebad39797bfb27996ec1052514ce4ba5c9da53edf5d315a64a326c1fabd68",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/test/engagement-review-export.test.ts",
+      "sha256": "f237b7d81738b23ede80127a8b93e87906a77cb38d017b904d30505e0d334eef",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/test/portfolio-workbook-export.test.ts",
+      "sha256": "6a44f492173b67087037e2d4371cf4191b2219ab33776624ffc3b25eb57a76f4",
+      "assignedAndPrivateCopyEqual": true
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "sha256": "f3432540f3ee5a7588ac98d135ce6be7bd0fc9895ad222b98dd135de86c79426",
+      "assignedAndPrivateCopyEqual": true
+    }
+  ],
+  "privateRunnerBindings": [
+    {
+      "file": "run.py",
+      "sha256": "e57ffeed91d8fd5d0e660dc63f4c17822896b42803a0b0cbd00cfc2b37adacbc"
+    },
+    {
+      "file": "generate.ts",
+      "sha256": "ae4a26536378d072cda75081665ba35b9374097eae77c482202d71a9b53c6994"
+    },
+    {
+      "file": "compare.py",
+      "sha256": "01f7e232b576d019e156c3a4968ea7c5280a005b7fc4e2c69f712a2e452b67df"
+    },
+    {
+      "file": "vitest.config.mjs",
+      "sha256": "5d936db533a018b108644c5eb3f91de9c869223d2a210f784140e366d6f95123"
+    },
+    {
+      "file": "generate-types.json",
+      "sha256": "7e534fcb1561f186ca075c8c984a81ea9dc4fd66115cf23b9e410292201f11a9"
+    },
+    {
+      "file": "baseline-portfolio.ts",
+      "sha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d"
+    },
+    {
+      "file": "baseline-engagement.ts",
+      "sha256": "18de32eba13f3bac998e35857654064c273458f8034d61ea5a2c2ed9eed8d120"
+    },
+    {
+      "file": "source/openplan/src/test/independent-route-probe.test.ts",
+      "sha256": "af1baae3a7dc99bb1ea136e8a5404bf68745561c9e922fe4753a6d5baa201e2d"
+    }
+  ],
+  "comparison": {
+    "portfolio": [
+      {
+        "records": 0,
+        "case": "0",
+        "exactBaselineCellXML": true,
+        "printRangesComplete": true,
+        "sha256": "2f7a8a1377f7223b198d0892e28eb4945e768ee3139789911eafa958c1ae8372",
+        "retainedOriginalCellsEqual": true,
+        "retainedCandidateBytesEqual": true,
+        "nativeODSAllCellsEqual": true,
+        "odsSha256": "6ff28024d0599c91037a1701142e2694cdbfc127de24f7f66e400d87f531c748",
+        "originalSha256": "40ae4e85dd62644adc529332d49918ff92e7438a44c9bfbae54104f32168fa6c"
+      },
+      {
+        "records": 1000,
+        "case": "1000",
+        "exactBaselineCellXML": true,
+        "printRangesComplete": true,
+        "sha256": "f1a1c03a53ac60e4357a84c8299833fa7096db8d95ab72f7553a9cc35ef79794",
+        "retainedOriginalCellsEqual": true,
+        "retainedCandidateBytesEqual": true,
+        "nativeODSAllCellsEqual": true,
+        "odsSha256": "6f01d369b912e18f5f77c33d419223a8ed45c420a81be107749528dd655d352c",
+        "originalSha256": "13cf9d52d34ae21e794f2f841994c65d61c56072ef7ae2d49cbc36e11cd0ab34"
+      },
+      {
+        "records": 2000,
+        "case": "2000",
+        "exactBaselineCellXML": true,
+        "printRangesComplete": true,
+        "sha256": "211b0ea969060720312af1e31b98360e698443509dc230b245d73ca8de5587a3",
+        "retainedOriginalCellsEqual": true,
+        "retainedCandidateBytesEqual": true,
+        "nativeODSAllCellsEqual": true,
+        "odsSha256": "7a2b83702f66bdb8fb5c8d4a895af3660b6964c89c204e55fe0e4338f2a618f1",
+        "originalSha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c"
+      },
+      {
+        "records": 8,
+        "case": "special",
+        "exactBaselineCellXML": true,
+        "printRangesComplete": true,
+        "sha256": "a44d72e7b911c6dcd148555c3669f24fe2b8a764002f4f7b06bae77f04cd15b0"
+      }
+    ],
+    "engagement": [
+      {
+        "case": "0",
+        "allXMLPartsSemanticallyEqual": true,
+        "styleBytesEqual": true,
+        "formulaCount": 4,
+        "forcedRecalculation": true
+      },
+      {
+        "case": "2",
+        "allXMLPartsSemanticallyEqual": true,
+        "styleBytesEqual": true,
+        "formulaCount": 4,
+        "forcedRecalculation": true
+      },
+      {
+        "case": "special",
+        "allXMLPartsSemanticallyEqual": true,
+        "styleBytesEqual": true,
+        "formulaCount": 4,
+        "forcedRecalculation": true
+      },
+      {
+        "case": "history",
+        "allXMLPartsSemanticallyEqual": true,
+        "styleBytesEqual": true,
+        "formulaCount": 5,
+        "forcedRecalculation": true
+      }
+    ],
+    "oracleControls": [
+      {
+        "case": "unchanged deep copy",
+        "outcome": "survived"
+      },
+      {
+        "case": "changed cell text",
+        "outcome": "detected",
+        "diagnostic": "exact cell XML types text formulas coordinates"
+      },
+      {
+        "case": "zip-comment",
+        "outcome": "survived"
+      },
+      {
+        "case": "missing-wrapped-header",
+        "outcome": "detected",
+        "diagnostic": "all native literal values and blanks"
+      },
+      {
+        "case": "reversed XML attribute order",
+        "outcome": "survived"
+      },
+      {
+        "case": "engagement formula altered",
+        "outcome": "detected",
+        "diagnostic": "complete engagement XML semantics"
+      }
+    ]
+  },
+  "sourceMutationControls": [
+    {
+      "case": "harmless",
+      "outcome": "survived",
+      "diagnostic": null,
+      "failedAssertions": []
+    },
+    {
+      "case": "wrap",
+      "outcome": "detected",
+      "diagnostic": "header wrap serialized",
+      "failedAssertions": [
+        "campaign review records retains the extracted review styles, frozen headers and recalculation settings on every sheet",
+        "portfolio XLSX round-trip emits wrapped cells, bounded readme printing and readable repeated project headers"
+      ]
+    },
+    {
+      "case": "await",
+      "outcome": "detected",
+      "diagnostic": "awaited serializer bytes reach response",
+      "failedAssertions": [
+        "GET /api/projects/export/workbook exports only the active workspace and allows read-only members",
+        "GET /api/projects/export/workbook catches an asynchronous serializer failure before logging or sending a workbook",
+        "GET /api/projects/export/workbook exports and reimports a recorded cost with an unknown price year"
+      ]
+    }
+  ],
+  "privateMutationRestoration": {
+    "src/lib/export/review-workbook-layout.ts": true,
+    "src/app/api/projects/export/workbook/route.ts": true
+  },
+  "resources": {
+    "independent": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "460791808",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ]
+    },
+    "compare": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "110473216",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ]
+    },
+    "generate": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "357941248",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0",
+      "affinity": [
+        23
+      ]
+    }
+  },
+  "limits": {
+    "memoryBytes": 1073741824,
+    "swapBytes": 0,
+    "cpuPercent": 50,
+    "nodeHeapMiB": 640,
+    "vitestWorkers": 1,
+    "network": "unshared",
+    "dependencies": "read-only existing parent installation",
+    "fullSuiteRun": false,
+    "buildRun": false,
+    "databaseRun": false,
+    "browserRun": false,
+    "freshNativeConversion": false,
+    "freshPDFExport": false,
+    "practitionerAcceptance": false,
+    "hostedChange": false
+  },
+  "nativeEvidence": {
+    "freshCandidateBytesMatchRetained": true,
+    "freshIndependentODSExtraction": true,
+    "actualPDFPagesInheritedFromPriorEvidence": [
+      6,
+      386,
+      771
+    ],
+    "allPagesVisuallyInspected": false,
+    "inspectedImages": [
+      {
+        "relativePath": "native-04/2000-page-771.png",
+        "sha256": "facb69cda0273fe3c43be9c0d228e011d5289b9b0cfc4d7768d2fea9b9165ddc"
+      },
+      {
+        "relativePath": "native-04/2000-page-1.png",
+        "sha256": "868262014c50ca03a88e5e153748b1f688bec1235536125508fa4927db337710"
+      },
+      {
+        "relativePath": "pdf-supplement-02/2000-last-ID-page-154.png",
+        "sha256": "b6ebec95e40038ba3d2fda64e9d28cd434c3d6f5f40b19add6ba7b3352ce4124"
+      }
+    ]
+  },
+  "failedAttempts": [
+    {
+      "step": "initial direction check",
+      "reason": "Source archive has no Git history; reviewed_commit is unavailable. Corrected to nested assigned checkout in read-only sandbox.",
+      "sourceDefect": false
+    },
+    {
+      "step": "initial generate",
+      "reason": "Baseline engagement module at private root cannot resolve ./geometry. Moved byte-identical baseline beside its unchanged relative dependencies.",
+      "sourceDefect": false
+    },
+    {
+      "step": "initial native comparison",
+      "reason": "New independent OOXML reader omitted absent Read me row 13 and shifted later cells. Preserve worksheet row coordinates. Corrected comparison passes all cases.",
+      "sourceDefect": false
+    }
+  ]
+}
