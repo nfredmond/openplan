@@ -190,3 +190,8 @@ The [dated workbook join](../2026-10-15-project-workbook-layout-join/STATUS.md) 
 ## REST readiness follow-up, October 15
 
 The [dated parent operation](../2026-10-15-final-preview-rest-operation/STATUS.md) records the reviewed single-use replacement, real Auth/REST/Storage200, CORS and immutable input/source preservation. The failed original REST remains retained. Old build/start recipe finding F1 remains open; a separate exact678 application packet and independent review precede any build. No visible-workflow acceptance is added.
+
+
+## Current application packet remains unexecuted
+
+The [parent F2 finding](../2026-10-15-current-preview-health-contract-finding/FINDING.md) records an attestation producer/consumer mismatch in preparedf299. Correction and original-snapshot independent review run separately. No checkout, build or start executes. The new packet must preserve full-SHA identity outside the endpoint while checking its intentional12-character response exactly.
