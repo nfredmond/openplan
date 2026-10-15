@@ -38,3 +38,29 @@ a promotion hold. Native target full catalog preservation remains unaccepted
 with cause unknown. PR330 stays watched on pushed sourcef0; these review
 records stay local until a later verified checkpoint to avoid a docs-only
 CI restart.
+
+
+## Final independent review accepts the corrected preparation
+
+Candidate `2545bb5e8` implements the three required corrections and binds exact
+sourcef0/application tree a13. Independent review `77da95d6373fcb3cbd83eed728611a96f2322364`
+finds no new P1/P2 defect and confirms R1, R2 and R3 are addressed. Root reads
+the complete report and both private drivers, checks all seven review evidence
+pins and compares the two public/private review results. Earlier parent readback
+separately matches 42 runtime inputs, 43 hash edges, 420 migrations, 44 public
+pins, ten public/private reports and the preparation archive hash.
+
+Root accepts this exact preparation design at its stated evidence tier. This
+is not operating admission. About 238 MB remains free against 4,597,706,396 bytes
+required; actual capacity still refuses. Cache cleanup approval remains pending.
+No admission file or real preview allocation, database/helper/application stage,
+build/start/browser journey or hosted change occurs. Current CI has not been
+accepted, and the 420-versus-418 promotion hold remains. These preparation/review
+records stay local so a documentation push does not restart the watched CI.
+
+The review checks actual Git modes, blobs and sizes for 17,349 source entries,
+without rehashing all 528 MB of source content. It streams 421 regular members
+in the 665-member preparation archive. It does not extract or restore that
+archive. Retained helper descriptors remain dated metadata, not fresh health.
+The disclosed preparation readback pressure, native catalog difference with
+unknown cause and all historical/frozen acceptance boundaries remain visible.
