@@ -1,0 +1,44 @@
+{
+  "services": {
+    "rest": {
+      "id": "cb8cfc278c910f934f495007a85748a740e3b274f977e00e12fe3cc2fa7add16",
+      "configurationUnchanged": true,
+      "running": true,
+      "startedAt": "2026-10-15T08:45:53.850247373Z",
+      "restartCount": 0,
+      "healthLogChanged": false
+    },
+    "auth": {
+      "id": "174ab2d834b744022f4388f754cddfb2e75db0c449b712bc4032006c5a2d2984",
+      "configurationUnchanged": true,
+      "running": true,
+      "startedAt": "2026-10-15T08:45:54.527684543Z",
+      "restartCount": 0,
+      "healthLogChanged": false
+    },
+    "storage": {
+      "id": "f11687449419ad9e3e97677fde125c07755a92d4e354d1a2de62488546b4d932",
+      "configurationUnchanged": true,
+      "running": true,
+      "startedAt": "2026-10-15T08:45:54.86504781Z",
+      "restartCount": 0,
+      "healthLogChanged": false
+    },
+    "gateway": {
+      "id": "9df8243592d037ee9189cd74cb116824d5ae45166d20b7bde4e88109610b709f",
+      "configurationUnchanged": true,
+      "running": true,
+      "startedAt": "2026-10-15T08:45:55.198844457Z",
+      "restartCount": 0,
+      "healthLogChanged": true
+    }
+  },
+  "actualRestHead": 503,
+  "transitionIntentAbsent": true,
+  "actualActiveReceiptsAbsent": true,
+  "actualActiveBindingAbsent": true,
+  "appBuildAbsent": true,
+  "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "logicalSourceGlobalStorageRecheck": "Not performed by child; parent retains immutable source guard.",
+  "nativeSuccessIsNotRestReady": true
+}

@@ -1,0 +1,18 @@
+--- original/policy.py
++++ recovery/rest_uri_recovery_01_policy.py
+@@ -4,0 +5 @@
++from urllib.parse import unquote, urlsplit
+@@ -32,0 +34,13 @@
++def native_rest_uri(uri):
++    """Decode URI escapes, preserving literal plus as libpq does."""
++    query = urlsplit(uri).query
++    pairs = query.split('&')
++    valid = len(pairs) == 1 and pairs[0].count('=') == 1
++    if not valid or re.search(r'%(?![0-9a-fA-F]{2})', query):
++        raise ValueError('native-rest-uri:syntax')
++    key, value = pairs[0].split('=', 1)
++    exact({'key': 'options', 'value': '-c search_path=public,extensions'},
++          {'key': unquote(key, errors='strict'), 'value': unquote(value, errors='strict')},
++          'native-rest-uri')
++
++
