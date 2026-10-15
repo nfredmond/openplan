@@ -1,0 +1,298 @@
+{
+  "trials": [
+    {
+      "trial": "baseline",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "baseline.json"
+    },
+    {
+      "trial": "harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "harmless.json"
+    },
+    {
+      "trial": "false-rollback",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "unconfirmed commit must direct re-review without claiming rollback",
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "false-rollback.json"
+    },
+    {
+      "trial": "lost-prior-identity",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "re-review must lock a previously created source row",
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "lost-prior-identity.json"
+    },
+    {
+      "trial": "missing-prior-projection",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "retry query must select the complete prior-creation identity",
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "missing-prior-projection.json"
+    },
+    {
+      "trial": "restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "reports an unconfirmed commit and rechecks prior creations before retrying",
+      "report": "restored.json"
+    },
+    {
+      "trial": "project-tail-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-tail-positive.json"
+    },
+    {
+      "trial": "project-tail-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-tail-harmless.json"
+    },
+    {
+      "trial": "project-tail",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "project beyond row cap must require individual name confirmation",
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-tail.json"
+    },
+    {
+      "trial": "project-tail-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-tail-restored.json"
+    },
+    {
+      "trial": "prior-tail-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-tail-positive.json"
+    },
+    {
+      "trial": "prior-tail-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-tail-harmless.json"
+    },
+    {
+      "trial": "prior-tail",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "retry must recover all source rows beyond row cap",
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-tail.json"
+    },
+    {
+      "trial": "prior-tail-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-tail-restored.json"
+    },
+    {
+      "trial": "project-projection-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-projection-positive.json"
+    },
+    {
+      "trial": "project-projection-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-projection-harmless.json"
+    },
+    {
+      "trial": "project-projection",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "project duplicate projection must include name and identity",
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-projection.json"
+    },
+    {
+      "trial": "project-projection-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-projection-restored.json"
+    },
+    {
+      "trial": "project-order-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-order-positive.json"
+    },
+    {
+      "trial": "project-order-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-order-harmless.json"
+    },
+    {
+      "trial": "project-order",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "project duplicate pages must use stable identity order",
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-order.json"
+    },
+    {
+      "trial": "project-order-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "checks project name matches beyond the database row cap",
+      "report": "project-order-restored.json"
+    },
+    {
+      "trial": "prior-projection-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-projection-positive.json"
+    },
+    {
+      "trial": "prior-projection-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-projection-harmless.json"
+    },
+    {
+      "trial": "prior-projection",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "prior duplicate projection must retain full source identity",
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-projection.json"
+    },
+    {
+      "trial": "prior-projection-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-projection-restored.json"
+    },
+    {
+      "trial": "prior-order-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-order-positive.json"
+    },
+    {
+      "trial": "prior-order-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-order-harmless.json"
+    },
+    {
+      "trial": "prior-order",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "prior duplicate pages must use stable identity order",
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-order.json"
+    },
+    {
+      "trial": "prior-order-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "locks every previously created source row beyond the database row cap",
+      "report": "prior-order-restored.json"
+    },
+    {
+      "trial": "late-page-error-positive",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "stops the review when a later duplicate page fails",
+      "report": "late-page-error-positive.json"
+    },
+    {
+      "trial": "late-page-error-harmless",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "stops the review when a later duplicate page fails",
+      "report": "late-page-error-harmless.json"
+    },
+    {
+      "trial": "late-page-error",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "later duplicate-page failure must stop the review",
+      "test": "stops the review when a later duplicate page fails",
+      "report": "late-page-error.json"
+    },
+    {
+      "trial": "late-page-error-restored",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "test": "stops the review when a later duplicate page fails",
+      "report": "late-page-error-restored.json"
+    }
+  ],
+  "classifierRefusals": [
+    {
+      "case": "startup",
+      "result": "REFUSED",
+      "reason": "wrong test identity or count"
+    },
+    {
+      "case": "wrong-name",
+      "result": "REFUSED",
+      "reason": "wrong test identity or count"
+    },
+    {
+      "case": "wrong-assertion",
+      "result": "REFUSED",
+      "reason": "wrong assertion diagnostic"
+    },
+    {
+      "case": "extra-failure",
+      "result": "REFUSED",
+      "reason": "not exactly one assertion failure"
+    }
+  ]
+}

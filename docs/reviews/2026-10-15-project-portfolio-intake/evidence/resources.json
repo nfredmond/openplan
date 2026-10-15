@@ -1,0 +1,34 @@
+{
+  "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/op-portfolio-intake-focused2-20261015.scope",
+  "memoryMax": "1073741824",
+  "memorySwapMax": "0",
+  "files": [
+    "project-portfolio-import-route.test.ts",
+    "project-portfolio-importer.test.tsx",
+    "portfolio-import-review.test.ts",
+    "portfolio-workbook-import.test.ts",
+    "refused-project-portfolio-import-action.test.ts"
+  ],
+  "command": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "src/test/project-portfolio-import-route.test.ts",
+    "src/test/project-portfolio-importer.test.tsx",
+    "src/test/portfolio-import-review.test.ts",
+    "src/test/portfolio-workbook-import.test.ts",
+    "src/test/refused-project-portfolio-import-action.test.ts",
+    "--config",
+    ".portfolio-intake-qa/vitest.config.mts",
+    "--configLoader",
+    "runner",
+    "--maxWorkers",
+    "1",
+    "--no-file-parallelism",
+    "--reporter=json",
+    "--outputFile",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-890cd78c/docs/reviews/2026-10-15-project-portfolio-intake/evidence/focused.json"
+  ],
+  "exitCode": 0,
+  "memoryPeak": "322617344"
+}
