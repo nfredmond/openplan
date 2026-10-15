@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { timingSafeSecretEquals } from "@/lib/http/secret-compare";
 import { WORKER_HEARTBEAT_STALE_AFTER_MS } from "@/lib/models/worker-health";
 import { createApiAuditLogger } from "@/lib/observability/audit";
+import { parseNodeQueueObservation } from "@/lib/ops/node-queue-observation-reader";
 import { expectedMigrations } from "@/lib/ops/migration-manifest";
 import { APP_VERSION, appCommitSha } from "@/lib/runtime/app-version";
 import { createServiceRoleClient } from "@/lib/supabase/server";
@@ -62,7 +63,7 @@ async function timed<T>(work: (signal: AbortSignal) => PromiseLike<T>, caller: A
 
 /**
  * The operator's health check: one database read, one Storage read, the age of
- * each modeling worker's heartbeat, and every migration this build expects.
+ * each modeling worker's heartbeat, separate Node process observations, and every migration this build expects.
  *
  * It is off unless OPENPLAN_HEALTH_TOKEN is set, and then answers only a
  * matching bearer token, because it touches the database on every call and
@@ -96,6 +97,9 @@ export async function GET(request: NextRequest) {
   const buckets = await timed((signal) => probeClient(signal).storage.listBuckets()
     .then(({ data, error }) => (error ? null : (data ?? []))), request.signal);
 
+  const processes = await timed((signal) => probeClient(signal).rpc("read_node_queue_process_observations")
+    .then(({ data, error }) => error ? null : parseNodeQueueObservation(data)), request.signal);
+
   const database: CheckResult = { state: heartbeats.value ? "ok" : "failed", ms: heartbeats.ms };
   const storage: CheckResult & { buckets?: number } = buckets.value
     ? { state: "ok", ms: buckets.ms, buckets: buckets.value.length }
@@ -112,8 +116,8 @@ export async function GET(request: NextRequest) {
   });
 
   const migrations = expectedMigrations();
-  const ok = database.state === "ok" && storage.state === "ok";
-  if (!ok) audit.warn("deep_health_failed", { database: database.state, storage: storage.state });
+  const ok = database.state === "ok" && storage.state === "ok" && processes.value !== null;
+  if (!ok) audit.warn("deep_health_failed", { database: database.state, storage: storage.state, nodeProcesses: processes.value ? "ok" : "failed" });
 
   return NextResponse.json(
     {
@@ -124,9 +128,10 @@ export async function GET(request: NextRequest) {
       checks: {
         database,
         storage,
-        // Only the modeling workers write heartbeats today. The Node queues
-        // (email, exports, translation, synthesis, GTFS) do not, so their
-        // absence here says nothing about whether they are running.
+        nodeQueueProcesses: processes.value
+          ? { state: "ok", ms: processes.ms, ...processes.value }
+          : { state: "failed", ms: processes.ms, scope: "process_only", jobCompletion: "unassessed" },
+        // Process observations and model capabilities remain separate from job completion.
         modelingWorkers: workers,
       },
       migrations: {

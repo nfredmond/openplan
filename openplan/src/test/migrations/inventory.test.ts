@@ -559,10 +559,12 @@ const EXPECTED = {
   // 20261017000001 adds project_map_packages and project_map_package_files,
   // both with RLS. Disposable catalog: 309 RLS application tables (310 with
   // PostGIS's spatial_ref_sys) and 14 application views (16 with PostGIS's two).
-  relations: 323,
-  tables: 309,
+  // 20261017000015 adds one deployment-global service-only process table.
+  // Candidate native SQL applies RLS without adding a client policy or view.
+  relations: 324,
+  tables: 310,
   views: 14,
-  rlsEnabledTables: 309,
+  rlsEnabledTables: 310,
 } as const;
 
 /** The three tables whose policies exist ONLY as runtime-built SQL. */

@@ -88,6 +88,15 @@ describe("compareMigrationSets", () => {
 });
 
 describe("check-deep-health", () => {
+  it("allows the three serial backend probe budgets before its client deadline", async () => {
+    vi.stubEnv("OPENPLAN_HEALTH_TOKEN", "health-token");
+    routes[`${HEALTH_URL}/deep`] = { status: 200, body: deepBody(["1"]) };
+    const timeout = vi.spyOn(AbortSignal, "timeout");
+    try {
+      await runDeepHealthCheck([]);
+      expect(timeout.mock.calls, "Checker budget must cover three eight-second server probes").toEqual([[30_000]]);
+    } finally { timeout.mockRestore(); }
+  });
   it("derives the deep route from the public health URL", () => {
     expect(deepHealthUrl("https://x.example/api/health")).toBe("https://x.example/api/health/deep");
     expect(deepHealthUrl("https://x.example/api/health/?a=1")).toBe("https://x.example/api/health/deep");

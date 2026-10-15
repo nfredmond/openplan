@@ -73,6 +73,7 @@ const UNREAD_COLUMNS: ReadonlyArray<{
   category: Category;
   reason: string;
 }> = [
+  { column: "node_queue_process_observations.build_sha", category: "READ_IN_SQL", reason: "The service-only process writer compares the captured build on every sequence and exact replay. Process identity cannot silently move to another build; the health reader does not publish this field." },
   { column: "model_execution_custody_enrollment.observed_at", category: "READ_IN_SQL", reason: "The scoped recovery reader returns the observed enrollment time without inferring historical execution." },
   { column: "model_stage_execution_starts.observed_at", category: "READ_IN_SQL", reason: "The scoped recovery reader returns the latest observed start with its count. This does not prove current ownership or completion." },
   { column: "model_run_recovery_receipts.prior_run", category: "WRITE_ONLY", reason: "Abandonment and historical keep-or-close decisions retain the original parent snapshot for audit. No current application reader exposes this stored snapshot." },

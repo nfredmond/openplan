@@ -1,4 +1,5 @@
 // @vitest-environment node
+import { unobservedNodeQueues } from "./helpers/node-process-observation";
 import { createServer, type Server } from "node:http";
 import { createClient } from "@supabase/supabase-js";
 import { NextRequest } from "next/server";
@@ -27,8 +28,9 @@ afterEach(async () => {
   }
 });
 
-async function fixture(stall?: "database" | "storage") {
+async function fixture(stall?: "database" | "storage" | "processes") {
   const queries: Array<{ path: string; select: string | null }> = [];
+  const rpcBodies: unknown[] = [];
   let entered!: () => void, closed!: () => void;
   const started = new Promise<void>(resolve => { entered = resolve; });
   const disconnected = new Promise<void>(resolve => { closed = resolve; });
@@ -36,14 +38,21 @@ async function fixture(stall?: "database" | "storage") {
     const url = new URL(request.url!, "http://fixture.invalid");
     queries.push({ path: url.pathname, select: url.searchParams.get("select") });
     const kind = url.pathname === "/rest/v1/modeling_worker_heartbeats" ? "database"
-      : url.pathname === "/storage/v1/bucket" ? "storage" : null;
+      : url.pathname === "/storage/v1/bucket" ? "storage"
+      : url.pathname === "/rest/v1/rpc/read_node_queue_process_observations" ? "processes" : null;
     response.setHeader("Content-Type", "application/json");
     if (!kind) { response.statusCode = 404; response.end("{}"); return; }
-    if (kind === stall) {
-      response.on("close", () => { if (!response.writableEnded) closed(); });
-      entered(); return;
-    }
-    response.end("[]");
+    const complete = () => {
+      if (kind === stall) {
+        response.on("close", () => { if (!response.writableEnded) closed(); });
+        entered(); return;
+      }
+      response.end(kind === "processes" ? JSON.stringify(unobservedNodeQueues()) : "[]");
+    };
+    if (kind === "processes") {
+      let body = ""; request.on("data", chunk => { body += chunk; });
+      request.on("end", () => { rpcBodies.push(JSON.parse(body || "{}")); complete(); });
+    } else complete();
   });
   servers.push(server);
   await new Promise<void>(resolve => server.listen(0, "127.0.0.1", resolve));
@@ -55,7 +64,7 @@ async function fixture(stall?: "database" | "storage") {
   const request = new NextRequest("http://application.invalid/api/health/deep", {
     signal: ending.signal, headers: { authorization: `Bearer ${token}` },
   });
-  return { queries, started, disconnected, ending, request, run: () => GET(request) };
+  return { queries, rpcBodies, started, disconnected, ending, request, run: () => GET(request) };
 }
 
 async function mustClose(disconnected: Promise<void>, reason: string) {
@@ -85,7 +94,7 @@ async function inheritedCancellation(useRequest: boolean) {
   expect(f.queries, "Inherited cancellation must preserve the one original request").toHaveLength(1);
 }
 
-async function deadlineCancellation(kind: "database" | "storage") {
+async function deadlineCancellation(kind: "database" | "storage" | "processes") {
   vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
   const f = await fixture(kind); const response = f.run(); await f.started;
   await vi.advanceTimersByTimeAsync(8000);
@@ -100,9 +109,11 @@ describe("deep health actual SDK transport", () => {
     expect(f.queries, "Actual health query projection differs").toEqual([
       { path: "/rest/v1/modeling_worker_heartbeats", select: "worker_kind,last_successful_heartbeat_at" },
       { path: "/storage/v1/bucket", select: null },
+      { path: "/rest/v1/rpc/read_node_queue_process_observations", select: null },
     ]);
-    expect(state.transports, "Each probe needs its own SDK cancellation transport").toHaveLength(2);
-    expect(state.transports[0]).not.toBe(state.transports[1]);
+    expect(f.rpcBodies, "Node process reader must keep empty RPC parameters").toEqual([{}]);
+    expect(state.transports, "Each probe needs its own SDK cancellation transport").toHaveLength(3);
+    expect(new Set(state.transports).size, "Every health probe retains a separate transport").toBe(3);
   });
   it("refuses pre-cancelled probes before constructing a client", async () => {
     const f = await fixture(); f.ending.abort(new Error("Health caller ended"));
@@ -126,8 +137,9 @@ describe("deep health actual SDK transport", () => {
     const options = { get signal(): AbortSignal { throw new Error("Retired probe inspected another signal"); } };
     await expect(transport(`${state.target}/extra`, options), "Retired probe must refuse before inspecting another signal")
       .rejects.toMatchObject({ name: "AbortError" });
-    expect(f.queries).toHaveLength(2);
+    expect(f.queries).toHaveLength(3);
   });
   it("closes the actual database read at its deadline", async () => deadlineCancellation("database"));
   it("closes the actual Storage read at its deadline", async () => deadlineCancellation("storage"));
+  it("closes the actual Node process read at its deadline", async () => deadlineCancellation("processes"));
 });
