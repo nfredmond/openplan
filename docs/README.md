@@ -90,6 +90,8 @@ one-family suite is not all-worker or full scientific acceptance.
 
 ## Recent engineering checkpoints
 
+October 15, 2026: [Integration secret rotation candidate](reviews/2026-10-15-integration-secret-rotation/STATUS.md) preserves retained credentials with a second read secret and primary-only writes. Local crypto and targeted source controls cover legacy formats, workspace/recipe identity and mixed-process configuration. No hosted rotation, queue recovery or restore acceptance is established.
+
 The [October 14 deep-health correction](reviews/2026-10-14-ops-health-transport/STATUS.md) records actual SDK cancellation and malformed error-report recovery in an unmerged PR #326 candidate. Hosted checks and workflow delivery remain separate.
 
 The [October14 explicit worker command](reviews/2026-10-14-owned-worker-cli/STATUS.md) joins private settings, exact credential references and preset options to the existing owned service. Actual child admission/replay/shutdown remains separate from processing and full application delivery.

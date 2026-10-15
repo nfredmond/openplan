@@ -440,6 +440,10 @@ unmerged PR #326 correction supports existing M3/M15a. Hosted backend access,
 workflow delivery, real Sentry receipt and planner acceptance remain open.
 Milestone grades do not change.
 
+
+**October 15 integration secret rotation candidate.**
+[Stage A second-secret read compatibility](../reviews/2026-10-15-integration-secret-rotation/STATUS.md) preserves primary-only writes and retained credential bytes. Four 13-case local cohorts and fourteen intended source faults pass, including mixed-primary reads, exact workspace binding and translation/API envelope identity. The procedure protects an occupied second slot and requires both secrets on every reader before switching writes. This remains M3 candidate work. No migration, hosted secret rotation, actual queue recovery, independent-host restore or milestone promotion is claimed.
+
 **October 14 Node queue process observation candidate.**
 [Process observations and review corrections](../reviews/2026-10-14-node-queue-observation/STATUS.md) support existing M3 and StageA monitoring. The candidate keeps process facts separate from queue outcomes, preserves worker signal ownership and rejects contradictory report time/state/count facts. Selected-schema SQL/HTTP and source fault reports preserve their boundaries. Migration 15 and hosted rollout remain pending. M3 and whole-product grades do not change.
 

@@ -22,8 +22,14 @@ source hashes. Determine which caches can actually be reconstructed from retaine
 sources; do not assume every directory outside Supabase is disposable.
 
 Include protected copies of configuration, Auth settings and required encryption
-keys. In particular, preserve `OPENPLAN_INTEGRATION_KEY_SECRET` for encrypted
-workspace keys. Preserve the mounted PostgreSQL Vault root key separately from
+keys. Preserve `OPENPLAN_INTEGRATION_KEY_SECRET` and, when retained workspace
+keys or sealed worker credentials depend on it,
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET`. Restore those required secrets to
+the web app and every credential-reading worker before resuming work. Use the
+[rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret)
+to preserve both read keys through a rolling transition. A database or journal
+copy does not contain these environment secrets. Do not retire either secret
+while a required recovery point depends on it. Preserve the mounted PostgreSQL Vault root key separately from
 the database dump. Identical encrypted rows can fail to decrypt in a fresh
 cluster with a different root key. A database dump does not include every cluster-level role or
 service configuration. Keep the information needed to recreate those alongside

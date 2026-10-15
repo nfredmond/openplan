@@ -1,0 +1,9 @@
+{
+  "filesMatched": 16,
+  "positiveControls": 3,
+  "intendedFailures": [
+    "wrong expected digest",
+    "changed actual bytes"
+  ],
+  "scope": "Read-only hashes and in-memory faults, no deployed behavior."
+}
