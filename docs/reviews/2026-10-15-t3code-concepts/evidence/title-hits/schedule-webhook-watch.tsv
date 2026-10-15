@@ -1,0 +1,155 @@
+59	closed-unmerged		Add desktop perf trace automation
+312	closed-unmerged		Add fork management automation
+1088	closed-unmerged	L	Add AgentWatch tool handling for Codex long-running jobs
+1815	closed-unmerged	XXL	[codex] Add persisted thread loop scheduling
+1819	closed-unmerged	XXL	[codex] Add thread loop scheduling and restart recovery
+2009	closed-unmerged	XXL	Cursor/harness routing scheduled UI
+2351	closed-unmerged	XXL	Replace provider session reaper polling with deadline-driven scheduling
+2431	merged	L	Add structured Discord webhook logging for release notifications
+2796	closed-unmerged	S	fix(desktop): allow Codex Computer Use automation on macOS
+2974	closed-unmerged	M	Use Effect scheduling for relay install locks
+2987	closed-unmerged	M	fix(vcs): reflect external git changes in status via .git watcher
+3053	merged	XXL	[codex] Add integrated browser preview, annotations, and agent automation
+3272	merged	L	[codex] Structure preview automation errors
+3285	merged	M	[codex] Structure Discord release webhook failures
+3333	merged	L	[codex] Structure preview automation failures
+3436	merged	L	[codex] Structure preview automation boundary failures
+3548	merged	XXL	Route preview automation through live owner streams
+3561	merged	M	[codex] Fix preview automation edge cases
+3565	merged	XL	Stabilize preview browser surfaces, automation, and recording
+3638	merged	XXL	feat: scheduled tasks (automations)
+3803	closed-unmerged	M	Avoid recursive config watches under proot
+4118	closed-unmerged	M	fix(web): preserve composer focus during browser automation
+4577	closed-unmerged	XXL	Make preview automation bounded and recoverable
+4656	merged	L	fix(orchestrator): schedule effects from durable deadlines
+4685	merged	L	fix(preview): bound automation waits and screenshot captures
+5816	closed-unmerged	L	feat(web): show a color swatch next to color literals in chat
+5871	closed-unmerged	M	feat(web): render color swatches next to color literals in chat markdown
+5874	closed-unmerged	S	fix(desktop): preserve active element during automation press
+5999	closed-unmerged	S	fix(web): render color swatches only on exact inline code matches
+6082	closed-unmerged	XL	feat(client): schedule custom snooze times
+6099	closed-unmerged	L	feat(web): render inline hex color swatches in chat messages
+6261	closed-unmerged	S	fix(web): open automation previews in thread browser panel
+6317	closed-unmerged	S	fix(desktop): keep preview automation alive on macOS close
+7127	closed-unmerged	XL	fix(preview): make in-app browser automation work on real app pages
+7200	closed-unmerged	L	fix(desktop): keep preview automation when leaving a thread
+7655	closed-unmerged	M	fix(web): show a thread's completion when a watch loop is still live
+7986	closed-unmerged	XXL	feat(server): server-side scheduled tasks — start agent runs automatically
+8272	closed-unmerged	L	fix(preview): let overlay-timeout errors reach automation callers
+8483	merged	S	fix(desktop): allow preview automation in agent-created threads
+8486	closed-unmerged	XXL	fix(desktop): recover preview automation after snapshot timeouts
+8509	merged	XS	fix(release): move nightly schedule to minute 38
+8731	closed-unmerged	XL	feat(mcp): run scheduled tasks immediately
+8768	closed-unmerged	L	fix(codex): keep live collab children from false watchdog interrupts
+8981	closed-unmerged	L	fix(preview): stabilize background browser automation
+9089	closed-unmerged	L	fix(mobile): invalidate stale scheduler delegates
+9271	merged	XS	fix(server): subscribe before provider settings watcher
+9524	merged	XS	(via juliusmarminge): Add --max-time 60 to curl in cursor-hygiene-webhook to prevent stalled t
+9925	closed-unmerged	M	fix(server): load only due tasks during scheduler ticks
+10562	merged	M	feat(mcp): expose scheduled task run-now
+10706	closed-unmerged	M	feat(web): switch scheduled tasks between environments
+10807	closed-unmerged	M	fix(desktop): ignore metadata-only changes in dev watcher
+10982	closed-unmerged	M	fix(desktop): hand keyboard focus back after an automation click
+11153	closed-unmerged	S	fix(server): skip scheduled tasks with malformed stored IDs
+11577	closed-unmerged	XXL	fix(desktop): keep browser automation from stealing chat focus
+11585	merged	M	fix(server): skip corrupt scheduled-task rows instead of stopping the scheduler
+11590	merged	S	fix(server): preserve due schedules across equivalent time formatting
+11592	open	XXL	fix(server): make scheduled-task edits atomic
+11635	open	XXL	fix(server): pause scheduled tasks bound to archived threads
+12088	closed-unmerged	L	feat(clients): reschedule a snoozed thread from its menu
+12250	closed-unmerged	XXL	feat(v2): improve scheduled tasks and add host failover
+12343	closed-unmerged	S	fix(preview): reconnect automation hosts after stream eviction
+12351	merged	XXL	feat(mobile): manage scheduled tasks across environments
+12408	merged	S	fix(web): edit automations from thread details
+12529	closed-unmerged	L	fix(server): scheduler writes no longer overwrite concurrent task edits
+12530	closed-unmerged	XL	fix(settings): scheduled-task saves only write the fields that changed
+12706	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+12795	merged	L	refactor(server): share scheduling for tasks and limit recovery
+12857	closed-unmerged	L	feat(server): add an optional activity webhook for active agent work
+14013	closed-unmerged	M	fix(server): keep Claude sessions with scheduled wakeups alive
+14019	closed-unmerged	XS	fix(tasks): classify artifact watchers as monitors
+14084	closed-unmerged	M	fix(preview): reclaim hidden tabs after automation timeouts
+14179	merged	M	fix(server): prevent Windows PTY helper crashes in watch mode
+14354	closed-unmerged	XXL	feat(server): restrict scheduled tasks to days, hours, and run caps
+14537	closed-unmerged	L	fix(server): update fff to stop runaway watcher rescans
+14543	merged	L	fix(server): update fff to stop runaway watcher rescans
+14600	closed-unmerged	XXL	T3code/webhook automations
+14618	closed-unmerged	L	feat(server): agents can schedule prompts in their threads
+14714	closed-unmerged	XXL	feat(server): restrict scheduled tasks to days, hours, and run caps
+14826	closed-unmerged	XXL	fix(preview): recover automation after timeouts and paused rendering
+14885	closed-unmerged	XS	fix(server): Claude artifact watchers show as monitors, not agents
+15040	open	XL	fix(server): restricted agents can no longer rewrite full-access scheduled tasks, plus 13 server fixes
+15057	merged	XL	feat(server): agents can watch a PR and get woken when checks, reviews, or conflicts need them
+15085	merged	XXL	feat(server): scheduled tasks can run on a webhook
+15086	merged	XL	feat(relay): forward webhook requests to the environment's tunnel
+15087	merged	L	feat(mobile): create and copy webhook automations
+15088	merged	XL	feat(web): create webhook automations and inspect their deliveries
+15091	open	L	fix(web): preserve composer focus during preview Tab automation
+15147	closed-unmerged	M	feat(web): choose scheduled task interval units
+15167	closed-unmerged	L	feat(scheduled-tasks): optionally settle threads on completion
+15369	closed-unmerged	L	fix(preview): keep typed desktop automation errors across IPC
+15415	merged	M	fix(server): PR watch wakes the agent when a bot edits its review comment
+15427	merged	M	fix(server): read paginated review replies when watching PRs
+15487	merged	XXL	feat(relay,server,web,mobile): opt-in to hold webhooks while offline
+15553	open	L	feat(clients): show scheduled usage-limit recovery in thread lists
+15680	closed-unmerged	S	fix(docs): document recurring orchestration tasks
+15699	closed-unmerged	M	fix(docs): document recurring orchestration tasks
+15741	closed-unmerged	L	fix(server): let agents watch reopened pull requests
+15768	open	XS	fix(server): keep scheduled-task intervals on elapsed time across DST
+15804	merged	S	fix(server): PR watch reports a required check that first appears already passed
+16002	merged	XL	fix(server): Stop also stops delegated tasks and pull request watches
+16081	closed-unmerged	L	feat(clients): reschedule a snoozed thread from its menu
+16095	merged	S	fix(threads): stop pull request watches when settling
+16204	merged	M	fix(threads): threads watching a PR stay in Working instead of bouncing to the inbox
+16208	merged	L	fix(server): PR watches stop burning GitHub's rate limit and giving up
+16215	closed-unmerged	M	fix(server): scheduled tasks start fresh threads from the repository's default branch
+16217	closed-unmerged	M	fix(server): subagents stop burning tokens on pull request watch wakes
+16226	closed-unmerged	M	feat(web): see and stop pull request watches from the PR hover card
+16232	merged	XL	refactor(server,relay): webhook capabilities live in services, not handlers
+16235	merged	L	feat(web): see and stop pull request watches in the thread details card
+16262	merged	L	feat(server): log how long PR watches stay quiet before they end
+16270	merged	L	perf(server): PR watches spend ~90% fewer GitHub points by checking a 1-point fingerprint first
+16392	closed-unmerged	XS	fix(scheduled-tasks): preserve stable task order on status updates and toggles
+16592	closed-unmerged	L	feat(web): choose reasoning, speed, and permissions for scheduled tasks
+16623	open	XS	fix(server): forks no longer inherit pull request watches
+16668	open	S	fix(server): Forgejo skipped jobs no longer keep a pull request watch pending
+16726	closed-unmerged	L	fix(server): agent scheduled tasks reuse one thread instead of one per run
+16875	open	S	fix(server): schedule_task no longer tells agents every run returns to their thread
+16951	closed-unmerged	S	fix(server): expose direct webhook paths to agents
+17224	open	M	feat(web): watch a pull request from its detail menu
+17257	closed-unmerged	L	feat(web): schedule tasks without a project
+17344	merged	S	fix(server): PR watch no longer reports passed while a second run of a check is still going
+17413	closed-unmerged	M	docs(connect): webhook path uses the endpoint key and held hooks are per link
+17451	open	M	fix(server): scheduled tasks for No project launch in a scratch folder
+17458	open	S	fix(server): run_scheduled_task_now returns the thread the run launched
+17469	closed-unmerged	L	feat(web): watch chat videos in a mini player and step through them in the viewer
+17627	closed-unmerged	M	fix(client): show readable automation intervals
+17635	merged	XS	fix(clients): remove redundant prefix from PR watch status
+17727	closed-unmerged	M	fix(server): use project roots for MCP schedules in non-Git projects
+17827	closed-unmerged	M	fix(web): distinguish automation messages in the timeline minimap
+17831	closed-unmerged	L	feat(server): PR watch reports missing required checks and behind-base
+17893	closed-unmerged	L	feat: scheduled tasks can run in the background
+17928	closed-unmerged	S	fix(forgejo): wake PR watches for finished checks and edited summaries
+18119	open	S	fix(forgejo): wake PR watches when checks finish
+18120	open	XS	fix(forgejo): wake PR watches for edited comments
+18144	open	M	fix(web): hovering a thread automation shows its full title and schedule
+18170	open	L	feat(clients): reschedule a snoozed thread from its menu
+18213	closed-unmerged	L	fix(server): scheduled runs record the turn's real outcome
+18279	merged	XS	fix(web): keybinding settings label Focus URL with a capitalized acronym
+18432	open	XS	fix(source-control): fix watch failures on large forgejo PRs
+18467	open	XS	fix(server): thread-bound scheduled tasks run on the thread's current provider
+18583	open	M	fix(server): agent-created schedules in projects without Git no longer fail every run
+18653	open	M	fix(web): scheduled task times name the server's timezone
+18759	open	L	fix(azure-devops): report build results to PR watches
+18775	open	M	fix(forgejo): a pull request watch passes once the required checks pass
+18820	open	XS	fix(server): release webhook claims when acceptance fails
+18838	open	S	fix(relay): stop held webhook deliveries when the inbox is cleared
+18940	merged	XS	fix(web): scheduled task model picker no longer shifts the dialog
+19077	merged	S	fix(ci): retry Cursor webhook HTTP 400s on main
+19143	open	L	fix(server): agents can choose the model for a scheduled task
+19160	merged	XS	fix(server): avoid excessive backtracking in webhook templates
+19254	closed-unmerged	M	fix(server): explain PR watcher read failures
+19373	open	L	fix(clients): scheduled task editors no longer default to a missing main branch
+19381	closed-unmerged	XL	feat(scheduled-tasks): cron schedules, and runs no longer stack while the agent is busy
+19548	closed-unmerged	L	fix(desktop): keep preview automation from stealing chat focus
+19606	open	XS	chore(server): make config directory watches explicitly non-recursive

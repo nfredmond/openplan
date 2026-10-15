@@ -1,0 +1,28 @@
+name: Research collector evidence
+on:
+  push:
+    branches: [main]
+  pull_request: {}
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || github.run_id }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+permissions:
+  contents: read
+
+jobs:
+  collector-controls:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    strategy:
+      matrix:
+        python: ["3.11", "3.14"]
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+      # All CLI responses are synthetic. This job makes no GitHub API requests.
+      - name: Harmless controls and targeted collector faults
+        run: python -I -B docs/reviews/2026-10-15-t3code-concepts/scripts/verify_collector_controls.py

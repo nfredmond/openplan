@@ -1,0 +1,99 @@
+{
+  "checkedAt": "2026-10-15T05:33:59.874294+00:00",
+  "checks": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "restored-after-harmless",
+      "exitCode": 0,
+      "expected": "survived",
+      "method": null,
+      "requiredDiagnostic": null,
+      "matched": true
+    },
+    {
+      "case": "ignore-api-failure",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_api_failure_is_never_cached_at_any_endpoint",
+      "requiredDiagnostic": "API unavailable",
+      "matched": true
+    },
+    {
+      "case": "omit-slurp",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_all_pages_are_flattened_in_order",
+      "requiredDiagnostic": "CLI must slurp every list endpoint",
+      "matched": true
+    },
+    {
+      "case": "discard-pages",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_all_pages_are_flattened_in_order",
+      "requiredDiagnostic": "all 190 files must survive pagination",
+      "matched": true
+    },
+    {
+      "case": "ignore-json-failure",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-list-as-object",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-missing-pages",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    },
+    {
+      "case": "allow-malformed-page",
+      "exitCode": 1,
+      "expected": "targeted_failure",
+      "method": "test_malformed_transport_is_refused",
+      "requiredDiagnostic": "CollectionError not raised",
+      "matched": true
+    }
+  ],
+  "sourceRestored": true,
+  "sourceSha256": "7ec73f4e25e74182a03ab2b8b7a1750eae529f5c7f93af611cec6a0dde947338",
+  "pythonVersion": "3.11.15 (main, Jun 11 2026, 04:03:40) [Clang 22.1.3 ]",
+  "pythonExecutable": "/home/nathaniel/.local/bin/python3.11",
+  "readerSha256": "1e859aa5c66833d4e6744c3fb22a80579aa2c20d49324c15863adb5216b17fb6",
+  "digestReaderSha256": "0e82efebe0f8fee5680c435b5e1989957543ecf83057f31624b5a17b3795a288",
+  "fullCohortMethods": 25,
+  "controllerSha256": "f362231b18cccaa203f96c6d70bcdcc0a2ab9899403f3579e4b81fd644d1a780",
+  "testsSha256": "f633feea8696becff100e7ce5f6471140706b9fd6b35b39b5f83e2064001de49",
+  "blindCategories": [
+    "Mocked transport cannot prove live GitHub completeness or rate-limit behavior.",
+    "CLI flags are asserted; no new live corpus recapture runs in this correction.",
+    "Captured comments remain truncated; no patch or semantic reading proof."
+  ]
+}

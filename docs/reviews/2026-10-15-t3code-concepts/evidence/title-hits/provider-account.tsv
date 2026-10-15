@@ -1,0 +1,383 @@
+560	closed-unmerged		t3code(dev): v0.0.4-alpha.2 — terminal perf, GitHub auth, IDE integrations
+563	closed-unmerged		Add Claude Code provider integration with provider-aware auth and rich-content support
+595	merged		fix: checkpoint diffs never resolve (shared PubSub subscription)
+649	merged		fix(server): skip auth check when Codex CLI uses a custom model provider
+787	closed-unmerged		fix: skip auth check custom model providers
+864	closed-unmerged		fix: checkpoint diffs never resolve due to shared PubSub subscriptions
+972	merged	L	fix(desktop): backfill SSH_AUTH_SOCK from login shell on macOS
+1143	closed-unmerged	L	Fix Claude adapter: web search misclassification, auth parsing duplication, and env exposure
+1173	closed-unmerged	L	feat: Codex OpenAI API key and base URL overrides from Settings
+1174	closed-unmerged	L	feat: Codex OpenAI API key and base URL overrides from Settings
+1362	closed-unmerged	XL	Add protected auth flow for remote web access
+1433	closed-unmerged	S	fix(server): prevent git auth loops during passive status refresh
+1458	closed-unmerged	XL	Add browser-based session auth bootstrap
+1556	merged	XL	Make provider model lists dynamic based on auth context
+1768	merged	XXL	Implement server auth bootstrap and pairing flow
+1853	merged	L	Use dev proxy for loopback auth and environment requests
+1898	merged	L	Stabilize auth session cookies per server mode
+1899	merged	M	Remove Claude subscription-based model adjustment
+1972	merged	XS	Preserve live stream subscriptions across explicit reconnects
+1980	closed-unmerged	L	Fix: Respect app server model list and "prolite" account support.
+2001	merged	L	Warm sidebar thread detail subscriptions
+2036	closed-unmerged	L	Route desktop remote bootstrap auth through Electron main process
+2155	closed-unmerged	L	Add an account limit meter to the chat composer
+2195	closed-unmerged	XS	Support spark for ChatGPT Pro Lite accounts
+2231	closed-unmerged	S	[codex] Refresh Codex app-server schema for prolite accounts
+2247	closed-unmerged	L	Fix Claude context window fallback accounting
+2272	merged	XS	fix: increase Claude auth probe timeout to 10s
+2480	merged	L	fix(source-control): handle self-hosted GitLab, multi-account GitHub auth & azure devops web url
+2606	merged	M	[codex] Fix Windows release signing setup
+2616	merged	XS	fix(codex): use longer and shared auth probe timeout for provider status check
+2694	closed-unmerged	S	fix(ssh): decode auth timestamps from JSON strings
+2729	closed-unmerged	XL	feat(server): replace Claude Agent SDK runtime with a direct stream-json CLI driver (subscription billing)
+2795	closed-unmerged	M	Handle auth timestamps and SSH ControlMaster handoff
+2825	closed-unmerged	M	fix: SSH auth decoding for JSON date strings
+2836	closed-unmerged	XXL	[codex] Add managed relay tunnels and standards-based auth
+2871	closed-unmerged	S	Fix auth JSON datetime decoding
+2895	closed-unmerged	M	Optimize sidebar unseen completion subscriptions
+2923	merged	M	fix(desktop): Preserve SSH HTTP auth status
+2948	closed-unmerged	S	Fix sidebar terminal shortcut state subscription
+3016	merged	L	Polish dialog/alert surfaces and unauthenticated provider banner
+3092	merged	XXL	Migrate desktop auth to Clerk bridge
+3145	closed-unmerged	XXL	Gemini account switching, Antigravity approvals, and other main updates
+3174	closed-unmerged	L	Fix thread detail subscription race
+3180	merged	XXL	[codex] align server auth Effect services
+3240	merged	XXL	[codex] improve server auth error context
+3250	merged	L	[codex] Structure relay auth persistence errors
+3252	closed-unmerged	L	fix: stabilize local dev auth startup
+3290	merged	M	Structure relay auth parsing errors
+3303	merged	L	[codex] Structure macOS passkey signing failures
+3368	merged	M	[codex] Structure OAuth scope encoding failures
+3401	closed-unmerged	XS	[codex] Structure desktop local auth failures
+3419	closed-unmerged	L	[codex] Preserve auth HTTP failure diagnostics
+3471	merged	L	[codex] Structure primary auth validation failures
+3492	merged	L	[codex] Restore T3 Connect account controls
+3528	closed-unmerged	XS	[codex] fix: retry transient shell subscription failures
+3559	closed-unmerged	L	[codex] Fix Claude auth probe fallback
+3678	closed-unmerged	M	fix(auth): keep MCP sessions authorized past token expiry
+3710	closed-unmerged	S	fix(ssh): select a satisfying node when the login-shell node fails the engine range
+3727	closed-unmerged	XXL	Plugin system (3/8): RPC transport + plugin-aware auth scopes
+3758	closed-unmerged	XXL	Add T3 Connect device-code login flow
+3772	merged	XL	Expose Clerk Google sign-in env vars to Expo
+3783	closed-unmerged	XXL	fix(grok): fail fast when Grok CLI is not authenticated
+3784	closed-unmerged	L	fix(grok): fail fast when Grok CLI is not authenticated
+3808	closed-unmerged	L	feat(source-control): detect outdated GitHub CLI instead of "Not authenticated"
+3904	closed-unmerged	M	fix(grok): support Grok 4.5 OAuth sessions
+3931	merged	S	fix(server): recognize Bedrock-backed Claude as authenticated
+3943	closed-unmerged	L	fix(server): fall back to plain `gh auth status` on CLIs without --json
+4104	merged	S	Share MCP OAuth locks across Codex shadow homes
+4151	closed-unmerged	L	feat(provider): re-authenticate Claude from within T3 Code
+4174	closed-unmerged	L	feat: add Codex OAuth voice-to-text input
+4186	merged	XS	Pass CLI OAuth config to hosted web deploy
+4219	closed-unmerged	XXL	Allow retrying git commits without signing when signing fails
+4235	closed-unmerged	L	Stop retrying subscriptions for missing threads
+4353	closed-unmerged	L	Add optional Jude broker authentication for Codex
+4360	closed-unmerged	XL	Add reusable loopback development auth
+4405	closed-unmerged	M	fix(client): self-heal empty thread details and back off failed thread subscriptions
+4602	closed-unmerged	M	fix(client-runtime): recover subscriptions that lose their transport
+4628	merged	S	test: account for lazy thread feed details
+4639	closed-unmerged	L	fix(web): gate PR actions on source-control provider auth readiness
+4803	closed-unmerged	L	fix(mobile): avoid duplicate Clerk auth back buttons
+4806	merged	XS	Fix Connect sign-in settings label
+4809	merged	S	fix(desktop): restore T3 Connect sign-in
+4835	closed-unmerged	M	docs(claude): update multi-account setup for CLAUDE_CONFIG_DIR
+4844	merged	XL	feat(connect): deregister account environments from any client
+4899	merged	S	fix(mobile): prevent crash on sign out in settings
+5012	closed-unmerged	S	fix(server): pass the explicit user to loginctl enable-linger (fixes WSL2 service install)
+5097	closed-unmerged	XXL	test(trading): replay recorded account fixtures and harden the ws smoke
+5133	merged	M	fix(web): unstick /connect after in-modal sign-in by redirecting to the authorize endpoint
+5140	merged	M	fix(mobile): repair Clerk auth navigation headers
+5296	closed-unmerged	XXL	feat(marketing): T3 Connect story, agent-subscription hero, minimal connect scene
+5472	closed-unmerged	S	fix(desktop): prevent automatic passkey prompt during sign-in
+5473	closed-unmerged	L	fix(server): type the account rate-limit runtime payload
+5647	closed-unmerged	L	feat(voice): add Codex subscription transcription
+5655	closed-unmerged	XXL	Show the account profile picture in the managed sidebar
+5770	merged	S	fix(web): preserve desktop route during Clerk auth
+5846	closed-unmerged	M	fix(grok): negotiate advertised ACP auth methods
+5853	closed-unmerged	M	fix(server): avoid grok browser auth during provider check
+5945	closed-unmerged	XXL	feat(composer): show provider account usage in the input area
+5980	merged	M	fix(web): show provider account accent badge in sidebar rows and hover card
+6016	closed-unmerged	XXL	fix(vcs): release passive sidebar subscriptions
+6049	merged	XS	fix(web): account for Windows window controls in PR page header
+6052	closed-unmerged	XXL	feat(github): use the right account for each repository
+6080	closed-unmerged	XXL	feat(composer): show provider account usage in the composer
+6148	closed-unmerged	M	fix(server): prevent silent session forks when switching provider accounts
+6285	merged	L	fix(connect): preserve CLI OAuth parameters through browser sign-in
+6291	merged	XS	docs: mention Bitbucket user read scope needed by auth probe
+6357	closed-unmerged	XXL	feat(usage): add subscription allowance reporting
+6383	closed-unmerged	XL	feat(server): Grok Build effort, auth, rewind, and usage [WIP - for content]
+6620	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+7133	closed-unmerged	XL	fix(usage): attribute account limits per provider instance
+7217	closed-unmerged	M	fix(web): protect account profile details
+7245	closed-unmerged	M	fix(server): treat Cursor API keys as authenticated
+7295	open	XS	fix(server): force-stop timed out login shell probes
+7374	closed-unmerged	XL	feat(web): show provider subscription limits
+7437	merged	S	fix(desktop): stop the passkey dialog from popping as soon as sign-in opens
+7479	merged	M	fix(desktop): upgrade Clerk OAuth transport
+7483	open	XXL	feat(desktop): sign in through the browser, sharing the t3 connect credential
+7588	merged	S	fix(server): outdated gh no longer reads as "not authenticated"
+7620	closed-unmerged	XS	fix(desktop): forward Bitbucket auth to WSL
+7643	open	M	fix(desktop): show onboarding after T3 Connect sign-in
+7691	closed-unmerged	M	fix(server): report Claude authentication accurately
+7869	closed-unmerged	L	fix(codex): accept ChatGPT Edu Plus accounts
+7894	open	S	fix(shared): hydrate PATH with Nushell login shells
+7903	closed-unmerged	M	fix(web): retry legacy Connect auth backfill
+7922	closed-unmerged	XXL	feat(desktop): add authenticated remote port forwarding
+7934	closed-unmerged	XS	fix(web): stop phrasing unknown provider auth as a verification failure
+7943	closed-unmerged	XS	fix(web): stop rendering healthy ready providers as auth failures
+7946	closed-unmerged	M	fix(shared): read PATH from nushell login shells
+7974	merged	XXL	fix(swift-ios): prevent lost messages and stale account access
+7978	closed-unmerged	XL	fix(auth): stop accumulating authorized-client rows per app relaunch
+8093	merged	M	perf(desktop): cut macOS signing calls by 81%
+8136	closed-unmerged	XS	fix(desktop): require passkey signing material only when Clerk is configured
+8193	closed-unmerged	S	fix(client-runtime): retry subscription input failures instead of dying
+8243	merged	L	feat(ci): download macOS preview DMGs without signing in
+8248	merged	XS	fix(desktop): let Clerk UI receive stable auth fixes
+8267	closed-unmerged	XL	feat(providers): show subscription usage limits
+8275	closed-unmerged	L	fix(claude): report unauthenticated Claude instances honestly
+8327	closed-unmerged	XXL	feat(usage): show subscription limits
+8330	closed-unmerged	XXL	feat(referrals): add account-wide referral points
+8383	closed-unmerged	L	fix(auth): explain DPoP clock-skew failures
+8411	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8413	closed-unmerged	L	fix(desktop): support OAuth popups in browser previews
+8417	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8435	merged	M	fix(desktop): oauth popups open from the browser preview
+8447	merged	M	fix(codex): accept Codex 0.150 account plans
+8474	closed-unmerged	L	feat(web): show plan usage below the account name in the model picker
+8515	closed-unmerged	XXL	feat(usage): add subscription limit reporting for Claude, Codex, Grok, and OpenCode
+8542	closed-unmerged	L	feat(desktop): add open at login setting
+8579	closed-unmerged	L	fix(server): keep Codex auth-like shadow entries private
+8606	merged	L	feat(server): add reusable auth token for dev worktrees
+8838	closed-unmerged	M	feat(connect): print stored oauth access token
+9019	closed-unmerged	XXL	fix(usage): correct Claude cost accounting
+9022	closed-unmerged	S	fix(desktop): forward Bitbucket credentials from the login shell
+9110	closed-unmerged	XL	fix(web): hide pull request rows after account changes
+9179	closed-unmerged	XXL	feat(claude): reauthenticate failed V2 threads
+9181	closed-unmerged	XXL	feat(providers): switch accounts mid-thread and track usage limits
+9226	closed-unmerged	S	fix(server): scan Codex's archived_sessions for usage accounting
+9263	closed-unmerged	XXL	feat(usage): show provider subscription limits on the usage page
+9288	closed-unmerged	M	feat(mobile): add account switch shortcut
+9311	closed-unmerged	XS	fix(server): authenticate Azure DevOps comment reads
+9425	merged	M	fix(antigravity): forward Google sign-in URLs from browser helper
+9468	closed-unmerged	M	fix(server): respawn Claude after an expired login
+9497	closed-unmerged	M	fix(shared): resolve multi-account SSH alias hosts to the real provider host
+9507	merged	XXL	feat(usage): show Codex and Claude subscription limits on a Limits tab
+9514	merged	M	fix(antigravity): handle native sign-in URLs on stderr
+9521	merged	XS	fix(server): keep events during thread subscription startup
+9523	merged	M	fix(auth): keep pairing credentials out of access read models
+9550	closed-unmerged	L	fix(antigravity): hand the Google sign-in URL to T3 through a browser preload
+9584	merged	L	fix(usage): deduplicate CLI proxy subscription accounts
+9628	closed-unmerged	M	fix(server): respawn Claude sessions after re-login on expired credentials
+9643	closed-unmerged	XS	fix(antigravity): replay auth state to late subscribers
+9647	merged	M	fix(web): resume Antigravity threads without repeated sign-in
+9696	closed-unmerged	L	fix(codex): make account switching reliable
+9785	merged	L	fix(auth): preserve explicitly granted pairing scopes
+9786	merged	XXL	feat(auth): separate environment administration permissions
+9787	merged	XXL	feat(auth): separate source control write permissions
+9788	merged	XXL	feat(auth): separate filesystem read and write permissions
+9789	merged	L	feat(auth): separate browser preview control permissions
+9790	merged	L	feat(auth): separate diagnostics and usage permissions
+9791	merged	XXL	feat(auth): allow passive terminal observation
+9899	merged	L	fix(mobile): show the provider account badge on thread rows
+9919	merged	XS	fix(antigravity): distinguish session initialization auth failures
+9986	merged	XS	test(server): remove static OAuth page snapshots
+10055	closed-unmerged	XL	feat(mobile): add subscription usage home screen widgets
+10083	open	XS	fix(server): recognize Tailscale Serve in auth policy
+10137	closed-unmerged	XS	fix(server): stop blaming Google sign-in for Antigravity session errors
+10244	merged	M	fix(server): keep the Antigravity Google sign-in across server restarts
+10298	merged	XL	fix(auth): keep old clients connected across scope changes
+10300	merged	XXL	feat(usage): pool subscription limits per provider across accounts and environments
+10312	open	S	fix(server): recover the login shell SSH agent
+10321	merged	L	fix(claude): name the expired login or usage limit instead of a generic API error
+10462	merged	M	fix(shared): redeem reset credits through the hub when it holds the account
+10469	closed-unmerged	M	fix(claude): report a signed-out Claude CLI as unauthenticated
+10601	merged	M	fix(usage): make unavailable account limits more visible
+10651	closed-unmerged	L	feat(web): preview spend and subscription limits from the sidebar footer
+10668	merged	M	fix: hide email-bearing account labels in usage limits
+10690	merged	M	fix(usage): keep account columns aligned across limit rows
+10700	open	M	fix(usage): deduplicate native subscription accounts
+10703	closed-unmerged	M	fix(usage): clarify pace labels and account reset details
+10704	closed-unmerged	M	fix(server): deliver Antigravity sign-in URLs without stderr
+10741	closed-unmerged	S	fix(swift-ios): retain subscriptions created during connection setup
+10764	closed-unmerged	XXL	fix(swift-ios): retain thread subscriptions across navigation
+10845	closed-unmerged	M	fix(usage): keep same-email Codex subscriptions apart when their plans differ
+10873	closed-unmerged	L	fix(usage): identify Codex quotas by workspace account
+10876	closed-unmerged	L	fix(usage): distinguish Codex workspaces by account ID
+10878	open	XS	fix(usage): recover missing Codex hub plans from auth metadata
+11013	open	S	fix(connect): stop reporting a loading cloud session as a sign-in change
+11047	closed-unmerged	XL	feat(threads): move a started thread to another account of the same provider
+11048	closed-unmerged	S	fix(server): respawn Claude after an expired login
+11059	merged	M	fix(server): recognize authenticated GitHub Enterprise hosts
+11147	closed-unmerged	M	fix(codex): pick up a new login without restarting T3
+11215	closed-unmerged	XXL	feat(usage-limit): recover gracefully when a subscription runs out
+11242	closed-unmerged	L	fix(server): detect GitHub sign-in on gh releases without `--json`
+11286	closed-unmerged	L	feat(desktop): fix login-shell environment capture w config
+11298	closed-unmerged	XS	fix(client): restore authenticated device stream tickets
+11367	merged	XXL	feat(github): route pull request operations across matching accounts
+11423	closed-unmerged	XXL	T3code/copilot cli subscription
+11462	closed-unmerged	XXL	fix(auth): explain expired environment credentials instead of offering a dead reconnect
+11485	merged	M	fix(usage): respect provider account homes
+11506	merged	XL	feat(mobile): add pooled subscription usage widgets
+11589	closed-unmerged	L	fix(usage): refresh stale subscription limits when viewed
+11625	closed-unmerged	M	fix(server): correctly report usage limits with multi-account Codex routing
+11648	open	XS	fix(desktop): carry ANDROID_HOME through from the login shell
+11692	merged	XXL	feat(swift-ios): show pooled subscription limits in widgets
+11718	closed-unmerged	L	feat(web): switch a started thread to another account of its provider
+11760	merged	XXL	ci(desktop): sign fork PR macOS previews without exposing signing secrets
+11794	merged	XL	feat(server): use Clerk's device authorization grant for headless connect login
+11811	merged	XS	fix(server): stop refreshing providers on every config subscription
+11881	open	L	fix(usage): show each account's own mark in the Limits bar
+11936	closed-unmerged	M	fix(server): support Antigravity auth in standalone binary
+11976	closed-unmerged	XXL	fix(source-control): seed GitHub OAuth subscriptions
+12023	closed-unmerged	M	perf(relay): reuse one Clerk OAuth client per credential pair
+12046	merged	XL	feat(mobile): render the Android subscription widget with expo-widgets
+12069	open	XS	fix(server): restore Claude subscription usage through proxies
+12104	closed-unmerged	XXL	fix(source-control): bound GitHub OAuth flow lifetime
+12115	merged	L	feat(usage): show OpenCode Go, Cursor, and Grok subscription limits
+12126	merged	L	perf(client): narrow mobile and web environment subscriptions
+12266	closed-unmerged	S	fix(server): stop probing Codex usage for accounts without a subscription
+12457	closed-unmerged	XXL	feat(server): per-instance Cursor config dirs for parallel sign-in
+12494	closed-unmerged	L	fix(server): backfill login shell for consistent agent env
+12585	open	M	fix: Preserve same-email proxy subscriptions
+12588	merged	M	fix(server): report the Grok account email so usage limits merge across environments
+12695	closed-unmerged	M	fix(mobile): hide disabled providers from subscription usage widget
+12711	closed-unmerged	L	fix(threads): stop missing-thread subscription retries
+12718	closed-unmerged	M	fix(desktop): account for main-window zoom in preview_resize
+12799	merged	S	fix(server): Grok accounts with no usage yet no longer vanish from Limits
+12853	closed-unmerged	S	fix(cli): authenticate release checks
+12861	closed-unmerged	L	fix(web): Antigravity sign-in required status + Sign in with Google
+12908	closed-unmerged	L	fix(web): Antigravity Sign-in required UI + Sign in with Google
+12948	merged	XL	feat(cursor): support browser login for the agent SDK
+12965	merged	XXL	feat(auth): share provider sign-in flows across clients
+12966	merged	L	refactor(cursor): use shared provider account setup and storage
+12967	merged	XXL	feat(acp): connect registry providers to shared sign-in flows
+12983	merged	XL	feat(auth): share provider sign-in flows and credential bindings
+13001	closed-unmerged	L	feat(server): add opt-in unsafe-no-auth mode for trusted proxies
+13014	closed-unmerged	L	fix(web): show Antigravity Sign-in required + Sign in with Google
+13019	closed-unmerged	M	fix(web): show Antigravity Sign-in required instead of Needs attention
+13089	closed-unmerged	L	fix(usage): keep one email in two Claude orgs as two accounts
+13090	closed-unmerged	S	fix(ssh): load profiles with the remote login shell
+13092	closed-unmerged	S	feat(auth): make the default session lifetime configurable
+13102	closed-unmerged	S	fix(web): sort authenticated providers first
+13114	closed-unmerged	M	fix(codex): report the stored login email when a custom provider hides the account
+13126	closed-unmerged	L	feat(auth): make pairing token ttl configurable
+13285	closed-unmerged	L	feat(codex): add account-gated Daybreak selection
+13348	open	S	fix(desktop): restore visible Google sign-in popups in previews
+13352	closed-unmerged	M	fix(client-runtime): WSL backend stays editable after re-login
+13384	closed-unmerged	S	fix(web): explain why a thread cannot continue on another enabled account
+13474	merged	L	fix(mobile): make Android subscription usage widgets scrollable
+13627	closed-unmerged	M	fix(client): retry durable subscriptions after transport loss
+13820	merged	XS	fix(usage): omit Cursor warning when no login is saved
+13838	open	L	fix(server): one failed Claude probe no longer sticks as an auth warning
+14042	closed-unmerged	M	fix(shared): distinguish Claude subscriptions with the same email
+14079	closed-unmerged	M	feat(web): opt-in account names in pooled usage limits
+14081	closed-unmerged	M	feat(web): opt-in account names for hub accounts in Limits
+14111	closed-unmerged	L	feat(web): filter sidebar threads by bot and account
+14127	merged	L	fix(web,mobile): say that removing a T3 Connect environment keeps its account registration
+14136	closed-unmerged	S	fix(server): bound OAuth token HTTP calls with a 10s timeout
+14290	merged	XXL	feat(codex): connect ChatGPT accounts with managed authentication
+14292	closed-unmerged	M	fix(usage): keep one email's organizations as separate accounts
+14304	merged	L	fix(codex): Pro Max accounts load, so Ultrafast shows up
+14305	closed-unmerged	L	fix(codex): Pro 500 accounts no longer break the Codex provider
+14340	open	S	fix(server): switching between Claude accounts that share ~/.claude/projects resumes the same session
+14376	merged	XS	fix(server): managed Codex refreshes after sign-out even when a check was interrupted
+14384	closed-unmerged	S	fix(usage): Cursor account history loads about 4x faster
+14439	closed-unmerged	L	feat(codex): add account-scoped Daybreak model picker
+14750	closed-unmerged	L	fix(usage): keep one email in two Claude orgs as two accounts
+14751	closed-unmerged	M	feat(web): show each pooled limits account on its own row
+14797	closed-unmerged	S	fix(server): release the Codex writer before switching accounts
+14805	closed-unmerged	M	fix(mobile): offer compatible accounts in existing threads
+14827	closed-unmerged	L	fix(threads): stop missing-thread subscription retries
+14899	open	M	fix(server): registry agents can offer terminal sign-in through the legacy flag
+14908	merged	XS	fix(server): Codex auth tokens are an omitted key, never undefined
+14995	closed-unmerged	XS	docs(relay): document the account-token creation permission
+15034	merged	L	fix(web): Woke dismiss syncs, preview mute is back, and subscription retries back off
+15198	closed-unmerged	L	feat(antigravity): report subscription usage limits
+15220	closed-unmerged	XXL	feat(server): outside agents sign in to the T3 MCP server with OAuth
+15272	closed-unmerged	M	fix(server): Codex text generation falls back to a model the account can run
+15277	closed-unmerged	L	fix(server): Codex accounts connect on Windows without Developer Mode
+15459	merged	M	fix(server): a logged-out Claude CLI no longer reports as authenticated
+15477	open	M	fix(clients): handoffs between accounts show which account is on each side
+15493	merged	M	fix(web): subagent cards name the provider account
+15523	closed-unmerged	L	feat(desktop): start macOS login launches without a window
+15545	closed-unmerged	M	perf(server): idle shell subscriptions stop waking the server
+15569	closed-unmerged	XS	fix(server): Cursor status says when the account's plan is rejected
+15664	merged	XS	docs(usage): OpenCode Go limits need a Go API key
+15793	closed-unmerged	L	feat(usage): count Pi turns toward the subscription they ran on
+15902	open	XXL	feat(usage): break usage down by project, thread, account and environment
+15908	open	S	fix(mobile): account badges no longer clip wide initials like WO
+15909	closed-unmerged	M	fix(server): Usage names Cursor instances whose account it cannot read
+15922	open	L	fix(mobile): the composer, model sheet and subagent bar show which account a thread uses
+15941	open	L	fix(mobile): match subscription widgets to app theme
+15995	open	S	fix(desktop): register Windows OAuth callbacks with the app entry point
+16076	closed-unmerged	L	feat(providers): new threads can rotate across a provider's accounts
+16131	merged	S	perf(mobile): skip showcase subscriptions in normal builds
+16274	closed-unmerged	L	feat(auth): desktop-local sessions renew without the bootstrap token
+16322	merged	XXL	feat: choose the GitHub account per host, save a GitHub token, and fewer reads per PR action
+16336	merged	XXL	feat(server): outside agents sign in to the T3 MCP server with OAuth
+16379	closed-unmerged	L	feat(server,web): a project can use its own GitHub account
+16573	open	S	fix(server): run event subscriptions close when a turn never starts
+16593	closed-unmerged	L	fix: select named provider accounts and fall back on exhausted quotas
+16677	closed-unmerged	XXL	feat(proxy): add built-in OAuth account routing and quota management
+16712	closed-unmerged	M	feat(claude): add Mythos 5.1 for accounts with access
+16718	merged	M	feat(server): hosted agents like ChatGPT can sign in to the T3 MCP server
+16806	open	M	fix(server): report stalled Antigravity sign-in sooner
+16939	merged	XS	fix(desktop): sign-in and captchas work again in desktop browser tabs
+17055	open	XS	fix(server): preserve Codex sign-in guidance in usage notices
+17140	merged	S	fix(usage): Cursor account history loads about 4x faster
+17151	closed-unmerged	XL	feat(providers): show Muse Code subscription usage in Limits
+17186	closed-unmerged	L	fix(auth): T3 Connect keeps working when device clocks drift
+17238	closed-unmerged	M	fix(devices): preserve commands through Windows SSH login shells
+17370	merged	XL	fix(auth): show connection permissions and enforce session lifetime
+17379	merged	XS	fix(server): a bare repository name resolves to the signed-in account again
+17509	closed-unmerged	S	fix(server): show Antigravity's real sign-in failure reason
+17516	closed-unmerged	XXL	Feat/GitHub account per owner
+17530	merged	L	feat(provider-antigravity): support subscription quota and usage limits
+17578	merged	XL	refactor(usage): Cursor account usage comes from provider-cursor
+17711	merged	L	fix(usage): keep one email in two workspaces as two accounts
+17725	merged	M	fix(azure-devops): list pull requests with token sign-in and check out into worktrees
+17750	closed-unmerged	M	perf(client-runtime): compile only the requested auth endpoint
+17787	closed-unmerged	XS	fix(test): server git tests ignore the developer's signing config from the repo root
+17836	merged	S	docs(pi): update installation and remote login guidance
+17865	open	M	fix(codex): restore reasoning controls for ChatGPT account models
+17890	open	XXL	feat(android): configure subscription usage widgets
+17908	open	S	fix(server): a signed-out Claude instance's sign-in hint names its config dir
+18076	open	M	fix(web): usage limits show one account popover at a time
+18089	closed-unmerged	XL	feat: save API keys once so agents can use them without the value entering the chat
+18096	open	M	fix(server): show Antigravity's real sign-in failure reason
+18172	open	L	fix(devices): preserve commands through Windows SSH login shells
+18183	merged	XS	test(server): Claude sign-in message test passes on Windows hosts
+18244	closed-unmerged	XS	fix(web): align source control account names with their label
+18266	open	L	fix(server): Muse turns stopped by the subscription quota are Limited, not failed
+18274	open	L	fix(server): Muse Code's subscription usage shows in Usage → Limits
+18417	open	M	fix(auth): preserve pairing codes after scope rejection
+18424	closed-unmerged	M	fix(provider-antigravity): collate subscriptions across computers
+18425	open	L	fix(providers): stop offering sign-in to providers that own their login
+18474	closed-unmerged	M	perf(client-runtime): compile only the requested auth endpoint
+18623	open	M	fix(web): an installed provider with unchecked sign-in no longer reads Needs attention
+18624	open	XS	fix(server): a Claude account with no rate-limit data no longer stays unsupported
+18737	open	XS	fix(server): Codex usage is unsupported without an account
+18807	open	S	fix(server): ACP agents that need no sign-in drop models they stopped advertising
+18815	closed-unmerged	L	feat(provider-muse): show Muse subscription limits in Usage limits
+18817	open	M	fix(gitlab): show authentication and rate-limit errors from activity reads
+18872	closed-unmerged	L	fix(provider-muse): Muse Code's subscription usage shows in Usage limits
+18895	open	M	fix(usage): separate Claude hub Team and Max subscriptions that share an email address
+19013	open	L	fix(server): GitHub requests use the gh login of the project's folder
+19108	closed-unmerged	M	fix(usage): keep same-email Claude wrapper accounts separate
+19130	closed-unmerged	L	fix(server): preserved codex history across account switches
+19152	closed-unmerged	L	fix(usage): accounts at their weekly limit no longer inflate pooled limits
+19173	open	L	fix(web): SSH server addresses are hidden until clicked, like account emails
+19207	merged	M	fix(usage): show one Antigravity account once, not once per machine
+19253	open	M	fix(server): Update all can update Codex when accounts share one install
+19321	merged	S	fix(server): stalled OAuth token requests no longer block credential calls
+19433	open	M	fix(claude): map monthly account spending limits
+19473	closed-unmerged	S	fix(antigravity): explain account verification failures
+19474	open	L	fix(server): banked Claude resets are read at most every ten minutes per account
+19529	closed-unmerged	M	fix(auth): persist server-compatible pairing scopes
+19557	open	XL	fix(server): preserve native Codex threads across account switches
+19578	open	M	fix(usage): Cursor limits show again after signing in through T3
+19603	open	XS	fix(web): standalone auth pages scroll when the card is taller than the window
+19604	merged	XS	fix(desktop): import CA trust variables from the login shell
+19640	open	S	fix(auth): T3 Connect tolerates a host clock a few seconds behind
+19661	open	M	fix(acp): identify browser sign-in polling failures
+19678	open	M	fix(cursor): explain model rejections from the account catalog

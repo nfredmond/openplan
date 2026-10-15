@@ -1,0 +1,642 @@
+98	merged		Add configurable assistant delivery mode with buffered-by-default ingestion
+101	merged		Bootstrap default thread on server welcome and simplify dev runner behavior
+119	closed-unmerged		Persist provider runtime mode settings
+131	merged		Add default-branch safeguard with auto feature-branch fallback
+160	merged		Extract slash model suggestion filtering into app settings helper
+161	merged		Fix worktree branch selector default and loading behavior
+302	closed-unmerged		Fix settings toggle restore behavior
+388	closed-unmerged		Harden server bind defaults and WebSocket origin checks
+421	closed-unmerged		feat(web): settings sidebar with section navigation
+422	closed-unmerged		feat(web): add default new-chat model setting with auto project model selection
+464	closed-unmerged		Add file-backed appearance config for font overrides
+470	closed-unmerged		Inherit provider-native skill commands in the chat composer
+493	merged		Fix codex binary path setting having no effect
+518	closed-unmerged		Add chat thread font-size setting
+561	closed-unmerged		Add settings.open shortcut with Mod+Shift+,
+577	closed-unmerged		feat(web): add sidebar settings entry
+584	merged		fix: settings in sidebar, better add project flow
+622	closed-unmerged		feat: add auto default model selection for new chats
+629	closed-unmerged		feat(web): add configurable app font settings
+642	merged		fix: use commit as the default git action without origin
+700	merged		Remove Codex service tier option from settings, contracts, and turn dispatch
+707	merged		fix: prevent Codex overrides footer overflow with long binary paths
+712	closed-unmerged		feat(web): display installed version in settings
+720	merged		Display application version in sidebar and settings
+800	merged		Sync desktop native theme with web theme setting
+855	merged	L	feat: Allow Overriding Timestamp Format in Settings
+892	merged	L	fix(web): add default thread env mode setting
+916	closed-unmerged	M	fix(web): close settings with Escape
+1007	closed-unmerged	XL	Add default new-thread worktree mode with draft defaults
+1009	closed-unmerged	L	Update the switch default thread branch settings ui
+1023	closed-unmerged	L	Add customizable commit message instructions in settings
+1037	closed-unmerged	XS	build: make AppImage executable by default
+1085	closed-unmerged	XXL	feat (suggestion): add shared skills settings
+1123	closed-unmerged	L	feat(desktop): add manual "Check for Updates" button in web settings
+1152	closed-unmerged	XS	fix: fall back to target provider's default model on provider switch
+1161	closed-unmerged	XXL	feat(desktop): add settings for shared web/desktop history
+1173	closed-unmerged	L	feat: Codex OpenAI API key and base URL overrides from Settings
+1174	closed-unmerged	L	feat: Codex OpenAI API key and base URL overrides from Settings
+1185	closed-unmerged	XL	Update Codex provider banner when Codex path settings change
+1191	closed-unmerged	L	Persist desktop settings to settings.json across releases
+1212	closed-unmerged	M	fix(dev): keep host overrides consistent across Vite and desktop
+1218	closed-unmerged	L	Fix Codex provider banner for custom overrides
+1219	closed-unmerged	L	feat(web): add default model and provider settings
+1223	merged	XS	fix(web): show health banner for selected provider instead of defaulting to Codex
+1256	closed-unmerged	XL	feat(threads): add title summary generation and settings
+1263	merged	L	feat(web): collapse mobile composer by default
+1284	closed-unmerged	M	feat(web): Add high-contrast mode setting
+1288	merged	XXL	refactor(settings): simplify settings layout and controls
+1299	closed-unmerged	S	Load Claude user and project settings sources
+1326	merged	L	feat: add word wrapping setting and in-panel button
+1333	closed-unmerged	XXL	Fix file explorer issues: visibility, defaults, and state persistence
+1334	merged	S	fix(claude): load Claude SDK filesystem setting sources
+1337	closed-unmerged	XL	feat(web): add local typography settings
+1345	closed-unmerged	M	Collapse work log groups by default
+1358	closed-unmerged	L	Add configurable default provider and model
+1359	merged	XXL	Add thread archiving and settings navigation
+1400	merged	XS	fix(desktop): default confirm dialog selection to "No"
+1411	closed-unmerged	L	Disallow PR creation from the default branch
+1421	merged	XXL	Make server settings authoritative for runtime behavior
+1428	closed-unmerged	XL	Add changelog dialog with GitHub releases in settings
+1443	closed-unmerged	XXL	Make server settings authoritative and preserve draft thread routes
+1466	merged	S	fix(claude): avoid resetting the Claude model on every turn
+1477	closed-unmerged	L	Add assistant response copy action with copy format setting
+1503	merged	S	Tighten settings nav and add Escape back navigation
+1535	closed-unmerged	L	Add colorblind mode setting
+1538	merged	L	Fix model settings getting stuck
+1545	closed-unmerged	L	Add colorblind mode setting
+1550	closed-unmerged	XXL	Add appearance settings with themes and accent colors
+1552	closed-unmerged	XS	fix(web): add safe-area-top padding to settings header on mobile
+1572	closed-unmerged	L	Add configurable terminal font setting
+1589	closed-unmerged	XL	Add terminal profile settings groundwork
+1593	closed-unmerged	XXL	Publish server settings schema with release versions
+1661	closed-unmerged	L	Feat(web,server): respect Claude gitignore settings in @ picker and show partial results
+1677	closed-unmerged	L	feat: resolve Claude Code plugins from settings and pass to Agent SDK
+1685	closed-unmerged	L	feat(settings): bulk select and actions for archived threads
+1705	merged	L	Persist server OTLP tracing settings across restarts
+1710	merged	M	fix: show restore defaults only on General settings
+1732	closed-unmerged	XXL	feat: display provider usage limits in settings
+1761	closed-unmerged	L	Git Sync Settings - Credential Prompt Control
+1792	closed-unmerged	M	Use Codex defaults for custom model capabilities
+1793	merged	M	Assign default capabilities to Codex custom models
+1816	closed-unmerged	XL	Add scoped typography settings
+1842	merged	XS	[codex] Fix settings browser test panel mounting
+1846	closed-unmerged	XS	fix(server): prefer pwsh as the default Windows terminal
+1868	merged	XXL	Persist client settings and saved environment secrets
+1891	merged	L	Harden secret store and resolve catalog overrides
+1923	closed-unmerged	M	feat: add setting to control default project expansion on startup
+1926	closed-unmerged	XL	add configurable worktree location settings
+1966	merged	XS	fix(git): hide stale merged/closed PRs on the default branch
+1971	merged	L	feat: add Launch Args setting for Claude provider
+2003	merged	S	Fix new-thread draft reuse for worktree defaults
+2014	closed-unmerged	L	feat(web): extract appearance settings to a separate tab
+2049	merged	L	Default nightly desktop builds to the nightly update channel
+2070	closed-unmerged	L	feat(settings): add UI and code font settings
+2076	merged	M	fix(server): drop stale text generation options when resetting text-gen model selection
+2092	closed-unmerged	M	fix(web): improve code block copy button for mobile and add position setting
+2099	merged	S	fix: guard against missing sidebarProjectGroupingOverrides in client settings
+2159	closed-unmerged	L	Add desktop title bar mode settings
+2174	closed-unmerged	XXL	feat(web): Appearance settings tab with font-size slider + live preview
+2180	merged	M	Collapse long user messages by default
+2211	closed-unmerged	XXL	Add preferred Pi model settings and pickers
+2314	merged	M	Add task sidebar auto-open setting
+2335	closed-unmerged	M	feat(settings): add submit key configuration for message sending
+2350	closed-unmerged	L	Add model favorite ordering and visibility settings
+2355	closed-unmerged	XXL	fix(ui): break second render loop in useSettings selector (React #185)
+2381	closed-unmerged	XL	Add sidebar project colors setting
+2385	closed-unmerged	XS	fix(desktop): filter out stale custom models in settings panel
+2421	merged	XS	fix(settings): disable auto-open of task sidebar by default
+2452	merged	XL	Refactor provider settings to declarative metadata
+2510	closed-unmerged	XXL	unify schema-driven settings forms
+2533	merged	XXL	Add keybindings settings editor
+2567	closed-unmerged	XXL	Add per-project settings
+2587	merged	XS	[codex] Fix sidebar preview settings reset
+2629	merged	M	Stabilize project grouping settings selector
+2690	closed-unmerged	M	fix(server): force Claude 200k context when selected/(default)
+2721	closed-unmerged	L	Personal fork setup: .bnpnecode home dir, worktree default, .env* carryover
+2746	closed-unmerged	L	Add provider profiles to settings
+2747	closed-unmerged	L	Add provider profiles to settings
+2756	closed-unmerged	M	Add Codex config profile setting
+2757	merged	S	fix(ux): spamming cmd + , no longer stack opening settings
+2792	closed-unmerged	L	Optimize settings sidebar nav rerenders
+2800	closed-unmerged	M	feat(pi): add Pi provider settings and runtime support
+2892	merged	L	Add Codex launch arguments setting
+2903	closed-unmerged	L	Add "Context menu style" setting
+2912	closed-unmerged	L	fix: restore missing settings variable in ChatView
+2960	merged	XS	Prevent settings layout shifts with scrollbar gutters
+3086	closed-unmerged	L	Add configurable default access mode for new threads
+3100	merged	L	fix(settings): validate the add-provider wizard step before advancing (#2813)
+3169	merged	XXL	Add diff scope switching and provider update settings
+3188	merged	XL	[codex] Refactor desktop settings Effect services
+3216	merged	L	[codex] Make settings environment-scoped by default
+3232	merged	S	[fix/feat:ui] Show default option badge
+3265	merged	M	[codex] Simplify desktop client settings errors
+3376	merged	L	[codex] Structure server settings failures
+3379	merged	M	[codex] Structure desktop backend settings read errors
+3391	merged	M	[codex] Structure mobile notification setting failures
+3432	merged	S	[codex] Diagnose desktop client settings read failures
+3480	merged	M	feat: add persistent word-wrap setting for chat code blocks and tables
+3481	closed-unmerged	S	fix(cursor): default binary path to cursor-agent  PR Description
+3487	closed-unmerged	XXL	Add reusable integrations settings foundation
+3531	merged	XS	[codex] Fix provider update checks restore defaults
+3534	closed-unmerged	S	[codex] fix: keep settings Escape local to edit fields
+3536	merged	S	Reduce ChatMarkdown settings rerenders
+3614	closed-unmerged	L	feat(settings): add archived thread bulk actions
+3615	closed-unmerged	L	feat(settings): add archived thread bulk actions
+3620	merged	M	Add Claude Sonnet 5 as the default Claude model
+3695	merged	XXL	fix(mobile): Android build OOM fix + home/menu/settings chrome polish
+3745	closed-unmerged	M	Optimize client settings selector rerenders
+3838	closed-unmerged	S	fix(cursor): default binary path to cursor-agent
+3842	merged	M	Fix project action preview settings persistence
+3852	closed-unmerged	M	Serve stack-specific default project favicons
+3854	closed-unmerged	M	feat: serve stack-specific default project favicons
+3946	closed-unmerged	L	Add configurable terminal font settings
+3950	closed-unmerged	M	feat(server): default Claude context window to 1M
+3957	closed-unmerged	XXL	WIP: Better defaults for worktree vs local checkout
+3958	closed-unmerged	M	fix: default new worktrees to latest origin main
+3974	merged	M	Default diffs to working changes
+4052	closed-unmerged	S	Prevent unrelated client settings rerenders
+4094	merged	S	fix(cursor): default binary path to cursor-agent (avoid path conflict w/ grok)
+4117	merged	L	fix(web): default provider selection for users without Codex
+4204	merged	XL	feat: add configurable source control writing settings
+4240	merged	L	fix: better defaults — Claude 1M context, Codex gpt-5.6, worktrees from origin main
+4242	merged	S	fix(server): respect inherited OPENCODE_CONFIG_CONTENT
+4276	merged	M	fix(web): new-thread defaults ignored for remote environments
+4313	merged	L	[codex] Move project grouping to General settings
+4315	merged	L	[codex] Move mobile project grouping to General settings
+4377	closed-unmerged	L	feat(web): add UI and code font family settings
+4384	closed-unmerged	XL	Add complete archive workflows to the default sidebar
+4409	merged	L	feat(web): collapse large git diffs by default to make chat more readable
+4411	merged	XL	Stop new threads inheriting checkout/branch from viewed thread
+4419	closed-unmerged	L	Honor XDG base directories for data and settings
+4449	closed-unmerged	XXL	[WIP] feat(usage): local usage analytics — ledger, RPC, settings page
+4479	merged	XXL	feat(web): per-device provider settings
+4481	closed-unmerged	L	feat(web): add transcript presentation settings
+4491	merged	L	feat: default sidebar v2 on for nightly and dev builds
+4494	closed-unmerged	L	Keep rapid settings edits from reverting each other
+4510	closed-unmerged	XS	fix(claude): map 'auto' runtime mode to 'default' permission mode
+4559	closed-unmerged	XXL	Target server settings by environment
+4563	closed-unmerged	M	fix(web): restore thread ID copy in the default sidebar
+4567	closed-unmerged	L	Separate client and environment settings
+4616	closed-unmerged	L	feat(web): add a reset-all button to keybindings settings
+4618	closed-unmerged	S	feat(codex): enable input dialogs in default mode
+4682	merged	XL	feat(web): add settings sidebar search
+4686	merged	L	Add OTA update checks to mobile settings
+4715	merged	L	feat(web): add appearance settings category
+4717	merged	M	Make mobile Thread List v2 the default
+4719	closed-unmerged	L	feat(web): add chat font size setting
+4784	merged	S	fix(composer): hide default Codex service tier
+4806	merged	XS	Fix Connect sign-in settings label
+4870	closed-unmerged	XXL	feat(web): add a Shortcuts tab to the Avi Code settings page
+4899	merged	S	fix(mobile): prevent crash on sign out in settings
+4957	closed-unmerged	M	fix(web): let provider icons inherit control color
+4964	merged	M	fix(web): keep worktree default when switching a draft's machine
+4981	merged	S	fix(mobile): explain iOS-only settings on Android
+4990	merged	S	fix(mobile): default bare IP pairing to HTTP
+5008	merged	M	perf(server): cache default branch name and origin existence across status refreshes
+5054	merged	L	fix(desktop): claim the t3code:// scheme default on Linux at startup
+5067	closed-unmerged	S	fix(desktop): stop AppImage from contaminating XDG_DATA_DIRS and GSETTINGS_SCHEMA_DIR in spawned terminals
+5068	merged	XS	fix(web): hide T3 Connect toggle in web app settings
+5075	merged	S	fix(server): scrub AppImage XDG_DATA_DIRS and GSETTINGS_SCHEMA_DIR from terminals
+5092	closed-unmerged	XL	feat(web): default Open in app plus a per-project override
+5103	merged	XXL	feat(web): configurable fonts and sizes under Settings → Appearance
+5227	closed-unmerged	XXL	feat(settings): list the MCP servers Claude Code loads
+5257	closed-unmerged	XS	fix(codex): inherit environment for personal skills
+5381	closed-unmerged	L	feat(settings): default agents to provider-native visual tools
+5397	merged	L	fix(web): keep terminal font settings reliable
+5567	closed-unmerged	L	fix(server): respect Codex default-mode user input
+5625	merged	XXL	feat(mobile): one sheet for model and thread settings
+5628	merged	M	fix(web): inherit terminal size in simple typography
+5642	closed-unmerged	L	fix(web): avoid freezing appearance font settings
+5672	merged	XXL	feat: sidebar v2 is now the default sidebar
+5692	closed-unmerged	L	fix(web): point settings panels at a connected device
+5768	merged	XXL	feat(web): overhaul project settings into a real settings page
+5802	merged	XL	feat(swift-ios): default new tasks to recent project
+5811	closed-unmerged	L	fix(server): exclude inherited Codex fork usage
+5832	closed-unmerged	L	feat(web): settings only show up where they can actually be saved
+5841	merged	XS	fix(web): match settings search shortcut styling to command palette's
+5892	closed-unmerged	M	fix(mobile): sort projects by recent activity to fix new task default
+5923	merged	XL	Move project settings to contextual project routes
+5928	merged	XS	fix(web): enable restore defaults after theme mix changes
+5929	merged	L	Add settings and usage breadcrumbs
+5930	merged	S	Retain thread sidebar data when navigating to /settings so back navigation is instant
+5950	closed-unmerged	M	fix(server): respect OpenCode's configured default agent
+5989	merged	L	fix(clients): default clone destination to folder plus repo name
+5990	closed-unmerged	XS	fix(server): respect Codex default-mode user input
+6011	merged	L	fix(clients): honor project default models in new threads
+6013	merged	XS	feat(web): add duplicate action to the T3 Code default theme
+6088	closed-unmerged	L	fix(web): scope source control settings by environment
+6100	closed-unmerged	L	feat(web): default panel layout for new project chats
+6125	closed-unmerged	L	feat(terminal): let users choose their default shell
+6151	closed-unmerged	M	feat(web): use self-hosted Inter as Windows default font
+6172	merged	L	fix(web): restore typography font sizes to defaults
+6224	merged	XXL	Nest mobile task settings in bottom sheets
+6226	closed-unmerged	M	fix(web): hide archive confirmation in settings with new sidebar
+6230	merged	S	web/settings: fix source control scan on relay environments
+6236	merged	S	fix(desktop): agent shells inherit a UTF-8 locale on macOS
+6287	closed-unmerged	M	feat(sidebar): reset width on double-click with viewport-based default
+6426	closed-unmerged	L	fix(mobile): hide inapplicable model settings in the picker
+6480	closed-unmerged	S	fix(web): preserve project filter through settings
+6520	merged	L	fix(mobile): show a real settings cog in the Android sidebar header
+6526	merged	M	fix(web): restore the Archive action in the default sidebar thread menu
+6535	merged	L	fix(web): restore default stage artwork colors
+6543	merged	M	fix(mobile): steer active turns by default
+6593	closed-unmerged	L	fix(web): honor project default model on desktop new threads
+6611	closed-unmerged	S	fix(web): move settings back action to the top
+6617	closed-unmerged	XXL	feat(mobile): themes with appearance override and custom import
+6621	closed-unmerged	S	fix(web): separate the settings search from the nav rows
+7066	closed-unmerged	XL	feat(web): add turn completion sound with settings toggle
+7078	merged	S	fix(server): fall back to the remote default branch instead of assuming main
+7082	merged	XL	feat(web): configurable browser defaults in Settings → Integrations
+7089	merged	XS	fix(server): enable the Cursor provider by default like every other provider
+7093	closed-unmerged	XS	fix(web): indent auto-settle inactivity setting
+7108	closed-unmerged	XS	fix(web): add back navigation to project settings
+7238	closed-unmerged	L	fix(server): exclude inherited Codex child usage
+7266	closed-unmerged	L	feat(mobile): add Plan Mode to new task settings
+7317	merged	M	fix(server): avoid PRs inherited from default upstreams
+7355	merged	S	feat(swift-ios): show build identity in settings
+7363	closed-unmerged	M	fix(desktop): inherit Claude Bedrock environment
+7394	closed-unmerged	M	fix(vcs): resolve the default branch from the remote, not a stale origin/HEAD
+7430	closed-unmerged	S	fix(web): use the styled tooltip for the sidebar project settings button
+7511	closed-unmerged	M	fix(web): new threads honor the project default model
+7515	closed-unmerged	M	fix(web): new threads honor the project default model
+7551	closed-unmerged	S	fix(web): let new threads honor the project's default model
+7614	closed-unmerged	XXL	feat(swift-ios): show what's new for the running build in Settings
+7725	merged	XS	fix(contracts): reconcile provider default tests
+7735	closed-unmerged	XS	fix(server): pin the Claude CLI verbose setting for text generation
+7744	closed-unmerged	M	fix(web): keep sidebar stable after settings
+7760	merged	M	fix(clients): default GitHub clones to HTTPS
+7863	closed-unmerged	XXL	feat(opencode): use native OpenCode 2 by default
+7864	closed-unmerged	S	fix(web): keep thread sidebar populated across Settings round-trips
+7895	merged	XXL	fix(swift-ios): clean up settings, environments, and thread actions
+8024	closed-unmerged	XXL	feat(settings): add worktree storage management
+8047	closed-unmerged	XL	feat: panel side setting, hidden-file browsing, media previews, and video attachments
+8088	merged	L	feat(web): add pull request merge defaults
+8167	closed-unmerged	L	fix(web): keep project order when starting threads from settings
+8168	merged	XS	fix(web): add back button to project settings
+8174	closed-unmerged	XL	feat(web): keybinding settings as settings rows
+8184	closed-unmerged	S	fix(web): stop worktree drafts inheriting checkout branch
+8277	closed-unmerged	L	fix(settings): keep the rest of settings.json when one provider instance is malformed
+8370	closed-unmerged	XS	fix(server): honor the provider update opt-out when settings cannot be read
+8372	closed-unmerged	L	feat(web): setting to keep the terminal from taking focus automatically
+8380	merged	XL	feat(web): split provider settings into list and editor
+8438	closed-unmerged	L	fix(desktop): resolve WSL distro IP from the default route, not hostname -I order
+8472	merged	M	fix(web): stabilize the provider settings editor
+8482	closed-unmerged	M	fix(web): let empty-provider composer open settings
+8504	merged	L	fix(web): clean up provider settings list and editor
+8532	merged	XL	feat(web): keybinding settings as settings rows
+8542	closed-unmerged	L	feat(desktop): add open at login setting
+8543	closed-unmerged	XS	fix(web): open provider settings on the Models tab
+8596	merged	L	fix: restore automatic thread settling defaults
+8603	merged	XS	Require human review for pull requests changing product defaults
+8672	closed-unmerged	M	fix: clear implicit project model defaults
+8765	closed-unmerged	XXL	feat(settings): centralize VibeProxy configuration
+8791	closed-unmerged	M	fix(mobile): default non-git projects to the current checkout
+8831	merged	XL	feat(web): search individual settings by detail
+8837	closed-unmerged	L	fix(clients): inherit model preferences for unconfigured projects
+8881	merged	M	fix(web): make WSL settings searchable
+8908	closed-unmerged	L	fix(claude): isolate capability probe settings
+8913	closed-unmerged	L	fix(codex): honor configured provider model defaults
+8917	merged	XS	chore(macroscope): review diagnostic overrides
+8925	merged	M	feat(web): open project settings from thread menus
+8962	merged	XXL	feat(settings): add open source license notices
+8970	merged	L	fix(settings): simplify open source license notices
+9030	closed-unmerged	XS	fix(web): keep start-from-origin setting visible
+9050	closed-unmerged	S	fix(web): preserve project scope through settings
+9142	merged	L	fix(web): project default model works on the hosted app
+9147	merged	L	fix(settings): sync auto-settle and other shared preferences across environments
+9160	merged	S	fix(web): compact project settings actions
+9174	merged	XS	fix(pull-requests): expand code tab diffs by default
+9207	merged	S	fix(web): warn when shared settings have no target environment
+9221	open	L	fix(server): reset terminal modes a dead shell leaves in inherited history
+9231	closed-unmerged	M	feat(web): add wider scrollbar accessibility setting
+9271	merged	XS	fix(server): subscribe before provider settings watcher
+9277	merged	L	feat(projects): automatically pull clean default branches
+9281	merged	L	fix(web): unify control sizing across settings pages
+9314	merged	M	fix(sidebar): collapse settled and snoozed shelves by default
+9326	merged	M	fix(web): make the diff layout toggle a persisted setting
+9339	merged	L	feat(web): choose whether links open in the default browser or in T3 Code
+9354	merged	XL	feat(web): reorganize settings pages
+9356	open	L	fix(settings): report rejected shared-settings writes on every environment
+9381	merged	L	fix(mobile): skip unsupported shared settings targets
+9457	merged	M	fix(web): make project icons the default
+9470	closed-unmerged	M	feat(web): add a setting to keep the composer from collapsing at rest
+9503	closed-unmerged	L	feat(settings): add a worktree directory setting
+9562	merged	XS	fix(web): make settings sidebar sub-section buttons full width
+9563	merged	M	fix(web): render settings sidebar immediately
+9598	closed-unmerged	M	feat(web): show usage limits and reset credits in provider settings
+9599	merged	L	refactor(web): move usage provider controls to settings
+9604	closed-unmerged	XS	fix(web): widen provider settings
+9619	merged	L	fix(web): match provider settings layout for disconnected devices
+9640	closed-unmerged	L	feat(server,contracts): add Claude advisor model setting
+9686	closed-unmerged	M	fix(web): show reasoning settings on hover
+9743	merged	M	fix(web): show project settings for new threads
+9754	merged	XXL	feat(settings): add shared project defaults and scoped overrides
+9763	merged	XS	fix(web): reset automatic pull to default
+9811	merged	S	fix(web): smooth settings sidebar transitions
+9812	merged	L	feat(web): highlight visible settings sections
+9933	merged	L	fix(settings): share restart continuation across environments
+9957	closed-unmerged	XS	fix(codex): prefer GPT-6 Astra by default
+9968	merged	XS	test(contracts): keep driver default lookup private
+10000	merged	XS	refactor(mobile): keep review default ID helper private
+10004	merged	XS	refactor(shared): keep persisted settings helpers private
+10021	merged	S	fix(web): add project settings to legacy sidebar project menu
+10025	merged	M	fix(server): keep the native Grok default model
+10060	merged	L	fix(web): honor terminal link browser overrides
+10065	merged	S	test(server): remove keybinding default assignment snapshot
+10080	merged	XS	fix(web): let authorized clients scrolling reach settings
+10121	closed-unmerged	L	refactor(server): normalize provider settings before use
+10126	closed-unmerged	XS	docs: correct the project settings navigation path
+10170	merged	M	refactor(contracts): keep unused settings and relay exports private
+10177	merged	S	style(web): fix inconsistencies in new settings layouts
+10203	closed-unmerged	L	feat(settings): add environment default model
+10204	closed-unmerged	L	feat(settings): add provider permission defaults
+10205	closed-unmerged	M	fix(mobile): release confirmed thread model overrides
+10215	closed-unmerged	M	fix(provider): retry the Claude capability probe without --settings
+10262	merged	XS	fix(web): keep settings inputs focused during IME composition
+10307	merged	XS	test(web): keep settings viewport comparison private
+10328	closed-unmerged	L	fix(settings): preview shared preference differences before applying
+10380	closed-unmerged	L	feat(files): add a setting to show gitignored files
+10384	closed-unmerged	M	feat(web): show provider usage limits and reset credits in settings
+10415	merged	S	fix(web): keep settings section headings description-free
+10524	closed-unmerged	M	fix(web): highlight only the active settings section
+10570	merged	L	fix(web): make settings project scopes searchable and scrollable
+10571	merged	L	fix(web): align provider settings with shared settings rows
+10589	closed-unmerged	L	feat(settings): configure directory defaults per server
+10595	closed-unmerged	L	feat(projects): apply model defaults to existing projects
+10618	closed-unmerged	M	fix(web): highlight the centered settings section
+10636	merged	XL	feat(web): pick settings environment and project as two selects
+10638	closed-unmerged	XXL	feat(settings): keep scope across pages and isolate environment edits
+10639	merged	XXL	feat(settings): edit any scopable setting as a project override
+10705	merged	L	fix(web): stop the settings sidebar shifting when switching pages
+10729	closed-unmerged	L	feat(settings): allow configuring hosting CLI paths
+10811	closed-unmerged	L	feat: default project access mode with machine default
+10843	merged	XXL	fix(swift-ios): apply audit findings across transport, home, chat, and settings
+10974	closed-unmerged	XXL	feat(review): configurable review language and default reasoning effort
+11026	merged	S	fix(server): let Claude launch args override the derived permission mode
+11028	closed-unmerged	M	feat(settings): add a toggle for draft GitHub pull requests
+11056	closed-unmerged	XS	fix(server): raise the macOS service open-file limit above the launchd default
+11171	closed-unmerged	XL	feat(web): redesign provider settings
+11176	merged	XL	feat(settings): add per-project overrides for scopable server settings
+11197	closed-unmerged	L	feat(server): add setting to create draft change requests
+11218	merged	M	Allow setting T3CODE_OTLP_HEADERS
+11232	closed-unmerged	L	fix(server): apply Effect overrides at pinned-runtime install root
+11261	merged	S	feat(web): open Usage on the Limits tab by default
+11337	merged	S	fix(web): stop question answers from resetting the editor caret
+11346	merged	L	feat(settings): configure default permissions for new threads
+11347	merged	S	fix(models): default to astra medium and fable 5.1 medium
+11406	closed-unmerged	M	fix(web): preserve checkout when opening project settings
+11457	closed-unmerged	M	feat(mobile): expose Android Live Update chips and settings
+11475	closed-unmerged	XXL	feat(providers): install Codex, Claude, and OpenCode from settings
+11484	merged	M	feat(web): choose the default diff file state
+11538	merged	M	chore(mobile): enable noUncheckedIndexedAccess and noImplicitOverride
+11540	merged	L	feat(mobile): show startup crashes in Settings → Diagnostics
+11541	merged	XL	fix(web): apply device settings to selected environments
+11594	merged	L	feat(web): add chat width setting for wide screens
+11598	merged	XXL	feat(settings): add automatic storage cleanup per machine and project
+11621	closed-unmerged	S	fix(web): allow changing keybindings in settings
+11653	closed-unmerged	L	feat(settings): allow configuring hosting CLI paths
+11663	closed-unmerged	S	fix(web): remember the last settings tab in memory
+11678	merged	L	feat(settings): choose how responses stream, with a warning on legacy token mode
+11689	merged	L	feat(swift-ios): show native crash reports in settings
+11691	merged	XL	feat(swift-ios): add project settings and response streaming controls
+11712	closed-unmerged	L	feat(settings): pinned threads stay active unless auto-settle pinned threads is on
+11717	closed-unmerged	M	feat(settings): per-project thread title instructions
+11747	closed-unmerged	L	feat(settings): customize worktree locations
+11803	closed-unmerged	M	feat(web): add project monogram color setting
+12004	closed-unmerged	XXL	Sorry, Slop PR. gh cli shouldn't target upstream by default :(
+12090	closed-unmerged	M	feat(web): restore per-checkout grouping in project settings
+12095	closed-unmerged	M	fix(web): move context window indicator out of legacy settings
+12101	closed-unmerged	M	fix(web): show the context window meter by default and keep it a normal setting
+12138	merged	M	fix(web): adapt provider settings to available content width
+12139	merged	M	fix(web): default diff panel to working tree
+12158	merged	XS	fix(web): align settings page widths
+12160	merged	XXL	feat(web): enable rich text composer by default
+12164	closed-unmerged	M	feat(web): make keybindings searchable in settings search
+12167	merged	S	fix(web): align follow-up and license settings controls
+12175	merged	M	feat(web): make keybindings searchable from settings search
+12190	merged	XS	fix(diff): collapse files by default
+12194	closed-unmerged	XL	feat(web): environment Skills settings section
+12195	closed-unmerged	XL	feat(web): override the skill list for one project
+12201	closed-unmerged	XXL	feat(web): localize remaining settings screens
+12203	closed-unmerged	M	feat(settings): allow custom thread title instructions
+12258	closed-unmerged	L	feat(settings): exclude PR-linked threads from inactivity settlement
+12272	merged	XXL	feat(mobile): make Settings easier to navigate and scope
+12280	open	M	feat(web): add project settings context menu to the draft headline
+12282	merged	XS	fix(mobile): use singular label for one settings environment
+12312	closed-unmerged	S	fix(mcp): default preview_snapshot to text-only output
+12349	merged	L	refactor(mobile): share settings choice row defaults
+12356	merged	L	fix(mobile): share settings control row layout
+12360	merged	M	refactor(web): share settings group surfaces
+12362	merged	S	refactor(web): reuse inline settings actions
+12366	merged	L	fix(mobile): share request action button defaults
+12369	merged	L	fix(mobile): share settings action row defaults
+12384	merged	L	refactor(mobile): split settings selection rows by platform
+12438	merged	L	fix(web): honor whitespace settings in pull request diffs
+12487	merged	L	fix(server): restore secrets when settings persistence fails
+12512	merged	L	fix(mobile): use native settings and snooze controls
+12530	closed-unmerged	XL	fix(settings): scheduled-task saves only write the fields that changed
+12552	merged	XS	fix(web): restore providers settings heading
+12559	closed-unmerged	S	feat(server): allow environment label override
+12564	closed-unmerged	L	feat(mobile): remove projects from the thread list and project settings
+12601	closed-unmerged	M	feat(server): make the pull request lookup interval a background activity setting
+12657	merged	M	refactor(observability): hold OTLP export settings per signal
+12662	closed-unmerged	M	docs: require acknowledged settings completion
+12675	closed-unmerged	L	feat(contracts): environment icon overrides carry emoji, monogram, and image
+12708	closed-unmerged	XXL	feat(settings): make large archives easier to manage
+12741	closed-unmerged	L	feat(settings): detect GitButler on the server
+12788	closed-unmerged	L	feat(settings): port PR-aware inactivity settlement to orchestration v2
+12822	merged	L	feat(web): group keybindings settings by area with a page toolbar
+12874	closed-unmerged	L	fix(web): await provider settings persistence
+12954	merged	XL	feat(settings): resolve t3.json inside the project settings resolver
+12955	merged	L	feat(settings): choose how new worktrees initialize submodules
+12984	merged	M	refactor(web): drop className overrides that repeat the base styles
+12988	closed-unmerged	M	refactor(web): fold repeated overrides into ui defaults
+13021	merged	M	refactor(web): fold repeated overrides into ui defaults
+13091	closed-unmerged	XS	fix(connections): preserve SSH alias overrides across reconnects
+13092	closed-unmerged	S	feat(auth): make the default session lifetime configurable
+13098	merged	XS	fix(web): read panel animation settings in the composer
+13099	closed-unmerged	S	fix(web): name the environment Providers edits in the settings scope
+13120	closed-unmerged	M	fix(web): settings Back and Escape leave settings in one step
+13136	closed-unmerged	S	fix(server): refresh session settings when resuming settled threads
+13139	merged	XL	feat(web): show settings scope as a sentence at the top of the page
+13148	merged	XS	chore(mobile): drop dead nitro-markdown tgz override and @expo/metro-runtime
+13149	merged	XL	perf(mobile): recycle the default v2 home list and scope the snooze minute tick
+13154	closed-unmerged	L	feat(web): put new-thread defaults and overrides back on the Project page
+13165	merged	XS	refactor(web): move settings scope pickers into breadcrumbs
+13236	closed-unmerged	S	fix(web): use marketing Antigravity icon in settings
+13243	closed-unmerged	L	feat(settings): choose the branch prefix for new worktrees
+13245	closed-unmerged	L	feat(settings): choose the branch prefix for new worktrees
+13248	closed-unmerged	L	feat(settings): choose the branch prefix for new worktrees
+13250	closed-unmerged	L	feat(settings): choose the branch prefix for new worktrees
+13257	closed-unmerged	XS	fix(settings): explain that provider update checks also fetch model catalog updates
+13258	closed-unmerged	L	fix(models): defer effort and context to provider settings
+13330	open	S	fix(web): stop listing a built-in model twice in provider settings
+13351	open	XS	fix(clients): default GitLab clones to HTTPS
+13359	open	S	fix(server): terminals no longer inherit the launching tmux session
+13458	closed-unmerged	L	feat(settings): allow disabling usage analytics
+13479	open	M	fix(web): settings shows the model a hidden default falls back to
+13510	closed-unmerged	M	fix(web): import agent sessions from project settings after onboarding
+13563	merged	M	fix(relay): stop forcing manual relay deploys by default
+13860	closed-unmerged	L	feat(web): commit and PR generation failures name the model and offer Settings
+13921	closed-unmerged	M	fix(web): default-branch confirmation keeps its copy while closing
+13985	closed-unmerged	S	fix(server): allow environment label override
+14065	closed-unmerged	S	feat(web): steer follow-ups by default
+14078	closed-unmerged	L	fix(settings): let users turn version control off
+14087	closed-unmerged	L	fix(settings): let users turn version control off
+14091	closed-unmerged	L	fix(settings): let users turn version control off
+14101	closed-unmerged	M	fix(web): move Settings Back button to the top of the sidebar
+14103	merged	XL	feat: save Bitbucket credentials from Source Control settings
+14193	open	M	fix(models): default Claude Sonnet 5.5 to its shipped medium effort
+14279	closed-unmerged	M	feat(desktop): setting to mute new browser previews
+14291	open	M	fix(server): repository identity prefers the gh default remote
+14300	open	M	fix(server): respect Forgejo branch deletion settings on merge
+14308	closed-unmerged	XXL	feat(sidebar): order active threads by last activity by default
+14410	closed-unmerged	L	fix(web): project settings can split a checkout out of its group again
+14445	open	S	fix(models): Claude Haiku 4.5 shows thinking on by default
+14493	open	M	fix(web): keep grouped project icons consistent in settings
+14529	merged	XS	fix(build): desktop and CLI builds resolve catalog overrides on selectors
+14548	merged	S	fix(web): hotkey settings record plain keys and Tab
+14642	merged	M	feat(settings): inactivity auto-settle can keep threads with a PR
+14710	merged	XS	fix: remove outdated restart setting update advice
+14728	closed-unmerged	S	fix(web): sidebar update pill shows updates on non-default provider instances
+14729	open	XL	fix(server): a restart that never starts settles the work its run inherited
+14745	open	S	fix(web): sidebar update pill shows updates on non-default provider instances
+14756	merged	M	fix(mobile): project picker cards match the settings card color
+14773	closed-unmerged	XXL	feat: setting to anchor sent messages at the top of the timeline
+14807	closed-unmerged	L	feat(mobile): optional send-immediately setting for iPhone voice input
+14844	closed-unmerged	L	fix(projects): make the local folder default easier to change
+14915	merged	XS	fix(settings): Pi and ACP Registry no longer show an Early Access badge
+14918	merged	XS	fix(server): subagents no longer inherit parent pull-request links
+14927	closed-unmerged	XS	fix(codex): surface gpt-6-sol and default Codex to gpt-6.1-sol
+14957	closed-unmerged	M	fix(web): move context window indicator out of legacy settings
+14987	open	XS	fix(server): saving settings no longer loosens file permissions
+14998	closed-unmerged	S	fix(web): align semantic branch naming help with settings descriptions
+15009	merged	L	fix(settings): symlinked settings files stay linked when saved
+15012	closed-unmerged	L	fix(server): t3_project_update writes the settings new threads read
+15021	merged	XS	fix(server): Claude V2 turns start on Windows with the default binary path
+15066	open	L	feat(web): add a browser homepage setting
+15097	closed-unmerged	L	fix(server): Claude launch arg --settings merges with T3 settings
+15132	closed-unmerged	XS	fix(web): clarify fast mode availability in settings
+15174	open	L	fix(client-runtime): threads archived by agents now show in Settings → Archive
+15206	open	L	fix(models): defer effort and context to provider settings
+15242	closed-unmerged	XS	fix(mobile): archived threads start at the settings content inset
+15387	open	L	fix(desktop): relaunch on Linux without setting no_new_privs
+15393	open	M	fix(server): Changes totals compare the default branch with its tracking upstream
+15445	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15465	closed-unmerged	XXL	feat(server): MCP tools for settings, providers, git, pull requests, terminals, projects, pin order, and opening threads
+15511	closed-unmerged	L	feat(contracts): environment icon overrides carry emoji, monogram, and image
+15575	open	M	fix(web): Usage hourly labels follow the Time format setting
+15594	merged	S	fix(server): honor submodule settings when creating worktrees
+15623	open	M	fix(codex): display inherited service tiers across models
+15681	open	M	fix(desktop): Linux AppImage settings restarts launch a fresh instance
+15773	closed-unmerged	M	feat(web): opt-in setting to compact idle threads before sending
+15860	open	M	feat(web): open project settings from the new thread project picker
+15912	closed-unmerged	L	feat(desktop): let below-default glass opacity make the window see-through
+15958	merged	L	fix(mobile): make the routes list match the other settings rows
+15964	open	L	fix(claude): Full access respects Claude settings that turn off bypass mode
+16011	open	XS	fix(client): default follow-up to queue so queued prompts wait
+16050	open	XXL	feat(server): typed plugin settings, write-only secrets and plugin storage
+16055	open	XXL	feat(web,mobile): manage plugins in Settings
+16056	open	XXL	feat(web,mobile): fill in plugin settings from Settings
+16057	open	XXL	feat(web,mobile): install and update plugins from npm in Settings
+16139	closed-unmerged	S	feat(mobile): enable the Working section by default
+16215	closed-unmerged	M	fix(server): scheduled tasks start fresh threads from the repository's default branch
+16234	closed-unmerged	L	feat: visual replies become an opt-in beta setting
+16356	closed-unmerged	L	feat(desktop): let below-default glass opacity make the window see-through
+16363	merged	XS	fix(server): main's settings, keybindings and session tests compile again
+16368	closed-unmerged	M	fix(server): Claude Full access falls back to Auto when settings disable bypass mode
+16383	closed-unmerged	S	fix(build): desktop artifacts resolve versioned override selectors
+16411	merged	S	fix(release): resolve version-qualified catalog overrides
+16417	closed-unmerged	XS	fix(web): thread details change counts follow the diff color setting
+16451	closed-unmerged	XL	feat(settings): choose a default worktree base ref
+16530	open	L	feat(cua): turn on computer use from settings on any host
+16546	open	XS	fix(web): composer follows an optionless thread instead of the settings default
+16560	closed-unmerged	L	fix(web): a cloned project's first worktree starts from its default branch
+16580	open	M	fix(server): provider settings saved during startup are no longer lost
+16585	closed-unmerged	L	feat(web): pull request links follow the "Open links in" setting
+16623	open	XS	fix(server): forks no longer inherit pull request watches
+16673	closed-unmerged	XXL	feat(i18n): add opt-in Simplified Chinese settings and navigation
+16679	open	L	fix(server): agent sessions no longer inherit the AppImage runtime environment
+16683	merged	L	feat(desktop): install the t3 command from Settings
+16763	closed-unmerged	L	feat(settings): add anonymous analytics opt-out
+16907	open	M	fix(web): default-branch confirmation keeps its copy while closing
+16931	closed-unmerged	XL	feat(server,web,desktop): enforce organization-managed settings
+16955	open	S	fix(web): Open in → Finder in the file preview opened the file in its default app instead of revealing it
+16958	merged	L	fix(settings): provider updates show live progress instead of a bare spinner
+16972	merged	S	fix(web): semantic branch naming hint lines up with its setting
+16978	closed-unmerged	M	fix(web): reveal Settings navigation on entry
+16983	open	S	fix(web,server): browser tabs follow the default appearance setting
+17001	closed-unmerged	S	fix(web): semantic prefix hint lines up with its settings row
+17101	open	XXL	feat: manage skills and MCP servers in Settings → Tools
+17107	closed-unmerged	S	fix(web): keep the semantic branch-naming note inside its settings row
+17113	closed-unmerged	M	feat(web): add setting to disable file path chips
+17120	open	L	perf(web): settings pages share one popover per page
+17121	closed-unmerged	XXL	perf(web): Settings loads only the General page on open
+17199	open	L	feat(desktop): add styled right-click menus via nativeContextMenus setting
+17221	closed-unmerged	M	feat(settings): per-project thread title instructions
+17234	closed-unmerged	M	feat(web): add a setting to turn off compact-before-send for old Claude threads
+17250	closed-unmerged	M	fix(server): background activity settings save without dropping the connection
+17285	closed-unmerged	XL	refactor(settings): drop the legacy per-driver providers map
+17294	closed-unmerged	XL	feat(web): add opt-in LaTeX rendering setting with Off, Readable and On modes
+17300	merged	XL	refactor(settings): drop the legacy per-driver providers map
+17348	merged	M	fix(web): timeline keeps live-following after returning from Settings
+17356	closed-unmerged	M	fix(acp): restore empty-valued default agent choices
+17396	merged	S	fix(web): find update settings from the command palette
+17440	open	XS	fix(server): SSH device-host tunnels no longer inherit ControlMaster
+17472	closed-unmerged	XL	feat(settings): per-project default base branch for new worktrees
+17507	closed-unmerged	L	feat(web): add a chat page scroll distance setting
+17521	open	M	feat(web): auto-assign accent color to non-default provider instances
+17587	merged	L	feat(desktop): T3 Code can be your default web browser on macOS
+17604	closed-unmerged	M	feat(provider): add Claude fork-subagents instance setting
+17760	closed-unmerged	L	test(server): share source control harness settings
+17835	merged	S	fix(pi): keep thinking defaults specific to each model
+17859	merged	M	fix(web): focus settings search with command-f
+17879	merged	XXL	feat(settings): providers can be turned on or off per project
+17901	merged	XXL	feat(source-control): host settings live on each host's definition, with a GitCafe token
+17909	open	XS	fix(server): storage cleanup finds the default branch when the remote has no HEAD ref
+17942	open	XL	feat(clients): set a default environment for each project
+18108	closed-unmerged	M	feat(settings): per-project thread title instructions
+18129	open	M	fix(server): background activity settings save without dropping the connection
+18190	merged	XS	fix(web): provider Runtime controls follow the settings row layout
+18208	merged	S	docs(settings): explain that provider update checks also gate the model catalog
+18226	closed-unmerged	XS	fix(client): steer follow-up messages by default
+18264	open	L	fix(web): Integrations settings show one Browser section, not two
+18279	merged	XS	fix(web): keybinding settings label Focus URL with a capitalized acronym
+18334	merged	M	fix(web): settings warn when an environment silently drops a setting
+18361	open	L	feat(settings): leave environments that can't store a setting out of its row
+18426	open	M	fix(web): preserve project settings during rapid saves
+18461	merged	L	fix(server): cap automatic thread continuations and turn them on by default
+18486	closed-unmerged	M	feat(web): a setting to opt out of compact-before-send on old Claude threads
+18503	open	S	fix(web): settings project picker lists only the chosen environment's projects
+18505	merged	XL	refactor(settings): centralize schema-declared secrets and inputs
+18511	merged	L	refactor(mobile): share themed toggle rows in settings
+18516	merged	L	refactor(mobile): share themed choice rows in settings
+18529	open	L	refactor(mobile): share settings action rows
+18540	open	XS	fix(mcp): default t3_thread_wait to 50 seconds so clients don't time out first
+18568	closed-unmerged	XL	feat(mobile): render Appearance with native settings controls
+18582	open	M	fix(server): settings saves no longer revert external edits to settings.json
+18589	open	M	fix(web): don't treat hidden models as unavailable when saving default model
+18661	open	L	feat(server): open paths in the default editor on Linux
+18692	open	M	fix(web): project settings no longer dead-ends on environments without the project
+18716	open	S	fix(web): the default-branch dialog no longer offers a feature branch it cannot create
+18781	merged	XS	fix(claude): default background text generation to haiku 5.5
+18840	merged	M	feat(server): rename built-in models from settings
+18903	open	S	fix(web): settings search reaches rows in collapsed sections
+18933	open	S	fix(pi): T3's orchestration guidance no longer overrides other extensions' prompt changes
+18993	open	L	feat(web): add chat settings to compact the work log and hide reasoning
+18994	closed-unmerged	M	feat(web): add a setting for single-line rows in the Working sidebar section
+19005	closed-unmerged	L	feat(web): setting to turn off compacting old Claude threads before sending
+19051	open	M	fix(server): provider settings changes now reach live sessions
+19054	closed-unmerged	M	fix(server): subagents drop pull request links they inherited from their parent
+19312	merged	XS	fix(web): settings save again after a stored value fails decode
+19330	merged	M	fix(acp): Copilot's default agent no longer disappears from the Agent menu
+19333	closed-unmerged	M	fix(server): external MCP launches use the environment's default model
+19373	open	L	fix(clients): scheduled task editors no longer default to a missing main branch
+19380	open	M	fix(server): external MCP calls inherit the environment default model
+19389	merged	M	fix(web): T3 Connect settings can repair a link that drifted to publish-only
+19496	closed-unmerged	XL	perf(all): settings parsing up to 6.7x faster, trace logging 2x
+19526	open	S	fix(server): reveal opens the default Windows file manager
+19541	open	XS	fix(server): storage cleanup tests pass with the macOS default TMPDIR
+19577	open	XS	fix(server): allow background activity settings patch in RPC authorization
+19680	open	M	fix(web): setup no longer locks hosted users out of Settings
