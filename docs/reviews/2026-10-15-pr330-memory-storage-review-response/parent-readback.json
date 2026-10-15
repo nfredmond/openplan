@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-15T18:00:22.995399+00:00",
+  "reviewCommit": "cd9663d7133689b820e4aa2339eb3c66a97c9490",
+  "reviewedDraft": "97c310944ecf694525798bcc7cdb30edb7832686",
+  "candidatePinsMatched": 30,
+  "reviewPinsMatched": 5,
+  "privatePublicResultsMatched": 2,
+  "fullReportProbeReadbackDriverRead": true,
+  "disposition": "R1/R2/R3 accepted for correction; no operating acceptance",
+  "correctionTask": "node:delegated-task:command%3Amcp%3A3f015e30-501a-44ae-80ba-38a5ed25d5ba%3Athread-send%3Asol-pr330-memory-preview-final-rebinding-20261015-round2",
+  "changesToCandidate": false,
+  "freshProbes": 0,
+  "cacheApproval": "pending, no deletion",
+  "operatingStages": 0
+}
