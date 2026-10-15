@@ -1,0 +1,188 @@
+{
+  "testedHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "rowRepair": {
+    "source": "2cd8483ce577caceccbb018af0d6b962074b24c8",
+    "joinedAs": "8e4484e972b6c3a477f2ec3026b4c2232df76028"
+  },
+  "reportTestRepair": {
+    "source": "276744c2d04e072454c596c6ebdf7b0a54fa4c21",
+    "joinedAs": "21510042e94bcaf80f262205ad156a7bb639e35c"
+  },
+  "attempt01": {
+    "before": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "status": "",
+      "resources": {
+        "memory.max": "6442450944",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.peak": "18063360",
+        "memory.swap.current": "0",
+        "cpu.max": "100000 100000"
+      }
+    },
+    "after": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "status": "",
+      "resources": {
+        "memory.max": "6442450944",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.peak": "4615688192",
+        "memory.swap.current": "0",
+        "cpu.max": "100000 100000"
+      }
+    },
+    "command": [
+      "/usr/bin/bwrap",
+      "--die-with-parent",
+      "--unshare-net",
+      "--ro-bind",
+      "/",
+      "/",
+      "--bind",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01",
+      "--tmpfs",
+      "/tmp",
+      "--dev",
+      "/dev",
+      "--proc",
+      "/proc",
+      "--chdir",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/home",
+      "NODE_OPTIONS=--max-old-space-size=4096",
+      "XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/cache",
+      "/usr/bin/node",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/node_modules/typescript/bin/tsc",
+      "--project",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/tsconfig.json",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 134,
+    "seconds": 116.83105079404777,
+    "compilerLogSha256": "d65728afd3de737fec6140faee0b807e21aca6ee9232d170ebf8e7600fde7c29",
+    "tsconfigSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+    "scope": "Full unchanged project tsconfig with all implementation/test roots and actual generated Next declaration inputs; noEmit, incremental output disabled. No source-specific diagnostic selection or new exclusions."
+  },
+  "attempt02": {
+    "before": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "status": "",
+      "resources": {
+        "memory.max": "8589934592",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.peak": "16953344",
+        "memory.swap.current": "0",
+        "cpu.max": "100000 100000"
+      }
+    },
+    "after": {
+      "head": "21510042e94bcaf80f262205ad156a7bb639e35c",
+      "status": "",
+      "resources": {
+        "memory.max": "8589934592",
+        "memory.swap.max": "0",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "memory.peak": "5874405376",
+        "memory.swap.current": "0",
+        "cpu.max": "100000 100000"
+      }
+    },
+    "command": [
+      "/usr/bin/bwrap",
+      "--die-with-parent",
+      "--unshare-net",
+      "--ro-bind",
+      "/",
+      "/",
+      "--bind",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+      "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02",
+      "--tmpfs",
+      "/tmp",
+      "--dev",
+      "/dev",
+      "--proc",
+      "/proc",
+      "--chdir",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+      "/usr/bin/env",
+      "-i",
+      "PATH=/usr/bin:/bin",
+      "HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/home",
+      "NODE_OPTIONS=--max-old-space-size=6144",
+      "XDG_CACHE_HOME=/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/cache",
+      "/usr/bin/node",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/node_modules/typescript/bin/tsc",
+      "--project",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan/tsconfig.json",
+      "--noEmit",
+      "--incremental",
+      "false",
+      "--pretty",
+      "false"
+    ],
+    "exitCode": 0,
+    "seconds": 92.59529607900186,
+    "compilerLogSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tsconfigSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+    "scope": "Full unchanged project tsconfig with all implementation/test roots and actual generated Next declaration inputs; noEmit, incremental output disabled. No source-specific diagnostic selection or new exclusions."
+  },
+  "generatedInputs": {
+    "origin": "retained failed678 build, read-only copies of generated TypeScript declarations only",
+    "unchangedAppPathInventory": true,
+    "count": 446,
+    "currentHashesMatch": true,
+    "manifestSha256": "1d51a4be356696f603b6712913f57cf35c9df10d84968b14e504ff3a3dcd7714"
+  },
+  "files": {
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/result.json": {
+      "sha256": "1de544cc0f2a4dc209b7bf233b7bfdaf74af6812bdd120578f306a0d9c187e5c",
+      "bytes": 2292
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/compiler.log": {
+      "sha256": "d65728afd3de737fec6140faee0b807e21aca6ee9232d170ebf8e7600fde7c29",
+      "bytes": 950
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/generated-type-inputs.json": {
+      "sha256": "1d51a4be356696f603b6712913f57cf35c9df10d84968b14e504ff3a3dcd7714",
+      "bytes": 61165
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-01/run.py": {
+      "sha256": "e8d47e2f13945c9eccd893883457dffe0a760ae0c582ea519f244b43b1248576",
+      "bytes": 2136
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/result.json": {
+      "sha256": "65ffebbd35adcb95cd98724a2802886e1e928b4427375fe5a21b263c3f9ec2da",
+      "bytes": 2289
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/compiler.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/run.py": {
+      "sha256": "04714317354acfd38b234371a99da067f19b67a0af50b5416f70bdb50664cd2c",
+      "bytes": 2136
+    },
+    "/home/nathaniel/.local/state/openplan/project-combined-full-types-20261015-02/prior-run.json": {
+      "sha256": "bce0947a60a3a101798eb08ded4f8bde17de605076d52517f9092a88223a5c3b",
+      "bytes": 467
+    }
+  },
+  "limits": [
+    "No accepted production build or build identity",
+    "No application start or attestation",
+    "No browser, desktop or 390px acceptance",
+    "No live RLS, database, hosted, scientific or practitioner acceptance from this compiler run"
+  ]
+}
