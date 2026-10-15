@@ -180,3 +180,8 @@ or nested delegation runs here.
 
 Private source, raw receipts, caches and controllers remain at
 `/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/`.
+
+
+## Later workbook layout checkpoint, October 15
+
+The [dated workbook join](../2026-10-15-project-workbook-layout-join/STATUS.md) records reviewed formatter69d, dependency/history closure805, independent reviewa4b and fresh checks on67828c17c. Earlier frozen06a QA remains separate. Exactmainced6 delivery is verified in [the dated follow-up](../2026-10-15-main329-delivery-readback/DELIVERY_VERIFIED.md). Preview REST recovery review and a current application-only build binding remain pending. No release or browser acceptance is declared.
