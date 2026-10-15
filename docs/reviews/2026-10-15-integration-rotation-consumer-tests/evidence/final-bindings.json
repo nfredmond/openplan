@@ -1,0 +1,9 @@
+{
+  "openplan/src/lib/integrations/workspace-keys.ts": "f237f10867b29072634103821046310c1af30e2f34af26b1f62e0097291570ac",
+  "openplan/src/lib/integrations/key-crypto.ts": "298f8b2218e578af8c6e6c050011d7839002c801aa68daf25df1411b42a7d274",
+  "openplan/src/lib/integrations/provider-api-credentials.ts": "102a3c27c161ab83bb5f5d91c5dfc3f6cb40ee13c2f90b9c851ef82106aded3e",
+  "openplan/src/lib/integrations/translation-credentials.ts": "fb0a54d0529a11ed42aef6bb07c7b3f4acd2bd9d2cdeb407e50db3f12c5932a6",
+  "openplan/src/lib/assistant/provider-api-transport.ts": "e20a5a3306e6cdc0c460d3f5b69db7253c9c353f342a2e1cb22c8e63ea0b5cba",
+  "openplan/src/test/integration-rotation-consumer-chain.test.ts": "004a0cdf3cd71592bf6469eceea3e69e93c73b2b8baf4e34143aa2b5dfcb2522",
+  "docs/reviews/2026-10-15-integration-rotation-consumer-tests/verify_controls.py": "6fca036c968e7dc2cad9dd880b0f71cda9fe582b6cda240b685bd245637c2a00"
+}

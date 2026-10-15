@@ -11,10 +11,9 @@
  * salt, so an attacker with a dumped table cannot amortize a dictionary attack
  * across rows and pays the full scrypt cost per guess per row. A high-entropy
  * secret (e.g. `openssl rand -hex 32`) makes that attack unpayable; SELF_HOSTING
- * instructs exactly that. The other cost is honest and documented: rotating
- * OPENPLAN_INTEGRATION_KEY_SECRET invalidates stored workspace keys (they fail
- * decryption and fall back to the deployment env key), so rotation means teams
- * re-enter their keys.
+ * instructs exactly that. During rotation, an optional previous secret keeps
+ * retained ciphertext readable. New writes use the primary secret. Reads do
+ * not rewrite ciphertext or change the fingerprints of queued credentials.
  *
  * Ciphertext formats:
  *   * `v3:<salt b64>:<iv b64>:<auth tag b64>:<ciphertext b64>`: current for
@@ -56,8 +55,8 @@ const SCRYPT_OPTIONS = { N: 2 ** 14, r: 8, p: 1, maxmem: 64 * 1024 * 1024 } as c
 /** Minimum operator-secret length; shorter secrets are refused, not padded. */
 export const INTEGRATION_KEY_SECRET_MIN_LENGTH = 16;
 
-function configuredSecret(): string | null {
-  const secret = process.env.OPENPLAN_INTEGRATION_KEY_SECRET?.trim();
+function configuredSecret(value = process.env.OPENPLAN_INTEGRATION_KEY_SECRET): string | null {
+  const secret = value?.trim();
   if (!secret || secret.length < INTEGRATION_KEY_SECRET_MIN_LENGTH) return null;
   return secret;
 }
@@ -122,13 +121,22 @@ export function encryptIntegrationKey(plaintext: string, binding?: IntegrationKe
  * Decrypt a stored ciphertext: v3 (workspace-bound), v2 (salted scrypt) or
  * legacy v1 (unsalted sha256). A v3 ciphertext decrypts only under the
  * workspace it was written for. Returns null (never throws) on any failure:
- * missing secret, rotated secret, wrong or missing workspace, tampered or
- * malformed ciphertext. A null simply means "no workspace key"; callers fall
- * back to the deployment env.
+ * missing primary secret, unknown secret, wrong or missing workspace, tampered
+ * or malformed ciphertext. Existing callers decide whether a null refuses the
+ * task or permits an environment key. This function never selects a payer.
  */
 export function decryptIntegrationKey(stored: string, binding?: IntegrationKeyBinding): string | null {
   const secret = configuredSecret();
   if (!secret) return null;
+  const current = decryptWithSecret(stored, secret, binding);
+  if (current !== null) return current;
+  const previous = configuredSecret(process.env.OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET ?? "");
+  if (!previous || previous === secret) return null;
+  return decryptWithSecret(stored, previous, binding);
+}
+
+/** Authenticate each candidate independently; failed authentication releases no plaintext. */
+function decryptWithSecret(stored: string, secret: string, binding?: IntegrationKeyBinding): string | null {
   const parts = stored.split(":");
   try {
     let key: Buffer;

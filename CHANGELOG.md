@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Integration secret rotation, candidate:** the optional private
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained workspace keys and
+sealed worker credentials while new writes use the primary. Prepare both
+secrets on every reader before switching the primary. Do not overwrite an
+occupied second slot while retained records need it. Reads do not re-encrypt
+records, and no hosted secret is changed. Follow the
+[rotation procedure](openplan/docs/SELF_HOSTING.md#rotate-the-integration-encryption-secret)
+and retain the [verification limits](docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md).
+
 **Node queue process observations, candidate:** eight existing queue commands record private process states under one captured instance and build. Deep health keeps missing, stale, stopped and unavailable observations separate from job completion. Candidate migration `20261017000015_node_queue_process_observations.sql` must precede deployment; hosted application is pending. Existing worker handlers retain shutdown ownership. The caller checker allows 30 seconds for three serial probes. See the [scope and proof limits](docs/reviews/2026-10-14-node-queue-observation/STATUS.md).
 
 **Project jurisdiction context, candidate:** the existing project editor separates

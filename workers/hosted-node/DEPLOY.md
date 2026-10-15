@@ -15,6 +15,14 @@ directories to separate children of a persistent `/data` volume. Export,
 engagement email, provider API, translation, and synthesis journals must survive
 a deployment. A database backup does not include these filesystem journals.
 
+For encryption-secret rotation, follow the staged
+[self-hosting procedure](../../openplan/docs/SELF_HOSTING.md#rotate-the-integration-encryption-secret).
+Prepare both secrets on every reader before changing the primary. The optional
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained ciphertext; new writes
+use `OPENPLAN_INTEGRATION_KEY_SECRET`. Reads do not rewrite queued envelopes or
+journals. Keep the old secret while any retained request or restore point needs
+it. This support does not rotate a provider API key or replay a provider call.
+
 `OPENPLAN_NODE_WORKERS` can select distinct supported queues by comma-separated
 name. Omit it to run all seven. Unknown or duplicate names refuse startup. AI
 queues still require a provider configured by the workspace; hosting the queue
