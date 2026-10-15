@@ -112,23 +112,34 @@ verification; keep its evidence and protected archives.
 
 ## Roll back the hosted app
 
-An app rollback does not reverse migrations. Roll back only to a deployment
-whose code works with the schema the hosted project has now.
+An app rollback does not reverse migrations or encrypted records. Roll back
+only to a deployment whose code works with the current schema and can read
+every required credential with the protected secrets that will be configured.
 
 1. Find the candidate: `vercel ls openplan --scope natford --prod`, then
    `vercel inspect <url> --scope natford` for its commit.
-2. Check schema compatibility. List the hosted migrations through the
+2. Check schema and credential-reader compatibility. List the hosted migrations through the
    Management API (`GET /v1/projects/lolckycpdjsgeejsmuzl/database/migrations`)
    and the repository's `openplan/supabase/migrations` at the candidate commit.
-   The candidate is safe only if every migration applied since that commit is
-   additive and the candidate never reads a dropped or renamed object. When in
-   doubt, roll forward with a fix instead.
+   Require every migration applied since that commit to be additive, with no
+   dropped or renamed object the candidate reads. Also inspect the candidate's
+   credential readers and protected configuration. If required workspace records,
+   sealed requests, journals or restore points need both integration secrets,
+   the web app and every credential-reading worker must support both secrets.
+   A build that reads only one secret cannot read a required set encrypted under
+   both, even when its schema is compatible. Follow the
+   [rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret).
+   Do not rewrite retained rows or queued envelopes to fit the rollback.
+   If either compatibility check is uncertain, roll forward with a compatible
+   fix instead.
 3. Promote with `vercel rollback <url> --scope natford`, then confirm
    `/api/health` reports the candidate's commit. Vercel then stops promoting
    new `main` builds until someone promotes a later deployment, so record the
    rollback in the coordination file.
 4. Railway workers deploy from `main` separately. Check that their commit
    matches the rolled-back app, or that the worker paths did not change.
+   Confirm every credential-reading worker retains the required secrets and
+   supports them before resuming work.
 
 **Dated target, October 12, 2026.** Production `dpl_7CTf3ojNmvkxJqiPK7gkcw33qxNs`
 serves `c03788c`. The previous production deployment,

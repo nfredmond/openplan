@@ -132,6 +132,13 @@ argument, report, log or public environment variable.
 
 Reads do not re-encrypt workspace rows or sealed request envelopes. Rewriting
 them can change the ciphertext fingerprints that protect queued requests.
+Before an app or worker rollback, establish that the candidate readers support
+every secret needed by required records. Once required records need both
+secrets, keep the web app and credential-reading workers on a build with
+second-secret support. Schema compatibility alone does not make an older
+single-secret build safe. Do not rewrite retained rows or queued envelopes
+to fit it. Use a compatible roll-forward fix if compatibility is uncertain.
+See the [hosted rollback procedure](ops/HOSTED_RECOVERY.md#roll-back-the-hosted-app).
 There is no automatic inventory or bulk re-encryption command. Keep the old
 secret until an inventory establishes that no required live record, retained
 request, journal or restore point still needs it. Saving a workspace key again

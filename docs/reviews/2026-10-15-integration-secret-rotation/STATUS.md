@@ -86,3 +86,34 @@ keys or sealed worker credentials depend on it. They require every reader to
 receive the secrets before work resumes and preserve keys needed by retained
 recovery points. This corrects instructions, without changing runtime code or
 establishing an actual restore. The amended head needs fresh CI.
+
+## Independent rollback review correction
+
+October 15, 2026. A separate Sol source review identified that the rollback
+procedures checked schema compatibility without requiring readers for both
+integration secrets. The hosted recovery and operations procedures now require
+compatible web and worker readers and their protected configuration before
+promotion or resumed work. The rotation procedure cross-links this restriction.
+Uncertain compatibility requires a compatible roll-forward fix; retained rows
+and queued envelopes must not be rewritten to fit an older build.
+
+The [independent report](INDEPENDENT_ROLLBACK_REVIEW.md) retains the finding and
+its source boundary. This corrects instructions, without rotating hosted keys
+or proving a real rollback. Its additional test gaps remain open: combined
+workspace-translation selection and fingerprint verification across rotation,
+an API destination change with a recomputed outer configuration hash through
+the previous-secret path, exhaustive malformed legacy envelopes, and actual
+configuration delivery and recovery. The existing sampled crypto checks do
+not establish those broader boundaries. Fresh CI is required for this head.
+
+Mechanical documentation checks and the unchanged sampled crypto suite pass
+19 cases across two files. Three six-case documentation cohorts survive
+(baseline, harmless comment and exact restored source); removing the new
+rollback link target fails only its named relative-link assertion, with the
+missing path recorded in the full diagnostic. Three classifier controls refuse
+unrelated failures. The first controller refuses a truncated JSON diagnostic;
+that failed attempt stays retained separately and restores source exactly.
+The [receipt](rollback-doc-controls.json) retains the bounds: file links, commands
+and environment names do not establish semantic rollback safety, Markdown
+anchors, unlisted operator documents or live operation. Root review confirms
+the new restriction in all three procedures.

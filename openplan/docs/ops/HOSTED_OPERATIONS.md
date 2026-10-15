@@ -44,11 +44,16 @@ migration before, or together with, the merge whose code reads it.
 ## Roll back
 
 Follow [Roll back the hosted app](HOSTED_RECOVERY.md#roll-back-the-hosted-app).
-An app rollback does not reverse migrations. The candidate build must work with
-the schema the database has now. Because migrations are additive, an older
-build normally does; the migration check does not flag a database that is
-ahead of the code. After a rollback, Vercel stops promoting new `main` builds
-until someone promotes one, so record it in the coordination file.
+An app rollback does not reverse migrations or encrypted records. The candidate
+web build and credential-reading workers must work with the current schema and
+read every required credential with their protected configuration. Additive
+migrations alone do not establish this compatibility. After an integration
+secret rotation, retained records may need both secrets; a build that reads only
+one cannot read that required set. Keep compatible readers and both required
+secrets, or use a compatible roll-forward fix. Do not rewrite retained rows or
+queued envelopes to fit an older build. After a rollback, Vercel stops promoting
+new `main` builds until someone promotes one, so record it in the coordination
+file.
 
 ## Restore
 
