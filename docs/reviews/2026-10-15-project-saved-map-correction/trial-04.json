@@ -1,0 +1,771 @@
+{
+  "records": [
+    {
+      "name": "classifier-harmless",
+      "result": "survived"
+    },
+    {
+      "name": "classifier-wrong-diagnostic",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:unrelated-assertion"
+    },
+    {
+      "name": "classifier-wrong-name",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:different-test"
+    },
+    {
+      "name": "classifier-runtime",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:runtime-suite"
+    },
+    {
+      "name": "classifier-runner-output",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:unhandled-runner-output"
+    },
+    {
+      "name": "classifier-suite-error",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:compiler-failure"
+    },
+    {
+      "name": "classifier-exit",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:signal-exit"
+    },
+    {
+      "name": "classifier-count",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:inconsistent-count"
+    },
+    {
+      "name": "classifier-messages",
+      "result": "intended classifier assertion failure",
+      "diagnostic": "AssertionError: classifier-reject:multiple-diagnostics"
+    },
+    {
+      "name": "baseline",
+      "exit": 0,
+      "passed": 33,
+      "failed": [],
+      "result": "survived"
+    },
+    {
+      "name": "harmless-comment",
+      "exit": 0,
+      "passed": 33,
+      "failed": [],
+      "result": "survived"
+    },
+    {
+      "name": "missing-site",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "diagnostics": [
+            "AssertionError: saved-geometry-parity: expected [ Array(2) ] to deeply equal [ Array(3) ]"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "diagnostics": [
+            "AssertionError: saved-geometry-parity: expected [ Array(2) ] to deeply equal [ Array(3) ]"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false": "AssertionError: saved-geometry-parity: expected [ Array(2) ] to deeply equal [ Array(3) ]",
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true": "AssertionError: saved-geometry-parity: expected [ Array(2) ] to deeply equal [ Array(3) ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "drop-saved-holes",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "diagnostics": [
+            "AssertionError: saved-geometry-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "diagnostics": [
+            "AssertionError: saved-geometry-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false": "AssertionError: saved-geometry-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]",
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true": "AssertionError: saved-geometry-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "wrong-area-filter",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false",
+          "diagnostics": [
+            "AssertionError: saved-area-filter: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true",
+          "diagnostics": [
+            "AssertionError: saved-area-filter: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=false": "AssertionError: saved-area-filter: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]",
+        "the project panel supplies saved features draws the inventory's exact three geometries with canWrite=true": "AssertionError: saved-area-filter: expected [ '==', [ 'geometry-type' ], \u2026(1) ] to deeply equal [ Array(3) ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "pending-corridors-hide-map",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features keeps the saved area and site when the corridors table is unavailable",
+          "diagnostics": [
+            "AssertionError: pending-corridors-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features keeps the saved area and site when the corridors table is unavailable": "AssertionError: pending-corridors-map-exists: expected [] to have a length of 1 but got +0"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "invalid-area-bypass",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features reports invalid saved shapes without repairing or drawing them",
+          "diagnostics": [
+            "AssertionError: no-map-construction: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features reports invalid saved shapes without repairing or drawing them": "AssertionError: no-map-construction: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "drop-global-site",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 0 latitude 0",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude -121.5 latitude 39",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 179.8 latitude 52",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude -170.7 latitude -14.3",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 144.8 latitude 13.4",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        },
+        {
+          "name": "the project panel supplies saved features retains a valid site at longitude 151.2 latitude -33.8",
+          "diagnostics": [
+            "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features retains a valid site at longitude 0 latitude 0": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0",
+        "the project panel supplies saved features retains a valid site at longitude -121.5 latitude 39": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0",
+        "the project panel supplies saved features retains a valid site at longitude 179.8 latitude 52": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0",
+        "the project panel supplies saved features retains a valid site at longitude -170.7 latitude -14.3": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0",
+        "the project panel supplies saved features retains a valid site at longitude 144.8 latitude 13.4": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0",
+        "the project panel supplies saved features retains a valid site at longitude 151.2 latitude -33.8": "AssertionError: saved-site-map-exists: expected [] to have a length of 1 but got +0"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "hide-unconfigured-notice",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features keeps inventory and download access when no engine is configured",
+          "diagnostics": [
+            "AssertionError: unconfigured-map-notice: expected null not to be null"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features keeps inventory and download access when no engine is configured": "AssertionError: unconfigured-map-notice: expected null not to be null"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "ignore-late-mount",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle draws late geometry after an initially empty mount",
+          "diagnostics": [
+            "AssertionError: late-map-exists: expected [] to have a length of 1 but got +0"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle draws late geometry after an initially empty mount": "AssertionError: late-map-exists: expected [] to have a length of 1 but got +0"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "stale-style-data",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle uses the newest geometry when style.load precedes tile readiness",
+          "diagnostics": [
+            "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle uses the newest geometry when style.load precedes tile readiness": "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "skip-source-refresh",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle replaces removed features without rebuilding the map",
+          "diagnostics": [
+            "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle replaces removed features without rebuilding the map": "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "skip-style-recovery",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle repaints saved layers after a style replacement without another camera move",
+          "diagnostics": [
+            "AssertionError: latest-saved-source: expected undefined to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle repaints saved layers after a style replacement without another camera move": "AssertionError: latest-saved-source: expected undefined to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "leak-pending-paint",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle cancels pending paint and style listeners on unmount",
+          "diagnostics": [
+            "AssertionError: paint-listener-cleanup: expected [ 1, 1, 1, +0, +0 ] to deeply equal [ +0, +0, +0, +0, +0 ]"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle cancels pending paint and style listeners on unmount": "AssertionError: paint-listener-cleanup: expected [ 1, 1, 1, +0, +0 ] to deeply equal [ +0, +0, +0, +0, +0 ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "skip-sizing",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "diagnostics": [
+            "AssertionError: observes-map-container: expected \"vi.fn()\" to be called with arguments: [ <div \u2026(3)></div> ]"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle resizes its actual container when a hidden tab becomes visible": "AssertionError: observes-map-container: expected \"vi.fn()\" to be called with arguments: [ <div \u2026(3)></div> ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "skip-visible-framing",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "diagnostics": [
+            "AssertionError: visible-camera-center: expected undefined to deeply equal [ 144.79371, 13.4443 ]"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle resizes its actual container when a hidden tab becomes visible": "AssertionError: visible-camera-center: expected undefined to deeply equal [ 144.79371, 13.4443 ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "fit-hidden-container",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle resizes its actual container when a hidden tab becomes visible",
+          "diagnostics": [
+            "AssertionError: hidden-camera-waits: expected [ { \u2026(3) } ] to have a length of +0 but got 1"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle resizes its actual container when a hidden tab becomes visible": "AssertionError: hidden-camera-waits: expected [ { \u2026(3) } ] to have a length of +0 but got 1"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "stale-async-data",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle uses latest saved geometry after asynchronous MapLibre startup",
+          "diagnostics": [
+            "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle uses latest saved geometry after asynchronous MapLibre startup": "AssertionError: latest-saved-source: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "leak-async-build",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle does not construct an asynchronous map after the panel unmounts",
+          "diagnostics": [
+            "AssertionError: no-map-construction: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle does not construct an asynchronous map after the panel unmounts": "AssertionError: no-map-construction: expected [ FakeMapboxMap{ \u2026(21) } ] to have a length of +0 but got 1"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "leak-setup-map",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle releases a constructed map if control setup fails",
+          "diagnostics": [
+            "AssertionError: failed-setup-map-removed: expected false to be true // Object.is equality"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle releases a constructed map if control setup fails": "AssertionError: failed-setup-map-removed: expected false to be true // Object.is equality"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "ignore-style-error",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle states an initial style failure and releases the map",
+          "diagnostics": [
+            "AssertionError: initial-style-failure-notice: expected null not to be null"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle states an initial style failure and releases the map": "AssertionError: initial-style-failure-notice: expected null not to be null"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "no-wrapped-gap",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'split-date-line' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:split-date-line: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', bbox: [ \u2026(2) ] }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'both-side-points' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:both-side-points: expected { kind: 'bbox', bbox: [ \u2026(2) ] } to deeply equal { kind: 'bbox', bbox: [ \u2026(2) ] }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'split-date-line' without rewriting source": "AssertionError: camera-frame:split-date-line: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'both-side-points' without rewriting source": "AssertionError: camera-frame:both-side-points: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+      },
+      "result": "classification refused: unexpected assertion diagnostic"
+    },
+    {
+      "name": "vertex-only-crop",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'broad-area' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:broad-area: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'full-world' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:full-world: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'overlapping-parts' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:overlapping-parts: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'broad-line' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:broad-line: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'broad-area' without rewriting source": "AssertionError: camera-frame:broad-area: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'full-world' without rewriting source": "AssertionError: camera-frame:full-world: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'overlapping-parts' without rewriting source": "AssertionError: camera-frame:overlapping-parts: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'broad-line' without rewriting source": "AssertionError: camera-frame:broad-line: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "unmerged-nested-spans",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'overlapping-parts' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:overlapping-parts: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'overlapping-parts' without rewriting source": "AssertionError: camera-frame:overlapping-parts: expected { kind: 'bbox', \u2026(1) } to deeply equal { kind: 'bbox', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "no-camera-instruction",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'split-date-line' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:split-date-line: expected null to deeply equal { kind: 'bbox', bbox: [ \u2026(2) ] }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'both-side-points' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:both-side-points: expected null to deeply equal { kind: 'bbox', bbox: [ \u2026(2) ] }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'broad-area' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:broad-area: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'full-world' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:full-world: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'overlapping-parts' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:overlapping-parts: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'broad-line' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:broad-line: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'local-zero-with-hole' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:local-zero-with-hole: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'zero-point' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:zero-point: expected null to deeply equal { kind: 'center', center: [ +0, +0 ] }"
+          ]
+        },
+        {
+          "name": "saved geometry framing frames 'ordinary-gap-tie' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:ordinary-gap-tie: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'split-date-line' without rewriting source": "AssertionError: camera-frame:split-date-line: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'both-side-points' without rewriting source": "AssertionError: camera-frame:both-side-points: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'broad-area' without rewriting source": "AssertionError: camera-frame:broad-area: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'full-world' without rewriting source": "AssertionError: camera-frame:full-world: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'overlapping-parts' without rewriting source": "AssertionError: camera-frame:overlapping-parts: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'broad-line' without rewriting source": "AssertionError: camera-frame:broad-line: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'local-zero-with-hole' without rewriting source": "AssertionError: camera-frame:local-zero-with-hole: expected null to deeply equal { kind: 'bbox', \u2026(1) }",
+        "saved geometry framing frames 'zero-point' without rewriting source": "AssertionError: camera-frame:zero-point: expected null to deeply equal { kind: 'center', \u2026(1) }",
+        "saved geometry framing frames 'ordinary-gap-tie' without rewriting source": "AssertionError: camera-frame:ordinary-gap-tie: expected null to deeply equal { kind: 'bbox', \u2026(1) }"
+      },
+      "result": "classification refused: unexpected assertion diagnostic"
+    },
+    {
+      "name": "invent-empty-camera",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'empty' without rewriting source",
+          "diagnostics": [
+            "AssertionError: camera-frame:empty: expected { kind: 'center', center: [ +0, +0 ] } to deeply equal null"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'empty' without rewriting source": "AssertionError: camera-frame:empty: expected { kind: 'center', center: [ +0, +0 ] } to deeply equal null"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "rewrite-source-order",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved geometry framing frames 'both-side-points' without rewriting source",
+          "diagnostics": [
+            "AssertionError: source-parity:both-side-points: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+          ]
+        }
+      ],
+      "expected": {
+        "saved geometry framing frames 'both-side-points' without rewriting source": "AssertionError: source-parity:both-side-points: expected { type: 'FeatureCollection', \u2026(1) } to deeply equal { type: 'FeatureCollection', \u2026(1) }"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "date-line-panel-camera",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features frames saved date-line inventory without rewriting any layer",
+          "diagnostics": [
+            "AssertionError: date-line-inventory-camera: expected undefined to deeply equal [ [ 179.5, 51 ], [ 180.3, 51.2 ] ]"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features frames saved date-line inventory without rewriting any layer": "AssertionError: date-line-inventory-camera: expected undefined to deeply equal [ [ 179.5, 51 ], [ 180.3, 51.2 ] ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "wrapped-async-visible-camera",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "saved map lifecycle frames latest wrapped data after async style readiness and visible resize",
+          "diagnostics": [
+            "AssertionError: wrapped-visible-camera: expected undefined to deeply equal [ [ 179.7, 51 ], [ 180.5, 51.2 ] ]"
+          ]
+        }
+      ],
+      "expected": {
+        "saved map lifecycle frames latest wrapped data after async style readiness and visible resize": "AssertionError: wrapped-visible-camera: expected undefined to deeply equal [ [ 179.7, 51 ], [ 180.5, 51.2 ] ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "date-line-source-parity",
+      "exit": 1,
+      "passed": 0,
+      "failed": [
+        {
+          "name": "the project panel supplies saved features frames saved date-line inventory without rewriting any layer",
+          "diagnostics": [
+            "AssertionError: date-line-source-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]"
+          ]
+        }
+      ],
+      "expected": {
+        "the project panel supplies saved features frames saved date-line inventory without rewriting any layer": "AssertionError: date-line-source-parity: expected [ Array(3) ] to deeply equal [ Array(3) ]"
+      },
+      "result": "intended assertion failure"
+    },
+    {
+      "name": "restored",
+      "exit": 0,
+      "passed": 33,
+      "failed": [],
+      "result": "survived"
+    }
+  ],
+  "classifierFixtures": [
+    {
+      "name": "declared-assertion",
+      "result": "accepted intended assertion"
+    },
+    {
+      "name": "unrelated-assertion",
+      "result": "refused"
+    },
+    {
+      "name": "runtime-in-selected-test",
+      "result": "refused"
+    },
+    {
+      "name": "different-test",
+      "result": "refused"
+    },
+    {
+      "name": "runtime-suite",
+      "result": "refused"
+    },
+    {
+      "name": "unhandled-runtime",
+      "result": "refused"
+    },
+    {
+      "name": "import-failure",
+      "result": "refused"
+    },
+    {
+      "name": "compiler-failure",
+      "result": "refused"
+    },
+    {
+      "name": "signal-exit",
+      "result": "refused"
+    },
+    {
+      "name": "inconsistent-count",
+      "result": "refused"
+    },
+    {
+      "name": "multiple-diagnostics",
+      "result": "refused"
+    },
+    {
+      "name": "missing-diagnostic",
+      "result": "refused"
+    },
+    {
+      "name": "unhandled-runner-output",
+      "result": "refused"
+    }
+  ],
+  "sourceRestored": true,
+  "sourceBindings": {
+    "docs/reviews/2026-10-15-project-saved-map-correction/faults.json": "0f511b16c05cce1b2ea56cd2a4e670292d3a0cff6dc96f402fcc8a4328ae1afa",
+    "docs/reviews/2026-10-15-project-saved-map-correction/verify_controls.py": "d54363b7a153995fce2c40fdeee5b59d63638b9f415bb22885258b3e4defe5e3",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": "0b11d8aeef07c2ac7b3beef8a1a60986f1c098edb4c375afd446d3ee6a69c3eb",
+    "openplan/src/components/projects/project-saved-map.tsx": "85f349c6fa17bf7f2586e6ea3b4405bad0d682e69a956dc4d4e3cd92ceaee687",
+    "openplan/src/lib/cartographic/geometry-bbox.ts": "52907dca5a4516575f8566fb31b4291312f713a611dd6750f93476107563e458",
+    "openplan/src/lib/cartographic/saved-geometry-frame.ts": "aea301a98cbae6294983cf055556b6485f6257d37076a56b4806c0fe5405b5b6",
+    "openplan/src/lib/geo/wgs84-bounds.ts": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719",
+    "openplan/src/lib/mapbox/keep-map-sized.ts": "83cb6382853c53967a46f260161a4025ab0fee1190bed8d3fa2e7610135c4e4d",
+    "openplan/src/lib/maps/map-engine.ts": "68cf80662206449299266a51b04c90c40f098973e64c30b75e266e90a4545639",
+    "openplan/src/lib/maps/when-style-accepts.ts": "789e2ecf05319826ea38f5280e63e650b8030b945aa8b0f36672725a7c377403",
+    "openplan/src/lib/projects/project-geopackage.ts": "c0663e8409ca3519ff13fe131a49cc5d91de9f5650ef273df5cc96540fb8ba8a",
+    "openplan/src/test/project-saved-map.test.tsx": "2cea6baa7fb20ae0745f095b60e5de62fcdc39911d449fbc8ebdb154b8b7b7f3",
+    "openplan/src/test/saved-geometry-frame.test.ts": "444338c042c7afcfa5665dc9f4cf7d9e9ae1d6552fe3ba05f523e9ec1b7a540c"
+  },
+  "resources": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/run-p3856302-i87564052.scope",
+    "memoryMax": "1073741824",
+    "swapMax": "0",
+    "cpuMax": "100000 100000",
+    "memory.peak": "282570752",
+    "memory.swap.peak": "0",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "blindCategories": [
+    "WebGL/projection/tessellation",
+    "real layout, keyboard and accessibility",
+    "identified-build desktop/exact390 browser",
+    "live database and downloaded export byte parity",
+    "topology, survey/legal and practitioner acceptance"
+  ]
+}

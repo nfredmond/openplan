@@ -5,8 +5,8 @@ import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { MapUnavailableNotice } from "@/components/ui/map-unavailable-notice";
-import { applyFitInstruction, fitInstructionFromExtent } from "@/lib/cartographic/geometry-bbox";
-import { bboxOfGeometry } from "@/lib/geographies/place-of-record";
+import { applyFitInstruction } from "@/lib/cartographic/geometry-bbox";
+import { fitInstructionFromSavedGeometry } from "@/lib/cartographic/saved-geometry-frame";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { deploymentMapEngine, startMap, styleForEngine } from "@/lib/maps/map-engine";
 import { whenStyleAccepts } from "@/lib/maps/when-style-accepts";
@@ -64,19 +64,8 @@ export function ProjectSavedMap({ collection }: { collection: GeoJSON.FeatureCol
         // Reframe for changed saved records, without moving the camera again
         // when a style reload restores the same geometry.
         if (framedCollection !== current && container.clientWidth > 0 && container.clientHeight > 0) {
-          const extents = current.features.flatMap((feature) => {
-            const extent = bboxOfGeometry(feature.geometry);
-            return extent ? [extent] : [];
-          });
-          if (extents.length > 0) {
-            const instruction = fitInstructionFromExtent([
-              Math.min(...extents.map((extent) => extent.minLon)),
-              Math.min(...extents.map((extent) => extent.minLat)),
-              Math.max(...extents.map((extent) => extent.maxLon)),
-              Math.max(...extents.map((extent) => extent.maxLat)),
-            ]);
-            if (instruction) applyFitInstruction(map, instruction);
-          }
+          const instruction = fitInstructionFromSavedGeometry(current);
+          if (instruction) applyFitInstruction(map, instruction);
           framedCollection = current;
         }
       };
