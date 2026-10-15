@@ -61,8 +61,8 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
   return <section id="project-jurisdiction" className="space-y-3 rounded-xl border border-border p-4">
     <h3 className="font-semibold">Project jurisdiction context</h3>
     <p className="text-sm text-muted-foreground">Declare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.</p>
-    {invalid ? <p role="alert">Saved jurisdiction is invalid or could not be read. Readiness is unavailable.</p> : saved === null
-      ? <p>No separate declaration. Readiness may show labelled legacy study-place context.</p>
+    {invalid ? <p role="alert">Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable.</p> : saved === null
+      ? <p>No separate declaration. Jurisdiction assessment may show labelled legacy study-place context.</p>
       : saved.state === "unresolved" ? <p>Jurisdiction explicitly unresolved. Study-place fallback is disabled.</p>
         : <ul>{saved.entries.map((entry, index) => <li key={index}>{entry.label}: {entry.identity === "staff_declared" ? "unverified staff declaration" : "server-resolved identity"}</li>)}</ul>}
     {!editing && canWrite && <Button type="button" onClick={restart}>Edit jurisdiction context</Button>}
@@ -91,7 +91,7 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
           setLabel(""); setKind(""); setReference("");
         }}>Add staff declaration</Button>
       </fieldset>
-      <p className="text-sm">Development limit: up to 12 declarations. Each receives a separate readiness assessment. File labels and feature properties do not author jurisdiction.</p>
+      <p className="text-sm">Development limit: up to 12 declarations. Each receives a separate jurisdiction assessment. File labels and feature properties do not author jurisdiction.</p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" disabled={saving || draft.length === 0 || draft.length > 12} onClick={() => void save(draft)}>Save jurisdiction context</Button>
         <Button type="button" disabled={saving} onClick={() => void save([])}>Clear to unresolved</Button>

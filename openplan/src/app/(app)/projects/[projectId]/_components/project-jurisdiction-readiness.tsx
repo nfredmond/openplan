@@ -7,7 +7,7 @@ import type { ProjectJurisdictionRow } from "@/lib/projects/project-jurisdiction
 export function ProjectJurisdictionReadiness({ project }: { project: ProjectJurisdictionRow & { id: string } }) {
   let payload;
   try { payload = buildProjectJurisdictionReadinessPayload(project, jurisdictionReadinessRegistrySha256()); }
-  catch { return <p role="alert">Saved jurisdiction is invalid or could not be read. Readiness is unavailable.</p>; }
+  catch { return <p role="alert">Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable.</p>; }
   return <section className="space-y-4">
     <p>{payload.disclosure}</p>
     {payload.entries.length === 0 && <p>Jurisdiction explicitly unresolved. No study-place fallback applies.</p>}
@@ -17,6 +17,6 @@ export function ProjectJurisdictionReadiness({ project }: { project: ProjectJuri
       <JurisdictionReadinessPanel reports={entry.assessment.reports} compact />
       {entry.administrativeGuidance && <details><summary>Separate administrative state-level guidance, identity unverified</summary><JurisdictionReadinessPanel reports={entry.administrativeGuidance.reports} compact /></details>}
     </section>)}
-    <a href={`/api/projects/${project.id}/jurisdiction-readiness?download=1`}>Download project jurisdiction readiness JSON</a>
+    <a href={`/api/projects/${project.id}/jurisdiction-readiness?download=1`}>Download project jurisdiction assessment JSON</a>
   </section>;
 }

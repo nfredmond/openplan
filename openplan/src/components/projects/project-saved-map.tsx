@@ -122,8 +122,8 @@ export function ProjectSavedMap({ collection }: { collection: GeoJSON.FeatureCol
     <figure className="space-y-2">
       <div ref={containerRef} className="h-[360px] w-full overflow-hidden rounded-lg border border-border" role="img" aria-label="Saved project study area, site marker and corridors" />
       <figcaption className="text-xs text-muted-foreground">
-        Saved project records: blue study area, green site marker, amber corridors.
-        Geometry does not establish jurisdiction or surveyed boundaries. Basemap attribution appears on the map.
+        Saved project shapes: blue project boundary, green site marker, amber corridors.
+        These shapes do not establish jurisdiction or surveyed boundaries. Map sources appear on the map.
       </figcaption>
     </figure>
   );

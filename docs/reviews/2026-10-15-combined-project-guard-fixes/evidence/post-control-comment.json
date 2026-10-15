@@ -1,0 +1,9 @@
+{
+  "file": "src/test/reference-count-projection-guard.test.ts",
+  "change": "Reword one comment to remove an em dash; exact reverse matches control restoration hash.",
+  "controlSha256": "5378c4979fb405c9ca267c7d19c3fbb090dfe4a972621bc20a505d22bd4d3dc2",
+  "finalSha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74",
+  "testFiles": 2,
+  "testsPassed": 12,
+  "logSha256": "2cf22b727330957e955a1f2e7a227775bb4c0351a092de6247ac599b7ebdd0d0"
+}

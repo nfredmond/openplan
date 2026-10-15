@@ -1,0 +1,64 @@
+[
+  {
+    "name": "types",
+    "exitCode": 0,
+    "command": [
+      "node",
+      "--max-old-space-size=700",
+      "node_modules/typescript/bin/tsc",
+      "--noEmit",
+      "-p",
+      "/home/nathaniel/.local/state/openplan/combined-project-guard-fixes-20261015/types.config.json"
+    ]
+  },
+  {
+    "name": "lint",
+    "exitCode": 0,
+    "command": [
+      "node",
+      "--max-old-space-size=700",
+      "node_modules/eslint/bin/eslint.js",
+      "--max-warnings=0",
+      "src/test/supabase-call-sites.ts",
+      "src/test/reference-count-projection-guard.test.ts",
+      "src/test/planner-copy-says-the-plain-thing.test.ts",
+      "src/components/projects/project-saved-map.tsx",
+      "src/components/projects/project-jurisdiction-editor.tsx",
+      "src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx",
+      "src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx"
+    ]
+  },
+  {
+    "name": "focused",
+    "exitCode": 0,
+    "command": [
+      "node",
+      "--max-old-space-size=700",
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "--config",
+      "/home/nathaniel/.local/state/openplan/combined-project-guard-fixes-20261015/focused.config.mts",
+      "src/test/planner-copy-says-the-plain-thing.test.ts",
+      "src/test/reference-count-projection-guard.test.ts",
+      "src/test/project-saved-map.test.tsx",
+      "src/test/project-jurisdiction-editor.test.tsx",
+      "src/test/project-jurisdiction-route.test.ts",
+      "src/test/jurisdiction-readiness-routes.test.ts",
+      "src/test/write-policy-coverage-guard.test.ts",
+      "src/test/gtfs-claim-boundaries.test.ts",
+      "src/test/gtfs-coverage.test.ts"
+    ]
+  },
+  {
+    "name": "inventory",
+    "exitCode": 0,
+    "command": [
+      "node",
+      "--max-old-space-size=700",
+      "--import",
+      "tsx",
+      "/home/nathaniel/.local/state/openplan/combined-project-guard-fixes-20261015/inventory.ts",
+      "/home/nathaniel/.local/state/openplan/combined-project-guard-fixes-20261015/final-sites.json"
+    ]
+  }
+]

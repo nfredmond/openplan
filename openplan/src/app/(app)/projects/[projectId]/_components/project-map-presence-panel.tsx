@@ -68,7 +68,7 @@ export function ProjectMapPresencePanel({
           <div className="module-section-heading">
             <h2 className="module-section-title">Where this project is</h2>
             <p className="module-section-description">
-              Review the saved study area, site marker and corridors together. Draw or upload a
+              Review the saved project boundary, site marker and corridors together. Draw or upload a
               location or corridor below. Save changes to include them on this map and in exports.
             </p>
           </div>
