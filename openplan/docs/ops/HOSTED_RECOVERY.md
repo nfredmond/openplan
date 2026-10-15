@@ -38,7 +38,13 @@ its bucket, path, byte count and SHA-256. Copy complete worker directories under
 the same consistency interval, including SQLite journals and WAL sidecars.
 Use SQLite's backup API or a verified checkpoint for active journals. A file
 transfer made while workers write is insufficient for a consistent recovery
-point. Preserve `OPENPLAN_INTEGRATION_KEY_SECRET` through protected custody.
+point. Preserve `OPENPLAN_INTEGRATION_KEY_SECRET` and
+`OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` through protected custody whenever
+the recovery point contains workspace keys or sealed worker credentials that
+need the second secret. Database dumps and worker journals do not contain these
+environment secrets. Keep each required secret while a retained recovery point
+needs it. Follow the [rotation procedure](../SELF_HOSTING.md#rotate-the-integration-encryption-secret)
+before changing either slot.
 
 ## Encrypted offsite copy, October 12, 2026
 
@@ -93,6 +99,11 @@ and [`verify-postgis-data-api.sql`](../../scripts/ops/verify-postgis-data-api.sq
 That Data API guard lives in a role setting, which a database dump does not carry.
 Verify retained password hashes against the synthetic users without printing
 passwords or hashes. SQL hash checks do not establish a working Auth service.
+
+Restore the recovery point's required primary and second integration secrets
+to the replacement web app and every credential-reading worker before resuming
+work. Check retained credentials without redispatching an uncertain provider
+request. A successful row or file restore does not establish credential recovery.
 
 Copy the captured objects and worker files into the isolated target, retrieve
 fresh copies and compare all byte counts and digests. Do not send the copies

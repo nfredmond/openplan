@@ -13,6 +13,8 @@
   "docs/ROADMAP.md": "47dd6b090e8746c30ce835c03f80c1520fe2a45a8c25386e1eb37fdb96a54209",
   "docs/archive/ROADMAP_EVIDENCE_LOG_2026-08-24_TO_2026-10-12.md": "8778128ca120b595153c88b31ad50e466d30ceecafd793dc905edfb8770c488b",
   "docs/reviews/2026-10-15-integration-secret-rotation/verify_controls.py": "6ef0eae00dffd7734b5869eb8a8a41f6bd40f61ff8406e0ce7049e1d4a52678c",
-  "docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md": "994610c580b3a24e0bb0b7a759fc71f489f9956a154c3fefea11a5ebe06d5ecb",
-  "docs/reviews/2026-10-15-integration-secret-rotation/REVIEW.md": "68db67ce8eab082be37bc7a2bc6060be41083a85819be09b162ae47b2567c7a0"
+  "docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md": "dd102b45ee015e1ef2a99e93bd53863b73e5df648d2198358accb02bf05c3e86",
+  "docs/reviews/2026-10-15-integration-secret-rotation/REVIEW.md": "d8e6e26b4f0f9458185a8b6dda27dc9a7cb4b5f91d18c2b5f1c4ea7c1f2db9fd",
+  "openplan/docs/ops/HOSTED_RECOVERY.md": "c4975be56c1dabdb99ab76104a665c296358b2ac308081ee51a4bd4ae523b67d",
+  "openplan/docs/ops/BACKUP_AND_RESTORE.md": "3b43d427ba165fcf82c372701d967c782d9d200d552174346b5e57f6fce0ae15"
 }

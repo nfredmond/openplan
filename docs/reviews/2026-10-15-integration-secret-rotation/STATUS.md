@@ -73,5 +73,16 @@ configuration names the application's actual type root; no application type
 errors are suppressed. The failed report remains retained privately.
 
 The [independent reports](REVIEW.md) preserve both review rounds. A dedicated
-GitHub workflow repeats the source controls. Full exact-head GitHub CI remains
-pending. No production setting or hosted secret has changed.
+GitHub workflow repeats the source controls. Full GitHub CI passes on
+`1f004f0894067225df75574d939968ecffac56ad`. No production setting or hosted
+secret has changed.
+
+## Recovery instruction correction after review
+
+October 15, 2026. GitHub review identified that the canonical local and hosted
+recovery procedures still named only the primary secret. Both now require
+protected capture and restoration of the second secret when retained workspace
+keys or sealed worker credentials depend on it. They require every reader to
+receive the secrets before work resumes and preserve keys needed by retained
+recovery points. This corrects instructions, without changing runtime code or
+establishing an actual restore. The amended head needs fresh CI.

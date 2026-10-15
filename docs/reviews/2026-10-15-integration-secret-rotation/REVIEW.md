@@ -18,3 +18,14 @@ I ran no tests or services. Hosted rotation, queue recovery, and restore accepta
 Both findings are closed. The instructions protect an occupied second slot, and the rolling-compatibility test now has a targeted fault and named assertion. The new provider revision test also checks retained identity and destination refusal.
 
 No additional concrete defect found in the changed lines. Read-only review; I ran no tests. Hosted rotation and queue/restore acceptance remain unproved.
+
+## GitHub review and recovery instructions
+
+The review of `1f004f0894` identified a P2 omission in the canonical backup and
+hosted recovery documents. Both named only the primary integration secret.
+The correction now names the second secret when retained records depend on it,
+requires protected capture and restoration to every credential reader, and
+preserves keys needed by retained recovery points. The runtime source and its
+tested bindings remain unchanged. The four selected test files pass 27 cases,
+and both recovery links resolve. These are instruction and regression checks,
+not a performed installation restore.
