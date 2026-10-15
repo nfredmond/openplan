@@ -44,21 +44,30 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
       return NextResponse.json({ error: "Workspace not found" }, { status: 404 });
     }
 
-    const result = await supabase
-      .from("projects")
-      .select(PROJECT_EXPORT_COLUMNS)
-      .eq("workspace_id", membership.workspace_id)
-      .order("updated_at", { ascending: false })
-      .limit(PORTFOLIO_IMPORT_MAX_ROWS + 1);
-    if (result.error) {
-      audit.error("portfolio_workbook_read_failed", {
-        workspaceId: membership.workspace_id,
-        code: result.error.code ?? null,
-      });
-      return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 500 });
+    const projects: PortfolioRoundTripProject[] = [];
+    const pageSize = 1_000;
+    // Advance by received rows so an installation's smaller response cap cannot
+    // turn a short page into a false end. Read at most one row beyond the limit.
+    while (projects.length <= PORTFOLIO_IMPORT_MAX_ROWS) {
+      const result = await supabase
+        .from("projects")
+        .select(PROJECT_EXPORT_COLUMNS)
+        .eq("workspace_id", membership.workspace_id)
+        .order("updated_at", { ascending: false })
+        .order("id", { ascending: true })
+        .range(projects.length, Math.min(projects.length + pageSize - 1, PORTFOLIO_IMPORT_MAX_ROWS));
+      if (result.error || !result.data) {
+        audit.error("portfolio_workbook_read_failed", {
+          workspaceId: membership.workspace_id,
+          code: result.error?.code ?? null,
+        });
+        return NextResponse.json({ error: "Failed to read the project portfolio" }, { status: 500 });
+      }
+      const page = result.data as unknown as PortfolioRoundTripProject[];
+      if (page.length === 0) break;
+      projects.push(...page);
     }
 
-    const projects = (result.data ?? []) as unknown as PortfolioRoundTripProject[];
     if (projects.length > PORTFOLIO_IMPORT_MAX_ROWS) {
       audit.warn("portfolio_workbook_row_limit", {
         workspaceId: membership.workspace_id,

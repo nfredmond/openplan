@@ -1,0 +1,457 @@
+{
+  "trials": [
+    {
+      "trial": "complete-positive",
+      "test": "exports all 2000 projects through the configured row cap with original workbook values",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "complete-positive.json"
+    },
+    {
+      "trial": "complete-harmless",
+      "test": "exports all 2000 projects through the configured row cap with original workbook values",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "complete-harmless.json"
+    },
+    {
+      "trial": "complete-fault",
+      "test": "exports all 2000 projects through the configured row cap with original workbook values",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "complete workbook must preserve all original rows and literal metadata",
+      "report": "complete-fault.json"
+    },
+    {
+      "trial": "complete-restored",
+      "test": "exports all 2000 projects through the configured row cap with original workbook values",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "complete-restored.json"
+    },
+    {
+      "trial": "projection-positive",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "projection-positive.json"
+    },
+    {
+      "trial": "projection-harmless",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "projection-harmless.json"
+    },
+    {
+      "trial": "projection-fault",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "every page must retain scope projection stable order and bounded ranges",
+      "report": "projection-fault.json"
+    },
+    {
+      "trial": "projection-restored",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "projection-restored.json"
+    },
+    {
+      "trial": "scope-positive",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "scope-positive.json"
+    },
+    {
+      "trial": "scope-harmless",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "scope-harmless.json"
+    },
+    {
+      "trial": "scope-fault",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "every page must retain scope projection stable order and bounded ranges",
+      "report": "scope-fault.json"
+    },
+    {
+      "trial": "scope-restored",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "scope-restored.json"
+    },
+    {
+      "trial": "tie-order-positive",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "tie-order-positive.json"
+    },
+    {
+      "trial": "tie-order-harmless",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "tie-order-harmless.json"
+    },
+    {
+      "trial": "tie-order-fault",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "every page must retain scope projection stable order and bounded ranges",
+      "report": "tie-order-fault.json"
+    },
+    {
+      "trial": "tie-order-restored",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "tie-order-restored.json"
+    },
+    {
+      "trial": "date-order-positive",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "date-order-positive.json"
+    },
+    {
+      "trial": "date-order-harmless",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "date-order-harmless.json"
+    },
+    {
+      "trial": "date-order-fault",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "every page must retain scope projection stable order and bounded ranges",
+      "report": "date-order-fault.json"
+    },
+    {
+      "trial": "date-order-restored",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "date-order-restored.json"
+    },
+    {
+      "trial": "bounded-range-positive",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "bounded-range-positive.json"
+    },
+    {
+      "trial": "bounded-range-harmless",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "bounded-range-harmless.json"
+    },
+    {
+      "trial": "bounded-range-fault",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "every page must retain scope projection stable order and bounded ranges",
+      "report": "bounded-range-fault.json"
+    },
+    {
+      "trial": "bounded-range-restored",
+      "test": "scopes and projects every ordered page for a read-only workspace member",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "bounded-range-restored.json"
+    },
+    {
+      "trial": "short-page-positive",
+      "test": "continues after a short capped page until the scoped portfolio is exhausted",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "short-page-positive.json"
+    },
+    {
+      "trial": "short-page-harmless",
+      "test": "continues after a short capped page until the scoped portfolio is exhausted",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "short-page-harmless.json"
+    },
+    {
+      "trial": "short-page-fault",
+      "test": "continues after a short capped page until the scoped portfolio is exhausted",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "short server pages must not truncate the workbook",
+      "report": "short-page-fault.json"
+    },
+    {
+      "trial": "short-page-restored",
+      "test": "continues after a short capped page until the scoped portfolio is exhausted",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "short-page-restored.json"
+    },
+    {
+      "trial": "over-limit-positive",
+      "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "over-limit-positive.json"
+    },
+    {
+      "trial": "over-limit-harmless",
+      "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "over-limit-harmless.json"
+    },
+    {
+      "trial": "over-limit-fault",
+      "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "over-limit portfolio must refuse before creating a workbook",
+      "report": "over-limit-fault.json"
+    },
+    {
+      "trial": "over-limit-restored",
+      "test": "refuses 2001 projects explicitly instead of generating a partial workbook",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "over-limit-restored.json"
+    },
+    {
+      "trial": "late-error-positive",
+      "test": "refuses a later page error instead of exporting the earlier rows",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "late-error-positive.json"
+    },
+    {
+      "trial": "late-error-harmless",
+      "test": "refuses a later page error instead of exporting the earlier rows",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "late-error-harmless.json"
+    },
+    {
+      "trial": "late-error-fault",
+      "test": "refuses a later page error instead of exporting the earlier rows",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "later page read failure must not export a partial workbook",
+      "report": "late-error-fault.json"
+    },
+    {
+      "trial": "late-error-restored",
+      "test": "refuses a later page error instead of exporting the earlier rows",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "late-error-restored.json"
+    },
+    {
+      "trial": "unavailable-positive",
+      "test": "keeps an unavailable page distinct from an empty portfolio",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "unavailable-positive.json"
+    },
+    {
+      "trial": "unavailable-harmless",
+      "test": "keeps an unavailable page distinct from an empty portfolio",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "unavailable-harmless.json"
+    },
+    {
+      "trial": "unavailable-fault",
+      "test": "keeps an unavailable page distinct from an empty portfolio",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "unavailable data must not become a successful empty page",
+      "report": "unavailable-fault.json"
+    },
+    {
+      "trial": "unavailable-restored",
+      "test": "keeps an unavailable page distinct from an empty portfolio",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "unavailable-restored.json"
+    },
+    {
+      "trial": "empty-positive",
+      "test": "exports a genuinely empty portfolio with the original workbook headers",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "empty-positive.json"
+    },
+    {
+      "trial": "empty-harmless",
+      "test": "exports a genuinely empty portfolio with the original workbook headers",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "empty-harmless.json"
+    },
+    {
+      "trial": "empty-fault",
+      "test": "exports a genuinely empty portfolio with the original workbook headers",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "empty successful read must still export the workbook",
+      "report": "empty-fault.json"
+    },
+    {
+      "trial": "empty-restored",
+      "test": "exports a genuinely empty portfolio with the original workbook headers",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "empty-restored.json"
+    },
+    {
+      "trial": "anonymous-positive",
+      "test": "stops anonymous callers before membership or project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "anonymous-positive.json"
+    },
+    {
+      "trial": "anonymous-harmless",
+      "test": "stops anonymous callers before membership or project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "anonymous-harmless.json"
+    },
+    {
+      "trial": "anonymous-fault",
+      "test": "stops anonymous callers before membership or project reads",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "anonymous caller must stop before portfolio access",
+      "report": "anonymous-fault.json"
+    },
+    {
+      "trial": "anonymous-restored",
+      "test": "stops anonymous callers before membership or project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "anonymous-restored.json"
+    },
+    {
+      "trial": "membership-positive",
+      "test": "stops callers without active membership before project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "membership-positive.json"
+    },
+    {
+      "trial": "membership-harmless",
+      "test": "stops callers without active membership before project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "membership-harmless.json"
+    },
+    {
+      "trial": "membership-fault",
+      "test": "stops callers without active membership before project reads",
+      "classification": "KILLED",
+      "exitCode": 1,
+      "assertion": "missing membership must stop before portfolio access",
+      "report": "membership-fault.json"
+    },
+    {
+      "trial": "membership-restored",
+      "test": "stops callers without active membership before project reads",
+      "classification": "SURVIVED",
+      "exitCode": 0,
+      "assertion": null,
+      "report": "membership-restored.json"
+    }
+  ],
+  "classifierRefusals": [
+    {
+      "case": "runtime",
+      "result": "REFUSED",
+      "reason": "runtime or unhandled error"
+    },
+    {
+      "case": "import",
+      "result": "REFUSED",
+      "reason": "empty selection or suite/import error"
+    },
+    {
+      "case": "empty",
+      "result": "REFUSED",
+      "reason": "empty selection or suite/import error"
+    },
+    {
+      "case": "wrong-test",
+      "result": "REFUSED",
+      "reason": "wrong test identity or active count"
+    },
+    {
+      "case": "wrong-assertion",
+      "result": "REFUSED",
+      "reason": "wrong assertion diagnostic"
+    },
+    {
+      "case": "wrong-code",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    },
+    {
+      "case": "extra-failure",
+      "result": "REFUSED",
+      "reason": "not one assertion failure"
+    }
+  ]
+}
