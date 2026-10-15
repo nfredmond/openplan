@@ -6,7 +6,7 @@ vi.mock("server-only", () => ({}));
 import { actor as jurisdictionActor, exportProject } from "./project-jurisdiction-export-fixture";
 import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { pagingFake } from "./helpers/paging-fake";
@@ -4311,8 +4311,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
     }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
     expect(response.status).toBe(200);
     const inserted = artifactsInsertMock.mock.calls[0][0];
-    expect(inserted.metadata_json.sourceContext.jurisdictionReadiness, "Report metadata shares external canonical material").toEqual(expected);
-    expect(JSON.stringify(inserted.metadata_json.sourceContext.jurisdictionReadiness), "Report readiness omits internal actor").not.toContain(jurisdictionActor);
+    assert(inserted.metadata_json, "Generated report includes metadata");
+    const sourceContext = inserted.metadata_json.sourceContext;
+    assert(
+      typeof sourceContext === "object" && sourceContext !== null && "jurisdictionReadiness" in sourceContext,
+      "Generated report metadata includes jurisdiction readiness source context"
+    );
+    const reportReadiness = sourceContext.jurisdictionReadiness;
+    expect(reportReadiness, "Report metadata shares external canonical material").toEqual(expected);
+    expect(JSON.stringify(reportReadiness), "Report readiness omits internal actor").not.toContain(jurisdictionActor);
     const html = serviceStorageUploadMock.mock.calls.find(call => String(call[0]).endsWith(".html"))?.[1].toString();
     expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
     expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
@@ -4325,7 +4332,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
     } };
     const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
     const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
-    expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(inserted.metadata_json.sourceContext.jurisdictionReadiness);
+    expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(reportReadiness);
     const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });
     for (const bytes of [standalone.bytes, bundle.files.find(file => file.path === "project/project.gpkg")!.bytes]) {
       const db = new Database(bytes, { readonly: true });
