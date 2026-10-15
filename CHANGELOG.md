@@ -25,8 +25,8 @@ stable enough to promise smooth upgrades indefinitely.
 retain invalid source status and delivery phase in immutable audit records.
 Selected rows still pass project classification, cost, confirmation, source
 custody and duplicate checks in the same transaction. Apply the migration before
-claiming this correction on an installation. Native execution and browser retry
-remain pending. See the [candidate evidence](docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/STATUS.md).
+claiming this correction on an installation. Native rollback checks pass on an
+isolated test target; browser retry remains pending. See the [candidate evidence](docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/STATUS.md).
 
 **Integration secret rotation, candidate:** the optional private
 `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained workspace keys and

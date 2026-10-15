@@ -1,9 +1,13 @@
 # Portfolio import transaction correction, candidate
 
 The candidate lets an invalid skipped source row remain in the audit record
-while valid selected rows create together. Native SQL execution, independent
-review, and the browser retry remain pending. This packet does not establish
-installation or workflow acceptance.
+while valid selected rows create together. The implementation records below
+describe the original preparation checkpoint. Subsequent independent source
+review and the parent's [native rollback proof](../2026-10-15-portfolio-skip-invalid-native/STATUS.md)
+pass within their stated bounds. The parent corrects the temporary-schema grant
+recommended by review before native execution; the original verification file
+still binds the earlier generator. The browser retry remains pending. This
+packet does not establish installation or workflow acceptance.
 
 ## Ownership and baseline
 

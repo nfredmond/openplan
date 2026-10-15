@@ -55,7 +55,17 @@ BEGIN
       IS DISTINCT FROM __OLD_BODY__ THEN RAISE EXCEPTION 'Original v2 body differs'; END IF;
 END $preflight$;
 CREATE TEMP TABLE portfolio_input (v jsonb NOT NULL);
-GRANT USAGE ON SCHEMA pg_temp TO service_role, authenticated, anon;
+DO $temp_access$
+DECLARE temporary_schema text;
+BEGIN
+  SELECT nspname INTO STRICT temporary_schema
+  FROM pg_catalog.pg_namespace
+  WHERE oid = pg_catalog.pg_my_temp_schema();
+  EXECUTE format(
+    'GRANT USAGE ON SCHEMA %I TO service_role, authenticated, anon',
+    temporary_schema
+  );
+END $temp_access$;
 INSERT INTO portfolio_input VALUES (__INPUT__::jsonb);
 GRANT SELECT ON portfolio_input TO service_role, authenticated, anon;
 SELECT (SELECT count(*) FROM public.projects) projects,
