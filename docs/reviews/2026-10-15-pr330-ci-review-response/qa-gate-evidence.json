@@ -1,0 +1,16 @@
+{
+  "head": "75931937aa85950da68577abef1246d7f3c8ff13",
+  "runId": 38773672471,
+  "jobId": 116556241944,
+  "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38773672471/job/116556241944",
+  "logSha256": "58eda766b46bea8bbcc633d878a148fd6168b12a172c7df3a581af37aca2917d",
+  "failures": [
+    "src/test/one-pending-schema-classifier.test.ts > one pending-schema classifier \u2014 no inline pending-schema regex > adds no new file",
+    "src/test/reference-count-projection-guard.test.ts > reference count projections > guards the guard"
+  ],
+  "passedTests": 22969,
+  "skippedTests": 1662,
+  "failedTests": 2,
+  "sameAsShuffled": true,
+  "disposition": "Existing report guard correction owns both failures. No duplicate task/suite/retry. QA gate failed, downstream acceptance unconfirmed."
+}
