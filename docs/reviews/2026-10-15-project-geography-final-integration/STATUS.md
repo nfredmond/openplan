@@ -195,3 +195,8 @@ The [dated parent operation](../2026-10-15-final-preview-rest-operation/STATUS.m
 ## Current application packet remains unexecuted
 
 The [parent F2 finding](../2026-10-15-current-preview-health-contract-finding/FINDING.md) records an attestation producer/consumer mismatch in preparedf299. Correction and original-snapshot independent review run separately. No checkout, build or start executes. The new packet must preserve full-SHA identity outside the endpoint while checking its intentional12-character response exactly.
+
+
+## T3 capture remains unresolved
+
+The [read-only diagnosis](../2026-10-15-project-preview-capture-diagnosis/README.md) finds that text-only snapshots still capture PNG and an unfinished snapshot can retain the tab queue after broker timeout. [Parent trace lookup](../2026-10-15-project-preview-capture-diagnosis/PARENT_TRACE_READBACK.md) ties the stalled open to tab5 but finds no capture-substep completion record. No documented argument remedy, live retry or desktop/390px acceptance is established.
