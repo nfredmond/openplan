@@ -85,3 +85,12 @@ No practitioner/public, native Excel, nationwide scientific, whole-installation
 recovery or production acceptance follows. Candidate migration 16 remains local
 to this isolated fixture. Hosted configuration, providers, mainline merges,
 release version and tags remain unchanged.
+
+## Subsequent authenticated journey
+
+The parent later signs in with the recovered existing owner account and checks
+saved geography, jurisdiction editing and actual downloads at desktop and 390px.
+The [dated browser checkpoint](../2026-10-15-current-project-browser-journey/STATUS.md)
+records the resulting evidence and a repeatable import-confirmation failure.
+It supersedes the front-door-only progress statement above. The actual app and
+web invocation stay unchanged; no completed import or release claim follows.
