@@ -1,0 +1,80 @@
+[
+  {
+    "name": "ts-harmless-comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "ts-remove-jurisdiction-field",
+    "exit": 1,
+    "expected": "killed",
+    "matched": true,
+    "required": [
+      "page.tsx(1337,46): error TS2339: Property 'jurisdiction_context' does not exist on type 'ProjectRow'."
+    ]
+  },
+  {
+    "name": "ts-consumers",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "ts-page-test",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "ts-fixtures",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "ts-jurisdiction-tests",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "focused-project-jurisdiction",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "page-harmless-comment",
+    "exit": 0,
+    "expected": "survived",
+    "matched": true,
+    "required": []
+  },
+  {
+    "name": "page-force-legacy-null",
+    "exit": 1,
+    "expected": "killed",
+    "matched": true,
+    "required": [
+      "passes selected raw jurisdiction context",
+      "Study-place fallback is disabled."
+    ]
+  },
+  {
+    "name": "page-omit-selected-jurisdiction",
+    "exit": 1,
+    "expected": "killed",
+    "matched": true,
+    "required": [
+      "passes selected raw jurisdiction context",
+      "jurisdiction_context"
+    ]
+  }
+]

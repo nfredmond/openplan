@@ -1,0 +1,17 @@
+const ts = require('./app/node_modules/typescript');
+const fs = require('node:fs');
+const cp = require('node:child_process');
+const crypto = require('node:crypto');
+const path = require('node:path');
+const repo = '/home/nathaniel/.t3/worktrees/openplan/t3-42303f19';
+const file = 'openplan/src/app/(app)/projects/[projectId]/_components/_types.ts';
+const before = cp.execFileSync('git',['show','80e3035098159deb3127bbb277226ae6f5872870:'+file],{cwd:repo,encoding:'utf8'});
+const after = fs.readFileSync(path.join(repo,file),'utf8');
+const configFile = ts.readConfigFile(path.join(__dirname,'app/tsconfig.json'),ts.sys.readFile);
+const config = ts.parseJsonConfigFileContent(configFile.config,ts.sys,path.join(__dirname,'app'));
+const emit = text => ts.transpileModule(text,{compilerOptions:config.options,fileName:file}).outputText;
+const a=emit(before), b=emit(after);
+const result={equal:a===b, emittedSha256:crypto.createHash('sha256').update(b).digest('hex'), emittedBytes:Buffer.byteLength(b), scope:'Isolated TypeScript transpilation of the type module; no full Next.js bundle claim.'};
+fs.writeFileSync(path.join(__dirname,'runtime-erasure.json'),JSON.stringify(result,null,2)+'\n');
+console.log(JSON.stringify(result));
+if(!result.equal) process.exitCode=1;

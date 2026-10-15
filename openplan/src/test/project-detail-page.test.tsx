@@ -1860,6 +1860,21 @@ describe("ProjectDetailPage", () => {
     expect(screen.getByText(/could not read reimbursement invoices for this project/i)).toBeInTheDocument();
   });
 
+  it.each([
+    [null, "No separate declaration. Jurisdiction assessment may show labelled legacy study-place context."],
+    [{ version: 1, state: "unresolved", entries: [], recordedBy: "22222222-2222-4222-8222-222222222222", recordedAt: "2026-10-15T00:00:00.000Z" }, "Jurisdiction explicitly unresolved. Study-place fallback is disabled."],
+    [{ version: 2 }, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
+    [undefined, "Saved jurisdiction is invalid or could not be read. Jurisdiction assessment is unavailable."],
+  ])("passes selected raw jurisdiction context %j to the validating editor", async (context, disclosure) => {
+    const result = await projectSingleMock();
+    projectSingleMock.mockResolvedValueOnce({ ...result, data: { ...result.data, jurisdiction_context: context } });
+
+    await renderPage();
+
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(within(document.getElementById("project-jurisdiction")!).getByText(disclosure)).toBeInTheDocument();
+  });
+
   it("keeps the ordinary empty states when the reads succeeded and there is nothing", async () => {
     await renderPage("delivery");
 
