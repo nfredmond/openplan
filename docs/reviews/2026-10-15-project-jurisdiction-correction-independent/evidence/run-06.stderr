@@ -1,0 +1,8 @@
+{
+  "mode": "restart",
+  "result": "AssertionError",
+  "diagnostic": "restart clears original draft\n\ntrue !== false\n",
+  "checked": [
+    "scope round trip refuses userId=actor-B"
+  ]
+}

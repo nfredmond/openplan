@@ -1,0 +1,31 @@
+{
+  "mode": "baseline",
+  "result": "Error",
+  "diagnostic": "EISDIR: illegal operation on a directory, read",
+  "checked": [
+    "scope round trip refuses userId=actor-B",
+    "explicit restart userId=actor-B",
+    "scope round trip refuses workspaceId=workspace-B",
+    "explicit restart workspaceId=workspace-B",
+    "scope round trip refuses projectId=review-project-B",
+    "explicit restart projectId=review-project-B",
+    "scope round trip refuses revision=revision-B",
+    "explicit restart revision=revision-B",
+    "scope round trip refuses canWrite=false",
+    "explicit restart canWrite=false",
+    "scope round trip refuses canWrite=undefined",
+    "explicit restart canWrite=undefined",
+    "inflight response after account round trip",
+    "deferred error parsing scope",
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited",
+    "canonical hash and material stable across clocks",
+    "complete generated adapter minimizes identifiers",
+    "bundle and separate JSON parity",
+    "standalone GeoPackage canonical parity and source geometry",
+    "bundle GeoPackage canonical parity and source geometry"
+  ]
+}

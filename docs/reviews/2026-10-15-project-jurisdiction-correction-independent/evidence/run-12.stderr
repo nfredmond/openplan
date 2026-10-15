@@ -1,0 +1,12 @@
+{
+  "mode": "hash",
+  "result": "AssertionError",
+  "diagnostic": "generation clock must not enter canonical material\n+ actual - expected\n... Skipped lines\n\n  {\n    attribution: 'Recorded time and source attribution retained; internal actor identifier omitted.',\n    context: {\n      entries: [\n        {\n...\n    ],\n+   generatedAt: '2031-02-03T04:05:06.000Z',\n+   payloadSha256: 'ae57a64b67831c2af686fd72c0af88b5a8659848f388eeabe6abd9e8f9746b2f',\n-   generatedAt: '2026-10-15T06:21:01.240Z',\n-   payloadSha256: '7df71d63066efe34c40daaba660c9fdd48dc26585fe8fd29f74bde98345df18d',\n    projectId: 'review-project',\n    projectRevision: '2026-10-15T01:00:00.000Z',\n    registrySha256: '531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158',\n    registryVersion: '2026-10-11.1',\n    schema: 'openplan.project-jurisdiction-readiness-export.v3',\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited"
+  ]
+}

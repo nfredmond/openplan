@@ -1,0 +1,13 @@
+{
+  "mode": "adapter",
+  "result": "AssertionError",
+  "diagnostic": "The expression evaluated to a falsy value:\n\n  assert.ok(!JSON.stringify(bundle.projectRecord).includes(actor))\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited",
+    "canonical hash and material stable across clocks"
+  ]
+}

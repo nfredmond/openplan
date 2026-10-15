@@ -1,0 +1,15 @@
+{
+  "mode": "gpkg",
+  "result": "AssertionError",
+  "diagnostic": "GeoPackage must retain canonical readiness hash\n+ actual - expected\n\n+ 'broken-hash'\n- 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9'\n",
+  "checked": [
+    "minimized external actor with internal custody",
+    "strict storage parse before external conversion",
+    "external canonical material hashed after minimization",
+    "null unresolved invalid missing remain distinct",
+    "sovereign overlap and global support not inherited",
+    "canonical hash and material stable across clocks",
+    "complete generated adapter minimizes identifiers",
+    "bundle and separate JSON parity"
+  ]
+}

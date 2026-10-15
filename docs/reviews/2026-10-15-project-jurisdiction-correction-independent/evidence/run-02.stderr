@@ -1,0 +1,9 @@
+{
+  "mode": "epoch:workspaceId",
+  "result": "AssertionError",
+  "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+  "checked": [
+    "scope round trip refuses userId=actor-B",
+    "explicit restart userId=actor-B"
+  ]
+}

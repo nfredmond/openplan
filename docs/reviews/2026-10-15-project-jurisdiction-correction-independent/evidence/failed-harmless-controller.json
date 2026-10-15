@@ -1,0 +1,22 @@
+{
+  "classifier": {
+    "empty_rejected": true,
+    "crash_rejected": true,
+    "type_error_rejected": true,
+    "wrong_assertion_rejected": true,
+    "harmless_accepted": true,
+    "intended_accepted": true
+  },
+  "cases": [
+    {
+      "mode": "harmless",
+      "exit": 1,
+      "expectedExit": 0,
+      "expectedDiagnostic": null,
+      "outcome": false,
+      "result": "SyntaxError",
+      "diagnostic": "Unexpected token '/', \"// Indepen\"... is not valid JSON",
+      "checksReached": 14
+    }
+  ]
+}
