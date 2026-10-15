@@ -1,0 +1,22 @@
+Running as unit: run-p19087-i87978769.scope; invocation ID: 359dc206b7e94a7280b504eca0116ac2
+failed to load config from /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/vitest.config.mts
+
+⎯⎯⎯⎯⎯⎯⎯ Startup Error ⎯⎯⎯⎯⎯⎯⎯⎯
+Error: Failed to load url ../../../../openplan/node_modules/vitest/dist/config.js (resolved id: ../../../../openplan/node_modules/vitest/dist/config.js) in /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/vitest.config.mts. Does the file exist?
+    at loadAndTransform (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:22739:33) {
+  code: 'ERR_LOAD_URL',
+  runnerError: Error: RunnerError
+      at reviveInvokeError (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:476:64)
+      at Object.invoke (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:549:11)
+      at async ModuleRunner.getModuleInformation (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1086:7)
+      at async request (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1103:83)
+      at async eval (/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/vitest.config.mts:5:31)
+      at async ESModulesEvaluator.runInlinedModule (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:913:3)
+      at async ModuleRunner.directRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1146:59)
+      at async ModuleRunner.cachedRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1053:73)
+      at async ModuleRunner.import (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1014:10)
+      at async runnerImport (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:35282:20)
+}
+
+
+

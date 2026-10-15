@@ -36,3 +36,75 @@ it("offers explicitly unverified staff entry without inventing resolved identity
   await waitFor(() => expect(fetch).toHaveBeenCalledOnce());
   expect(JSON.parse(vi.mocked(fetch).mock.calls[0][1]!.body as string).jurisdiction.entries).toEqual([{ mode: "staff", label: "Sovereign declaration", kind: "nation", countryCode: null, subdivisionCode: null, reference: null, scope: "other" }]);
 });
+
+for (const [name, change] of [
+  ["account", { userId: "other-user" }], ["workspace", { workspaceId: "other-workspace" }],
+  ["permission", { canWrite: false }], ["project", { projectId: "other-project" }],
+  ["revision", { revision: "2026-10-16T00:00:00.000Z" }],
+] as const) {
+  it(`retains original draft and blocks ${name} props changes until explicit restart`, async () => {
+    const view = render(<ProjectJurisdictionEditor {...props} />);
+    fireEvent.click(screen.getByText("Edit jurisdiction context")); fireEvent.click(screen.getByText("Resolve jurisdiction"));
+    view.rerender(<ProjectJurisdictionEditor {...props} {...change} />);
+    expect(screen.queryByText(/county 06045/), "Retained draft survives changed props").toBeTruthy();
+    expect((screen.getByText("Save jurisdiction context").closest("fieldset") as HTMLFieldSetElement).disabled, "Stale draft submission blocked").toBe(true);
+    fireEvent.click(screen.getByText("Save jurisdiction context")); fireEvent.click(screen.getByText("Clear to unresolved"));
+    expect(fetch, "Stale draft emits no request").not.toHaveBeenCalled();
+    if (name !== "permission") {
+      fireEvent.click(screen.getByText("Compare saved context and restart"));
+      expect(screen.queryByText(/county 06045/), "Restart uses current saved context").toBeNull();
+      fireEvent.click(screen.getByText("Resolve jurisdiction")); fireEvent.click(screen.getByText("Save jurisdiction context"));
+      await waitFor(() => expect(refresh).toHaveBeenCalledOnce());
+      const [url, options] = vi.mocked(fetch).mock.calls[0];
+      expect(url).toBe(`/api/projects/${{ ...props, ...change }.projectId}`);
+      expect(options!.headers).toEqual({ "content-type": "application/json", "x-openplan-expected-user": { ...props, ...change }.userId, "x-openplan-expected-workspace": { ...props, ...change }.workspaceId });
+      expect(JSON.parse(options!.body as string).expectedRevision).toBe({ ...props, ...change }.revision);
+    }
+  });
+  it(`keeps draft when an in-flight save returns after ${name} changes`, async () => {
+    let resolveResponse!: (value: Response) => void;
+    vi.mocked(fetch).mockReturnValue(new Promise(resolve => { resolveResponse = resolve; }));
+    const view = render(<ProjectJurisdictionEditor {...props} />);
+    fireEvent.click(screen.getByText("Edit jurisdiction context")); fireEvent.click(screen.getByText("Resolve jurisdiction")); fireEvent.click(screen.getByText("Save jurisdiction context"));
+    view.rerender(<ProjectJurisdictionEditor {...props} {...change} />);
+    resolveResponse(new Response("{}", { status: 200 }));
+    await waitFor(() => expect(screen.queryByText(/save response belongs to an earlier scope/), "Earlier-scope response disclosed").toBeTruthy());
+    expect(refresh, "Earlier-scope response cannot confirm new scope").not.toHaveBeenCalled();
+    expect(screen.queryByText(/county 06045/), "Earlier-scope response preserves original draft").toBeTruthy();
+  });
+}
+it("blocks an in-flight confirmation even when account changes away and back", async () => {
+  let resolveResponse!: (value: Response) => void;
+  vi.mocked(fetch).mockReturnValue(new Promise(resolve => { resolveResponse = resolve; }));
+  const view = render(<ProjectJurisdictionEditor {...props} />);
+  fireEvent.click(screen.getByText("Edit jurisdiction context")); fireEvent.click(screen.getByText("Resolve jurisdiction")); fireEvent.click(screen.getByText("Save jurisdiction context"));
+  view.rerender(<ProjectJurisdictionEditor {...props} userId="other-user" />);
+  view.rerender(<ProjectJurisdictionEditor {...props} />);
+  resolveResponse(new Response("{}", { status: 200 }));
+  await waitFor(() => expect(screen.queryByText(/save response belongs to an earlier scope/), "Earlier-scope response disclosed").toBeTruthy());
+  expect(refresh, "An intervening account change invalidates confirmation").not.toHaveBeenCalled();
+});
+
+it("does not publish a prior-scope error after deferred response parsing", async () => {
+  let resolveBody!: (value: { error: string }) => void;
+  const json = vi.fn(() => new Promise(resolve => { resolveBody = resolve; }));
+  vi.mocked(fetch).mockResolvedValue({ ok: false, json } as unknown as Response);
+  const view = render(<ProjectJurisdictionEditor {...props} />);
+  fireEvent.click(screen.getByText("Edit jurisdiction context")); fireEvent.click(screen.getByText("Resolve jurisdiction")); fireEvent.click(screen.getByText("Save jurisdiction context"));
+  await waitFor(() => expect(json).toHaveBeenCalledOnce());
+  view.rerender(<ProjectJurisdictionEditor {...props} userId="other-user" />);
+  resolveBody({ error: "Response for the original account" });
+  await waitFor(() => expect(screen.queryByText(/save response belongs to an earlier scope/), "Parsed error stays with original scope").toBeTruthy());
+  expect(screen.queryByText("Response for the original account"), "Prior account error does not enter new scope").toBeNull();
+});
+it("blocks confirmation after permission is revoked and restored during a save", async () => {
+  let resolveResponse!: (value: Response) => void;
+  vi.mocked(fetch).mockReturnValue(new Promise(resolve => { resolveResponse = resolve; }));
+  const view = render(<ProjectJurisdictionEditor {...props} />);
+  fireEvent.click(screen.getByText("Edit jurisdiction context")); fireEvent.click(screen.getByText("Resolve jurisdiction")); fireEvent.click(screen.getByText("Save jurisdiction context"));
+  view.rerender(<ProjectJurisdictionEditor {...props} canWrite={false} />);
+  view.rerender(<ProjectJurisdictionEditor {...props} />);
+  resolveResponse(new Response("{}", { status: 200 }));
+  await waitFor(() => expect(screen.queryByText(/save response belongs to an earlier scope/), "Intervening permission loss invalidates confirmation").toBeTruthy());
+  expect(refresh, "Restored permission cannot adopt earlier intent").not.toHaveBeenCalled();
+});

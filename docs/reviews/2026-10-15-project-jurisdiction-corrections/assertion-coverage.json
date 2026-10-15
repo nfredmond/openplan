@@ -1,0 +1,494 @@
+{
+  "project-jurisdiction-editor.test.tsx :: retains original draft and blocks account props changes until explicit restart": {
+    "survivors": [
+      {
+        "label": "harmless survivor: retains original draft and blocks account props changes until explicit restart",
+        "receipt": "controls-04/00.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ],
+    "faults": [
+      {
+        "label": "account scope retention",
+        "receipt": "controls-04/01.json",
+        "diagnostic": "Stale draft submission blocked"
+      },
+      {
+        "label": "handler stale refusal",
+        "receipt": "controls-04/24.json",
+        "diagnostic": "Stale draft emits no request"
+      },
+      {
+        "label": "restart reads saved context",
+        "receipt": "controls-04/25.json",
+        "diagnostic": "Restart uses current saved context"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after account changes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after account changes",
+        "receipt": "controls-04/02.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "account in-flight confirmation",
+        "receipt": "controls-04/03.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "account scope epoch tracking",
+        "receipt": "controls-04/60.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: retains original draft and blocks workspace props changes until explicit restart": {
+    "survivors": [
+      {
+        "label": "harmless survivor: retains original draft and blocks workspace props changes until explicit restart",
+        "receipt": "controls-04/04.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ],
+    "faults": [
+      {
+        "label": "workspace scope retention",
+        "receipt": "controls-04/05.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after workspace changes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after workspace changes",
+        "receipt": "controls-04/06.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "workspace in-flight confirmation",
+        "receipt": "controls-04/07.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "workspace scope epoch tracking",
+        "receipt": "controls-04/61.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: retains original draft and blocks permission props changes until explicit restart": {
+    "survivors": [
+      {
+        "label": "harmless survivor: retains original draft and blocks permission props changes until explicit restart",
+        "receipt": "controls-04/08.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ],
+    "faults": [
+      {
+        "label": "permission scope retention",
+        "receipt": "controls-04/09.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after permission changes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after permission changes",
+        "receipt": "controls-04/10.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "permission in-flight confirmation",
+        "receipt": "controls-04/11.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: retains original draft and blocks project props changes until explicit restart": {
+    "survivors": [
+      {
+        "label": "harmless survivor: retains original draft and blocks project props changes until explicit restart",
+        "receipt": "controls-04/12.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ],
+    "faults": [
+      {
+        "label": "project scope retention",
+        "receipt": "controls-04/13.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after project changes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after project changes",
+        "receipt": "controls-04/14.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after project changes",
+        "receipt": "controls-05/00.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "project in-flight confirmation",
+        "receipt": "controls-04/15.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "project scope epoch tracking",
+        "receipt": "controls-05/06.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: retains original draft and blocks revision props changes until explicit restart": {
+    "survivors": [
+      {
+        "label": "harmless survivor: retains original draft and blocks revision props changes until explicit restart",
+        "receipt": "controls-04/16.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ],
+    "faults": [
+      {
+        "label": "revision scope retention",
+        "receipt": "controls-04/17.json",
+        "diagnostic": "Stale draft submission blocked"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: keeps draft when an in-flight save returns after revision changes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after revision changes",
+        "receipt": "controls-04/18.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "harmless survivor: keeps draft when an in-flight save returns after revision changes",
+        "receipt": "controls-05/01.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "revision in-flight confirmation",
+        "receipt": "controls-04/19.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      },
+      {
+        "label": "revision scope epoch tracking",
+        "receipt": "controls-05/07.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: blocks an in-flight confirmation even when account changes away and back": {
+    "survivors": [
+      {
+        "label": "harmless survivor: blocks an in-flight confirmation even when account changes away and back",
+        "receipt": "controls-04/20.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ],
+    "faults": [
+      {
+        "label": "account round-trip epoch",
+        "receipt": "controls-04/21.json",
+        "diagnostic": "Earlier-scope response disclosed"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: does not publish a prior-scope error after deferred response parsing": {
+    "survivors": [
+      {
+        "label": "harmless survivor: does not publish a prior-scope error after deferred response parsing",
+        "receipt": "controls-04/22.json",
+        "diagnostic": "Parsed error stays with original scope"
+      }
+    ],
+    "faults": [
+      {
+        "label": "parsed response scope",
+        "receipt": "controls-04/23.json",
+        "diagnostic": "Parsed error stays with original scope"
+      }
+    ]
+  },
+  "project-jurisdiction-export-corrections.test.ts :: hashes a versioned external representation after strict internal validation": {
+    "survivors": [
+      {
+        "label": "harmless survivor: hashes a versioned external representation after strict internal validation",
+        "receipt": "controls-04/26.json",
+        "diagnostic": "External canonical material excludes internal actor UUID"
+      }
+    ],
+    "faults": [
+      {
+        "label": "external actor minimization",
+        "receipt": "controls-04/27.json",
+        "diagnostic": "External canonical material excludes internal actor UUID"
+      },
+      {
+        "label": "recorded time retained",
+        "receipt": "controls-04/28.json",
+        "diagnostic": "External attribution keeps time and source"
+      },
+      {
+        "label": "explicit external schema",
+        "receipt": "controls-04/29.json",
+        "diagnostic": "External schema is explicit"
+      },
+      {
+        "label": "explicit external scope",
+        "receipt": "controls-04/30.json",
+        "diagnostic": "External scope is explicit"
+      },
+      {
+        "label": "strict internal parser before export",
+        "receipt": "controls-04/31.json",
+        "diagnostic": "Export cannot bypass strict internal authorship validation"
+      },
+      {
+        "label": "external canonical hash",
+        "receipt": "controls-04/32.json",
+        "diagnostic": "External hash covers its actual canonical bytes"
+      },
+      {
+        "label": "registry identity",
+        "receipt": "controls-04/33.json",
+        "diagnostic": "Registry identity retained"
+      }
+    ]
+  },
+  "project-jurisdiction-export-corrections.test.ts :: carries minimized same-revision canonical material through real generated files and SQLite at different clocks": {
+    "survivors": [
+      {
+        "label": "harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "receipt": "controls-04/34.json",
+        "diagnostic": "Generated project record minimizes actor"
+      },
+      {
+        "label": "harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "receipt": "controls-05/02.json",
+        "diagnostic": "Generated project record minimizes actor"
+      }
+    ],
+    "faults": [
+      {
+        "label": "generated project context export",
+        "receipt": "controls-04/35.json",
+        "diagnostic": "Generated project record minimizes actor"
+      },
+      {
+        "label": "GeoPackage canonical hash record",
+        "receipt": "controls-04/36.json",
+        "diagnostic": "standalone canonical hash parity"
+      },
+      {
+        "label": "GeoPackage canonical payload bytes",
+        "receipt": "controls-04/37.json",
+        "diagnostic": "standalone canonical byte parity"
+      },
+      {
+        "label": "GeoPackage registry hash",
+        "receipt": "controls-04/38.json",
+        "diagnostic": "standalone registry hash"
+      },
+      {
+        "label": "GeoPackage registry version",
+        "receipt": "controls-04/39.json",
+        "diagnostic": "standalone registry version"
+      },
+      {
+        "label": "GeoPackage payload schema",
+        "receipt": "controls-04/40.json",
+        "diagnostic": "standalone schema"
+      },
+      {
+        "label": "recordedBy sanitizer guard",
+        "receipt": "controls-04/57.json",
+        "diagnostic": "Generated project record minimizes actor"
+      },
+      {
+        "label": "recorded_by sanitizer guard",
+        "receipt": "controls-04/58.json",
+        "diagnostic": "Generated project record minimizes actor"
+      },
+      {
+        "label": "trusted row projection",
+        "receipt": "controls-04/59.json",
+        "diagnostic": "Adapter reads full trusted jurisdiction projection"
+      },
+      {
+        "label": "clock independence",
+        "receipt": "controls-05/08.json",
+        "diagnostic": "Separate JSON canonical parity across clocks"
+      }
+    ]
+  },
+  "project-jurisdiction-artifacts.test.ts :: exports a separate jurisdiction manifest without changing project_area attributes or WKB": {
+    "survivors": [
+      {
+        "label": "harmless survivor: exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+        "receipt": "controls-04/41.json",
+        "diagnostic": "expected null to deeply equal"
+      }
+    ],
+    "faults": [
+      {
+        "label": "GeoPackage context record",
+        "receipt": "controls-04/42.json",
+        "diagnostic": "expected null to deeply equal"
+      }
+    ]
+  },
+  "project-jurisdiction-artifacts.test.ts :: renders each declaration and its payload hash with escaped labels and no authority inference": {
+    "survivors": [
+      {
+        "label": "harmless survivor: renders each declaration and its payload hash with escaped labels and no authority inference",
+        "receipt": "controls-04/43.json",
+        "diagnostic": "Report discloses external schema"
+      }
+    ],
+    "faults": [
+      {
+        "label": "external report rendering",
+        "receipt": "controls-04/44.json",
+        "diagnostic": "Report discloses external schema"
+      },
+      {
+        "label": "report time disclosure",
+        "receipt": "controls-04/45.json",
+        "diagnostic": "Report retains recorded time"
+      }
+    ]
+  },
+  "project-jurisdiction.test.ts :: freezes identical same-revision context and payload hashes without changing old bytes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: freezes identical same-revision context and payload hashes without changing old bytes",
+        "receipt": "controls-04/46.json",
+        "diagnostic": "Frozen JSON uses shared external canonical contract"
+      }
+    ],
+    "faults": [
+      {
+        "label": "external frozen payload",
+        "receipt": "controls-04/47.json",
+        "diagnostic": "Frozen JSON uses shared external canonical contract"
+      }
+    ]
+  },
+  "jurisdiction-readiness-routes.test.ts :: uses the project place and keeps Puerto Rico's unavailable claims visible": {
+    "survivors": [
+      {
+        "label": "harmless survivor: uses the project place and keeps Puerto Rico's unavailable claims visible",
+        "receipt": "controls-04/48.json",
+        "diagnostic": "Download selects external v3"
+      }
+    ],
+    "faults": [
+      {
+        "label": "download version",
+        "receipt": "controls-04/49.json",
+        "diagnostic": "Download selects external v3"
+      }
+    ]
+  },
+  "jurisdiction-readiness-routes.test.ts :: distinguishes authenticated internal custody from minimized download bytes": {
+    "survivors": [
+      {
+        "label": "harmless survivor: distinguishes authenticated internal custody from minimized download bytes",
+        "receipt": "controls-04/50.json",
+        "diagnostic": "Authenticated API retains internal v2"
+      }
+    ],
+    "faults": [
+      {
+        "label": "internal API custody retained",
+        "receipt": "controls-04/51.json",
+        "diagnostic": "Authenticated API retains internal v2"
+      },
+      {
+        "label": "download actor minimization",
+        "receipt": "controls-04/52.json",
+        "diagnostic": "Download omits internal actor"
+      }
+    ]
+  },
+  "report-generate-route.test.ts :: persists an html artifact and updates report status": {
+    "survivors": [
+      {
+        "label": "harmless survivor: persists an html artifact and updates report status",
+        "receipt": "controls-04/53.json",
+        "diagnostic": "Report freezes external readiness version"
+      }
+    ],
+    "faults": [
+      {
+        "label": "report export payload: persists an html artifact and updates report status",
+        "receipt": "controls-04/54.json",
+        "diagnostic": "Report freezes external readiness version"
+      }
+    ]
+  },
+  "report-generate-route.test.ts :: freezes non-null export-safe report readiness with canonical hash parity": {
+    "survivors": [
+      {
+        "label": "harmless survivor: freezes non-null export-safe report readiness with canonical hash parity",
+        "receipt": "controls-04/55.json",
+        "diagnostic": "Report metadata shares external canonical material"
+      },
+      {
+        "label": "harmless survivor: freezes non-null export-safe report readiness with canonical hash parity",
+        "receipt": "controls-05/03.json",
+        "diagnostic": "Report metadata shares external canonical material"
+      }
+    ],
+    "faults": [
+      {
+        "label": "report export payload: freezes non-null export-safe report readiness with canonical hash parity",
+        "receipt": "controls-04/56.json",
+        "diagnostic": "Report metadata shares external canonical material"
+      },
+      {
+        "label": "actual report GeoPackage parity",
+        "receipt": "controls-05/09.json",
+        "diagnostic": "Actual report JSON and both GeoPackages share a hash across clocks"
+      }
+    ]
+  },
+  "project-jurisdiction-editor.test.tsx :: blocks confirmation after permission is revoked and restored during a save": {
+    "survivors": [
+      {
+        "label": "harmless survivor: blocks confirmation after permission is revoked and restored during a save",
+        "receipt": "controls-05/04.json",
+        "diagnostic": "Intervening permission loss invalidates confirmation"
+      }
+    ],
+    "faults": [
+      {
+        "label": "permission scope epoch tracking",
+        "receipt": "controls-05/05.json",
+        "diagnostic": "Intervening permission loss invalidates confirmation"
+      }
+    ]
+  }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import { type JurisdictionEntryInput, jurisdictionDraft, projectJurisdictionInputSchema, readProjectJurisdiction, resolveProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
-import { buildProjectJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessPayload, buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { buildJurisdictionReadinessEvidenceFile } from "@/lib/jurisdiction-readiness/evidence-bundle";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { createHash } from "node:crypto";
@@ -68,8 +68,8 @@ describe("independent project jurisdiction", () => {
   it("freezes identical same-revision context and payload hashes without changing old bytes", async () => {
     const row = { id: "project", updated_at: revision, jurisdiction_context: await context() };
     const before = buildJurisdictionReadinessEvidenceFile(row, hash);
-    const payload = buildProjectJurisdictionReadinessPayload(row, hash);
-    expect(JSON.parse(before.bytes.toString())).toEqual(payload);
+    const payload = buildProjectJurisdictionReadinessExportPayload(row, hash);
+    expect(JSON.parse(before.bytes.toString()), "Frozen JSON uses shared external canonical contract").toEqual(payload);
     expect(payload.projectRevision).toBe(revision);
     const { payloadSha256, ...material } = payload;
     expect(payloadSha256).toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));

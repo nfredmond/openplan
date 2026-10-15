@@ -1,0 +1,747 @@
+[
+  {
+    "label": "harmless survivor: retains original draft and blocks account props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks account props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "account scope retention",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks account props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks account props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft submission blocked: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:50:147\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after account changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after account changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "account in-flight confirmation",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after account changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after account changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: retains original draft and blocks workspace props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks workspace props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "workspace scope retention",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks workspace props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks workspace props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft submission blocked: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:50:147\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after workspace changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after workspace changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "workspace in-flight confirmation",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after workspace changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after workspace changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: retains original draft and blocks permission props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks permission props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "permission scope retention",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks permission props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks permission props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft submission blocked: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:50:147\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after permission changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after permission changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "permission in-flight confirmation",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after permission changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after permission changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: retains original draft and blocks project props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks project props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "project scope retention",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks project props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks project props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft submission blocked: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:50:147\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after project changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after project changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "project in-flight confirmation",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after project changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after project changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: retains original draft and blocks revision props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks revision props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "revision scope retention",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks revision props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks revision props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft submission blocked: expected false to be true // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:50:147\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: keeps draft when an in-flight save returns after revision changes",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after revision changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "revision in-flight confirmation",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "keeps draft when an in-flight save returns after revision changes",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "keeps draft when an in-flight save returns after revision changes",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:71:133\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: blocks an in-flight confirmation even when account changes away and back",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "blocks an in-flight confirmation even when account changes away and back",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "account round-trip epoch",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "blocks an in-flight confirmation even when account changes away and back",
+    "diagnostic": "Earlier-scope response disclosed",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "blocks an in-flight confirmation even when account changes away and back",
+        "messages": [
+          "AssertionError: Earlier-scope response disclosed: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<button\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n          \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n          \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mEdit jurisdiction context\u001b[0m\n        \u001b[36m</button>\u001b[39m\n      \u001b[36m</section>\u001b[39m\n    \u001b[36m</div>\u001b[39m\n  \u001b[36m</body>\u001b[39m\n\u001b[36m</html>\u001b[39m\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:84:131\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: does not publish a prior-scope error after deferred response parsing",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "does not publish a prior-scope error after deferred response parsing",
+    "diagnostic": "Parsed error stays with original scope",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "parsed response scope",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "does not publish a prior-scope error after deferred response parsing",
+    "diagnostic": "Parsed error stays with original scope",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "does not publish a prior-scope error after deferred response parsing",
+        "messages": [
+          "AssertionError: Parsed error stays with original scope: expected null to be truthy\n\nIgnored nodes: comments, script, style\n\u001b[36m<html>\u001b[39m\n  \u001b[36m<head />\u001b[39m\n  \u001b[36m<body>\u001b[39m\n    \u001b[36m<div>\u001b[39m\n      \u001b[36m<section\u001b[39m\n        \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3 rounded-xl border border-border p-4\"\u001b[39m\n        \u001b[33mid\u001b[39m=\u001b[32m\"project-jurisdiction\"\u001b[39m\n      \u001b[36m>\u001b[39m\n        \u001b[36m<h3\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"font-semibold\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mProject jurisdiction context\u001b[0m\n        \u001b[36m</h3>\u001b[39m\n        \u001b[36m<p\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm text-muted-foreground\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[0mDeclare the jurisdictions involved in this project separately from its study boundary. This does not establish adopting authority or legal applicability.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<p>\u001b[39m\n          \u001b[0mNo separate declaration. Readiness may show labelled legacy study-place context.\u001b[0m\n        \u001b[36m</p>\u001b[39m\n        \u001b[36m<div\u001b[39m\n          \u001b[33mrole\u001b[39m=\u001b[32m\"alert\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<p>\u001b[39m\n            \u001b[0mThis retained draft belongs to project \u001b[0m\n            \u001b[0mproject\u001b[0m\n            \u001b[0m, account \u001b[0m\n            \u001b[0muser\u001b[0m\n            \u001b[0m, workspace \u001b[0m\n            \u001b[0mworkspace\u001b[0m\n            \u001b[0m, revision \u001b[0m\n            \u001b[0m2026-10-15T00:00:00.000Z\u001b[0m\n            \u001b[0m. Submission is blocked because scope, revision or permission changed. Compare it with the saved context above.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<button\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n            \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n            \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n            \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n            \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mCompare saved context and restart\u001b[0m\n          \u001b[36m</button>\u001b[39m\n        \u001b[36m</div>\u001b[39m\n        \u001b[36m<fieldset\u001b[39m\n          \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-3\"\u001b[39m\n          \u001b[33mdisabled\u001b[39m=\u001b[32m\"\"\u001b[39m\n        \u001b[36m>\u001b[39m\n          \u001b[36m<legend\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"sr-only\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mEdit project jurisdiction\u001b[0m\n          \u001b[36m</legend>\u001b[39m\n          \u001b[36m<p\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"text-sm\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[0mSearch currently covers US Census counties, cities, CDPs and metro areas. Other contexts, including sovereign, overlapping and international jurisdictions, require an unverified staff declaration.\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<button>\u001b[39m\n            \u001b[0mResolve jurisdiction\u001b[0m\n          \u001b[36m</button>\u001b[39m\n          \u001b[36m<p>\u001b[39m\n            \u001b[0mAdded search identity: \u001b[0m\n            \u001b[0mSearch label\u001b[0m\n          \u001b[36m</p>\u001b[39m\n          \u001b[36m<ol>\u001b[39m\n            \u001b[36m<li>\u001b[39m\n              \u001b[0mcounty 06045 (server re-resolves on save)\u001b[0m\n              \u001b[0m \u001b[0m\n              \u001b[36m<button\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"inline-flex items-center justify-center gap-2 whitespace-nowrap border text-sm font-semibold transition-all duration-200 disabled:pointer-events-none disabled:opacity-50 [&_svg]:pointer-events-none [&_svg:not([class*='size-'])]:size-4 shrink-0 [&_svg]:shrink-0 outline-none focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-offset-2 focus-visible:ring-offset-background border-primary/12 bg-primary text-primary-foreground hover:bg-[color:var(--pine-deep)] focus-visible:ring-[color:var(--focus-ring-light)]/45 h-10 px-4.5 py-2 has-[>svg]:px-3.5\"\u001b[39m\n                \u001b[33mdata-size\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                \u001b[33mdata-slot\u001b[39m=\u001b[32m\"button\"\u001b[39m\n                \u001b[33mdata-variant\u001b[39m=\u001b[32m\"default\"\u001b[39m\n                \u001b[33mtype\u001b[39m=\u001b[32m\"button\"\u001b[39m\n              \u001b[36m>\u001b[39m\n                \u001b[0mRemove entry \u001b[0m\n                \u001b[0m1\u001b[0m\n              \u001b[36m</button>\u001b[39m\n            \u001b[36m</li>\u001b[39m\n          \u001b[36m</ol>\u001b[39m\n          \u001b[36m<fieldset\u001b[39m\n            \u001b[33mclass\u001b[39m=\u001b[32m\"space-y-2\"\u001b[39m\n          \u001b[36m>\u001b[39m\n            \u001b[36m<legend>\u001b[39m\n              \u001b[0mUnverified staff declaration\u001b[0m\n            \u001b[36m</legend>\u001b[39m\n            \u001b[36m<label\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mJurisdiction label\u001b[0m\n              \u001b[36m<input\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n                \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n                \u001b[33mmaxlength\u001b[39m=\u001b[32m\"200\"\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</label>\u001b[39m\n            \u001b[36m<label\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mSource-defined kind\u001b[0m\n              \u001b[36m<input\u001b[39m\n                \u001b[33mclass\u001b[39m=\u001b[32m\"file:text-foreground placeholder:text-muted-foreground selection:bg-primary selection:text-primary-foreground h-11 w-full min-w-0 rounded-xl border border-input bg-background px-3.5 py-2 text-base shadow-xs transition-[color,box-shadow,border-color] outline-none file:inline-flex file:h-7 file:border-0 file:bg-transparent file:text-sm file:font-medium disabled:pointer-events-none disabled:cursor-not-allowed disabled:opacity-50 md:text-sm focus-visible:border-[color:var(--focus-ring-light)] focus-visible:ring-3 focus-visible:ring-[color:var(--focus-ring-light)]/35 aria-invalid:ring-destructive/20 aria-invalid:border-destructive\"\u001b[39m\n                \u001b[33mdata-slot\u001b[39m=\u001b[32m\"input\"\u001b[39m\n                \u001b[33mmaxlength\u001b[39m=\u001b[32m\"80\"\u001b[39m\n                \u001b[33mvalue\u001b[39m=\u001b[32m\"\"\u001b[39m\n              \u001b[36m/>\u001b[39m\n            \u001b[36m</label>\u001b[39m\n            \u001b[36m<label\u001b[39m\n              \u001b[33mclass\u001b[39m=\u001b[32m\"block\"\u001b[39m\n            \u001b[36m>\u001b[39m\n              \u001b[0mContext scope\u001b[0m\n              \u001b[36m<select>\u001b[39m\n                \u001b[36m<option\u001b[39m\n                  \u001b[33mv...\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:97:137\n    at runWithExpensiveErrorDiagnosticsDisabled (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/config.js:47:12)\n    at checkCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:124:77)\n    at Timeout.checkRealTimersCallback (/home/nathaniel/code/openplan/openplan/node_modules/@testing-library/dom/dist/wait-for.js:118:16)\n    at listOnTimeout (node:internal/timers:685:17)\n    at processTimers (node:internal/timers:618:7)"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "handler stale refusal",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks account props changes until explicit restart",
+    "diagnostic": "Stale draft emits no request",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks account props changes until explicit restart",
+        "messages": [
+          "AssertionError: Stale draft emits no request: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"/api/projects/project\",\n      Object {\n        \"body\": \"{\"expectedRevision\":\"2026-10-15T00:00:00.000Z\",\"jurisdiction\":{\"version\":1,\"state\":\"declared\",\"entries\":[{\"mode\":\"resolved\",\"kind\":\"county\",\"geoid\":\"06045\"}]}}\",\n        \"headers\": Object {\n          \"content-type\": \"application/json\",\n          \"x-openplan-expected-user\": \"user\",\n          \"x-openplan-expected-workspace\": \"workspace\",\n        },\n        \"method\": \"PATCH\",\n      },\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:52:55\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "restart reads saved context",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks account props changes until explicit restart",
+    "diagnostic": "Restart uses current saved context",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "retains original draft and blocks account props changes until explicit restart",
+        "messages": [
+          "AssertionError: Restart uses current saved context: expected <li><button \u2026(5)></button></li> to be null\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-editor.test.tsx:55:88\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: hashes a versioned external representation after strict internal validation",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External canonical material excludes internal actor UUID",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "external actor minimization",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External canonical material excludes internal actor UUID",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: External canonical material excludes internal actor UUID: expected '{\"schema\":\"openplan.project-jurisdict\u2026' not to contain '99999999-9999-4999-8999-999999999999'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:19:100\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "recorded time retained",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External attribution keeps time and source",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: External attribution keeps time and source: expected { \u2026(4) } to deeply equal { \u2026(4) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:20:74\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "explicit external schema",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External schema is explicit",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: External schema is explicit: expected 'openplan.project-jurisdiction-readine\u2026' to be 'openplan.project-jurisdiction-readine\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:21:58\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "explicit external scope",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External scope is explicit",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: External scope is explicit: expected 'internal' to be 'external_handoff' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:22:56\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "strict internal parser before export",
+    "source": "src/lib/projects/project-jurisdiction.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "Export cannot bypass strict internal authorship validation",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: Export cannot bypass strict internal authorship validation: expected [Function] to throw an error\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1552:16)\n    at Proxy.<anonymous> (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/code/openplan/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:27:217\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "external canonical hash",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "External hash covers its actual canonical bytes",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: External hash covers its actual canonical bytes: expected 'e2247e2d0a18ae64dddde4817edc2667df1a8\u2026' to be '227a1a48160cbd34fd55fb2bb1c742ee967b1\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:25:76\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "registry identity",
+    "source": "src/lib/jurisdiction-readiness/payload.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "hashes a versioned external representation after strict internal validation",
+    "diagnostic": "Registry identity retained",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "hashes a versioned external representation after strict internal validation",
+        "messages": [
+          "AssertionError: Registry identity retained: expected null to be truthy\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:23:66\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "source": "src/lib/project-evidence-bundles/generated-records.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "Generated project record minimizes actor",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "generated project context export",
+    "source": "src/lib/project-evidence-bundles/generated-records.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "Generated project record minimizes actor",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: Generated project record minimizes actor: expected '{\"place_source\":\"uploaded\",\"place_kin\u2026' not to contain '99999999-9999-4999-8999-999999999999'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:51:96\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "GeoPackage canonical hash record",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "standalone canonical hash parity",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: standalone canonical hash parity: expected 'wrong-hash' to be '227a1a48160cbd34fd55fb2bb1c742ee967b1\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:67:69\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "GeoPackage canonical payload bytes",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "standalone canonical byte parity",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: standalone canonical byte parity: expected '{}' to be '{\"attribution\":\"Recorded time and sou\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:68:77\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "GeoPackage registry hash",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "standalone registry hash",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: standalone registry hash: expected 'wrong-registry' to be '531dca87cc6621786d4cff27b0fb52dd5b991\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:66:62\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "GeoPackage registry version",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "standalone registry version",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: standalone registry version: expected 'wrong-version' to be '2026-10-11.1' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:65:66\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "GeoPackage payload schema",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-export-corrections.test.ts",
+    "test": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+    "diagnostic": "standalone schema",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "carries minimized same-revision canonical material through real generated files and SQLite at different clocks",
+        "messages": [
+          "AssertionError: standalone schema: expected 'wrong-schema' to be 'openplan.project-jurisdiction-readine\u2026' // Object.is equality\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-export-corrections.test.ts:64:56\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-artifacts.test.ts",
+    "test": "exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+    "diagnostic": "expected null to deeply equal",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "GeoPackage context record",
+    "source": "src/lib/projects/project-geopackage.ts",
+    "suite": "project-jurisdiction-artifacts.test.ts",
+    "test": "exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+    "diagnostic": "expected null to deeply equal",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "exports a separate jurisdiction manifest without changing project_area attributes or WKB",
+        "messages": [
+          "AssertionError: expected null to deeply equal { \u2026(4) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-artifacts.test.ts:19:55\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: renders each declaration and its payload hash with escaped labels and no authority inference",
+    "source": "src/lib/reports/html.ts",
+    "suite": "project-jurisdiction-artifacts.test.ts",
+    "test": "renders each declaration and its payload hash with escaped labels and no authority inference",
+    "diagnostic": "Report discloses external schema",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "external report rendering",
+    "source": "src/lib/reports/html.ts",
+    "suite": "project-jurisdiction-artifacts.test.ts",
+    "test": "renders each declaration and its payload hash with escaped labels and no authority inference",
+    "diagnostic": "Report discloses external schema",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "renders each declaration and its payload hash with escaped labels and no authority inference",
+        "messages": [
+          "AssertionError: Report discloses external schema: expected '<!doctype html>\\n<html lang=\"en\">\\n  \u2026' to contain 'openplan.project-jurisdiction-readine\u2026'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-artifacts.test.ts:34:52\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "report time disclosure",
+    "source": "src/lib/reports/html.ts",
+    "suite": "project-jurisdiction-artifacts.test.ts",
+    "test": "renders each declaration and its payload hash with escaped labels and no authority inference",
+    "diagnostic": "Report retains recorded time",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": true,
+    "failures": [
+      {
+        "name": "renders each declaration and its payload hash with escaped labels and no authority inference",
+        "messages": [
+          "AssertionError: Report retains recorded time: expected '<!doctype html>\\n<html lang=\"en\">\\n  \u2026' to contain '2026-10-15T00:00:00.000Z'\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction-artifacts.test.ts:36:48\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+        ]
+      }
+    ]
+  },
+  {
+    "label": "harmless survivor: freezes identical same-revision context and payload hashes without changing old bytes",
+    "source": "src/lib/jurisdiction-readiness/evidence-bundle.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "freezes identical same-revision context and payload hashes without changing old bytes",
+    "diagnostic": "openplan.project-jurisdiction-readiness-export.v3",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": true,
+    "failures": []
+  },
+  {
+    "label": "external frozen payload",
+    "source": "src/lib/jurisdiction-readiness/evidence-bundle.ts",
+    "suite": "project-jurisdiction.test.ts",
+    "test": "freezes identical same-revision context and payload hashes without changing old bytes",
+    "diagnostic": "openplan.project-jurisdiction-readiness-export.v3",
+    "survives": false,
+    "exitCode": 1,
+    "expectedObserved": false,
+    "failures": [
+      {
+        "name": "independent project jurisdiction freezes identical same-revision context and payload hashes without changing old bytes",
+        "messages": [
+          "AssertionError: expected { \u2026(12) } to deeply equal { \u2026(12) }\n    at /home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/openplan/src/test/project-jurisdiction.test.ts:72:49\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/code/openplan/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+        ]
+      }
+    ]
+  }
+]

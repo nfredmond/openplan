@@ -1,3 +1,11 @@
+import Database from "better-sqlite3";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { buildProjectGeoPackage } from "@/lib/projects/project-geopackage";
+import { loadProjectEvidenceGeneratedFiles } from "@/lib/project-evidence-bundles/generated-records";
+vi.mock("server-only", () => ({}));
+import { actor as jurisdictionActor, exportProject } from "./project-jurisdiction-export-fixture";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
@@ -1537,7 +1545,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
       format: "html",
     });
     expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
-    expect(artifactsInsertMock).toHaveBeenCalledWith(
+    expect(artifactsInsertMock, "Report freezes external readiness version").toHaveBeenCalledWith(
       expect.objectContaining({
         report_id: "11111111-1111-4111-8111-111111111111",
         artifact_kind: "html",
@@ -1547,7 +1555,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
             jurisdictionReadiness: expect.objectContaining({
-              schema: "openplan.project-jurisdiction-readiness-response.v2",
+              schema: "openplan.project-jurisdiction-readiness-export.v3",
               contextSource: "legacy_study_place",
               payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
               entries: expect.arrayContaining([expect.objectContaining({
@@ -4293,4 +4301,41 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.anything()
     );
   });
+  it("freezes non-null export-safe report readiness with canonical hash parity", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2028-01-01T00:00:00Z"));
+    try {
+    projectMaybeSingleMock.mockResolvedValue({ data: exportProject, error: null });
+    const expected = buildProjectJurisdictionReadinessExportPayload(exportProject, jurisdictionReadinessRegistrySha256());
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls[0][0];
+    expect(inserted.metadata_json.sourceContext.jurisdictionReadiness, "Report metadata shares external canonical material").toEqual(expected);
+    expect(JSON.stringify(inserted.metadata_json.sourceContext.jurisdictionReadiness), "Report readiness omits internal actor").not.toContain(jurisdictionActor);
+    const html = serviceStorageUploadMock.mock.calls.find(call => String(call[0]).endsWith(".html"))?.[1].toString();
+    expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
+    expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
+    vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
+    const client = { from() {
+      const query = { select() { return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
+        async maybeSingle() { return { data: exportProject, error: null }; },
+        then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
+      }; return query;
+    } };
+    const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
+    const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
+    expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(inserted.metadata_json.sourceContext.jurisdictionReadiness);
+    const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });
+    for (const bytes of [standalone.bytes, bundle.files.find(file => file.path === "project/project.gpkg")!.bytes]) {
+      const db = new Database(bytes, { readonly: true });
+      try {
+        const row = db.prepare("SELECT payload_sha256, readiness_payload_json FROM project_jurisdiction_context").get() as { payload_sha256: string; readiness_payload_json: string };
+        expect(row.payload_sha256, "Actual report JSON and both GeoPackages share a hash across clocks").toBe(expected.payloadSha256);
+        expect(row.readiness_payload_json, "Actual report JSON and both GeoPackages share canonical bytes").toBe(canonicalizeActionPayload(expected));
+      } finally { db.close(); }
+    }
+    } finally { vi.useRealTimers(); }
+  });
+
 });

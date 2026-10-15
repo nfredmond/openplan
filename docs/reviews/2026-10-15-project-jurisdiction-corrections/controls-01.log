@@ -1,0 +1,6 @@
+Running as unit: run-p61651-i88032284.scope; invocation ID: 4751b1f56d5e4fb0ba2dd4d7f4903d41
+harmless survivor: retains original draft and blocks account props changes until explicit restart SURVIVED False
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-06d1c54c/docs/reviews/2026-10-15-project-jurisdiction-corrections/prove.py", line 124, in <module>
+    raise RuntimeError('Unexpected mutation outcome: ' + c['label'])
+RuntimeError: Unexpected mutation outcome: harmless survivor: retains original draft and blocks account props changes until explicit restart

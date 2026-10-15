@@ -1,6 +1,6 @@
 import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { NextRequest, NextResponse } from "next/server";
-import { buildProjectJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessPayload, buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
@@ -28,12 +28,12 @@ export async function GET(
   }
   if (!read.data) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
+  const download = new URL(request.url).searchParams.get("download") === "1";
   let payload;
-  try { payload = buildProjectJurisdictionReadinessPayload(read.data, jurisdictionReadinessRegistrySha256()); }
+  try { payload = (download ? buildProjectJurisdictionReadinessExportPayload : buildProjectJurisdictionReadinessPayload)(read.data, jurisdictionReadinessRegistrySha256()); }
   catch {
     return NextResponse.json({ error: "Saved project jurisdiction is invalid or was not read. Readiness is unavailable." }, { status: 500 });
   }
-  const download = new URL(request.url).searchParams.get("download") === "1";
   audit.info("project_jurisdiction_readiness_read", {
     projectId,
     contextSource: payload.contextSource,

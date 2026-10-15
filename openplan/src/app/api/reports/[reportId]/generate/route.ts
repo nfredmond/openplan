@@ -136,7 +136,7 @@ import type {
   PacketGeographyCorridor,
   PacketGeographyReadState,
 } from "@/lib/reports/geography-figure";
-import { buildProjectJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 
 /**
@@ -1766,7 +1766,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     // type — the same reason the workspace read above is cast. Guaranteed
     // non-null here; a failed or empty project read returned already.
     const projectRow = projectResultForPacket.data as unknown as PacketProjectRow;
-    const jurisdictionReadiness = buildProjectJurisdictionReadinessPayload(projectRow, jurisdictionReadinessRegistrySha256());
+    const jurisdictionReadiness = buildProjectJurisdictionReadinessExportPayload(projectRow, jurisdictionReadinessRegistrySha256());
     let estimatedCostSourceTitle: string | null = null;
     if (projectRow.estimated_cost_source_document_id) {
       // The recorded FK is the source of this estimate. Portfolio imports are

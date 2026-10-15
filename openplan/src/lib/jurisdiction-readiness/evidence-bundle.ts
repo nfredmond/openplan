@@ -2,14 +2,14 @@ import type { ProjectJurisdictionRow } from "@/lib/projects/project-jurisdiction
 import { createHash } from "node:crypto";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import type { GeneratedProjectEvidenceFile } from "@/lib/project-evidence-bundles/archive";
-import { buildProjectJurisdictionReadinessPayload } from "./payload";
+import { buildProjectJurisdictionReadinessExportPayload } from "./payload";
 
-/** Freeze the same project readiness payload exposed by the UI and API. */
+/** Freeze the external payload shared by downloads, reports and GeoPackages. */
 export function buildJurisdictionReadinessEvidenceFile(
   project: ProjectJurisdictionRow & { id: string },
   registrySha256: string,
 ): GeneratedProjectEvidenceFile {
-  const payload = buildProjectJurisdictionReadinessPayload(project, registrySha256);
+  const payload = buildProjectJurisdictionReadinessExportPayload(project, registrySha256);
   const canonical = canonicalizeActionPayload(payload);
   return {
     path: "project/jurisdiction-readiness.json",

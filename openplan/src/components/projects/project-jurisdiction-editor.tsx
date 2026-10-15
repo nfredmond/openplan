@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useLayoutEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { StudyAreaPicker } from "@/components/models/study-area-picker";
 import { Button } from "@/components/ui/button";
@@ -12,7 +12,7 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
   projectId: string; context: unknown; revision: string; userId: string; workspaceId: string; canWrite: boolean;
 }) {
   const router = useRouter();
-  let saved;
+  let saved: ReturnType<typeof readProjectJurisdiction>;
   let invalid = false;
   try { saved = readProjectJurisdiction({ jurisdiction_context: context }); } catch { invalid = true; saved = null; }
   const [editing, setEditing] = useState(false);
@@ -25,18 +25,33 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
   const [reference, setReference] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [baseRevision, setBaseRevision] = useState(revision);
+  const currentScope = useRef({ projectId, userId, workspaceId, revision, canWrite, epoch: 0 });
+  useLayoutEffect(() => {
+    const previous = currentScope.current;
+    const changed = previous.projectId !== projectId || previous.userId !== userId || previous.workspaceId !== workspaceId || previous.canWrite !== canWrite || previous.revision !== revision;
+    currentScope.current = { projectId, userId, workspaceId, revision, canWrite, epoch: previous.epoch + (changed ? 1 : 0) };
+  }, [projectId, userId, workspaceId, revision, canWrite]);
+  const [draftScope, setDraftScope] = useState(currentScope.current);
+  const staleDraft = draftScope.projectId !== projectId || draftScope.userId !== userId || draftScope.workspaceId !== workspaceId || draftScope.revision !== revision || !canWrite || draftScope.epoch !== currentScope.current.epoch;
+  function restart() {
+    setDraft(jurisdictionDraft(saved)); setDraftScope(currentScope.current); setError(null); setSelectedLabel(null); setEditing(true);
+  }
   const [selectedLabel, setSelectedLabel] = useState<string | null>(null);
   async function save(entries: JurisdictionEntryInput[]) {
+    if (staleDraft) { setError("This draft belongs to its original project, account, workspace and revision. Compare the saved context before restarting."); return; }
+    const requestScope = draftScope;
+    const scopeStillCurrent = () => currentScope.current.epoch === requestScope.epoch && currentScope.current.canWrite;
     setError(null); setSaving(true);
     try {
-      const response = await fetch(`/api/projects/${projectId}`, {
+      const response = await fetch(`/api/projects/${requestScope.projectId}`, {
         method: "PATCH",
-        headers: { "content-type": "application/json", "x-openplan-expected-user": userId, "x-openplan-expected-workspace": workspaceId },
-        body: JSON.stringify({ expectedRevision: baseRevision, jurisdiction: { version: 1, state: entries.length ? "declared" : "unresolved", entries } }),
+        headers: { "content-type": "application/json", "x-openplan-expected-user": requestScope.userId, "x-openplan-expected-workspace": requestScope.workspaceId },
+        body: JSON.stringify({ expectedRevision: requestScope.revision, jurisdiction: { version: 1, state: entries.length ? "declared" : "unresolved", entries } }),
       });
+      if (!scopeStillCurrent()) { setError("The save response belongs to an earlier scope. Your original draft remains for comparison; check saved context before restarting."); return; }
       if (!response.ok) {
         const body = await response.json().catch(() => ({}));
+        if (!scopeStillCurrent()) { setError("The save response belongs to an earlier scope. Keep the original draft for comparison."); return; }
         setError(body.error ?? "Could not confirm the save. Keep your draft."); return;
       }
       setEditing(false); router.refresh();
@@ -50,8 +65,12 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
       ? <p>No separate declaration. Readiness may show labelled legacy study-place context.</p>
       : saved.state === "unresolved" ? <p>Jurisdiction explicitly unresolved. Study-place fallback is disabled.</p>
         : <ul>{saved.entries.map((entry, index) => <li key={index}>{entry.label}: {entry.identity === "staff_declared" ? "unverified staff declaration" : "server-resolved identity"}</li>)}</ul>}
-    {!editing && canWrite && <Button type="button" onClick={() => { setDraft(jurisdictionDraft(saved)); setBaseRevision(revision); setError(null); setSelectedLabel(null); setEditing(true); }}>Edit jurisdiction context</Button>}
-    {editing && <fieldset disabled={saving} className="space-y-3">
+    {!editing && canWrite && <Button type="button" onClick={restart}>Edit jurisdiction context</Button>}
+    {editing && staleDraft && <div role="alert">
+      <p>This retained draft belongs to project {draftScope.projectId}, account {draftScope.userId}, workspace {draftScope.workspaceId}, revision {draftScope.revision}. Submission is blocked because scope, revision or permission changed. Compare it with the saved context above.</p>
+      {canWrite && <Button type="button" disabled={saving} onClick={restart}>Compare saved context and restart</Button>}
+    </div>}
+    {editing && <fieldset disabled={saving || staleDraft} className="space-y-3">
       <legend className="sr-only">Edit project jurisdiction</legend>
       <p className="text-sm">Search currently covers US Census counties, cities, CDPs and metro areas. Other contexts, including sovereign, overlapping and international jurisdictions, require an unverified staff declaration.</p>
       <StudyAreaPicker corridorText="" onCorridorChange={() => {}} searchOnly showRunEngineHint={false} onPlaceResolved={place => {
@@ -72,7 +91,7 @@ export function ProjectJurisdictionEditor({ projectId, context, revision, userId
           setLabel(""); setKind(""); setReference("");
         }}>Add staff declaration</Button>
       </fieldset>
-      <p className="text-sm">Up to 12 declarations. Each receives a separate readiness assessment. File labels and feature properties do not author jurisdiction.</p>
+      <p className="text-sm">Development limit: up to 12 declarations. Each receives a separate readiness assessment. File labels and feature properties do not author jurisdiction.</p>
       <div className="flex flex-wrap gap-2">
         <Button type="button" disabled={saving || draft.length === 0 || draft.length > 12} onClick={() => void save(draft)}>Save jurisdiction context</Button>
         <Button type="button" disabled={saving} onClick={() => void save([])}>Clear to unresolved</Button>
