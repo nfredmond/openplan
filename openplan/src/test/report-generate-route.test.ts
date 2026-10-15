@@ -1,3 +1,5 @@
+import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
+import { collectSupabaseSelectSites } from "./supabase-call-sites";
 import Database from "better-sqlite3";
 import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
 import { buildProjectGeoPackage } from "@/lib/projects/project-geopackage";
@@ -4342,6 +4344,36 @@ describe("POST /api/reports/[reportId]/generate", () => {
       source: source as Record<string, unknown> };
   }
 
+  it("keeps the initial project projection literal and equal to every optional group", async () => {
+    const expected = [
+      "id", "workspace_id", "name", "summary", "status", "plan_type", "delivery_phase", "created_at", "updated_at",
+      "jurisdiction_context", ...PROJECT_PLACE_COLUMN_NAMES,
+      "estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
+      "latitude", "longitude",
+    ].join(", ");
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
+    const sites = collectSupabaseSelectSites().filter(site =>
+      site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
+    );
+    expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);
+    expect(sites.filter(site => site.projection === null), "Computed fallback stays honestly unchecked").toHaveLength(1);
+  });
+
+  it.each([
+    ["jurisdiction_context"], [...PROJECT_PLACE_COLUMN_NAMES],
+    ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"],
+    ["latitude", "longitude"],
+  ])("removes exactly the confirmed optional group beginning %s", async (...columns: string[]) => {
+    pendingProjectSchema([columns[0]]);
+    expect((await generatePendingSchemaReport()).status, "Single-group recovery generates").toBe(200);
+    const projections = projectSelectMock.mock.calls.map(call => call[0]);
+    expect(projections, "Single missing group takes exactly one retry").toHaveLength(2);
+    expect(projections[1], "Fallback removes the complete named group and nothing else").toBe(
+      projections[0].split(", ").filter(column => !columns.includes(column)).join(", ")
+    );
+  });
+
   it.each(["postgres", "cache"] as const)("generates schema-pending jurisdiction with readable place and cost (%s)", async style => {
     pendingProjectSchema(["jurisdiction_context"], style);
     const response = await generatePendingSchemaReport();
@@ -4437,6 +4469,10 @@ describe("POST /api/reports/[reportId]/generate", () => {
     "column projects.unrecognized_field does not exist", "schema cache unavailable",
     "column projects.unrelated_place_label does not exist",
     "schema cache connection lost while reading jurisdiction_context",
+    "column reports.jurisdiction_context does not exist",
+    "Could not find the 'jurisdiction_context' column of 'reports' in the schema cache",
+    "permission denied: column projects.jurisdiction_context does not exist",
+    'column projects."Jurisdiction_Context" does not exist',
   ])("refuses unclassified project read errors without dropping fields: %s", async message => {
     projectMaybeSingleMock.mockResolvedValue({ data: null, error: { message } });
     expect((await generatePendingSchemaReport()).status, "Unclassified failure refuses report").toBe(500);

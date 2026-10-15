@@ -125,7 +125,7 @@ import {
 } from "@/lib/reports/dual-demand-agreement";
 import { readReportAerialOrthoSelections, reportAerialOrthoPreviewHref } from "@/lib/reports/aerial-ortho-evidence";
 import { freezeSelectedReportAerialOrtho } from "@/lib/reports/aerial-ortho-evidence-server";
-import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { looksLikePendingSchema, readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
 import { classifyRouteReadFailure } from "@/lib/http/read-outcome";
 import {
   PROJECT_PLACE_COLUMN_NAMES,
@@ -140,14 +140,15 @@ import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdicti
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { buildReportProjectJurisdictionSchemaPendingPayload } from "@/lib/reports/project-jurisdiction";
 
-const PACKET_PROJECT_CORE_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at";
 const PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS = [
   { kind: "jurisdiction", columns: ["jurisdiction_context"] },
   { kind: "geography", columns: PROJECT_PLACE_COLUMN_NAMES },
   { kind: "estimate", columns: ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"] },
   { kind: "site", columns: ["latitude", "longitude"] },
 ] as const;
-const PACKET_PROJECT_COLUMNS = `${PACKET_PROJECT_CORE_COLUMNS}, ${PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.flatMap(group => [...group.columns]).join(", ")}`;
+// Keep the initial projection literal so the source guard checks every column.
+// Route tests pin parity with the four independently removable groups above.
+const PACKET_PROJECT_COLUMNS = "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude";
 
 /**
  * A read whose ABSENCE is honest when the schema is genuinely not there: no
@@ -1636,11 +1637,7 @@ export async function POST(request: NextRequest, context: RouteContext) {
     let projectColumnsForPacket = PACKET_PROJECT_COLUMNS.split(", ");
     for (let attempt = 0; attempt < PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.length; attempt += 1) {
       const message = projectResultForPacket.error?.message;
-      if (!message || !looksLikePendingSchema(message)) break;
-      const missingColumn = (
-        /column (?:(?:public\.)?projects\.)?["']?(\w+)["']? does not exist/i.exec(message)?.[1]
-        ?? /could not find the ['"](\w+)['"] column of ['"]projects['"]/i.exec(message)?.[1]
-      )?.toLowerCase();
+      const missingColumn = readPendingSchemaMissingColumn(message, "projects");
       const missing = PACKET_PROJECT_OPTIONAL_COLUMN_GROUPS.find(group => group.columns.some(column =>
         column === missingColumn && projectColumnsForPacket.includes(column)
       ));
