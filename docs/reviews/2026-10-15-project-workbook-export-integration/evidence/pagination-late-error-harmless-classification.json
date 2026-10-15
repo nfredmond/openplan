@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-late-error-harmless",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "refuses a later page error instead of exporting the earlier rows",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

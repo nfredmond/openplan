@@ -1,0 +1,66 @@
+[
+  {
+    "trial": "legacy-fake-inclusive-range-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 1,
+    "marker": "legacy over-limit export must refuse without a workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-fake-inclusive-range-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-single-capped-query-positive",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-single-capped-query-harmless",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  },
+  {
+    "trial": "legacy-single-capped-query-fault",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 1,
+    "marker": "legacy over-limit export must refuse without a workbook",
+    "classification": "KILLED"
+  },
+  {
+    "trial": "legacy-single-capped-query-restored",
+    "testFile": "src/test/project-portfolio-export-route.test.ts",
+    "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+    "exitCode": 0,
+    "marker": null,
+    "classification": "SURVIVED"
+  }
+]

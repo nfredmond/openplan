@@ -1,0 +1,8 @@
+{
+  "trial": "legacy-single-capped-query-harmless",
+  "testFile": "src/test/project-portfolio-export-route.test.ts",
+  "test": "GET /api/projects/export/workbook refuses an over-limit portfolio instead of silently truncating it",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

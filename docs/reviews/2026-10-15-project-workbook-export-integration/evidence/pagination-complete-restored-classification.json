@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-complete-restored",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "exports all 2000 projects through the configured row cap with original workbook values",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

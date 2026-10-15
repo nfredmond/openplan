@@ -1,0 +1,16 @@
+legacy-fake-inclusive-range-positive SURVIVED
+legacy-fake-inclusive-range-harmless SURVIVED
+legacy-fake-inclusive-range-fault KILLED
+legacy-fake-inclusive-range-restored SURVIVED
+legacy-single-capped-query-positive SURVIVED
+legacy-single-capped-query-harmless SURVIVED
+legacy-single-capped-query-fault KILLED
+legacy-single-capped-query-restored SURVIVED
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-32433c82/docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py", line 299, in <module>
+    main(args.start_at)
+    ~~~~^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-32433c82/docs/reviews/2026-10-15-project-workbook-export-integration/verify_controls.py", line 268, in main
+    assert code == 0 and report['success'] is True and report['numFailedTests'] == 0
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError
