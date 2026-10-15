@@ -133,3 +133,27 @@ remain open. The old APP49 build and artifacts do not accept the corrections.
 Root next tests the stable reader against actual transport on a new isolated
 fixture target. No old proof database or frozen packet becomes a test target.
 The main/hosted promotion hold and prohibition on a new release remain.
+
+
+The native workbook proof completes at `2ce251264` and joins locally as
+`72b119cc9`. Root reads its full report, route probe, controller, extraction,
+safety checks, publisher and packet verifier. The parent readback confirms 29
+packet hashes, 962 current/extracted source bindings and all six owned helpers
+stopped without OOM. A private copy of the verifier reclassifies 15 retained
+accepted trials and four altered-cell faults; all six real XLSX hashes and XML
+values match the published records. No native suite is repeated.
+
+This accepts the bounded cap/cursor/UUID and tested workbook-value evidence.
+The meaningful old-reader control returns four rows while duplicating one UUID
+and omitting another. All five protected database fingerprints, 22,633 file
+fingerprints and fixture rows match within the recorded interval. Complete
+new-target catalog preservation remains unaccepted: `pg_class` differs and the
+before record retains only a digest. The original assertion failure stays.
+No cause, full RLS, browser, native Excel or atomic-content result is invented.
+
+The fresh browser runtime remains pending. Root filesystem capacity is about
+3.1 GiB, below the retained launcher's unchanged 8 GiB free-space guard. A new
+Sol-high preparation task examines a separate memory-backed working root and
+durable compressed output custody. It may prepare and test stand-ins only.
+No real database, helper, build or web stage starts from that preparation.
+No global cache deletion or old packet change is authorized by this step.
