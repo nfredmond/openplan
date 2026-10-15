@@ -1,0 +1,69 @@
+{
+  "label": "controls-final-controls-query-before-private-read-0077",
+  "umask": "0077",
+  "exitCode": 1,
+  "passed": 0,
+  "failed": 1,
+  "focused": true,
+  "skipped": 39,
+  "failures": [
+    {
+      "name": "synthesis worker custody and recovery refuses nonprivate and malformed saved journals",
+      "messages": [
+        "AssertionError: expected \"vi.fn()\" to not be called at all, but actually been called 1 times\n\nReceived:\n\n  1st vi.fn() call:\n\n    Array [\n      \"engagement_synthesis_generation_requests\",\n    ]\n\n\nNumber of calls: 1\n\n    at Proxy.<anonymous> (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/@vitest/expect/dist/index.js:1467:10)\n    at Proxy.<anonymous> (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/chai/index.js:1700:25)\n    at /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/src/test/engagement-synthesis-generation-worker.test.ts:209:24\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "sourceHashes": {
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+    "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2"
+  },
+  "overlay": {
+    "target": "openplan/src/lib/engagement/synthesis-generation-worker.ts",
+    "sha256": "c68028a8925ec5849cacecf5d73b0d7d4e8e542ef8635d365d6c7ed1d4ba2af7"
+  },
+  "command": [
+    "bwrap",
+    "--die-with-parent",
+    "--ro-bind",
+    "/",
+    "/",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "--bind",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/controls-final-controls-query-before-private-read-0077",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/controls-final-controls-query-before-private-read-0077",
+    "--ro-bind",
+    "/home/nathaniel/code/openplan/openplan/node_modules",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--chdir",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan",
+    "--ro-bind",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015/mutation-synthesis-generation-worker.ts",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/src/lib/engagement/synthesis-generation-worker.ts",
+    "node",
+    "--max-old-space-size=640",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "--configLoader",
+    "runner",
+    "--config",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/vitest.config.mts",
+    "src/test/engagement-synthesis-generation-worker.test.ts",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/controls-final-controls-query-before-private-read-0077/tests.json",
+    "-t",
+    "refuses nonprivate and malformed saved journals"
+  ]
+}

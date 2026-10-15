@@ -1,0 +1,93 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan
+
+ ❯ src/test/engagement-synthesis-generation-worker.test.ts (40 tests | 1 failed | 39 skipped) 93ms
+     ↓ journals before claim, dispatch and delivery with the real local API
+     ↓ retries an unknown claim acknowledgement with the same attempt and worker
+     ↓ keeps an unknown dispatch acknowledgement unobserved without filling the output slot
+     ↓ resumes a claimed attempt after a credential read failure without claiming again
+     ↓ redelivers only the original bytes after an unknown output acknowledgement
+     ↓ recovers a receipt larger than the old one-megabyte worker journal
+     ↓ cannot use a replayed dispatch acknowledgement to call a provider
+     ↓ refuses inconsistent claim acknowledgement {"attemptId":"a0000000-0000-4000-8000-000000000001"}
+     ↓ refuses inconsistent claim acknowledgement {"workerId":"a0000000-0000-4000-8000-000000000001"}
+     ↓ refuses inconsistent claim acknowledgement {"authorizationId":"a0000000-0000-4000-8000-000000000001"}
+     ↓ refuses inconsistent claim acknowledgement {"taskIndex":1}
+     ↓ refuses inconsistent claim acknowledgement {"bindingText":"{}"}
+     ↓ refuses inconsistent claim acknowledgement {"claimExpiresAt":"2099-01-01T00:00:00Z"}
+     ↓ stops on an unreadable status before constructing an API adapter
+     ↓ stops at an expired unchanged native deadline before constructing an API adapter
+     ↓ stops before a call for changed native status {"canContinue":false}
+     ↓ stops before a call for changed native status {"attemptId":"a0000000-0000-4000-8000-000000000001"}
+     ↓ stops before a call for changed native status {"workerId":"a0000000-0000-4000-8000-000000000002"}
+     ↓ stops before a call for changed native status {"dispatchSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+     ↓ stops before a call for changed native status {"outputSha256":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"}
+     ↓ stops before a call for changed native status {"expiresAt":null}
+     ↓ stops before a call for changed native status {"expiresAt":"2026-01-01T00:00:00Z"}
+     ↓ stops before a call for changed native status {"expiresAt":"2099-01-01T00:00:00Z"}
+     ↓ observes lost authority during a call and retains the actual interrupted response
+     ↓ preserves a returned receipt when later interpretation throws
+     ↓ recovers an original receipt temporary left before atomic rename
+     ↓ does not treat a partially written temporary as an observed result
+     ↓ refuses two conflicting but internally valid original observations
+     ↓ rejects a changed acknowledgement while preserving the original observation
+     ↓ refuses a changed recovery target
+     ↓ refuses a changed recovery authorization
+     ↓ refuses a changed recovery task
+     ↓ refuses a changed recovery job-attempt
+     ↓ refuses a changed recovery job-grant
+     ↓ refuses a changed recovery job-task
+     ↓ refuses a changed recovery dispatch-checksum
+     ↓ refuses a changed recovery observed-checksum
+     ↓ refuses a changed recovery delivered-checksum
+     ↓ refuses concurrent ownership of the same journal
+     × refuses nonprivate and malformed saved journals 92ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/engagement-synthesis-generation-worker.test.ts > synthesis worker custody and recovery > refuses nonprivate and malformed saved journals
+AssertionError: expected [Function] to throw error including 'connector_file_not_private' but got '[\n  {\n    "code": "invalid_union",\…'
+
+- Expected
++ Received
+
+- connector_file_not_private
++ [
++   {
++     "code": "invalid_union",
++     "errors": [],
++     "note": "No matching discriminator",
++     "discriminator": "phase",
++     "options": [
++       "prepared",
++       "claimed",
++       "dispatching",
++       "running",
++       "observed",
++       "delivered",
++       "unobserved"
++     ],
++     "path": [
++       "phase"
++     ],
++     "message": "Invalid discriminator value. Expected 'prepared' | 'claimed' | 'dispatching' | 'running' | 'observed' | 'delivered' | 'unobserved'"
++   }
++ ]
+
+ ❯ src/test/engagement-synthesis-generation-worker.test.ts:209:61
+    207|     await chmod(path, 0o644);
+    208|     expect((await stat(path)).mode & 0o777).toBe(0o644);
+    209|     await expect(runSynthesisGenerationWorkerAttempt(f.args)).rejects.…
+       |                                                             ^
+    210|     expect(f.from).not.toHaveBeenCalled();
+    211|     await chmod(path, 0o600);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 39 skipped (40)
+   Start at  00:50:21
+   Duration  1.39s (transform 652ms, setup 84ms, import 1.02s, tests 93ms, environment 0ms)
+
+JSON report written to /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/controls-privacy-bypass-0022/tests.json
