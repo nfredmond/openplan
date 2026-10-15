@@ -1,0 +1,62 @@
+--- original-v3/attest_start_v1.py
++++ new-v2/attest_start_v2.py
+@@ -1,0 +2 @@
++import hashlib
+@@ -9 +10,37 @@
+-import app_binding_v1 as a
++NEW_ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015')
++V3 = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3')
++BINDING_SHA = 'c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329'
++if hashlib.sha256((V3/'app_binding_v1.py').read_bytes()).hexdigest() != BINDING_SHA:
++    raise ValueError('attest-binding-sha')
++sys.path.insert(0, str(V3))
++try:
++    import app_binding_v1 as a
++finally:
++    sys.path.pop(0)
++a.require(Path(a.__file__).resolve()==V3/'app_binding_v1.py' and
++          a.sha(Path(a.__file__))==BINDING_SHA, 'attest-binding-module')
++
++NPM_SOURCES = {
++    "/usr/lib/node_modules/npm/lib/commands/run.js": "86080ad381490dd347b5cde5071a8d2444c1f471e795f4a88957e4726fca20ab",
++    "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js": "daceffb5ae860499cc8e0696c8c33ef5d705f62f597974858b6472fcd1215f79",
++    "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js": "94dea9ff50028869f4f88c4ec5e520d56fa7c2f6cc03422a9f06c44d291a0c34",
++    "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/make-spawn-args.js": "d1647624f0ce227e5cff1c4570f3e754e0eaaf08041db354102ec2bdbbd721df",
++    "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/set-path.js": "bc023d0c2d0840074c9e81ac0bda0fed0ef75e64623fa670437a7706d05d3542"
++}
++
++
++# Fixed Linux npm run start case: no caller-supplied binPaths, one trusted PATH.
++def npm_child_path(base):
++    for name, expected in NPM_SOURCES.items():
++        a.require(a.sha(Path(name))==expected, 'attest-npm-source:'+Path(name).name)
++    a.require(base=='/usr/bin:/bin', 'attest-base-path')
++    entries=[]
++    directory=a.APP
++    while True:
++        entries.append(str(directory/'node_modules/.bin'))
++        if directory.parent==directory:
++            break
++        directory=directory.parent
++    entries.extend(['/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin',base])
++    return ':'.join(entries)
++
+@@ -44,0 +82 @@
++    expected['PATH']=npm_child_path(expected['PATH'])
+@@ -62 +100 @@
+-    a.write_once(a.RUN/'runtime-start-attestation.json',{'schema':1,'unit':UNIT,'mainPid':properties['MainPID'],
++    a.write_once(NEW_ROOT/'runtime-start-attestation.json',{'schema':1,'unit':UNIT,'mainPid':properties['MainPID'],
+@@ -66,0 +105,2 @@
++        'appBindingSha256':BINDING_SHA,'npmSourceHashes':NPM_SOURCES,
++        'derivedNpmPathSha256':hashlib.sha256(expected['PATH'].encode()).hexdigest(),
+@@ -70 +110 @@
+-if __name__=='__main__':
++def main():
+@@ -74 +114 @@
+-    a.require(Path(__file__).resolve()==a.ROOT/'attest_start_v1.py','attestor-root')
++    a.require(Path(__file__).resolve()==NEW_ROOT/'attest_start_v2.py','attestor-root')
+@@ -78,0 +119,4 @@
++
++
++if __name__=='__main__':
++    main()
