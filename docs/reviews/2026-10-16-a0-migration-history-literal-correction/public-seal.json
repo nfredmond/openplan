@@ -1,0 +1,112 @@
+{
+  "a0AppTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "a0ApplicationSource": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "a0AuthorSubject": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+  "files": {
+    "DESIGN.md": {
+      "bytes": 11390,
+      "sha256": "12b07b3b888de12f2606ee3d13ca42667a933324c4258197b02f258393790b8a"
+    },
+    "PARENT_RECIPE.md": {
+      "bytes": 4565,
+      "sha256": "4ce37a65133c0866cfa0e0180140bba22b58a6d51445a39acb39024c3d42ec35"
+    },
+    "STATUS.md": {
+      "bytes": 8135,
+      "sha256": "ae81b4495f12ebc38bb23d05300470657032db37e561ebd3681ecd74bd7e49a7"
+    },
+    "checks.json": {
+      "bytes": 7829,
+      "sha256": "b5701ad1a19ec57158ca42894121ae53354819eb3025d9328d6ae43186c37c10"
+    },
+    "controls.py": {
+      "bytes": 18134,
+      "sha256": "03d2bf930ba799f9a1f1a4925c42fa5c9dda08aa8877fc4417913da7c74ed963"
+    },
+    "evidence-pins.json": {
+      "bytes": 9031,
+      "sha256": "a3d60eb2f3a8d072cd2ca5cc0e36fa20294791052489a560705002de85749d02"
+    },
+    "external-predecessor-pins.json": {
+      "bytes": 126449,
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    "final_checks.py": {
+      "bytes": 4354,
+      "sha256": "f5f69a92f672d6c3e2d79fe39228b411b46b0cddf01482ab970d94fcffd29d4c"
+    },
+    "package-pins.json": {
+      "bytes": 1495,
+      "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2"
+    },
+    "prepare.py": {
+      "bytes": 5592,
+      "sha256": "adca346882ad78a8929e3ad5f2ffa37280908eec1965cb6fbdce77ed46bcac29"
+    },
+    "prior-function-pins.json": {
+      "bytes": 593,
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9"
+    },
+    "proposed-admission.json": {
+      "bytes": 133616,
+      "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3"
+    },
+    "review-pins.json": {
+      "bytes": 3636,
+      "sha256": "1de634e1fbc73fdc2e0ddaf29ab5fdfc6fae53f4ccfdb398dd11dbb9be4fd331"
+    },
+    "runtime/cases.py": {
+      "bytes": 12821,
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    "runtime/controller.py": {
+      "bytes": 32321,
+      "sha256": "ff7e69534f7ade3b486030d655c7b3302105224439e513614fe524118dabe55b"
+    },
+    "runtime/fixture.py": {
+      "bytes": 7731,
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    "runtime/journal.py": {
+      "bytes": 4331,
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    "runtime/literal_history.py": {
+      "bytes": 7675,
+      "sha256": "a1e84629e61aa29070c517d65352c1c1901cd1049b2f417bba3ebf342b699c90"
+    },
+    "runtime/policy.py": {
+      "bytes": 6126,
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    "runtime/run_stage.sh": {
+      "bytes": 199,
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    "runtime/sql/assertions.sql": {
+      "bytes": 794,
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    "runtime/sql/post_rollback.sql": {
+      "bytes": 654,
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    "runtime/sql/shadows.sql": {
+      "bytes": 489,
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    "source-pins.json": {
+      "bytes": 201496,
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    "window.py": {
+      "bytes": 6870,
+      "sha256": "1d62168bed9fd7db2ce5b732bb6f32f2a1c846aa27b57eb271978ee87407711a"
+    }
+  },
+  "independentFinalReview": "REQUIRED; root-owned; no admission/push/PR/main/release",
+  "preparationBase": "14bef38bd3fde0c7f06c5dad04d6b0c149113d74",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016",
+  "scope": "New isolated source continuation and one accepted finite pure composition window only. No native parser or migration acceptance."
+}

@@ -1,0 +1,250 @@
+{
+  "admissionsAbsent": true,
+  "controls": {
+    "nativeParserProof": false,
+    "onlyPopenInert": true,
+    "trials": [
+      {
+        "failure": null,
+        "outcome": "pass",
+        "trial": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "survived",
+        "trial": "harmless"
+      },
+      {
+        "failure": "AssertionError:corpus-hex-preservation",
+        "outcome": "named-failure",
+        "trial": "hex"
+      },
+      {
+        "failure": "AssertionError:nul-refusal",
+        "outcome": "named-failure",
+        "trial": "nul"
+      },
+      {
+        "failure": "AssertionError:source-hash-refusal",
+        "outcome": "named-failure",
+        "trial": "sourcehash"
+      },
+      {
+        "failure": "AssertionError:readback-duplicate",
+        "outcome": "named-failure",
+        "trial": "rowcount"
+      },
+      {
+        "failure": "AssertionError:readback-version",
+        "outcome": "named-failure",
+        "trial": "exactread"
+      },
+      {
+        "failure": "AssertionError:predecessor-history-change",
+        "outcome": "named-failure",
+        "trial": "priorhistory"
+      },
+      {
+        "failure": "AssertionError:postcommit-corrupt-refusal",
+        "outcome": "named-failure",
+        "trial": "readbackcall"
+      },
+      {
+        "failure": "AssertionError:postcommit-projection",
+        "outcome": "named-failure",
+        "trial": "projection"
+      },
+      {
+        "failure": "AssertionError:phase-refusal-off",
+        "outcome": "named-failure",
+        "trial": "scs"
+      },
+      {
+        "failure": "AssertionError:phase-refusal-boolpid",
+        "outcome": "named-failure",
+        "trial": "pid"
+      },
+      {
+        "failure": "AssertionError:phase-refusal-wrongdb",
+        "outcome": "named-failure",
+        "trial": "identity"
+      },
+      {
+        "failure": "AssertionError:phase-refusal-ambiguous",
+        "outcome": "named-failure",
+        "trial": "ambiguous"
+      },
+      {
+        "failure": "AssertionError:predecessor-rebinding",
+        "outcome": "named-failure",
+        "trial": "predecessor"
+      },
+      {
+        "failure": "AssertionError:fresh-physical-line",
+        "outcome": "named-failure",
+        "trial": "newline"
+      },
+      {
+        "failure": "AssertionError:ready-durable-before-body",
+        "outcome": "named-failure",
+        "trial": "earlysend"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "trial": "restored"
+      }
+    ]
+  },
+  "grantedPreparedPinsSHA256": "6a4c21998a9466d098fae78aa989022083f8a2e968197e43d9be623b3b14e9bf",
+  "mountTier": "Actual named read-only roots/probes; inherited writable submounts not excluded; full mountinfo retained private.",
+  "nativeDispatches": 0,
+  "nativeParserAccepted": false,
+  "outerTerminal": {
+    "retry": "forbidden; terminal exit releases this invocation lock if reached; no native claim",
+    "returncode": 0,
+    "seconds": 33.87365764309652,
+    "stderrSHA256": "dec2aa5e4796ff093647737df7ea308d59eff495ccca7e291d18564bcef639ef",
+    "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "packageSHA256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2",
+  "parentSession": 70737,
+  "planSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016",
+  "pureWindow": {
+    "nativeDispatches": 0,
+    "status": "complete",
+    "steps": [
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "7b4b8eda126ab976ec314ce9a4d9d6e73900558e30a773a9dfc3d146a2c9bb35",
+        "step": 1
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "step": 2
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "cf774cf0f0c670241197f0b23110ad1294cdf93c37a13b85f7032d4a7a57160c",
+        "step": 3
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "441910dd2254e6ab87a30be44f224483c8db2345b499356b5b72315b99b5a4e1",
+        "step": 4
+      }
+    ]
+  },
+  "readOnlyProbes": [
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/AGENTS.md"
+    },
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/AGENTS.md"
+    },
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json"
+    }
+  ],
+  "readerControls": [
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "baseline"
+    },
+    {
+      "failure": null,
+      "outcome": "survived",
+      "trial": "harmless"
+    },
+    {
+      "failure": "AssertionError:reader-wrong-refusal-rejected",
+      "outcome": "named-failure",
+      "trial": "substring-fault"
+    },
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "restored"
+    }
+  ],
+  "realRefusal": "MISSING_ROOT_ADMISSION:apply17",
+  "resources": {
+    "actual": {
+      "cpu.max": "50000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-a0-history-literal-TEST-01-20261016.service",
+    "networkNamespace": "net:[4026534387]",
+    "readOnlyRoots": [
+      "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r3",
+      "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates",
+      "/home/nathaniel/.local/state/openplan/a0-r6-observe-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-allocate-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-restore419-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016",
+      "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016"
+    ]
+  },
+  "selectedExternalUnchanged": 413,
+  "sourceMigrations": 421,
+  "stagesAbsent": true,
+  "syntax": [
+    "controls.py",
+    "final_checks.py",
+    "prepare.py",
+    "runtime/cases.py",
+    "runtime/controller.py",
+    "runtime/fixture.py",
+    "runtime/journal.py",
+    "runtime/literal_history.py",
+    "runtime/policy.py",
+    "window.py"
+  ],
+  "unchangedR6Runtime": [
+    "cases.py",
+    "fixture.py",
+    "journal.py",
+    "policy.py",
+    "run_stage.sh",
+    "sql/assertions.sql",
+    "sql/post_rollback.sql",
+    "sql/shadows.sql"
+  ],
+  "unitInvocation": "c39ab66a2d23491b9a780fcca83cab00",
+  "windowGuardControls": [
+    {
+      "outcome": "pass",
+      "trial": "baseline"
+    },
+    {
+      "outcome": "survived",
+      "trial": "harmless"
+    },
+    {
+      "outcome": "named-failure",
+      "trial": "resource-omitted"
+    },
+    {
+      "outcome": "pass",
+      "trial": "restored"
+    }
+  ]
+}
