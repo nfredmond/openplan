@@ -16,6 +16,14 @@
   "restoreInvocation": "fc0b6044bb9f49c9ae98fd803537f817",
   "targetOID": "6196780",
   "cloneReadySHA256": "41423348cbd631d20ff58bb85197deabcf2003235bc0281b52b102b930f8b683",
-  "upgradeState": "refused before dispatch: shared lock occupied",
-  "upgradeIntentAbsent": true
+  "upgradeState": "terminal success",
+  "upgradeIntentAbsent": true,
+  "upgradeExit": 0,
+  "upgradeInvocation": "480bc4a8d49a42419229387de3f25c2e",
+  "upgradeReadySHA256": "b478754cc25b9d1a404e80bfbba32b66a91819e10f7755eae6afa1a9073796db",
+  "servicesExit": 1,
+  "servicesFailure": "ConnectionResetError",
+  "servicesInvocation": "ad0472a59578427192312e9a9d89b48c",
+  "activeCheckSession": 82160,
+  "activeCheckState": "running"
 }

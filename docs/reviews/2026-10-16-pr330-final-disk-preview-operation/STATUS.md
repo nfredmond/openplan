@@ -17,3 +17,11 @@ Private custody lives under `/home/nathaniel/.local/state/openplan/pr330-final-d
 Restore exits zero, invocation `fc0b6044bb9f49c9ae98fd803537f817`, 174.382 seconds, 512M peak and zero swap. The actual new database OID is 6196780, owner postgres. The controller verifies representative419 rows/history/sequences, retained dump SHA, copied Storage bytes, source identity and protected inputs before publishing clone readiness. Root reads the zero terminal exit, exact target/OID and clone-ready receipt. This is a retained-fixture restore, not independent clean installation or recovery acceptance.
 
 The first upgrade entry returns `Shared lock occupied. No stage requested.` with exit two. It creates no upgrade intent or request journal. This is a refusal before dispatch, not a failed SQL operation. Root preserves it and will request upgrade after the other owned check releases the serial lock. No migration, helper or application operation is accepted by this record.
+
+## Upgrade passes; helpers start but first readiness check fails
+
+Upgrade exits zero, invocation `480bc4a8d49a42419229387de3f25c2e`, 178.893 seconds, 512M peak and zero swap. The accepted target has 420 migrations and latest17. The function body, both classification constraints, history SQL and original non-history data/source checks match. Upgrade readiness SHA-256 is `b478754cc25b9d1a404e80bfbba32b66a91819e10f7755eae6afa1a9073796db`.
+
+The service stage exits one, invocation `ad0472a59578427192312e9a9d89b48c`, 81.925 seconds, 512M peak and zero swap. All four new helper create/start commands return zero and retain exact IDs before dependent requests. The first combined readiness check raises `ConnectionResetError`. This stage remains failed. Root subsequently observes all four returned IDs running, which alone does not establish API readiness. Root requests one separately reviewed read-only active check in session82160. It reruns no create/start command. No checkout/build or browser success is claimed.
+
+Three source lanes continue independently: A0 native-wrapper corrections after three P2 findings, official bootstrap runner closure, and project-budget input completeness. The A0 native wrapper remains unadmitted. These lanes do not change this preview's frozen source identity.
