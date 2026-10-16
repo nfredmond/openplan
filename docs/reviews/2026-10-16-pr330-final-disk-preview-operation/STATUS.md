@@ -31,3 +31,9 @@ Three source lanes continue independently: A0 native-wrapper corrections after t
 The separate read-only active check exits zero, invocation `45298f45b421497eb8d9f9934063d519`, 80.565 seconds, 512M peak and zero swap. It verifies all four exact helper bindings, API/CORS and upgrade identity, then reacquires source and protected-input checks. It starts no helper. This successful observation does not change the failed service-stage result.
 
 Root reads its actual exit before requesting one checkout, session49811, for exact607/application treebed. Checkout and build acceptance remain unproved at this checkpoint.
+
+## Checkout passes; fresh capacity refuses build admission
+
+Checkout exits zero, invocation `a4162542e6904cd8834dafd0f8c935f5`, 173.261 seconds, 1G peak and zero swap. Root reads its actual readiness for exact607, environment/migration/dependency/source-inventory bindings. Fresh disk-capacity observation then refuses `disk-memory-total-budget`. A subsequent sample records 12768641024 available bytes against 12,884,901,888 required. No build request or intent exists. Root preserves the refusal and does not lower the build cap or host reserve. This is a pre-admission observation, not a failed webpack build.
+
+The completed runner-source collection at b831 supplies exact official Auth SQL, official CLI history DDL and Storage's inspected import boundary. Root reads the full report/amendment. The remaining pinned Pop dependency receives bounded public-source authorization from root; it does not require a product decision from Nathaniel. Bootstrap construction remains unadmitted. Budget and A0 correction lanes continue while preview capacity waits.

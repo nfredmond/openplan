@@ -29,5 +29,12 @@
   "activeCheckExit": 0,
   "activeCheckInvocation": "45298f45b421497eb8d9f9934063d519",
   "checkoutSession": 49811,
-  "checkoutState": "running"
+  "checkoutState": "terminal success",
+  "checkoutExit": 0,
+  "checkoutInvocation": "a4162542e6904cd8834dafd0f8c935f5",
+  "checkoutReadySHA256": "6e3f7534d5e4c6167572e219bb65021af8e99d3c2b1d570cc24a14feeecca6ff",
+  "buildState": "not admitted: disk-memory-total-budget",
+  "buildRequestAbsent": true,
+  "observedMemAvailable": 12768641024,
+  "requiredMemAvailable": 12884901888
 }
