@@ -1,0 +1,26 @@
+--- accepted-memory/run_stage.sh
++++ disk/run_stage.sh
+@@ -5,2 +5,2 @@
+-ROOT=/dev/shm/openplan-pr330-final-source-preview-20261016
+-DURABLE=/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016
++ROOT=/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016
++DURABLE=/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016
+@@ -24 +24 @@
+-  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --unit=openplan-pr330-final-607ee0895-web \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --unit=openplan-pr330-disk-607ee0895-web \
+@@ -26,3 +26,3 @@
+-    -p StandardOutput=append:/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/journal/unit-start/web-stdout.bin \
+-    -p StandardError=append:/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/journal/unit-start/web-stderr.bin \
+-    -p "ExecStopPost=/usr/bin/python3 -B /home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/journal.py stopped-web" \
++    -p StandardOutput=append:/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016/journal/unit-start/web-stdout.bin \
++    -p StandardError=append:/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016/journal/unit-start/web-stderr.bin \
++    -p "ExecStopPost=/usr/bin/python3 -B /home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016/templates/journal.py stopped-web" \
+@@ -34 +34 @@
+-  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit=openplan-pr330-final-607ee0895-attest \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit=openplan-pr330-disk-607ee0895-attest \
+@@ -40 +40 @@
+-  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-final-607ee0895-$stage" \
++  exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-disk-607ee0895-$stage" \
+@@ -48 +48 @@
+-exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-final-607ee0895-$stage" \
++exec /usr/bin/python3 -B "$ROOT/journal.py" execute "unit-$stage" -- /usr/bin/systemd-run --user --wait --pipe --unit="openplan-pr330-disk-607ee0895-$stage" \

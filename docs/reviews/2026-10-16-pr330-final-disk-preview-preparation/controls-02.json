@@ -1,0 +1,116 @@
+{
+  "trials": [
+    {
+      "trial": "baseline-memory_storage.py",
+      "observations": 20,
+      "pass": true
+    },
+    {
+      "trial": "harmless-memory_storage.py",
+      "survived": true
+    },
+    {
+      "trial": "baseline-storage_stage.py",
+      "observations": 10,
+      "pass": true
+    },
+    {
+      "trial": "harmless-storage_stage.py",
+      "survived": true
+    },
+    {
+      "trial": "host-reserve",
+      "namedAssertion": "Unchanged build and host memory reservations",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "memory-gate",
+      "namedAssertion": "Expected refusal: disk-memory-total-budget",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "double-count-disk",
+      "namedAssertion": "Shared disk must reserve working plus archive",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "disk-gate",
+      "namedAssertion": "Expected refusal: disk-combined-budget",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "disk-floor",
+      "namedAssertion": "Expected refusal: disk-headroom-floor",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "disk-device",
+      "namedAssertion": "Expected refusal: disk-mount-identity",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "disk-execution",
+      "namedAssertion": "Expected refusal: disk-execution",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "staged-count",
+      "namedAssertion": "Expected refusal: disk-staged-count",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "parent-symlink",
+      "namedAssertion": "Expected refusal: disk-parent-symlink",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "shared-device",
+      "namedAssertion": "Expected refusal: disk-shared-device",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "mount-census",
+      "namedAssertion": "Expected refusal: disk-mount-census",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "mount-timeout",
+      "namedAssertion": "Mount observation must stay bounded",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "disk-admission",
+      "namedAssertion": "Expected refusal: final-parent-review-admission",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "capacity-model",
+      "namedAssertion": "Expected refusal: final-parent-review-admission",
+      "failedAsIntended": true
+    },
+    {
+      "trial": "old-review",
+      "namedAssertion": "Expected refusal: final-parent-review-admission",
+      "failedAsIntended": true
+    }
+  ],
+  "harmlessSurvivors": 2,
+  "namedFaults": 15,
+  "restoredSourceSHA256": {
+    "memory_storage.py": "24bd85b523604913da249467a62f5fb5a469cf4aaeb444e5662460e418260ca8",
+    "storage_stage.py": "125f381f45ebf98e06e86d16d505100563791a28b762c789b941b8e5ce91ca2e"
+  },
+  "runtimeSeals": 42,
+  "currentCapacity": null,
+  "currentCapacityRefusal": "disk-memory-total-budget",
+  "runtimeStages": 0,
+  "injectedAdmissionFixtureOnly": true,
+  "blindCategories": [
+    "actual build peak/output",
+    "kernel/Docker/bwrap semantics",
+    "SQL and service behavior",
+    "truth of parent review authorization",
+    "concurrent mount/filesystem changes",
+    "browser and human acceptance"
+  ]
+}

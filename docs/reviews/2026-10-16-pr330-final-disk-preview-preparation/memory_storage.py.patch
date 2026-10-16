@@ -1,0 +1,71 @@
+--- accepted-memory/memory_storage.py
++++ disk/memory_storage.py
+@@ -11,2 +11,2 @@
+-ROOT = Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
+-DURABLE = Path('/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')
++DURABLE = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016')
+@@ -52 +52,3 @@
+-    require(observed['target']=='/dev/shm' and observed['fstype']=='tmpfs', 'memory-mount')
++    require(observed['target'] == '/' and observed['fstype'] == 'ext4' and
++            observed['source'] == '/dev/nvme0n1p2' and
++            observed['uuid'] == 'c7f8e9a2-2767-4dba-81a8-5ae1ade8d595', 'disk-mount-identity')
+@@ -54,2 +56 @@
+-    require('rw' in flags and 'noexec' not in flags, 'memory-execution')
+-    require({'nosuid','nodev'} <= flags, 'memory-mount-flags')
++    require('rw' in flags and 'noexec' not in flags, 'disk-execution')
+@@ -58,8 +59,7 @@
+-def capacity_check(available, memory_free, durable_free, staged=0):
+-    # MemAvailable already excludes resident tmpfs pages. Never count tmpfs free
+-    # as extra RAM. Build-created output pages are charged inside its 10 GiB cap.
+-    require(available >= 10*GiB and memory_free >= 8*GiB, 'original-headroom-floor')
+-    require(available >= 10*GiB + EVIDENCE_RESERVE + HOST_RESERVE + max(0,SOURCE_BYTES-staged),
+-            'memory-total-budget')
+-    # Reserve uncompressed size plus tar/gzip overhead. Compression is never a
+-    # capacity assumption. A larger actual inventory refuses archive/start.
++def capacity_check(available, working_free, durable_free, staged=0):
++    # Source, output and custody reside on disk. Page cache used during a build
++    # remains charged to that build's unchanged 10 GiB cgroup and is reclaimable.
++    # No disk or tmpfs free bytes count as extra RAM.
++    require(type(staged) is int and staged >= 0, 'disk-staged-count')
++    memory_required = 10*GiB + HOST_RESERVE
++    require(available >= memory_required, 'disk-memory-total-budget')
+@@ -67,5 +67,14 @@
+-    require(durable_free >= raw + raw//100 + DISK_RESERVE, 'durable-archive-budget')
+-    return {'available':available, 'memoryFree':memory_free, 'durableFree':durable_free,
+-            'sourceBytes':SOURCE_BYTES, 'stagedBytes':staged,
+-            'outputReservation':OUTPUT_RESERVE, 'unitCap':10*GiB,
+-            'hostReservation':HOST_RESERVE, 'durableRequired':raw+raw//100+DISK_RESERVE}
++    working_required = max(0, raw-staged)
++    archive_raw = max(raw, staged)
++    archive_required = archive_raw + archive_raw//100 + DISK_RESERVE
++    # Both directories share this identified filesystem. Reserve working bytes
++    # AND an uncompressed-size archive together, rather than counting free twice.
++    combined_required = working_required + archive_required
++    require(min(working_free, durable_free) >= 8*GiB, 'disk-headroom-floor')
++    require(min(working_free, durable_free) >= combined_required, 'disk-combined-budget')
++    return {'available': available, 'workingFree': working_free, 'durableFree': durable_free,
++            'sourceBytes': SOURCE_BYTES, 'stagedBytes': staged,
++            'outputReservation': OUTPUT_RESERVE, 'unitCap': 10*GiB,
++            'hostReservation': HOST_RESERVE, 'memoryRequired': memory_required,
++            'workingRequired': working_required, 'archiveRequired': archive_required,
++            'durableRequired': combined_required, 'storage': 'disk'}
+@@ -75,2 +84,6 @@
+-    result = subprocess.run(['/usr/bin/findmnt','-J','-T','/dev/shm','-o','TARGET,FSTYPE,OPTIONS'],
+-                            capture_output=True, check=True)
++    require(ROOT.parent.resolve() == ROOT.parent and DURABLE.resolve() == DURABLE,
++            'disk-parent-symlink')
++    require(os.stat(ROOT.parent).st_dev == os.stat(DURABLE).st_dev, 'disk-shared-device')
++    result = subprocess.run(['/usr/bin/findmnt', '-J', '-T', str(ROOT.parent), '-o',
++                             'TARGET,SOURCE,FSTYPE,OPTIONS,UUID'],
++                            capture_output=True, check=True, timeout=5)
+@@ -78 +91 @@
+-    require(len(mount)==1, 'memory-mount-census')
++    require(len(mount) == 1, 'disk-mount-census')
+@@ -82,3 +95,3 @@
+-    staged = sum(x.get('bytes',0) for x in inventory(ROOT).values()) if ROOT.exists() else 0
+-    return capacity_check(available,shutil.disk_usage('/dev/shm').free,
+-                          shutil.disk_usage(DURABLE).free,staged)
++    staged = sum(x.get('bytes', 0) for x in inventory(ROOT).values()) if ROOT.exists() else 0
++    return capacity_check(available, shutil.disk_usage(ROOT.parent).free,
++                          shutil.disk_usage(DURABLE).free, staged)

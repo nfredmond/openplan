@@ -1,0 +1,23 @@
+--- accepted-memory/app_binding_v1.py
++++ disk/app_binding_v1.py
+@@ -20 +20 @@
+-ROOT = Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')
+@@ -22 +22 @@
+-SOURCE_REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-439a9ccf')
++SOURCE_REPO = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-worktree-20261016')
+@@ -28,4 +28,4 @@
+-HOST = '127.74.19.14'
+-API = 'http://' + HOST + ':29953'
+-WEB = 'http://' + HOST + ':3588'
+-HELPERS = {'helper.py': '675825911ad6a361e8d1917da3946894a207f4bebe61136c498824e756e441e6', 'policy.py': 'bc0ae32d2fd5b5994a8fecd7650fc2f04addf234130c7779ea30ff197cfe594b'}
++HOST = '127.74.19.15'
++API = 'http://' + HOST + ':29954'
++WEB = 'http://' + HOST + ':3589'
++HELPERS = {'helper.py': '2176b1d33ec42f3c8f65bcb295daf16c0703fd0e930b06133f3a9ad32240fcd6', 'policy.py': '4eceb4374cffa81ca6ef7ba073113a544acc049067c13aec88c4bc628b90e3c1'}
+@@ -263 +263 @@
+-        [] if phase == 'build' else ['--', '--hostname', HOST, '--port', '3588'])
++        [] if phase == 'build' else ['--', '--hostname', HOST, '--port', '3589'])
+@@ -343 +343 @@
+-        probe.bind((HOST, 3588))
++        probe.bind((HOST, 3589))

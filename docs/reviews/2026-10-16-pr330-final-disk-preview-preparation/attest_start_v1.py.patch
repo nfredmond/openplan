@@ -1,0 +1,17 @@
+--- accepted-memory/attest_start_v1.py
++++ disk/attest_start_v1.py
+@@ -10,3 +10,3 @@
+-NEW_ROOT = Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
+-V3 = Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
+-BINDING_SHA = 'a2240c842209fe7cdcb2bb3b9bf834fcec208951eabb64bfaed63d0fe970e9a1'
++NEW_ROOT = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')
++V3 = Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')
++BINDING_SHA = '77c7beb886926438189bf2cc5a89fb77870fc21dc5db8b6b5534d39bb27e9747'
+@@ -48 +48 @@
+-UNIT = 'openplan-pr330-final-607ee0895-web.service'
++UNIT = 'openplan-pr330-disk-607ee0895-web.service'
+@@ -73,2 +73,2 @@
+-    rows=a.command(['/usr/bin/ss','-H','-ltnp','sport = :3588']).decode().splitlines()
+-    a.require(len(rows)==1 and rows[0].split()[3]==a.HOST+':3588', 'attest-listener')
++    rows=a.command(['/usr/bin/ss','-H','-ltnp','sport = :3589']).decode().splitlines()
++    a.require(len(rows)==1 and rows[0].split()[3]==a.HOST+':3589', 'attest-listener')

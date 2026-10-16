@@ -1,0 +1,5 @@
+--- accepted-memory/journal.py
++++ disk/journal.py
+@@ -10 +10 @@
+-DURABLE=Path('/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016')
++DURABLE=Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-preview-20261016')

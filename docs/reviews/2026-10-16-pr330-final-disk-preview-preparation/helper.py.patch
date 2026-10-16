@@ -1,0 +1,17 @@
+--- accepted-memory/helper.py
++++ disk/helper.py
+@@ -135 +135 @@
+-    for port in [29953,3588]:
++    for port in [29954,3589]:
+@@ -257 +257 @@
+-        bindings={'8000/tcp':[{'HostIp':p.HOST,'HostPort':'29953'}]} if kind=='gateway' else {},
++        bindings={'8000/tcp':[{'HostIp':p.HOST,'HostPort':'29954'}]} if kind=='gateway' else {},
+@@ -307 +307 @@
+-        if kind=='gateway':args+=['--publish',p.HOST+':29953:8000']
++        if kind=='gateway':args+=['--publish',p.HOST+':29954:8000']
+@@ -336 +336 @@
+-TARGET = 'openplan_pr330_final_90e91b0476b3933d87c45da1'
++TARGET = 'openplan_pr330_disk_9a4e004d0a9e23f1b727ff9e'
+@@ -457 +457 @@
+-    p.exact({'regular':True,'mode':0o600,'sha256':'9ddac1d10bc10da3b42b6003cd25e8f1f14851736ca099820b1ef8ce7cccf188'},
++    p.exact({'regular':True,'mode':0o600,'sha256':'f0911dbe78ee36e97e9495d5a86e56b9c381f5a24cabfce790ddf0341b4ff0cd'},

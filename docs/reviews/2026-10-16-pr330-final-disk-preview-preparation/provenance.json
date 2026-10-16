@@ -1,0 +1,13 @@
+{
+  "oldPacketSHA256": "bd5d60d4514c3d4a52b362d11a0b4d0e084bde450e292764d75dc03be8191ebe",
+  "oldListSHA256": "c1f30205506fed4d53cf5621772f642b1e7e6b6f95f5608867b33d811fc64c72",
+  "oldReview": "0b363901455bb955e9f67395f9fd6a5ed40e3ccd",
+  "oldPacketEntriesPreserved": 70,
+  "privateInputs": 42,
+  "sourceInventoryUnchanged": true,
+  "oldRuntimeRootAllocated": false,
+  "newRuntimeRootAllocated": false,
+  "operatingStages": 0,
+  "sourceHead": "607ee0895a79457181eda1d2ebbda1de4f2a4d40",
+  "appTree": "bed283ab0c937ead65378a2e9d26c177ceee6938"
+}

@@ -1,0 +1,16 @@
+--- accepted-memory/policy.py
++++ disk/policy.py
+@@ -14,5 +14,5 @@
+-HOST = '127.74.19.14'
+-API = 'http://' + HOST + ':29953'
+-WEB = 'http://' + HOST + ':3588'
+-PURPOSE = 'pr330-final-source-preview-20261016'
+-ROOT = '/dev/shm/openplan-pr330-final-source-preview-20261016'
++HOST = '127.74.19.15'
++API = 'http://' + HOST + ':29954'
++WEB = 'http://' + HOST + ':3589'
++PURPOSE = 'pr330-final-disk-preview-20261016'
++ROOT = '/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016'
+@@ -69 +69 @@
+-    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_pr330_final_[0-9a-f]{24}', value) is not None}, 'target')
++    exact({'valid': True}, {'valid': isinstance(value, str) and re.fullmatch(r'openplan_pr330_disk_[0-9a-f]{24}', value) is not None}, 'target')

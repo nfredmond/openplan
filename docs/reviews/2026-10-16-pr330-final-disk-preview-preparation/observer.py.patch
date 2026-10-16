@@ -1,0 +1,5 @@
+--- accepted-memory/observer.py
++++ disk/observer.py
+@@ -10 +10 @@
+-ROOT=Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
++ROOT=Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')

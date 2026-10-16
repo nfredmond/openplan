@@ -1,0 +1,8 @@
+--- accepted-memory/storage_stage.py
++++ disk/storage_stage.py
+@@ -19,0 +20,2 @@
++        approved.get('storage')=='disk' and approved.get('capacityModel')=='disk-v1' and
++        approved.get('reviewCommit') not in {j.HEAD,'0b363901455bb955e9f67395f9fd6a5ed40e3ccd'} and
+@@ -60 +62 @@
+-        unit='openplan-pr330-final-607ee0895-'+suffix+'.service'
++        unit='openplan-pr330-disk-607ee0895-'+suffix+'.service'

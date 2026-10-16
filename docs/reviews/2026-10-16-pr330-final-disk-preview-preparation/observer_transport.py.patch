@@ -1,0 +1,9 @@
+--- accepted-memory/observer_transport.py
++++ disk/observer_transport.py
+@@ -11,3 +11,3 @@
+-ROOT=Path('/dev/shm/openplan-pr330-final-source-preview-20261016')
+-OBSERVER_SHA='6bfd39b3f8a23773531d3f32c5c9020443943a72f27d643f66df76aaedfdb17e'
+-UNIT='openplan-pr330-final-preserved-web-observer'
++ROOT=Path('/home/nathaniel/.local/state/openplan/pr330-final-disk-working-20261016')
++OBSERVER_SHA='047bc38eb6cf4389f7d20fbe1600a58561296b3669ac7fecf3357b875f96323d'
++UNIT='openplan-pr330-disk-preserved-web-observer'
