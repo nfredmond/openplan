@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan
+
+ ✓ src/test/packet-geography-figure.test.ts (20 tests) 29ms
+
+ Test Files  1 passed (1)
+      Tests  20 passed (20)
+   Start at  20:25:42
+   Duration  591ms (transform 60ms, setup 62ms, import 41ms, tests 29ms, environment 362ms)
+
+JSON report written to /home/nathaniel/.t3/worktrees/openplan/t3-e444198e/docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/restored.json
+{"cwd":"/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan","cacheDir":"/home/nathaniel/.local/state/openplan/pr330-study-place-wording-awm0vsz1/restored/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709","maxWorkers":1,"pool":"forks","configFile":"/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/vitest.config.ts"}
