@@ -1,4 +1,4 @@
-import { parseExactDecimal, type ExactDecimal } from "./optional-amount";
+import { compareExactDecimals, decimalUnitsAtScale, parseExactDecimal, type ExactDecimal } from "./optional-amount";
 
 /**
  * One way to write a dollar figure, everywhere in OpenPlan.
@@ -113,11 +113,8 @@ function formatter(
  * Intl receives BigInt, never an unvalidated decimal-string overload. */
 function exactAmountText(amount: ExactDecimal, intl: Intl.NumberFormat): string {
   const digits = intl.resolvedOptions().maximumFractionDigits ?? 0;
-  const magnitude = amount.units < BigInt(0) ? -amount.units : amount.units;
-  const divisor = BigInt(10) ** BigInt(Math.max(0, amount.scale - digits));
-  const rounded = amount.scale > digits
-    ? (magnitude + divisor / BigInt(2)) / divisor
-    : magnitude * BigInt(10) ** BigInt(digits - amount.scale);
+  const scaled = decimalUnitsAtScale(amount, digits, true)!;
+  const rounded = scaled < BigInt(0) ? -scaled : scaled;
   const minorBase = BigInt(10) ** BigInt(digits);
   const whole = rounded / minorBase;
   const signedWhole = amount.negative ? (whole === BigInt(0) ? -0 : -whole) : whole;
@@ -147,7 +144,7 @@ export function formatMoney(
   const currency = options.currency?.trim() ? options.currency.trim().toUpperCase() : DEFAULT_MONEY_CURRENCY;
 
   const mode: "whole" | "exact" =
-    options.precision === "whole" || (options.precision === "auto" && amount.units % (BigInt(10) ** BigInt(amount.scale)) === BigInt(0))
+    options.precision === "whole" || (options.precision === "auto" && decimalUnitsAtScale(amount, 0, false) !== null)
       ? "whole"
       : "exact";
   const intl = formatter(currency, mode, options.currencyDisplay ?? "symbol");
@@ -177,7 +174,7 @@ export function formatMoneyRange(
   const highAmount = parseExactDecimal(high);
   if (lowAmount === null || highAmount === null) return options.absent ?? "Not recorded";
 
-  const lowFirst = lowAmount.units * BigInt(10) ** BigInt(highAmount.scale) <= highAmount.units * BigInt(10) ** BigInt(lowAmount.scale);
+  const lowFirst = compareExactDecimals(lowAmount, highAmount) <= 0;
   const [first, second] = lowFirst ? [low, high] : [high, low];
   const firstText = formatMoney(first, options);
   const secondText = formatMoney(second, options);

@@ -1,0 +1,776 @@
+{
+  "baseCommit": "360420ac42f34d2514bec91a0cd796804a8bd78f",
+  "baseApplicationTree": "98535591a5a5916e0ffaef4125196366d3816410",
+  "applicationTree": "9c6185b267e3f14e8e2a4689137059659750f67a",
+  "selectedTests": 184,
+  "selectedFiles": 9,
+  "newTests": 9,
+  "newNamedFaults": 9,
+  "harmlessSurvivor": true,
+  "finallyExactRestoration": true,
+  "sourceAndHarnessUnexpectedFailures": 0,
+  "terminalExitCode": 0,
+  "serviceRuntimeSeconds": 58.897,
+  "memoryPeakBytes": 477630464,
+  "memoryEvents": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+  "freshIndependentReviewPending": true,
+  "compilerFlockReleased": true,
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-money-decimal-scale-correction-20261016",
+  "sourceSealsSHA256": "6664a4e82576d9cb0b54276596e6934145a184d7b569ccfd3b47c9b65340525b",
+  "reportHashes": {
+    "REPORT.md": "3e5b42bd30bafb4158c39f1187204f658db94d448f97b931ea609941258d10e1",
+    "VALIDATION.md": "cf7db994818688bbc404fed846dd43d1d30665fca24b6a7cbcb19d5cd9494413"
+  },
+  "checks": [
+    {
+      "name": "direction",
+      "exitCode": 0,
+      "seconds": 1.7048834060551599
+    },
+    {
+      "name": "focused",
+      "exitCode": 0,
+      "seconds": 1.6003712500678375
+    },
+    {
+      "name": "production-probe",
+      "exitCode": 0,
+      "seconds": 0.8978954979684204
+    },
+    {
+      "name": "mutations",
+      "exitCode": 0,
+      "seconds": 19.24961173092015
+    },
+    {
+      "name": "types",
+      "exitCode": 0,
+      "seconds": 10.749868814949878
+    },
+    {
+      "name": "lint",
+      "exitCode": 0,
+      "seconds": 5.000477512017824
+    },
+    {
+      "name": "relevant-tests",
+      "exitCode": 0,
+      "seconds": 19.500490296981297
+    }
+  ],
+  "resources": {
+    "command": [
+      "python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/project-money-decimal-scale-correction-20261016/checks.py"
+    ],
+    "environmentKeys": [
+      "HOME",
+      "LC_CTYPE",
+      "NODE_OPTIONS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "TMPDIR",
+      "VITE_CACHE_DIR",
+      "XDG_CACHE_HOME",
+      "npm_config_cache",
+      "npm_config_globalconfig",
+      "npm_config_userconfig"
+    ],
+    "before": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "10207232",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "after": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "477630464",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "networkUnshared": true,
+    "donorMount": [
+      "21011 21009 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules /home/nathaniel/.t3/worktrees/openplan/t3-dd644852/openplan/node_modules ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "exitCode": 0,
+    "seconds": 58.7378518700134
+  },
+  "mutations": {
+    "results": [
+      {
+        "name": "mutation-baseline",
+        "exitCode": 0,
+        "seconds": 1.7493011669721454,
+        "expectedTest": null,
+        "expectedFailure": null,
+        "failedTests": [],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "harmless-survivor",
+        "exitCode": 0,
+        "seconds": 1.4996864170534536,
+        "expectedTest": null,
+        "expectedFailure": null,
+        "failedTests": [],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "f5853ea7b5bb1e3a0a2cc99ba15d3dbf7dbd7971449863d48d118dffe2340d94",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "tiny-rounding",
+        "exitCode": 1,
+        "seconds": 1.6992542910156772,
+        "expectedTest": "rounds tiny finite exponents",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales rounds tiny finite exponents to signed zero at every precision"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "e1b3bbf4e4223158ecce7aeb6a0cf13b90257eccccacfb037974df1e4da0f86a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "zero-expansion",
+        "exitCode": 1,
+        "seconds": 1.3987886920804158,
+        "expectedTest": "handles zero coefficients",
+        "expectedFailure": "Maximum BigInt size exceeded",
+        "failedTests": [
+          "bounded money decimal scales handles zero coefficients before positive or negative exponent expansion"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "0b8486fcc5b9809aeacc47ec7a46524d5edb48eeed1ce70a6d23066c49b769ba",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "unsafe-scale-arithmetic",
+        "exitCode": 1,
+        "seconds": 1.6664562600199133,
+        "expectedTest": "keeps exponent plus fraction scale",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales keeps exponent plus fraction scale exact above safe integer arithmetic"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "3cd77c397d2fe09686fbde914fc0f19e1316b4bc19c70acd285f08b6e13a5708",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "fractional-cents-as-zero",
+        "exitCode": 1,
+        "seconds": 1.6320527660427615,
+        "expectedTest": "rejects nonzero fractional cents",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales rejects nonzero fractional cents without allocating their denominator"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "f6e5d01b8b052f01f76600183b642b83da5479ce1f2111f35a8062875edcb0b7",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "auto-integrality",
+        "exitCode": 1,
+        "seconds": 1.5997080999659374,
+        "expectedTest": "distinguishes integral trailing zeros",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales distinguishes integral trailing zeros in auto mode"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "5c69c6e5f8af99a33c806a9a5f0dd672b3dc6cd52b877d8ab844ef5dc5664106",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "half-rounding",
+        "exitCode": 1,
+        "seconds": 1.5994923620019108,
+        "expectedTest": "rounds ordinary digits half away",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales rounds ordinary digits half away from zero in recorded currency units"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "f3bb88fd0552fc0e13133e3def29dc88674dd87fed17eb755d3b09e75592e7b3",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "range-order",
+        "exitCode": 1,
+        "seconds": 1.5163122799713165,
+        "expectedTest": "orders ranges by sign magnitude",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales orders ranges by sign magnitude and aligned digits without cross powers"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "a60bed6883bfcccd629bd17e2c63b5815e15849d2b48227507ea0580512962f8",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "nonfinite-exponent",
+        "exitCode": 1,
+        "seconds": 1.581679555005394,
+        "expectedTest": "refuses genuinely nonfinite exponents",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales refuses genuinely nonfinite exponents and retains missing amount meaning"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "740eb5fe1a287093043fbd517b05f5251a1394d321909bf3fa3d48c2c929016a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "float-aggregate",
+        "exitCode": 1,
+        "seconds": 1.601263674092479,
+        "expectedTest": "retains root cent references",
+        "expectedFailure": "AssertionError",
+        "failedTests": [
+          "bounded money decimal scales retains root cent references and JSON representation across safe cent limits"
+        ],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "ce1abe7c6f4039fa1ce00a81a1525a30204511111b67163e073ef6282acfc4d8",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "mutation-restored",
+        "exitCode": 0,
+        "seconds": 1.5995949039934203,
+        "expectedTest": null,
+        "expectedFailure": null,
+        "failedTests": [],
+        "sourceSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      }
+    ],
+    "restoredSHA256": {
+      "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+    },
+    "exactRestoration": true
+  },
+  "sourcePins": {
+    "openplan/src/lib/money/optional-amount.ts": {
+      "sha256": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "bytes": 8122,
+      "mode": "0o664",
+      "gitBlob": "0befc39e6729e8d0d86f653e87b08a70ab01b6c3",
+      "beforeSHA256": "c0d0f565439f5857a37c022adb88b49f62554aa47cb8d7206904037a7411c187"
+    },
+    "openplan/src/lib/money/format.ts": {
+      "sha256": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "bytes": 9874,
+      "mode": "0o664",
+      "gitBlob": "42bc79c38bebe8d4af85f290ce2826fa041600b1",
+      "beforeSHA256": "3344a0eeef3ebb5e9c47f75fba4888c7f777875b10264c8ade3fa1893e4bb33f"
+    },
+    "openplan/src/test/money-decimal-scale.test.ts": {
+      "sha256": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca",
+      "bytes": 7339,
+      "mode": "0o664",
+      "gitBlob": "0af3ac0948fb4af39b0c2c50788c65a6e2918fc9",
+      "beforeSHA256": null
+    }
+  },
+  "independentReview": {
+    "commit": "e824e1968e2b93cbfe76b40a54cc0ce9b6789524",
+    "reportSHA256": "5ec697e59e1bb0d85fc4f21a41575fb478b4026e2abcc35b7660bbe2ab85ff20",
+    "evidenceSHA256": "e9ef120a2a8d43a14ac71c762521408ef2233d725f9e80a0a7bba9cb61c4de37",
+    "publicPinsMatched": 4,
+    "privatePinsMatched": 18
+  },
+  "preservedEarlierArtifacts": {
+    "authorSourcePins": 9,
+    "authorPrivatePins": 126,
+    "originalArithmeticPrivatePins": 113,
+    "rootDecimalScalePrivatePins": 19,
+    "originalFrozenSourcePins": 6,
+    "historical24FaultsNotAllExactFinalReruns": true,
+    "historicalFailuresUnchanged": true
+  },
+  "privateTopLevelPins": {
+    "admission.json": {
+      "sha256": "08c361e701fa816f22bf9453b8bad9ea340f6cfc9be5141d4cb3c9441ba0aefa",
+      "bytes": 561,
+      "mode": "0o600"
+    },
+    "audit.py": {
+      "sha256": "9d3e2e296a1a8400944d2ebfbf3993ba439ae981bdc13d6dbf339086d9856164",
+      "bytes": 2633,
+      "mode": "0o600"
+    },
+    "auto-integrality-intent.json": {
+      "sha256": "64f56183c2f7d79deba63f31f36682e049788de99aa71366394562f7ad2923d8",
+      "bytes": 909,
+      "mode": "0o600"
+    },
+    "auto-integrality.json": {
+      "sha256": "746ee90e77ead55ce240fb8024fb95b20e9e52e8c286747e0dde7fdb891cff97",
+      "bytes": 4659,
+      "mode": "0o600"
+    },
+    "auto-integrality.log": {
+      "sha256": "4d8291678037a472347d3b8e6b441530bdbf3b9ed379f917f6a949887092d5fc",
+      "bytes": 131,
+      "mode": "0o600"
+    },
+    "check-results.json": {
+      "sha256": "95cfdc6f2b92039f376332efc996873fe7f75f0ff1e4a1d317730b2bc4d1bca2",
+      "bytes": 611,
+      "mode": "0o600"
+    },
+    "checks.py": {
+      "sha256": "50bbbc931930f9c7850d0f2b3f209f4b9dae940f4ab35a1ad49221affa7e1d96",
+      "bytes": 2691,
+      "mode": "0o600"
+    },
+    "checks01-resources.json": {
+      "sha256": "7d5db0ae114e214733dd1e7fa1463ff7c14afbe5ddc5fb81fe4c3d6723dac9c5",
+      "bytes": 1217,
+      "mode": "0o600"
+    },
+    "consumer-audit.txt": {
+      "sha256": "1db9342b9f4a21a4c79343cc4116589062238ac5a0c54ff369513665db1a8dd7",
+      "bytes": 2372,
+      "mode": "0o600"
+    },
+    "direction-intent.json": {
+      "sha256": "5c6553711dd5883216d8efb81e02cec3f702bf4732351716be3ebdc2084d6d0e",
+      "bytes": 418,
+      "mode": "0o600"
+    },
+    "direction.log": {
+      "sha256": "39c69ae83f2b5e8fd42b88184ff9da1bc1794740931f4c7928f595606029abb0",
+      "bytes": 934,
+      "mode": "0o600"
+    },
+    "final-audit.json": {
+      "sha256": "1a1da7faf2732402abd1d43a90c30937089bb36dd4f5545ae5891907401f64cb",
+      "bytes": 49348,
+      "mode": "0o600"
+    },
+    "final-audit.py": {
+      "sha256": "c1e3d5a11e3cf60d3da4f63209b82d6c3b6b2853e514b4f0e6165afcabcadb0e",
+      "bytes": 2631,
+      "mode": "0o600"
+    },
+    "final-preservation.json": {
+      "sha256": "81a7c0e7e4912dc9210e74a955e3ebd0b7c624b3f03cc2453422fda520d7a778",
+      "bytes": 1509,
+      "mode": "0o600"
+    },
+    "float-aggregate-intent.json": {
+      "sha256": "9c3c2dd40abfec8c7a383b3afe0e8eba5aea4cc5e3cb5dbf80a06745190f811f",
+      "bytes": 890,
+      "mode": "0o600"
+    },
+    "float-aggregate.json": {
+      "sha256": "7e160d7a67d465f9d3f4be0f0ea4d2f65311b8f499d4d9926350e9e16a393365",
+      "bytes": 4674,
+      "mode": "0o600"
+    },
+    "float-aggregate.log": {
+      "sha256": "58cc85bcbadc12262082826290b961b046c515fd18f6d8a9464fa0d5d03b319f",
+      "bytes": 130,
+      "mode": "0o600"
+    },
+    "focused-intent.json": {
+      "sha256": "5aa85c58131e0d53e08ca3493d3755673a611fa358d2b7b6a316da32164ef697",
+      "bytes": 754,
+      "mode": "0o600"
+    },
+    "focused-result.json": {
+      "sha256": "7f851d4a50c0e5ee58968a9e277988a07299d22c494a614446d773a6486031ed",
+      "bytes": 3671,
+      "mode": "0o600"
+    },
+    "focused.log": {
+      "sha256": "82bdcaaabba906c75ade3411f9c39d4ab8fda437bdd4bc52f59ea35318021846",
+      "bytes": 129,
+      "mode": "0o600"
+    },
+    "fractional-cents-as-zero-intent.json": {
+      "sha256": "20cd3dafc6202518c97e4d4578253494b2a62f1247f2e0b417ddaba6750be614",
+      "bytes": 907,
+      "mode": "0o600"
+    },
+    "fractional-cents-as-zero.json": {
+      "sha256": "d6be5deb4149481d8611e69ef5666c9837f2763ad3269c1fa081f86e1696d4c9",
+      "bytes": 4747,
+      "mode": "0o600"
+    },
+    "fractional-cents-as-zero.log": {
+      "sha256": "edadd7f17e68e0ebea0ac66fcab90484aa1cb36f682464da40aca70d63921fc6",
+      "bytes": 139,
+      "mode": "0o600"
+    },
+    "global-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "half-rounding-intent.json": {
+      "sha256": "2f3e977f157dd594bfd4554412d15c814d2ba7de3d220bd3d9daab05909e7d4a",
+      "bytes": 896,
+      "mode": "0o600"
+    },
+    "half-rounding.json": {
+      "sha256": "cb591a1c7fd35e0ace8e3c9020aaa3308544db22a2ccaff51bf4b4b712b31d5c",
+      "bytes": 4661,
+      "mode": "0o600"
+    },
+    "half-rounding.log": {
+      "sha256": "86eea44e0d15ef76647fc99c941429305a8027c65341985fd4302c33b5c1c6c2",
+      "bytes": 128,
+      "mode": "0o600"
+    },
+    "harmless-survivor-intent.json": {
+      "sha256": "653a53d2befa5f32e22a03dc71f03ad877a670f9ea405dbe6a3a69c309480e15",
+      "bytes": 808,
+      "mode": "0o600"
+    },
+    "harmless-survivor.json": {
+      "sha256": "ae37ac4e2dd3b5507f7f3de87e2677209dfc12dfb1f17e4d1dd4a8f67f47be08",
+      "bytes": 3672,
+      "mode": "0o600"
+    },
+    "harmless-survivor.log": {
+      "sha256": "618cb03fc81fe472dd97fe1a2e8e15c51dc5c6b9b4ded73d15c2ee2f4777c287",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "host-network.txt": {
+      "sha256": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+      "bytes": 16,
+      "mode": "0o600"
+    },
+    "initial-audit.json": {
+      "sha256": "40ebd339669b4947d4f676be05056e8505ae597f3e4c729bc80e6bfa2bbc08e8",
+      "bytes": 49280,
+      "mode": "0o600"
+    },
+    "installed-versions.json": {
+      "sha256": "65f6c0eedff3c60406fc40b38cda62eb20254e3d7098a97389d509e7fb5d416c",
+      "bytes": 192,
+      "mode": "0o600"
+    },
+    "lint-intent.json": {
+      "sha256": "f480b0a71c27106c066183e08e39fb99ec5fea18bb297070d4f1901a921e37d8",
+      "bytes": 564,
+      "mode": "0o600"
+    },
+    "lint.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "mutation-baseline-intent.json": {
+      "sha256": "3d20fd989f8b9d5d1dd0a3266f4be61c9b2f52fe4395f4eacb221737e95546f3",
+      "bytes": 808,
+      "mode": "0o600"
+    },
+    "mutation-baseline.json": {
+      "sha256": "34f7615402acf4cb48db9727a23230ba4f5f8adb196b1bd6640b6069a3d4834c",
+      "bytes": 3672,
+      "mode": "0o600"
+    },
+    "mutation-baseline.log": {
+      "sha256": "9945450ca96b0e0054cb5ac292f77dc1d9390ee6ba97a8c1f6dea63b926ff4db",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "mutation-restored-intent.json": {
+      "sha256": "6dc84be7e01593c815299e9fc217ae68b9c7e9c480e926f3778cc6fe2d10d732",
+      "bytes": 808,
+      "mode": "0o600"
+    },
+    "mutation-restored.json": {
+      "sha256": "38fd35c2c66e9b4744f74e81bdbde04fb3869d86d30c7e3bf0069636967a650e",
+      "bytes": 3673,
+      "mode": "0o600"
+    },
+    "mutation-restored.log": {
+      "sha256": "df422d729d528c48c3a00e63cff27cc02cd9532905f2a248b5908d939448b4e7",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "mutation-results.json": {
+      "sha256": "24be332218040d8bba27ce2c0e80982ecca802eedbd472036b7c18979abe48c3",
+      "bytes": 8433,
+      "mode": "0o600"
+    },
+    "mutations-intent.json": {
+      "sha256": "b029793b957402ba4c934c33463e6d54207f692bea28b16fbc6cc41eccabb57f",
+      "bytes": 496,
+      "mode": "0o600"
+    },
+    "mutations.log": {
+      "sha256": "24cf3356d290ff8308d1cc996a3f06a52154c1d16062e7e96d046fe01fabe32c",
+      "bytes": 234,
+      "mode": "0o600"
+    },
+    "mutations.py": {
+      "sha256": "3ef1c8a2ad382b2aff546423199cb38345539157173fa4ba8e3441ab1637d6b1",
+      "bytes": 4268,
+      "mode": "0o600"
+    },
+    "nonfinite-exponent-intent.json": {
+      "sha256": "ef0fd9a2125ca83eac6ef0346dace24d1c48f6078bf8297e7fda091c36379881",
+      "bytes": 911,
+      "mode": "0o600"
+    },
+    "nonfinite-exponent.json": {
+      "sha256": "d13c7f1f57f165573804ef7e647169a65277e07c47a1cfe6ab704bb67659befb",
+      "bytes": 4638,
+      "mode": "0o600"
+    },
+    "nonfinite-exponent.log": {
+      "sha256": "4e8f68fd289d382ad1e446e849e255ca78704dc04648fd4801223b4c88d774c6",
+      "bytes": 133,
+      "mode": "0o600"
+    },
+    "original-format.ts": {
+      "sha256": "3344a0eeef3ebb5e9c47f75fba4888c7f777875b10264c8ade3fa1893e4bb33f",
+      "bytes": 10106,
+      "mode": "0o600"
+    },
+    "original-optional-amount.ts": {
+      "sha256": "c0d0f565439f5857a37c022adb88b49f62554aa47cb8d7206904037a7411c187",
+      "bytes": 6143,
+      "mode": "0o600"
+    },
+    "parent-exit.json": {
+      "sha256": "316f258394ffd87709a0c678add188e76c7a6a111f0859049cd22d2d961278f1",
+      "bytes": 198,
+      "mode": "0o600"
+    },
+    "prepare.py": {
+      "sha256": "619550d1c4bd2510f0ec8a6379f0719d2a95934224b3fb5da2198daa3807c615",
+      "bytes": 1963,
+      "mode": "0o600"
+    },
+    "probe-result.json": {
+      "sha256": "ef5bc3e4d21f8afcddd11fd757a4630b872633798dec7ec27c4cc366aad725a6",
+      "bytes": 2637,
+      "mode": "0o600"
+    },
+    "probe.cjs": {
+      "sha256": "06a366d0fc6a017ea4160f3635190b27fe4effb91ff6013ac09e941fb13d61bc",
+      "bytes": 2879,
+      "mode": "0o600"
+    },
+    "production-probe-intent.json": {
+      "sha256": "30d2a648431e2f4edc39952f90fe839455c29a0a24bf7af2daa3e4805e631821",
+      "bytes": 480,
+      "mode": "0o600"
+    },
+    "production-probe.log": {
+      "sha256": "dedf3f9b783630bfeae0d022950bf32f294ddbf801b80fd1756128748d91ce17",
+      "bytes": 76,
+      "mode": "0o600"
+    },
+    "range-order-intent.json": {
+      "sha256": "796964ac2675e617c9afb2d623f24b69acf5e0898be7b332b53a86e094750df6",
+      "bytes": 892,
+      "mode": "0o600"
+    },
+    "range-order.json": {
+      "sha256": "64fb84688361c4ca3499055dc2d62d832d2dd033e5497196fa1a5c6bb2893b4e",
+      "bytes": 4678,
+      "mode": "0o600"
+    },
+    "range-order.log": {
+      "sha256": "27849b572fb75349880ecd6e030fb4a03ec19883c4eaf3388c85aa99b9af630f",
+      "bytes": 126,
+      "mode": "0o600"
+    },
+    "relevant-tests-intent.json": {
+      "sha256": "eebfa3463b2b86e2971b4867a76108510a83e217132633df83b441ad3abbea87",
+      "bytes": 1188,
+      "mode": "0o600"
+    },
+    "relevant-tests-result.json": {
+      "sha256": "c1053785829da8ebab58653eaa1a529070c08441c1409b3b8ec5e5f67073a989",
+      "bytes": 62433,
+      "mode": "0o600"
+    },
+    "relevant-tests.log": {
+      "sha256": "a5e42281a483a6cce76531fa27fcdcddfda6edf5acf3c8bcf982a6abc826b3c0",
+      "bytes": 136,
+      "mode": "0o600"
+    },
+    "resource-exec.py": {
+      "sha256": "a3d83b25609fc52472409062e68b5fc8aca0d92a1d2ba969d7cef623f47ab77b",
+      "bytes": 1253,
+      "mode": "0o600"
+    },
+    "returned-session.json": {
+      "sha256": "1d2701f3c32cd7fe8a67534aee7ed62daeca9cbafd3dca59114ddeab5ca56bcb",
+      "bytes": 113,
+      "mode": "0o600"
+    },
+    "root-scale-pin-audit.json": {
+      "sha256": "23959c5eb3a42e388035f13e546c1d7d6365de398520f23ca2e1f8e1898280ef",
+      "bytes": 3237,
+      "mode": "0o600"
+    },
+    "run.sh": {
+      "sha256": "df35046b92a9347dabee9f8b5eae263c5113c2023043d945d7173bcfc9d2bfbf",
+      "bytes": 1012,
+      "mode": "0o700"
+    },
+    "seal.py": {
+      "sha256": "5a1c2c4eaed530e678dcc27d18bbdc6b205e6b27d386bc473c662fbe3360aca2",
+      "bytes": 4722,
+      "mode": "0o600"
+    },
+    "summary.json": {
+      "sha256": "2ef79e3b8133a0ea4cc965be0e61ed549842cf524ed712b9dbc56e1e2024062e",
+      "bytes": 652,
+      "mode": "0o600"
+    },
+    "tiny-rounding-intent.json": {
+      "sha256": "6775167e49747cd84b53155ab70a4a4200e1fec6910d572e7adaa9d57d5ac9cd",
+      "bytes": 888,
+      "mode": "0o600"
+    },
+    "tiny-rounding.json": {
+      "sha256": "c0a0a47c9cb88969a5e562c5487fc08dd37ca860672c6d031d3ff667ddf00a3e",
+      "bytes": 4660,
+      "mode": "0o600"
+    },
+    "tiny-rounding.log": {
+      "sha256": "744dcf5070ab6a526053c7ca612de93149462e32261497f1b2e2ba7e65b3c585",
+      "bytes": 128,
+      "mode": "0o600"
+    },
+    "tsconfig.json": {
+      "sha256": "131f56cb8b5725640898b8463e7d1f2d05b3a4dcbfc876d62fb381697579a404",
+      "bytes": 1643,
+      "mode": "0o600"
+    },
+    "types-intent.json": {
+      "sha256": "3037cdaa0825e0c936c31ed9e18c9136ff31437acfd277a0bcb1054d865690e9",
+      "bytes": 540,
+      "mode": "0o600"
+    },
+    "types.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "unit-checks01.log": {
+      "sha256": "cc5b0b2f4f52bef4ebf0ea1dbc527a5c699bb52fe5e3354b4ce1c34f9fdb735c",
+      "bytes": 368,
+      "mode": "0o600"
+    },
+    "unsafe-scale-arithmetic-intent.json": {
+      "sha256": "4bacb0d45bb113b5995c4bdde57cd241ab3b5973da6199acd1a934e65c76f096",
+      "bytes": 910,
+      "mode": "0o600"
+    },
+    "unsafe-scale-arithmetic.json": {
+      "sha256": "ef43d7538d55c483ac212cc8f14e0ec1b09a5c4fb6ba67752ad94d97d0eaf3e2",
+      "bytes": 4680,
+      "mode": "0o600"
+    },
+    "unsafe-scale-arithmetic.log": {
+      "sha256": "0a3f9aa2481fb352f87ea74c5dc01196531305cc95b96b80cb657fbf004b140a",
+      "bytes": 138,
+      "mode": "0o600"
+    },
+    "user-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "vitest-focused.config.mjs": {
+      "sha256": "c83c65496e9b78524ca991eb53e5bedeb3c1d22779a7242ff4d4d9f4646807d2",
+      "bytes": 449,
+      "mode": "0o600"
+    },
+    "vitest.config.mjs": {
+      "sha256": "2d97187ef8f9eb1a353d3db7004e2bc0ae5d4d944b4163ee9947b930df0f397b",
+      "bytes": 485,
+      "mode": "0o600"
+    },
+    "zero-expansion-intent.json": {
+      "sha256": "725c823c76a4181613875a9829662222ef5f5e02a54dcc06f896609c3bd16889",
+      "bytes": 897,
+      "mode": "0o600"
+    },
+    "zero-expansion.json": {
+      "sha256": "da518298414fe82e5954f0d6b257b982a815034796f39424936bc9d6fe515792",
+      "bytes": 4594,
+      "mode": "0o600"
+    },
+    "zero-expansion.log": {
+      "sha256": "158c57f64d399f7b0fb365856663b5dea28184a9eb7a52935e650b492de13cb0",
+      "bytes": 129,
+      "mode": "0o600"
+    }
+  },
+  "excludedScratchDirectories": [
+    "home",
+    "tmp",
+    "xdg",
+    "npm",
+    "vite",
+    "records"
+  ],
+  "postCommitReceiptNotIncludedInPreCommitPins": true,
+  "acceptance": {
+    "nativeNUMERIC": false,
+    "nativeRPCJSON": false,
+    "ACL_RLS": false,
+    "committed1201Fixture": false,
+    "snapshotConcurrency": false,
+    "upgradeRestore": false,
+    "browserDesktop390": false,
+    "browserIntl": false,
+    "exports": false,
+    "practitionerFinance": false,
+    "M11": false,
+    "scientific": false,
+    "hosted": false,
+    "v1": false,
+    "integration": false,
+    "push": false,
+    "PR": false,
+    "main": false,
+    "release": false
+  }
+}

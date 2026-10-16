@@ -1,0 +1,28 @@
+{
+  "baseCommit": "360420ac42f34d2514bec91a0cd796804a8bd78f",
+  "baseApplicationTree": "98535591a5a5916e0ffaef4125196366d3816410",
+  "applicationTree": "9c6185b267e3f14e8e2a4689137059659750f67a",
+  "files": {
+    "openplan/src/lib/money/optional-amount.ts": {
+      "sha256": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "bytes": 8122,
+      "mode": "0o664",
+      "gitBlob": "0befc39e6729e8d0d86f653e87b08a70ab01b6c3",
+      "beforeSHA256": "c0d0f565439f5857a37c022adb88b49f62554aa47cb8d7206904037a7411c187"
+    },
+    "openplan/src/lib/money/format.ts": {
+      "sha256": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "bytes": 9874,
+      "mode": "0o664",
+      "gitBlob": "42bc79c38bebe8d4af85f290ce2826fa041600b1",
+      "beforeSHA256": "3344a0eeef3ebb5e9c47f75fba4888c7f777875b10264c8ade3fa1893e4bb33f"
+    },
+    "openplan/src/test/money-decimal-scale.test.ts": {
+      "sha256": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca",
+      "bytes": 7339,
+      "mode": "0o664",
+      "gitBlob": "0af3ac0948fb4af39b0c2c50788c65a6e2918fc9",
+      "beforeSHA256": null
+    }
+  }
+}
