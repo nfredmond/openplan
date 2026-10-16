@@ -1,0 +1,331 @@
+{
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/bindings/package-pins.json": {
+    "bytes": 1495,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/local-commit.json": {
+    "bytes": 4661,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "7e51241b69e20b13156909e149cc6bdbfaeafee9e6f9b413f3db500d485ac9d8",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/plan.json": {
+    "bytes": 61975,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/private-manifest.json": {
+    "bytes": 1168313,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "76c0d0bb22567aeffc5ef45543ad1fb23177ec282960fe64cf3b4ed305e18316",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/proposed-admission.json": {
+    "bytes": 133616,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/allocatefb77.md": {
+    "bytes": 22152,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "74d11bdf7ad0c77b7c6d10514fef761cd0a0ee766b30fe0e2214432941fcb745",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/observe714.md": {
+    "bytes": 17553,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/restore7c7f.md": {
+    "bytes": 21648,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "f3cdc9bece92ab5caf000d4aed3a72e3c1473ae4190de366204cea71c6bfe3c5",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/source688.md": {
+    "bytes": 17274,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/custody-manifest.json": {
+    "bytes": 7955,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "3f9bbd065fcde9e8776ccbd3d0933e7a33a8d1ccfff583378d7d969ad54683e5",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__bin__psql__common.c": {
+    "bytes": 55789,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "29fe648c0057e3d41eca6810d410171f6d3795c13482a9ff238872e85aa960b6",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__bin__psql__mainloop.c": {
+    "bytes": 18388,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "8d08a81c505571c39c0bc238816bdbd1edf9990d9364d6d7a40d70cb2bd6dcab",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__fe_utils__psqlscan.l": {
+    "bytes": 41761,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "32db95d95e9e66f3e4ab2675424fba2c822409a570052d8c1158ef0998f0f068",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/REVIEW.md": {
+    "bytes": 24369,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "6c467c1bf0c7861953ab1f380fa3301265f6bfa47a5c9338b3e4b3faa32b19f2",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/REPORT.md": {
+    "bytes": 21133,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "6dbaf165dd38692125d9ab4fea9025a66ce781e5d683d71577e40174c9145c58",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/VALIDATION.md": {
+    "bytes": 4572,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "badd429b6d5dfaf62bea84a5fa1463e0f8547ffc8a8c8089d19ca52ef7d9d280",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent/source-pins.json": {
+    "bytes": 13318,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "ec6d9a5dacde258d53b6877cf1305d0e9c7285a2a6b9a21f24ad20c7bdadf8ee",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/RESEARCH.md": {
+    "bytes": 16653,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "9dcc4096d76eb121d15455b4e5fb303f7529c8a05a67942d84b017cb31b20570",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/SOURCES.md": {
+    "bytes": 6344,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "ab91c8f94a15cb335d0e5a4bb68a998855f5ae95ef5b74f4a11d6524bfae48e1",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/STATUS.md": {
+    "bytes": 2362,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "dd015804ed00ea90c5af54da114a72f17b83554b01501d09c952edbdfba3f68d",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/source-pins.json": {
+    "bytes": 13830,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "9685e33d6351802ed1d8a0d6204fb8d9ef383ac91845a40b49e5306314da549e",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/DESIGN.md": {
+    "bytes": 11390,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "12b07b3b888de12f2606ee3d13ca42667a933324c4258197b02f258393790b8a",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/PARENT_RECIPE.md": {
+    "bytes": 4565,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "4ce37a65133c0866cfa0e0180140bba22b58a6d51445a39acb39024c3d42ec35",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/STATUS.md": {
+    "bytes": 8135,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "ae81b4495f12ebc38bb23d05300470657032db37e561ebd3681ecd74bd7e49a7",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/checks.json": {
+    "bytes": 7829,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "b5701ad1a19ec57158ca42894121ae53354819eb3025d9328d6ae43186c37c10",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/controls.py": {
+    "bytes": 18134,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "03d2bf930ba799f9a1f1a4925c42fa5c9dda08aa8877fc4417913da7c74ed963",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/evidence-pins.json": {
+    "bytes": 9031,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "a3d60eb2f3a8d072cd2ca5cc0e36fa20294791052489a560705002de85749d02",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/external-predecessor-pins.json": {
+    "bytes": 126449,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/final_checks.py": {
+    "bytes": 4354,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "f5f69a92f672d6c3e2d79fe39228b411b46b0cddf01482ab970d94fcffd29d4c",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/package-pins.json": {
+    "bytes": 1495,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/prepare.py": {
+    "bytes": 5592,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "adca346882ad78a8929e3ad5f2ffa37280908eec1965cb6fbdce77ed46bcac29",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/prior-function-pins.json": {
+    "bytes": 593,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/proposed-admission.json": {
+    "bytes": 133616,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/public-seal.json": {
+    "bytes": 4169,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "9f2492b5288a0faf26b8477f24a922d7393855f665215f5a2b088b6e40be9862",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/review-pins.json": {
+    "bytes": 3636,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "1de634e1fbc73fdc2e0ddaf29ab5fdfc6fae53f4ccfdb398dd11dbb9be4fd331",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/cases.py": {
+    "bytes": 12821,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/controller.py": {
+    "bytes": 32321,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "ff7e69534f7ade3b486030d655c7b3302105224439e513614fe524118dabe55b",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/fixture.py": {
+    "bytes": 7731,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/journal.py": {
+    "bytes": 4331,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/literal_history.py": {
+    "bytes": 7675,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "a1e84629e61aa29070c517d65352c1c1901cd1049b2f417bba3ebf342b699c90",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/policy.py": {
+    "bytes": 6126,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/run_stage.sh": {
+    "bytes": 199,
+    "gid": 1000,
+    "mode": 448,
+    "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/assertions.sql": {
+    "bytes": 794,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/post_rollback.sql": {
+    "bytes": 654,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/shadows.sql": {
+    "bytes": 489,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/source-pins.json": {
+    "bytes": 201496,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/window.py": {
+    "bytes": 6870,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "1d62168bed9fd7db2ce5b732bb6f32f2a1c846aa27b57eb271978ee87407711a",
+    "uid": 1000
+  }
+}

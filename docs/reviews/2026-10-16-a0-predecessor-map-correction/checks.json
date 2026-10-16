@@ -1,0 +1,372 @@
+{
+  "admissionsAbsent": true,
+  "mapControls": {
+    "nativeParserAccepted": false,
+    "oldCampaignRerun": false,
+    "sourceVariants": 7,
+    "trials": [
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "matching",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "ordinary-count",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "ordinary-digest",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "last_value",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "log_cnt",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "is_called",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "missing-label",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "extra-label",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "field-type",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "bool-int-type",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "census",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "history",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "off",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "unknown",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "corrupt",
+        "source": "baseline"
+      },
+      {
+        "failure": null,
+        "outcome": "survived",
+        "scenario": "matching",
+        "source": "harmless"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:ordinary-count",
+        "outcome": "named-failure",
+        "scenario": "ordinary-count",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:ordinary-digest",
+        "outcome": "named-failure",
+        "scenario": "ordinary-digest",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:last_value",
+        "outcome": "named-failure",
+        "scenario": "last_value",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:log_cnt",
+        "outcome": "named-failure",
+        "scenario": "log_cnt",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:is_called",
+        "outcome": "named-failure",
+        "scenario": "is_called",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:missing-label",
+        "outcome": "named-failure",
+        "scenario": "missing-label",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:extra-label",
+        "outcome": "named-failure",
+        "scenario": "extra-label",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:field-type",
+        "outcome": "named-failure",
+        "scenario": "field-type",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:bool-int-type",
+        "outcome": "named-failure",
+        "scenario": "bool-int-type",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:census",
+        "outcome": "named-failure",
+        "scenario": "census",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:history",
+        "outcome": "named-failure",
+        "scenario": "history",
+        "source": "guard-removed"
+      },
+      {
+        "failure": "AssertionError:predecessor-drift-accepted:bool-int-type",
+        "outcome": "named-failure",
+        "scenario": "bool-int-type",
+        "source": "type-removed"
+      },
+      {
+        "failure": "AssertionError:unadmitted-snapshot-accepted",
+        "outcome": "named-failure",
+        "scenario": "loader:unadmitted",
+        "source": "admission-removed"
+      },
+      {
+        "failure": "AssertionError:changed-snapshot-bytes-accepted",
+        "outcome": "named-failure",
+        "scenario": "loader:changed-bytes",
+        "source": "bytes-removed"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "matching",
+        "source": "restored"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "loader:matching",
+        "source": "restored"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "loader:unadmitted",
+        "source": "restored"
+      },
+      {
+        "failure": null,
+        "outcome": "pass",
+        "scenario": "loader:changed-bytes",
+        "source": "restored"
+      }
+    ]
+  },
+  "mountTier": "Named read-only mounts and EROFS probes only; inherited writable submounts not excluded.",
+  "nativeDispatches": 0,
+  "nativeParserAccepted": false,
+  "outerTerminal": {
+    "retry": "forbidden; terminal exit releases this invocation lock if reached; no native claim",
+    "returncode": 0,
+    "seconds": 16.39559305901639,
+    "stderrSHA256": "915dd0bb39e0077e5a3359c920340d7bcfa3093063d732eb586a0646dfb0bfd3",
+    "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "packageSHA256": "cc201cf6379e67480ccba6677157293ad498ca5bed773b2a744a500b176117ff",
+  "parentSession": 23993,
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016",
+  "pureWindow": {
+    "nativeDispatches": 0,
+    "status": "complete",
+    "steps": [
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "3baf6c48941dda1fd1218bf8317ba417e3d33e668717b6dbbc36e3aeea812817",
+        "step": 1
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "step": 2
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "ca39b00912df1a5fdbc9912706a4f7cce96bcdb44d72dca103bef7457284d287",
+        "step": 3
+      },
+      {
+        "returncode": 0,
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stdoutSHA256": "2b1ee691323efccee9bd72866acc9cda0f7cc04e7810ac68971c303a3402ffdd",
+        "step": 4
+      }
+    ]
+  },
+  "readOnlyProbes": [
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/AGENTS.md"
+    },
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/AGENTS.md"
+    },
+    {
+      "errno": 30,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json"
+    }
+  ],
+  "readerControls": [
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "baseline"
+    },
+    {
+      "failure": null,
+      "outcome": "survived",
+      "trial": "harmless"
+    },
+    {
+      "failure": "AssertionError:reader-wrong-refusal-rejected",
+      "outcome": "named-failure",
+      "trial": "substring-fault"
+    },
+    {
+      "failure": null,
+      "outcome": "pass",
+      "trial": "restored"
+    }
+  ],
+  "realRefusal": "MISSING_ROOT_ADMISSION:apply17",
+  "resources": {
+    "actual": {
+      "cpu.max": "50000 100000",
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "pids.max": "64"
+    },
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-a0-predecessor-map-TEST-01-20261016.service",
+    "networkNamespace": "net:[4026534384]",
+    "readOnlyRoots": [
+      "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics",
+      "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5",
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r3",
+      "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates",
+      "/home/nathaniel/.local/state/openplan/a0-r6-observe-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-allocate-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-restore419-root-decision-20261016",
+      "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016",
+      "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent"
+    ]
+  },
+  "retainedSnapshot": {
+    "bytes": 41476,
+    "labels": 383,
+    "sha256": "936054d47550fa7003177ddbf877fb1fd1b3c529e10536637bfbb1d85118d3db"
+  },
+  "selectedExternalUnchanged": 465,
+  "sourceMigrations": 421,
+  "stagesAbsent": true,
+  "syntax": [
+    "controls.py",
+    "final_checks.py",
+    "prepare.py",
+    "runtime/cases.py",
+    "runtime/controller.py",
+    "runtime/fixture.py",
+    "runtime/journal.py",
+    "runtime/literal_history.py",
+    "runtime/policy.py",
+    "window.py"
+  ],
+  "unchangedR6Runtime": [
+    "cases.py",
+    "fixture.py",
+    "journal.py",
+    "literal_history.py",
+    "policy.py",
+    "run_stage.sh",
+    "sql/assertions.sql",
+    "sql/post_rollback.sql",
+    "sql/shadows.sql"
+  ],
+  "unitInvocation": "d23c5d8e9c8a4639b5d5c993957540d5",
+  "windowGuardControls": [
+    {
+      "outcome": "pass",
+      "trial": "baseline"
+    },
+    {
+      "outcome": "survived",
+      "trial": "harmless"
+    },
+    {
+      "outcome": "named-failure",
+      "trial": "resource-omitted"
+    },
+    {
+      "outcome": "pass",
+      "trial": "restored"
+    }
+  ]
+}

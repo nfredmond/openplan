@@ -1,0 +1,67 @@
+"""Prepare a new capsule from exact source, without importing the old subject."""
+import hashlib
+import json
+import os
+from pathlib import Path
+
+HERE=Path(__file__).resolve().parent
+ROOT=Path('/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016')
+PRIOR=ROOT.with_name('a0-migration-history-literal-correction-20261016')
+REVIEW=Path('/home/nathaniel/.t3/worktrees/openplan/t3-411de75e/docs/reviews/2026-10-16-a0-history-literal-independent')
+
+
+def sha(path):return hashlib.sha256(path.read_bytes()).hexdigest()
+
+
+def emit(path,value):
+    with path.open('x') as out:json.dump(value,out,indent=2,sort_keys=True);out.write('\n')
+    path.chmod(0o600)
+
+
+def pin(path):
+    info=path.lstat()
+    if not path.is_file() or path.is_symlink():raise ValueError('pin-regular')
+    return {'sha256':sha(path),'bytes':info.st_size,'mode':info.st_mode&0o777,'uid':info.st_uid,'gid':info.st_gid}
+
+
+def main():
+    os.umask(0o077)
+    templates=ROOT/'templates';templates.mkdir(mode=0o700)
+    for path in sorted((HERE/'runtime').rglob('*')):
+        if not path.is_file():continue
+        target=templates/path.relative_to(HERE/'runtime')
+        target.parent.mkdir(mode=0o700,parents=True,exist_ok=True)
+        with target.open('xb') as out:out.write(path.read_bytes())
+        target.chmod(0o700 if target.suffix=='.sh' else 0o600)
+    bindings=ROOT/'bindings';bindings.mkdir(mode=0o700)
+    for name in ['source-pins.json','preceding-helper-pins.json','prior-function-pins.json','external-predecessor.json']:
+        with (bindings/name).open('xb') as out:out.write((PRIOR/'bindings'/name).read_bytes())
+    with (ROOT/'plan.json').open('xb') as out:out.write((PRIOR/'plan.json').read_bytes())
+    reports=json.loads((PRIOR/'bindings/review-pins.json').read_text())
+    for path in sorted(REVIEW.iterdir()):
+        if path.is_file():reports[str(path)]=pin(path)
+    oldpublic=HERE.with_name('2026-10-16-a0-migration-history-literal-correction')
+    # Only 26 old public files and selected old seals, never the old campaign.
+    selected=[x for x in oldpublic.rglob('*') if x.is_file()]
+    selected += [PRIOR/name for name in ['private-manifest.json','local-commit.json','plan.json','bindings/package-pins.json','proposed-admission.json']]
+    for path in selected:reports[str(path)]=pin(path)
+    emit(bindings/'review-pins.json',reports)
+    package={'files':{str(p.relative_to(templates)):sha(p) for p in sorted(templates.rglob('*')) if p.is_file()},
+        'bindings':{p.name:sha(p) for p in sorted(bindings.iterdir()) if p.is_file()},
+        'notice':'NEW predecessor-map capsule. External actual R6 executions remain external; no admission.'}
+    emit(bindings/'package-pins.json',package)
+    proposal=json.loads((PRIOR/'proposed-admission.json').read_text())
+    proposal['packageSHA256']=sha(bindings/'package-pins.json')
+    proposal['independentReviewSHA256']=None
+    proposal['notice']='PROPOSAL ONLY. New full retained predecessor-map guard; fresh root-owned exact-candidate independent review and separate admission required.'
+    emit(ROOT/'proposed-admission.json',proposal)
+    external=json.loads((bindings/'external-predecessor.json').read_text())
+    paths=set(Path(x) for x in external['files'])|set(Path(x) for x in reports)
+    paths.update(PRIOR/'bindings'/x for x in ['source-pins.json','preceding-helper-pins.json','prior-function-pins.json','external-predecessor.json','review-pins.json'])
+    emit(ROOT/'selected-before.json',{str(p):pin(p) for p in sorted(paths)})
+    print(json.dumps({'runtimeFiles':len(package['files']),'selectedExternalAndPrior':len(paths),
+        'packageSHA256':sha(bindings/'package-pins.json'),'externalPredecessorSHA256':sha(bindings/'external-predecessor.json'),
+        'planSHA256':sha(ROOT/'plan.json'),'admitted':False}))
+
+
+if __name__=='__main__':main()

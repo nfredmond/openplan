@@ -1,0 +1,120 @@
+{
+  "a0AppTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "a0Source": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "admissionPublished": false,
+  "files": {
+    "DESIGN.md": {
+      "bytes": 8914,
+      "sha256": "a9cf30d3f822d41c407bffa4087ff316a73ca6d8ccc2e82aab37d1a6318f7532"
+    },
+    "PARENT_RECIPE.md": {
+      "bytes": 2924,
+      "sha256": "5db2683877e6d65e2e630501bffa0d7bc6ba90c3bef0220b31d1660d10577183"
+    },
+    "STATUS.md": {
+      "bytes": 8227,
+      "sha256": "1b4fe7ab4f885f9b902f79b1dbbd43b8b642b50c27a17097dc44833631a90413"
+    },
+    "checks.json": {
+      "bytes": 11189,
+      "sha256": "1f8abb506fb9f0ce28a5bb0c78c0a90128ae8ed317a05724dee31a5a6fe6a45c"
+    },
+    "controls.py": {
+      "bytes": 17065,
+      "sha256": "2ec0effd5ecefefe33b7594c713bba01d92b2301ce3d0ee28a7d300822f8be82"
+    },
+    "evidence-pins.json": {
+      "bytes": 9081,
+      "sha256": "48de8ad23418b418ae984e3e1413bbb65ed3453d4805d6818014a6b085541381"
+    },
+    "external-predecessor-pins.json": {
+      "bytes": 126449,
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    "final_checks.py": {
+      "bytes": 4998,
+      "sha256": "bbcb1b2ead926298dd0b8f2b757bd8b39f758d15b924e95164c13d694cb253c8"
+    },
+    "package-pins.json": {
+      "bytes": 1526,
+      "sha256": "cc201cf6379e67480ccba6677157293ad498ca5bed773b2a744a500b176117ff"
+    },
+    "preparation-input-pins.json": {
+      "bytes": 2627,
+      "sha256": "6f8f7d912c2909fa43a59479b69711bd20775a8b4ddef07055561e2ba22e2c0f"
+    },
+    "prepare.py": {
+      "bytes": 3836,
+      "sha256": "160e94041c231f0dd36a945322784e9583958914a98f7bd1c09af7847d6d89d4"
+    },
+    "prior-function-pins.json": {
+      "bytes": 593,
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9"
+    },
+    "proposed-admission.json": {
+      "bytes": 133651,
+      "sha256": "cbde180ee0eae30993f9e402859fc9a485020a31aea1f7c9fd2a69b3e0865bde"
+    },
+    "review-pins.json": {
+      "bytes": 13566,
+      "sha256": "27d8961c5a8aaeb7968cf74c07c53c733c3fae97ca56847e843dcf348d379077"
+    },
+    "runtime-delta.patch": {
+      "bytes": 3329,
+      "sha256": "b199a3841cb7f9b4d3c85d1408b98d479cbc4b5776837393962786db40f8eff5"
+    },
+    "runtime/cases.py": {
+      "bytes": 12821,
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    "runtime/controller.py": {
+      "bytes": 33694,
+      "sha256": "a63b9e0dd46efcc95f770ad02ba62cebae5a28b78ff54d87cf6e1252e386ae36"
+    },
+    "runtime/fixture.py": {
+      "bytes": 7731,
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    "runtime/journal.py": {
+      "bytes": 4331,
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    "runtime/literal_history.py": {
+      "bytes": 7675,
+      "sha256": "a1e84629e61aa29070c517d65352c1c1901cd1049b2f417bba3ebf342b699c90"
+    },
+    "runtime/policy.py": {
+      "bytes": 6126,
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    "runtime/run_stage.sh": {
+      "bytes": 199,
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    "runtime/sql/assertions.sql": {
+      "bytes": 794,
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    "runtime/sql/post_rollback.sql": {
+      "bytes": 654,
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    "runtime/sql/shadows.sql": {
+      "bytes": 489,
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    "source-pins.json": {
+      "bytes": 201496,
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    "window.py": {
+      "bytes": 7120,
+      "sha256": "57465db95b6d3ca21ae16c9def3badcd19c449a8fb3c4c6bd9578b26a6fef09f"
+    }
+  },
+  "freshIndependentFinalReview": "REQUIRED; new root-owned round",
+  "nativeAccepted": false,
+  "preparationBase": "34e67a05ad8fc54b67345726d1d43a553b8c54c7",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016",
+  "sourceFindingReview": "1fcb68f39abba8baac3b0235cce8dc208633fbbe"
+}
