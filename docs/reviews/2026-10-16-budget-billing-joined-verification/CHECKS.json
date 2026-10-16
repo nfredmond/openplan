@@ -1,0 +1,421 @@
+{
+  "at": "2026-10-16T22:38:50.818547+00:00",
+  "sourceHead": "dca2e647b0810a4dc0215defc9bd9ea63aee6e34",
+  "appTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "sourcePins": {
+    "openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx": "b7bf3b0a2a05cfc8c50e3ac1e704505bf08cbd069ba7163b06a21843066af4fb",
+    "openplan/src/app/(app)/projects/[projectId]/_components/_helpers.ts": "cb51bc6fcffee42095c1d79a1543dc540894b09b2ae7628bbdc9c5050d94600a",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-budget-panel.tsx": "1997717ca45a52a687ddaed395ab274902212eaae5608c405295cbd4b6b086d4",
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-delivery-board.tsx": "9345fd7aa98c5e569aa8c4ea3e6bd0a4cfc5ceaf72a05c3d1b7272d1b1449d6d",
+    "openplan/src/app/api/invoicing/client-invoices/route.ts": "f7b1a47afade4cf86d90cd3fc61dfe02bc1c55e709c38fc1ddaee699a8f3ae82",
+    "openplan/src/components/invoicing/client-invoice-composer.tsx": "e6bd694ccb829f1aecde6c75e3e86fb822e3749a306af678d7bd955bd4370ebc",
+    "openplan/src/components/invoicing/engagement-nte-bar.tsx": "a994d9efb05a54712429c93613cccc66c59967a12bc0d9a58e031de7b8102207",
+    "openplan/src/lib/invoicing/contracts/reconciliation.ts": "186db87350720cd455aabbcc840987079b5879f216a5a913ebc191f3de018718",
+    "openplan/src/lib/invoicing/invoice-currency.ts": "b4269ae9a003d949d0cb93802734d40edd16e244d99f047d596554dfed113968",
+    "openplan/src/lib/invoicing/invoice-pdf.ts": "6200374910fd0a9bdc83301d07dad1510ae207a809eacbf13bfb625f8b8747bf",
+    "openplan/src/lib/invoicing/invoice-records.ts": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+    "openplan/src/lib/invoicing/receivables.ts": "d3145a93f7a9e294775841ca472cf7d88695870fac926dc607ee8eb8e72d7cd5",
+    "openplan/src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+    "openplan/src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+    "openplan/src/lib/project-evidence-bundles/bytes.ts": "f6b67f5d15a8e29b5bae14561305260a96566b5e9ccaeca074d7ffae0c3d25ea",
+    "openplan/src/lib/projects/budget-queries.ts": "c763dfe4041b9f6390f93b2329312a539a2d13796a74719d84f9630413bf9743",
+    "openplan/src/lib/projects/budget.ts": "fb3ccc6f106f68aaabc8292fac1143d365a39560470816d4415a366ae5554347",
+    "openplan/src/lib/projects/portfolio.ts": "26aa2faee092e4959a4936eb8f177a74e48ffd67820d974f723473a4971ed96c",
+    "openplan/src/lib/time/workspace-calendar.ts": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf",
+    "openplan/src/lib/work/deadlines.ts": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+    "openplan/src/test/client-invoice-composer.test.tsx": "9a4823477e6340f098db1783d6c84e118523709483b3e10dffb9e08485447b61",
+    "openplan/src/test/client-invoice-pdf.test.ts": "260ce2888bd77a0c3c75f904ad943c521730e9b85262a396e4c259021db329d4",
+    "openplan/src/test/engagement-billed-exact-money.test.tsx": "55c7e90ad41dc9636d082b1882c0386e241e931a50a58d84542124615c20ca5d",
+    "openplan/src/test/invoicing-receivables.test.ts": "a3d8d5a5b73872f64b82d58ec7bd73ada49493e1a06be7bc58df697981cfab6a",
+    "openplan/src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca",
+    "openplan/src/test/one-money-figure-reads-the-same-on-both-screens.test.tsx": "63eddcdc5064bb0fcc424efa8c3cd21e0bcafeffc64e1b1680d893f456647715",
+    "openplan/src/test/project-budget-complete-inputs-corrections.test.ts": "91f76cbb668d6f6a471e2fbe0cb5742b95a08bead069ee143967b6ee674cd35e",
+    "openplan/src/test/project-budget-exact-money.test.tsx": "8a03caaf97f9a958a6402930053c7f412ae78b64c315b9d31d8feb21a5756d91",
+    "openplan/src/test/project-budget-panel.test.tsx": "824808d0e55e249cf114d5b814490fcb52066527aa4f8341a83a987d09e6780e",
+    "openplan/src/test/project-budget-queries.test.ts": "545aadb8f09f7a412095a0821c8d79c7ecf2844f0c2c2ac8ceb91f0d87545737",
+    "openplan/src/test/project-budget-snapshot-migration.test.ts": "87bd9f5e89a88593ee5d0f4c4af875eae2320e324c916ef9c2e44090e6911067",
+    "openplan/src/test/project-budget-source-error-classification.test.ts": "1c04f10c8204005125a67637f26b46b699300f26aa67da0647f150554ca3f5a5",
+    "openplan/src/test/project-budget-stated-budget-isolation.test.ts": "b6256dc699f1841bcc39c703663bb8dfd6b79efde45f7bbb689db97b5ac59a0f",
+    "openplan/src/test/project-budget.test.ts": "c54f664fc5bd247dbc6041f00ba517e203a06b880f4d5c4900203d70ea1d5be0",
+    "openplan/src/test/project-detail-page.test.tsx": "9d4083a7beb090a6d57ade0506ea88aa22f804a9b8903fd18668bf611a51c58a",
+    "openplan/src/test/project-portfolio.test.ts": "2510b1a39eccd95f2bc6bad3b352eceb0ec18466bef223946247f9208fad4619",
+    "openplan/src/test/receivable-invoicing-routes.test.ts": "099bab665e3b1c14e52a0d319235a97a6174a316ec19b061fbf3ec8f9c3c00e6",
+    "openplan/src/test/the-deliverable-update-control-is-reachable.test.tsx": "61a69d893e6320a9be9fd5fe11140315a153f47db40a81d838fd5adbe1bbd258",
+    "openplan/src/test/the-record-reassignment-control-is-reachable.test.tsx": "d35eb4564bf70b892d289e1beda5d5709f4e7a32f3459bf19864f387870adb7a"
+  },
+  "selectedFiles": [
+    "src/test/money-decimal-scale.test.ts",
+    "src/test/project-budget-exact-money.test.tsx",
+    "src/test/project-budget.test.ts",
+    "src/test/project-budget-panel.test.tsx",
+    "src/test/project-portfolio.test.ts",
+    "src/test/the-deliverable-update-control-is-reachable.test.tsx",
+    "src/test/project-budget-complete-inputs-corrections.test.ts",
+    "src/test/one-money-figure-reads-the-same-on-both-screens.test.tsx",
+    "src/test/project-budget-queries.test.ts",
+    "src/test/project-budget-stated-budget-isolation.test.ts",
+    "src/test/project-budget-snapshot-migration.test.ts",
+    "src/test/project-detail-page.test.tsx",
+    "src/test/the-record-reassignment-control-is-reachable.test.tsx",
+    "src/test/project-budget-source-error-classification.test.ts",
+    "src/test/invoicing-receivables.test.ts",
+    "src/test/client-invoice-pdf.test.ts",
+    "src/test/receivable-invoicing-routes.test.ts",
+    "src/test/client-invoice-composer.test.tsx",
+    "src/test/engagement-billed-exact-money.test.tsx"
+  ],
+  "testResult": {
+    "success": true,
+    "numPassedTests": 420,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "wholeJoinedUnitExit": 1,
+  "wholeJoinedUnitFailure": "Scoped TSC Node512MiB heap exhaustion; kernel memoryevents zero, preserved; lint unrun there",
+  "joinedResources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "pids.max": "64",
+    "memory.peak": "769974272",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "pids.peak": "42",
+    "pids.events": "max 0"
+  },
+  "configuredFullTypes": {
+    "exitCode": 0,
+    "seconds": 214.1857565380633,
+    "resources": {
+      "memory.max": "7516192768",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64",
+      "memory.peak": "5705949184",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "pids.peak": "23",
+      "pids.events": "max 0"
+    },
+    "finally": {
+      "head": "dca2e647b0810a4dc0215defc9bd9ea63aee6e34",
+      "app": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+      "all39SourcePinsMatch": true,
+      "clean": true
+    }
+  },
+  "lint": {
+    "exitCode": 0,
+    "seconds": 14.891449902905151,
+    "source": {
+      "head": "dca2e647b0810a4dc0215defc9bd9ea63aee6e34",
+      "app": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+      "all39SourcePinsMatch": true,
+      "clean": true
+    }
+  },
+  "fullCompilerIntent": {
+    "argv": [
+      "/usr/bin/node",
+      "--max-old-space-size=6144",
+      "node_modules/typescript/bin/tsc",
+      "--project",
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json",
+      "--noEmit",
+      "--incremental",
+      "false"
+    ],
+    "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+    "tsconfigSHA256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+    "head": "dca2e647b0810a4dc0215defc9bd9ea63aee6e34",
+    "app": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+    "nextEnvExists": false,
+    "nextGeneratedTypesExist": false,
+    "claim": "Whole actual configured TypeScript source project. Does not create Next build-generated route types or establish build/browser."
+  },
+  "joinedGuardControls": [
+    {
+      "scope": "resources",
+      "harmless": "SURVIVED"
+    },
+    {
+      "fault": "memory.max",
+      "outcome": "KILLED",
+      "assertion": "resource-memory.max"
+    },
+    {
+      "fault": "memory.swap.max",
+      "outcome": "KILLED",
+      "assertion": "resource-memory.swap.max"
+    },
+    {
+      "fault": "cpu.max",
+      "outcome": "KILLED",
+      "assertion": "resource-cpu.max"
+    },
+    {
+      "fault": "pids.max",
+      "outcome": "KILLED",
+      "assertion": "resource-pids.max"
+    },
+    {
+      "fault": "/",
+      "outcome": "KILLED",
+      "assertion": "mount-/"
+    },
+    {
+      "fault": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016",
+      "outcome": "KILLED",
+      "assertion": "mount-/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016"
+    },
+    {
+      "fault": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+      "outcome": "KILLED",
+      "assertion": "mount-/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules"
+    },
+    {
+      "fault": "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016",
+      "outcome": "KILLED",
+      "assertion": "mount-/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016"
+    },
+    {
+      "fault": "network",
+      "outcome": "KILLED",
+      "assertion": "network"
+    },
+    {
+      "scope": "identity",
+      "harmless": "SURVIVED"
+    },
+    {
+      "fault": "head",
+      "outcome": "KILLED",
+      "assertion": "source-identity"
+    },
+    {
+      "fault": "files",
+      "outcome": "KILLED",
+      "assertion": "source-bytes"
+    },
+    {
+      "fault": "dirty",
+      "outcome": "KILLED",
+      "assertion": "working-changes"
+    },
+    {
+      "scope": "test-report",
+      "harmless": "SURVIVED"
+    },
+    {
+      "fault": "failed-test",
+      "outcome": "KILLED",
+      "assertion": "test-outcome"
+    },
+    {
+      "fault": "missing-suites",
+      "outcome": "KILLED",
+      "assertion": "test-count"
+    }
+  ],
+  "fullTypesResourceControls": [
+    {
+      "harmless": "SURVIVED"
+    },
+    {
+      "fault": "memory.max",
+      "outcome": "KILLED",
+      "assertion": "full-type-resource-memory.max"
+    },
+    {
+      "fault": "memory.swap.max",
+      "outcome": "KILLED",
+      "assertion": "full-type-resource-memory.swap.max"
+    },
+    {
+      "fault": "cpu.max",
+      "outcome": "KILLED",
+      "assertion": "full-type-resource-cpu.max"
+    },
+    {
+      "fault": "pids.max",
+      "outcome": "KILLED",
+      "assertion": "full-type-resource-pids.max"
+    }
+  ],
+  "privateProof": {
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/binding.json": {
+      "bytes": 5248,
+      "sha256": "f8a69e12b72dd871af2bd08e8fe04e563c6856f24c2b143fc81de39e205eff14"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/checks.py": {
+      "bytes": 5725,
+      "sha256": "a16a6aea3205755e8ff780313c40da4e7db92e96640ae66709011a13dd49f7d0"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/direction-intent.json": {
+      "bytes": 289,
+      "sha256": "9c41bc8708297194703e23522af792f5a1b3699b9e63e5af9b0b6d24d7d0c438"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/direction-stderr.log": {
+      "bytes": 648,
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/direction-stdout.log": {
+      "bytes": 286,
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/dispatch-intent.json": {
+      "bytes": 584,
+      "sha256": "6250f8ffe02bfaeeb43ff18f42724193b97ec16f3861720ef5e26f7af4cd0e10"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/finally.json": {
+      "bytes": 5161,
+      "sha256": "384a4f0ccd66447312c7836e446f52b821189419766535d33cc5bbf3c7f05aae"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/guard-controls.json": {
+      "bytes": 1969,
+      "sha256": "13e894f4d2e59a5809de29288e8391410f59f96f92161b2cd83ee023075df175"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/host-network.txt": {
+      "bytes": 17,
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/prepared-harness.json": {
+      "bytes": 1186,
+      "sha256": "553f1762727352f73f78b963700a07abc19fa85c710a4d60a4e61bc0cd501593"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/resources-after.json": {
+      "bytes": 936,
+      "sha256": "aa3d615c4372264799708b220979a101fba3c7691dba51abf9bb7b30c95ee8e3"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/resources-before.json": {
+      "bytes": 934,
+      "sha256": "01f5092ca2317fa27ba4521db653480bc0f269a03c5d5e7ca4f58dcb9cc9830d"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/results.json": {
+      "bytes": 259,
+      "sha256": "0d85be82eab39c50c71cbcce433b1ab16c94f452b03ac2ca144bbd3170d42418"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/root-disposition.json": {
+      "bytes": 564,
+      "sha256": "1c8192a1f1aea8d9074c78c2a75a6f754cbcb714f77f2cc86f87cf96a7a4a1e6"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/run.sh": {
+      "bytes": 1106,
+      "sha256": "d6af0ee45712be7c53004a6d5cc158f84c90c5ff5353c8165975c623a77bf981"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/terminal-seal.json": {
+      "bytes": 3353,
+      "sha256": "c998867ca8a5b6256000dc4d2d235994028c47c0280babf4bad1ec73f174d886"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/test-files.json": {
+      "bytes": 992,
+      "sha256": "30ff702612cd4e2f3dd06d0986aa1e8c7f3e9698f2ff10a9fbafc8b7cd22daf9"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/tests-intent.json": {
+      "bytes": 1594,
+      "sha256": "72f8922f75c86492c657a662fb6e77be53fd12f33e47db92d5af9a940be34d60"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/tests-result.json": {
+      "bytes": 146894,
+      "sha256": "6d204043cc5c1633804a9a4247a2ddf0a383a9d67ee00267dda43f06a708045c"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/tests-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/tests-stdout.log": {
+      "bytes": 125,
+      "sha256": "68e31fdd29d347547aa615295c0f8bb4c88ecfe8962bb6cf4aac162a149f30b7"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/tsconfig.json": {
+      "bytes": 6253,
+      "sha256": "43a17ac8a2fe1456d4be24a9057ba874b3c07ef4ef055edf1fbb72e6b7d9a05f"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/types-intent.json": {
+      "bytes": 425,
+      "sha256": "13776ddb4b2ff523c758fc1d66b9cb9e7e0095d387e56253b26c688fb2944453"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/types-stderr.log": {
+      "bytes": 979,
+      "sha256": "26fbb1f1731ec05d44d0cf36671a162666d46594bebaaf32cf90f49720cb7a84"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/types-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/unexpected-failure.txt": {
+      "bytes": 304,
+      "sha256": "8cd74a57b3e623c76e277b70addc94f8e4faffad3d3c4dd5b7388961a5c4c0e7"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-joined-checks-20261016/vitest.config.mjs": {
+      "bytes": 512,
+      "sha256": "daa57ad0bfbf7687769e1b3d31d94b312783cb9a8197ea02cbb9322bcbe0cd99"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/before.json": {
+      "bytes": 650,
+      "sha256": "4a5873a1e7bf0d3c55781a88bf1a74ac96e6303a711d0aae8ec53015635e6569"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/binding.json": {
+      "bytes": 5248,
+      "sha256": "f8a69e12b72dd871af2bd08e8fe04e563c6856f24c2b143fc81de39e205eff14"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/check.py": {
+      "bytes": 4348,
+      "sha256": "5e3b0799256ea9e45a88b11935cc4b61b2b8aec6e7828da29ad78c6ad7cb648b"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/compiler-intent.json": {
+      "bytes": 789,
+      "sha256": "b67b6fdd82534dfbfd6382246601836088f3b95b8df148deb2aca095495d7ca5"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/compiler.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/compiler.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/dispatch-intent.json": {
+      "bytes": 1179,
+      "sha256": "eab6fb658443a567814a64608837861435398c68938058dc3b9047709b5b9831"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/host-network.txt": {
+      "bytes": 17,
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/lint-intent.json": {
+      "bytes": 2368,
+      "sha256": "5a1c7111b8093948c0c93482a095df02a8179bacfc5854387150f9f82a623d07"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/lint-result.json": {
+      "bytes": 235,
+      "sha256": "09785f6756c9ae1e2be75af95e2c4773fa8c389a31622153bb85d596174a104b"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/lint.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/lint.stdout": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/resource-controls.json": {
+      "bytes": 479,
+      "sha256": "2e0148814436000f615f1715d94b2e1c7e554ce026d74964a7b152bfa1da89a6"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/result.json": {
+      "bytes": 553,
+      "sha256": "643e4b9bfe1aa0f9a89b71b94aeaf6720956a0ac7b6c65d1c01518fd92397bc2"
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-billing-full-types-20261016/run.sh": {
+      "bytes": 951,
+      "sha256": "0ef254085ece2238800a246a1e24d9619daa03059c7c649ab1d27b4bc0a0a884"
+    }
+  },
+  "blindCategories": [
+    "Selected tests only, not full Vitest suite",
+    "Full actual configured TS without absent Next-generated route types, not a build",
+    "Mocked database/HTML/UI state do not establish native/SDK/renderer/browser",
+    "Named mounts only, inherited submount writability unassessed",
+    "Harness resource/source/report controls do not broaden application mutation coverage",
+    "No CI/main/hosted/release or practitioner/M11/v1 acceptance"
+  ]
+}
