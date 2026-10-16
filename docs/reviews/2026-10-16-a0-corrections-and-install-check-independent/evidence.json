@@ -1,0 +1,167 @@
+{
+  "reviewDate": "2026-10-16",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-5fd04097",
+  "branch": "t3/a0-corrections-install-check-review",
+  "initialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewBaseAfterAncestorCheckedLocalFastForward": "4b65f0484f45a38c746e37789979351e990837c5",
+  "subjects": {
+    "A": {
+      "candidate": "4b65f0484f45a38c746e37789979351e990837c5",
+      "parent": "40d8227dc25cb94084de077a4e8f47b107cc7a08",
+      "original": "7048efd372edce210e8af5438aa7775f7d359739",
+      "sourceCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-c1880cd3",
+      "verdict": "approve bounded source; all three prior P2 resolved; no new P1/P2",
+      "nativeAccepted": false
+    },
+    "B": {
+      "candidate": "1831c8449f7273ab18d505e0e2db366e56edac08",
+      "parent": "82d33de8d3d2d901e2feddad757ee9aaaec9daba",
+      "inheritedHelperCandidate": "e41f3cb75ae61feabf8ce89b5bc8ed8fcdec600c",
+      "sourceCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-e04f0f77",
+      "readMechanism": "exact git objects; no checkout/merge of B",
+      "verdict": "approve bounded source; no P1/P2",
+      "nativeAccepted": false
+    }
+  },
+  "pinsAudit": {
+    "allMatch": true,
+    "entriesIncludingOverlap": 252,
+    "groups": [
+      {
+        "group": "A current source",
+        "count": 18,
+        "allMatch": true
+      },
+      {
+        "group": "A reviewAndProtocolInputs",
+        "count": 10,
+        "allMatch": true
+      },
+      {
+        "group": "A preservedHistoricalAndDonorFiles",
+        "count": 83,
+        "allMatch": true
+      },
+      {
+        "group": "A newPrivateEvidence",
+        "count": 51,
+        "allMatch": true
+      },
+      {
+        "group": "A newPublicEvidence",
+        "count": 7,
+        "allMatch": true
+      },
+      {
+        "group": "A original source at original commit",
+        "count": 15,
+        "allMatch": true
+      },
+      {
+        "group": "A original private",
+        "count": 42,
+        "allMatch": true
+      },
+      {
+        "group": "A original public",
+        "count": 5,
+        "allMatch": true
+      },
+      {
+        "group": "B current source",
+        "count": 5,
+        "allMatch": true
+      },
+      {
+        "group": "B original 14 trial logs",
+        "count": 14,
+        "allMatch": true
+      },
+      {
+        "group": "B original completion",
+        "count": 1,
+        "allMatch": true
+      },
+      {
+        "group": "B original control receipt",
+        "count": 1,
+        "allMatch": true
+      }
+    ],
+    "additionalInheritedBEntriesMatch": 8,
+    "deliberatelyWrongHashRefused": true,
+    "fullPrivateAuditSHA256": "3b1aab496f1aa0405aa995c4748a42849783bde954637fb04390656d16508a3c",
+    "fullRestoredCopyInventorySHA256": "01059f6c9c7dd47a6e8c27c41f5374e3d78271c0d6b51ca1ec5d36c3c0e2958b",
+    "copyFiles": {
+      "A": 563,
+      "B": 558
+    }
+  },
+  "retainedChecksNotIndependentlyRerun": {
+    "A": {
+      "nodeOriginal": 18,
+      "vitest": 114,
+      "scopedTypes": "exit zero in retained receipt; empty log alone insufficient",
+      "scopedLint": "exit zero in retained receipt; empty log alone insufficient",
+      "ordinaryRootBothEnvUnset": 5,
+      "ordinaryNestedBothEnvUnset": 7,
+      "correctionTrialsInspected": 12,
+      "harmlessSurvivors": 3,
+      "intendedTestFailures": 8,
+      "externalCleanupRejections": 1,
+      "initialTypeErrorTrialAcceptedAsKill": false,
+      "historicalAndDonorEntriesMatch": 83,
+      "donorIncidentRepaired": false
+    },
+    "B": {
+      "focusedOwnerCount": 15,
+      "firstTwoOutputLinesInRetainedCompletion": false,
+      "aggregate15PassPresent": true,
+      "originalTrialLogPinsMatch": 14
+    }
+  },
+  "resourceEnvelope": {
+    "sharedFlock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "workers": 1,
+    "memoryMaxBytes": 1073741824,
+    "memorySwapMaxBytes": 0,
+    "cpuPercent": 50,
+    "nodeHeapMiB": 256,
+    "shortOwnedTestUnits": [
+      {
+        "unit": "openplan-a0-corrections-install-review-a-20261016",
+        "invocationId": "8106d2af37af4b6c8fb88e83b1ebd94e",
+        "exitCode": 0,
+        "runtimeSeconds": 19.829,
+        "memoryPeakReported": "68.4M",
+        "source": "terminal tool completion; controls logs retained privately"
+      },
+      {
+        "unit": "openplan-a0-corrections-install-review-b-20261016",
+        "invocationId": "331c606b45524bef8039176dd1f5785c",
+        "exitCode": 0,
+        "runtimeSeconds": 11.771,
+        "memoryPeakReported": "59.2M",
+        "source": "terminal tool completion; trial logs retained privately"
+      },
+      {
+        "unit": "openplan-a0-corrections-install-review-b-focused-20261016",
+        "exitCode": 0,
+        "runtimeSeconds": 2.021,
+        "memoryPeakReported": "51.8M",
+        "logSHA256": "3fb5f0657d8149fbc0d61e5ed408ff4cd022a812d3bc6897b717e6c14ab21413"
+      }
+    ]
+  },
+  "privateEvidenceRoot": "/home/nathaniel/.local/state/openplan/a0-corrections-and-install-check-independent-20261016",
+  "privateReviewerDriversSHA256": {
+    "run-a.py": "e2d30cd8d9fbedc1db9f079d9448b38726ee7e58e5543148370b6b733aeaae56",
+    "audit-pins.py": "6ba1039b15a0051c41da9aed29e96dce804fb0466605cdc22b419ede5eb3781f"
+  },
+  "preparedNativeConfigurationProbe": "PREPARATION ONLY; new identity-bound root wrapper required; no SQL execution",
+  "combinedCandidateAcceptance": false,
+  "T1Complete": false,
+  "T15Complete": false,
+  "sourceFixesMade": false,
+  "pushPRMergeRelease": false
+}
