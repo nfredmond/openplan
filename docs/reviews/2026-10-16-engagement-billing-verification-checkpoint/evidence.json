@@ -1,0 +1,97 @@
+{
+  "status": "RESEARCH_CONFIRMED_CORRECTION_UNCOMMITTED_TRIAL01_FAILED",
+  "recordedAt": "2026-10-16T21:22:31.306125+00:00",
+  "sourceHead": "04841834d31755d3d618a6ea3c300fb9b0b1414b",
+  "sourceApplicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "researchHead": "8defc05aec7d707bfebdea7f5a173a5659a11fcc",
+  "inputs": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/STATUS.md": {
+      "sha256": "affb3dd20c032d1a4dc0ed3ca062bf767269dad23e7c9cbfc24d617675176a96",
+      "bytes": 21534,
+      "copiedAs": "research-STATUS.md"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/evidence.json": {
+      "sha256": "7f70dc4530a8b3fdb608f54b7f46a8820638fd4f7f59801136c9f51ca504dbb1",
+      "bytes": 10185,
+      "copiedAs": "research-evidence.json"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/probe-results.json": {
+      "sha256": "f751037fac617c16843887db36c6c497817d8962fe861cc26eb31ee4743e2752",
+      "bytes": 55399,
+      "copiedAs": "research-probe-results.json"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/private-evidence.sha256": {
+      "sha256": "87d20b5b6e92351e4b1df013ede258c4eee3953f3f34f4d972654601a65489b1",
+      "bytes": 2573,
+      "copiedAs": "research-private-evidence.sha256"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/SHA256SUMS": {
+      "sha256": "9650034415a6b86cda5795ee3a6b84ae7caf44e7e3ca94b33e3f8b499e2d3d0b",
+      "bytes": 331,
+      "copiedAs": "research-SHA256SUMS"
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/source-pins.json": {
+      "sha256": "71f06911752332e7513c375b08814372f1f2a9dbebebe01c685a52b93d198f26",
+      "bytes": 3120,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/preparation-pins.json": {
+      "sha256": "0eba3459c4f6978561ec7eb22f6dcac0bc8587482a1662651040fc7e15633eb6",
+      "bytes": 5053,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/test-results.json": {
+      "sha256": "34a292b72a1efeb42692ddff2cd4f2f7f3e0b0ba5698976c55607929d306fda4",
+      "bytes": 45017,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/terminal.json": {
+      "sha256": "07bf263ec73d394634df238dc803db492f727b59ebea709078a82df44b24ccc4",
+      "bytes": 110,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/restoration.json": {
+      "sha256": "85db0acc4f66de27b93224463fc55b9b067b3b63a56767d4a9688b56f9e629be",
+      "bytes": 5920,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/composer-prior-for-projected-regression.vitest.json": {
+      "sha256": "69c83c28535a3296b4e5f7254b7d1fed2dae12121322c2d43afe822dcb87fe3f",
+      "bytes": 12728,
+      "private": true
+    },
+    "/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016/results/composer-prior-for-projected-regression.transform.json": {
+      "sha256": "f2cdb3a841c49d78114593ca79c64b7562c2f38710a3078bf9e61df83dc93330",
+      "bytes": 187,
+      "private": true
+    }
+  },
+  "authorWorktree": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10",
+  "trial01": {
+    "unit": "op-m11-billed-exact-correction01",
+    "invocation": "eac4cc51564b4b7095e9d093874fef51",
+    "exit": 1,
+    "seconds": 73.752,
+    "peakBytes": 327204864,
+    "memoryMax": 1073741824,
+    "swapMax": 0,
+    "cpuMax": "50000 100000",
+    "tasksMax": 48,
+    "baselinePassed": 106,
+    "harmlessPassed": 106,
+    "acceptedTargetedFaults": 13,
+    "composerFaultAccepted": false,
+    "pending": "api-overBy, restored suite, scoped types, lint, direction",
+    "all18SourcePinsMatch": true
+  },
+  "readerCorrection": "PREPARATION_ONLY; narrow exact Testing Library missing-warning classification. No new dispatch authorized by this record.",
+  "rootReview": "Read changed helper/API/all six consumers, searched all summary callsites; source inspection does not approve final candidate or establish workflow completion.",
+  "limits": [
+    "Supplied arithmetic and source/test boundary only.",
+    "Both research units retain exit1; pure02 arithmetic completes then direction fails.",
+    "Trial01 correction unit remains exit1.",
+    "Named root/source/donor RO, private RW; inherited nested RW mounts prevent host-wide isolation assertion.",
+    "Native numeric transport, retrieval completeness, currency agreement, PDF rendering, desktop/390px/browser and practicing-planner acceptance remain open.",
+    "No source join, native operation, main merge or release."
+  ]
+}
