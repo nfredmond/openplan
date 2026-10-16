@@ -96,7 +96,7 @@ describe("exact missing public snapshot function", () => {
     expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
     expect(inputs.pending.deliverableBudgetColumns).toBe(false);
     expect(inputs.unreadable.deliverables).toBe(true);
-    expect(inputs.readFailures).toContainEqual({ label: "this project's deliverables", message });
+    expect(inputs.readFailures).toContainEqual({ label: "this project's deliverables", message, code });
   });
 
   it("still discloses the actually absent deliverable table", async () => {

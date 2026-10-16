@@ -6,7 +6,7 @@
  * Failed or malformed reads carry unavailable flags; consumers must honor them.
  */
 import { z } from "zod";
-import { looksLikePendingSchema } from "@/lib/supabase/pending-schema";
+import { readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
 import type { BilledLineLike } from "@/lib/projects/budget";
 
 export type ProjectBudgetQuerySupabaseLike = {
@@ -104,6 +104,8 @@ export type ProjectBudgetReadFailure = {
   /** Plural, lower-case, no trailing period: it is rendered inside a sentence. */
   label: string;
   message: string;
+  /** Original database code when supplied, including an unknown code. */
+  code?: string;
 };
 
 /** Admit the source NUMERIC(14,2) domain, not arbitrary parseFloat input.
@@ -174,6 +176,29 @@ function missingSnapshotRpc(error: { code?: string; message?: string }): boolean
   ).test(message);
 }
 
+/** Match named source relations, never a dependency inferred from generic text.
+ * Legacy transport fixtures omit codes; an actual conflicting code still wins.
+ */
+function missingSourceRelation(error: { code?: string; message?: string } | null, relations: readonly string[]): boolean {
+  if (!error || (error.code !== undefined && error.code !== "42P01")) return false;
+  return relations.some((relation) => new RegExp(`^relation "(?:public\\.)?${relation}" does not exist$`).test(error.message ?? ""));
+}
+
+/** Keep the established explicitly named projects.budget_amount compatibility.
+ * SQL19's p.budget_amount alias and unqualified errors cannot establish origin:
+ * a policy/helper may use the same alias. Those remain unreadable until a
+ * catalog-established RPC flag can distinguish actual source-column absence.
+ */
+function missingStatedBudgetColumn(error: { code?: string; message?: string } | null): boolean {
+  if (!error) return false;
+  const message = error.message ?? "";
+  const postgres = (error.code === undefined || error.code === "42703") &&
+    /^column (?:public\.)?projects\./.test(message);
+  const cache = (error.code === undefined || error.code === "PGRST204") &&
+    /^could not find the /i.test(message);
+  return (postgres || cache) && readPendingSchemaMissingColumn(message, "projects") === "budget_amount";
+}
+
 function unavailableInputs(error: { message?: string; code?: string }): ProjectBudgetInputs {
   const pending = missingSnapshotRpc(error);
   return {
@@ -186,7 +211,8 @@ function unavailableInputs(error: { message?: string; code?: string }): ProjectB
     unreadable: {
       deliverables: !pending, statedBudget: !pending, spendEntries: !pending, clientInvoices: !pending,
     },
-    readFailures: pending ? [] : [{ label: "this project's complete budget inputs", message: error.message || "no message reported" }],
+    readFailures: pending ? [] : [{ label: "this project's complete budget inputs", message: error.message || "no message reported",
+      ...(error.code === undefined ? {} : { code: error.code }) }],
   };
 }
 
@@ -221,7 +247,11 @@ export async function loadProjectBudgetInputs(
       // Catalog-selected optional columns cannot explain a query's undefined
       // column. A policy/helper failure is unreadable, not an optional gap.
       ? source.error?.code === "42P01" && /^relation "(?:public\.)?project_deliverables" does not exist$/.test(source.error.message ?? "")
-      : looksLikePendingSchema(source.error?.message);
+      : source === snapshot.statedBudget
+        ? missingSourceRelation(source.error, ["projects"]) || missingStatedBudgetColumn(source.error)
+        : source === snapshot.spendEntries
+          ? missingSourceRelation(source.error, ["project_spend_entries"])
+          : missingSourceRelation(source.error, ["client_invoices", "client_invoice_line_items"]);
     const failed = (source: { error: { message?: string } | null }) => Boolean(source.error) && !pending(source);
     return {
       deliverables,
@@ -248,7 +278,8 @@ export async function loadProjectBudgetInputs(
         ["this project's stated budget", snapshot.statedBudget],
         ["this project's direct spend ledger", snapshot.spendEntries],
         ["client invoices billed to this project", snapshot.clientInvoices],
-      ] as const).flatMap(([label, source]) => failed(source) ? [{ label, message: source.error?.message || "no message reported" }] : []),
+      ] as const).flatMap(([label, source]) => failed(source) ? [{ label, message: source.error?.message || "no message reported",
+        ...(source.error?.code === undefined ? {} : { code: source.error.code }) }] : []),
     };
   } catch (error) {
     return unavailableInputs({ message: error instanceof Error ? error.message : "Complete budget snapshot could not be read." });

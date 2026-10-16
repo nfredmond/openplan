@@ -58,7 +58,7 @@ describe("stated-budget source failure preserves delivery records", () => {
     const inputs = await load(data);
     expect(inputs.unreadable.statedBudget).toBe(true);
     expect(inputs.unreadable.deliverables).toBe(false);
-    expect(inputs.readFailures).toEqual([{ label: "this project's stated budget", message: "permission denied for table projects" }]);
+    expect(inputs.readFailures).toEqual([{ label: "this project's stated budget", message: "permission denied for table projects", code: "42501" }]);
   });
 
   it.each([{ version: 2 }, { project_id: "another-project" }])(

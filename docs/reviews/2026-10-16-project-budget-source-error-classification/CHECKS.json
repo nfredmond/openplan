@@ -1,0 +1,258 @@
+{
+  "evidenceTier": "synthetic-production-loader-and-scoped-static-checks",
+  "baseCommit": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+  "baseApplicationTree": "e04a8509926c27065e77537f1816071811bb5b4d",
+  "candidateLoaderSHA256": "c763dfe4041b9f6390f93b2329312a539a2d13796a74719d84f9630413bf9743",
+  "baselineTests": 128,
+  "harmlessTests": 128,
+  "restoredTests": 128,
+  "newTests": 11,
+  "files": [
+    {
+      "path": "openplan/src/test/project-budget-complete-inputs-corrections.test.ts",
+      "assertions": 81,
+      "passed": true
+    },
+    {
+      "path": "openplan/src/test/project-budget-queries.test.ts",
+      "assertions": 22,
+      "passed": true
+    },
+    {
+      "path": "openplan/src/test/project-budget-source-error-classification.test.ts",
+      "assertions": 11,
+      "passed": true
+    },
+    {
+      "path": "openplan/src/test/project-budget-stated-budget-isolation.test.ts",
+      "assertions": 14,
+      "passed": true
+    }
+  ],
+  "checks": [
+    {
+      "name": "baseline",
+      "exit": 0,
+      "tests": 128
+    },
+    {
+      "name": "harmless",
+      "exit": 0,
+      "tests": 128
+    },
+    {
+      "name": "broad-statedBudget",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "missing-pending-statedBudget",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "erase-delivery-statedBudget",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "broad-spendEntries",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "missing-pending-spendEntries",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "erase-delivery-spendEntries",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "broad-clientInvoices",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "missing-pending-clientInvoices",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "erase-delivery-clientInvoices",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "drop-source-code",
+      "exit": 1,
+      "tests": 128
+    },
+    {
+      "name": "drop-outer-code",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "stated-zero-fallback",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "ignore-relation-code",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "ignore-column-code",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "allow-unknown-column",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "allow-unqualified-column",
+      "exit": 1,
+      "tests": 11
+    },
+    {
+      "name": "final-restored",
+      "exit": 0,
+      "tests": 128
+    },
+    {
+      "name": "scoped-types",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "focused-lint",
+      "exit": 0,
+      "tests": null
+    },
+    {
+      "name": "direction",
+      "exit": 0,
+      "tests": null
+    }
+  ],
+  "mutationOutcomes": [
+    {
+      "name": "harmless-annotation",
+      "outcome": "survived"
+    },
+    {
+      "name": "broad-statedBudget",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: statedBudget: {\"code\":\"42703\",\"message\":\"column budget_proof_helper.missing does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "missing-pending-statedBudget",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification recognizes exact source absence without broad schema guesses",
+      "failure": "AssertionError: {\"code\":\"42P01\",\"message\":\"relation \\\"public.projects\\\" does not exist\"}: expected false to be true // Object.is equality"
+    },
+    {
+      "name": "erase-delivery-statedBudget",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification keeps other valid sources and unavailable values separate from recorded zero",
+      "failure": "AssertionError: expected [] to deeply equal [ { id: 'd', \u2026(9) } ]"
+    },
+    {
+      "name": "broad-spendEntries",
+      "outcome": "killed",
+      "expectedAssertion": "'spendEntries' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: spendEntries: {\"code\":\"42703\",\"message\":\"column budget_proof_helper.missing does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "missing-pending-spendEntries",
+      "outcome": "killed",
+      "expectedAssertion": "'spendEntries' source error classification recognizes exact source absence without broad schema guesses",
+      "failure": "AssertionError: {\"code\":\"42P01\",\"message\":\"relation \\\"public.project_spend_entries\\\" does not exist\"}: expected false to be true // Object.is equality"
+    },
+    {
+      "name": "erase-delivery-spendEntries",
+      "outcome": "killed",
+      "expectedAssertion": "'spendEntries' source error classification keeps other valid sources and unavailable values separate from recorded zero",
+      "failure": "AssertionError: expected [] to deeply equal [ { id: 'd', \u2026(9) } ]"
+    },
+    {
+      "name": "broad-clientInvoices",
+      "outcome": "killed",
+      "expectedAssertion": "'clientInvoices' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: clientInvoices: {\"code\":\"42703\",\"message\":\"column budget_proof_helper.missing does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "missing-pending-clientInvoices",
+      "outcome": "killed",
+      "expectedAssertion": "'clientInvoices' source error classification recognizes exact source absence without broad schema guesses",
+      "failure": "AssertionError: {\"code\":\"42P01\",\"message\":\"relation \\\"public.client_invoices\\\" does not exist\"}: expected false to be true // Object.is equality"
+    },
+    {
+      "name": "erase-delivery-clientInvoices",
+      "outcome": "killed",
+      "expectedAssertion": "'clientInvoices' source error classification keeps other valid sources and unavailable values separate from recorded zero",
+      "failure": "AssertionError: expected [] to deeply equal [ { id: 'd', \u2026(9) } ]"
+    },
+    {
+      "name": "drop-source-code",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: expected [ { \u2026(2) } ] to deeply equal [ { \u2026(3) } ]"
+    },
+    {
+      "name": "drop-outer-code",
+      "outcome": "killed",
+      "expectedAssertion": "retains the actual outer RPC failure code and message",
+      "failure": "AssertionError: expected [ { \u2026(2) } ] to deeply equal [ { \u2026(3) } ]"
+    },
+    {
+      "name": "stated-zero-fallback",
+      "outcome": "killed",
+      "expectedAssertion": "preserves stated budget precedence, recorded zero and not-entered states",
+      "failure": "AssertionError: expected +0 to be null // Object.is equality"
+    },
+    {
+      "name": "ignore-relation-code",
+      "outcome": "killed",
+      "expectedAssertion": "'spendEntries' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: spendEntries: {\"code\":\"42703\",\"message\":\"relation \\\"public.project_spend_entries\\\" does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "ignore-column-code",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: statedBudget: {\"code\":\"42883\",\"message\":\"column projects.budget_amount does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "allow-unknown-column",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: statedBudget: {\"code\":\"42703\",\"message\":\"column projects.unknown does not exist\"}: expected true to be false // Object.is equality"
+    },
+    {
+      "name": "allow-unqualified-column",
+      "outcome": "killed",
+      "expectedAssertion": "'statedBudget' source error classification retains dependency, ambiguous and code-mismatched errors as original failures",
+      "failure": "AssertionError: statedBudget: {\"code\":\"42703\",\"message\":\"column \\\"budget_amount\\\" does not exist\"}: expected true to be false // Object.is equality"
+    }
+  ],
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "pids.max": "48",
+    "memory.peak": "347152384",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "serviceRuntimeSeconds": 50.42,
+  "harnessElapsedSeconds": 50.238842710037716,
+  "restoredExactly": true,
+  "blindCategory": "No native SQL origin/reachability, RLS, catalog, HTTP, UI/artifacts, practitioner or scientific acceptance. Alias pending-column compatibility remains unproved."
+}
