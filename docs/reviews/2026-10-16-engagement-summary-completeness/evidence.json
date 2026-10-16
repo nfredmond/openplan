@@ -1,0 +1,267 @@
+{
+  "date": "2026-10-16",
+  "parent": "95f46dc506b85e83bcbf84146f6cf8dafa4c5a65",
+  "parentApplicationTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "runtimeGranted": true,
+  "dependencyExecutionOccurred": true,
+  "privateTrial": "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01",
+  "preparationManifestSha256": "6eea50d7d72cce5e8cab75dac9a2158fbeec2dd2d7a22369444aa2f47c0abaab",
+  "sourcePinsSha256": "a3e55aece50151f268bedf6245ad64944674c0a2994eeff1a440dceacae79254",
+  "orderedSourceHistorySha256": "4c336fa56d13ff47ef98617bf00fcea3ac816f000dc57bd812c3b70cdb7c59fd",
+  "orderedSourceMigrations": 423,
+  "sql20Installed": false,
+  "attempts": 1,
+  "terminal": {
+    "exit": 0,
+    "timeNs": 1792192134978151200,
+    "clientPid": 1491985,
+    "lockReleasedByTerminalExit": true
+  },
+  "runtime": {
+    "invocationId": "3976044c3d2d4ee9b2eee220326eca25",
+    "serviceRuntimeSeconds": 140.748,
+    "cpuSeconds": 69.23,
+    "namedMountCount": 17,
+    "inheritedWritableMountCount": 227,
+    "hostWideOnlyPrivateWritableEstablished": false,
+    "limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64",
+      "memory.peak": "801095680",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "pids.current": "3",
+      "pids.peak": "43",
+      "pids.events": "max 0"
+    }
+  },
+  "checks": [
+    {
+      "name": "baseline",
+      "outcome": "PASS",
+      "passed": 46,
+      "failed": 0,
+      "seconds": 16.319195887073874
+    },
+    {
+      "name": "harmless-comment",
+      "outcome": "SURVIVED",
+      "passed": 46,
+      "failed": 0,
+      "seconds": 16.29383972391952
+    },
+    {
+      "name": "reader-workspace-echo-ignored",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.8979050900088623
+    },
+    {
+      "name": "reader-excluded-echo-ignored",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 3.1005654929904267
+    },
+    {
+      "name": "reader-duplicate-accepted",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.8966676159761846
+    },
+    {
+      "name": "reader-number-rounds-aggregate",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 2,
+      "seconds": 2.898401483078487
+    },
+    {
+      "name": "reader-missing-becomes-zero",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 2,
+      "seconds": 2.9026082719210535
+    },
+    {
+      "name": "reader-permissions-pending",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.894598701968789
+    },
+    {
+      "name": "reader-incomplete-accepted",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.8533783480525017
+    },
+    {
+      "name": "sql-definer-bypass",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.798225131002255
+    },
+    {
+      "name": "sql-gross-replaced-with-cash",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.9700564809609205
+    },
+    {
+      "name": "sql-workspace-filter-removed",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.924098929972388
+    },
+    {
+      "name": "sql-excluded-invoice-counted",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 2.9988620500080287
+    },
+    {
+      "name": "dashboard-discards-snapshot",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 4.798240217962302
+    },
+    {
+      "name": "route-foreign-workspace-args",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 1,
+      "seconds": 3.349411063012667
+    },
+    {
+      "name": "route-hides-failed-position",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 3,
+      "seconds": 3.5042837749933824
+    },
+    {
+      "name": "pdf-hides-source-unavailable",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 2,
+      "seconds": 4.393791712005623
+    },
+    {
+      "name": "composer-hides-source-unavailable",
+      "outcome": "KILLED_EXPECTED_ASSERTION",
+      "passed": 0,
+      "failed": 2,
+      "seconds": 6.801357939024456
+    },
+    {
+      "name": "restored",
+      "outcome": "PASS",
+      "passed": 46,
+      "failed": 0,
+      "seconds": 16.19470640399959
+    }
+  ],
+  "faultCount": 16,
+  "expectedAssertionFailures": 22,
+  "focusedChecks": [
+    {
+      "name": "focused-types",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=640",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/trial01/focused-tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "exit": 0,
+      "seconds": 24.948713142075576,
+      "resources": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64",
+        "memory.peak": "801095680",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "pids.current": "3",
+        "pids.peak": "39",
+        "pids.events": "max 0"
+      }
+    },
+    {
+      "name": "focused-lint",
+      "argv": [
+        "/usr/bin/node",
+        "--max-old-space-size=384",
+        "/home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/openplan/node_modules/eslint/bin/eslint.js",
+        "src/lib/invoicing/engagement-summary-queries.ts",
+        "src/lib/invoicing/receivables.ts",
+        "src/app/api/invoicing/client-invoices/route.ts",
+        "src/app/(app)/invoicing/_components/receivables-lane.tsx",
+        "src/lib/project-evidence-bundles/bytes.ts",
+        "src/components/invoicing/engagement-nte-bar.tsx",
+        "src/lib/invoicing/invoice-pdf.ts",
+        "src/components/invoicing/client-invoice-composer.tsx",
+        "src/test/engagement-summary-completeness.test.tsx",
+        "src/test/engagement-summary-dashboard.test.tsx",
+        "src/test/receivable-invoicing-routes.test.ts",
+        "src/test/client-invoice-pdf.test.ts",
+        "src/test/client-invoice-composer.test.tsx",
+        "src/test/engagement-billed-exact-money.test.tsx"
+      ],
+      "exit": 0,
+      "seconds": 9.850003229919821,
+      "resources": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64",
+        "memory.peak": "801095680",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "pids.current": "3",
+        "pids.peak": "39",
+        "pids.events": "max 0"
+      }
+    },
+    {
+      "name": "direction",
+      "argv": [
+        "/usr/bin/npm",
+        "run",
+        "product:direction:check"
+      ],
+      "exit": 0,
+      "seconds": 1.8003172709140927,
+      "resources": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64",
+        "memory.peak": "801095680",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "pids.current": "3",
+        "pids.peak": "43",
+        "pids.events": "max 0"
+      }
+    }
+  ],
+  "sourceRestoration": {
+    "allSourceBytesMatch": true,
+    "allPreservationPinsMatch": true,
+    "sourceWrites": false,
+    "inMemoryMutationCleared": true
+  },
+  "claimBoundary": "Source candidate plus focused mocked/HTML/source-guard execution only. No native SQL/RLS/SDK transport, browser/native PDF, practitioner, full suite, installation, hosted operation, join, push, PR, main or release acceptance."
+}

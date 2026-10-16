@@ -20,6 +20,19 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Engagement invoice-summary completeness, source candidate:** candidate migration
+`20261017000020_engagement_billed_summaries.sql` adds a caller-scoped stable
+snapshot of gross sent/paid subtotals and separate draft subtotals. Dashboard
+engagement totals no longer depend on the 500-row register. Invoice warnings
+and PDF/evidence assembly use the same reader and disclose an unavailable or
+pending source without inventing zero totals. Authorized draft creation stays
+warn-only. Aggregate currency and legacy agreement terms remain unassessed.
+SQL20 is unapplied and unreleased. Native role/RLS, raw SDK precision,
+upgrade/recovery, atomicity and identified-build browser/PDF proof remain open.
+It adds one source migration after the existing 422-file history; it does not
+change the existing SQL19 native controller's source binding. See the
+[candidate record](docs/reviews/2026-10-16-engagement-summary-completeness/STATUS.md).
+
 **Planner Agent CLI and usage-limit candidates:** the configured connector's
 `install-check` command offers inspected, version-pinned npm guidance without
 running an update. Structured Codex usage-limit failures retain a scoped receipt

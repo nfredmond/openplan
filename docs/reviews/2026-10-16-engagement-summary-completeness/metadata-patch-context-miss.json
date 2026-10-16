@@ -1,0 +1,14 @@
+{
+  "date": "2026-10-16",
+  "stage": "after successful terminal, before staging or commit",
+  "operation": "report-only manifest-count patch",
+  "failedPatch": "*** Begin Patch\n*** Update File: /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/VALIDATION.md\n@@\n full terminal and restoration receipts stay private.\n+\n+The private evidence manifest seals 2879 files after terminal exit, including\n+preparation, root grant, transforms, full assertions, logs, mount/resource\n+receipts and isolated caches. It does not rewrite or absorb an older trial.\n*** End Patch",
+  "error": "apply_patch verification failed: Failed to find expected lines in /home/nathaniel/.t3/worktrees/openplan/t3-80bd5760/docs/reviews/2026-10-16-engagement-summary-completeness/VALIDATION.md:\nfull terminal and restoration receipts stay private.",
+  "writesOccurred": false,
+  "subsequentStagingOrCommitExecuted": false,
+  "rootDisposition": "Routine metadata-only patch-context miss, not subject/check failure. Retain raw error and correct the actual longer sentence. No repeated runtime operation.",
+  "actualLine": "`fault-observations.json`; full terminal and restoration receipts stay private.",
+  "addedLine": "The private evidence manifest seals 2879 files after terminal exit.",
+  "productionTestHarnessBytesChanged": false,
+  "runtimeRerun": false
+}

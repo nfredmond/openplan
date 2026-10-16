@@ -369,12 +369,15 @@ export function ClientInvoiceComposer({
         error?: string;
         details?: string;
         nteWarning?: EngagementNteWarning;
+        ntePositionSource?: { state: "complete" | "pending" | "unavailable" };
       };
       if (!response.ok) {
         throw new Error(payload.details || payload.error || "Failed to save client invoice");
       }
 
-      if (payload.nteWarning) {
+      if (payload.ntePositionSource && payload.ntePositionSource.state !== "complete") {
+        setNteNotice(`Client invoice saved. Engagement invoice summary ${payload.ntePositionSource.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Prior and projected gross billing are unknown; no ceiling comparison is available.`);
+      } else if (payload.nteWarning) {
         setNteNotice(
           `This invoice takes the engagement to ${formatEngagementMoney(payload.nteWarning.projectedBilledToDate)} projected gross billing against its ${formatEngagementMoney(payload.nteWarning.notToExceed)} legacy not-to-exceed, ${formatEngagementMoney(payload.nteWarning.overBy)} over. ${ENGAGEMENT_CURRENCY_DISCLOSURE} Recorded as a warning; nothing was blocked.`
         );

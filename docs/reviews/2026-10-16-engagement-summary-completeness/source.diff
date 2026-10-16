@@ -1,0 +1,692 @@
+diff --git a/CHANGELOG.md b/CHANGELOG.md
+index 4710f832a..226a23bf1 100644
+--- a/CHANGELOG.md
++++ b/CHANGELOG.md
+@@ -22,0 +23,13 @@ stable enough to promise smooth upgrades indefinitely.
++**Engagement invoice-summary completeness, source candidate:** candidate migration
++`20261017000020_engagement_billed_summaries.sql` adds a caller-scoped stable
++snapshot of gross sent/paid subtotals and separate draft subtotals. Dashboard
++engagement totals no longer depend on the 500-row register. Invoice warnings
++and PDF/evidence assembly use the same reader and disclose an unavailable or
++pending source without inventing zero totals. Authorized draft creation stays
++warn-only. Aggregate currency and legacy agreement terms remain unassessed.
++SQL20 is unapplied and unreleased. Native role/RLS, raw SDK precision,
++upgrade/recovery, atomicity and identified-build browser/PDF proof remain open.
++It adds one source migration after the existing 422-file history; it does not
++change the existing SQL19 native controller's source binding. See the
++[candidate record](docs/reviews/2026-10-16-engagement-summary-completeness/STATUS.md).
++
+diff --git a/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx b/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx
+index 405c7aac1..b00bbb054 100644
+--- a/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx
++++ b/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx
+@@ -16 +15,0 @@ import {
+-  buildEngagementBilledSummary,
+@@ -19,0 +19 @@ import {
++import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
+@@ -130,0 +131 @@ export async function ReceivablesLane({
++  const engagementSummariesRead = loadEngagementBilledSummaries(supabase, { workspaceId });
+@@ -213,0 +215 @@ export async function ReceivablesLane({
++  const engagementSummaries = await engagementSummariesRead;
+@@ -365 +367 @@ export async function ReceivablesLane({
+-                        const billed = buildEngagementBilledSummary(engagement, invoices);
++                        const billed = engagementSummaryFor(engagementSummaries, engagement);
+diff --git a/openplan/src/app/api/invoicing/client-invoices/route.ts b/openplan/src/app/api/invoicing/client-invoices/route.ts
+index ab98c2c46..ec91dd625 100644
+--- a/openplan/src/app/api/invoicing/client-invoices/route.ts
++++ b/openplan/src/app/api/invoicing/client-invoices/route.ts
+@@ -5 +4,0 @@ import {
+-  buildEngagementBilledSummary,
+@@ -9,0 +9 @@ import {
++import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
+@@ -392,0 +393 @@ export async function POST(request: NextRequest) {
++    let ntePositionSource: { state: "complete" | "pending" | "unavailable" } | undefined;
+@@ -395,10 +396,6 @@ export async function POST(request: NextRequest) {
+-      const { data: engagementInvoices, error: engagementInvoicesError } = await supabase
+-        .from("client_invoices")
+-        .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount")
+-        .eq("engagement_id", engagement.id);
+-
+-      if (!engagementInvoicesError) {
+-        const summary = buildEngagementBilledSummary(
+-          engagement,
+-          (engagementInvoices ?? []) as Parameters<typeof buildEngagementBilledSummary>[1]
+-        );
++      const positionRead = await loadEngagementBilledSummaries(supabase, {
++        workspaceId: parsed.data.workspaceId, engagementId: engagement.id,
++      });
++      ntePositionSource = { state: positionRead.state };
++      const summary = engagementSummaryFor(positionRead, engagement);
++      if (positionRead.state === "complete") {
+@@ -420 +417,3 @@ export async function POST(request: NextRequest) {
+-          message: engagementInvoicesError.message,
++          state: positionRead.state,
++          code: positionRead.error?.code ?? null,
++          message: positionRead.error?.message ?? "Engagement summary unavailable",
+@@ -609 +608 @@ export async function POST(request: NextRequest) {
+-      { invoice, lineItems: lineRows, ...(nteWarning ? { nteWarning } : {}) },
++      { invoice, lineItems: lineRows, ...(ntePositionSource ? { ntePositionSource } : {}), ...(nteWarning ? { nteWarning } : {}) },
+diff --git a/openplan/src/components/invoicing/client-invoice-composer.tsx b/openplan/src/components/invoicing/client-invoice-composer.tsx
+index 47a726680..d898ff47f 100644
+--- a/openplan/src/components/invoicing/client-invoice-composer.tsx
++++ b/openplan/src/components/invoicing/client-invoice-composer.tsx
+@@ -371,0 +372 @@ export function ClientInvoiceComposer({
++        ntePositionSource?: { state: "complete" | "pending" | "unavailable" };
+@@ -377 +378,3 @@ export function ClientInvoiceComposer({
+-      if (payload.nteWarning) {
++      if (payload.ntePositionSource && payload.ntePositionSource.state !== "complete") {
++        setNteNotice(`Client invoice saved. Engagement invoice summary ${payload.ntePositionSource.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Prior and projected gross billing are unknown; no ceiling comparison is available.`);
++      } else if (payload.nteWarning) {
+diff --git a/openplan/src/components/invoicing/engagement-nte-bar.tsx b/openplan/src/components/invoicing/engagement-nte-bar.tsx
+index 983977920..24edc2524 100644
+--- a/openplan/src/components/invoicing/engagement-nte-bar.tsx
++++ b/openplan/src/components/invoicing/engagement-nte-bar.tsx
+@@ -6,0 +7 @@ export function EngagementNteBar({ summary, currencyCode }: { summary: Engagemen
++  const sourceUnavailable = summary.source && summary.source.state !== "complete";
+@@ -8 +9,3 @@ export function EngagementNteBar({ summary, currencyCode }: { summary: Engagemen
+-    ? `Gross billed calculation unavailable (${summary.unavailable?.billedToDate ?? "unavailable"} amount).`
++    ? sourceUnavailable
++      ? `Engagement invoice summary ${summary.source?.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Gross billed and draft positions are unknown.`
++      : `Gross billed calculation unavailable (${summary.unavailable?.billedToDate ?? "unavailable"} amount).`
+@@ -15 +18 @@ export function EngagementNteBar({ summary, currencyCode }: { summary: Engagemen
+-  const draft = summary.draftedUnbilled === null
++  const draft = sourceUnavailable ? "" : summary.draftedUnbilled === null
+diff --git a/openplan/src/lib/invoicing/engagement-summary-queries.ts b/openplan/src/lib/invoicing/engagement-summary-queries.ts
+new file mode 100644
+index 000000000..99c49bbd5
+--- /dev/null
++++ b/openplan/src/lib/invoicing/engagement-summary-queries.ts
+@@ -0,0 +1,104 @@
++import { z } from "zod";
++import { parseOptionalMoney, type ExactMoneyAmount } from "@/lib/money/optional-amount";
++import {
++  buildEngagementBilledPosition,
++  type EngagementBilledSummary,
++  type InvoicingEngagementLike,
++} from "./receivables";
++
++export type EngagementSummaryScope = {
++  workspaceId: string;
++  engagementId?: string;
++  excludeInvoiceId?: string;
++};
++export type EngagementSummaryClient = {
++  rpc: (name: "engagement_billed_summaries_v1", args: {
++    p_workspace_id: string; p_engagement_id: string | null; p_exclude_invoice_id: string | null;
++  }) => PromiseLike<{ data: unknown; error: { code?: string; message?: string } | null }>;
++};
++type SourceError = { code?: string; message: string };
++export type EngagementSummaryRead = {
++  state: "complete" | "pending" | "unavailable";
++  summaries: ReadonlyMap<string, EngagementBilledSummary>;
++  error?: SourceError;
++};
++
++const bucket = z.object({ amount: z.string().nullable(), missing: z.string().regex(/^\d+$/), invalid: z.string().regex(/^\d+$/) });
++const row = z.object({
++  engagement_id: z.string().min(1), not_to_exceed_amount: z.string().nullable(), billed: bucket, draft: bucket,
++});
++const envelope = z.object({
++  version: z.literal(1), workspace_id: z.string(), engagement_id: z.string().nullable(), exclude_invoice_id: z.string().nullable(),
++}).and(z.discriminatedUnion("complete", [
++  z.object({ complete: z.literal(true), data: z.array(row), error: z.null() }),
++  z.object({ complete: z.literal(false), data: z.unknown(), error: z.object({ code: z.string().optional(), message: z.string() }) }),
++]));
++
++/** A missing named public RPC is pending. Dependency or permission failures are not. */
++function missingRpc(error: SourceError): boolean {
++  const name = '(?:public|"public")\\.(?:engagement_billed_summaries_v1|"engagement_billed_summaries_v1")';
++  return error.code === "42883"
++    ? new RegExp(`^function ${name}\\(uuid, uuid, uuid\\) does not exist$`).test(error.message)
++    : error.code === "PGRST202" && new RegExp(`^Could not find the function ${name}(?:\\(p_engagement_id, p_exclude_invoice_id, p_workspace_id\\)| with parameters p_engagement_id, p_exclude_invoice_id, p_workspace_id)? in the schema cache$`).test(error.message);
++}
++
++function failed(error: SourceError): EngagementSummaryRead {
++  return { state: missingRpc(error) ? "pending" : "unavailable", summaries: new Map(), error };
++}
++
++/** Aggregate NUMERIC text has no per-row ceiling and never passes through Number. */
++function amount(value: z.infer<typeof bucket>): { amount: ExactMoneyAmount | null; unavailable?: "missing" | "invalid" } {
++  if (BigInt(value.missing) > BigInt(0)) return { amount: null, unavailable: "missing" };
++  if (BigInt(value.invalid) > BigInt(0)) return { amount: null, unavailable: "invalid" };
++  if (value.amount === null) return { amount: null, unavailable: "missing" };
++  try {
++    if (!/^\d+(?:\.\d{1,2})?$/.test(value.amount)) throw new Error("Invalid aggregate amount");
++    return { amount: parseOptionalMoney(value.amount) };
++  } catch {
++    return { amount: null, unavailable: "invalid" };
++  }
++}
++
++/** No fallback to a capped register. The RPC's scope echo binds every response. */
++export async function loadEngagementBilledSummaries(client: EngagementSummaryClient, scope: EngagementSummaryScope): Promise<EngagementSummaryRead> {
++  try {
++    const result = await client.rpc("engagement_billed_summaries_v1", {
++      p_workspace_id: scope.workspaceId, p_engagement_id: scope.engagementId ?? null, p_exclude_invoice_id: scope.excludeInvoiceId ?? null,
++    });
++    if (result.error) return failed({ message: result.error.message ?? "Engagement summary source failed.", ...(result.error.code === undefined ? {} : { code: result.error.code }) });
++    const parsed = envelope.safeParse(result.data);
++    if (!parsed.success || parsed.data.workspace_id !== scope.workspaceId || parsed.data.engagement_id !== (scope.engagementId ?? null) ||
++      parsed.data.exclude_invoice_id !== (scope.excludeInvoiceId ?? null)) {
++      return failed({ message: "Engagement summary snapshot is incomplete, invalid or outside the requested scope." });
++    }
++    if (!parsed.data.complete) return { state: "unavailable", summaries: new Map(), error: parsed.data.error };
++    const summaries = new Map<string, EngagementBilledSummary>();
++    for (const entry of parsed.data.data) {
++      if (summaries.has(entry.engagement_id) || (scope.engagementId !== undefined && entry.engagement_id !== scope.engagementId)) {
++        return failed({ message: "Engagement summary snapshot contains duplicate or foreign identities." });
++      }
++      const billed = amount(entry.billed);
++      const draft = amount(entry.draft);
++      const summary = buildEngagementBilledPosition({ not_to_exceed_amount: entry.not_to_exceed_amount }, billed.amount, draft.amount, {
++        ...(billed.unavailable ? { billedToDate: billed.unavailable } : {}),
++        ...(draft.unavailable ? { draftedUnbilled: draft.unavailable } : {}),
++      });
++      summaries.set(entry.engagement_id, { ...summary, source: { state: "complete" } });
++    }
++    if (scope.engagementId !== undefined && !summaries.has(scope.engagementId)) return failed({ message: "Requested engagement summary is absent from the snapshot." });
++    return { state: "complete", summaries };
++  } catch (error) {
++    const parsed = z.object({ message: z.string(), code: z.string().optional() }).safeParse(error);
++    return failed(parsed.success ? parsed.data : { message: "Engagement summary snapshot could not be read." });
++  }
++}
++
++/** Missing source is unknown money, even when the visible invoice register is empty. */
++export function engagementSummaryFor(read: EngagementSummaryRead, engagement: InvoicingEngagementLike): EngagementBilledSummary {
++  const summary = engagement.id ? read.summaries.get(engagement.id) : undefined;
++  if (read.state === "complete" && summary) return summary;
++  return { ...buildEngagementBilledPosition(engagement, null, null), source: {
++    state: read.state === "pending" ? "pending" : "unavailable",
++    error: read.error ?? { message: "Engagement summary is absent from the complete snapshot." },
++  } };
++}
+diff --git a/openplan/src/lib/invoicing/invoice-pdf.ts b/openplan/src/lib/invoicing/invoice-pdf.ts
+index 3482af541..db007b406 100644
+--- a/openplan/src/lib/invoicing/invoice-pdf.ts
++++ b/openplan/src/lib/invoicing/invoice-pdf.ts
+@@ -177 +176,0 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-    const nte = data.engagement.not_to_exceed_amount;
+@@ -178,0 +178 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
++    const nte = billed?.source?.state === "complete" ? billed.notToExceed : data.engagement.not_to_exceed_amount;
+@@ -185 +185,3 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
+-    if (billed) {
++    if (billed?.source && billed.source.state !== "complete") {
++      ntePart += `<p>Engagement invoice summary ${billed.source.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Gross billed, remaining and draft positions are unknown.</p>`;
++    } else if (billed) {
+diff --git a/openplan/src/lib/invoicing/receivables.ts b/openplan/src/lib/invoicing/receivables.ts
+index db45d8ade..7b8a8cc0f 100644
+--- a/openplan/src/lib/invoicing/receivables.ts
++++ b/openplan/src/lib/invoicing/receivables.ts
+@@ -118,0 +119,2 @@ export type EngagementBilledSummary = {
++  /** Completeness refers to the caller-visible engagement snapshot, not agreement authority. */
++  source?: { state: "complete" | "pending" | "unavailable"; error?: { code?: string; message: string } };
+@@ -408,0 +411,10 @@ export function buildEngagementBilledSummary(
++  return buildEngagementBilledPosition(engagement, billedToDate, draftedUnbilled, unavailable);
++}
++
++/** Compose already-aggregated gross buckets without inventing invoice records. */
++export function buildEngagementBilledPosition(
++  engagement: InvoicingEngagementLike,
++  billedToDate: ExactMoneyAmount | null,
++  draftedUnbilled: ExactMoneyAmount | null,
++  unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {}
++): EngagementBilledSummary {
+diff --git a/openplan/src/lib/project-evidence-bundles/bytes.ts b/openplan/src/lib/project-evidence-bundles/bytes.ts
+index 31cf373a8..834fcff43 100644
+--- a/openplan/src/lib/project-evidence-bundles/bytes.ts
++++ b/openplan/src/lib/project-evidence-bundles/bytes.ts
+@@ -6 +6,2 @@ import type { SupabaseClient } from "@supabase/supabase-js";
+-import { buildEngagementBilledSummary, type EngagementBilledSummary } from "@/lib/invoicing/receivables";
++import type { EngagementBilledSummary } from "@/lib/invoicing/receivables";
++import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
+@@ -243,0 +245 @@ export async function resolveInvoicePdfBytes(
++      .eq("workspace_id", invoice.workspace_id)
+@@ -249,13 +251,5 @@ export async function resolveInvoicePdfBytes(
+-    const nte = (engagementRead.data as { not_to_exceed_amount?: unknown }).not_to_exceed_amount;
+-    if (nte !== null && nte !== undefined) {
+-      const invoicesRead = await caller
+-        .from("client_invoices")
+-        .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount")
+-        .eq("engagement_id", invoice.engagement_id);
+-      if (!invoicesRead.error) {
+-        engagementBilled = buildEngagementBilledSummary(
+-          engagementRead.data as Parameters<typeof buildEngagementBilledSummary>[0],
+-          (invoicesRead.data ?? []) as Parameters<typeof buildEngagementBilledSummary>[1]
+-        );
+-      }
+-    }
++    const positionRead = await loadEngagementBilledSummaries(caller, {
++      workspaceId: invoice.workspace_id, engagementId: invoice.engagement_id,
++    });
++    engagementBilled = engagementSummaryFor(positionRead, { id: invoice.engagement_id,
++      not_to_exceed_amount: engagement?.not_to_exceed_amount });
+diff --git a/openplan/src/test/client-invoice-composer.test.tsx b/openplan/src/test/client-invoice-composer.test.tsx
+index 6f2875468..0a4ef58fe 100644
+--- a/openplan/src/test/client-invoice-composer.test.tsx
++++ b/openplan/src/test/client-invoice-composer.test.tsx
+@@ -57 +57 @@ const unbilledEntries = [
+-function stubFetch({ nteWarning }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning } = {}) {
++function stubFetch({ nteWarning, ntePositionSource }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning; ntePositionSource?: { state: "complete" | "pending" | "unavailable" } } = {}) {
+@@ -63 +63 @@ function stubFetch({ nteWarning }: { nteWarning?: import("@/lib/invoicing/receiv
+-    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning }) };
++    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning, ntePositionSource }) };
+@@ -81,0 +82,16 @@ describe("ClientInvoiceComposer", () => {
++  it.each(["pending", "unavailable"] as const)("ESComplete shows %s summary after a successful authorized draft", async (state) => {
++    stubFetch({ ntePositionSource: { state } });
++    render(<ClientInvoiceComposer {...baseProps} />);
++    fillRequiredHeader();
++    fireEvent.change(screen.getByLabelText("Engagement"), { target: { value: ENGAGEMENT_ID } });
++    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "New work" } });
++    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "1" } });
++    fireEvent.change(screen.getByLabelText("Unit rate"), { target: { value: "1" } });
++    fireEvent.click(screen.getByRole("button", { name: "Save client invoice" }));
++    await waitFor(() => expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument());
++    await waitFor(() => expect(screen.queryByText(/Prior and projected gross billing are unknown/) !== null).toBe(true));
++    const notice = screen.getByText(/Prior and projected gross billing are unknown/);
++    expect(notice).toHaveTextContent(state === "pending" ? "pending schema upgrade" : "source unavailable");
++    expect(notice).toHaveTextContent("no ceiling comparison is available");
++    expect(refreshMock).toHaveBeenCalled();
++  });
+diff --git a/openplan/src/test/client-invoice-pdf.test.ts b/openplan/src/test/client-invoice-pdf.test.ts
+index f93df77a6..c048bb192 100644
+--- a/openplan/src/test/client-invoice-pdf.test.ts
++++ b/openplan/src/test/client-invoice-pdf.test.ts
+@@ -8,0 +9 @@ const renderReportPdfMock = vi.fn();
++const summaryRpcMock = vi.fn();
+@@ -43 +44,2 @@ const engagementSingleMock = vi.fn();
+-const engagementEqMock = vi.fn(() => ({ single: engagementSingleMock }));
++const engagementWorkspaceEqMock = vi.fn(() => ({ single: engagementSingleMock }));
++const engagementEqMock = vi.fn(() => ({ eq: engagementWorkspaceEqMock, single: engagementSingleMock }));
+@@ -98,0 +101,5 @@ const INVOICE = "77777777-7777-4777-8777-777777777777";
++function summarySnapshot(ceiling: string | null = null, billed = "0", draft = "0", missing = "0") {
++  return { data: { version: 1, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, exclude_invoice_id: null, complete: true, error: null,
++    data: [{ engagement_id: ENGAGEMENT, not_to_exceed_amount: ceiling, billed: { amount: billed, missing, invalid: "0" }, draft: { amount: draft, missing: "0", invalid: "0" } }] }, error: null };
++}
++
+@@ -254,0 +262 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
++    summaryRpcMock.mockReset().mockResolvedValue(summarySnapshot());
+@@ -307,0 +316 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
++      rpc: summaryRpcMock,
+@@ -349 +358 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
+-    invoiceListResultMock.mockReturnValueOnce({ data: Array.from({ length: 45 }, () => ({ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "999999999999.99" })), error: null });
++    summaryRpcMock.mockResolvedValueOnce(summarySnapshot("999999999999.99", "44999999999999.55"));
+@@ -355,2 +364,2 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
+-    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+-    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
++    expect(summaryRpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
++    expect(invoiceSelectMock).not.toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+@@ -362 +371 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
+-    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent" }, { engagement_id: ENGAGEMENT, status: "draft", subtotal_amount: 2 }], error: null });
++    summaryRpcMock.mockResolvedValueOnce(summarySnapshot("bad", "0", "2", "1"));
+@@ -370,0 +380,15 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
++  it.each(["pending", "unavailable"])("ESComplete discloses %s snapshot without suppressing the invoice PDF", async (state) => {
++    summaryRpcMock.mockResolvedValueOnce({ data: null, error: state === "pending" ? {
++      code: "PGRST202", message: "Could not find the function public.engagement_billed_summaries_v1(p_engagement_id, p_exclude_invoice_id, p_workspace_id) in the schema cache",
++    } : { code: "42501", message: "permission denied for table client_invoices" } });
++    const response = await getInvoicePdf(new NextRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}/pdf`), context);
++    expect(response.status).toBe(200);
++    const html = renderReportPdfMock.mock.calls[0][0] as string;
++    expect(html).toContain(state === "pending" ? "pending schema upgrade" : "source unavailable");
++    expect(html).toContain("Gross billed, remaining and draft positions are unknown.");
++    expect(html).not.toContain("billed to date 0.00");
++    expect(summaryRpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
++    expect(engagementEqMock).toHaveBeenCalledWith("id", ENGAGEMENT);
++    expect(engagementWorkspaceEqMock).toHaveBeenCalledWith("workspace_id", WORKSPACE);
++  });
++
+diff --git a/openplan/src/test/engagement-summary-completeness.test.tsx b/openplan/src/test/engagement-summary-completeness.test.tsx
+new file mode 100644
+index 000000000..0d7221bb2
+--- /dev/null
++++ b/openplan/src/test/engagement-summary-completeness.test.tsx
+@@ -0,0 +1,137 @@
++import { describe, expect, it, vi } from "vitest";
++import { renderToStaticMarkup } from "react-dom/server";
++import { readFileSync } from "node:fs";
++import { engagementSummaryFor, loadEngagementBilledSummaries, type EngagementSummaryClient } from "@/lib/invoicing/engagement-summary-queries";
++import { EngagementNteBar } from "@/components/invoicing/engagement-nte-bar";
++
++const scope = { workspaceId: "workspace-1", engagementId: "engagement-1" };
++function snapshot(billed: string | null = "0", draft: string | null = "0", ceiling: string | null = "0") {
++  return { version: 1, workspace_id: scope.workspaceId, engagement_id: scope.engagementId as string | null,
++    exclude_invoice_id: null as string | null, complete: true, error: null,
++    data: [{ engagement_id: scope.engagementId, not_to_exceed_amount: ceiling,
++      billed: { amount: billed, missing: "0", invalid: "0" }, draft: { amount: draft, missing: "0", invalid: "0" } }] };
++}
++async function read(data: unknown, error: { code?: string; message: string } | null = null) {
++  const rpc = vi.fn<EngagementSummaryClient["rpc"]>().mockResolvedValue({ data, error });
++  return { result: await loadEngagementBilledSummaries({ rpc }, scope), rpc };
++}
++
++describe("ESComplete snapshot reader", () => {
++  it("binds workspace, engagement and excluded invoice identity without a row-query fallback", async () => {
++    const data = snapshot("10", "2", "20"); data.exclude_invoice_id = "current-invoice";
++    const rpc = vi.fn<EngagementSummaryClient["rpc"]>().mockResolvedValue({ data, error: null });
++    const result = await loadEngagementBilledSummaries({ rpc }, { ...scope, excludeInvoiceId: "current-invoice" });
++    expect(result.state).toBe("complete");
++    expect(rpc).toHaveBeenCalledExactlyOnceWith("engagement_billed_summaries_v1", {
++      p_workspace_id: "workspace-1", p_engagement_id: "engagement-1", p_exclude_invoice_id: "current-invoice",
++    });
++    expect(engagementSummaryFor(result, { id: scope.engagementId }).remaining).toBe(10);
++  });
++  for (const [count, billed, remaining] of [
++    [501, "500999999999994.99", "-499999999999995.00"],
++    [1201, "1200999999999987.99", "-1199999999999988.00"],
++  ] as const) {
++    it(`retains aggregate text for ${count} legal NUMERIC(14,2) contributors beyond safe aggregate cents`, async () => {
++      // A finite supplied corpus establishes the independent literal expectation.
++      // The mocked scalar is not evidence that PostgreSQL executes this aggregate.
++      const corpus = Array.from({ length: count }, () => "999999999999.99");
++      const expectedCents = corpus.reduce((sum, value) => sum + BigInt(value.replace(".", "")), BigInt(0));
++      expect(expectedCents.toString()).toBe(billed.replace(".", ""));
++      expect(expectedCents > BigInt(Number.MAX_SAFE_INTEGER)).toBe(true);
++      const { result } = await read(snapshot(billed, billed, "999999999999.99"));
++      const summary = JSON.parse(JSON.stringify(engagementSummaryFor(result, { id: scope.engagementId })));
++      expect(summary.billedToDate).toBe(billed);
++      expect(summary.draftedUnbilled).toBe(billed);
++      const remainingText = String(summary.remaining);
++      const [whole, fraction = ""] = remainingText.split(".");
++      expect(whole + fraction.padEnd(2, "0")).toBe(remaining.replace(".", ""));
++      expect(summary.isOverNte).toBe(true);
++    });
++  }
++  it("keeps recorded zero, absent ceiling and unknown source distinct", async () => {
++    const zero = await read(snapshot());
++    expect(engagementSummaryFor(zero.result, { id: scope.engagementId })).toMatchObject({ billedToDate: 0, draftedUnbilled: 0, notToExceed: 0, remaining: 0 });
++    const absent = await read(snapshot("0", "0", null));
++    expect(engagementSummaryFor(absent.result, { id: scope.engagementId }).notToExceed).toBeNull();
++    const missing = await read(null);
++    expect(engagementSummaryFor(missing.result, { id: scope.engagementId })).toMatchObject({ billedToDate: null, draftedUnbilled: null, remaining: null, isOverNte: null, source: { state: "unavailable" } });
++  });
++  it.each(["billed", "draft"] as const)("isolates missing and malformed %s buckets", async (which) => {
++    for (const [value, missing, invalid, reason] of [
++      [null, "1", "0", "missing"], ["NaN", "0", "1", "invalid"], ["2junk", "0", "0", "invalid"], ["1.001", "0", "0", "invalid"],
++    ] as const) {
++      const data = snapshot("7", "2", "10"); data.data[0][which] = { amount: value, missing, invalid };
++      const { result } = await read(data);
++      const summary = engagementSummaryFor(result, { id: scope.engagementId });
++      expect(summary.billedToDate).toBe(which === "billed" ? null : 7);
++      expect(summary.draftedUnbilled).toBe(which === "draft" ? null : 2);
++      expect(summary.unavailable).toEqual({ [which === "billed" ? "billedToDate" : "draftedUnbilled"]: reason });
++    }
++  });
++  it.each([
++    ["PGRST202", "Could not find the function public.engagement_billed_summaries_v1(p_engagement_id, p_exclude_invoice_id, p_workspace_id) in the schema cache", "pending"],
++    ["42883", "function public.engagement_billed_summaries_v1(uuid, uuid, uuid) does not exist", "pending"],
++    ["42883", "function public.other_dependency(uuid) does not exist", "unavailable"],
++    ["42501", "Could not find the function public.engagement_billed_summaries_v1 in the schema cache", "unavailable"],
++    ["42P01", 'relation "public.client_invoices" does not exist', "unavailable"],
++    ["XX000", "internal failure", "unavailable"],
++  ])("preserves original %s source failure and classifies %s", async (code, message, state) => {
++    const { result } = await read(null, { code, message });
++    expect(result).toEqual({ state, summaries: new Map(), error: { code, message } });
++    const summary = engagementSummaryFor(result, { id: scope.engagementId, not_to_exceed_amount: 10 });
++    expect(summary.billedToDate).toBeNull(); expect(summary.draftedUnbilled).toBeNull(); expect(summary.remaining).toBeNull();
++    expect(summary.source).toEqual({ state, error: { code, message } });
++  });
++  it("preserves thrown SDK code and message without reclassifying permissions", async () => {
++    const rpc = vi.fn<EngagementSummaryClient["rpc"]>().mockRejectedValue({ code: "42501", message: "source permission failure" });
++    const result = await loadEngagementBilledSummaries({ rpc }, scope);
++    expect(result).toEqual({ state: "unavailable", summaries: new Map(), error: { code: "42501", message: "source permission failure" } });
++  });
++  it("preserves incomplete envelope error without treating an internal missing function as pending", async () => {
++    const error = { code: "42883", message: "function public.engagement_billed_summaries_v1(uuid, uuid, uuid) does not exist" };
++    const { result } = await read({ ...snapshot(), complete: false, data: null, error });
++    expect(result).toEqual({ state: "unavailable", summaries: new Map(), error });
++  });
++  it.each(["workspace", "engagement", "exclude", "incomplete", "duplicate", "absent", "malformed"])("refuses %s snapshots as unknown money", async (fault) => {
++    const data = snapshot();
++    if (fault === "workspace") data.workspace_id = "foreign";
++    if (fault === "engagement") data.engagement_id = "foreign";
++    if (fault === "exclude") data.exclude_invoice_id = "foreign";
++    if (fault === "duplicate") data.data.push(data.data[0]);
++    if (fault === "absent") data.data = [];
++    const input = fault === "incomplete" ? { ...data, complete: false, error: { code: "XX000", message: "partial" } } : fault === "malformed" ? { ...data, data: [{}] } : data;
++    const { result } = await read(input);
++    expect(result.state).toBe("unavailable"); expect(result.summaries.size).toBe(0);
++    expect(engagementSummaryFor(result, { id: scope.engagementId }).billedToDate).toBeNull();
++  });
++  it.each(["pending", "unavailable"] as const)("renders %s without an artificial zero or currency assertion", (state) => {
++    const summary = engagementSummaryFor({ state, summaries: new Map(), error: { code: "test", message: "source failed" } }, { id: scope.engagementId });
++    const html = renderToStaticMarkup(<EngagementNteBar summary={summary} currencyCode={null} />);
++    expect(html).toContain(state === "pending" ? "pending schema upgrade" : "source unavailable");
++    expect(html).toContain("positions are unknown"); expect(html).not.toContain("0.00 gross billed");
++  });
++});
++
++describe("ESComplete SQL source intent", () => {
++  const sql = readFileSync("supabase/migrations/20261017000020_engagement_billed_summaries.sql", "utf8");
++  it("retains stable scalar invoker security and explicit caller ACL", () => {
++    expect(sql).toMatch(/RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER/);
++    expect(sql).toContain("m.workspace_id = p_workspace_id AND m.user_id = auth.uid()");
++    expect(sql).toContain("REVOKE ALL ON FUNCTION public.engagement_billed_summaries_v1(uuid, uuid, uuid) FROM PUBLIC, anon, service_role;");
++    expect(sql).toContain("GRANT EXECUTE ON FUNCTION public.engagement_billed_summaries_v1(uuid, uuid, uuid) TO authenticated;");
++    expect(sql).not.toMatch(/SECURITY DEFINER|SET ROLE|DISABLE TRIGGER|GRANT .* ON (?:TABLE|public\.client_invoices)/i);
++  });
++  it("aggregates scoped gross text before row caps, separately from drafts and cash", () => {
++    expect(sql).toContain("coalesce(sum(i.subtotal_amount) FILTER (WHERE i.status IN ('sent', 'paid')), 0) AS billed");
++    expect(sql).toContain("coalesce(sum(i.subtotal_amount) FILTER (WHERE i.status = 'draft'), 0) AS draft");
++    expect(sql).toContain("'amount', a.billed::text"); expect(sql).toContain("'amount', a.draft::text");
++    expect(sql).toContain("i.engagement_id = e.id AND i.workspace_id = p_workspace_id");
++    expect(sql).toContain("WHERE e.workspace_id = p_workspace_id");
++    expect(sql).toContain("p_engagement_id IS NULL OR e.id = p_engagement_id");
++    expect(sql).toContain("p_exclude_invoice_id IS NULL OR i.id <> p_exclude_invoice_id");
++    expect(sql).toContain("WHERE i.engagement_id = e.id AND i.workspace_id = p_workspace_id\n      AND (p_exclude_invoice_id IS NULL OR i.id <> p_exclude_invoice_id)");
++    expect(sql).not.toMatch(/\bLIMIT\b|\bOFFSET\b|sum\(i\.(?:total_amount|retention_amount)\)/i);
++    expect(sql).toContain("RAISE EXCEPTION 'Engagement summary scope is unavailable' USING ERRCODE = '42501'");
++    expect(sql).toContain("i.workspace_id <> e.workspace_id");
++  });
++});
+diff --git a/openplan/src/test/engagement-summary-dashboard.test.tsx b/openplan/src/test/engagement-summary-dashboard.test.tsx
+new file mode 100644
+index 000000000..e7418dd95
+--- /dev/null
++++ b/openplan/src/test/engagement-summary-dashboard.test.tsx
+@@ -0,0 +1,54 @@
++import { beforeEach, describe, expect, it, vi } from "vitest";
++import { Children, isValidElement, type ReactNode } from "react";
++import { EngagementNteBar } from "@/components/invoicing/engagement-nte-bar";
++import type { EngagementBilledSummary } from "@/lib/invoicing/receivables";
++
++const { rpc, calls, results } = vi.hoisted(() => ({
++  rpc: vi.fn(), calls: [] as Array<{ table: string; method: string; args: unknown[] }>,
++  results: new Map<string, { data: unknown; error: null }>(),
++}));
++vi.mock("server-only", () => ({}));
++vi.mock("@/lib/supabase/server", () => ({ createClient: async () => ({ rpc, from: (table: string) => {
++  const chain: Record<string, unknown> = {};
++  for (const method of ["select", "eq", "in", "order", "limit"]) chain[method] = (...args: unknown[]) => {
++    calls.push({ table, method, args }); return chain;
++  };
++  chain.maybeSingle = async () => ({ data: null, error: null });
++  chain.then = (resolve: (value: unknown) => unknown) => Promise.resolve(results.get(table) ?? { data: [], error: null }).then(resolve);
++  return chain;
++} }) }));
++import { ReceivablesLane } from "@/app/(app)/invoicing/_components/receivables-lane";
++
++function summaries(node: ReactNode): EngagementBilledSummary[] {
++  return Children.toArray(node).flatMap((child) => {
++    if (!isValidElement<{ summary?: EngagementBilledSummary; children?: ReactNode }>(child)) return [];
++    return child.type === EngagementNteBar && child.props.summary ? [child.props.summary] : summaries(child.props.children);
++  });
++}
++
++describe("ESComplete dashboard caller", () => {
++  beforeEach(() => {
++    calls.length = 0; results.clear(); rpc.mockReset();
++    results.set("invoicing_clients", { data: [{ id: "client-1", name: "Client", client_kind: "agency" }], error: null });
++    results.set("invoicing_engagements", { data: [{ id: "eng-1", client_id: "client-1", title: "Legacy engagement", status: "active", engagement_kind: "contract", not_to_exceed_amount: "1" }], error: null });
++    results.set("client_invoices", { data: Array.from({ length: 500 }, (_, i) => ({ id: `invoice-${i}`, client_id: "client-1", engagement_id: "eng-1", status: "draft", subtotal_amount: 0 })), error: null });
++    rpc.mockResolvedValue({ data: { version: 1, workspace_id: "workspace-1", engagement_id: null, exclude_invoice_id: null, complete: true, error: null,
++      data: [{ engagement_id: "eng-1", not_to_exceed_amount: "1", billed: { amount: "501", missing: "0", invalid: "0" }, draft: { amount: "7", missing: "0", invalid: "0" } }] }, error: null });
++  });
++  it("uses the workspace snapshot independently of its 500-row register and asserts actual list projection", async () => {
++    const tree = await ReceivablesLane({ workspaceId: "workspace-1", canWriteInvoices: false });
++    expect(summaries(tree)).toEqual([expect.objectContaining({ billedToDate: 501, draftedUnbilled: 7, remaining: -500, source: { state: "complete" } })]);
++    expect(rpc).toHaveBeenCalledExactlyOnceWith("engagement_billed_summaries_v1", { p_workspace_id: "workspace-1", p_engagement_id: null, p_exclude_invoice_id: null });
++    expect(calls.filter((call) => call.table === "client_invoices")).toEqual([
++      { table: "client_invoices", method: "select", args: ["id, client_id, engagement_id, project_id, invoice_number, status, sent_date, paid_date, period_start, period_end, invoice_date, due_date, subtotal_amount, retention_percent, retention_amount, total_amount, payment_terms, currency_code, notes, created_at"] },
++      { table: "client_invoices", method: "eq", args: ["workspace_id", "workspace-1"] },
++      { table: "client_invoices", method: "order", args: ["created_at", { ascending: false }] },
++      { table: "client_invoices", method: "limit", args: [500] },
++    ]);
++  });
++  it("does not turn a failed workspace summary into totals from the visible register", async () => {
++    rpc.mockResolvedValueOnce({ data: null, error: { code: "42501", message: "permission denied" } });
++    const tree = await ReceivablesLane({ workspaceId: "workspace-1", canWriteInvoices: false });
++    expect(summaries(tree)).toEqual([expect.objectContaining({ billedToDate: null, draftedUnbilled: null, remaining: null, source: { state: "unavailable", error: { code: "42501", message: "permission denied" } } })]);
++  });
++});
+diff --git a/openplan/src/test/receivable-invoicing-routes.test.ts b/openplan/src/test/receivable-invoicing-routes.test.ts
+index e937b3223..d317c0dc6 100644
+--- a/openplan/src/test/receivable-invoicing-routes.test.ts
++++ b/openplan/src/test/receivable-invoicing-routes.test.ts
+@@ -114 +114,2 @@ const rpcSelectMock = vi.fn();
+-const rpcMock = vi.fn(() => ({ select: rpcSelectMock }));
++const summaryRpcMock = vi.fn<() => { data: unknown; error: { code?: string; message: string } | null }>();
++const rpcMock = vi.fn((name: string, _args: unknown) => name === "engagement_billed_summaries_v1" ? Promise.resolve(summaryRpcMock()) : { select: rpcSelectMock });
+@@ -239,0 +241,6 @@ const invoicePayload = {
++function summarySnapshot(ceiling: string | null = null, billed = "0.00", draft = "0.00", billedMissing = "0") {
++  return { data: { version: 1, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, exclude_invoice_id: null, complete: true, error: null,
++    data: [{ engagement_id: ENGAGEMENT, not_to_exceed_amount: ceiling,
++      billed: { amount: billed, missing: billedMissing, invalid: "0" }, draft: { amount: draft, missing: "0", invalid: "0" } }] }, error: null };
++}
++
+@@ -242,0 +250 @@ beforeEach(() => {
++  summaryRpcMock.mockReset().mockReturnValue(summarySnapshot());
+@@ -791,14 +799 @@ describe("POST /api/invoicing/client-invoices", () => {
+-    invoiceListResultMock.mockReturnValueOnce({
+-      data: [
+-        {
+-          id: "prior",
+-          status: "sent",
+-          engagement_id: ENGAGEMENT,
+-          subtotal_amount: 8000,
+-          retention_percent: 0,
+-          retention_amount: 0,
+-          total_amount: 8000,
+-        },
+-      ],
+-      error: null,
+-    });
++    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10000", "8000"));
+@@ -817,0 +813,3 @@ describe("POST /api/invoicing/client-invoices", () => {
++    expect(body.ntePositionSource).toEqual({ state: "complete" });
++    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
++    expect(rpcMock.mock.invocationCallOrder[0]).toBeLessThan(invoiceInsertMock.mock.invocationCallOrder[0]);
+@@ -826 +824,2 @@ describe("POST /api/invoicing/client-invoices", () => {
+-      invoiceListResultMock.mockReturnValueOnce({ data: Array.from({ length: count }, (_, i) => ({ id: `prior-${i}`, engagement_id: ENGAGEMENT, status: i % 2 ? "sent" : "paid", subtotal_amount: "999999999999.99" })), error: null });
++      const totals = { 45: "44999999999999.55", 91: "90999999999999.09", 100: "99999999999999.00" };
++      summaryRpcMock.mockReturnValueOnce(summarySnapshot("999999999999.99", totals[count]));
+@@ -840,2 +839,2 @@ describe("POST /api/invoicing/client-invoices", () => {
+-      expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+-      expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
++      expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
++      expect(invoiceSelectMock).not.toHaveBeenCalled();
+@@ -849 +848 @@ describe("POST /api/invoicing/client-invoices", () => {
+-    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "10.01" }], error: null });
++    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10.00", "10.01"));
+@@ -854,2 +853,2 @@ describe("POST /api/invoicing/client-invoices", () => {
+-    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+-    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
++    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
++    expect(invoiceSelectMock).not.toHaveBeenCalled();
+@@ -861 +860 @@ describe("POST /api/invoicing/client-invoices", () => {
+-    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: null }], error: null });
++    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10", "0", "0", "1"));
+@@ -869,0 +869 @@ describe("POST /api/invoicing/client-invoices", () => {
++    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10junk"));
+@@ -875,0 +876,15 @@ describe("POST /api/invoicing/client-invoices", () => {
++  it.each([
++    ["PGRST202", "Could not find the function public.engagement_billed_summaries_v1(p_engagement_id, p_exclude_invoice_id, p_workspace_id) in the schema cache", "pending"],
++    ["42501", "permission denied for table client_invoices", "unavailable"],
++    ["XX000", "summary dependency failed", "unavailable"],
++  ])("ESComplete preserves %s failure while creating an authorized draft", async (code, message, state) => {
++    summaryRpcMock.mockReturnValueOnce({ data: null, error: { code, message } });
++    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
++    expect(response.status).toBe(201);
++    const body = await response.json();
++    expect(body.ntePositionSource).toEqual({ state });
++    expect(body.nteWarning).toBeUndefined();
++    expect(invoiceInsertMock).toHaveBeenCalled();
++    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_read_failed", expect.objectContaining({ state, code, message }));
++  });
++
+diff --git a/openplan/supabase/migrations/20261017000020_engagement_billed_summaries.sql b/openplan/supabase/migrations/20261017000020_engagement_billed_summaries.sql
+new file mode 100644
+index 000000000..780e5c664
+--- /dev/null
++++ b/openplan/supabase/migrations/20261017000020_engagement_billed_summaries.sql
+@@ -0,0 +1,71 @@
++BEGIN;
++
++-- One scalar bypasses API row-set limits. STABLE keeps all reads in one
++-- statement snapshot. This reads legacy gross subtotals, not cash or terms.
++CREATE FUNCTION public.engagement_billed_summaries_v1(
++  p_workspace_id uuid, p_engagement_id uuid DEFAULT NULL,
++  p_exclude_invoice_id uuid DEFAULT NULL
++) RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER
++SET search_path = pg_catalog, public, pg_temp AS $$
++DECLARE
++  summaries jsonb;
++BEGIN
++  -- Membership and underlying RLS both apply. An unknown scope cannot become
++  -- an empty successful financial position. No actor argument is accepted.
++  IF p_workspace_id IS NULL OR NOT EXISTS (
++    SELECT 1 FROM public.workspace_members m
++    WHERE m.workspace_id = p_workspace_id AND m.user_id = auth.uid()
++  ) THEN
++    RAISE EXCEPTION 'Engagement summary workspace is unavailable' USING ERRCODE = '42501';
++  END IF;
++  IF p_engagement_id IS NOT NULL AND NOT EXISTS (
++    SELECT 1 FROM public.invoicing_engagements e
++    WHERE e.id = p_engagement_id AND e.workspace_id = p_workspace_id
++  ) THEN
++    RAISE EXCEPTION 'Engagement summary scope is unavailable' USING ERRCODE = '42501';
++  END IF;
++
++  -- Refuse visible inconsistent attribution rather than omit its money.
++  IF EXISTS (
++    SELECT 1 FROM public.client_invoices i
++    JOIN public.invoicing_engagements e ON e.id = i.engagement_id
++    WHERE e.workspace_id = p_workspace_id
++      AND (p_engagement_id IS NULL OR e.id = p_engagement_id)
++      AND i.workspace_id <> e.workspace_id
++      AND (p_exclude_invoice_id IS NULL OR i.id <> p_exclude_invoice_id)
++      AND i.status IN ('sent', 'paid', 'draft')
++  ) THEN
++    RAISE EXCEPTION 'Invoice workspace does not match its engagement' USING ERRCODE = '22000';
++  END IF;
++
++  SELECT coalesce(jsonb_agg(jsonb_build_object(
++    'engagement_id', e.id, 'not_to_exceed_amount', e.not_to_exceed_amount::text,
++    'billed', jsonb_build_object('amount', a.billed::text, 'missing', a.billed_missing::text, 'invalid', a.billed_invalid::text),
++    'draft', jsonb_build_object('amount', a.draft::text, 'missing', a.draft_missing::text, 'invalid', a.draft_invalid::text)
++  ) ORDER BY e.id), '[]'::jsonb) INTO summaries
++  FROM public.invoicing_engagements e
++  CROSS JOIN LATERAL (
++    SELECT
++      coalesce(sum(i.subtotal_amount) FILTER (WHERE i.status IN ('sent', 'paid')), 0) AS billed,
++      coalesce(sum(i.subtotal_amount) FILTER (WHERE i.status = 'draft'), 0) AS draft,
++      count(*) FILTER (WHERE i.status IN ('sent', 'paid') AND i.subtotal_amount IS NULL) AS billed_missing,
++      count(*) FILTER (WHERE i.status = 'draft' AND i.subtotal_amount IS NULL) AS draft_missing,
++      count(*) FILTER (WHERE i.status IN ('sent', 'paid') AND (i.subtotal_amount < 0 OR i.subtotal_amount::text IN ('NaN', 'Infinity', '-Infinity'))) AS billed_invalid,
++      count(*) FILTER (WHERE i.status = 'draft' AND (i.subtotal_amount < 0 OR i.subtotal_amount::text IN ('NaN', 'Infinity', '-Infinity'))) AS draft_invalid
++    FROM public.client_invoices i
++    WHERE i.engagement_id = e.id AND i.workspace_id = p_workspace_id
++      AND (p_exclude_invoice_id IS NULL OR i.id <> p_exclude_invoice_id)
++  ) a
++  WHERE e.workspace_id = p_workspace_id
++    AND (p_engagement_id IS NULL OR e.id = p_engagement_id);
++
++  RETURN jsonb_build_object('version', 1, 'workspace_id', p_workspace_id,
++    'engagement_id', p_engagement_id, 'exclude_invoice_id', p_exclude_invoice_id,
++    'complete', true, 'data', summaries, 'error', NULL);
++END;
++$$;
++
++REVOKE ALL ON FUNCTION public.engagement_billed_summaries_v1(uuid, uuid, uuid) FROM PUBLIC, anon, service_role;
++GRANT EXECUTE ON FUNCTION public.engagement_billed_summaries_v1(uuid, uuid, uuid) TO authenticated;
++
++COMMIT;

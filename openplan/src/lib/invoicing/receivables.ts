@@ -116,6 +116,8 @@ export type EngagementBilledSummary = {
   isOverNte: boolean | null;
   /** Missing ceilings remain unrecorded; invalid ceilings and unreadable buckets are explicit. */
   unavailable?: Partial<Record<"billedToDate" | "draftedUnbilled" | "notToExceed", "missing" | "invalid">>;
+  /** Completeness refers to the caller-visible engagement snapshot, not agreement authority. */
+  source?: { state: "complete" | "pending" | "unavailable"; error?: { code?: string; message: string } };
 };
 
 export type EngagementNteWarning = {
@@ -406,6 +408,16 @@ export function buildEngagementBilledSummary(
   }
   const billedToDate = bucketAmount(billedAmounts, "billedToDate");
   const draftedUnbilled = bucketAmount(draftAmounts, "draftedUnbilled");
+  return buildEngagementBilledPosition(engagement, billedToDate, draftedUnbilled, unavailable);
+}
+
+/** Compose already-aggregated gross buckets without inventing invoice records. */
+export function buildEngagementBilledPosition(
+  engagement: InvoicingEngagementLike,
+  billedToDate: ExactMoneyAmount | null,
+  draftedUnbilled: ExactMoneyAmount | null,
+  unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {}
+): EngagementBilledSummary {
   let notToExceed: ExactMoneyAmount | null = null;
   try {
     notToExceed = parseOptionalMoney(engagement.not_to_exceed_amount);

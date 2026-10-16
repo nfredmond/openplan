@@ -1,0 +1,10 @@
+{
+  "stage": "post-terminal report sealing",
+  "command": "git diff --cached --check",
+  "exit": 2,
+  "kind": "report artifact formatting only",
+  "reason": "Saved unified source diff contains single-space blank context lines; report correction diff has an extra blank line at EOF.",
+  "rawOutput": "/home/nathaniel/.local/state/openplan/engagement-summary-completeness-20261016/metadata-diff-whitespace.stdout",
+  "correction": "Regenerate source.diff with unified=0 and remove the report diff extra EOF blank line. Production, tests and runtime harness remain byte-identical.",
+  "runtimeRepeated": false
+}

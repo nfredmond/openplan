@@ -1,0 +1,5 @@
+--- VALIDATION.md.before-metadata-correction
++++ VALIDATION.md.after-metadata-correction
+@@ -131,1 +131,2 @@
+ `fault-observations.json`; full terminal and restoration receipts stay private.
++The private evidence manifest seals 2879 files after terminal exit.

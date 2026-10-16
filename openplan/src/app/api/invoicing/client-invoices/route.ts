@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
 import {
-  buildEngagementBilledSummary,
   computeLineItemAmount,
   summarizeClientInvoiceTotals,
   type EngagementNteWarning,
 } from "@/lib/invoicing/receivables";
+import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
 import { compareMoney, subtractMoney, sumMoney, type ExactMoneyAmount } from "@/lib/money/optional-amount";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
@@ -390,18 +390,15 @@ export async function POST(request: NextRequest) {
     // ahead of the insert so the new invoice cannot count against itself.
     let priorBilledToDate: ExactMoneyAmount | null = null;
     let notToExceed: ExactMoneyAmount | null = null;
+    let ntePositionSource: { state: "complete" | "pending" | "unavailable" } | undefined;
 
     if (engagement) {
-      const { data: engagementInvoices, error: engagementInvoicesError } = await supabase
-        .from("client_invoices")
-        .select("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount")
-        .eq("engagement_id", engagement.id);
-
-      if (!engagementInvoicesError) {
-        const summary = buildEngagementBilledSummary(
-          engagement,
-          (engagementInvoices ?? []) as Parameters<typeof buildEngagementBilledSummary>[1]
-        );
+      const positionRead = await loadEngagementBilledSummaries(supabase, {
+        workspaceId: parsed.data.workspaceId, engagementId: engagement.id,
+      });
+      ntePositionSource = { state: positionRead.state };
+      const summary = engagementSummaryFor(positionRead, engagement);
+      if (positionRead.state === "complete") {
         priorBilledToDate = summary.billedToDate;
         notToExceed = summary.notToExceed;
         if (summary.unavailable) {
@@ -417,7 +414,9 @@ export async function POST(request: NextRequest) {
         audit.warn("nte_position_read_failed", {
           workspaceId: parsed.data.workspaceId,
           engagementId: engagement.id,
-          message: engagementInvoicesError.message,
+          state: positionRead.state,
+          code: positionRead.error?.code ?? null,
+          message: positionRead.error?.message ?? "Engagement summary unavailable",
         });
       }
     }
@@ -606,7 +605,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json(
-      { invoice, lineItems: lineRows, ...(nteWarning ? { nteWarning } : {}) },
+      { invoice, lineItems: lineRows, ...(ntePositionSource ? { ntePositionSource } : {}), ...(nteWarning ? { nteWarning } : {}) },
       { status: 201 }
     );
   } catch (error) {

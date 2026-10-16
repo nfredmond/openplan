@@ -111,7 +111,8 @@ const lineDeleteMock = vi.fn(() => ({ eq: lineDeleteEqMock }));
 
 // replace_client_invoice_lines: rpc().select(projection) resolves the new line rows.
 const rpcSelectMock = vi.fn();
-const rpcMock = vi.fn(() => ({ select: rpcSelectMock }));
+const summaryRpcMock = vi.fn<() => { data: unknown; error: { code?: string; message: string } | null }>();
+const rpcMock = vi.fn((name: string, _args: unknown) => name === "engagement_billed_summaries_v1" ? Promise.resolve(summaryRpcMock()) : { select: rpcSelectMock });
 
 // service-role client: the compensating delete of a half-created invoice.
 const serviceInvoiceDeleteEqMock = vi.fn();
@@ -237,9 +238,16 @@ const invoicePayload = {
   ],
 };
 
+function summarySnapshot(ceiling: string | null = null, billed = "0.00", draft = "0.00", billedMissing = "0") {
+  return { data: { version: 1, workspace_id: WORKSPACE, engagement_id: ENGAGEMENT, exclude_invoice_id: null, complete: true, error: null,
+    data: [{ engagement_id: ENGAGEMENT, not_to_exceed_amount: ceiling,
+      billed: { amount: billed, missing: billedMissing, invalid: "0" }, draft: { amount: draft, missing: "0", invalid: "0" } }] }, error: null };
+}
+
 beforeEach(() => {
   vi.clearAllMocks();
   createApiAuditLoggerMock.mockReturnValue(mockAudit);
+  summaryRpcMock.mockReset().mockReturnValue(summarySnapshot());
 
   authGetUserMock.mockResolvedValue({ data: { user: { id: USER } } });
 
@@ -788,20 +796,7 @@ describe("POST /api/invoicing/client-invoices", () => {
       },
       error: null,
     });
-    invoiceListResultMock.mockReturnValueOnce({
-      data: [
-        {
-          id: "prior",
-          status: "sent",
-          engagement_id: ENGAGEMENT,
-          subtotal_amount: 8000,
-          retention_percent: 0,
-          retention_amount: 0,
-          total_amount: 8000,
-        },
-      ],
-      error: null,
-    });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10000", "8000"));
 
     const response = await postClientInvoice(
       jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", {
@@ -815,6 +810,9 @@ describe("POST /api/invoicing/client-invoices", () => {
     // 8000 billed + 5000 this invoice = 13000 against a 10000 ceiling.
     expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000 });
     expect(body.invoice).toMatchObject({ id: INVOICE });
+    expect(body.ntePositionSource).toEqual({ state: "complete" });
+    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+    expect(rpcMock.mock.invocationCallOrder[0]).toBeLessThan(invoiceInsertMock.mock.invocationCallOrder[0]);
   });
   for (const [count, projectedCents, overCents] of [
     [45, "4500000000000056", "4400000000000057"],
@@ -823,7 +821,8 @@ describe("POST /api/invoicing/client-invoices", () => {
   ] as const) {
     it(`serializes exact projected warning cents from ${count} legitimate rows`, async () => {
       engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "999999999999.99" }, error: null });
-      invoiceListResultMock.mockReturnValueOnce({ data: Array.from({ length: count }, (_, i) => ({ id: `prior-${i}`, engagement_id: ENGAGEMENT, status: i % 2 ? "sent" : "paid", subtotal_amount: "999999999999.99" })), error: null });
+      const totals = { 45: "44999999999999.55", 91: "90999999999999.09", 100: "99999999999999.00" };
+      summaryRpcMock.mockReturnValueOnce(summarySnapshot("999999999999.99", totals[count]));
       const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode: "EUR", lineItems: [{ description: "New work", amount: 1.01 }] }));
       expect(response.status).toBe(201);
       const body = await response.json();
@@ -837,8 +836,8 @@ describe("POST /api/invoicing/client-invoices", () => {
       expect(cents(body.nteWarning.overBy)).toBe(BigInt(overCents));
       expect(body.nteWarning.basis).toBe("legacy_terms_unassessed");
       expect(body.nteWarning).not.toHaveProperty("currencyCode");
-      expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
-      expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
+      expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+      expect(invoiceSelectMock).not.toHaveBeenCalled();
       expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
       expect(invoiceInsertMock).toHaveBeenCalled();
     });
@@ -846,19 +845,19 @@ describe("POST /api/invoicing/client-invoices", () => {
 
   it.each(["EUR", "JPY"])("keeps %s on the invoice without asserting a warning currency", async (currencyCode) => {
     engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10.00" }, error: null });
-    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "10.01" }], error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10.00", "10.01"));
     const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode, lineItems: [{ description: "New work", amount: 1.01 }] }));
     expect(response.status).toBe(201);
     expect((await response.json()).nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 10.01, projectedBilledToDate: 11.02, notToExceed: 10, overBy: 1.02 });
     expect(invoiceInsertMock).toHaveBeenCalledWith(expect.objectContaining({ currency_code: currencyCode }));
-    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
-    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
+    expect(rpcMock).toHaveBeenCalledWith("engagement_billed_summaries_v1", { p_workspace_id: WORKSPACE, p_engagement_id: ENGAGEMENT, p_exclude_invoice_id: null });
+    expect(invoiceSelectMock).not.toHaveBeenCalled();
     expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
   });
 
   it("audits unavailable billed position and still accepts invoice creation", async () => {
     engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: 10 }, error: null });
-    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: null }], error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10", "0", "0", "1"));
     const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
     expect(response.status).toBe(201);
     expect((await response.json()).nteWarning).toBeUndefined();
@@ -867,10 +866,26 @@ describe("POST /api/invoicing/client-invoices", () => {
 
   it("audits an invalid ceiling and still accepts invoice creation", async () => {
     engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10junk" }, error: null });
+    summaryRpcMock.mockReturnValueOnce(summarySnapshot("10junk"));
     const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
     expect(response.status).toBe(201);
     expect((await response.json()).nteWarning).toBeUndefined();
     expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_unavailable", expect.objectContaining({ unavailable: { notToExceed: "invalid" } }));
+  });
+
+  it.each([
+    ["PGRST202", "Could not find the function public.engagement_billed_summaries_v1(p_engagement_id, p_exclude_invoice_id, p_workspace_id) in the schema cache", "pending"],
+    ["42501", "permission denied for table client_invoices", "unavailable"],
+    ["XX000", "summary dependency failed", "unavailable"],
+  ])("ESComplete preserves %s failure while creating an authorized draft", async (code, message, state) => {
+    summaryRpcMock.mockReturnValueOnce({ data: null, error: { code, message } });
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    const body = await response.json();
+    expect(body.ntePositionSource).toEqual({ state });
+    expect(body.nteWarning).toBeUndefined();
+    expect(invoiceInsertMock).toHaveBeenCalled();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_read_failed", expect.objectContaining({ state, code, message }));
   });
 
 });

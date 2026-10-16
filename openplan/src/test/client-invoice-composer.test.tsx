@@ -54,13 +54,13 @@ const unbilledEntries = [
   { id: "te-3", staff_id: "staff-2", labor_category: "GIS Analyst", hours: 4, billable: true, billed_line_item_id: null },
 ];
 
-function stubFetch({ nteWarning }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning } = {}) {
+function stubFetch({ nteWarning, ntePositionSource }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning; ntePositionSource?: { state: "complete" | "pending" | "unavailable" } } = {}) {
   const fetchMock = vi.fn(async (url: string, init?: { method?: string }) => {
     if (!init?.method || init.method === "GET") {
       expect(url).toContain("/api/invoicing/time-entries?");
       return { ok: true, json: async () => ({ timeEntries: unbilledEntries, hasMore: false }) };
     }
-    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning }) };
+    return { ok: true, json: async () => ({ invoice: { id: "inv-1" }, lineItems: [], nteWarning, ntePositionSource }) };
   });
   vi.stubGlobal("fetch", fetchMock);
   return fetchMock;
@@ -79,6 +79,22 @@ async function pullUnbilledTime() {
 }
 
 describe("ClientInvoiceComposer", () => {
+  it.each(["pending", "unavailable"] as const)("ESComplete shows %s summary after a successful authorized draft", async (state) => {
+    stubFetch({ ntePositionSource: { state } });
+    render(<ClientInvoiceComposer {...baseProps} />);
+    fillRequiredHeader();
+    fireEvent.change(screen.getByLabelText("Engagement"), { target: { value: ENGAGEMENT_ID } });
+    fireEvent.change(screen.getByLabelText(/Description \(line 1\)/), { target: { value: "New work" } });
+    fireEvent.change(screen.getByLabelText("Quantity"), { target: { value: "1" } });
+    fireEvent.change(screen.getByLabelText("Unit rate"), { target: { value: "1" } });
+    fireEvent.click(screen.getByRole("button", { name: "Save client invoice" }));
+    await waitFor(() => expect(screen.getByText("Client invoice saved as draft.")).toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByText(/Prior and projected gross billing are unknown/) !== null).toBe(true));
+    const notice = screen.getByText(/Prior and projected gross billing are unknown/);
+    expect(notice).toHaveTextContent(state === "pending" ? "pending schema upgrade" : "source unavailable");
+    expect(notice).toHaveTextContent("no ceiling comparison is available");
+    expect(refreshMock).toHaveBeenCalled();
+  });
   beforeEach(() => {
     refreshMock.mockReset();
   });
