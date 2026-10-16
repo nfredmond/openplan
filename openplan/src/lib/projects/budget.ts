@@ -50,6 +50,9 @@ export type SpendEntryLike = {
 };
 
 export type BilledLineLike = {
+  /** Source identities when loaded from the complete project snapshot. */
+  id?: string;
+  invoice_id?: string;
   deliverable_id?: string | null;
   amount?: number | string | null;
   invoice_status?: string | null;

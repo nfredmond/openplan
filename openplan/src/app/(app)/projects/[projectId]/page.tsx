@@ -479,20 +479,17 @@ export default async function ProjectDetailPage({
     reads
   );
 
-  // Budget & pace inputs: ALL deliverables (with their budget columns), the
-  // stated project budget, the spend ledger, and billed client-invoice lines —
-  // each read pending-schema tolerant inside the loader.
+  // Read every budget source from one caller-scoped snapshot. The server
+  // retains the deliverable schema fallbacks and classifies each source error.
   const budgetInputs = await loadProjectBudgetInputs(
     supabase as unknown as ProjectBudgetQuerySupabaseLike,
     project.id
   );
-  // The loader classifies and RETURNS its failures rather than swallowing them;
-  // this is where they become something a planner can see. Without it a failed
-  // client-invoice or spend read renders as "Billed to date $0" — an agency's
-  // money stated as zero because a query broke. The panel below still shows the
-  // decomposed totals, so the banner is the only thing standing between a
-  // failed read and a number a planner would act on.
+  // Disclose failed sources and withhold financial totals and pace until the
+  // full financial input is readable. Missing assignee alone is not a money gap.
   budgetInputs.readFailures.forEach((failure) => reads.check(failure.label, { error: failure }));
+  const budgetInputsUnavailable = Object.values(budgetInputs.unreadable).some(Boolean) ||
+    Object.entries(budgetInputs.pending).some(([key, pending]) => key !== "deliverableAssigneeColumn" && pending);
   const projectBudgetSnapshot = buildProjectBudgetSnapshot({
     project: { budget_amount: budgetInputs.statedBudgetAmount },
     deliverables: budgetInputs.deliverables,
@@ -500,7 +497,7 @@ export default async function ProjectDetailPage({
     billedLines: budgetInputs.billedLines,
   });
   const budgetSummaryByDeliverableId = new Map<string, DeliverableBudgetSummary>(
-    projectBudgetSnapshot.deliverables
+    (budgetInputsUnavailable ? [] : projectBudgetSnapshot.deliverables)
       .filter((summary): summary is DeliverableBudgetSummary & { deliverableId: string } => Boolean(summary.deliverableId))
       .map((summary) => [summary.deliverableId, summary])
   );
@@ -1421,11 +1418,8 @@ export default async function ProjectDetailPage({
           <ProjectBudgetPanel
             projectId={project.id}
             snapshot={projectBudgetSnapshot}
-            pendingSchema={{
-              deliverableBudgetColumns: budgetInputs.pending.deliverableBudgetColumns,
-              spendEntries: budgetInputs.pending.spendEntries,
-              clientInvoices: budgetInputs.pending.clientInvoices,
-            }}
+            inputsUnavailable={budgetInputsUnavailable}
+            pendingSchema={budgetInputs.pending}
             deliverableOptions={budgetInputs.deliverables.map((deliverable) => ({
               id: deliverable.id,
               title: deliverable.title,
