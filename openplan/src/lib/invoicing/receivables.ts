@@ -124,7 +124,6 @@ export type EngagementNteWarning = {
   projectedBilledToDate: ExactMoneyAmount;
   notToExceed: ExactMoneyAmount;
   overBy: ExactMoneyAmount;
-  currencyCode: string | null;
 };
 
 function roundCurrency(value: number): number {

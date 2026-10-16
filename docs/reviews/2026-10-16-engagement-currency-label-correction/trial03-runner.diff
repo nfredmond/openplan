@@ -1,0 +1,115 @@
+--- trial02/run-window.py
++++ trial03/run-window.py
+@@ -9 +9 @@
+-ro_targets=['/',str(root),str(p.parent),'/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10','/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb','/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f','/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-exact-independent-20261016','/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016','/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules',str(app/'node_modules')]
++ro_targets=['/',str(root),str(p.parent),str(p.parent/'trial02'),'/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10','/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb','/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f','/home/nathaniel/.local/state/openplan/engagement-billed-exact-money-correction-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-precision-probe-20261016','/home/nathaniel/.local/state/openplan/engagement-billed-exact-independent-20261016','/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016','/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules',str(app/'node_modules')]
+@@ -19 +19 @@
+-selection=json.loads((p/'selection.json').read_text());results=[]
++selection=json.loads((p/'selection.json').read_text())
+@@ -21,2 +21,2 @@
+-expected_names=json.loads((p/'expected-fault-names.json').read_text())
+-route_oracle=json.loads((p/'route-failure-oracle.json').read_text())
++setup_pins=json.loads((p/'test-setup-pins.json').read_text())
++
+@@ -24,38 +24,18 @@
+- assert context['originalPreparationSha256']=='fe4370c8d5a8dfe0600184758592b772fabea1709908052d483299bc0df33df9'
+- assert digest(context['originalPreparationManifest'])==context['originalPreparationSha256']
+- assert intact(context['oldTrialFiles']) and intact(context['sourcePins'])
+- assert context['sourcePins']==pins
+- for name in context['sharedByteFiles']:assert (p/name).read_bytes()==(p.parent/name).read_bytes(),name
+- assert pathlib.Path(context['trial02Config']).read_text().replace(str(p),str(p.parent))==pathlib.Path(context['originalConfig']).read_text()
+- previous=json.loads(pathlib.Path(context['originalMutations']).read_text());current=json.loads((p/'mutations.json').read_text())
+- assert previous[0]==context['originalHarmlessDefinition'] and previous[0]['survivor'] is True
+- intended=[dict(m) for m in previous if not m.get('survivor')]
+- for m in intended:
+-  if m['name']=='context-zero-decimal-inference-drops-cents':m['failureText']='Not-to-exceed 50000'
+- assert current==intended
+- transform=json.loads(pathlib.Path(context['originalHarmlessTransform']).read_text());harmless=previous[0]
+- assert transform['applied'] is True and transform['file']==str(app/harmless['file'])
+- assert transform['name']==harmless['name'] and transform['find']==harmless['find'] and transform['replace']==harmless['replace']
+- expected={(x['file'],x['fullName']) for x in context['baselinePassedNames']};assert len(expected)==15
+- for item in context['baselineAndHarmless']:
+-  assert digest(item['file'])==item['sha256'];data=json.loads(pathlib.Path(item['file']).read_text())
+-  assert data['success'] is True and data['numPassedTests']==15 and data['numFailedTests']==0
+-  passing=[(t['name'],a['fullName']) for t in data['testResults'] for a in t['assertionResults'] if a['status']=='passed']
+-  assert len(passing)==15 and len(set(passing))==15 and set(passing)==expected
+- for m in current:
+-  names=[(x['file'],x['fullName']) for x in expected_names[m['name']]]
+-  assert len(names)==m['expectedFailed'] and len(set(names))==len(names) and set(names)<=expected
+- (p/'reused-checks.json').write_text(json.dumps({'baseline15':'REUSED_SEALED_PASS','harmless15':'REUSED_SEALED_SURVIVED','source18Match':True,'oldTrialFilesMatch':True,'original47PreparationSealRetained':True,'configPathOnlyEquality':True,'sourceTestFixtureAssertionsChanged':False,'sharedByteFilesEqual':context['sharedByteFiles'],'uniqueBaselineCases':15,'harmlessTransformMatches':True},indent=2)+'\n')
+-
+-def verify_route_failure(data,failed,mutation):
+- assert mutation['name']==route_oracle['mutationName']
+- assert len(data['testResults'])==1 and data['testResults'][0]['name']==route_oracle['expectedFile']
+- assert len(failed)==route_oracle['expectedCaseCount']==6
+- assert {f['title'] for f in failed}==set(route_oracle['cases'])
+- for failure in failed:
+-  expected=route_oracle['cases'][failure['title']]
+-  assert len(failure['messages'])==expected['messageCount']==1
+-  lines=failure['messages'][0].splitlines()
+-  assert lines[0]==expected['firstLine'] and lines[0].startswith('AssertionError:'),failure['title']
+-  assert lines.count(expected['assertionLocationLine'])==1,failure['title']
+- for key,value in route_oracle['requiredTransform'].items():assert mutation[key]==value
++ assert intact(context['trial01Files']) and intact(context['trial02Files']) and intact(context['sourcePins']) and intact(setup_pins)
++ assert context['sourcePins']==pins and context['setupClosurePins']==setup_pins
++ old=json.loads(pathlib.Path(context['trial02TypeConfig']).read_text());new=json.loads((p/'focused-tsconfig.json').read_text())
++ expected=dict(old);expected['include']=[*old['include'],str(app/'src/test/setup.ts')];assert new==expected
++ assert (app/'src/test/setup.ts').read_text().splitlines()[:2]==["import '@testing-library/jest-dom'","import { installJsdomDialogShim } from './guided-flow-jsdom-dialog-shim'"]
++ reused=json.loads(pathlib.Path(context['trial02ReusedChecks']).read_text());assert reused['baseline15']=='REUSED_SEALED_PASS' and reused['harmless15']=='REUSED_SEALED_SURVIVED'
++ baseline_names=None
++ for file in [context['originalBaseline'],context['originalHarmless']]:
++  data=json.loads(pathlib.Path(file).read_text());assert data['success'] and data['numPassedTests']==15 and data['numFailedTests']==0
++  names=[(t['name'],a['fullName']) for t in data['testResults'] for a in t['assertionResults'] if a['status']=='passed'];assert len(names)==15 and len(set(names))==15
++  if baseline_names is None:baseline_names=set(names)
++  else:assert set(names)==baseline_names
++ previous=json.loads(pathlib.Path(context['trial02Results']).read_text());mutations=json.loads(pathlib.Path(context['trial02Mutations']).read_text());assert len(previous)==8 and len(mutations)==7
++ assert {x['name'] for x in previous[:-1]}=={m['name'] for m in mutations}
++ for item in previous[:-1]:
++  mutation=next(m for m in mutations if m['name']==item['name']);assert item['outcome'] in ['KILLED_EXPECTED_TYPED_ROUTE_ASSERTIONS','KILLED_EXPECTED_ASSERTION'] and item['passed']==0 and item['failed']==mutation['expectedFailed']
++ assert previous[-1]['name']=='restored' and previous[-1]['outcome']=='PASS' and previous[-1]['passed']==15 and previous[-1]['failed']==0
++ (p/'reused-checks.json').write_text(json.dumps({'sealedBaseline15':'REUSED_PASS','sealedHarmless15':'REUSED_SURVIVED','sealedSevenFaults':'REUSED_ACCEPTED','sealedRestored15':'REUSED_PASS','trial01Files':len(context['trial01Files']),'trial02Files':len(context['trial02Files']),'allOldTrialFilesMatch':True,'source18Match':True,'setupClosure2Match':True,'typeConfigOnlyAppendsActualSetup':True,'vitestOrMutationDispatched':False},indent=2)+'\n')
+@@ -64 +44 @@
+-def run(name,argv,timeout,expected=0):
++def run(name,argv,timeout):
+@@ -69,3 +49 @@
+- (p/'results'/f'{name}.terminal.json').write_text(json.dumps(receipt,indent=2)+'\n')
+- assert proc.returncode==expected,'UNEXPECTED_COMMAND_EXIT:'+name+':'+str(proc.returncode)
+- return receipt
++ (p/'results'/f'{name}.terminal.json').write_text(json.dumps(receipt,indent=2)+'\n');assert proc.returncode==0,'UNEXPECTED_COMMAND_EXIT:'+name+':'+str(proc.returncode)
+@@ -73,22 +50,0 @@
+-def vitest(m):
+- (p/'active-mutation.json').write_text(json.dumps(m)+'\n');name=m['name'];report=p/'results'/f'{name}.vitest.json'
+- tests=[m['test']] if m.get('test') else selection['tests'];pattern=m.get('pattern',selection['pattern']);bad='expectedFailed' in m
+- argv=['/usr/bin/node','--max-old-space-size=384',str(app/'node_modules/vitest/vitest.mjs'),'run','--config',str(p/'vitest.config.mts'),'--reporter=json','--outputFile',str(report),*tests,'-t',pattern]
+- receipt=run(name,argv,35,1 if bad else 0);data=json.loads(report.read_text());assert data.get('numRuntimeErrorTestSuites',0)==0,name
+- assert all(t['status']!='failed' or any(a['status']=='failed' for a in t['assertionResults']) for t in data['testResults']),name
+- failed=[{'title':a['fullName'],'messages':a['failureMessages']} for t in data['testResults'] for a in t['assertionResults'] if a['status']=='failed']
+- if bad:
+-  assert not data['success'] and data['numFailedTests']==m['expectedFailed'] and data['numPassedTests']==0,name
+-  assert len(failed)==m['expectedFailed'],name
+-  expected={(x['file'],x['fullName']) for x in expected_names[name]}
+-  actual=[(t['name'],a['fullName']) for t in data['testResults'] for a in t['assertionResults'] if a['status']=='failed']
+-  assert len(actual)==len(set(actual)) and set(actual)==expected,name
+-  if name=='route-current-invoice-currency-inheritance':verify_route_failure(data,failed,m)
+-  else:assert all(any('AssertionError' in v and m['failureText'] in v for v in f['messages']) for f in failed),name
+-  receipt.update(outcome='KILLED_EXPECTED_TYPED_ROUTE_ASSERTIONS' if name=='route-current-invoice-currency-inheritance' else 'KILLED_EXPECTED_ASSERTION',failures=failed)
+- else:
+-  assert data['success'] and data['numFailedTests']==0 and data['numPassedTests']==m.get('expectedPassed',selection['expectedPassed']),name
+-  receipt['outcome']='SURVIVED' if m.get('survivor') else 'PASS'
+- if m.get('file'):
+-  applied=json.loads((p/'results'/f'{name}.transform.json').read_text());assert applied['applied'] is True and applied['name']==name and applied['file']==str(app/m['file']) and applied['find']==m['find'] and applied['replace']==m['replace'],name
+- receipt.update(passed=data['numPassedTests'],failed=data['numFailedTests']);results.append(receipt);(p/'test-results.json').write_text(json.dumps(results,indent=2)+'\n')
+@@ -99 +54,0 @@
+- # Reuse only exact sealed baseline/harmless evidence before the first new dependency load.
+@@ -101,2 +56 @@
+- for mutation in json.loads((p/'mutations.json').read_text()):vitest(mutation)
+- vitest({'name':'restored'})
++ # First dependency is tsc, after observed RO source/donor mounts and exact evidence checks.
+@@ -109,4 +63,3 @@
+- (p/'active-mutation.json').write_text('{"name":"restored-finally"}\n')
+- readback={f:{'expected':h,'actual':digest(f),'matches':digest(f)==h} for f,h in pins.items()}
+- receipt={'all18Match':intact(pins),'sourceReadback':readback,'allOldPinsMatch':intact(oldpins),'allTrial01PinsMatch':intact(context['oldTrialFiles']),'trial01PinCount':len(context['oldTrialFiles']),'oldPinCount':len(oldpins),'inMemoryMutationCleared':True,'sourceWrites':False,'resources':resources()}
+- (p/'restoration.json').write_text(json.dumps(receipt,indent=2)+'\n');assert receipt['all18Match'] and receipt['allOldPinsMatch'] and receipt['allTrial01PinsMatch']
++ receipt={'all18Match':intact(pins),'all327PreservationPinsMatch':intact(oldpins),'allTrial01PinsMatch':intact(context['trial01Files']),'trial01PinCount':len(context['trial01Files']),'allTrial02PinsMatch':intact(context['trial02Files']),'trial02PinCount':len(context['trial02Files']),'setupClosure2Match':intact(setup_pins),'sourceWrites':False,'vitestOrMutationsExecuted':False,'resources':resources()}
++ (p/'restoration.json').write_text(json.dumps(receipt,indent=2)+'\n')
++ assert all(receipt[k] for k in ['all18Match','all327PreservationPinsMatch','allTrial01PinsMatch','allTrial02PinsMatch','setupClosure2Match'])

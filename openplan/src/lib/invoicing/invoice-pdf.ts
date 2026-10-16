@@ -22,7 +22,7 @@
 import { esc } from "./html-escape";
 import { parseCurrencyAmount } from "./invoice-records";
 import type { EngagementBilledSummary } from "./receivables";
-import { formatInvoiceMoney } from "./invoice-currency";
+import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "./invoice-currency";
 
 export type ClientInvoicePdfWorkspace = {
   name?: string | null;
@@ -180,24 +180,25 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
     if (billed?.unavailable?.notToExceed) {
       ntePart = "<p>Legacy ceiling calculation unavailable (invalid amount); agreement terms unassessed.</p>";
     } else if (nte !== null && nte !== undefined) {
-      ntePart = `<p>Not-to-exceed ${formatAmount(billed?.notToExceed ?? nte, currency)}; agreement terms unassessed.</p>`;
+      ntePart = `<p>Not-to-exceed ${esc(formatEngagementMoney(billed?.notToExceed ?? nte))}; agreement terms unassessed.</p>`;
     }
     if (billed) {
       const billedPart = billed.billedToDate === null
         ? `Gross billed calculation unavailable (${esc(billed.unavailable?.billedToDate ?? "unavailable")} amount)`
-        : `billed to date ${formatAmount(billed.billedToDate, currency)} gross before retention`;
+        : `billed to date ${esc(formatEngagementMoney(billed.billedToDate))} gross before retention`;
       const remainingPart = billed.remaining === null
         ? ", remaining unavailable"
-        : `, remaining ${formatAmount(billed.remaining, currency)}`;
+        : `, remaining ${esc(formatEngagementMoney(billed.remaining))}`;
       const draftPart = billed.draftedUnbilled === null
         ? `; draft calculation unavailable (${esc(billed.unavailable?.draftedUnbilled ?? "unavailable")} amount)`
-        : `; gross draft ${formatAmount(billed.draftedUnbilled, currency)}`;
+        : `; gross draft ${esc(formatEngagementMoney(billed.draftedUnbilled))}`;
       ntePart += `<p>${billedPart}${remainingPart}${draftPart}.</p>`;
     }
 
     engagementContext = `<div class="engagement-context">
       <p>Engagement: ${esc(title)}${referencePart}</p>
       ${ntePart}
+      <p>${esc(ENGAGEMENT_CURRENCY_DISCLOSURE)}</p>
     </div>`;
   }
 

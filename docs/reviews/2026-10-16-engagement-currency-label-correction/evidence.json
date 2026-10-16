@@ -1,0 +1,200 @@
+{
+  "status": "APPLICABLE_BOUNDED_CHECKS_PASS_AWAIT_NEW_INDEPENDENT_REVIEW",
+  "sourceBase": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "baseAppTree": "493488ffc952f1a69765c046afd03375d4fed126",
+  "runtimeGranted": false,
+  "dependenciesExecuted": 0,
+  "selection": {
+    "source": [
+      "src/app/api/invoicing/client-invoices/route.ts",
+      "src/components/invoicing/client-invoice-composer.tsx",
+      "src/lib/invoicing/invoice-currency.ts",
+      "src/lib/invoicing/invoice-pdf.ts",
+      "src/lib/invoicing/receivables.ts"
+    ],
+    "tests": [
+      "src/test/client-invoice-composer.test.tsx",
+      "src/test/client-invoice-pdf.test.ts",
+      "src/test/receivable-invoicing-routes.test.ts"
+    ],
+    "pattern": "keeps .* invoice currency separate|adds the engagement reference|keeps .* invoice amounts separate|retains exact aggregate cents|keeps an invoice artifact usable|serializes exact projected warning cents|keeps .* on the invoice without asserting|audits unavailable billed position|audits an invalid ceiling|warns without blocking",
+    "expectedPassed": 15
+  },
+  "mutations": [
+    {
+      "name": "harmless-context-annotation",
+      "file": "src/lib/invoicing/invoice-currency.ts",
+      "find": "/** Legacy engagement context",
+      "replace": "/** Bounded label check. Legacy engagement context",
+      "survivor": true,
+      "expectedPassed": 15
+    },
+    {
+      "name": "route-current-invoice-currency-inheritance",
+      "file": "src/app/api/invoicing/client-invoices/route.ts",
+      "find": "overBy: subtractMoney(projected, notToExceed),",
+      "replace": "overBy: subtractMoney(projected, notToExceed), currencyCode: parsed.data.currencyCode ?? null,",
+      "test": "src/test/receivable-invoicing-routes.test.ts",
+      "pattern": "serializes exact projected warning cents|keeps .* on the invoice without asserting|warns without blocking",
+      "expectedFailed": 6,
+      "failureText": "currency"
+    },
+    {
+      "name": "composer-current-invoice-currency-inheritance",
+      "file": "src/components/invoicing/client-invoice-composer.tsx",
+      "find": "formatEngagementMoney(payload.nteWarning.projectedBilledToDate)",
+      "replace": "formatInvoiceMoney(payload.nteWarning.projectedBilledToDate, currencyCode)",
+      "test": "src/test/client-invoice-composer.test.tsx",
+      "pattern": "keeps .* invoice currency separate",
+      "expectedFailed": 2,
+      "failureText": "90999999999999.09"
+    },
+    {
+      "name": "pdf-current-invoice-draft-currency-inheritance",
+      "file": "src/lib/invoicing/invoice-pdf.ts",
+      "find": "formatEngagementMoney(billed.draftedUnbilled)",
+      "replace": "formatInvoiceMoney(billed.draftedUnbilled, currency)",
+      "test": "src/test/client-invoice-pdf.test.ts",
+      "pattern": "keeps .* invoice amounts separate",
+      "expectedFailed": 2,
+      "failureText": "gross draft"
+    },
+    {
+      "name": "context-number-conversion-drops-cents",
+      "file": "src/lib/invoicing/invoice-currency.ts",
+      "find": "return formatInvoiceMoney(amount, null);",
+      "replace": "return formatInvoiceMoney(Number(amount), null);",
+      "test": "src/test/client-invoice-pdf.test.ts",
+      "pattern": "keeps .* invoice amounts separate",
+      "expectedFailed": 2,
+      "failureText": "billed to date 90999999999999.09"
+    },
+    {
+      "name": "context-zero-decimal-inference-drops-cents",
+      "file": "src/lib/invoicing/invoice-currency.ts",
+      "find": "return formatInvoiceMoney(amount, null);",
+      "replace": "return formatInvoiceMoney(amount, \"JPY\");",
+      "test": "src/test/client-invoice-pdf.test.ts",
+      "pattern": "adds the engagement reference|keeps .* invoice amounts separate",
+      "expectedFailed": 3,
+      "failureText": "currency unassessed"
+    },
+    {
+      "name": "context-currency-disclosure-removed",
+      "file": "src/lib/invoicing/invoice-currency.ts",
+      "find": "Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed. This is a numerical comparison only; agreement terms are unassessed.",
+      "replace": "Agreement terms unassessed.",
+      "pattern": "keeps .* invoice currency separate|keeps .* invoice amounts separate",
+      "expectedFailed": 4,
+      "failureText": "Aggregate currency"
+    },
+    {
+      "name": "composer-prior-for-projected",
+      "file": "src/components/invoicing/client-invoice-composer.tsx",
+      "find": "formatEngagementMoney(payload.nteWarning.projectedBilledToDate)",
+      "replace": "formatEngagementMoney(payload.nteWarning.billedToDate)",
+      "test": "src/test/client-invoice-composer.test.tsx",
+      "pattern": "keeps .* invoice currency separate",
+      "expectedFailed": 2,
+      "failureText": "90999999999999.09"
+    }
+  ],
+  "privateRoot": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016",
+  "trial01": {
+    "classification": "HARNESS_READER_FAILURE",
+    "exit": 1,
+    "baseline15": "PASS",
+    "harmless15": "SURVIVED",
+    "routeObservedFailed": 6,
+    "routeObservedPassed": 0,
+    "routeAcceptedCompletedKill": false,
+    "remainingFaultsRan": false,
+    "restoredTypesLintDirectionRan": false,
+    "invocationId": "a22df8a436694d8880bb961f5b60d108",
+    "runtimeSeconds": 23.051,
+    "cpuSeconds": 11.487,
+    "memoryPeakBytes": 295956480,
+    "swapBytes": 0,
+    "pidPeak": 39,
+    "pidMaxEvents": 0,
+    "all18SourcePinsMatch": true,
+    "all327OldPinsMatch": true,
+    "compilerLockReleasedReadOnlyVerified": true,
+    "immutableManifestSha256": "af142941c18f8957119807bf099f040eff6fefd1fd1f46f5044564820976c6fe",
+    "immutableSealSha256": "3abd9c89ede8022dca55d74e5aef278eade559be23522059c8c67299a07bf74a"
+  },
+  "trial02": {
+    "status": "HARNESS_TYPE_CLOSURE_FAILURE",
+    "selection": 15,
+    "baselineHarmlessReuseOnlyAfterCustody": true,
+    "faults": 7,
+    "sourceTestsFixturesAssertionsChanged": false,
+    "readerChanges": [
+      "exact six-name route AssertionError/first-line/assertion-location oracle",
+      "root-authorized stable zero-decimal intended prefix; exact three names"
+    ],
+    "private": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/trial02",
+    "exit": 1,
+    "invocationId": "5018744807be4615b63d15eecc3d35bf",
+    "acceptedFaults": 7,
+    "restored15Passed": true,
+    "focusedTypesExit": 2,
+    "matcherErrors": 16,
+    "lintGitDirectionExecuted": false,
+    "runtimeSeconds": 65.043,
+    "cpuSeconds": 32.387,
+    "memoryPeakBytes": 716386304,
+    "pidPeak": 38,
+    "pidMaxEvents": 0,
+    "oom": 0,
+    "source18Old327Trial01PinsMatch": true,
+    "immutableManifestSha256": "d6876a8bee33682c0ce95cf41364233293827434f76eb9a3dbb546842871da20",
+    "immutableSealSha256": "86723f990232950d36da074c508e3b8737555880ab25cbc179bade5a783db73e"
+  },
+  "trial03": {
+    "status": "PASS",
+    "private": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/trial03",
+    "configOnlyAddsActualSetupInclude": true,
+    "setupClosurePins": {
+      "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/setup.ts": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b"
+    },
+    "commands": "focused-types, focused-lint, git-metadata, git-cat-file, direction",
+    "vitestOrMutationCommands": false,
+    "unitRuntimeMaxSeconds": 120,
+    "exit": 0,
+    "invocationId": "b1ded742eb9943aab3020d6d41fd1e39",
+    "runtimeSeconds": 28.004,
+    "cpuSeconds": 13.927,
+    "memoryPeakBytes": 672157696,
+    "swapBytes": 0,
+    "pidPeak": 43,
+    "pidMaxEvents": 0,
+    "oomEvents": 0,
+    "typesExit": 0,
+    "lintExit": 0,
+    "gitMetadataExit": 0,
+    "gitCatFileExit": 0,
+    "directionExit": 0,
+    "finalAllPinsMatch": true,
+    "compilerLockReleased": true,
+    "immutableManifestSha256": "f08c3d0b8dd09ddbed1cd491ecc7b247a0b24669a2d43804382febd2345f4f91",
+    "immutableSealSha256": "9a44662292a416684b2d8af58a26daa14543699c88215add185238946fb1b045"
+  },
+  "claims": {
+    "sourceAndMockedHtmlOnly": true,
+    "independentFinalReviewAccepted": false,
+    "browserNativeFinanceM11V1Accepted": false,
+    "priorFailedUnitsRemainFailed": true,
+    "sourceTestsUnchangedAcrossTrials": true,
+    "sourceJoinPushPrMainRelease": false
+  },
+  "correctedAppTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "claimTier": "Bounded actual source/mocked-consumer/HTML tests plus scoped types/lint/direction; no independent final approval",
+  "reportArtifactFormatting": {
+    "initialStagedWhitespaceFindings": 15,
+    "sourceChanged": false,
+    "sourceAndTrial03RunnerDiffsUseZeroContext": true,
+    "originalFullContextCopiesRetained": true
+  }
+}

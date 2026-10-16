@@ -777,7 +777,7 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(lineInsertMock).not.toHaveBeenCalled();
   });
 
-  it("warns — and does not block — when the invoice pushes the engagement over its not-to-exceed", async () => {
+  it("warns without blocking when the invoice pushes the engagement over its not-to-exceed", async () => {
     engagementSingleMock.mockResolvedValueOnce({
       data: {
         id: ENGAGEMENT,
@@ -813,7 +813,7 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(response.status).toBe(201);
     const body = await response.json();
     // 8000 billed + 5000 this invoice = 13000 against a 10000 ceiling.
-    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000, currencyCode: null });
+    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000 });
     expect(body.invoice).toMatchObject({ id: INVOICE });
   });
   for (const [count, projectedCents, overCents] of [
@@ -836,13 +836,25 @@ describe("POST /api/invoicing/client-invoices", () => {
       expect(cents(body.nteWarning.projectedBilledToDate)).toBe(BigInt(projectedCents));
       expect(cents(body.nteWarning.overBy)).toBe(BigInt(overCents));
       expect(body.nteWarning.basis).toBe("legacy_terms_unassessed");
-      expect(body.nteWarning.currencyCode).toBe("EUR");
+      expect(body.nteWarning).not.toHaveProperty("currencyCode");
       expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
       expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
       expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
       expect(invoiceInsertMock).toHaveBeenCalled();
     });
   }
+
+  it.each(["EUR", "JPY"])("keeps %s on the invoice without asserting a warning currency", async (currencyCode) => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10.00" }, error: null });
+    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "10.01" }], error: null });
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode, lineItems: [{ description: "New work", amount: 1.01 }] }));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 10.01, projectedBilledToDate: 11.02, notToExceed: 10, overBy: 1.02 });
+    expect(invoiceInsertMock).toHaveBeenCalledWith(expect.objectContaining({ currency_code: currencyCode }));
+    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
+    expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
+  });
 
   it("audits unavailable billed position and still accepts invoice creation", async () => {
     engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: 10 }, error: null });

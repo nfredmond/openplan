@@ -180,9 +180,31 @@ describe("buildClientInvoiceHtml", () => {
     });
 
     expect(html).toContain("Engagement: On-call modeling (Ref TO-7)");
-    expect(html).toContain("Not-to-exceed $50,000.00");
-    expect(html).toContain("billed to date $18,000.00");
-    expect(html).toContain("remaining $32,000.00");
+    expect(html).toContain("Not-to-exceed 50000.00 (currency unassessed)");
+    expect(html).toContain("billed to date 18000.00 (currency unassessed)");
+    expect(html).toContain("remaining 32000.00 (currency unassessed)");
+  });
+
+  it.each([
+    ["EUR", "€5,000.00", "€3,000.00"],
+    ["JPY", "¥5,000", "¥3,000"],
+  ])("keeps %s invoice amounts separate from exact unassessed PDF context", (currencyCode, invoiceTotal, lineAmount) => {
+    const html = buildClientInvoiceHtml({
+      ...baseHtmlData,
+      invoice: { ...baseHtmlData.invoice, currency_code: currencyCode },
+      engagement: { title: "Legacy context", not_to_exceed_amount: "50000.01" },
+      engagementBilled: { billedToDate: "90999999999999.09", draftedUnbilled: "91999999999999.08", notToExceed: "50000.01", remaining: "-90999999949999.08", isOverNte: true },
+    });
+    const context = html.match(/<div class="engagement-context">([\s\S]*?)<\/div>/)![1];
+    expect(context).toContain("Not-to-exceed 50000.01 (currency unassessed)");
+    expect(context).toContain("billed to date 90999999999999.09 (currency unassessed) gross before retention");
+    expect(context).toContain("remaining -90999999949999.08 (currency unassessed)");
+    expect(context).toContain("gross draft 91999999999999.08 (currency unassessed)");
+    expect(context).toContain("Aggregate currency, legacy ceiling currency and currency agreement across invoices are unassessed.");
+    expect(context).toContain("This is a numerical comparison only; agreement terms are unassessed.");
+    expect(context).not.toMatch(/[€¥$]/);
+    expect(html).toContain(invoiceTotal);
+    expect(html).toContain(lineAmount);
   });
 
   it("escapes every user-entered string — markup in a description arrives as text", () => {

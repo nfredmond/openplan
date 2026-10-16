@@ -583,7 +583,6 @@ export async function POST(request: NextRequest) {
             projectedBilledToDate: projected,
             notToExceed,
             overBy: subtractMoney(projected, notToExceed),
-            currencyCode: parsed.data.currencyCode ?? null,
           };
         }
       } catch {

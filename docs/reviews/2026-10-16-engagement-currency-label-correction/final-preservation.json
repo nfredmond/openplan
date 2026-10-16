@@ -1,0 +1,57 @@
+{
+  "status": "APPLICABLE_CHECKS_PASS_LOCAL_CHECKPOINT_PREPARED",
+  "headBeforeCommit": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "correctedAppTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "all18SourcePinsMatch": true,
+  "all327PreservationPinsMatch": true,
+  "trial01_144AndTrial02_381PinsMatch": true,
+  "setupClosure2Match": true,
+  "immutableSeals": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/trial01-sealed",
+      "manifestSha256": "af142941c18f8957119807bf099f040eff6fefd1fd1f46f5044564820976c6fe",
+      "sealSha256": "3abd9c89ede8022dca55d74e5aef278eade559be23522059c8c67299a07bf74a",
+      "fileCount": 99,
+      "allMatch": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/trial02-sealed",
+      "manifestSha256": "d6876a8bee33682c0ce95cf41364233293827434f76eb9a3dbb546842871da20",
+      "sealSha256": "86723f990232950d36da074c508e3b8737555880ab25cbc179bade5a783db73e",
+      "fileCount": 299,
+      "allMatch": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/engagement-currency-label-correction-20261016/trial03-sealed",
+      "manifestSha256": "f08c3d0b8dd09ddbed1cd491ecc7b247a0b24669a2d43804382febd2345f4f91",
+      "sealSha256": "9a44662292a416684b2d8af58a26daa14543699c88215add185238946fb1b045",
+      "fileCount": 648,
+      "allMatch": true
+    }
+  ],
+  "frozenCheckouts": [
+    {
+      "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10",
+      "head": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+      "clean": true
+    },
+    {
+      "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb",
+      "head": "8defc05aec7d707bfebdea7f5a173a5659a11fcc",
+      "clean": true
+    },
+    {
+      "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f",
+      "head": "ab4a9f29540371fd4bf00466d385121b6906768d",
+      "clean": true
+    }
+  ],
+  "failedTrialsRemainFailed": [
+    "op-m11-engagement-currency-label01",
+    "op-m11-engagement-currency-label02"
+  ],
+  "passedTrial": "op-m11-engagement-currency-label03",
+  "compilerLockReleased": true,
+  "freshIndependentReviewAccepted": false,
+  "noSourceJoinPushPrMainNativeRelease": true
+}

@@ -19,7 +19,7 @@ import {
   type TimeEntryLike,
 } from "@/lib/invoicing/time-billing";
 import { formatMoney } from "@/lib/money/format";
-import { formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
+import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "@/lib/invoicing/invoice-currency";
 
 export type InvoiceClientOption = { id: string; name: string };
 export type InvoiceEngagementOption = {
@@ -376,7 +376,7 @@ export function ClientInvoiceComposer({
 
       if (payload.nteWarning) {
         setNteNotice(
-          `This invoice takes the engagement to ${formatInvoiceMoney(payload.nteWarning.projectedBilledToDate, payload.nteWarning.currencyCode)} projected gross billing against its ${formatInvoiceMoney(payload.nteWarning.notToExceed, payload.nteWarning.currencyCode)} legacy not-to-exceed, ${formatInvoiceMoney(payload.nteWarning.overBy, payload.nteWarning.currencyCode)} over. Agreement terms unassessed. Recorded as a warning; nothing was blocked.`
+          `This invoice takes the engagement to ${formatEngagementMoney(payload.nteWarning.projectedBilledToDate)} projected gross billing against its ${formatEngagementMoney(payload.nteWarning.notToExceed)} legacy not-to-exceed, ${formatEngagementMoney(payload.nteWarning.overBy)} over. ${ENGAGEMENT_CURRENCY_DISCLOSURE} Recorded as a warning; nothing was blocked.`
         );
       }
 
