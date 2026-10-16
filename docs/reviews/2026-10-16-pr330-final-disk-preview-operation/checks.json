@@ -1,0 +1,15 @@
+{
+  "sourceHead": "607ee0895a79457181eda1d2ebbda1de4f2a4d40",
+  "appTree": "bed283ab0c937ead65378a2e9d26c177ceee6938",
+  "review": "a7c63b3e541e197f3b592756af6e3d6b6eef0ec1",
+  "reviewPinsMatched": 40,
+  "networkFreeReview": false,
+  "allocateExit": 0,
+  "probeExit": 0,
+  "preflightExit": 0,
+  "preflightReadySHA256": "b5784fc31f577a24e6a5c872fc961b9e13c3e31e2c0ae832547d78912ac33182",
+  "protectedBaselineSHA256": "243ea52cf988b5cbf2d485247c032400b5297b64ac84733c4574d1d5f13ecf24",
+  "restoreSession": 4096,
+  "restoreState": "running",
+  "nativeAcceptance": false
+}
