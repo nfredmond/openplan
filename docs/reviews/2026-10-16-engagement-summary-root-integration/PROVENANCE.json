@@ -1,0 +1,164 @@
+{
+  "at": "2026-10-16T23:29:58.810796+00:00",
+  "subject": "6ca955851ba53437c68a171d523c2539184971e4",
+  "independentReview": "c9ed9aee7e8006b5d096efe139d0392d0d80b87e",
+  "checkedSourceHead": "16e65545191ad6ff216ebd3376b428f13e82cabc",
+  "app": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+  "wholeAffectedTests": 145,
+  "files": 7,
+  "lint": 0,
+  "direction": 0,
+  "fullConfiguredTypes": "unrun at changed app; capacity admission refused",
+  "authorScopedTypes": 0,
+  "rawTerminalTimeNs": "1792192134978151106",
+  "originalPublicTerminalTimeNs": "1792192134978151200",
+  "differenceNanoseconds": "94",
+  "originalEvidencePreserved": true,
+  "rootProof": {
+    "admission.json": {
+      "bytes": 559,
+      "sha256": "ee984358f302fda26448d2fd153abee5d48ebf3ea10b53b2a97b697c189f1d94"
+    },
+    "binding.json": {
+      "bytes": 2938,
+      "sha256": "1e5434f9846a340c5b2fcc6ab542e167ba0bea12eaf31cb32663abb9854ec1e0"
+    },
+    "checks.py": {
+      "bytes": 5754,
+      "sha256": "0389dd091698f25e3d301efa956ec648fd7c0cc40ddb491cad246d195b6fc204"
+    },
+    "direction-intent.json": {
+      "bytes": 289,
+      "sha256": "9723ac23c44b784a940e88517d2c1c3fe12f58fe6540e2af1f166fc16eb916eb"
+    },
+    "direction-stderr.log": {
+      "bytes": 648,
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+    },
+    "direction-stdout.log": {
+      "bytes": 286,
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912"
+    },
+    "finally.json": {
+      "bytes": 2826,
+      "sha256": "22005c22e984bdd1b21925a0d055fdba695e97779472eca43c25b7197dda4305"
+    },
+    "guard-controls.json": {
+      "bytes": 1971,
+      "sha256": "c583314c225a2667bd807282219f05ccf7ae3428bff4e0b185335c7b7735bc89"
+    },
+    "host-network.txt": {
+      "bytes": 17,
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86"
+    },
+    "lint-intent.json": {
+      "bytes": 1145,
+      "sha256": "2f4388639fde55ee38b16ba10d01c3ce142e6f8eaaf7a7d18a685ee740909f86"
+    },
+    "lint-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "lint-stdout.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "outer-terminal-readback.json": {
+      "bytes": 567,
+      "sha256": "929230fbcbbabfc80931f9f1a597471205b757b4f24d5efab08d1e10753e627f"
+    },
+    "resources-after.json": {
+      "bytes": 937,
+      "sha256": "cd4df935355f1122de25c4a843a4c7857a1bfccd94ab0d2190f0ed0e3c57e5d3"
+    },
+    "resources-before.json": {
+      "bytes": 935,
+      "sha256": "d7714959bc26709334e0c02a5971ce5a72d0d8eaa55717c174c0738a8d047e6d"
+    },
+    "results.json": {
+      "bytes": 257,
+      "sha256": "d1330eb0df78393e3653ef7342fb6ab0f4a33a2ecb3d46a4c5c4a2574f7d7837"
+    },
+    "run.sh": {
+      "bytes": 1109,
+      "sha256": "9b82ef03d8b877c23c8dcb85d602fd4d066b2133064933cf5b594867554ab591"
+    },
+    "summary.json": {
+      "bytes": 478,
+      "sha256": "7c55387a2bd77687ca72f5808ecbb077b494ef3c7122d44b94f2fe9d8746fc59"
+    },
+    "test-files.json": {
+      "bytes": 345,
+      "sha256": "5e71f351592162395d45bbc416756039034d7e9b6de3e61a2bd2e5c8cfcdb019"
+    },
+    "tests-intent.json": {
+      "bytes": 925,
+      "sha256": "9950a0a6eb6b6c2ad19d81293df794e5e73bc85d43369979e31c06de01ccdc9b"
+    },
+    "tests-result.json": {
+      "bytes": 50208,
+      "sha256": "1367a0472474c2241ea36048052b0049b07bc1e56bf03657a9f732db1177a763"
+    },
+    "tests-stderr.log": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "tests-stdout.log": {
+      "bytes": 126,
+      "sha256": "4ad368ba81bb20ee804bad5f14845a693320a8e136119e113070c2fcec85be85"
+    },
+    "vitest.config.mjs": {
+      "bytes": 324,
+      "sha256": "b969b7747efe174685ed5f2350faff85c27d8a5b7e210fc6ccf9b3c39fe8fff6"
+    }
+  },
+  "A0SourceCandidate": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "A0SourceReview": "0eb98a5080f155cb73d581bbe0bbd19dc60cd26c",
+  "A0OperationReview": "ed21e54f6448eeabaf1740a55740bbd1994bf7b1",
+  "A0ActualStageSummarySHA256": "cd623fa32f9c0d2e91111299b99893c508bf334ea8dfed208f2692baeceb329e",
+  "A0ActualStage": {
+    "at": "2026-10-16T23:26:25.497215+00:00",
+    "parentSession": 36055,
+    "parentExit": 0,
+    "seconds": 22.84313349693548,
+    "outerUnit": "openplan-a0-native-parent-map-apply17-20261016-01",
+    "outerInvocation": "02c96327e4434d4595a184092e8feb2f",
+    "innerInvocation": "13a1394c4f6a4d8d8f849b0a82872d4d",
+    "controllerRequests": 29,
+    "managerRequests": 1,
+    "allRequestsExitZero": true,
+    "fullRetainedPreMapMatches": true,
+    "mapLabels": 383,
+    "fullPostMapUnchangedExceptHistory": true,
+    "historyCount": 420,
+    "latestHistory": "20261017000017",
+    "historyOriginalSourceSHA256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+    "originalUTF8Bytes": 15938,
+    "cardinality": 1,
+    "dimensions": 1,
+    "lowerBound": 1,
+    "upperBound": 1,
+    "priorDigestUnchanged": true,
+    "finishDescriptorProconfigRawACLPreserved": true,
+    "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+    "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+    "completeSHA256": "985e563b691ad8a063925363b9c350f96df02632852f22274c9a6ab73da32f2d",
+    "managerTerminalSHA256": "372c0b72c03f1f80cdc7002c649043a009e59b48122a04d231b677d5e21574b3",
+    "admissionSHA256": "8193d17f537cb64420ef95e54ea00f7fd94b06f893c473281a2ca24b66a4557e",
+    "wrapperResources": "1GiB/zero swap/CPU50/Tasks64; database container outside cap",
+    "activeOuterPeakSample": "1929216",
+    "finalExactPeakAccepted": false,
+    "initialSourceSequenceLogCntIsCalledEquivalence": false,
+    "scope": "Only isolated native apply17 body/history/map/finish/scope stage. No18/RLS/Auth/provider/browser/practitioner/scientific/V1 acceptance. No successor.",
+    "originalScopeBeforeAfterEqualsRetained": true,
+    "actualScopeRequests": [
+      "request-011",
+      "request-029"
+    ],
+    "actualPostMapDerivationSHA256": "b63c569f70e77dc6f01ff206967f69af1c17de9c3b9271b10fabed74228b73e7",
+    "readyRecordSHA256": "cc76afb0246a52e90e65085236d461bd8d0bbb125b37aeca7a134ce580cb3dc8"
+  },
+  "nativeSQL20": false,
+  "browser": false,
+  "milestoneAccepted": false
+}
