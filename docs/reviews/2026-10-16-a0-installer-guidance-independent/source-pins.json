@@ -1,0 +1,14 @@
+{
+  "candidate": "e41f3cb75ae61feabf8ce89b5bc8ed8fcdec600c",
+  "soleParent": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "sha256": {
+    "docs/reviews/2026-10-16-a0-installer-guidance/STATUS.md": "015a7f04d28f3db86338ab5306070ce05822d8fc9ca043d45edf4a53e8c7ebe3",
+    "docs/reviews/2026-10-16-a0-installer-guidance/controls.json": "3ba8c4a8cf9dab686e39193b80088f8dc3a9ec2d1cf6d5dfa3c478ad44009900",
+    "docs/reviews/2026-10-16-a0-installer-guidance/verify-controls.py": "26477776394737be6d8857a73a1fc685ee342ba8f207d14037b11c9093d9bbf9",
+    "workers/planner_agent_connector/installer-guidance.mjs": "737cd7d0ed6ffe2a093b14b59f8fa479f4d6402da2b519ab6b1ec4f765d2e688",
+    "workers/planner_agent_connector/installer-guidance-cli.mjs": "8aea6c6242132643097f4cbf4279c72f6ca2deb1df509b89cfb63a8836e5a0ef",
+    "workers/planner_agent_connector/test/installer-guidance.test.mjs": "1512b34781a4640371d82ea131410522aaeda9ffc41813381822db46a35e0284",
+    "workers/planner_agent_connector/tested-cli-versions.mjs": "4110f452a7b6eb08232bd5dc84fb367c041251c69d9d39137bb1c74b508abc71",
+    "workers/planner_agent_connector/tested-cli-versions.json": "0a32b6136c2bdef170223f43e6806aa2bc002a6d33b641cf37612ddee2931d3b"
+  }
+}
