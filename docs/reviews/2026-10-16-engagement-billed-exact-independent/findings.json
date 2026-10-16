@@ -1,0 +1,62 @@
+{
+  "sourceCommit": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "wholePatchApproved": false,
+  "boundedArithmeticSourceAssessment": "acceptable by inspection subject to presentation objection",
+  "findings": [
+    {
+      "id": "M11-EXACT-CURRENCY-01",
+      "priority": "P2",
+      "disposition": "SOURCE_OBJECTION",
+      "title": "Do not infer engagement and legacy ceiling currency from the current invoice",
+      "newPrimaryLocations": [
+        {
+          "file": "openplan/src/app/api/invoicing/client-invoices/route.ts",
+          "line": 586
+        },
+        {
+          "file": "openplan/src/components/invoicing/client-invoice-composer.tsx",
+          "line": 379
+        }
+      ],
+      "relatedChangedContext": [
+        {
+          "file": "openplan/src/lib/invoicing/invoice-pdf.ts",
+          "line": 183
+        },
+        {
+          "file": "openplan/src/lib/invoicing/invoice-pdf.ts",
+          "line": 196
+        }
+      ],
+      "missingEvidenceLocations": [
+        {
+          "file": "openplan/src/app/api/invoicing/client-invoices/route.ts",
+          "line": 209
+        },
+        {
+          "file": "openplan/src/app/api/invoicing/client-invoices/route.ts",
+          "line": 397
+        },
+        {
+          "file": "openplan/src/lib/project-evidence-bundles/bytes.ts",
+          "line": 242
+        },
+        {
+          "file": "openplan/src/lib/project-evidence-bundles/bytes.ts",
+          "line": 253
+        }
+      ],
+      "sourceTrace": "The new warning takes currencyCode from the current request and the composer uses that code for legacy ceiling, aggregate and overrun, although the queried records do not establish currency agreement. Changed PDF context uses invoice.currency_code for the same legacy values and newly shown drafts.",
+      "runtimeReproducedByReviewer": false,
+      "minimalCorrection": "Retain invoice currency on its own amounts. Explicitly disclose unassessed ceiling currency, aggregate currency and cross-record agreement in legacy context; preserve exact arithmetic, prior/projected separation and warn-only creation. No new currency framework required.",
+      "severityLimits": [
+        "No native incident",
+        "No observed wrong NTE flag",
+        "No demonstrated stored corruption",
+        "No practical exposure estimate",
+        "No High or P1 claim"
+      ],
+      "inheritedBoundary": "PDF inherited invoice currency before this patch; the objection concerns truthful changed context and newly shown draft amount, not a newly attributed old arithmetic defect."
+    }
+  ]
+}

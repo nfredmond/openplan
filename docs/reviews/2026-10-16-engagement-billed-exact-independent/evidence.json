@@ -1,0 +1,143 @@
+{
+  "sourceCommit": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "claimTier": "independent source review and inspection of saved execution evidence",
+  "reviewerRuntimeDispatched": false,
+  "reviewerTestsOrDependencyLoads": 0,
+  "ownMetadataFailure": {
+    "command": "python -B source JSON inspection",
+    "exit": 127,
+    "stderr": "/bin/bash: line 1: python: command not found",
+    "subjectOrDependencyExecuted": false,
+    "subsequentReadOnlyInspectionUses": "python3 -B"
+  },
+  "authorSourceDiffMatchesGit": true,
+  "sourcePins": {
+    "count": 18,
+    "allCurrentAndGitMatch": true,
+    "authorManifestSha256": "71f06911752332e7513c375b08814372f1f2a9dbebebe01c685a52b93d198f26"
+  },
+  "manifests": {
+    "authorPublic": {
+      "count": 6,
+      "mismatches": []
+    },
+    "authorPrivate255": {
+      "count": 255,
+      "mismatches": []
+    },
+    "originalPublic4": {
+      "count": 4,
+      "mismatches": []
+    },
+    "originalPrivate30": {
+      "count": 30,
+      "mismatches": []
+    }
+  },
+  "authorPublicManifestSha256": "636b50039140f9ceb0f0642a6d4c1acab9b9b129a03b4782241717264162f77c",
+  "authorFinalHandoffSha256": "3248b718d5c736e232a64b85de678e0c5acd5d1544f358188361364ae5f4026c",
+  "originalProbe": {
+    "commit": "8defc05aec7d707bfebdea7f5a173a5659a11fcc",
+    "observationsRead": 52,
+    "differingObservations": 24,
+    "overNteDifferences": 0,
+    "reportSha256": "affb3dd20c032d1a4dc0ed3ca062bf767269dad23e7c9cbfc24d617675176a96",
+    "publicFiles": 4,
+    "privateFiles": 30,
+    "repeated": false
+  },
+  "authorTrials": {
+    "trial01": {
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction01",
+      "invocationId": "eac4cc51564b4b7095e9d093874fef51",
+      "classification": "HARNESS_FAILURE"
+    },
+    "trial02": {
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction02",
+      "invocationId": "893ed1308e4145acba354c9014fb8d1d",
+      "classification": "FOCUSED_CHECKS_PASS_DIRECTION_ENVIRONMENT_FAILURE"
+    },
+    "trial03": {
+      "wholeUnitExit": 1,
+      "unit": "op-m11-billed-exact-correction03",
+      "invocationId": "683a6e634cd04cccacf3c8d275a52f14",
+      "classification": "DEVICE_CONTROL_CORRECTED_DIRECTION_GIT_THREAD_FAILURE"
+    },
+    "trial04": {
+      "wholeUnitExit": 0,
+      "unit": "op-m11-billed-exact-correction04",
+      "invocationId": "fdbe7fbe8a174a0d834ea9beb56466e7",
+      "classification": "DIRECTION_PASS_WITH_CORRECTED_RESOURCE_CONTROLLER"
+    }
+  },
+  "actualSavedVitestFilesInspected": 22,
+  "acceptedFaults": {
+    "assertionErrorFaults": 14,
+    "distinctComposerQueryFailure": 1,
+    "harmlessSurvivors": true,
+    "exactSourceRestoration": true,
+    "uiFaultActuallyWrongCentLiteral": true
+  },
+  "direction04": {
+    "runtimeSeconds": 2.092,
+    "directionSeconds": 1.885446029016748,
+    "memoryPeakBytes": 125771776,
+    "pidPeak": 43,
+    "pidsEventsMax": 0,
+    "oom": 0,
+    "authorityMetadataChanged": false
+  },
+  "authorityPins": [
+    {
+      "path": "AGENTS.md",
+      "sha256": "c4df01b5984d57adc3d30dcf32f61c1a1e0e661343c8cfe76e797f76a013457b",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/product/V1_PRODUCT_CONTRACT.md",
+      "sha256": "732eafe7f237c97d6a451b9233d4a5274e32b9ba21dce49dace173aebc3e3818",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "sha256": "58450e80affa231335d5399f6e0a4b144fdeb02571c8276f3c131922ea21b78c",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/product/CORE_REQUIREMENTS_LEDGER.md",
+      "sha256": "87f78e603545a7d9013e001a235b08f42d9da4824e42e98deaccf3535e74adf0",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/ops/KNOWN_ISSUES.md",
+      "sha256": "2bd59f980e34d59abea2cf5b1639061c2ec60ed537ce842db6f34b26c162594a",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "sha256": "31e5432a8cb5d95901baa6ebde2491ddf25723268c898912b0b8a8ccfaaf6217",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+      "sha256": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    },
+    {
+      "path": "docs/reviews/product-direction/2026-10-06-integration-review.md",
+      "sha256": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+      "reviewedFrom": "reviewer checkout at 05dd3e8"
+    }
+  ],
+  "privateEvidencePath": "/home/nathaniel/.local/state/openplan/engagement-billed-exact-independent-20261016",
+  "limitations": [
+    "No new runtime pass",
+    "No integration approval",
+    "No native/browser/practitioner or complete M11/V1 acceptance",
+    "Existing retrieval cap and SDK completeness unchanged",
+    "Cross-record currency agreement remains unassessed",
+    "No host-wide only-private-writable isolation claim"
+  ]
+}

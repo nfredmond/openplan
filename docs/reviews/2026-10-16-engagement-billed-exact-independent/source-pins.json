@@ -1,0 +1,156 @@
+{
+  "commit": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "parent": "04841834d31755d3d618a6ea3c300fb9b0b1414b",
+  "appTree": "493488ffc952f1a69765c046afd03375d4fed126",
+  "baseAppTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "pins": [
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx",
+      "expected": "b7bf3b0a2a05cfc8c50e3ac1e704505bf08cbd069ba7163b06a21843066af4fb",
+      "actual": "b7bf3b0a2a05cfc8c50e3ac1e704505bf08cbd069ba7163b06a21843066af4fb",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/app/api/invoicing/client-invoices/route.ts",
+      "expected": "c22e5fb236c10f3cc5c2c6896ab481b668e436b6104db6be9cde27342259e6c6",
+      "actual": "c22e5fb236c10f3cc5c2c6896ab481b668e436b6104db6be9cde27342259e6c6",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/client-invoice-composer.tsx",
+      "expected": "62994385f0e7a300531486b85ed5bd37ec33863f1dc4975775d3861ad8e1e24f",
+      "actual": "62994385f0e7a300531486b85ed5bd37ec33863f1dc4975775d3861ad8e1e24f",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/components/invoicing/engagement-nte-bar.tsx",
+      "expected": "a994d9efb05a54712429c93613cccc66c59967a12bc0d9a58e031de7b8102207",
+      "actual": "a994d9efb05a54712429c93613cccc66c59967a12bc0d9a58e031de7b8102207",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-currency.ts",
+      "expected": "ad96c83a4abdddaba863c56fef05d3faf389d06b3ece647278519296d6418585",
+      "actual": "ad96c83a4abdddaba863c56fef05d3faf389d06b3ece647278519296d6418585",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-pdf.ts",
+      "expected": "c57ff86b30095c3d00685bef8eb4d1b31784eba20c74949c488f2b7c49c98312",
+      "actual": "c57ff86b30095c3d00685bef8eb4d1b31784eba20c74949c488f2b7c49c98312",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/receivables.ts",
+      "expected": "098a2091af1da499fcdd9f07c703834cab1babf1458e24e6a4a9c7333e4e0d07",
+      "actual": "098a2091af1da499fcdd9f07c703834cab1babf1458e24e6a4a9c7333e4e0d07",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/project-evidence-bundles/bytes.ts",
+      "expected": "f6b67f5d15a8e29b5bae14561305260a96566b5e9ccaeca074d7ffae0c3d25ea",
+      "actual": "f6b67f5d15a8e29b5bae14561305260a96566b5e9ccaeca074d7ffae0c3d25ea",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-composer.test.tsx",
+      "expected": "7928f04f511f4f1536e10be7bfa501c4f6df68a509c78a99b005f28ed9fcf243",
+      "actual": "7928f04f511f4f1536e10be7bfa501c4f6df68a509c78a99b005f28ed9fcf243",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/client-invoice-pdf.test.ts",
+      "expected": "8a51bca7988e71290a18e6cc5b123ea48e733af5573302e9367a129d9ce451d5",
+      "actual": "8a51bca7988e71290a18e6cc5b123ea48e733af5573302e9367a129d9ce451d5",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/receivable-invoicing-routes.test.ts",
+      "expected": "cf3e5d5ecd364a9c15cd1e2220f309bc45a6d8057b26c63c199f428a02afb57e",
+      "actual": "cf3e5d5ecd364a9c15cd1e2220f309bc45a6d8057b26c63c199f428a02afb57e",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/test/engagement-billed-exact-money.test.tsx",
+      "expected": "55c7e90ad41dc9636d082b1882c0386e241e931a50a58d84542124615c20ca5d",
+      "actual": "55c7e90ad41dc9636d082b1882c0386e241e931a50a58d84542124615c20ca5d",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/optional-amount.ts",
+      "expected": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "actual": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/money/format.ts",
+      "expected": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "actual": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/invoice-records.ts",
+      "expected": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+      "actual": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/work/deadlines.ts",
+      "expected": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+      "actual": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/time/workspace-calendar.ts",
+      "expected": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf",
+      "actual": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf",
+      "matches": true,
+      "gitMatches": true
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/openplan/src/lib/invoicing/contracts/reconciliation.ts",
+      "expected": "186db87350720cd455aabbcc840987079b5879f216a5a913ebc191f3de018718",
+      "actual": "186db87350720cd455aabbcc840987079b5879f216a5a913ebc191f3de018718",
+      "matches": true,
+      "gitMatches": true
+    }
+  ],
+  "changedFiles": [
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/REPORT.md",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/SHA256SUMS",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/evidence.json",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/original-probe-preservation.json",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/private-evidence.sha256",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/source-pins.json",
+    "docs/reviews/2026-10-16-engagement-billed-exact-money-correction/source.diff",
+    "openplan/src/app/(app)/invoicing/_components/receivables-lane.tsx",
+    "openplan/src/app/api/invoicing/client-invoices/route.ts",
+    "openplan/src/components/invoicing/client-invoice-composer.tsx",
+    "openplan/src/components/invoicing/engagement-nte-bar.tsx",
+    "openplan/src/lib/invoicing/invoice-currency.ts",
+    "openplan/src/lib/invoicing/invoice-pdf.ts",
+    "openplan/src/lib/invoicing/receivables.ts",
+    "openplan/src/lib/project-evidence-bundles/bytes.ts",
+    "openplan/src/test/client-invoice-composer.test.tsx",
+    "openplan/src/test/client-invoice-pdf.test.ts",
+    "openplan/src/test/engagement-billed-exact-money.test.tsx",
+    "openplan/src/test/receivable-invoicing-routes.test.ts"
+  ],
+  "sourceDiffExactGitMatches": true
+}
