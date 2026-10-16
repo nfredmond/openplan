@@ -1,7 +1,7 @@
 -- Add a narrow failure report to the existing immutable terminal-result contract.
 -- No state enum, business action, caller authority or historical result changes.
 CREATE FUNCTION public.valid_assistant_native_limit_receipt(receipt jsonb,job public.assistant_provider_turns)
-RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path=pg_catalog,public AS $$
+RETURNS boolean LANGUAGE plpgsql IMMUTABLE SET search_path=pg_catalog,public,pg_temp AS $$
 DECLARE signal jsonb:=receipt->'signal'; reset_value jsonb:=signal->'resetAtUnixSeconds';
 BEGIN
   IF job.provider<>'codex' OR job.auth_mode NOT IN ('chatgpt','apiKey') OR job.connection_id IS NULL
@@ -27,7 +27,7 @@ GRANT EXECUTE ON FUNCTION public.valid_assistant_native_limit_receipt(jsonb,publ
 
 CREATE OR REPLACE FUNCTION public.finish_assistant_provider_turn(p_turn_id uuid,p_attempt_id uuid,p_user_id uuid,p_connection_id uuid,p_token_hash text,
   p_result jsonb,p_provider_receipt jsonb,p_failure_code text)
-RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public AS $$
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,public,pg_temp AS $$
 DECLARE connection public.assistant_provider_connections; job public.assistant_provider_turns; payload jsonb;
 BEGIN
   SELECT * INTO job FROM public.assistant_provider_turns WHERE id=p_turn_id;

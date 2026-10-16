@@ -1,8 +1,9 @@
-import { test } from "node:test";
+import { after, test } from "node:test";
 import assert from "node:assert/strict";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
+import { tmpdir } from "node:os";
 import { createHash } from "node:crypto";
 import { startCodexSession, NativeProviderError } from "../codex-session.mjs";
 import { codexTurnFailure } from "../codex-provider.mjs";
@@ -10,8 +11,10 @@ import { codexUsageLimitTracker } from "../codex-usage-limit.mjs";
 import { connectorCycle, privateConnectorDirectory, writeConnectorJournal } from "../connector-worker.mjs";
 import { ConnectorError } from "../connector-client.mjs";
 import { usageLimitReceipt, validUsageLimitDelivery } from "../usage-limit-receipt.mjs";
-const base = process.env.OPENPLAN_USAGE_TEST_TMP;
-if (!base) throw new Error("Set the private usage-limit test directory");
+// Every supported Node entry point owns and cleans a mode-0700 temporary parent.
+const base = await mkdtemp(join(process.env.OPENPLAN_USAGE_TEST_TMP ?? tmpdir(), "openplan-usage-limit-"));
+after(async () => { await rm(base, { recursive: true, force: true }); });
+await privateConnectorDirectory(base);
 const uid = n => `${n}`.repeat(8)+"-1111-4111-8111-111111111111";
 const setup = { version: 1, appUrl: "http://127.0.0.1:3219", connectionId: uid(1), workspaceId: uid(2), projectId: uid(3), expectedAuthMode: "chatgpt", token: `op_pc_${uid(1)}.${"s".repeat(43)}` };
 const packet = { version: 1, workspaceId: uid(2), project: { id: uid(3), name: "SYNTHETIC" }, source: { id: `project:${uid(3)}`, label: "SYNTHETIC", href: `/projects/${uid(3)}` } };
@@ -21,7 +24,7 @@ const job = { id: uid(4), requestId: uid(5), userId: uid(6), attemptId: uid(7), 
   prompt: JSON.stringify({ question: "Stored facts?", selectedProjectRecord: packet }), instructions: "Synthetic project", outputSchema: { type: "object" }, leaseExpiresAt: "2099-01-01T00:00:00Z" };
 const detail = { code: "usageLimitExceeded", resetAtUnixSeconds: 1800000600, resetSource: "account_rate_limits", nativeThreadId: "synthetic-thread", nativeTurnId: "synthetic-turn" };
 
-test("structured frames freeze sparse attempt limits at the final event and discard prose", async () => {
+test("structured frames keep generic resets unknown and discard unbound windows and prose", async () => {
   for (const code of ["usageLimitExceeded", "rateLimitExceeded", "sessionBudgetExceeded", "other"]) {
     const session = startCodexSession({ command: process.execPath, args: [fileURLToPath(new URL("./usage-limit-frames.mjs", import.meta.url)), code], options: { stdio: ["pipe", "pipe", "pipe"], env: {} } }, { timeoutMs: 2000 });
     try {
@@ -30,30 +33,45 @@ test("structured frames freeze sparse attempt limits at the final event and disc
       const final = await session.waitFor("turn/completed", value => value.threadId === "synthetic-thread" && value.turn.id === "synthetic-turn");
       const error = codexTurnFailure(final, session);
       assert.equal(error.code, code === "other" ? "native_turn_failed" : "native_usage_limit");
-      if (code !== "other") assert.equal(error.usageLimit.resetAtUnixSeconds, code === "usageLimitExceeded" ? 1800000600 : null, "Final-event reset changed or invented");
+      if (code !== "other") assert.equal(error.usageLimit.resetAtUnixSeconds, null, "Unbound bucket reset reached the failure");
       assert.doesNotMatch(JSON.stringify(error), /PRIVATE|1900000000/, "Raw metadata escaped");
     } finally { await session.close(); }
   }
 });
 
-test("reset unknowns, window replacement, bucket scope and fresh trackers refuse inferred recovery", () => {
+test("qualified window observations preserve sparse values and bounds without binding a failure reset", () => {
   const tracker = codexUsageLimitTracker();
   assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null);
   for (const bad of [undefined, null, -1, 1.5, "1800000000", 253402300800]) {
     tracker.merge({ primary: { usedPercent: 100, resetsAt: bad } });
-    assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null, `Invalid reset ${bad}`);
+    assert.equal(tracker.defaultWindowObservations().primary.resetsAt, null, `Invalid observation reset ${bad}`);
   }
   tracker.merge({ primary: { usedPercent: 100, resetsAt: 1800000000 } });
   tracker.merge({ primary: null });
-  assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, 1800000000);
+  assert.equal(tracker.defaultWindowObservations().primary?.resetsAt, 1800000000, "Sparse update cleared a qualified observation");
+  const observation = tracker.defaultWindowObservations();
+  observation.primary.resetsAt = 42;
+  assert.equal(tracker.defaultWindowObservations().primary.resetsAt, 1800000000, "Observed copy changed session state");
+  assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null, "Even a sole default observation lacks causal binding");
   tracker.merge({ primary: { usedPercent: 100 } });
-  assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null, "Old reset survived a newly reported unknown window");
+  assert.equal(tracker.defaultWindowObservations().primary.resetsAt, null, "Old observation reset survived a newly reported unknown window");
   tracker.merge({ limitId: "other-model", primary: { usedPercent: 100, resetsAt: 1900000000 } });
   assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null);
   tracker.merge({ primary: { usedPercent: 99, resetsAt: 1800000000 } });
   assert.equal(tracker.signal("usageLimitExceeded").resetAtUnixSeconds, null);
   assert.equal(codexUsageLimitTracker().signal("usageLimitExceeded").resetAtUnixSeconds, null);
   assert.equal(tracker.signal({ usageLimitExceeded: {} }), null);
+});
+
+test("known default followed by known or unknown nondefault windows never supplies a causal reset", () => {
+  for (const otherReset of [1900000000, null]) {
+    const tracker = codexUsageLimitTracker();
+    tracker.merge({ limitId: "codex", primary: { usedPercent: 100, resetsAt: 1800000000 } });
+    tracker.merge({ limitId: "other-model", normalModelSlug: "synthetic", primary: { usedPercent: 100, resetsAt: otherReset } });
+    assert.equal(tracker.defaultWindowObservations().primary.resetsAt, 1800000000, "Nondefault bucket replaced a qualified default observation");
+    assert.deepEqual(tracker.signal("usageLimitExceeded"), { code: "usageLimitExceeded", resetAtUnixSeconds: null, resetSource: null },
+      "Generic error borrowed an unbound default reset");
+  }
 });
 
 test("failure journal replays exact scoped bytes after lost acknowledgement without regeneration", async () => {

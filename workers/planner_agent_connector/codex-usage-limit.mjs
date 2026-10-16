@@ -3,8 +3,9 @@ export const CODEX_LIMIT_CODES = ["usageLimitExceeded", "rateLimitExceeded", "se
 // Unix seconds through 9999-12-31. Values outside the displayable contract stay unknown.
 export const validReset = value => Number.isSafeInteger(value) && value >= 0 && value <= 253402300799;
 
-// One tracker belongs to one owned session and attempt. Keep only window fields;
-// account identity, plan, credits and provider prose never enter the result.
+// Default-bucket windows are observations, not the cause of a task failure.
+// The supplied TurnError contract has no causal bucket identity or model binding.
+// Keep those observations separate; generic failure receipts have unknown resets.
 export function codexUsageLimitTracker() {
   const windows = {};
   return {
@@ -21,12 +22,10 @@ export function codexUsageLimitTracker() {
         windows[key] = { usedPercent: window.usedPercent, resetsAt: validReset(window.resetsAt) ? window.resetsAt : null };
       }
     },
+    defaultWindowObservations() { return structuredClone(windows); },
     signal(code) {
       if (!CODEX_LIMIT_CODES.includes(code)) return null;
-      const exhausted = Object.values(windows).filter(window => window.usedPercent >= 100);
-      const reset = code === "usageLimitExceeded" && exhausted.length && exhausted.every(window => window.resetsAt !== null)
-        ? Math.max(...exhausted.map(window => window.resetsAt)) : null;
-      return { code, resetAtUnixSeconds: reset, resetSource: reset === null ? null : "account_rate_limits" };
+      return { code, resetAtUnixSeconds: null, resetSource: null };
     },
   };
 }
