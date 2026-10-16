@@ -1,0 +1,252 @@
+{
+  "acceptedTrial01OutcomesRetained": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "assertion": "wrong-oid-rejected",
+      "file": "policy.py",
+      "mutation": 0,
+      "outcome": "KILLED"
+    },
+    {
+      "assertion": "boolean-oid-rejected",
+      "file": "policy.py",
+      "mutation": 1,
+      "outcome": "KILLED"
+    },
+    {
+      "assertion": "missing-history-fields-rejected",
+      "file": "policy.py",
+      "mutation": 2,
+      "outcome": "KILLED"
+    },
+    {
+      "assertion": "stage-replay-rejected",
+      "file": "journal.py",
+      "mutation": 3,
+      "outcome": "KILLED"
+    },
+    {
+      "assertion": "exclusive-clobber-rejected",
+      "file": "journal.py",
+      "mutation": 4,
+      "outcome": "KILLED"
+    }
+  ],
+  "allReaderClassFunctionASTUnchanged": true,
+  "anchors": [
+    {
+      "anchorOccurrences": 1,
+      "assertion": "wrong-oid-rejected",
+      "filename": "policy.py",
+      "index": 0,
+      "reader": "wrong-oid"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "boolean-oid-rejected",
+      "filename": "policy.py",
+      "index": 1,
+      "reader": "boolean-oid"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "missing-history-fields-rejected",
+      "filename": "policy.py",
+      "index": 2,
+      "reader": "missing-history"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "stage-replay-rejected",
+      "filename": "journal.py",
+      "index": 3,
+      "reader": "no-replay"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "exclusive-clobber-rejected",
+      "filename": "journal.py",
+      "index": 4,
+      "reader": "clobber"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "durable-file-and-directory",
+      "filename": "journal.py",
+      "index": 5,
+      "reader": "custody"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "durable-file-and-directory",
+      "filename": "journal.py",
+      "index": 6,
+      "reader": "custody"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "late-ack-rejected",
+      "filename": "journal.py",
+      "index": 7,
+      "reader": "late-ack"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "overbound-output-rejected",
+      "filename": "journal.py",
+      "index": 8,
+      "reader": "output-bound"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "missing-definition-rejected",
+      "filename": "controller.py",
+      "index": 9,
+      "reader": "missing-definition"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "missing-wanted-attribute-rejected",
+      "filename": "controller.py",
+      "index": 10,
+      "reader": "wanted-missing"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "atomic-top-level-boundary",
+      "filename": "sql.py",
+      "index": 11,
+      "reader": "migration-atomicity"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "sequence-explicit-fields",
+      "filename": "sql.py",
+      "index": 12,
+      "reader": "journey"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "locked-real-body-history-order",
+      "filename": "sql.py",
+      "index": 13,
+      "reader": "journey"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "upgrade-preserves-explicit-sequence-state",
+      "filename": "controller.py",
+      "index": 14,
+      "reader": "sequence-change"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "restore-same-backend-empty-guard",
+      "filename": "sql.py",
+      "index": 15,
+      "reader": "restore-composition"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "history-setting-independent-hex",
+      "filename": "sql.py",
+      "index": 16,
+      "reader": "history-hex"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "same-backend-before-parse-string-semantics",
+      "filename": "sql.py",
+      "index": 17,
+      "reader": "history-hex"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "actual-statement-sha-rejected",
+      "filename": "controller.py",
+      "index": 18,
+      "reader": "statement-sha"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "actual-statement-cardinality-rejected",
+      "filename": "controller.py",
+      "index": 19,
+      "reader": "statement-cardinality"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "same-backend-before-parse-string-semantics",
+      "filename": "sql.py",
+      "index": 20,
+      "reader": "history-hex"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "actual-history-cardinality-sha-projection",
+      "filename": "sql.py",
+      "index": 21,
+      "reader": "journey"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "actual-history-cardinality-sha-projection",
+      "filename": "sql.py",
+      "index": 22,
+      "reader": "journey"
+    },
+    {
+      "anchorOccurrences": 1,
+      "assertion": "migration-fresh-physical-lines",
+      "filename": "sql.py",
+      "index": 23,
+      "reader": "history-hex"
+    }
+  ],
+  "fault5ExpectedAssertionUnchanged": true,
+  "faultCount": 24,
+  "kind": "STATIC AST/literal/byte metadata only; no subject import/execution",
+  "oldControlSourceMatchesPublic": true,
+  "oldRestoredWorkingMatchesProduction": {
+    "controller.py": true,
+    "journal.py": true,
+    "policy.py": true,
+    "sql.py": true
+  },
+  "other23MutationTuplesIdentical": true,
+  "runtimePins": {
+    "controller.py": {
+      "bytes": 23660,
+      "mode": "0o664",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "journal.py": {
+      "bytes": 6172,
+      "mode": "0o664",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "policy.py": {
+      "bytes": 5369,
+      "mode": "0o664",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "sql.py": {
+      "bytes": 17422,
+      "mode": "0o664",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    }
+  },
+  "trial02WorkingMatchesProduction": {
+    "controller.py": true,
+    "journal.py": true,
+    "policy.py": true,
+    "sql.py": true
+  }
+}

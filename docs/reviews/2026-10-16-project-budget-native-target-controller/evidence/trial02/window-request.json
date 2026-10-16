@@ -1,0 +1,302 @@
+{
+  "argv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/run-pure-window.sh"
+  ],
+  "cpuPercent": 50,
+  "device": "/dev/null-only dev-bind before env",
+  "donor": null,
+  "failed01Inventory": {
+    "bytes": 356902,
+    "mode": "0o600",
+    "sha256": "7204b3389d70346111a81aa675495ccffb4b48f6946341880f50df83a932bdac",
+    "uid": 1000
+  },
+  "inputs": {
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/controls-reader.diff": {
+      "bytes": 5287,
+      "mode": "0o600",
+      "sha256": "9ee4f6ca5e63981f6f39147a64bd30f3577e33a2d66f3d3d02eeca7fb7715706",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/failed01-private-preservation.json": {
+      "bytes": 59,
+      "mode": "0o600",
+      "sha256": "016fb5345ace89761f33f4f1e04369e0ea6b1e2baeb42ed2c7422896903d4def",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/plan.json": {
+      "bytes": 54746,
+      "mode": "0o600",
+      "sha256": "ee0cc8e1413414a961d9a757fd4d6fed2403ed96696d3e410ed6fd43328d812a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/reuse-pins.json": {
+      "bytes": 7221,
+      "mode": "0o600",
+      "sha256": "b8e14a2c834050881177349c53f9f011649884c5e22ad50d7d3eaac2dc09c710",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/run-pure-window.sh": {
+      "bytes": 838,
+      "mode": "0o600",
+      "sha256": "9a9ffc123a9817e6ca878d3d02d839060a95f6bb7acc9a5ba2b46c8e9d3ccd7e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/static-anchor-reader-inspection.json": {
+      "bytes": 6295,
+      "mode": "0o600",
+      "sha256": "a2055c3ed61023ab3a068ed263c3a826e6c6558e8e30ee52a460666752096e5c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/controller.py": {
+      "bytes": 23660,
+      "mode": "0o600",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/journal.py": {
+      "bytes": 6172,
+      "mode": "0o600",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/policy.py": {
+      "bytes": 5369,
+      "mode": "0o600",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/sql.py": {
+      "bytes": 17422,
+      "mode": "0o600",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/trial02_controls.py": {
+      "bytes": 29076,
+      "mode": "0o600",
+      "sha256": "6c2e2315ce071807e4c6fbe9ae82dda7c214eeaf2aa62d8c91c8e194974b8d53",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/window_runner.py": {
+      "bytes": 3252,
+      "mode": "0o600",
+      "sha256": "1bc4008e36f59c422ad59c5c7d9ca9be04c29d95a3b615c064b83c685c67dc3a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/controller.py": {
+      "bytes": 23660,
+      "mode": "0o600",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/journal.py": {
+      "bytes": 6172,
+      "mode": "0o600",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/policy.py": {
+      "bytes": 5369,
+      "mode": "0o600",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/sql.py": {
+      "bytes": 17422,
+      "mode": "0o600",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    }
+  },
+  "lock": "ONE nonblocking SHARED named compiler lock, no wait/retry",
+  "memoryBytes": 536870912,
+  "network": "unshared",
+  "newExecutionOnly": [
+    "unfinished faults5-23",
+    "final restored baseline",
+    "actual nested product:direction:check once"
+  ],
+  "newPrivate": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02 RW only",
+  "noNative": true,
+  "oldHost": "named root RO, inherited submount writability unassessed",
+  "publicFiles": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/DESIGN.md": {
+      "bytes": 9915,
+      "mode": "0o664",
+      "sha256": "9ddbc19ef275c9713006ecb0d96f719e834ed545150b5c7bfad95cdd3dbc3f71",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/HISTORY_CORRECTION.md": {
+      "bytes": 4399,
+      "mode": "0o664",
+      "sha256": "c38d618e06ebfacfa98362325eec3f1ec53165ab389616939ce6404b95f12cd7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/PARENT_RECIPE.md": {
+      "bytes": 9192,
+      "mode": "0o664",
+      "sha256": "1387f96f40139ab49ac360e5ab3d3e0fac1712c07a97411d81333b4163f12e96",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/REVIEW.md": {
+      "bytes": 2551,
+      "mode": "0o664",
+      "sha256": "2b3e2b97ece03c24658fe2a0a0e1d8efdd5c681a1a9857f875db82182a818ed3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/STATUS.md": {
+      "bytes": 2849,
+      "mode": "0o664",
+      "sha256": "51f27fbdaf76c37c0f5f3d844eb222938534606a4ce6619468ae673b343a8b7c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/TRIAL02.md": {
+      "bytes": 2060,
+      "mode": "0o664",
+      "sha256": "ca81216051815c4c2da57e4020831de5e9c415339bad2a2423cd795f90661661",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/VALIDATION.md": {
+      "bytes": 5716,
+      "mode": "0o664",
+      "sha256": "c01b280a9cd8443bd41efe00ff8d1ec96c99d275b0efaad8a837458b2c5e77b1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/admission.example.json": {
+      "bytes": 972,
+      "mode": "0o600",
+      "sha256": "a99956b1936c7367f9354319125d3ad687829dbf7679099720192e48594f2bae",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/controls.py": {
+      "bytes": 28435,
+      "mode": "0o664",
+      "sha256": "99cc7306120c466bb474309362903286bb1fb8ced9de3ea6777d11ff7e962a58",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/plan.json": {
+      "bytes": 54746,
+      "mode": "0o600",
+      "sha256": "ee0cc8e1413414a961d9a757fd4d6fed2403ed96696d3e410ed6fd43328d812a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/allocate.json": {
+      "bytes": 1171,
+      "mode": "0o600",
+      "sha256": "7bf3c984ac749d055f2c1a5c5a89003b8d1a4c8e81e91b2669dd0890a47d3cba",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/apply17.json": {
+      "bytes": 1182,
+      "mode": "0o600",
+      "sha256": "6a859d78beb5beea44df5a2445d99e72e1a21035932f48abd1ba6525eb8ed606",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/apply18.json": {
+      "bytes": 1193,
+      "mode": "0o600",
+      "sha256": "7b28d12031e0661eb56daffae1ceeb5e89a7a1c9a6d9b0552095b27952291f2f",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/apply19.json": {
+      "bytes": 1181,
+      "mode": "0o600",
+      "sha256": "ad148ff9a74a176d9b3648b86f9364e0d74447f910c00f1f203cb9318ec3dde6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/observe.json": {
+      "bytes": 1161,
+      "mode": "0o600",
+      "sha256": "f3bf717e8b5d41a32ad04797d0ccf0510e048b2a43e6299142e4da3c419e6e9b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/render419.json": {
+      "bytes": 1192,
+      "mode": "0o600",
+      "sha256": "1e8ea824e79cc2d229a9f9eb0bdab62b7b564e953256c2f1c0cbb01749b233e2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/profiles/restore419.json": {
+      "bytes": 1204,
+      "mode": "0o600",
+      "sha256": "760323431421c94b7e29a37c1759aa0b28ac0bd93acd74621bf0b3ca1f8d3312",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/run-pure-window.sh": {
+      "bytes": 830,
+      "mode": "0o664",
+      "sha256": "dbadab756fd938110a895e078e3fc137fd22c5c5858e9dc28a54acf532fa623c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/run-trial02-window.sh": {
+      "bytes": 838,
+      "mode": "0o600",
+      "sha256": "9a9ffc123a9817e6ca878d3d02d839060a95f6bb7acc9a5ba2b46c8e9d3ccd7e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/controller.py": {
+      "bytes": 23660,
+      "mode": "0o664",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/journal.py": {
+      "bytes": 6172,
+      "mode": "0o664",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/policy.py": {
+      "bytes": 5369,
+      "mode": "0o664",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/sql.py": {
+      "bytes": 17422,
+      "mode": "0o664",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/source-pins.json": {
+      "bytes": 117112,
+      "mode": "0o600",
+      "sha256": "c56b2cf133c792260c449a6dc228ea0c0cf4c4b44a80299923db81f8c41cbe20",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/trial02_controls.py": {
+      "bytes": 29076,
+      "mode": "0o600",
+      "sha256": "6c2e2315ce071807e4c6fbe9ae82dda7c214eeaf2aa62d8c91c8e194974b8d53",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/trial02_window_runner.py": {
+      "bytes": 3252,
+      "mode": "0o600",
+      "sha256": "1bc4008e36f59c422ad59c5c7d9ca9be04c29d95a3b615c064b83c685c67dc3a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/window_runner.py": {
+      "bytes": 4099,
+      "mode": "0o664",
+      "sha256": "e4fea3355309e1fccdc20d132692fcb9374c6aa7dbf26600bc68c2d5bb757c66",
+      "uid": 1000
+    }
+  },
+  "python": "/usr/bin/python3 -B",
+  "reusedOnly": [
+    "trial01 accepted initial baseline",
+    "trial01 harmless source comment",
+    "trial01 faults0-4",
+    "trial01 resource7 supplied record controls"
+  ],
+  "runtimeGuardAndAssertionBytesUnchanged": true,
+  "runtimeMaxSeconds": 180,
+  "status": "REQUEST_ONLY_NOT_GRANTED_TRIAL02",
+  "supersedesExecution": "No replay: permanently retained failed01 HARNESS_FAILURE1; explicit new root grant still required",
+  "swapBytes": 0,
+  "tasks": 64,
+  "unit": "openplan-budget-target-pure02"
+}

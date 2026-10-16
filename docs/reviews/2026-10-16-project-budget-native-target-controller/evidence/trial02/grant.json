@@ -1,0 +1,25 @@
+{
+  "at": "2026-10-16T22:38:06.912415+00:00",
+  "authority": "Root exact engineering continuation grant",
+  "requestSHA256": "67a51ee5d91a7d9c9e2a4cc4e26b58054992505060f60dfab72013fbdbbba345",
+  "argv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/run-pure-window.sh"
+  ],
+  "unit": "openplan-budget-target-pure02",
+  "limits": {
+    "seconds": 180,
+    "memory": 536870912,
+    "swap": 0,
+    "cpuPercent": 50,
+    "tasks": 64
+  },
+  "scope": "Resume unfinished5-23 ONLY, sealed baseline/harmless0-4/resource7 reuse, restored baseline, nested direction; inert Popen+FD only",
+  "reader": "unique file-fsync anchor only; original assertion unchanged",
+  "failed01": "permanent HARNESS_FAILURE1 retained",
+  "sourceUnchanged": true,
+  "noNative": true,
+  "noAutomaticRetry": true,
+  "singleNonblockingSharedLock": true,
+  "successorGranted": false
+}

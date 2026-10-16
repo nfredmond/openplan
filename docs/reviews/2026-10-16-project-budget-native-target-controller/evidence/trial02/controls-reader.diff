@@ -1,0 +1,77 @@
+--- failed01/controls.py
++++ trial02/trial02_controls.py
+@@ -11,7 +11,7 @@
+ from types import SimpleNamespace
+ from unittest.mock import patch
+ 
+-ROOT = Path('/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02')
+ REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74')
+ PACKET = REPO/'docs/reviews/2026-10-16-project-budget-native-target-controller'
+ WORK = ROOT/'working'
+@@ -415,7 +415,7 @@
+  ('policy.py',"same(['name', 'statements', 'version'], sorted(row), 'history-complete-fields')","pass # selected missing-field fault",'missing-history','missing-history-fields-rejected'),
+  ('journal.py','path = parent/name',"path = parent/(name+str(time.time_ns()))",'no-replay','stage-replay-rejected'),
+  ('journal.py','os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW','os.O_CREAT | os.O_TRUNC | os.O_NOFOLLOW','clobber','exclusive-clobber-rejected'),
+- ('journal.py','os.fsync(stream.fileno())','pass # selected file sync omission','custody','durable-file-and-directory'),
++ ('journal.py','stream.flush()\n        os.fsync(stream.fileno())\n    sync(path.parent)','stream.flush()\n        pass # selected file sync omission\n    sync(path.parent)','custody','durable-file-and-directory'),
+  ('journal.py','sync(path.parent)','pass # selected directory sync omission','custody','durable-file-and-directory'),
+  ('journal.py',"p.require(time.monotonic()-start < timeout, 'transport-late-terminal')","pass # selected late acknowledgement fault",'late-ack','late-ack-rejected'),
+  ('journal.py',"p.require(counts[key.data] <= bound, 'transport-output-bound')","pass # selected output overflow fault",'output-bound','overbound-output-rejected'),
+@@ -448,20 +448,29 @@
+ 
+ def main():
+     os.umask(0o077)
++    import hashlib
++    provenance=json.loads((ROOT/'reuse-pins.json').read_bytes())
++    for name,value in provenance['files'].items():
++        path=Path(name); raw=path.read_bytes(); info=path.lstat()
++        check(not path.is_symlink() and info.st_uid==value['uid'] and
++              oct(info.st_mode & 0o777)==value['mode'] and len(raw)==value['bytes'] and
++              hashlib.sha256(raw).hexdigest()==value['sha256'],'sealed-trial01-reuse-pin')
++    previous=json.loads(Path(provenance['controlsResultPath']).read_bytes())
++    check(previous['restored'] is True and previous['sourceUnchanged'] is True,
++          'sealed-trial01-exact-restoration')
++    check(previous['trials']==provenance['acceptedTrials'],'sealed-trial01-accepted-only')
+     working_before={x.name:x.read_bytes() for x in WORK.glob('*.py')}
+     source_before={str(x):x.read_bytes() for x in (PACKET/'runtime').glob('*.py')}
+-    result={'scope':'INERT process and FD responder; no shell/native/SQL/manager/helper dispatch',
+-            'baseline':None,'trials':[],'restored':False,'sourceUnchanged':False}
++    result={'scope':'INERT process and FD responder only; resume5-23',
++            'reusedTrial01':{'controlsResultPath':provenance['controlsResultPath'],
++                            'acceptedTrials':previous['trials'],
++                            'baseline':previous['baseline'],
++                            'executionRepeated':False},
++            'trials':[],'finalRestoredBaseline':None,'restored':False,'sourceUnchanged':False}
+     trials=ROOT/'trials'; trials.mkdir(mode=0o700)
+     try:
+-        result['baseline']=checks(load(),trials/'baseline')
+-        # The harmless mutation must survive before any named broken behavior.
+-        path=WORK/'controller.py'
+-        path.write_bytes(working_before[path.name]+b'\n# harmless source comment\n')
+-        checks(load(),trials/'harmless')
+-        result['trials'].append({'mutation':'harmless-comment','outcome':'SURVIVED'})
+-        path.write_bytes(working_before[path.name])
+-        for index,(filename,old,new,selected,expected) in enumerate(MUTATIONS):
++        for index in range(5,len(MUTATIONS)):
++            filename,old,new,selected,expected=MUTATIONS[index]
+             target=WORK/filename; original=working_before[filename]
+             check(original.count(old.encode())==1,'mutation-unique-anchor:'+str(index))
+             target.write_bytes(original.replace(old.encode(),new.encode(),1))
+@@ -475,7 +484,7 @@
+             finally:
+                 target.write_bytes(original)
+                 check(target.read_bytes()==original,'mutation-finally-restoration:'+str(index))
+-        checks(load(),trials/'restored')
++        result['finalRestoredBaseline']=checks(load(),trials/'restored')
+     finally:
+         for filename,raw in working_before.items():
+             (WORK/filename).write_bytes(raw)
+@@ -483,7 +492,6 @@
+         result['sourceUnchanged']=all(Path(k).read_bytes()==v for k,v in source_before.items())
+         (ROOT/'controls.json').write_text(json.dumps(result,indent=2)+'\n')
+     check(result['restored'] and result['sourceUnchanged'],'outer-finally-source-restoration')
+-    # Sourcecompare the actual real-entry composition, not a mock of Controller.
+     import ast
+     tree=ast.parse((PACKET/'runtime/controller.py').read_text())
+     check(any(isinstance(node,ast.Call) and isinstance(node.func,ast.Attribute) and node.func.attr=='run'

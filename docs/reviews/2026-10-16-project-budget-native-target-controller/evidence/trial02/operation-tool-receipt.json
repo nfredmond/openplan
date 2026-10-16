@@ -1,0 +1,21 @@
+{
+  "initial": {
+    "chunk_id": "559371",
+    "wall_time_seconds": 1.001469956,
+    "session_id": 49085,
+    "original_token_count": 26,
+    "output": "Running as unit: openplan-budget-target-pure02.service; invocation ID: 73219af8f30d45d19112e2b9a12b506b\n"
+  },
+  "terminal": {
+    "chunk_id": "0da52a",
+    "wall_time_seconds": 0.000008556,
+    "exit_code": 0,
+    "original_token_count": 58,
+    "output": "          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 9.648s\n             CPU time consumed: 1.641s\n                   Memory peak: 189.5M (swap: 0B)\n"
+  },
+  "invocationID": "73219af8f30d45d19112e2b9a12b506b",
+  "unit": "openplan-budget-target-pure02",
+  "attempts": 1,
+  "nativeDispatched": false,
+  "lockRelease": "Wrapper process returned; its shared-lock file descriptor closed."
+}

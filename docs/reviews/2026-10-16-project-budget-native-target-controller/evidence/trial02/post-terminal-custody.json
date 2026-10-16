@@ -1,0 +1,2422 @@
+{
+  "actualRemainingFaults": 19,
+  "allMatch": true,
+  "claim": "Post-terminal metadata readback only; no subject rerun.",
+  "directionExit": 0,
+  "failed01PrivateOriginalFiles": 900,
+  "failed01SealedFiles": 923,
+  "mismatches": [],
+  "nativeAcceptance": false,
+  "sourceChecks": [
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/AGENTS.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/ARCHITECTURE.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/ROADMAP.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/ops/KNOWN_ISSUES.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/product/CORE_REQUIREMENTS_LEDGER.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/product/MILESTONES.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/product/US_PLANNING_CAPABILITY_MATRIX.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/product/V1_PRODUCT_CONTRACT.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-15-project-jurisdiction-native/native_proof.py"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/product-direction/2026-10-06-integration-review.md"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/scripts/ops/capability-evidence.mjs"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/scripts/ops/full_restore.py"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/scripts/ops/product-direction-review.mjs"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000001_gtfs_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000002_workspace_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000003_census_lodes_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000004_safe_query_fn.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000005_workspace_trigger.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260219000006_storage.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260224000001_runs_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260224000002_runs_ai_interpretation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260225000003_fix_handle_new_user_trigger.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260225000004_workspace_slug_normalization.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260226000005_runs_report_telemetry.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260226000006_workspace_billing_skeleton.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260226000007_billing_events.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260226000008_billing_webhook_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260305000009_op003_workspace_stage_gate_binding.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260306000010_op003_stage_gate_decision_log.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000011_projects_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000012_project_subrecords.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000013_project_issues_meetings.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000014_data_hub_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000015_data_hub_geometry_attachment.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000016_data_hub_corridor_attachment.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260313000017_data_hub_crash_point_attachment.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260314000018_reports_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260314000019_scenarios_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260314000020_engagement_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260315000021_plans_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260315000022_programs_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260315000023_models_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260316000024_fix_workspace_members_rls_recursion.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260317000025_model_runs_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000026_model_run_stages_and_artifacts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000027_network_packages_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000028_network_zones_corridors_connectors.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000029_network_package_qa_columns.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000030_model_run_skim_config.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260318000031_model_run_kpis.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260321000032_engagement_public_share.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260321000033_lane_c_lapm_pm_invoicing.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260324000134_county_onramp_runs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000035_rtp_cycles_module.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000036_project_rtp_cycle_links.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000037_rtp_cycle_chapters.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000038_rtp_engagement_targets.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000039_rtp_cycle_chapter_content.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260409000040_reports_rtp_cycle_target.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000041_funding_opportunities.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000042_funding_opportunity_decisions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000043_funding_awards_and_profiles.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000044_funding_opportunity_expected_amounts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000045_scenario_shared_spine.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000046_scenario_comparison_snapshots.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260410000047_reports_metadata_json.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260415000048_aerial_operations_os.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000049_reports_rtp_basis_staleness.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000050_assistant_action_executions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000051_projects_aerial_posture.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000052_projects_rtp_posture.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000053_project_milestones_obligation_type.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000054_model_run_kpis_behavioral_onramp.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260416000055_scenario_comparison_summary_view.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260418000056_funding_opportunity_decision_states_expansion.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260418000057_aerial_mission_aoi.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260418000058_drop_execute_safe_query.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260419000059_workspaces_is_demo.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260420000060_report_artifacts_bucket.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260420000061_pin_function_search_paths.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260420000062_public_data_select_policies.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260420000063_public_views_security_invoker.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260420000064_scope_gtfs_child_feed_visibility.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260421000065_projects_location.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260421000066_project_corridors.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260422000067_rtp_cycles_anchor.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260422000068_census_tracts_map_view.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000069_modeling_evidence_backbone.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000070_reports_modeling_county_run_link.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000071_reports_modeling_county_run_link_grants.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000072_billing_ledger_foundation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000073_workspace_invitations.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000074_access_requests.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000075_access_request_intake_hardening.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000076_access_request_review_events.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260424000077_access_request_provisioning_link.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260427000078_access_request_service_pipeline.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260508000079_modeling_caveat_kpi_sql_gate.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260519000080_county_run_worker_dispatch.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260519000081_assistant_action_approval_integrity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260717000082_v1_security_hardening.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260717000083_funding_opportunity_narrative_drafts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260717000084_engagement_geometry_photos_votes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260717000085_narrative_draft_grounding.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260718000086_run_artifacts_bucket.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260718000087_model_runs_engine_key_behavioral.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260718000088_sketch_abm_engine.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260718000089_project_bca_screenings.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000090_engagement_ai_synthesis.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000091_engagement_category_style.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000092_engagement_corridor_join.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000093_engagement_sentiment_hotspots.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000094_engagement_item_demographics.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000095_engagement_representativeness_cache.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260719000096_engagement_near_duplicates.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260720000097_engagement_threaded_replies.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260720000098_engagement_translation_cache.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260720000099_ite_trip_generation_engine.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260721000001_aerial_processing_jobs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260721000002_modeling_calibrated_claim_tier.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000001_rtp_priority_scoring.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000002_project_rtp_evidence_run.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000003_rtp_public_share.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000004_reap_model_run_rpc.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000005_reap_rpc_lock_down.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000006_aerial_project_posture_table.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000007_engagement_survey_builder.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000008_engagement_close_loop.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260722000009_engagement_notifications.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260723000001_knowledge_base.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260723000002_kb_search_chunks.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260723000003_kb_search_chunks_or_semantics.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260723000004_safety_crashes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260723000005_workspace_home_geography.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260724000001_equity_tract_designations.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000003_run_project_provenance.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000004_report_runs_typed_evidence.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000005_scenario_entries_model_run_attachment.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000006_models_network_package_link.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000007_module_link_cleanup_triggers.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000008_reports_engagement_campaign_target.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000009_invoicing_reimbursement_profiles.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000010_receivable_invoicing.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000011_invoicing_time_and_rates.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000012_deliverable_budgets_and_spend.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000013_document_narrative_drafts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000014_grant_application_assembly.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000015_pursuit_kind_and_solicitation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260727000016_application_section_finalizer.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000001_workspace_integration_keys.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000002_spend_entry_deliverable_same_project.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000003_viewer_role.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000004_workspace_owner_floor.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000005_project_corridors_writable.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000006_workspace_write_role_gate.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000007_workspace_write_role_gate_children.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000008_projects_deletable.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000009_project_place_of_record.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000010_permissive_update_policies.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000011_stage_gate_decisions_project_scope.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260728000012_vmt_significance_screenings.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260729000001_funding_award_closure_provenance.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260729000002_engagement_context_layers.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260729000003_engagement_campaign_place_of_record.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260729000004_engagement_content_translations.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000001_engagement_campaign_accessibility_contact.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000002_engagement_campaign_submission_geofence.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000003_engagement_survey_response_drafts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000004_aerial_artifact_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000005_aerial_artifact_custody_anon_revoke.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000006_assistant_action_agent_principal.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000007_name_the_dead_billing_schema.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000008_zero_policy_table_anon_revoke.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000009_public_reference_data_write_revoke.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000010_enable_rls_on_gtfs_child_tables.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260730000011_enable_rls_on_public_reference_tables.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260804000001_default_deny_new_table_grants.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260804000002_restore_client_role_grants_after_cli_default_flip.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000001_us_federal_default_stage_gate_template.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000002_widen_demographics_language_vocabulary.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000003_rtp_financial_element.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000004_rtp_horizon_bands_may_not_overlap.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000005_restore_revoked_client_grants.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000006_gtfs_service_levels.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000007_gtfs_service_level_honesty_columns.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000008_promote_gtfs_feed_version.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000009_title_vi_service_equity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000010_census_tract_universes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260805000011_survey_question_draft_status.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260810000001_model_run_failure_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260810000002_engagement_campaign_slugs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260810000003_engagement_campaign_projects.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000001_aerial_flight_plans.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000002_aerial_imagery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000003_aerial_custody_georef.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000004_aerial_processing_manifest_jobs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000005_document_library_stored_kinds.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000006_project_record_assignees.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000007_work_notifications.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000008_rtp_extraction_staging.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000009_rtp_extraction_provenance.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000010_kb_ocr_extraction_source.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260811000011_work_notifications_grants.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000001_safety_crash_neutral_dimensions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000002_safety_crash_parties.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000003_safety_crash_severity_counts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000010_award_expenditure_deadline.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000011_local_measure_fund.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000012_measure_claims.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000013_measure_claim_review_reminder.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000014_measure_off_the_top_and_atomic_allocation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000015_workspace_gis_layers.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000016_workspace_gis_features.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000018_workspace_gis_layer_references.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260812000019_measure_period_reserve.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260816000001_workspace_gis_workspace_binding.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260817000001_kb_search_chunks_extraction_source.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260817000002_cron_job_heartbeats.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260820000001_run_artifacts_markdown.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260821000001_engagement_crash_corroboration.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260822000001_work_notification_recipient_can_mark_read.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000001_report_artifact_aerial_preview_mime.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000002_land_use_plans.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000003_land_use_plan_policy_compaction.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000004_land_use_plan_workspace_cascade.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000005_land_use_plan_append_only_cascade.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000006_land_use_plan_report_target.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260823000007_land_use_plan_review_reporting.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000001_safety_ksi_concentrations.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000002_safety_ksi_tract_burden.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000003_project_estimated_cost_and_csv_provenance.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000004_workspace_stage_gate_template_selection.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000005_county_run_worker_lifecycle.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260825000001_reviewed_portfolio_import.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260825000003_safety_road_context_cache.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260825000004_safety_road_context_scope_guard.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000001_safety_exact_acquisition_screens.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000002_project_evidence_bundles.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000003_model_truth_correction.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000004_governed_decision_packages.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000005_decision_package_creator_submission.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000006_decision_package_approver_membership_visibility.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260826000007_scenario_model_link_cascade_delete.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260827000001_model_truth_completion.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260827000002_governed_decision_enforcement.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260827000003_evidence_dependency_freshness.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260828000001_model_validation_assessment_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260828000002_validation_custody_fail_closed.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260828000003_model_validation_structural_diagnosis_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260828000004_comparable_observation_v2_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260828000005_structural_demand_diagnosis_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260831000001_distributed_work_loading_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260831000002_distributed_work_loading_custody_guards.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260904000001_persist_fars_crashes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260905000001_portfolio_unknown_price_year.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260905000002_safety_acquisition_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260905000003_crash_resource_update_provenance.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260906000001_program_work_program_preparation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260906000002_program_work_program_source_snapshot.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260906000003_program_work_program_conflict_response.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000001_document_extraction_recovery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000002_work_program_extraction_versions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000003_work_program_preparation_references.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000004_work_program_export_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000005_work_program_recovery_forward_repair.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260907000006_document_extraction_cancel.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000001_engagement_record_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000003_engagement_public_copy_guards.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000004_engagement_report_jobs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000005_engagement_report_delivery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000006_engagement_survey_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000007_engagement_setup_reuse.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000008_engagement_export_access_paths.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000009_engagement_bundle_access.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000010_engagement_review_intent.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260908000011_engagement_campaign_configuration_scope.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260909000001_work_program_review.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260909000002_work_program_review_packets.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260910000001_work_program_actuals.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260910000002_work_program_reporting.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260910000003_work_program_report_exports.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000001_contract_reconciliation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000002_contract_billing.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000003_contract_documents.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000004_contract_imports.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000005_contract_relationships.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000006_contract_staff_assignments.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000007_contract_evidence.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260911000008_contract_source_deletions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260912000001_contract_master_authorization.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260912000002_contract_scoped_access.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260913000001_contract_delivery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260914000001_contract_management_responses.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260915000002_contract_management_reports.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260922000001_contract_billing_direction.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261003000001_work_program_reimbursement.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261004000001_work_program_closeout_reconciliation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261005000001_work_program_period_closure.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261006000001_work_program_refund_matches.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261007000001_work_program_multi_carryover.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261008000001_assistant_hold_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261009000001_assistant_submittal_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261010000001_assistant_provider_connections.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261011000001_assistant_claude_connections.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261011000002_assistant_opencode_connections.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261012000001_workspace_provider_api_revisions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261012000002_assistant_api_turns.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261013000001_engagement_response_snapshot.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000001_engagement_response_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000002_engagement_response_history_reader.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000003_engagement_response_recovery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000004_engagement_delivery_summary.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000005_engagement_delivery_authority_locks.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000006_engagement_response_rpc_policy_cleanup.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000007_engagement_conflicts_without_transaction_retry.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000008_engagement_translation_scope.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000009_engagement_translation_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000011_engagement_translation_snapshot.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000013_engagement_translation_generation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000014_engagement_translation_generation_reads.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000015_engagement_translation_generation_catalog.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000016_engagement_translation_retained_publication.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000017_engagement_translation_command_activation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000018_engagement_translation_shared_reads.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000019_engagement_translation_generation_resolution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000020_engagement_public_translation_queue.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000021_engagement_response_decision_links.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000022_engagement_decision_request_resolution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000023_engagement_public_copy_privacy.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000024_engagement_report_decision_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000025_engagement_synthesis_sources.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000026_engagement_synthesis_source_list.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000027_engagement_synthesis_reviews.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000028_engagement_synthesis_approvals.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000029_engagement_synthesis_response_links.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000030_engagement_decision_synthesis_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000031_engagement_decision_resolution_guard.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000033_engagement_synthesis_generation_requests.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000034_engagement_synthesis_generation_plans.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000035_engagement_synthesis_generation_execution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000036_engagement_synthesis_generation_history.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000037_engagement_synthesis_context_requests.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000038_engagement_synthesis_context_plans.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261014000039_engagement_synthesis_context_execution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000001_measure_period_fund_integrity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000002_security_artifact_storage_writes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000003_engagement_synthesis_thematic_requests.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000004_engagement_synthesis_thematic_choices.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000005_engagement_synthesis_thematic_preparation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000006_engagement_synthesis_thematic_inputs.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000007_engagement_synthesis_thematic_input_seals.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000008_engagement_synthesis_thematic_plans.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000009_engagement_synthesis_thematic_execution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000010_engagement_synthesis_thematic_import.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000011_engagement_synthesis_thematic_discovery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000012_engagement_synthesis_preparation_queue.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000013_engagement_synthesis_request_discovery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261015000014_engagement_synthesis_preparation_recovery.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000001_bca_workbench_versions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000002_land_use_plan_context.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000003_land_use_plan_draft_revision.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000004_land_use_plan_freeze_commands.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000005_land_use_plan_freeze_server_path.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000006_land_use_plan_retained_study_area.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000007_land_use_plan_creation_commands.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000008_land_use_plan_creation_cancellation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000009_land_use_plan_cascade_guards.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000010_land_use_plan_rule_reconciliation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000011_workspace_gis_cascade_guards.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000013_synthesis_execution_queue.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000014_model_attempt_command_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000015_legacy_assessment_command_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000016_legacy_artifact_command_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000017_legacy_kpi_command_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000018_model_execution_retention.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000019_model_recovery_status.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000020_model_blocked_stage_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000021_model_attempt_prepared_artifact_identity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000022_model_reaper_recovery_boundary.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000023_model_recovery_decisions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000024_model_attempt_instrument_member_read.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000025_gtfs_abandonment_fence.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000026_gtfs_failure_closure.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000027_run_project_workspace_foreign_keys.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000030_gtfs_human_review.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261016000032_model_kpi_receipt_float_precision.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000001_project_map_packages.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000002_engagement_survey_question_counts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000003_aerial_private_dispatch_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000006_permission_integrity.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000007_workspace_time_zone.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000008_historical_run_decisions.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000009_owp_program_type.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000010_workspace_storage_quota.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000011_aerial_preserve_held_custody.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000012_aerial_delivery_authority.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000013_artifact_storage_server_writes.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000014_work_program_evidence_date_workspace_calendar.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000015_node_queue_process_observations.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000016_project_jurisdiction_context.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql"
+    },
+    {
+      "group": "source",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/openplan/supabase/migrations/20261017000019_project_budget_complete_inputs.sql"
+    },
+    {
+      "group": "runtime",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/controller.py"
+    },
+    {
+      "group": "runtime",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/journal.py"
+    },
+    {
+      "group": "runtime",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/policy.py"
+    },
+    {
+      "group": "runtime",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller/runtime/sql.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/controller.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/journal.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/policy.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/REVIEW.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/checks.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/evidence-pins.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/source-pins.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/packet.sha256"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/REPORT.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/VALIDATION.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/evidence.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/packet.sha256"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/DESIGN.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/EOF_METADATA.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/MVCC_LIFECYCLE.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/NUMERIC_BOUNDARY.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/README.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/REPORT.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/SOURCE_COMPATIBILITY.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/VALIDATION.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/catalog.sql"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/controls.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/evidence.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/generate.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/receipts.template.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/source-pins.json"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/verify_text.py"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/REPORT.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/VALIDATION.md"
+    },
+    {
+      "group": "externalReadOnly",
+      "match": true,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/evidence.json"
+    }
+  ]
+}

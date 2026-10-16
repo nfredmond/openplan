@@ -1,0 +1,5 @@
+
+> openplan@0.68.0 product:direction:check
+> node scripts/ops/product-direction-review.mjs --check
+
+Product direction records checked; review deadline 2026-11-06: docs/reviews/product-direction/2026-10-06-integration-review.md (2 independent contexts, review v0.66.0, package v0.68.0).

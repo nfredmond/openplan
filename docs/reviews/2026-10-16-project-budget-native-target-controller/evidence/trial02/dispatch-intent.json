@@ -1,0 +1,78 @@
+{
+  "allMatch": true,
+  "argv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/run-pure-window.sh"
+  ],
+  "attempt": 1,
+  "grantSHA256": "1f6cfe38bef9ed3071eebbea3d8a932b0f149ccd512ba1d6af1d01b76f2eb577",
+  "inputChecks": [
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/controls-reader.diff"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/failed01-private-preservation.json"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/plan.json"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/reuse-pins.json"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/run-pure-window.sh"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/static-anchor-reader-inspection.json"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/controller.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/journal.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/policy.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/templates/sql.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/trial02_controls.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/window_runner.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/controller.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/journal.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/policy.py"
+    },
+    {
+      "match": true,
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-target-controller-20261016/trial02/working/sql.py"
+    }
+  ],
+  "native": "FORBIDDEN",
+  "requestSHA256": "67a51ee5d91a7d9c9e2a4cc4e26b58054992505060f60dfab72013fbdbbba345",
+  "retry": "FORBIDDEN"
+}
