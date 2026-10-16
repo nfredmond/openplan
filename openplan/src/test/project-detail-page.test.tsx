@@ -2284,6 +2284,26 @@ describe("ProjectDetailPage", () => {
       expect(within(board).queryByText(/Spending below recorded progress/)).not.toBeInTheDocument();
     });
 
+    it.each([
+      { label: "invalid stated money", answer: { data: { budget_amount: "9".repeat(400) }, error: null } },
+      { label: "permission failure", answer: { data: null, error: { code: "42501", message: "permission denied for table projects" } } },
+    ])("retains delivery work when the stated-budget source fails ($label)", async ({ answer }) => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Retained delivery work", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: 0,
+        assignee_user_id: null,
+      }], error: null });
+      projectBudgetMaybeSingleMock.mockResolvedValue(answer);
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByText("Retained delivery work")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
+      expect(within(board).queryByText("No deliverables yet")).not.toBeInTheDocument();
+      expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
+      expect(within(board).queryByText(/Budget \$/)).not.toBeInTheDocument();
+    });
+
     it("retains nonzero budget and progress prefills when other financial sources are readable", async () => {
       deliverablesLimitMock.mockResolvedValue({ data: [{
         id: "d1", title: "Readable values", summary: null, owner_label: null, due_date: null,
