@@ -1,0 +1,10 @@
+{
+  "REVIEW.md": "168b966dce7eae589f42eb30cd1b2b61ab83e361260b63eabfb3c8bacfbad18a",
+  "CHECKS.json": "ddbe7c08c11e4ed9341da602adbdfd23250544dafa3ae54b15f74d446ef5ed85",
+  "SOURCE_SEAL.json": "aea5796bd19a32001552f0df3e82cf5089b75883d7d74455317fd874a1e57d84",
+  "privateSeal": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-source-classification-independent-20261016/PRIVATE_SEAL.json",
+    "sha256": "075f0667271aa199df4302ef1fc2a6f95f9f31b56d929be8e672275c292f86f2",
+    "files": 411
+  }
+}

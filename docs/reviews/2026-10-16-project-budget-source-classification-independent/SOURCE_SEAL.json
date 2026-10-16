@@ -1,0 +1,15 @@
+{
+  "candidate": "8e1cc91a78040c91328d91f8200015570052defb",
+  "parent": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+  "applicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "files": {
+    "openplan/src/lib/projects/budget-queries.ts": "c763dfe4041b9f6390f93b2329312a539a2d13796a74719d84f9630413bf9743",
+    "openplan/src/test/project-budget-source-error-classification.test.ts": "1c04f10c8204005125a67637f26b46b699300f26aa67da0647f150554ca3f5a5",
+    "openplan/src/test/project-budget-stated-budget-isolation.test.ts": "b6256dc699f1841bcc39c703663bb8dfd6b79efde45f7bbb689db97b5ac59a0f",
+    "openplan/src/test/project-budget-complete-inputs-corrections.test.ts": "91f76cbb668d6f6a471e2fbe0cb5742b95a08bead069ee143967b6ee674cd35e"
+  },
+  "helper": {
+    "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae"
+  },
+  "candidateEvidenceSealSHA256": "a2505c6ccfa817c070bb94cea4412630911dd702ebdf6edacf7b39b88b00ecc4"
+}

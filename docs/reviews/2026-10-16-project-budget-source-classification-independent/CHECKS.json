@@ -1,0 +1,144 @@
+{
+  "verdict": "bounded-approval",
+  "P1": [],
+  "P2": [],
+  "candidate": "8e1cc91a78040c91328d91f8200015570052defb",
+  "applicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "parent": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+  "verifiedPins": {
+    "report": 3,
+    "source": 4,
+    "private": 113
+  },
+  "independentMatrix": {
+    "baseline": 564,
+    "harmless": 564,
+    "restored": 564,
+    "additionalStateCasesPerRun": 5,
+    "controls": [
+      {
+        "name": "harmless-annotation",
+        "outcome": "survived",
+        "cases": 564
+      },
+      {
+        "name": "broad-statedBudget",
+        "outcome": "killed",
+        "assertion": "statedBudget/internal:pending",
+        "actual": true,
+        "expected": false
+      },
+      {
+        "name": "broad-spendEntries",
+        "outcome": "killed",
+        "assertion": "spendEntries/internal:pending",
+        "actual": true,
+        "expected": false
+      },
+      {
+        "name": "broad-clientInvoices",
+        "outcome": "killed",
+        "assertion": "clientInvoices/internal:pending",
+        "actual": true,
+        "expected": false
+      },
+      {
+        "name": "drop-source-code",
+        "outcome": "killed",
+        "assertion": "statedBudget/internal:custody",
+        "actual": [
+          {
+            "label": "this project's stated budget",
+            "message": "column independent_helper.secret does not exist"
+          }
+        ],
+        "expected": [
+          {
+            "label": "this project's stated budget",
+            "code": "42703",
+            "message": "column independent_helper.secret does not exist"
+          }
+        ]
+      },
+      {
+        "name": "erase-delivery",
+        "outcome": "killed",
+        "assertion": "statedBudget/internal:delivery",
+        "actual": [],
+        "expected": [
+          {
+            "id": "d",
+            "title": "Independent record",
+            "summary": null,
+            "owner_label": null,
+            "due_date": null,
+            "status": "in_progress",
+            "created_at": "2026-10-16",
+            "budget_amount": "100.01",
+            "percent_complete": 0,
+            "assignee_user_id": null
+          }
+        ]
+      },
+      {
+        "name": "zero-fallback",
+        "outcome": "killed",
+        "assertion": "states:amount",
+        "actual": 0,
+        "expected": null
+      },
+      {
+        "name": "erase-pending",
+        "outcome": "killed",
+        "assertion": "spendEntries/relation-{\"message\":\"relation \\\"project_spend_entries\\\" does not exist\"}:pending",
+        "actual": false,
+        "expected": true
+      }
+    ],
+    "finallyRestored": true
+  },
+  "resources": {
+    "before": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "48",
+      "memory.peak": "8925184",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "net": "net:[4026533038]",
+    "mounts": [
+      "20169 4760 259:4 / / ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21022 20169 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules /home/nathaniel/.t3/worktrees/openplan/t3-9211d974/openplan/node_modules ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "checks": [
+      {
+        "name": "matrix",
+        "exit": 0
+      },
+      {
+        "name": "direction",
+        "exit": 0
+      }
+    ],
+    "success": true,
+    "after": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "48",
+      "memory.peak": "155156480",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "elapsedSeconds": 3.530686669051647
+  },
+  "serviceSeconds": 3.672,
+  "terminal": 0,
+  "sharedLock": "single-nonblocking-acquisition; process terminal and no-holder readback",
+  "authorCampaign": "raw audit only, no128/16 rerun",
+  "authorFailedTrials": {
+    "trial01": "failed setup;0 tests/0 counted faults",
+    "trial02": "failed exact-name reader; first mutant11/9pass/2fail;0 completed counted kills"
+  },
+  "blindCategory": "Synthetic envelopes do not establish SQL origin, catalogs, RLS, native cancellation, raw JSON, MVCC, upgrade, browser, money arithmetic, artifacts, M11 or v1 acceptance."
+}
