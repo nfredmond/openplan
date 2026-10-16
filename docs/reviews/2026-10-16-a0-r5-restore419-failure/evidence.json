@@ -1,0 +1,230 @@
+{
+  "status": "FAILED_RESTORED_DATABASE_WITHOUT_ACCEPTED_COMPLETION",
+  "sourceCandidate": "1b21ef6dbc3c9a75872ad6d36e6b7d369c6fda9a",
+  "applicationTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "admissionReview": "98cff4cf63ab760dc6be8550263470a019be1ec7",
+  "reviewSHA256": "bfedfa199bc98e72f3efc54102b8defda9500d67203e54ff14747845865ecf14",
+  "proposalSHA256": "ada674a713647a170e948ba5f4b89436cdd0e367e85f599a377974aafc694bba",
+  "outer": {
+    "exitCode": 1,
+    "seconds": 5.029465477913618,
+    "streamBytes": 412,
+    "streamSHA256": "4179c1011801d1a3a3556292be8c56118105732b9e140b56521bd3f5ffb499da",
+    "unit": "openplan-a0-native-parent-r5-restore419-20261016-01",
+    "finalUnitState": {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "openplan-a0-native-parent-r5-restore419-20261016-01",
+        "--property=ActiveState",
+        "--property=SubState",
+        "--property=InvocationID",
+        "--property=MainPID",
+        "--property=Result",
+        "--property=ExecMainStatus",
+        "--property=MemoryMax",
+        "--property=MemorySwapMax",
+        "--property=CPUQuotaPerSecUSec",
+        "--property=MemoryPeak",
+        "--property=MemorySwapPeak",
+        "--property=ControlGroup"
+      ],
+      "exitCode": 0,
+      "properties": {
+        "ActiveState": "failed",
+        "SubState": "failed",
+        "InvocationID": "932f850eb7044404bb354d13e6f1974e",
+        "MainPID": "0",
+        "Result": "exit-code",
+        "ExecMainStatus": "1",
+        "ControlGroup": "",
+        "MemoryPeak": "14065664",
+        "MemorySwapPeak": "0",
+        "CPUQuotaPerSecUSec": "500ms",
+        "MemoryMax": "1073741824",
+        "MemorySwapMax": "0"
+      },
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "successorDispatched": false
+  },
+  "requests": [
+    {
+      "request": "request-001",
+      "returncode": 0,
+      "pid": 17387,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-002",
+      "returncode": 0,
+      "pid": 17388,
+      "stdoutSHA256": "41b6f2b425d8203703839f2b16e3f5ccae7fd16e551c14e327eaf80d9055eeae",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-003",
+      "returncode": 0,
+      "pid": 17389,
+      "stdoutSHA256": "9fd8fadafa6d5aed88e15adebbdcf427917dd426322b67fa0119de58328ff75e",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-004",
+      "returncode": 0,
+      "pid": 17390,
+      "stdoutSHA256": "9fd8fadafa6d5aed88e15adebbdcf427917dd426322b67fa0119de58328ff75e",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-005",
+      "returncode": 0,
+      "pid": 17391,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-006",
+      "returncode": 0,
+      "pid": 17412,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-007",
+      "returncode": 0,
+      "pid": 17423,
+      "stdoutSHA256": "36f120162a6a08e79d1c495261a8d5e7652c0f66d533d197507a8dc64593ffa5",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-008",
+      "returncode": 0,
+      "pid": 17453,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-009",
+      "returncode": 0,
+      "pid": 17584,
+      "stdoutSHA256": "b98946df91c1231de6a420043aaf3ced53e28589276ac55f892c3905ce97ece2",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-010",
+      "returncode": 0,
+      "pid": 17639,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-011",
+      "returncode": 0,
+      "pid": 17650,
+      "stdoutSHA256": "323f82624515b592abde122e627ba2c12a380f90644e681e2eac3d99d2934457",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-012",
+      "returncode": 0,
+      "pid": 17788,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-013",
+      "returncode": 0,
+      "pid": 17800,
+      "stdoutSHA256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-014",
+      "returncode": 0,
+      "pid": 17832,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-015",
+      "returncode": 0,
+      "pid": 17869,
+      "stdoutSHA256": "9a271f2a916b0b6ee6cecb2426f0b3206ef074578be55d9bc94f6f3fe3ab86aa",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-016",
+      "returncode": 0,
+      "pid": 17916,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-017",
+      "returncode": 0,
+      "pid": 17926,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-018",
+      "returncode": 0,
+      "pid": 18747,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-019",
+      "returncode": 0,
+      "pid": 18772,
+      "stdoutSHA256": "0e7e8e59990626d468f8e09fc0a0e7bf79cf1f20bff3036599e262e3f4f77a50",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-020",
+      "returncode": 0,
+      "pid": 18914,
+      "stdoutSHA256": "193db746c1354a8b56ea0fe8f7727c16dfc746041be0aad8c0cb6b2aa3a35e74",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "request": "request-021",
+      "returncode": 3,
+      "pid": 18939,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "ffa2a8d781640cc9a4a17e1a1daa1ba2e90d4e0137be34ba7e870865fc2c7080"
+    }
+  ],
+  "archiveExit": 0,
+  "history": {
+    "count": 419,
+    "latest": "20261017000016",
+    "matchesFrozen419": true
+  },
+  "failure": {
+    "request": 21,
+    "returncode": 3,
+    "diagnostic": "ERROR:  relation \"http_request_queue_id_seq\" does not have a composite type",
+    "stderrSHA256": "ffa2a8d781640cc9a4a17e1a1daa1ba2e90d4e0137be34ba7e870865fc2c7080"
+  },
+  "originalScopeBeforeMatched": true,
+  "originalScopeAfterObserved": false,
+  "dumpAfterSHA256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398",
+  "missingReceipts": [
+    "complete",
+    "manager-terminal",
+    "history",
+    "snapshot",
+    "definitions"
+  ],
+  "target": "openplan_a0_limit_c2e1f4598374c1bf439baa3b",
+  "targetOID": 6212363,
+  "proofRoot": "/home/nathaniel/.local/state/openplan/a0-r5-restore419-root-decision-20261016",
+  "proofManifestSHA256": "f74881c859719cbc4f41625470352a2c70bfb7a505fa8af4f4fbc1b157324564",
+  "proofFiles": 145,
+  "nativeRetryOrSuccessor": false,
+  "scope": "Helper native snapshot failure, not application defect or accepted restore. Retained target and original stage remain fenced."
+}
