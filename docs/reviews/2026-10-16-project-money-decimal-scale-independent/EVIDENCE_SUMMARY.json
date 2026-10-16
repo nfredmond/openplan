@@ -1,0 +1,320 @@
+{
+  "subjectCommit": "7cc519c584a9c585db4a35266c84f5b083bcace0",
+  "subjectParent": "360420ac42f34d2514bec91a0cd796804a8bd78f",
+  "subjectApplicationTree": "9c6185b267e3f14e8e2a4689137059659750f67a",
+  "disposition": "bounded_source_approval",
+  "P1": 0,
+  "P2": 0,
+  "priorP2_1": "addressed within supplied-string/pure-unit boundary",
+  "newExecution": {
+    "unit": "op-decimal-scale-independent01",
+    "terminalExitCode": 0,
+    "serviceRuntimeSeconds": 6.498,
+    "resources": {
+      "command": [
+        "python3",
+        "-B",
+        "/home/nathaniel/.local/state/openplan/project-money-decimal-scale-independent-20261016/checks.py"
+      ],
+      "environmentKeys": [
+        "HOME",
+        "LC_CTYPE",
+        "NODE_OPTIONS",
+        "PATH",
+        "PYTHONDONTWRITEBYTECODE",
+        "TMPDIR",
+        "VITE_CACHE_DIR",
+        "XDG_CACHE_HOME",
+        "npm_config_cache",
+        "npm_config_globalconfig",
+        "npm_config_userconfig"
+      ],
+      "before": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "memory.peak": "10633216",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "after": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "memory.peak": "263372800",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      },
+      "networkUnshared": true,
+      "donorMount": [
+        "21010 21009 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules /home/nathaniel/.local/state/openplan/project-money-decimal-scale-independent-20261016/exact-source/openplan/node_modules ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+      ],
+      "exitCode": 0,
+      "seconds": 6.332075746031478
+    },
+    "stages": [
+      {
+        "name": "direction",
+        "exitCode": 0,
+        "seconds": 2.9480522649828345,
+        "restoredSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "oracle",
+        "exitCode": 0,
+        "seconds": 1.5972360629821196,
+        "restoredSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      },
+      {
+        "name": "new-nine-tests",
+        "exitCode": 0,
+        "seconds": 1.6976905920309946,
+        "restoredSHA256": {
+          "src/lib/money/optional-amount.ts": "c957ffc9f7c74da749c17c59af46f8f99461e68f1a57445c4ca655d71256d77a",
+          "src/lib/money/format.ts": "9bb8c64c90778f47fd417c0b1e3852353e0e7d11ac2a08b122c17abaf7cf0389",
+          "src/test/money-decimal-scale.test.ts": "3e30927ad63e4a185e6d3b4f66d08a1f12cab1b89bff1ecfbb38de930d6705ca"
+        }
+      }
+    ],
+    "finiteRationalFixtures": 123,
+    "orderedPairs": 15129,
+    "newCandidateTests": 9,
+    "independentNamedFaults": 3,
+    "harmlessSurvives": true,
+    "exactRestoration": true,
+    "unexpectedRuntimeFailures": 0,
+    "oneNonblockingAcquisition": true,
+    "flockReleased": true
+  },
+  "metadataPreparationFailures": 1,
+  "pinAuditCounts": {
+    "currentSource": 3,
+    "currentPrivate": 84,
+    "previousSource": 9,
+    "previousPrivate": 126,
+    "independentPrivate": 18,
+    "originalArithmetic": 113,
+    "independentPublic": 4,
+    "rootScaleDiagnostic": 19
+  },
+  "allAuditedPinsMatch": true,
+  "authorSelected184NotRerun": true,
+  "historical24FaultsNotAllFinalReruns": true,
+  "authorCorrectionNineFaultsRawAssertionsAudited": true,
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-2fd1bd90",
+  "reviewBranch": "t3/review-money-decimal-scale-correction",
+  "reviewBase": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewApplicationTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-money-decimal-scale-independent-20261016",
+  "privateTopLevelPins": {
+    "admission.json": {
+      "sha256": "24ed8c447852044df8987366c24bce06004cb0698c3bdc313842476a2bda6ed7",
+      "bytes": 355,
+      "mode": "0o664"
+    },
+    "author-assertion-audit.json": {
+      "sha256": "e03ee1482579d7970ab73b323bdcec46a4fae39a78b87808be21383171caf025",
+      "bytes": 14026,
+      "mode": "0o664"
+    },
+    "check-results.json": {
+      "sha256": "1c493081919e2cb941b486284f3cddd400c1104be1ac71150d37ba64eff12457",
+      "bytes": 1331,
+      "mode": "0o664"
+    },
+    "checks-resources.json": {
+      "sha256": "fabefa8383954106b52ace14ba12f4b65c6e28402a12b7d3b5f2c9b389b50e29",
+      "bytes": 1268,
+      "mode": "0o664"
+    },
+    "checks.py": {
+      "sha256": "6dd209a2a97455507b726082fe6576f5f045a52590791f54a5510ca56ec8bbe3",
+      "bytes": 1692,
+      "mode": "0o664"
+    },
+    "consumer-paths.txt": {
+      "sha256": "f59bc240867b15d85ee96f7e34d76aa33ce4eef3d8b720634e8b2fc5cb9982d1",
+      "bytes": 3710,
+      "mode": "0o664"
+    },
+    "direction-intent.json": {
+      "sha256": "5c6553711dd5883216d8efb81e02cec3f702bf4732351716be3ebdc2084d6d0e",
+      "bytes": 418,
+      "mode": "0o664"
+    },
+    "direction.log": {
+      "sha256": "1f4e3a3cc1fc99b70e34500918ba1afe17ceacc2322f7bbd2e3986658c4b3458",
+      "bytes": 1095,
+      "mode": "0o664"
+    },
+    "final-audit.json": {
+      "sha256": "d98250f41d8a33db131d04c1741ce81f007d544e44a096e5bb5a9f2722d31468",
+      "bytes": 899,
+      "mode": "0o664"
+    },
+    "gitdir.txt": {
+      "sha256": "9bfdea5fec92cf46b4180c9bb391ce65852b6190294cac2f10f6e4856ea468a6",
+      "bytes": 56,
+      "mode": "0o664"
+    },
+    "global-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "host-network.txt": {
+      "sha256": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+      "bytes": 16,
+      "mode": "0o664"
+    },
+    "installed-versions.json": {
+      "sha256": "0c0270a232f73df5695086720c25b40886faa511e4d34bce40ce506b3559fa22",
+      "bytes": 69,
+      "mode": "0o664"
+    },
+    "new-nine-results.json": {
+      "sha256": "043cbf93b42b9a7294a52944cb56bfa894787b2838ea0ad65f71a544945c6255",
+      "bytes": 3723,
+      "mode": "0o664"
+    },
+    "new-nine-tests-intent.json": {
+      "sha256": "d8ff29e780e749b030de4533edaa75d9a08850ee214a49a847dcf90b1a83ebb7",
+      "bytes": 750,
+      "mode": "0o664"
+    },
+    "new-nine-tests.log": {
+      "sha256": "2e0fb98d796263d3271d501fc2d704c475462bec0b7ed9e6ec03c4ede4d537c0",
+      "bytes": 132,
+      "mode": "0o664"
+    },
+    "oracle-fixtures.json": {
+      "sha256": "12416ea382edb54caf8dde57122e0c77020776cbfa6569ece204edf9955b5944",
+      "bytes": 1336879,
+      "mode": "0o664"
+    },
+    "oracle-intent.json": {
+      "sha256": "3ccf9fadbb80e921ee6800c0157a5c5d406a59d6704c5b57858c345c5113fedf",
+      "bytes": 482,
+      "mode": "0o664"
+    },
+    "oracle-results.json": {
+      "sha256": "09bb03d410dbca4e23d29603aa9a3c826c30ec4ed9a5a22272515213842dff26",
+      "bytes": 5456,
+      "mode": "0o664"
+    },
+    "oracle.cjs": {
+      "sha256": "e353d7950ffafcd1c260aa9bb543302c99c231d57c364164917a2cc40a538550",
+      "bytes": 5714,
+      "mode": "0o664"
+    },
+    "oracle.log": {
+      "sha256": "40fd13f93109a2b52da073119c6764fcba1e1be0872c18a8591ba4f5f0a048b1",
+      "bytes": 152,
+      "mode": "0o664"
+    },
+    "overlay.json": {
+      "sha256": "42b4251c937d2a1d29e4e0ae0da8d2f5a22861d5bd47fe1c4cfffaa71b7b2932",
+      "bytes": 347,
+      "mode": "0o664"
+    },
+    "parent-terminal.json": {
+      "sha256": "ad883393abbab22f9b33699234b09ed0d85ef35b731da1c0e34c4930abe26394",
+      "bytes": 406,
+      "mode": "0o664"
+    },
+    "pin-audit.json": {
+      "sha256": "70d68b8b8ce733b19106c9ce45ebc9574cb0d76519cad88f58a09808c083fc60",
+      "bytes": 65270,
+      "mode": "0o664"
+    },
+    "preparation-failure.json": {
+      "sha256": "1cf82bc97c028745d0be11baf39ad943afd5dc1f34949380605bbab9438538e5",
+      "bytes": 225,
+      "mode": "0o664"
+    },
+    "prepare-oracle.py": {
+      "sha256": "3a210fb36cbfcf2cbc6b4573952a62cbfe4a8e75a5e9fc0fa6dffb5e5517e660",
+      "bytes": 1488,
+      "mode": "0o664"
+    },
+    "resource-exec.py": {
+      "sha256": "4f28e9beb01e5b0af5716e2c0839e68d84d72a520cc29572329d095f21d6e7f2",
+      "bytes": 1303,
+      "mode": "0o664"
+    },
+    "root-scale-audit.json": {
+      "sha256": "23959c5eb3a42e388035f13e546c1d7d6365de398520f23ca2e1f8e1898280ef",
+      "bytes": 3237,
+      "mode": "0o664"
+    },
+    "run.sh": {
+      "sha256": "3b998e17b8f7a60ecc9031a72ab60d0fb6028ef85bb155e0baba6cbaa8ff83eb",
+      "bytes": 970,
+      "mode": "0o664"
+    },
+    "source-seals.json": {
+      "sha256": "6664a4e82576d9cb0b54276596e6934145a184d7b569ccfd3b47c9b65340525b",
+      "bytes": 1155,
+      "mode": "0o664"
+    },
+    "unit.log": {
+      "sha256": "2a5a148610de307ba33972684f3302c8fbdcdf7ee2d04913105eccd2371ffca5",
+      "bytes": 324,
+      "mode": "0o664"
+    },
+    "user-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "vitest.config.mjs": {
+      "sha256": "f19da98c2c4e88b2efaeec8b47122d9471741751ea5287967797c700658d5659",
+      "bytes": 473,
+      "mode": "0o664"
+    }
+  },
+  "excludedDirectories": [
+    "exact-source",
+    "home",
+    "tmp",
+    "xdg",
+    "npm",
+    "vite",
+    "compiled"
+  ],
+  "postCommitReceiptExcluded": true,
+  "reportHashes": {
+    "REPORT.md": "ee56d3ee2af1db6b9d9b7f939edf1f5302b5232f05ce388b915fd858fdebf5fb",
+    "VALIDATION.md": "a93db49b568a607b85e2d6b8d3b32f90eb7ad59737363ee6b8a2b74a58d0e41e",
+    "SOURCE_SEALS.json": "0a5d3b060975a5b45d23df59e663f9a4a6ca595bf241e1c520d842154c5dec8f"
+  },
+  "acceptance": {
+    "nativeNUMERIC": false,
+    "nativeRPCJSON": false,
+    "ACL_RLS": false,
+    "committed1201Fixture": false,
+    "snapshotConcurrency": false,
+    "upgradeRestore": false,
+    "browserIntl": false,
+    "browserDesktop390": false,
+    "exports": false,
+    "practitionerFinance": false,
+    "fullApplicationCompile": false,
+    "fullSuite": false,
+    "M11": false,
+    "scientific": false,
+    "hosted": false,
+    "v1": false,
+    "integration": false,
+    "push": false,
+    "PR": false,
+    "main": false,
+    "release": false
+  }
+}

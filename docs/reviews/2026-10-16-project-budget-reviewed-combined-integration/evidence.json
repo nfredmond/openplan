@@ -1,0 +1,233 @@
+{
+  "sourceHead": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+  "appTree": "e04a8509926c27065e77537f1816071811bb5b4d",
+  "sourceReviews": [
+    "75bf571d590de8f1bd57d67f601a86a788043501",
+    "541f01e582ff3b7bc19448ef89f824cc70540047"
+  ],
+  "sourceMatch": {
+    "money": 10,
+    "isolation": 3
+  },
+  "checks": [
+    {
+      "label": "direction",
+      "exitCode": 0,
+      "seconds": 1.7450499479891732,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "tests",
+      "exitCode": 0,
+      "seconds": 44.30685138795525,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "types",
+      "exitCode": 0,
+      "seconds": 10.942534597008489,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "lint",
+      "exitCode": 0,
+      "seconds": 10.050859451992437,
+      "sourceUnchanged": true
+    }
+  ],
+  "terminal": {
+    "parentSession": 11246,
+    "terminalExitCode": 0,
+    "unit": "op-budget-combined-checks01.service",
+    "invocationID": "22254e3483364bf7b9317f7e4833bc61",
+    "runtimeSeconds": 67.278,
+    "resources": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "488198144",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "testSummary": {
+      "tests": {
+        "success": true,
+        "numPassedTests": 298,
+        "numFailedTests": 0,
+        "numPendingTests": 0
+      },
+      "selectedFiles": 13,
+      "sourceUnchanged": true,
+      "fullSuite": false,
+      "fullApplicationCompile": false
+    },
+    "compilerLockReleasedWithUnit": true,
+    "sourceHead": "93c5a1efc514d53db953bdba5a8322dcf844e14b",
+    "appTree": "e04a8509926c27065e77537f1816071811bb5b4d"
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-checks-20261016",
+  "privateTopLevelPins": {
+    "admission.json": {
+      "sha256": "134e4114f948b89d04176e4566cf9e2825fccef5b4ccbc80c657806492f7c65c",
+      "bytes": 549,
+      "mode": "0o600"
+    },
+    "checks.py": {
+      "sha256": "c73a49184f2c6e7b985c90269410f62ad31ab7dc4c6096e6879359bb16836760",
+      "bytes": 2848,
+      "mode": "0o664"
+    },
+    "checks01-resources.json": {
+      "sha256": "4b79845a539b6932cb8c0fc099f938757c907808fe8ed2e7bc21df6c89d9e79a",
+      "bytes": 1256,
+      "mode": "0o664"
+    },
+    "direction-intent.json": {
+      "sha256": "62388333b633a40b64dfb72704e5738e17c9884d2dd59c9aca4a7a74c6dde1e1",
+      "bytes": 1890,
+      "mode": "0o664"
+    },
+    "direction-stderr.log": {
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "bytes": 648,
+      "mode": "0o664"
+    },
+    "direction-stdout.log": {
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "bytes": 286,
+      "mode": "0o664"
+    },
+    "global-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "host-network.txt": {
+      "sha256": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+      "bytes": 16,
+      "mode": "0o600"
+    },
+    "lint-intent.json": {
+      "sha256": "1cb5624f08a6e3c12e8236e79951e7708263c734639b98e6baf74af57ce1dd8a",
+      "bytes": 2604,
+      "mode": "0o664"
+    },
+    "lint-stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "lint-stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "parent-terminal.json": {
+      "sha256": "0c6fc9c22a944721edce08ffb7afee1658099b8a270a8b4d345a2a1e0748e31e",
+      "bytes": 852,
+      "mode": "0o600"
+    },
+    "resource-exec.py": {
+      "sha256": "6fd84281f6f36d9590356f2effc0d069c4fbb1ed5ec4cf73cec46eb673e6ce1e",
+      "bytes": 1283,
+      "mode": "0o600"
+    },
+    "results.json": {
+      "sha256": "3483035dd91c59b63fa01dd0df8d053c237711d58076e8409695c61d6d56ad28",
+      "bytes": 457,
+      "mode": "0o664"
+    },
+    "run.sh": {
+      "sha256": "dc60cc30f8c77ecd273d0a43adba7d918e30c28a48a5e386204bf91d0a8f085a",
+      "bytes": 1044,
+      "mode": "0o600"
+    },
+    "setup.json": {
+      "sha256": "68a0bdaef47a46fe792a3d3bb789123390232ea5ea7b581812133f4bfe647e3f",
+      "bytes": 474,
+      "mode": "0o600"
+    },
+    "summary.json": {
+      "sha256": "760cb440b68ed7efc4c47405e7e9f53a3e17148ec00e9268f48a2b36be73eef8",
+      "bytes": 226,
+      "mode": "0o664"
+    },
+    "test-files.json": {
+      "sha256": "70579369f177a15b66aa239c1154b8830d75b53364ba2c13e8d42e1bc60b58d1",
+      "bytes": 692,
+      "mode": "0o600"
+    },
+    "tests-intent.json": {
+      "sha256": "6c55df0906f16a3672b994dbfa9b6c77a055aaa80eab211cc1cda56346cf79ee",
+      "bytes": 2889,
+      "mode": "0o664"
+    },
+    "tests-result.json": {
+      "sha256": "b82e75bbbfe73e89629f7c82fba7bf14e0a12f054ae077789780efd839989bb3",
+      "bytes": 105424,
+      "mode": "0o664"
+    },
+    "tests-stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "tests-stdout.log": {
+      "sha256": "d85cc018da2384c345c7edc48324056f3d8fc62601ad1888fa6e9cf2d2a05ab0",
+      "bytes": 128,
+      "mode": "0o664"
+    },
+    "tsconfig.json": {
+      "sha256": "8dd0f739b0cd92031c58ad5fa4f9754e2c285853ac037cdcdd4351227e0d5b4b",
+      "bytes": 2911,
+      "mode": "0o600"
+    },
+    "types-intent.json": {
+      "sha256": "0c580bfc2a9212b76b59e54b06aeb38a507ccbac6b9cc3207f4d4c4b2bb2edec",
+      "bytes": 2029,
+      "mode": "0o664"
+    },
+    "types-stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "types-stdout.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "user-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "vitest.config.mjs": {
+      "sha256": "52bece391578f664855063aa92bc25291d032f03ae9210fb21158791b9b8e1d5",
+      "bytes": 515,
+      "mode": "0o600"
+    }
+  },
+  "excludedDirectories": [
+    "home",
+    "tmp",
+    "xdg",
+    "npm",
+    "vite"
+  ],
+  "newGuardOrTestChange": false,
+  "newMutationCampaign": false,
+  "separateKnownOpen": "Generic pending classifier can swallow internal42703 in stated/spend/invoice; syntheticprobe only, separate sourcecorrection underway",
+  "acceptance": {
+    "nativeSQL19": false,
+    "RLS": false,
+    "committedCompleteHTTP": false,
+    "snapshotConcurrency": false,
+    "fullSuite": false,
+    "fullApplicationCompile": false,
+    "browser": false,
+    "practitionerFinance": false,
+    "M11": false,
+    "v1": false,
+    "release": false
+  }
+}
