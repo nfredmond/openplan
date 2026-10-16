@@ -10,6 +10,12 @@
   "preflightReadySHA256": "b5784fc31f577a24e6a5c872fc961b9e13c3e31e2c0ae832547d78912ac33182",
   "protectedBaselineSHA256": "243ea52cf988b5cbf2d485247c032400b5297b64ac84733c4574d1d5f13ecf24",
   "restoreSession": 4096,
-  "restoreState": "running",
-  "nativeAcceptance": false
+  "restoreState": "terminal success",
+  "nativeAcceptance": false,
+  "restoreExit": 0,
+  "restoreInvocation": "fc0b6044bb9f49c9ae98fd803537f817",
+  "targetOID": "6196780",
+  "cloneReadySHA256": "41423348cbd631d20ff58bb85197deabcf2003235bc0281b52b102b930f8b683",
+  "upgradeState": "refused before dispatch: shared lock occupied",
+  "upgradeIntentAbsent": true
 }
