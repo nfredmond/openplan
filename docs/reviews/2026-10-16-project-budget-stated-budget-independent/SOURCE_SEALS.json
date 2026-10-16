@@ -1,0 +1,88 @@
+{
+  "candidateArchiveCommit": "5b9397968b276ab57121cca2bdc14d832b3b11f4",
+  "candidateAppTree": "f520e01ef084e78f1bde90cbe4d6941facd2dae2",
+  "patchSHA256": "404acef304a567807dc2ef2dda3292bc2e83eb0baaba9cce56d7567fe13af35c",
+  "assignedBase": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "assignedAppTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+  "scope": "Production and test source pins for this bounded review. The docs-only report commit retains its assigned app tree, not the candidate app tree.",
+  "files": [
+    {
+      "path": "openplan/src/lib/projects/budget-queries.ts",
+      "bytes": 12241,
+      "sha256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "gitBlob": "48b0d2af2a960852d74fb1721c8b720d81a977b7"
+    },
+    {
+      "path": "openplan/src/test/project-budget-stated-budget-isolation.test.ts",
+      "bytes": 3906,
+      "sha256": "e1a509aeac4ad233fac4d6b16ad40c2e659c3b3c5a55418fd1f08895bd026a27",
+      "gitBlob": "0f10128f90091fd31866d36acad2995b9e9ee18f"
+    },
+    {
+      "path": "openplan/src/test/project-detail-page.test.tsx",
+      "bytes": 123629,
+      "sha256": "9d4083a7beb090a6d57ade0506ea88aa22f804a9b8903fd18668bf611a51c58a",
+      "gitBlob": "569f48569cc446d0ddfd3bcc7edc67b5133348da"
+    },
+    {
+      "path": "openplan/src/app/(app)/projects/[projectId]/page.tsx",
+      "bytes": 75733,
+      "sha256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5",
+      "gitBlob": "3d7bf624da8399e6fd2fec33d4aadc0e92cac315"
+    },
+    {
+      "path": "openplan/src/app/(app)/projects/[projectId]/_components/project-delivery-board.tsx",
+      "bytes": 38104,
+      "sha256": "430adcaa588db46b850553e6e635f560053559b0c310cac4c03dc838020a8972",
+      "gitBlob": "d53f2aa175f63350129835c38590b98869a3d45f"
+    },
+    {
+      "path": "openplan/src/lib/projects/budget.ts",
+      "bytes": 13459,
+      "sha256": "7b0f37e64f4a55a5d2d2e92d0a317ab0df9ab5c4e386257b8cc9db191fe6c873",
+      "gitBlob": "d7739475f9b4383056dbecab62beef837c8cba84"
+    },
+    {
+      "path": "openplan/src/test/helpers/project-budget-snapshot.ts",
+      "bytes": 1527,
+      "sha256": "1719fc919f08068966351a03ea9da8d84d21bda648bda8cda761f59ebd6ea442",
+      "gitBlob": "2fd37279ce3b6fbc551bbdee49805e5a559469fb"
+    },
+    {
+      "path": "openplan/src/lib/supabase/pending-schema.ts",
+      "bytes": 5109,
+      "sha256": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+      "gitBlob": "0aa1e17054daf4bf90e02240147c5cff19b53891"
+    },
+    {
+      "path": "openplan/src/lib/money/optional-amount.ts",
+      "bytes": 1475,
+      "sha256": "f5714d6db74f9894e155599e0a05dbe32bc13911d4f639fa5584c2256099fe2c",
+      "gitBlob": "4ade49e1e75558db7e748750f44d9e2d7ad958fb"
+    },
+    {
+      "path": "openplan/src/app/(app)/projects/[projectId]/_components/project-budget-panel.tsx",
+      "bytes": 9111,
+      "sha256": "4fa0a7b2e5dc9cbb18bc3243561e2daeb93803331bc6ecc64ec2df5e4095ad59",
+      "gitBlob": "91ed9dc948264872ef2073c45acbce6edf5d98cd"
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017000019_project_budget_complete_inputs.sql",
+      "bytes": 6046,
+      "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+      "gitBlob": "5b9f4d5dd856638995c771ea60d5c4686c341fe4"
+    },
+    {
+      "path": "openplan/package-lock.json",
+      "bytes": 603270,
+      "sha256": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420",
+      "gitBlob": "8d4da9bde123262752925e8b73fc6bc4d292fb15"
+    },
+    {
+      "path": "openplan/vitest.config.ts",
+      "bytes": 3779,
+      "sha256": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+      "gitBlob": "6f3dd9115350f7bdfd84da3c62465d431dfa9d0c"
+    }
+  ]
+}
