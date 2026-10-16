@@ -2,6 +2,8 @@
 
 October 15, 2026, America/Los_Angeles. **Preparation only. Root reviews this plan before seeking any operating authorization.** No release is authorized. The current task overrides older autonomous hosted-operation instructions in AGENTS.md.
 
+The [parent disposition](PARENT_DISPOSITION.md) supersedes this report's broader approval and recovery requirements. The original preparation findings remain preserved below.
+
 The proposed order is inventory, rehearsal capture, isolated upgrade/recovery proof, fresh protected capture, migrations, then code promotion and identified delivery checks. A merge to main triggers deployment. Git deployment does not apply Supabase migrations.
 
 ## Exact source and ownership
