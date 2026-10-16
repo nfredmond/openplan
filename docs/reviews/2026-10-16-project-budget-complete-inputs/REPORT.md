@@ -7,11 +7,17 @@ A3, native financial acceptance, or v1. The roadmap remains the sole queue.
 ## Source and ownership
 
 The assigned checkout is `/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f`,
-branch `t3/2dcbde6f`. It started clean at
+current branch `t3/project-budget-complete-inputs`. Initial inspection reports
+`t3/2dcbde6f`; the reflog records its rename before the fast-forward. This lane
+issues no branch-rename command. It started clean at
 `05dd3e8da4a4572437f06e771b0a2477873e681f` and fast-forwarded locally, without a
 fetch, to `f8a571bb0a18b8b6501870acb5ef1e760d487e1c`, also verified at the supplied
 `t3-e04f0f77` checkout. The base app tree is
 `d577a9cd955018b3253f42b3d9af2a96a9a10b53`.
+The verified implementation checkpoint is
+`3ff0474afe89465ed33a1d163364b2c2d51ca334`, with app tree
+`c499b7089021bb4d131319828f4e56740ce794b6`. The following identity correction
+changes this report only. Both checkpoints remain local.
 
 Ownership covers `budget-queries.ts`, the source-identity fields in `budget.ts`,
 the financial panel and its page wiring, their focused tests/transport fixtures,
