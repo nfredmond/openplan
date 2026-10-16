@@ -1,0 +1,253 @@
+{
+  "date": "2026-10-16",
+  "sourceBase": "0ceedbbd174edb557e90b5bf6a144592e8120bb4",
+  "candidateStagedAppTree": "f520e01ef084e78f1bde90cbe4d6941facd2dae2",
+  "sourceFiles": {
+    "openplan/src/lib/projects/budget-queries.ts": {
+      "sha256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "bytes": 12241
+    },
+    "openplan/src/test/project-budget-stated-budget-isolation.test.ts": {
+      "sha256": "e1a509aeac4ad233fac4d6b16ad40c2e659c3b3c5a55418fd1f08895bd026a27",
+      "bytes": 3906
+    },
+    "openplan/src/test/project-detail-page.test.tsx": {
+      "sha256": "9d4083a7beb090a6d57ade0506ea88aa22f804a9b8903fd18668bf611a51c58a",
+      "bytes": 123629
+    }
+  },
+  "sql19SHA256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+  "sourceCommit": null,
+  "sourceCustody": "Three staged source changes pre-exist this report turn and remain staged, unchanged and uncommitted. This report commit owns only its new documentation.",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016",
+  "privateManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/report-private-input-manifest.json",
+    "sha256": "861d14e86a43f09210239739c1d84a78af1ef164a1f8298041009ef0aede4403",
+    "entries": 2469
+  },
+  "checks": [
+    {
+      "tag": "resource-guards",
+      "returncode": 0,
+      "args": [
+        "/usr/bin/python3",
+        "-B",
+        "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/resource_controls.py"
+      ]
+    },
+    {
+      "tag": "lint",
+      "returncode": 0,
+      "args": [
+        "/usr/bin/node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/lib/projects/budget-queries.ts",
+        "src/test/project-budget-stated-budget-isolation.test.ts",
+        "src/test/project-detail-page.test.tsx",
+        "--max-warnings=0"
+      ]
+    },
+    {
+      "tag": "types",
+      "returncode": 0,
+      "args": [
+        "/usr/bin/node",
+        "node_modules/typescript/bin/tsc",
+        "-p",
+        "/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/tsconfig.budget.json"
+      ]
+    },
+    {
+      "tag": "combined",
+      "returncode": 0,
+      "args": [
+        "/usr/bin/node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/project-budget-queries.test.ts",
+        "src/test/project-budget-complete-inputs-corrections.test.ts",
+        "src/test/project-budget-stated-budget-isolation.test.ts",
+        "src/test/project-budget-snapshot-migration.test.ts",
+        "src/test/project-detail-page.test.tsx",
+        "src/test/project-budget.test.ts",
+        "src/test/project-budget-panel.test.tsx",
+        "src/test/the-deliverable-update-control-is-reachable.test.tsx",
+        "src/test/the-record-reassignment-control-is-reachable.test.tsx",
+        "--config=/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/vitest.private.mts",
+        "--configLoader=runner",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/project-budget-stated-budget-isolation-20261016/combined.json"
+      ]
+    }
+  ],
+  "results": {
+    "resource-guards": {
+      "returncode": 0,
+      "stdoutSHA256": "833070779488b6f447eee07298a6f1021c71556e367d881e01b68ad55a257535",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "resources": {
+        "memory.peak": "15540224",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    },
+    "lint": {
+      "returncode": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "resources": {
+        "memory.peak": "346259456",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    },
+    "types": {
+      "returncode": 0,
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "resources": {
+        "memory.peak": "337506304",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    },
+    "combined": {
+      "returncode": 0,
+      "stdoutSHA256": "c0294ef9699b89e2d972610fbbf23e1c5e537c76a4ea6d2af1e3b02e0728e695",
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "resources": {
+        "memory.peak": "453521408",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+      }
+    }
+  },
+  "mutations": [
+    {
+      "tag": "harmless",
+      "returncode": 0,
+      "passed": 16,
+      "failed": 0,
+      "pending": 84,
+      "intendedAssertion": null,
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "lost-isolation",
+      "returncode": 1,
+      "passed": 10,
+      "failed": 6,
+      "pending": 84,
+      "intendedAssertion": "isolates malformed stated-budget money",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "invented-success",
+      "returncode": 1,
+      "passed": 10,
+      "failed": 6,
+      "pending": 84,
+      "intendedAssertion": "isolates malformed stated-budget money",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "wrong-source-message",
+      "returncode": 1,
+      "passed": 11,
+      "failed": 5,
+      "pending": 84,
+      "intendedAssertion": "isolates malformed stated-budget money",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "invented-zero",
+      "returncode": 1,
+      "passed": 10,
+      "failed": 6,
+      "pending": 84,
+      "intendedAssertion": "retains honest optional stated-budget values (0)",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "foreign-project",
+      "returncode": 1,
+      "passed": 15,
+      "failed": 1,
+      "pending": 84,
+      "intendedAssertion": "refuses an invalid outer identity (1)",
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    },
+    {
+      "tag": "financial-summary-reappears",
+      "returncode": 1,
+      "passed": 14,
+      "failed": 2,
+      "pending": 84,
+      "intendedAssertion": "retains delivery work when the stated-budget source fails",
+      "beforeSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5",
+      "restoredSHA256": "2d3cb3b451c96926a0ffab5aabe387294b462fbd7c0631b2b6903b81c11efbf5"
+    },
+    {
+      "tag": "restored",
+      "returncode": 0,
+      "passed": 16,
+      "failed": 0,
+      "pending": 84,
+      "intendedAssertion": null,
+      "beforeSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab",
+      "restoredSHA256": "30c5133a27cfb723c9ea1fdbe45cf6a19a5fb9c156d0804565105ba14b9b63ab"
+    }
+  ],
+  "resourceControls": {
+    "trials": [
+      {
+        "tag": "baseline",
+        "pass": true
+      },
+      {
+        "tag": "harmless",
+        "pass": true
+      },
+      {
+        "tag": "remove-memory.max",
+        "failedAs": "missing-refusal:memory.max"
+      },
+      {
+        "tag": "remove-memory.swap.max",
+        "failedAs": "missing-refusal:memory.swap.max"
+      },
+      {
+        "tag": "remove-cpu.max",
+        "failedAs": "missing-refusal:cpu.max"
+      },
+      {
+        "tag": "remove-donorKernelReadOnly",
+        "failedAs": "missing-refusal:donorKernelReadOnly"
+      },
+      {
+        "tag": "restored",
+        "pass": true
+      }
+    ],
+    "beforeSHA256": "8b4d7db613fb368c93751bcf86991aa798686b1303c0f6bb9fe9a66b656efdec",
+    "afterSHA256": "8b4d7db613fb368c93751bcf86991aa798686b1303c0f6bb9fe9a66b656efdec",
+    "scope": "Pure controls over the exact observed-resource assertion AST, not actual resource misconfiguration or donor writes"
+  },
+  "parentFinalExit": {
+    "execSessionId": 85255,
+    "returncode": 0,
+    "finalControllerLogSHA256": "fa7f5454412752e3b2ea5eb1006fe7ed99b34c475c91ee1683d13222a99b981a",
+    "combinedReportSHA256": "7f9c4d5737b915bb9bc325397d55bc2300d6721dc5f6e5df7a8b11ff511ff7d6"
+  },
+  "limits": [
+    "No full-project TypeScript or production build",
+    "No native SQL, RLS, API row-limit or transaction snapshot acceptance",
+    "No identified-build browser desktop/390px acceptance",
+    "No hosted, scientific, practitioner, finance or v1 acceptance",
+    "Separate exact-money accumulation correction remains open"
+  ]
+}
