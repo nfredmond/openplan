@@ -352,3 +352,9 @@ describe("the deliverable update control is reachable from the delivery board", 
     expect(refreshMock).not.toHaveBeenCalled();
   });
 });
+
+it("labels the direct-cost chip as direct spending", async () => {
+  await renderBoardFromRealBuilders();
+  expect(screen.queryByText("Direct spending $2,000.00")).not.toBeNull();
+  expect(screen.queryByText(/Billed \+ spend/)).not.toBeInTheDocument();
+});

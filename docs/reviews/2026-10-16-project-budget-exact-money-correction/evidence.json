@@ -1,0 +1,1082 @@
+{
+  "baseCommit": "0ceedbbd174edb557e90b5bf6a144592e8120bb4",
+  "applicationTree": "98535591a5a5916e0ffaef4125196366d3816410",
+  "rootEvidenceAudit": {
+    "pinCount": 113,
+    "rootReportSHA256": "5958ef3fdebb09466a2a0d3a5320bb2b0f6ccfcd8174033643389272f416c56d",
+    "frozenSourcePins": {
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/projects/budget.ts": "7b0f37e64f4a55a5d2d2e92d0a317ab0df9ab5c4e386257b8cc9db191fe6c873",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/money/optional-amount.ts": "f5714d6db74f9894e155599e0a05dbe32bc13911d4f639fa5584c2256099fe2c",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/invoicing/invoice-records.ts": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/work/deadlines.ts": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/projects/budget-queries.ts": "465c8d8b2c6422891ecd59c5fff0037b525f0ffd4ee4ea101bcef64fe4e4eb99",
+      "/home/nathaniel/.t3/worktrees/openplan/t3-2dcbde6f/openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae"
+    },
+    "verifiedPrivatePinCount": 113,
+    "allPrivatePinHashesBytesAndModesMatch": true,
+    "rootReportMatchesManifest": true,
+    "rootEvidenceManifestSHA256": "8ed6a618f540a04ed5ecf659694971a940bfeabaa5cc85fe872d97b917dcfd94"
+  },
+  "finalChecks": [
+    {
+      "name": "types-final",
+      "exitCode": 0,
+      "seconds": 10.575965565047227
+    },
+    {
+      "name": "lint-final",
+      "exitCode": 0,
+      "seconds": 7.698066242039204
+    },
+    {
+      "name": "tests-final",
+      "exitCode": 0,
+      "seconds": 18.604763625888154
+    },
+    {
+      "name": "after-probe",
+      "exitCode": 0,
+      "seconds": 1.7668163790367544
+    }
+  ],
+  "finalResourceReceipt": {
+    "command": [
+      "python3",
+      "/home/nathaniel/.local/state/openplan/project-budget-exact-money-correction-20261016/finish.py"
+    ],
+    "environmentKeys": [
+      "HOME",
+      "LC_CTYPE",
+      "NODE_OPTIONS",
+      "PATH",
+      "TMPDIR",
+      "VITE_CACHE_DIR",
+      "XDG_CACHE_HOME",
+      "npm_config_cache",
+      "npm_config_globalconfig",
+      "npm_config_userconfig"
+    ],
+    "before": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "8691712",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "after": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "485269504",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "networkUnshared": true,
+    "donorMount": [
+      "21832 21830 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules /home/nathaniel/.t3/worktrees/openplan/t3-88a8a5f3/openplan/node_modules ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "exitCode": 0,
+    "seconds": 102.02233388391323
+  },
+  "afterCases": [
+    {
+      "label": "ordinary-cents",
+      "count": 10000,
+      "amount": "0.01",
+      "loaderAccepted": true,
+      "expected": "100.00",
+      "actual": "100.00",
+      "displayed": "$100.00",
+      "representation": "number",
+      "deliverableActual": "100.00",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "ordinary-large",
+      "count": 10000,
+      "amount": "19999.99",
+      "loaderAccepted": true,
+      "expected": "199999900.00",
+      "actual": "199999900.00",
+      "displayed": "$199,999,900.00",
+      "representation": "number",
+      "deliverableActual": "199999900.00",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-2",
+      "count": 2,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "1999999999999.98",
+      "actual": "1999999999999.98",
+      "displayed": "$1,999,999,999,999.98",
+      "representation": "number",
+      "deliverableActual": "1999999999999.98",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-19",
+      "count": 19,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "18999999999999.81",
+      "actual": "18999999999999.81",
+      "displayed": "$18,999,999,999,999.81",
+      "representation": "number",
+      "deliverableActual": "18999999999999.81",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-33",
+      "count": 33,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "32999999999999.67",
+      "actual": "32999999999999.67",
+      "displayed": "$32,999,999,999,999.67",
+      "representation": "number",
+      "deliverableActual": "32999999999999.67",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-49",
+      "count": 49,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "48999999999999.51",
+      "actual": "48999999999999.51",
+      "displayed": "$48,999,999,999,999.51",
+      "representation": "number",
+      "deliverableActual": "48999999999999.51",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-79",
+      "count": 79,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "78999999999999.21",
+      "actual": "78999999999999.21",
+      "displayed": "$78,999,999,999,999.21",
+      "representation": "string",
+      "deliverableActual": "78999999999999.21",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-89",
+      "count": 89,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "88999999999999.11",
+      "actual": "88999999999999.11",
+      "displayed": "$88,999,999,999,999.11",
+      "representation": "number",
+      "deliverableActual": "88999999999999.11",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-90",
+      "count": 90,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "89999999999999.10",
+      "actual": "89999999999999.10",
+      "displayed": "$89,999,999,999,999.10",
+      "representation": "string",
+      "deliverableActual": "89999999999999.10",
+      "centExact": true,
+      "centTotalWithinSafeInteger": true
+    },
+    {
+      "label": "maximum-101",
+      "count": 101,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "100999999999998.99",
+      "actual": "100999999999998.99",
+      "displayed": "$100,999,999,999,998.99",
+      "representation": "string",
+      "deliverableActual": "100999999999998.99",
+      "centExact": true,
+      "centTotalWithinSafeInteger": false
+    },
+    {
+      "label": "maximum-1001",
+      "count": 1001,
+      "amount": "999999999999.99",
+      "loaderAccepted": true,
+      "expected": "1000999999999989.99",
+      "actual": "1000999999999989.99",
+      "displayed": "$1,000,999,999,999,989.99",
+      "representation": "string",
+      "deliverableActual": "1000999999999989.99",
+      "centExact": true,
+      "centTotalWithinSafeInteger": false
+    }
+  ],
+  "namedFaultControls": [
+    {
+      "name": "float-accumulation",
+      "exitCode": 1,
+      "expectedTest": "reconstructs safe",
+      "failedTests": [
+        "exact project budget money reconstructs safe and beyond-range accepted totals and JSON without losing cents",
+        "exact project budget money keeps billing, drafts, attribution, budgets and remaining amounts reconstructible",
+        "exact project budget money judges exact over-budget and ten-point boundaries before percent display rounding",
+        "exact project budget money carries exact portfolio bases and burn through complete and stated budgets",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "unchecked-number",
+      "exitCode": 1,
+      "expectedTest": "reconstructs safe",
+      "failedTests": [
+        "exact project budget money reconstructs safe and beyond-range accepted totals and JSON without losing cents",
+        "exact project budget money keeps billing, drafts, attribution, budgets and remaining amounts reconstructible",
+        "exact project budget money judges exact over-budget and ten-point boundaries before percent display rounding",
+        "exact project budget money carries exact portfolio bases and burn through complete and stated budgets",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "billing-as-cost",
+      "exitCode": 1,
+      "expectedTest": "keeps billing",
+      "failedTests": [
+        "exact project budget money keeps billing, drafts, attribution, budgets and remaining amounts reconstructible",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "float-subtraction",
+      "exitCode": 1,
+      "expectedTest": "keeps billing",
+      "failedTests": [
+        "exact project budget money keeps billing, drafts, attribution, budgets and remaining amounts reconstructible",
+        "exact project budget money judges exact over-budget and ten-point boundaries before percent display rounding",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "float-comparison",
+      "exitCode": 1,
+      "expectedTest": "judges exact",
+      "failedTests": [
+        "exact project budget money keeps billing, drafts, attribution, budgets and remaining amounts reconstructible",
+        "exact project budget money judges exact over-budget and ten-point boundaries before percent display rounding"
+      ]
+    },
+    {
+      "name": "null-as-zero",
+      "exitCode": 1,
+      "expectedTest": "keeps null",
+      "failedTests": [
+        "exact project budget money keeps null and zero distinct and rejects invalid or sub-cent amounts"
+      ]
+    },
+    {
+      "name": "invalid-as-zero",
+      "exitCode": 1,
+      "expectedTest": "keeps null",
+      "failedTests": [
+        "exact project budget money keeps null and zero distinct and rejects invalid or sub-cent amounts"
+      ]
+    },
+    {
+      "name": "subcent-truncation",
+      "exitCode": 1,
+      "expectedTest": "keeps null",
+      "failedTests": [
+        "exact project budget money keeps null and zero distinct and rejects invalid or sub-cent amounts"
+      ]
+    },
+    {
+      "name": "negative-accepted",
+      "exitCode": 1,
+      "expectedTest": "keeps null",
+      "failedTests": [
+        "exact project budget money keeps null and zero distinct and rejects invalid or sub-cent amounts"
+      ]
+    },
+    {
+      "name": "rounded-verdict",
+      "exitCode": 1,
+      "expectedTest": "judges exact",
+      "failedTests": [
+        "exact project budget money judges exact over-budget and ten-point boundaries before percent display rounding"
+      ]
+    },
+    {
+      "name": "percentage-base-guard",
+      "exitCode": 1,
+      "expectedTest": "refuses invalid percentage",
+      "failedTests": [
+        "exact project budget money refuses invalid percentage bases and nonfinite formatter inputs"
+      ]
+    },
+    {
+      "name": "percentage-input-guard",
+      "exitCode": 1,
+      "expectedTest": "refuses invalid percentage",
+      "failedTests": [
+        "exact project budget money refuses invalid percentage bases and nonfinite formatter inputs"
+      ]
+    },
+    {
+      "name": "portfolio-float-percent",
+      "exitCode": 1,
+      "expectedTest": "carries exact portfolio",
+      "failedTests": [
+        "exact project budget money carries exact portfolio bases and burn through complete and stated budgets"
+      ]
+    },
+    {
+      "name": "portfolio-number",
+      "exitCode": 1,
+      "expectedTest": "carries exact portfolio",
+      "failedTests": [
+        "exact project budget money carries exact portfolio bases and burn through complete and stated budgets"
+      ]
+    },
+    {
+      "name": "format-number",
+      "exitCode": 1,
+      "expectedTest": "formats exact decimal",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "project-helper-number",
+      "exitCode": 1,
+      "expectedTest": "renders exact project",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "cent-number-spelling",
+      "exitCode": 1,
+      "expectedTest": "reconstructs safe",
+      "failedTests": [
+        "exact project budget money reconstructs safe and beyond-range accepted totals and JSON without losing cents"
+      ]
+    },
+    {
+      "name": "chip-label",
+      "exitCode": 1,
+      "expectedTest": "labels the direct-cost",
+      "failedTests": [
+        "labels the direct-cost chip as direct spending"
+      ]
+    },
+    {
+      "name": "optional-invalid-unknown",
+      "exitCode": 1,
+      "expectedTest": "keeps null",
+      "failedTests": [
+        "exact project budget money keeps null and zero distinct and rejects invalid or sub-cent amounts"
+      ]
+    },
+    {
+      "name": "exponent-nonfinite",
+      "exitCode": 1,
+      "expectedTest": "refuses invalid percentage",
+      "failedTests": [
+        "exact project budget money refuses invalid percentage bases and nonfinite formatter inputs"
+      ]
+    },
+    {
+      "name": "currency-digits",
+      "exitCode": 1,
+      "expectedTest": "formats exact decimal",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes"
+      ]
+    },
+    {
+      "name": "currency-from-data",
+      "exitCode": 1,
+      "expectedTest": "formats exact decimal",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes"
+      ]
+    },
+    {
+      "name": "small-negative-sign",
+      "exitCode": 1,
+      "expectedTest": "formats exact decimal",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes",
+        "exact project budget money renders exact project totals, negative remaining and draft money in the DOM"
+      ]
+    },
+    {
+      "name": "range-number",
+      "exitCode": 1,
+      "expectedTest": "formats exact decimal",
+      "failedTests": [
+        "exact project budget money formats exact decimal amounts in currency minor units with existing rounding modes"
+      ]
+    }
+  ],
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-exact-money-correction-20261016",
+  "privateTopLevelPins": {
+    "after-probe-intent.json": {
+      "sha256": "30a6f2c7f3c32139e5b3ebeaf83d7a52cc3c02f966a9d457d495a752b2b76a12",
+      "bytes": 1267,
+      "mode": "0o600"
+    },
+    "after-probe.cjs": {
+      "sha256": "72849709c12cc71e436b63a4b8ecadb9c6eab274b1d46b83782e4e1f3577a809",
+      "bytes": 6399,
+      "mode": "0o600"
+    },
+    "after-probe.log": {
+      "sha256": "2eb9249dd65ce87ff39e065992c4e5fdca67a0cca7f1ee171178d0e9e3557f09",
+      "bytes": 48,
+      "mode": "0o600"
+    },
+    "after-result.json": {
+      "sha256": "e772c8964dba0add59412749363e54e3e34200001b08c3a1bc5f04d818588744",
+      "bytes": 5761,
+      "mode": "0o600"
+    },
+    "before-probe.cjs": {
+      "sha256": "c915320bf02f8494f38deb7a4bd6e65a0fcd16d64fd0bb867defbd737cf53660",
+      "bytes": 5795,
+      "mode": "0o600"
+    },
+    "before-result.json": {
+      "sha256": "94828d7909a88ffcb195880874d18f3100fe9762e77dd83c59a7324eab910d98",
+      "bytes": 5144,
+      "mode": "0o600"
+    },
+    "before.log": {
+      "sha256": "f84de38a8a49645682f07c973c9a7440c4262064bfb83c37dae465fa2ea37af8",
+      "bytes": 1750,
+      "mode": "0o600"
+    },
+    "candidate-source-seals.json": {
+      "sha256": "a423c745b8447fc57ebc852b757f2526afc5ab3b948c093ff3b28a76f1db326f",
+      "bytes": 2287,
+      "mode": "0o600"
+    },
+    "checkout-custody.json": {
+      "sha256": "3ed3402522e852262a8117125fd8d9a120ee983de6c245e1d9fcc541093993e4",
+      "bytes": 498,
+      "mode": "0o600"
+    },
+    "direction.log": {
+      "sha256": "7ee2cc5a6ef3b6fc018f777fc254ae4b9f6951b30c461c3bf05779a529c26e3b",
+      "bytes": 483,
+      "mode": "0o600"
+    },
+    "direction2.log": {
+      "sha256": "be65d9e6e8c801427790f4c59c1c8533ac3b169e4011f6aa14a35760972a8d5a",
+      "bytes": 1214,
+      "mode": "0o600"
+    },
+    "empty-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "final-check-results.json": {
+      "sha256": "1d30d00c9a43e8d26d91f7febb9517278cd2618c8e72187ed8647613f1950f66",
+      "bytes": 357,
+      "mode": "0o600"
+    },
+    "final-check.py": {
+      "sha256": "34180efe6805ce98711012196644613860f38c290dafa8d2a25591a852cc5023",
+      "bytes": 2519,
+      "mode": "0o600"
+    },
+    "final-checks.log": {
+      "sha256": "ad3aa8fe9494b1e44e6a01d0ecf23d21868b756cfafc03ccc76c03086ce7074c",
+      "bytes": 55,
+      "mode": "0o600"
+    },
+    "finish-admission.json": {
+      "sha256": "030548a765773b3374b6eb12797ee4b058cb79a75bb82eb8f991a444229906f6",
+      "bytes": 931,
+      "mode": "0o600"
+    },
+    "finish-resources.json": {
+      "sha256": "731333ff8012be11e12790aa8cca229d909ba26d190722e76c4df661504c6408",
+      "bytes": 1176,
+      "mode": "0o600"
+    },
+    "finish-results.json": {
+      "sha256": "a9937abb7297dda25d6c0f12d6423e008b1e5cd635651934ce0ea891a61f864a",
+      "bytes": 188,
+      "mode": "0o600"
+    },
+    "finish.log": {
+      "sha256": "d1875bd9c81e34e1add77b08ba31c2088066205df9debf56cbeaced516b7a285",
+      "bytes": 320,
+      "mode": "0o600"
+    },
+    "finish.py": {
+      "sha256": "8440f20ee186799be19775c7d93434d1009b81307e5c5403985c823afe5b7f96",
+      "bytes": 680,
+      "mode": "0o600"
+    },
+    "global-npmrc": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "host-network.txt": {
+      "sha256": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+      "bytes": 16,
+      "mode": "0o600"
+    },
+    "installed-versions.json": {
+      "sha256": "65f6c0eedff3c60406fc40b38cda62eb20254e3d7098a97389d509e7fb5d416c",
+      "bytes": 192,
+      "mode": "0o600"
+    },
+    "lint-final-intent.json": {
+      "sha256": "2ab76b176658ef255251362d3fa4ea3eda4e0b2f915eecdfa5d07d34dce4f354",
+      "bytes": 1720,
+      "mode": "0o600"
+    },
+    "lint-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "local-fast-forward.log": {
+      "sha256": "1324cd5d0cb0207358921dee174053a17f0bad7acaf593960f89ecc19a9aa427",
+      "bytes": 926866,
+      "mode": "0o600"
+    },
+    "mutation-baseline.json": {
+      "sha256": "2cb24ba81dd8de943ec9f3e3ce5c1dfea7ed9152d0abc8d663a3ebb0cb25be46",
+      "bytes": 8025,
+      "mode": "0o600"
+    },
+    "mutation-baseline.log": {
+      "sha256": "3b26fc812190ed2c1634e2117e22736cd18c68087d69f6ee22e5d1b5dcf68f14",
+      "bytes": 131,
+      "mode": "0o600"
+    },
+    "mutation-results.json": {
+      "sha256": "a02c77b3f59cdccfa76cf17823b648a8fab0d010553afa303f9d6b7f09b52bd2",
+      "bytes": 740,
+      "mode": "0o600"
+    },
+    "mutations.log": {
+      "sha256": "e92dfbeceb306b89a5f58ef0971c708e2d33e8a987c03e81e3b8e3a1dedb52a3",
+      "bytes": 903,
+      "mode": "0o600"
+    },
+    "mutations.py": {
+      "sha256": "8f4b5ac23f749a80c25f6b123e7bd91770fee9925a5981b4feec665bc0891b43",
+      "bytes": 5174,
+      "mode": "0o600"
+    },
+    "mutations2.log": {
+      "sha256": "4c12122061ad9fb960e2196e6d76ab2490b21f2c26c54408a207e315cc63dd00",
+      "bytes": 927,
+      "mode": "0o600"
+    },
+    "mutations2.py": {
+      "sha256": "5beda78108158b25052c360974835be658f9e3bc4941da78ee40da2b778ccf30",
+      "bytes": 5227,
+      "mode": "0o600"
+    },
+    "mutations3-resources.json": {
+      "sha256": "bd9bc51518f16c0799cfe0de7096617a081a6f68b44b9bf3d0cbe6acbd1edc5b",
+      "bytes": 1180,
+      "mode": "0o600"
+    },
+    "mutations3.log": {
+      "sha256": "2ace3c56aaba96292c157beb86586ec814b206eeb72e9266f6244e22039eb337",
+      "bytes": 11400,
+      "mode": "0o600"
+    },
+    "mutations4-resources.json": {
+      "sha256": "359ff70fb4f4b583c72ffb59397ec7077d471a95a3cb38bd3ed32d9787f8db41",
+      "bytes": 1180,
+      "mode": "0o600"
+    },
+    "mutations4.log": {
+      "sha256": "d96696be10c375ad0ed3a61558815ca6b88b14da8275bab16cbd5638b6253db2",
+      "bytes": 2273,
+      "mode": "0o600"
+    },
+    "mutations4.py": {
+      "sha256": "6ab0fb4a6185d54a3f91f5b10c1a0c36afcee762527b216daa5244bf4e20974f",
+      "bytes": 3846,
+      "mode": "0o600"
+    },
+    "mutations5.py": {
+      "sha256": "513538c38ae5dedfbe3fadcad6269d4795ed2297a7461cbd38acee2573a53151",
+      "bytes": 3784,
+      "mode": "0o600"
+    },
+    "r2-billing-as-cost.json": {
+      "sha256": "26c722ce4aa7988c8430477048c9a2ead276c34825506e36fb52d027b907cff8",
+      "bytes": 10537,
+      "mode": "0o600"
+    },
+    "r2-billing-as-cost.log": {
+      "sha256": "35f435dcc1038fad37483d634605a62825a441760a7ce807950a7af95c56b921",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "r2-chip-label.json": {
+      "sha256": "890d0d3ede8aebb00e82253114d9a82c636257515ed905de872b6ce87476fea9",
+      "bytes": 18972,
+      "mode": "0o600"
+    },
+    "r2-chip-label.log": {
+      "sha256": "56f25f54b81e59ad21a5b6d7d98740428374718209bf295817dbc19d912e22ee",
+      "bytes": 127,
+      "mode": "0o600"
+    },
+    "r2-float-accumulation.json": {
+      "sha256": "2401cc64eeeaf353cf440c96cfa3114f6f38e386025a251b1c3fe88cff700211",
+      "bytes": 14261,
+      "mode": "0o600"
+    },
+    "r2-float-accumulation.log": {
+      "sha256": "6adf8b54cb45768e6c0fc170d1b23e9d4e3d72111d2e0b42495aa6919e64893f",
+      "bytes": 135,
+      "mode": "0o600"
+    },
+    "r2-float-comparison.json": {
+      "sha256": "d6ec95d302b7b212ec1c3ab890264f867b2ebd256192dd7f59caf0e9d8a0fbb5",
+      "bytes": 10493,
+      "mode": "0o600"
+    },
+    "r2-float-comparison.log": {
+      "sha256": "87e627d22441a9fdca5a023f08ee7e483de87a58a1e70a1a74068d0b275f31f2",
+      "bytes": 133,
+      "mode": "0o600"
+    },
+    "r2-float-subtraction.json": {
+      "sha256": "bad5d79f74aa1b0f1049146583632794d2fa04ad7844fa53658b0f32fc875200",
+      "bytes": 11726,
+      "mode": "0o600"
+    },
+    "r2-float-subtraction.log": {
+      "sha256": "ed4a1235d22b790192d84de9c9f7dcac0c9a4ac9c8d6de7206715f4512a7d711",
+      "bytes": 134,
+      "mode": "0o600"
+    },
+    "r2-format-number.json": {
+      "sha256": "ba7ac8e4ea8e3776f7201bfb3ef3bd4449dae15268548b57c0c082f4f4d3be58",
+      "bytes": 10558,
+      "mode": "0o600"
+    },
+    "r2-format-number.log": {
+      "sha256": "272703e2e9b92959fffc4b902104a53e1764119f7cb5339655d3dfaf531e1fe3",
+      "bytes": 130,
+      "mode": "0o600"
+    },
+    "r2-harmless.json": {
+      "sha256": "8cc2f26f6c8e4df5a1ecd92798051bf42cf9cb1efa09b4584f7aa237282de66d",
+      "bytes": 8030,
+      "mode": "0o600"
+    },
+    "r2-harmless.log": {
+      "sha256": "dbf197844ff1a238dfd5877f735848178060a4487aec114b79ce53cb9c6ab185",
+      "bytes": 125,
+      "mode": "0o600"
+    },
+    "r2-invalid-as-zero.json": {
+      "sha256": "f92ad0c0f94697ae460a32b7fc185e8dab4c0c967862956ebd7d83ed0ddc832d",
+      "bytes": 9345,
+      "mode": "0o600"
+    },
+    "r2-invalid-as-zero.log": {
+      "sha256": "dee2976fdea401db7d4688e4ee5466fbb1a88b0943e5b613743d4ac0832ef9bc",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "r2-mutation-baseline.json": {
+      "sha256": "9b91c92b88324c688bd181b3f242ce376d380b8bad70ba75dd9fa0f01bf4e4e1",
+      "bytes": 8027,
+      "mode": "0o600"
+    },
+    "r2-mutation-baseline.log": {
+      "sha256": "6312e003c25efa3fedbfca460c5faea15979e4c0e1a57d3027b72bcf7bd96a44",
+      "bytes": 134,
+      "mode": "0o600"
+    },
+    "r2-mutation-results.json": {
+      "sha256": "d1579584a0e8b0eca1b161d81508b83c12f38c6e1a522a8fb63ca41d72b52975",
+      "bytes": 6690,
+      "mode": "0o600"
+    },
+    "r2-negative-accepted.json": {
+      "sha256": "6aac6e1a56bc92d1f21281409d4ab6150044ea6e3ddaf9f1f1aa0cc02d4d5d00",
+      "bytes": 9346,
+      "mode": "0o600"
+    },
+    "r2-negative-accepted.log": {
+      "sha256": "f020f95e028253cb2695991ddcabd6b3a47456a188c876f97221a5d38dc6bf40",
+      "bytes": 134,
+      "mode": "0o600"
+    },
+    "r2-null-as-zero.json": {
+      "sha256": "e994f532a6bc77190da0d5ccc3802bb67a86b05c5e7ad389f471ce29a9157af3",
+      "bytes": 9227,
+      "mode": "0o600"
+    },
+    "r2-null-as-zero.log": {
+      "sha256": "79eebb92b0e23e251d18562434c9481d5f0a695a34889514149eb7da4a4c7896",
+      "bytes": 129,
+      "mode": "0o600"
+    },
+    "r2-percentage-base-guard.json": {
+      "sha256": "702fee54b07719981a716539d21e617917f2f1e35ab083bc5927482e832adf37",
+      "bytes": 9390,
+      "mode": "0o600"
+    },
+    "r2-percentage-base-guard.log": {
+      "sha256": "2e86373e39a790aaef0cc16496edb3cb61b83455ee6f8d4430fbf4a03ba68c81",
+      "bytes": 138,
+      "mode": "0o600"
+    },
+    "r2-percentage-input-guard.json": {
+      "sha256": "6ef8bf0ede5e5357d736da097a2f7e4018c404553bd175e2fda2bf3f1adece9f",
+      "bytes": 9347,
+      "mode": "0o600"
+    },
+    "r2-percentage-input-guard.log": {
+      "sha256": "8a31cafac5d29398bcf0167f03e4b1688af2a8ac27245bdedd58b4ce3e7e0f7b",
+      "bytes": 139,
+      "mode": "0o600"
+    },
+    "r2-portfolio-float-percent.json": {
+      "sha256": "108db7f487c08024cf45dd7e7f873587f728245c90b6290ee04daf33d705e568",
+      "bytes": 9247,
+      "mode": "0o600"
+    },
+    "r2-portfolio-float-percent.log": {
+      "sha256": "bedad6f74fd01f36f096c660c1800f3f26ae563fa908ab02fc3660e4d06b0c9f",
+      "bytes": 140,
+      "mode": "0o600"
+    },
+    "r2-portfolio-number.json": {
+      "sha256": "65efb54b3013d7a5b44d2c0c3f72156f8137d3515fd1317c143d8cd449876501",
+      "bytes": 9284,
+      "mode": "0o600"
+    },
+    "r2-portfolio-number.log": {
+      "sha256": "27dd6600fe830a4a7ee676fc85af469c2373b1dcb0ecd0b3fc0ce8fde314452e",
+      "bytes": 133,
+      "mode": "0o600"
+    },
+    "r2-project-helper-number.json": {
+      "sha256": "395f1070994f14e4aaedb8e227155d937e4e0a9b8bba3545e5e78fb4b6b2cbc1",
+      "bytes": 10551,
+      "mode": "0o600"
+    },
+    "r2-project-helper-number.log": {
+      "sha256": "2f6c131e22aeef88b64cb217e9cb2cfcd7a6e4646ea0f10819099af459b54210",
+      "bytes": 138,
+      "mode": "0o600"
+    },
+    "r2-rounded-verdict.json": {
+      "sha256": "a41d957b4beb71e0d5f8eaabb25b08292ad1034b8f70ee6177d7bd4073a331c1",
+      "bytes": 9279,
+      "mode": "0o600"
+    },
+    "r2-rounded-verdict.log": {
+      "sha256": "f84b2217c96dc1a65a7ca2106a278af66b6f2a241dd4962f9580630053b55752",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "r2-subcent-truncation.json": {
+      "sha256": "a20b9e449fd4066feb4555077ca9ff78eff6f19bd9e1968f646f769c20d3b203",
+      "bytes": 9339,
+      "mode": "0o600"
+    },
+    "r2-subcent-truncation.log": {
+      "sha256": "9edc3d2c0be79694fe7dac34c46a7ed14b4eb6efa0a4eca5fe3f4da17559dc07",
+      "bytes": 135,
+      "mode": "0o600"
+    },
+    "r2-unchecked-number.json": {
+      "sha256": "5546607d36672755f1e1d88899bbd8e6a467b67c2c8678d1a37ce14e7208ce51",
+      "bytes": 14298,
+      "mode": "0o600"
+    },
+    "r2-unchecked-number.log": {
+      "sha256": "68c02291eb1c8097aa2d39b907cae6307d560b9896d6ace1bd17c81c7bb00f78",
+      "bytes": 133,
+      "mode": "0o600"
+    },
+    "r4-cent-number-spelling.json": {
+      "sha256": "1d8a472659b9d1902f45d0b32928ba24c16424c7ac3258014249c76c9b8aae61",
+      "bytes": 9280,
+      "mode": "0o600"
+    },
+    "r4-cent-number-spelling.log": {
+      "sha256": "aeb1f8b6d6253532d3ef9cf52096c91b63b436abee206b14cd3ff98c325f6df0",
+      "bytes": 137,
+      "mode": "0o600"
+    },
+    "r4-chip-label.json": {
+      "sha256": "8fe2dbf56c901cc32cbe697817ccb11dbcb37d03435a6a300ec65c09e2b5be2d",
+      "bytes": 9070,
+      "mode": "0o600"
+    },
+    "r4-chip-label.log": {
+      "sha256": "cf394949fb1c8a9c7de3f7ab0d935fb63cb2fcd0237cbc11c2cf35d826d872fb",
+      "bytes": 127,
+      "mode": "0o600"
+    },
+    "r4-guard-baseline.json": {
+      "sha256": "ab49c1d0266d216fe465072a1275d47435ab9aff43edea54fd6723d7e45b773e",
+      "bytes": 8029,
+      "mode": "0o600"
+    },
+    "r4-guard-baseline.log": {
+      "sha256": "a250c958eb30f755b13813ade24d7a29a321f2baca05c5f2682d3270cb029ee7",
+      "bytes": 131,
+      "mode": "0o600"
+    },
+    "r4-harmless.json": {
+      "sha256": "57ad8ef2fd4753ea5e07d2b859a7cd2321e4f7b0058b2f1a7110ad327da7a6a2",
+      "bytes": 8025,
+      "mode": "0o600"
+    },
+    "r4-harmless.log": {
+      "sha256": "896d398290115ad4cf119cd8bdf6a82fd2195aedb23750d64553f44cad759026",
+      "bytes": 125,
+      "mode": "0o600"
+    },
+    "r4-mutation-results.json": {
+      "sha256": "9ef6d74fc92010ab61b0d73210a816da1af42ae8b284d43d9d1409e8027900c4",
+      "bytes": 1963,
+      "mode": "0o600"
+    },
+    "r4-unchecked-number.json": {
+      "sha256": "0e7257912c027032b0b08be4804616a1399c31a237be22f7b111459eeefc0d11",
+      "bytes": 14300,
+      "mode": "0o600"
+    },
+    "r4-unchecked-number.log": {
+      "sha256": "8a4b6dae7c2d45c44b6dc6700f36019269ddd5bacd8f38680b11ff275a057ad3",
+      "bytes": 133,
+      "mode": "0o600"
+    },
+    "r5-chip-label.json": {
+      "sha256": "a15092fefef04c9096d84ff5dde97f5ab809be8332d5a415d6219ef27c8c2b77",
+      "bytes": 8424,
+      "mode": "0o600"
+    },
+    "r5-chip-label.log": {
+      "sha256": "a945234853bfcdb9ef6288bbdf08d7034edce000cf5198a0022747ce1bb92add",
+      "bytes": 127,
+      "mode": "0o600"
+    },
+    "r5-currency-digits.json": {
+      "sha256": "f6d710401c7755b82f7ee48efa08c84fcc075b21fe24fa90c78ed2559848e41b",
+      "bytes": 9285,
+      "mode": "0o600"
+    },
+    "r5-currency-digits.log": {
+      "sha256": "c3eda2b95ec246bdb9e6d835d8d9b2093820fd0fddeedabda36b05792d993f22",
+      "bytes": 132,
+      "mode": "0o600"
+    },
+    "r5-currency-from-data.json": {
+      "sha256": "98516a66e035594efe0dff110364f39dce75c3b133e96f09a44021fc677ee4e8",
+      "bytes": 9297,
+      "mode": "0o600"
+    },
+    "r5-currency-from-data.log": {
+      "sha256": "8f556eaccd91a03abb183214ecfd72e6ab438426e481eb2ab18a9999a32349c9",
+      "bytes": 135,
+      "mode": "0o600"
+    },
+    "r5-exponent-nonfinite.json": {
+      "sha256": "94a5d72e9938003968142bfe67a12b68dc49f661625ece3fcda475bb0de10a9a",
+      "bytes": 9296,
+      "mode": "0o600"
+    },
+    "r5-exponent-nonfinite.log": {
+      "sha256": "05456cacfa3b0c0aeea3740d349295767d748a1c40b8f46a45e37e2b1d386ae0",
+      "bytes": 135,
+      "mode": "0o600"
+    },
+    "r5-guard-baseline.json": {
+      "sha256": "53c2439c966c17b896472c363bc98953dd1224966ddcd4a586ce55160b0a4cba",
+      "bytes": 8029,
+      "mode": "0o600"
+    },
+    "r5-guard-baseline.log": {
+      "sha256": "626684de3283295bf1ed696b5f6d7cdbe079a45c407ffd8128a49545a62af718",
+      "bytes": 131,
+      "mode": "0o600"
+    },
+    "r5-guard-restored.json": {
+      "sha256": "bd534d41f947da595b9b7958c1bf81d17c7e4a30ae5cbda985430de2724b269f",
+      "bytes": 8023,
+      "mode": "0o600"
+    },
+    "r5-guard-restored.log": {
+      "sha256": "4785b083de197e391c5a804203ad0cb87539f3305ef7c90b255ade88a623b877",
+      "bytes": 131,
+      "mode": "0o600"
+    },
+    "r5-harmless.json": {
+      "sha256": "ed3c0edf208fd71302ee2fddcb31ee66b7248cacfe4f3de9385fd56f14a1f879",
+      "bytes": 8027,
+      "mode": "0o600"
+    },
+    "r5-harmless.log": {
+      "sha256": "4cab8bdb5a6bdc67fb79ea8c66f8427a3daaaa5d2eb55c62fdb3eeff0572ba02",
+      "bytes": 125,
+      "mode": "0o600"
+    },
+    "r5-mutation-results.json": {
+      "sha256": "37571d488e7019598abfa094144fb33cfa18bb754342cf61e962095ee501a6d1",
+      "bytes": 2969,
+      "mode": "0o600"
+    },
+    "r5-optional-invalid-unknown.json": {
+      "sha256": "b91995c7d890680a3103c6cd64d1cb1495c2e3c359249e9e46ad2acdb9f7fc77",
+      "bytes": 9344,
+      "mode": "0o600"
+    },
+    "r5-optional-invalid-unknown.log": {
+      "sha256": "9f4a9efd37bdd7787c63fbdb1718e005b8a5e7a64d15dbe549ef07f8a2bff8fd",
+      "bytes": 141,
+      "mode": "0o600"
+    },
+    "r5-range-number.json": {
+      "sha256": "0655b0a5ce18012f4523c0003e31a38ff69f583440414576f155997953af0316",
+      "bytes": 9325,
+      "mode": "0o600"
+    },
+    "r5-range-number.log": {
+      "sha256": "5736b0ac181b14909b9bdbd1ba6fc307d9004474ac2c3e18b1ef76cad2ffb70a",
+      "bytes": 129,
+      "mode": "0o600"
+    },
+    "r5-small-negative-sign.json": {
+      "sha256": "e1d3866fc0fd2b65ceae5173e34984b64abc5e2d84a241d72f23c01b3a2e7efa",
+      "bytes": 10516,
+      "mode": "0o600"
+    },
+    "r5-small-negative-sign.log": {
+      "sha256": "b1f255ee5bd8c1d4d2503ed8a9b7fd822b12e4625b47afaee76efaf540366d34",
+      "bytes": 136,
+      "mode": "0o600"
+    },
+    "remaining-check-intent.json": {
+      "sha256": "9fb5329b9adb44d65c636261b263832fcddcac8b9f2be82b963c52357b59b525",
+      "bytes": 638,
+      "mode": "0o600"
+    },
+    "remaining-controls.log": {
+      "sha256": "fba9f2fae5637d5b41eee5b8f65fb8bf0495864fa084455d6197c049de1234bc",
+      "bytes": 182,
+      "mode": "0o600"
+    },
+    "resource-exec.py": {
+      "sha256": "43b2f229cf487c08f00eba376b33ec8362227fe8b76c1df05c95e17d84dc1fb6",
+      "bytes": 1252,
+      "mode": "0o600"
+    },
+    "root-evidence-audit.json": {
+      "sha256": "95a1d6372b47814f9d35d610f89a7bf6c6e2d6a7d0df62b3bd461eab38d47cc4",
+      "bytes": 1363,
+      "mode": "0o600"
+    },
+    "run.sh": {
+      "sha256": "67b5f4257a8f5a1feff35d44c79ed78d0dbebb34773e8e4577513911271125f7",
+      "bytes": 981,
+      "mode": "0o700"
+    },
+    "seal-evidence.py": {
+      "sha256": "f4f7e338f9c66e6541b85b819eb47e0984c62896c478af03cc00c3176707c7c9",
+      "bytes": 2859,
+      "mode": "0o600"
+    },
+    "tests-final-intent.json": {
+      "sha256": "63cda31a67aebcc27c60f191e094fde07bde893583eb3739a249d5a6b2f9f1ec",
+      "bytes": 1769,
+      "mode": "0o600"
+    },
+    "tests-final.log": {
+      "sha256": "8536d4408dbcc3ccda14e2fc04e87759a093c22dab2c3f310ceed1ce36b3bbf9",
+      "bytes": 1534,
+      "mode": "0o600"
+    },
+    "tests1.log": {
+      "sha256": "aaddad5e3a3f31953af4a0672335d0f1971a9a8181799a58925add8d95082db6",
+      "bytes": 5247,
+      "mode": "0o600"
+    },
+    "tests2.log": {
+      "sha256": "6162027aa15535556a967a40f82191ab267c144a7820e9f17a100eff6113607b",
+      "bytes": 2009,
+      "mode": "0o600"
+    },
+    "tsconfig.json": {
+      "sha256": "81f5d3d2c47e62af8891f9252dbff144a7a957593f71bd511efa9a71ffcd7330",
+      "bytes": 1538,
+      "mode": "0o600"
+    },
+    "types-final-intent.json": {
+      "sha256": "ac7b60b994f91603d676d62193f765a8df6d7b9423cf42257b523da15db9131a",
+      "bytes": 1321,
+      "mode": "0o600"
+    },
+    "types-final.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "types1.log": {
+      "sha256": "eaa93d122bc1398b7a3647cd8f585d2257974007c657fd5ef544dc3c462d2ea2",
+      "bytes": 679,
+      "mode": "0o600"
+    },
+    "types2.log": {
+      "sha256": "ddfac36e90d7ff81fc8ebbb66a6862ca09398c1fc91da678b30b1877935af05e",
+      "bytes": 278,
+      "mode": "0o600"
+    },
+    "vitest.config.mjs": {
+      "sha256": "b7c1aed8273ff113bfe241883a69f791e389b01323cd87fabc279e4b1c8dedec",
+      "bytes": 484,
+      "mode": "0o600"
+    }
+  },
+  "excludedScratchDirectories": [
+    "home",
+    "tmp",
+    "xdg",
+    "npm",
+    "vite"
+  ],
+  "reportSHA256": "5eb4dd19ec69c7000d72f6753cf9971f781a0dfb8cd85b2b108e8cd23d3d960e",
+  "validationSHA256": "35148681685144274a8c47861f1560a6e500b6b451b0dd825e97a77b5968c69e",
+  "independentReviewPending": true,
+  "nativeAcceptance": false,
+  "browserAcceptance": false,
+  "exportsAcceptance": false,
+  "practitionerAcceptance": false,
+  "integrationPerformed": false
+}

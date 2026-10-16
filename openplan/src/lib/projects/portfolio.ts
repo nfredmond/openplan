@@ -1,3 +1,4 @@
+import { compareMoney, moneyPercent, type ExactMoneyAmount } from "@/lib/money/optional-amount";
 /**
  * The portfolio table's shaping — one row per project, from the batched lanes
  * `./portfolio-queries.ts` read.
@@ -104,8 +105,8 @@ export type PortfolioBurnColumn = {
   available: boolean;
   unavailableReason: string | null;
   burnPercent: number | null;
-  actualToDate: number | null;
-  budgetAmount: number | null;
+  actualToDate: ExactMoneyAmount | null;
+  budgetAmount: ExactMoneyAmount | null;
   basis: PortfolioBurnBasis | null;
   /**
    * Deliverable-budget coverage, whenever the deliverables lane answered —
@@ -243,9 +244,9 @@ function buildBurnColumn(inputs: ProjectPortfolioInputs, projectId: string): Por
   const statedBudget = snapshot.statedBudget;
 
   const basisAmount =
-    statedBudget !== null && statedBudget > 0
+    statedBudget !== null && compareMoney(statedBudget, 0) > 0
       ? { amount: statedBudget, basis: "stated_budget" as const }
-      : coverage === "complete" && snapshot.deliverableBudgetTotal !== null && snapshot.deliverableBudgetTotal > 0
+      : coverage === "complete" && snapshot.deliverableBudgetTotal !== null && compareMoney(snapshot.deliverableBudgetTotal, 0) > 0
         ? { amount: snapshot.deliverableBudgetTotal, basis: "deliverable_budgets" as const }
         : null;
 
@@ -260,7 +261,7 @@ function buildBurnColumn(inputs: ProjectPortfolioInputs, projectId: string): Por
   return {
     available: true,
     unavailableReason: null,
-    burnPercent: Math.round((snapshot.actualToDate / basisAmount.amount) * 10000) / 100,
+    burnPercent: moneyPercent(snapshot.actualToDate, basisAmount.amount),
     actualToDate: snapshot.actualToDate,
     budgetAmount: basisAmount.amount,
     basis: basisAmount.basis,

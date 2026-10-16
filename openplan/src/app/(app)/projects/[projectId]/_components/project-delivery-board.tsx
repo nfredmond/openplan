@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { parseOptionalAmount } from "@/lib/money/optional-amount";
+import { compareMoney, parseOptionalAmount } from "@/lib/money/optional-amount";
 import { ArrowRight, ClipboardCheck, FileClock, Target } from "lucide-react";
 import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -626,8 +626,8 @@ export function ProjectDeliveryBoard({
                           {budgetSummary.budgetAmount !== null ? (
                             <StatusBadge tone="neutral">Budget {fmtCurrency(budgetSummary.budgetAmount)}</StatusBadge>
                           ) : null}
-                          {budgetSummary.actualToDate > 0 ? (
-                            <StatusBadge tone="info">Billed + spend {fmtCurrency(budgetSummary.actualToDate)}</StatusBadge>
+                          {compareMoney(budgetSummary.actualToDate, 0) > 0 ? (
+                            <StatusBadge tone="info">Direct spending {fmtCurrency(budgetSummary.actualToDate)}</StatusBadge>
                           ) : null}
                         </>
                       ) : null}

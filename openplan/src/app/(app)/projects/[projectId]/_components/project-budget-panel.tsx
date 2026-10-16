@@ -1,3 +1,4 @@
+import { compareMoney } from "@/lib/money/optional-amount";
 import { Wallet } from "lucide-react";
 import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -167,7 +168,7 @@ export function ProjectBudgetPanel({
                     <p className="mt-1.5 text-label text-muted-foreground">
                       Billed {fmtCurrency(summary.billedToDate)} · Spend {fmtCurrency(summary.spendToDate)}
                       {summary.remaining !== null ? ` · Remaining ${fmtCurrency(summary.remaining)}` : ""}
-                      {summary.draftedAmount > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
+                      {compareMoney(summary.draftedAmount, 0) > 0 ? ` · Drafted (not billed) ${fmtCurrency(summary.draftedAmount)}` : ""}
                     </p>
                   </div>
                 </div>

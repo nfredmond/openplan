@@ -1,0 +1,51 @@
+{
+  "baseCommit": "0ceedbbd174edb557e90b5bf6a144592e8120bb4",
+  "applicationTree": "98535591a5a5916e0ffaef4125196366d3816410",
+  "files": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/_helpers.ts": {
+      "sha256": "cb51bc6fcffee42095c1d79a1543dc540894b09b2ae7628bbdc9c5050d94600a",
+      "bytes": 5315,
+      "gitBlob": "caf6a64c9732b1edb1a1174a091402c82dc590d0"
+    },
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-budget-panel.tsx": {
+      "sha256": "1997717ca45a52a687ddaed395ab274902212eaae5608c405295cbd4b6b086d4",
+      "bytes": 9188,
+      "gitBlob": "3101b6cd3b49790efe5fe89fe865076d762c7c08"
+    },
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-delivery-board.tsx": {
+      "sha256": "9345fd7aa98c5e569aa8c4ea3e6bd0a4cfc5ceaf72a05c3d1b7272d1b1449d6d",
+      "bytes": 38136,
+      "gitBlob": "ca4238978b68a3366f918ace3616659b4dd4cf8b"
+    },
+    "openplan/src/lib/money/format.ts": {
+      "sha256": "3344a0eeef3ebb5e9c47f75fba4888c7f777875b10264c8ade3fa1893e4bb33f",
+      "bytes": 10106,
+      "gitBlob": "ecf0a35ef37e30ebab1babd0bb27dc30f09de9b6"
+    },
+    "openplan/src/lib/money/optional-amount.ts": {
+      "sha256": "c0d0f565439f5857a37c022adb88b49f62554aa47cb8d7206904037a7411c187",
+      "bytes": 6143,
+      "gitBlob": "878bf6aa422cb6c4b1b31e608127cfe64f8b898f"
+    },
+    "openplan/src/lib/projects/budget.ts": {
+      "sha256": "fb3ccc6f106f68aaabc8292fac1143d365a39560470816d4415a366ae5554347",
+      "bytes": 13375,
+      "gitBlob": "4bdb8bbbb26b5d755932aa1aca85627a4bc2f080"
+    },
+    "openplan/src/lib/projects/portfolio.ts": {
+      "sha256": "26aa2faee092e4959a4936eb8f177a74e48ffd67820d974f723473a4971ed96c",
+      "bytes": 13741,
+      "gitBlob": "7bf7bca28aa4a3e55a0e6ecb4bbfe018c927ed46"
+    },
+    "openplan/src/test/project-budget-exact-money.test.tsx": {
+      "sha256": "8a03caaf97f9a958a6402930053c7f412ae78b64c315b9d31d8feb21a5756d91",
+      "bytes": 11578,
+      "gitBlob": "1e32c4117bc4fe76c109e900416651de7e0b8dba"
+    },
+    "openplan/src/test/the-deliverable-update-control-is-reachable.test.tsx": {
+      "sha256": "61a69d893e6320a9be9fd5fe11140315a153f47db40a81d838fd5adbe1bbd258",
+      "bytes": 15808,
+      "gitBlob": "f260171bd7a8d8cbbaf860b127a46d2e1b0920c3"
+    }
+  }
+}
