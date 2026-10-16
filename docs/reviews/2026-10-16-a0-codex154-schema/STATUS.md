@@ -67,12 +67,14 @@ protocol equivalence or account and model compatibility.
 
 ## Controls exercise the stated boundaries
 
-The three final campaigns retain 14 named broken behaviors, harmless survivors
+The three final campaigns retain 15 named broken behaviors, harmless survivors
 and restoration. Kernel controls use owned temporary fixtures. The donor test
 reads its specimen but receives EROFS when writing; a later writable override
 reaches `donor-write-reached`. The offline probe sees a different network
 namespace and no host profile. Removing network isolation fails
-`host-network-visible`. No shared donor is touched by these controls.
+`host-network-visible`. Mounting an owned empty specimen at the excluded profile
+path fails `host-profile-visible`, without mounting or reading the real profile.
+No shared donor is touched by these controls.
 
 Capture predicate controls replace the native command boundary. They detect
 wrong metadata, wrong native version, symbolic-link output, excess bytes, changed
@@ -81,7 +83,8 @@ relative, unresolved, missing and donor-as-writable-root paths, plus overwriting
 an existing record. Copied mutation subjects and owned specimens restore after
 each fault. These controls do not execute a provider.
 
-The first five-predicate capture campaign remains private and unchanged.
+The first five-predicate capture campaign and two-fault kernel campaign remain
+private and unchanged.
 The second campaign adds empty-output refusal. Two earlier units' complete
 manager streams exist in parent tool activity; the later predicate, primitive
 and actual native units retain complete streams in the private proof root.

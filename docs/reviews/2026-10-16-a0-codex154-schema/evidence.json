@@ -271,40 +271,6 @@
     "scope": "Raw selected seven definitions identical. Other protocol surface differences are not adapter compatibility evidence."
   },
   "controls": {
-    "isolation-controls.json": {
-      "rows": [
-        {
-          "case": "donor-read-and-write-refusal",
-          "returncode": 0
-        },
-        {
-          "case": "harmless-comment",
-          "returncode": 0
-        },
-        {
-          "case": "writable-donor-override",
-          "namedFailure": "donor-write-reached"
-        },
-        {
-          "case": "restored-donor",
-          "sha256": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
-        },
-        {
-          "case": "offline-network-and-profile-boundary",
-          "returncode": 0
-        },
-        {
-          "case": "omit-network-namespace",
-          "namedFailure": "host-network-visible"
-        },
-        {
-          "case": "offline-harmless-and-restored",
-          "returncode": 0
-        }
-      ],
-      "sharedDonorTouched": false,
-      "blind": "Owned kernel specimens, not native provider or Vitest acceptance."
-    },
     "controls-02/capture-controls.json": {
       "rows": [
         {
@@ -388,6 +354,44 @@
       ],
       "restored": true,
       "nativeCommands": false
+    },
+    "isolation-02/isolation-controls.json": {
+      "rows": [
+        {
+          "case": "donor-read-and-write-refusal",
+          "returncode": 0
+        },
+        {
+          "case": "harmless-comment",
+          "returncode": 0
+        },
+        {
+          "case": "writable-donor-override",
+          "namedFailure": "donor-write-reached"
+        },
+        {
+          "case": "restored-donor",
+          "sha256": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
+        },
+        {
+          "case": "offline-network-and-profile-boundary",
+          "returncode": 0
+        },
+        {
+          "case": "omit-network-namespace",
+          "namedFailure": "host-network-visible"
+        },
+        {
+          "case": "expose-owned-profile-specimen",
+          "namedFailure": "host-profile-visible"
+        },
+        {
+          "case": "offline-harmless-and-restored",
+          "returncode": 0
+        }
+      ],
+      "sharedDonorTouched": false,
+      "blind": "Owned kernel specimens, not native provider or Vitest acceptance."
     }
   },
   "privatePins": {
@@ -424,6 +428,26 @@
     "controls-02/unit-stream.log": {
       "sha256": "1d26bc0732b3762e629c60f90dcc0564745c70701c637a12791d25b47dc893a2",
       "bytes": 440,
+      "mode": "0o600"
+    },
+    "isolation-02/exit.json": {
+      "sha256": "6b0ca7526117d3429733ff10785e2f585158fab3db724fe190a334ebef121b6e",
+      "bytes": 46,
+      "mode": "0o600"
+    },
+    "isolation-02/intent.json": {
+      "sha256": "d699609e09db9b540d8e12e1f0b4ab358838dcccedf5c097bc441dc169948761",
+      "bytes": 546,
+      "mode": "0o600"
+    },
+    "isolation-02/isolation-controls.json": {
+      "sha256": "4c05130a2001a0a7562e967d0a6b30ef82473273fb3ee50c96507d721cf0e8bc",
+      "bytes": 880,
+      "mode": "0o600"
+    },
+    "isolation-02/unit-stream.log": {
+      "sha256": "91b618a2dc3e33fc5518c86ddcf929091d32284c6d0a48dc3a0d408b33615933",
+      "bytes": 381,
       "mode": "0o600"
     },
     "isolation-controls.json": {

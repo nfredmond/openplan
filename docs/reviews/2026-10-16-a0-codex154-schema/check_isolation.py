@@ -50,6 +50,12 @@ def campaign(root):
         fault = run([x for x in commands if x != '--unshare-all'], net_code)
         assert fault.returncode != 0 and b'host-network-visible' in fault.stderr
         rows.append({'case':'omit-network-namespace','namedFailure':'host-network-visible'})
+        # Expose an owned empty specimen at the excluded profile path. No real
+        # host profile is mounted or read to exercise this assertion.
+        fault = run(commands + ['--dir', '/home', '--dir', '/home/nathaniel',
+                                '--ro-bind', str(package), '/home/nathaniel/.codex'], net_code)
+        assert fault.returncode != 0 and b'host-profile-visible' in fault.stderr
+        rows.append({'case':'expose-owned-profile-specimen','namedFailure':'host-profile-visible'})
         assert run(commands, '# harmless\n'+net_code).returncode == 0
         rows.append({'case':'offline-harmless-and-restored','returncode':0})
     return rows
@@ -64,4 +70,4 @@ if __name__ == '__main__':
         json.dump({'rows':rows,'sharedDonorTouched':False,
                    'blind':'Owned kernel specimens, not native provider or Vitest acceptance.'},stream,indent=2)
         stream.write('\n')
-    print(json.dumps({'cases':len(rows),'namedFaults':2,'harmlessSurvivors':2,'restoration':True}))
+    print(json.dumps({'cases':len(rows),'namedFaults':3,'harmlessSurvivors':2,'restoration':True}))
