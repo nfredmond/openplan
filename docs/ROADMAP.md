@@ -96,7 +96,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | M9c | Beat Social Pinpoint, shown with people | Later | Audit | Comparative trial |
 | M9d | Statutory hearing record | Later | Audit | Not started |
 | M10 | Capital projects (M10a–d, a.1–d.2) | Later (C3) | Audit | California bridge case |
-| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md) | Fix KI-005 to 007 (PR 252) |
+| M11 | Contract budgets and forecasts | In progress, mostly done | [Sep 9](reviews/2026-09-09-v047-release/VERIFICATION.md); [Oct 16 complete summary readers](reviews/2026-10-16-engagement-summary-root-integration/STATUS.md); [full configured types](reviews/2026-10-16-engagement-summary-full-types/STATUS.md) | Verify complete budget and billing snapshots through native caller/SDK, financial reconstruction and identified browser/artifact journeys. Agency accounting fit, human usefulness and reminder delivery remain open. |
 | M12 | RTP update from the adopted plan | Later (C1) | Audit | Prior-RTP intake without a paid key |
 | M13 | Local tax and grant administration | Next (B5) | Audit | Recipient city role |
 | M13e | Grant discovery and applications | Next (B4) | Audit | ATP scoring on screen |

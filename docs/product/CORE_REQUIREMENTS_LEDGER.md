@@ -582,3 +582,31 @@ consented provider recordings and identified-build desktop/390px journeys
 remain open. Claude/OpenCode structured limits and broader provider tasks remain
 open. No requirement grade or nationwide, territory, tribal or independent
 installation requirement changes.
+
+## October 16, 2026: complete budget and engagement summary readers
+
+CORE-PM-01 remains mapped to M11 and its project, contract, staff and deliverable
+handoffs. The [reviewed integration record](../reviews/2026-10-16-engagement-summary-root-integration/STATUS.md)
+preserves complete caller-visible project budget retrieval and exact money
+helpers, plus an independent engagement billing snapshot. Dashboard totals no
+longer depend on its 500-row invoice register. Pre-insert warnings and the shared
+PDF/evidence resolver use the same summary reader. Missing, invalid, pending and
+unavailable inputs remain distinct from entered zero. Aggregate currency,
+ceiling currency and agreement meaning remain unassessed; invoice creation
+stays warn-only.
+
+Independent source reviews accept the bounded changes. The latest join passes
+145 affected tests, lint and direction checks. The [full configured TypeScript
+record](../reviews/2026-10-16-engagement-summary-full-types/STATUS.md) covers the
+changed application tree separately from the earlier compiler result. These
+checks establish source and local test boundaries. They do not establish
+native scalar/SDK retrieval, caller RLS, exact financial reconstruction,
+upgrade/restore, complete artifact atomicity or identified desktop/390px
+journeys. SQL20 remains unapplied and unreleased; SQL19 remains unreleased.
+
+The M11 roadmap row now points to those next checks without changing its status.
+Contract/task/staff drawdown, forecast delivery, agency accounting fit,
+practitioner usefulness and reminder delivery remain required. No complete M11,
+OWP/UPWP administration, financial acceptance or V1 claim follows. Nationwide,
+territory, tribal, independent installation and separate scientific acceptance
+requirements remain unchanged.
