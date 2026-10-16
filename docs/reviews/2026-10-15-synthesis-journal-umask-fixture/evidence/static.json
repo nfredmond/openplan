@@ -1,0 +1,37 @@
+{
+  "lintExitCode": 0,
+  "command": [
+    "bwrap",
+    "--die-with-parent",
+    "--ro-bind",
+    "/",
+    "/",
+    "--bind",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "/home/nathaniel/.local/state/openplan/synthesis-journal-umask-fixture-20261015",
+    "--ro-bind",
+    "/home/nathaniel/code/openplan/openplan/node_modules",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan/node_modules",
+    "--tmpfs",
+    "/tmp",
+    "--proc",
+    "/proc",
+    "--dev",
+    "/dev",
+    "--chdir",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan",
+    "node",
+    "--max-old-space-size=640",
+    "node_modules/eslint/bin/eslint.js",
+    "--max-warnings=0",
+    "src/test/engagement-synthesis-generation-worker.test.ts"
+  ],
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "291483648",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.peak": "0"
+  },
+  "privateDriverSha256": "86e4e9cd53b1e9b16ef83dd00096beaaecaafdf80d58aa7329466894d3701730"
+}

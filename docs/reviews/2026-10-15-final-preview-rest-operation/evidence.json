@@ -1,0 +1,175 @@
+{
+  "operation": {
+    "at": "2026-10-15T09:43:00.516369+00:00",
+    "review": "159de17faf9da881c77c521baabeb817178f01c3",
+    "implementation": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+    "preflight": {
+      "unit": "openplan-rest-recovery-parent-preflight-01",
+      "exit": 0,
+      "seconds": 11.508,
+      "peakRounded": "55M",
+      "swap": "0B"
+    },
+    "transition": {
+      "unit": "openplan-rest-recovery-parent-transition-01",
+      "exit": 0,
+      "seconds": 25.23,
+      "peakRounded": "49.6M",
+      "swap": "0B"
+    },
+    "activeCheck": {
+      "unit": "openplan-rest-recovery-parent-active-01",
+      "exit": 0,
+      "seconds": 10.447,
+      "peakRounded": "52.8M",
+      "swap": "0B"
+    },
+    "limits": "The operation summaries retain tool-returned systemd results. They do not establish aggregate PostgreSQL server memory, job completion, browser acceptance or app build. No old build/start recipe executes.",
+    "activeReceiptHash": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+    "observationHash": "7353b5f98398c3f1f5ed0d08c48d92be08175dc6c7b5c8db3258b9331f0f09fc"
+  },
+  "actualObservations": {
+    "at": "2026-10-15T09:42:31.144026+00:00",
+    "health": {
+      "auth": 200,
+      "rest": 200,
+      "storage": 200
+    },
+    "cors": {
+      "own": {
+        "status": 200,
+        "allowOrigin": "http://127.74.19.10:3585"
+      },
+      "prior": {
+        "status": 200,
+        "allowOrigin": "http://127.74.19.10:3585"
+      }
+    },
+    "containers": {
+      "rest": {
+        "id": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+        "name": "/openplan-combined-final-rest-64be34b53235",
+        "running": true,
+        "oomKilled": false,
+        "restarts": 0,
+        "startedAt": "2026-10-15T09:41:11.168614317Z",
+        "memory": 536870912,
+        "memorySwap": 536870912
+      },
+      "auth": {
+        "id": "174ab2d834b744022f4388f754cddfb2e75db0c449b712bc4032006c5a2d2984",
+        "name": "/openplan-combined-final-auth-516814944a59",
+        "running": true,
+        "oomKilled": false,
+        "restarts": 0,
+        "startedAt": "2026-10-15T08:45:54.527684543Z",
+        "memory": 536870912,
+        "memorySwap": 536870912
+      },
+      "storage": {
+        "id": "f11687449419ad9e3e97677fde125c07755a92d4e354d1a2de62488546b4d932",
+        "name": "/openplan-combined-final-storage-25aebf81ee30",
+        "running": true,
+        "oomKilled": false,
+        "restarts": 0,
+        "startedAt": "2026-10-15T08:45:54.86504781Z",
+        "memory": 536870912,
+        "memorySwap": 536870912
+      },
+      "gateway": {
+        "id": "9df8243592d037ee9189cd74cb116824d5ae45166d20b7bde4e88109610b709f",
+        "name": "/openplan-combined-final-gateway-6e6f51a922fb",
+        "running": true,
+        "oomKilled": false,
+        "restarts": 0,
+        "startedAt": "2026-10-15T08:45:55.198844457Z",
+        "memory": 536870912,
+        "memorySwap": 536870912
+      },
+      "retained-failed-rest": {
+        "id": "cb8cfc278c910f934f495007a85748a740e3b274f977e00e12fe3cc2fa7add16",
+        "name": "/openplan-combined-final-rest-64be34b53235-failed-uri-recovery-01",
+        "running": false,
+        "oomKilled": false,
+        "restarts": 0,
+        "startedAt": "2026-10-15T08:45:53.850247373Z",
+        "memory": 536870912,
+        "memorySwap": 536870912
+      }
+    },
+    "collectorResources": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "memory.peak": "46927872",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "receipts": {
+      "replacement-started-private.json": "445c90a887ab2d4839885892848bd2220f63a5a036392bd0759227564531168d",
+      "create-ack-private.json": "1545be662bd45c91a0e928a4bf0cf8ab31059ff80a626d052e5d46112ea34038",
+      "packet-after-01-private.json": "ff7eda089e13c73d46d74e4b8500376ea087bd5dff0989c5ec09427b03833f59",
+      "active-service-receipts-private.json": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "packet-after-02-private.json": "ff7eda089e13c73d46d74e4b8500376ea087bd5dff0989c5ec09427b03833f59",
+      "start-intent-private.json": "a04dd8707e84df1ef32a565783a3f7ee98cb1720fd6389f1bf00834600160665",
+      "create-intent-private.json": "b5a1f753f9196b4a3a3bb278afc9fe5fcfeb7c32d52ea9798ae2e13a79953a2a",
+      "replacement-receipt-private.json": "a7b5210ad7e117ba9ee2c81eb92b7875ce1c6be70ad2e63f660856db98a35582",
+      "active-binding-private.json": "eb59fad42679f11ac2a6cd97f6267adbb21c25ea6298efcf10e2e578b37da72e",
+      "start-ack-private.json": "1545be662bd45c91a0e928a4bf0cf8ab31059ff80a626d052e5d46112ea34038",
+      "rename-intent-private.json": "a456fd9756810d9662e4cbcdff13406546e54f1a873645f6d2c4265036219092",
+      "packet-before-private.json": "aede958f22433aca06535cb1bb89255aeb8b9b45824c061a56573160bfac0f99",
+      "transition-intent-private.json": "fc63fa4f03972da7ffbf5acea8d6fe597b1b5fd65af1cb80baf88f86210affb4",
+      "stop-intent-private.json": "f5f9f698953dc58fe5fcb5a9e83b49bafea1f08026de371ec0b336ab6f7244f0",
+      "rename-ack-private.json": "b4ba12673cbed1a6b5424f5da9e830d424b33e76a678147ecc696974b3350dd0",
+      "stop-ack-private.json": "1622ec5c13e8fafdc44243797d1620816a57a602014b5d585c58080f28bd9293"
+    },
+    "readbackControl": {
+      "harmless": "survived",
+      "rest503": "refused at actual health status"
+    }
+  },
+  "packetPreservation": {
+    "beforeCount": 18485,
+    "afterCount": 18502,
+    "changed": [],
+    "removed": [],
+    "added": [
+      "rest-uri-recovery-01/active-binding-private.json",
+      "rest-uri-recovery-01/active-service-receipts-private.json",
+      "rest-uri-recovery-01/create-ack-private.json",
+      "rest-uri-recovery-01/create-intent-private.json",
+      "rest-uri-recovery-01/create-private.log",
+      "rest-uri-recovery-01/rename-ack-private.json",
+      "rest-uri-recovery-01/rename-intent-private.json",
+      "rest-uri-recovery-01/rename-private.log",
+      "rest-uri-recovery-01/replacement-receipt-private.json",
+      "rest-uri-recovery-01/replacement-started-private.json",
+      "rest-uri-recovery-01/start-ack-private.json",
+      "rest-uri-recovery-01/start-intent-private.json",
+      "rest-uri-recovery-01/start-private.log",
+      "rest-uri-recovery-01/stop-ack-private.json",
+      "rest-uri-recovery-01/stop-intent-private.json",
+      "rest-uri-recovery-01/stop-private.log",
+      "rest-uri-recovery-01/transition-intent-private.json"
+    ],
+    "baselineSha256": "309be0c23bc9e555c72141efd793e215bd7cbb9d8a0d1d6642aae61fe0a64f64",
+    "controls": {
+      "harmlessExtra": "survived",
+      "changedHash": "refused",
+      "changedMode": "refused"
+    },
+    "limits": "Does not follow dependency symlinks or establish logical database preservation. Original source/global/helper/Storage guards separately passed."
+  },
+  "proof": "/home/nathaniel/.local/state/openplan/rest-recovery-parent-operation-20261015-01",
+  "hashes": {
+    "observations.json": "7353b5f98398c3f1f5ed0d08c48d92be08175dc6c7b5c8db3258b9331f0f09fc",
+    "packet-preservation.json": "c5b36c7a4256f6b07ad68c20958c99c5aa0d4815db6a897ae07bede0779afd5c",
+    "operation-summary.json": "0fe716a8876801b65df98e6ed61400cf34723015700a7d381f68dd2364e312fc",
+    "capture.py": "856d36b517daf4027ee1e838f1ad2377b8dbf3c5895989d2c887978a92c04e90",
+    "preserve.py": "d39b31215fdb2c54dd30b50c93875ec215e6e79a2044278ae053cafac6537536"
+  },
+  "limits": [
+    "REST-only transition, not app build or user workflow acceptance",
+    "F1 remains blocking for the old build/start recipe",
+    "No hosted setting, migration, provider or release change"
+  ]
+}

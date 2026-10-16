@@ -1,0 +1,20 @@
+{
+  "preparedOnly": true,
+  "sealedFiles": 25,
+  "checksumListSHA256": "87f96cec8f07cb737c82ff93907619cc3e8aa9306efb0a578eed29f2ebbb7856",
+  "manifestSHA256": "4392388032ad99ffe9fe83adfaa5571c9e23692151b6d6d12f294cc29dfca71a",
+  "parentRecipeSHA256": "91326e7941c5606d6ab2ede3c8d6b179c49f1892012e2793298a732b042c7f7c",
+  "runnerSHA256": "2f66be1b8c376d12075af08e09488fc2e616098c2489b966763cd13a124d11dd",
+  "allPublicPrivateTemplatesEqual": true,
+  "oldPinnedFilesAndModesUnchanged": true,
+  "dependencyMetadata969RecordsMatch": true,
+  "shellSyntaxHarmlessSurvivesAndBrokenIfFails": true,
+  "candidateAbsent": true,
+  "executionEmpty": true,
+  "noOperatingReceipts": true,
+  "knownCredentialScreenPass": true,
+  "applicationSource": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "limits": "No operating stage, database transport, network request, compiler, build or browser. Host/user-manager/tool integrity, allocation races and actual runtime behavior remain unproved.",
+  "finalCorrection": "Docstring now identifies parent-only upgrade stages; functional AST unchanged apart from sealed hash literals. Final 64-case campaign rerun on resealed inputs.",
+  "priorFinalAuditSHA256": "9dae79e19e7e705b7a2ecf5d56514cc107b147b40bb55669c620bdec9b78bdc7"
+}

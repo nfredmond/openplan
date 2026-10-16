@@ -1,0 +1,792 @@
+{
+  "head": "ffd21964f38fb9a391e26e89a4cb705d409af6f8",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-5ec0f982",
+  "node": "v24.22.0",
+  "bindings": {
+    "openplan/src/lib/geo/wgs84-bounds.ts": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719",
+    "openplan/src/lib/cartographic/geometry-bbox.ts": "52907dca5a4516575f8566fb31b4291312f713a611dd6750f93476107563e458",
+    "openplan/src/lib/cartographic/saved-geometry-frame.ts": "aea301a98cbae6294983cf055556b6485f6257d37076a56b4806c0fe5405b5b6",
+    "openplan/src/lib/cartographic/corridor-line-geojson.ts": "230c02311801f9831bcdf370561d7939fe2e2dd818d89df852568ccc2e19e436",
+    "openplan/src/lib/projects/project-geopackage.ts": "c0663e8409ca3519ff13fe131a49cc5d91de9f5650ef273df5cc96540fb8ba8a",
+    "openplan/src/components/projects/project-saved-map.tsx": "85f349c6fa17bf7f2586e6ea3b4405bad0d682e69a956dc4d4e3cd92ceaee687"
+  },
+  "records": [
+    {
+      "name": "empty",
+      "actual": null
+    },
+    {
+      "name": "original-date-line",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            179.7,
+            51
+          ],
+          [
+            180.3,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "opposite-points",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            179.8,
+            51.1
+          ],
+          [
+            180.2,
+            51.1
+          ]
+        ]
+      }
+    },
+    {
+      "name": "third-part",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            178,
+            51
+          ],
+          [
+            180.3,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "broad",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -170,
+            51
+          ],
+          [
+            170,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "broad-with-site",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -170,
+            51
+          ],
+          [
+            175,
+            52
+          ]
+        ]
+      }
+    },
+    {
+      "name": "broad-with-inner-part",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -170,
+            51
+          ],
+          [
+            175,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "full-world",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -180,
+            51
+          ],
+          [
+            180,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "full-world-with-nested",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -180,
+            51
+          ],
+          [
+            180,
+            52
+          ]
+        ]
+      }
+    },
+    {
+      "name": "full-world-union",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -180,
+            51
+          ],
+          [
+            180,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "touching-parts",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            10,
+            51
+          ],
+          [
+            30,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "reordered-parts",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            179.7,
+            51
+          ],
+          [
+            180.3,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "broad-cartesian-line",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -170,
+            0
+          ],
+          [
+            170,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "name": "split-corridors",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            179,
+            1
+          ],
+          [
+            181,
+            3
+          ]
+        ]
+      }
+    },
+    {
+      "name": "ordinary-tie",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -90,
+            0
+          ],
+          [
+            90,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "three-way-tie",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            -120,
+            0
+          ],
+          [
+            120,
+            0
+          ]
+        ]
+      }
+    },
+    {
+      "name": "zero",
+      "actual": {
+        "kind": "center",
+        "center": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "name": "negative-zero",
+      "actual": {
+        "kind": "center",
+        "center": [
+          0,
+          0
+        ]
+      }
+    },
+    {
+      "name": "north-pole",
+      "actual": {
+        "kind": "center",
+        "center": [
+          0,
+          90
+        ]
+      }
+    },
+    {
+      "name": "south-pole",
+      "actual": {
+        "kind": "center",
+        "center": [
+          0,
+          -90
+        ]
+      }
+    },
+    {
+      "name": "both-poles",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            0,
+            -90
+          ],
+          [
+            0,
+            90
+          ]
+        ]
+      }
+    },
+    {
+      "name": "seam-equivalent-points",
+      "actual": {
+        "kind": "center",
+        "center": [
+          180,
+          0
+        ]
+      }
+    },
+    {
+      "name": "seam-with-latitude",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            180,
+            1
+          ],
+          [
+            180,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "zero-width-line",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            0,
+            0
+          ],
+          [
+            0,
+            1
+          ]
+        ]
+      }
+    },
+    {
+      "name": "high-precision",
+      "actual": {
+        "kind": "center",
+        "center": [
+          12.12345678901234,
+          45.12345678901234
+        ]
+      }
+    },
+    {
+      "name": "hole",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            0,
+            0
+          ],
+          [
+            2,
+            2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "separate-hole-components",
+      "actual": {
+        "kind": "bbox",
+        "bbox": [
+          [
+            179,
+            51
+          ],
+          [
+            181,
+            51.2
+          ]
+        ]
+      }
+    },
+    {
+      "name": "extra-dimension",
+      "actual": {
+        "kind": "center",
+        "center": [
+          10.1234567890123,
+          20.9876543210987
+        ]
+      }
+    }
+  ],
+  "rejected": [
+    {
+      "name": "unclosed-area",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "empty-area",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "null-feature",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "unsupported-area",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "nonfinite-area",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "invalid-site",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "out-of-range-site",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "nonfinite-site",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "invalid-corridor",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    },
+    {
+      "name": "unsupported-corridor",
+      "actual": {
+        "crs": "EPSG:4326",
+        "layers": [
+          {
+            "layerKey": "project_area",
+            "geometryType": "Polygon or MultiPolygon",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_location",
+            "geometryType": "Point",
+            "featureCount": 0,
+            "rejectedFeatureCount": 0,
+            "status": "unavailable"
+          },
+          {
+            "layerKey": "project_corridors",
+            "geometryType": "LineString",
+            "featureCount": 0,
+            "rejectedFeatureCount": 1,
+            "status": "unavailable"
+          }
+        ],
+        "featureCount": 0,
+        "unavailableLayerCount": 3,
+        "rejectedFeatureCount": 1
+      }
+    }
+  ],
+  "intervalOracleCases": 300,
+  "componentCalls": [
+    {
+      "method": "fitBounds",
+      "bbox": [
+        [
+          179.7,
+          51
+        ],
+        [
+          180.5,
+          51.2
+        ]
+      ],
+      "options": {
+        "padding": 64,
+        "maxZoom": 15,
+        "duration": 400
+      }
+    }
+  ],
+  "zeroCalls": [
+    {
+      "method": "easeTo",
+      "options": {
+        "center": [
+          0,
+          0
+        ],
+        "zoom": 14,
+        "duration": 400
+      }
+    }
+  ],
+  "controls": [
+    {
+      "name": "baseline",
+      "result": "survived",
+      "diagnostic": null
+    },
+    {
+      "name": "harmless-comment",
+      "result": "survived",
+      "diagnostic": null
+    },
+    {
+      "name": "no-wrapped-gap",
+      "result": "intended assertion failure",
+      "diagnostic": "original-date-line: exact camera instruction"
+    },
+    {
+      "name": "restored",
+      "result": "survived",
+      "diagnostic": null
+    }
+  ],
+  "limits": [
+    "Pure helpers and extracted component paint closure only",
+    "No React scheduling, browser, WebGL, projection, tessellation, accessibility or database",
+    "No source mutation; only in-memory controls"
+  ]
+}

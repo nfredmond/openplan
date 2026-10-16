@@ -1,0 +1,5 @@
+--- /home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5/observer.py
++++ observer.py
+@@ -10 +10 @@
+-ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5')
++ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6')

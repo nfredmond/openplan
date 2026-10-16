@@ -1,0 +1,78 @@
+{
+  "schema": 1,
+  "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "recoveryProducer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+  "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3",
+  "frozenRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "templates": {
+    "app_binding_v1.py": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+    "attest_start_v1.py": "0f62106d862c4f691cd87ffdaee6c277f93f01908cadfbcf7c686c365fd27665"
+  },
+  "bindingSha256": "493af5c631b4b420d6f5b6c0723879e9d555240395a41aca7dde367051f0070f",
+  "privateInputs": {
+    "app_binding_v1.py": "c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329",
+    "app-env-private.json": "a62b271a418901db0965f77e54b3e646196e0b3912230efd819f1849ad36f205",
+    "app-v1.env": "a283c64f3002d46ad879ea313f618166b94ff7712e3c9d7fd8dba11f977b69f9",
+    "migrations.json": "56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317",
+    "dependency-binding.json": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d",
+    "recovery-active-binding.json": "362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b",
+    "attest_start_v1.py": "0f62106d862c4f691cd87ffdaee6c277f93f01908cadfbcf7c686c365fd27665"
+  },
+  "helperModules": {
+    "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+    "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+    "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+  },
+  "activeBinding": {
+    "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+    "restId": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+    "files": {
+      "replacement-receipt-private.json": "a7b5210ad7e117ba9ee2c81eb92b7875ce1c6be70ad2e63f660856db98a35582",
+      "replacement-started-private.json": "445c90a887ab2d4839885892848bd2220f63a5a036392bd0759227564531168d",
+      "active-service-receipts-private.json": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "active-binding-private.json": "eb59fad42679f11ac2a6cd97f6267adbb21c25ea6298efcf10e2e578b37da72e"
+    },
+    "operationObservationSha256": "7353b5f98398c3f1f5ed0d08c48d92be08175dc6c7b5c8db3258b9331f0f09fc"
+  },
+  "migrationCount": 419,
+  "nonRootLockEntries": 1143,
+  "installedLockEntries": 969,
+  "applicationEnvironmentDelta": [
+    "OPENPLAN_COMMIT_SHA"
+  ],
+  "candidateExists": false,
+  "executionFiles": [],
+  "packetVersion": 3,
+  "supersedesPacketCommit": "807c89b29692e1e56ae1d8e3d34714480e72ede7",
+  "healthContract": {
+    "commit": "21510042e94b",
+    "migrations": {
+      "expected": 419,
+      "latest": "20261017000016"
+    }
+  },
+  "actualAppUnit": "openplan-current-project-preview-app-21510042e-v3-web.service",
+  "independentReviewCommit": "bcd47064b87306fc742704a742c24ceeb873f25c",
+  "independentReviewFiles": {
+    "REVIEW.md": "9e4fb1ba4eb08af82fc39555c3a3f1c34831a09f88a289e9b714de3ed1fe410d",
+    "nested_probe.py": "b7b43c030d67e6197c46097defacab945e947e31a5c6d0f9c04cdb8fc0f2317d",
+    "health_probe.py": "e6c3053f7deec14970af455676bf0afabdb96f6bc8ae666343af0d34fec01c35",
+    "evidence.json": "9fb2305f549fac70c4e213e9e7ad4ee6b4b5b78cf4b875de3ebd6c834ee3e888"
+  },
+  "operationFilesSha256": "6200f71a07ef3559695ac007c18e438a9afb90f20771a604ce247013dc48067b",
+  "runnerSha256": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+  "recipeFiles": {
+    "PARENT_RECIPE.md": "4b8558bef34f20761a567e6fc0853dbc2eb5d5a51e1f755ba0d5e4abf685bc2b",
+    "run_stage_v3.sh": "34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e",
+    "operation-files.sha256": "6200f71a07ef3559695ac007c18e438a9afb90f20771a604ce247013dc48067b",
+    "template-diff.patch": "826b2c8835647d875421e28ca78639b9febc98db4d2bc3e53a1fd77ebe9b1eac",
+    "runner-diff.patch": "986ee1168e0b1d10679c73e9b49086739775d5d16bae53981509223f4148cfc5",
+    "verify_composition.py": "7964f4ea7ac48ebecbbe85cd367e20cd7d4baad3b189f58b414b77bdba821591",
+    "recipe-diff.patch": "72e714505db13b7fe551c3bad520530e316a42072753f47b6f38aa8ff1eb230a"
+  },
+  "reviewedV2IndependentCommit": "4eb906b32fd1d6cd74c435e662d396a768438f8e",
+  "parentCompilerReportCommit": "fa696fa9a93b265649b454483ad8904e28fa1781",
+  "executionBlockedPendingIndependentV3Review": true
+}

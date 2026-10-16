@@ -1,0 +1,33 @@
+{
+  "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "source": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "target": "openplan_workbook_native_f022913ef7654f40b2795c55",
+  "sourceRowsSha256": "2c4c300a93013e4694f4ee8aea60ffbbbaa243938058d6d94a980520a9935639",
+  "sourceBytes": 110668947,
+  "freeDiskBytes": 49773031424,
+  "versions": {
+    "count": 419,
+    "latest": "20261017000016"
+  },
+  "server": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "createdAt": "2026-10-15T06:52:46.035749+00:00",
+  "archive": {
+    "sha256": "802e35337ed5c5b829648685b7110e9677ac4cb0f7c9b6608836572579742002",
+    "bytes": 15076357
+  },
+  "targetCatalog": {
+    "oid": 6103255,
+    "datname": "openplan_workbook_native_f022913ef7654f40b2795c55",
+    "datdba": "postgres",
+    "datcollate": "en_US.UTF-8",
+    "datctype": "en_US.UTF-8"
+  },
+  "fixtureCounts": [
+    0,
+    1000,
+    2000,
+    2001,
+    7,
+    3
+  ]
+}

@@ -1,0 +1,228 @@
+{
+  "appHead": "21510042e94bcaf80f262205ad156a7bb639e35c",
+  "buildId": "u1jUSo57HKk72eLd1Qv43",
+  "webInvocation": "34615ba06b554482b0f79c90fe999a61",
+  "browser": "Playwright MCP fallback",
+  "T3Acceptance": false,
+  "journeyManifestSha256": "0ba0e819b98650c8a130b89b03c9d6de112d1bce9ae1413966b23479fc950ec5",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/current-project-preview-browser-fallback-20261015",
+  "downloads": [
+    {
+      "name": "legacy-jurisdiction-three-shapes.gpkg",
+      "bytes": 139264,
+      "sha256": "8d22afe023086ad2b61dc0983913093af52e9a18e9b9a8667018b88d16e69ae6"
+    },
+    {
+      "name": "legacy-jurisdiction.json",
+      "bytes": 10483,
+      "sha256": "596ba6935c137ec15af31737ea7d74bc366fb2780a5dad1b69e5ca943983b89e"
+    },
+    {
+      "name": "two-unverified-jurisdictions-three-shapes.gpkg",
+      "bytes": 143360,
+      "sha256": "06a135d2ef54fb1f56cb4466060a5395ee67fff34fa608b71745b9d967f467c1"
+    },
+    {
+      "name": "two-unverified-jurisdictions.json",
+      "bytes": 14184,
+      "sha256": "ee22c88f2660bde4c49a663560194991ad088a8ab9cf63e490c485feaa5b66bf"
+    },
+    {
+      "name": "unresolved-jurisdiction.json",
+      "bytes": 888,
+      "sha256": "6da53cccf07f1e948da53a515edf73a0ff3e724ea9820348efb5e88b6b98825e"
+    },
+    {
+      "name": "unresolved-portfolio.xlsx",
+      "bytes": 10756,
+      "sha256": "72c9837fe7dd89607a5c5b95eb9ae092c529db28007302b573e4b86cd42dec4e"
+    },
+    {
+      "name": "unresolved-three-shapes.gpkg",
+      "bytes": 131072,
+      "sha256": "00558cd03fe652e2034fb4310b4ca9b48528aaf18dee196b7e0b4d702f144d28"
+    }
+  ],
+  "selectedBrowserArtifacts": [
+    {
+      "name": "browser-identity-after-journey.json",
+      "bytes": 523,
+      "sha256": "d17f92ec14a6c5ca1d645646153df7dbe7429e5d0cc204b8e7a791feef4800f3"
+    },
+    {
+      "name": "data-hub-feeds-desktop.png",
+      "bytes": 157490,
+      "sha256": "4e06cb55d1970c7eb01f59a9b11e48cb32bb98676157c9c562e60e69ee1446a0"
+    },
+    {
+      "name": "expired-feed-390-layout.json",
+      "bytes": 529,
+      "sha256": "8f934aed68d440968567342a1e1f29f9104eb9b6a719042285768b02cd6ce871"
+    },
+    {
+      "name": "expired-feed-390.png",
+      "bytes": 81514,
+      "sha256": "9441632c0cf2cb040da71a01a4470a39d959d28488dead6499c092cbc52a7184"
+    },
+    {
+      "name": "expired-feed-desktop-layout.json",
+      "bytes": 531,
+      "sha256": "64ea1acf39e3d4482720ee3d0665d383b3bbe0bf600a04f6b6d24bed3cd11bd9"
+    },
+    {
+      "name": "expired-feed-desktop.png",
+      "bytes": 158758,
+      "sha256": "57ab25dd8eb1f8c7c1e1225f53ec57e2c1dedeaf48ac38b9f18a1da8dc4fb601"
+    },
+    {
+      "name": "import-review-390-layout.json",
+      "bytes": 399,
+      "sha256": "510a98fae8adc7e32958a24dec25a0b91e3d7f31e6aab75b374b919faaf2e153"
+    },
+    {
+      "name": "import-review-390.png",
+      "bytes": 58150,
+      "sha256": "ffa4f44b6087695bcaef54deff3647a32aeb20c4028e311ba218a577fa1fa461"
+    },
+    {
+      "name": "journey-console-final-01.txt",
+      "bytes": 1247,
+      "sha256": "747bc13c266b215bf53462f65f25f0f5044755219e18ae3fb7c9bef27dec360d"
+    },
+    {
+      "name": "jurisdiction-editor-390.png",
+      "bytes": 67943,
+      "sha256": "fb52d50dea3a942fadf5faae26a2e28f4b3b2b56f60f6e1278e32e24618f1265"
+    },
+    {
+      "name": "jurisdiction-saved-390-layout.json",
+      "bytes": 748,
+      "sha256": "62c68e4da695e3d12d0c280c20c60fdccd10c5e6cc5e67ce186e56b026548e8c"
+    },
+    {
+      "name": "jurisdiction-saved-390.png",
+      "bytes": 81049,
+      "sha256": "18451bd51f1bf2a20447ee270f52ea8a430231afec83040b67f59958dff86b81"
+    },
+    {
+      "name": "jurisdiction-saved-reloaded-desktop.png",
+      "bytes": 195506,
+      "sha256": "51bc2646333a01b90a5492517593c4836b894855257213d40cebd71b177a170a"
+    },
+    {
+      "name": "jurisdiction-unresolved-390.png",
+      "bytes": 65037,
+      "sha256": "86c816134c452132d2d2ca7e07ebd8d45eaa3716b61a3cf7848242b8dea87198"
+    },
+    {
+      "name": "landing-desktop.png",
+      "bytes": 253528,
+      "sha256": "f526639f23b57404560080ddabf912269fd726f3c1024828c31a390122912241"
+    },
+    {
+      "name": "project-record-desktop.png",
+      "bytes": 150596,
+      "sha256": "c3270db3b7b4d17b46f2152136d9191067bcb3ae477f37de81bfe8a7ff27676c"
+    },
+    {
+      "name": "saved-map-390-layout.json",
+      "bytes": 641,
+      "sha256": "19959b6460bd844ecfc8d0e6b8ed670514c9869a3a8657edeee2095ebc8b227d"
+    },
+    {
+      "name": "saved-map-390.png",
+      "bytes": 121009,
+      "sha256": "450089df46b7510b1c730e867ec6c7a9816e660a025e05c6b74aade945d16d91"
+    },
+    {
+      "name": "saved-map-desktop-layout.json",
+      "bytes": 504,
+      "sha256": "54a05b9c17c54f0ee3f626b8ed9f7a72900765d016b6fe8220f1787c675dd974"
+    },
+    {
+      "name": "saved-map-desktop.png",
+      "bytes": 259628,
+      "sha256": "9c52cd3efbb5984ef1642e0b195a977be4681ff14989bbf768ce020e08ccc0e0"
+    },
+    {
+      "name": "saved-three-shapes-desktop.png",
+      "bytes": 257055,
+      "sha256": "dd3d4dba8db954b682b80413ead2c182b4146ea41f99db1c8f2dc94f94c968f5"
+    },
+    {
+      "name": "scoped-analysis-390-layout.json",
+      "bytes": 541,
+      "sha256": "f486c4ec555bd9e72dc1d1c1d696f7a1630413653ae22919d334703200c53e93"
+    },
+    {
+      "name": "scoped-analysis-390.png",
+      "bytes": 76747,
+      "sha256": "4b13cbdbb0833381b25afd18a14470d614eca20f3db12bdf973fa9d634749f01"
+    },
+    {
+      "name": "scoped-analysis-desktop.png",
+      "bytes": 346651,
+      "sha256": "71b2e2b0aa7e8b19860b9b875f8bad741cecbc63720bd3379ba9cbd98185bfb1"
+    },
+    {
+      "name": "sign-in-390-layout.json",
+      "bytes": 658,
+      "sha256": "3f74fdec9929bb26d1ceb78e50e6a1c5d920b80540d6cf7fdd36d70f8a017bd7"
+    },
+    {
+      "name": "sign-in-390.png",
+      "bytes": 67057,
+      "sha256": "1602bae253c5986cbaedd8cafdb57f0f354563e10baee3f20ca6db40fc84ad26"
+    },
+    {
+      "name": "sign-in-desktop.png",
+      "bytes": 151703,
+      "sha256": "98e083ea0f1a0d9785a772cd67ab00d1c6f67adede4625a83cc8d052531adca4"
+    },
+    {
+      "name": "three-shapes-reloaded-390-layout.json",
+      "bytes": 451,
+      "sha256": "f9e0cfc6e72cc65cd64779df69e2d2a05b6bd8350893d817e0ec8c32d1bfcc58"
+    },
+    {
+      "name": "three-shapes-reloaded-390.png",
+      "bytes": 121086,
+      "sha256": "d7d6978b8d1f4fbfe43bd60cb2c1a9a60b9b1e2499775eb51147f2a2f0e8abd6"
+    }
+  ],
+  "import": {
+    "result": "failed twice",
+    "HTTPStatus": 409,
+    "code": "import_stale",
+    "approvedPreviewHash": "b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508",
+    "createdAcceptance": false,
+    "nativeAtomicityProof": "pending",
+    "cause": "Skipped invalid source status rejected by function; audit status/phase constraints also unconditional",
+    "candidateMigration17": "separate implementation pending, unapplied"
+  },
+  "consoleRetainedRecords": {
+    "warnings": 4,
+    "errors": 2,
+    "warningCategory": "WebGL ReadPixels stall",
+    "errorCategory": "import HTTP409"
+  },
+  "limits": [
+    "no native QGIS or Excel acceptance",
+    "no measured or current service finding",
+    "no scientific validation",
+    "no hosted changes or release"
+  ],
+  "independentArtifactReview": {
+    "sourceCommit": "b61e316c6e5db0a87dde122e31c2a30887279955",
+    "joinedAs": "0d926f652",
+    "report": "../2026-10-15-current-browser-download-artifact-review/README.md",
+    "scope": "offline seven downloaded files; no confirmed artifact defect",
+    "harmlessSurvivors": 1,
+    "targetedFaultsDetected": 23,
+    "originalsUnchanged": true,
+    "copiesRestored": true,
+    "parentReadFullReportProbeEvidence": true,
+    "parentFreshBindings": 21,
+    "parentReadbackSha256": "355a26c7fd584b7a850087abfc1716b856090f899c00935f2ceaf57fa394406c"
+  }
+}

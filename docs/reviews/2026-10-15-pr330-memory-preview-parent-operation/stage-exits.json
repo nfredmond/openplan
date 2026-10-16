@@ -1,0 +1,107 @@
+{
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "stages": {
+    "allocate": {
+      "returncode": 0,
+      "seconds": 0.447,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-allocate.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "dd4ab6c36961cee989f6deb77d05273fb4b262a777c6ee4f535e06313944d0bf"
+    },
+    "preflight": {
+      "returncode": 0,
+      "seconds": 69.547,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-preflight.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "0b79b951fae50e025a19d34b98e7505e22cab98d849a481c810897c4596e4b38"
+    },
+    "restore": {
+      "returncode": 0,
+      "seconds": 150.892,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-restore.service",
+      "stdoutSHA256": "19c53a7c60d6cff904e22d4d0fa3610c690d43ead3dcaf1548d896d872ad9e07",
+      "stderrSHA256": "213b4a1ce61b0ea2f3a27594f21073d50ce727320e2f5af3627754367c0cfc8a"
+    },
+    "upgrade": {
+      "returncode": 0,
+      "seconds": 156.537,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-upgrade.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "8071f87c6b8781c2ebb8d96d3b7a336be1e8c1d6be651bd96385dce78e1a4e93"
+    },
+    "services": {
+      "returncode": 1,
+      "seconds": 70.059,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-services.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "36eab79968b764afc8ac1b58e9a6ec5e576f960a60bb7535e8ce084931828b08"
+    },
+    "active-check": {
+      "returncode": 0,
+      "seconds": 69.6,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-active-check.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e51d3cb47edbedd6b8963759b4d09019f75f6b29bfc15e03ed40734862edb110"
+    },
+    "checkout": {
+      "returncode": 0,
+      "seconds": 145.217,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-checkout.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "74d51320de79a2b90310f0750e93805c4291e7820d08eccb162af8450d822667"
+    },
+    "build": {
+      "returncode": 0,
+      "seconds": 658.954,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-build.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "439e3735f6f913b469b27d4321d0ac989e29ef06a8c5e67f319d7acd3099bdcb"
+    },
+    "archive": {
+      "returncode": 0,
+      "seconds": 63.499,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-archive.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "fb0673835ebb949036053d2d79150a801d20c6e6b1c7c62a3e022d8b1acde2c4"
+    },
+    "start": {
+      "returncode": 0,
+      "seconds": 0.203,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-web.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "d885b96d0d78caa9a5094d1fb2d5b4aa75dba02ce92d05ee89b36b1987db4e25"
+    },
+    "attest": {
+      "returncode": 0,
+      "seconds": 142.324,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-attest.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "5d57c4dfd5f57a96aacd59e1241c31d0618204d90f41843f61dcc5dbab116b52"
+    },
+    "post-journey": {
+      "returncode": 0,
+      "seconds": 68.707,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-post-journey.service",
+      "stdoutSHA256": "3036d61146315f61e97d82b929bedc7b7b42c1892d74e3b7d0d79cecbc9f6806",
+      "stderrSHA256": "c5593e63b36e580ec40e3d601885cb9d2d9d85fd6fce99fb30c0989d25185219"
+    }
+  },
+  "servicesDisposition": "Original failed stage retained. No mutator retry/restart. Subsequent already-reviewed read-only active check succeeds.",
+  "build": "Completed within build boundary; actual artifact inventory and receipts accepted. Browser outcomes remain partial.",
+  "buildObserverTask": "node:delegated-task:command%3Amcp%3A4129311c-65d7-4581-bdf7-2121310d6492%3Adelegate-task%3Asol-pr330-memory-preview-build-observation-20261015-r2-01",
+  "readiness": {
+    "http": 200,
+    "seconds": 55.465,
+    "healthSHA256": "cce6a618980ed22be55c868f8ffe7dd433826f428053082c346f19a7af907806",
+    "keys": [
+      "status",
+      "service",
+      "checkedAt",
+      "deployment",
+      "checks"
+    ],
+    "boundary": "HTTP readiness only; strict source/listener/cgroup/environment attestation still required."
+  },
+  "acceptance": "Partial local journey; raster/mobile visual evidence incomplete; source wording correction pending. No promotion or release."
+}

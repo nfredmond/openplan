@@ -86,12 +86,14 @@ export function StudyAreaPicker({
   onPlaceResolved,
   showRunEngineHint = true,
   externalLabel = null,
+  searchOnly = false,
 }: {
   corridorText: string;
   onCorridorChange: (text: string) => void;
   onPlaceResolved?: (place: PlaceBoundaryResponse | null) => void;
   showRunEngineHint?: boolean;
   externalLabel?: string | null;
+  searchOnly?: boolean;
 }) {
   const [mode, setMode] = useState<PickerMode>("search");
   const [query, setQuery] = useState("");
@@ -178,14 +180,14 @@ export function StudyAreaPicker({
       );
       if (!res.ok) throw new Error("boundary failed");
       const data = (await res.json()) as PlaceBoundaryResponse;
-      emitCorridorText(JSON.stringify(data.geojson));
+      if (!searchOnly) emitCorridorText(JSON.stringify(data.geojson));
       onPlaceResolved?.(data);
       setSelectedLabel(data.label ?? item.label);
       setResults([]);
       setCoverage(null);
       setQuery("");
     } catch {
-      setError(`Couldn't load the boundary for ${item.label}. Try another result or draw the area.`);
+      setError(`Could not resolve ${item.label}. Try another result${searchOnly ? " or use a staff declaration." : " or draw the area."}`);
     } finally {
       setResolvingGeoid(null);
     }
@@ -230,7 +232,7 @@ export function StudyAreaPicker({
           <Search className="h-3.5 w-3.5" />
           Search a place
         </button>
-        <button
+        {!searchOnly && <button
           type="button"
           onClick={() => setMode("draw")}
           aria-pressed={mode === "draw"}
@@ -241,7 +243,7 @@ export function StudyAreaPicker({
         >
           <Pencil className="h-3.5 w-3.5" />
           Draw an area
-        </button>
+        </button>}
       </div>
 
       {mode === "search" ? (
@@ -294,9 +296,8 @@ export function StudyAreaPicker({
             <p className="flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
               <span>
-                Place search is unavailable right now, so this is not a result — nothing was searched.{" "}
-                {coverage.reason ?? "The US Census lookup services did not respond."} Draw the area instead, or try again
-                shortly.
+                Place search is unavailable right now, so this is not a result. Nothing was searched.{" "}
+                {coverage.reason ?? "The US Census lookup services did not respond."} {searchOnly ? "Use a staff declaration or retry later." : "Draw the area instead, or try again shortly."}
               </span>
             </p>
           ) : null}
@@ -318,7 +319,7 @@ export function StudyAreaPicker({
           coverage !== null &&
           !coverage.searchUnavailable &&
           coverage.unavailableKinds.length === 0 ? (
-            <p className="text-xs text-muted-foreground">No matching places. Try a different spelling, or draw the area.</p>
+            <p className="text-xs text-muted-foreground">No matching places. {searchOnly ? "Use a staff declaration for contexts outside search coverage." : "Try a different spelling, or draw the area."}</p>
           ) : null}
         </div>
       ) : (
@@ -333,7 +334,7 @@ export function StudyAreaPicker({
 
       {error ? <p role="alert" className="text-xs text-red-600 dark:text-red-300">{error}</p> : null}
 
-      {summary.valid ? (
+      {!searchOnly && (summary.valid ? (
         <div className="rounded-lg border border-emerald-300/60 bg-emerald-50/60 px-3 py-2.5 text-sm dark:border-emerald-900/50 dark:bg-emerald-950/20">
           <div className="flex items-start justify-between gap-3">
             <div className="flex items-start gap-2">
@@ -360,7 +361,7 @@ export function StudyAreaPicker({
           {showRunEngineHint && summary.areaKm2 !== null && summary.areaKm2 > LARGE_AREA_KM2 ? (
             <p className="mt-2 flex items-start gap-1.5 text-xs text-amber-800 dark:text-amber-200">
               <AlertTriangle className="mt-0.5 h-3.5 w-3.5 flex-shrink-0" />
-              Large study area — best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale
+              Large study area, best run on the <strong>AequilibraE (Fast Screening)</strong> engine. A metro-scale
               sketch run exceeds the 150-tract in-process cap and is routed to the AequilibraE worker automatically;
               expect a few minutes either way.
             </p>
@@ -368,9 +369,9 @@ export function StudyAreaPicker({
         </div>
       ) : (
         <p className="text-xs text-muted-foreground">
-          Search for any US place or draw an area to set the study boundary. No place is preset — this runs anywhere in the US.
+          Search for any US place or draw an area to set the study boundary. No place is preset. This runs anywhere in the US.
         </p>
-      )}
+      ))}
     </div>
   );
 }

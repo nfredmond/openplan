@@ -1,0 +1,64 @@
+{
+  "candidateCommit": "97c310944ecf694525798bcc7cdb30edb7832686",
+  "storageSHA256": "672a9d8bc5406436dac8aaaff7da618fe5b30715085339738401649f28bdd25c",
+  "appSHA256": "db438d5c289cacfb20cd9fbcf250ff396c9827619f8d0fb5e2c4d532cfeddfe7",
+  "trackedSymlink": {
+    "candidate": {
+      "result": "refused",
+      "reason": "archive-link"
+    },
+    "harmlessComment": {
+      "result": "refused",
+      "reason": "archive-link"
+    },
+    "privateCorrection": {
+      "result": "archived-and-read-back",
+      "trackedLink": {
+        "mode": 511,
+        "kind": "symlink",
+        "target": "../.claude/skills"
+      },
+      "unownedLink": "archive-link refusal"
+    }
+  },
+  "namespaceRootWrites": {
+    "candidate": {
+      "controller": "writable",
+      "candidate": "writable",
+      "execution": "writable"
+    },
+    "harmlessComment": {
+      "controller": "writable",
+      "candidate": "writable",
+      "execution": "writable"
+    },
+    "privateReadonlyCorrection": {
+      "controller": "EROFS",
+      "candidate": "writable",
+      "execution": "writable"
+    }
+  },
+  "resourcesBefore": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "cpu.max": "50000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "7614464"
+  },
+  "resourcesAfter": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "cpu.max": "50000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.peak": "19865600"
+  },
+  "sourceUntouched": true,
+  "realMemoryRootAbsent": true,
+  "blindCategories": [
+    "disk-backed tiny specimens mapped into private namespaces",
+    "no actual tmpfs allocation, cgroup page-attribution measurement or native addon",
+    "no application/DB/helper/build/start/browser/recovery acceptance"
+  ]
+}

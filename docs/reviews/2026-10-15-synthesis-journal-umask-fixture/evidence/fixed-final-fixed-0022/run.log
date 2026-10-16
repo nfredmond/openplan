@@ -1,0 +1,12 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/openplan
+
+ ✓ src/test/engagement-synthesis-generation-worker.test.ts (40 tests) 3693ms
+     ✓ recovers a receipt larger than the old one-megabyte worker journal  376ms
+
+ Test Files  1 passed (1)
+      Tests  40 passed (40)
+   Start at  00:51:14
+   Duration  5.03s (transform 638ms, setup 49ms, import 1.10s, tests 3.69s, environment 0ms)
+
+JSON report written to /home/nathaniel/.t3/worktrees/openplan/t3-bb278a60/docs/reviews/2026-10-15-synthesis-journal-umask-fixture/evidence/fixed-final-fixed-0022/tests.json

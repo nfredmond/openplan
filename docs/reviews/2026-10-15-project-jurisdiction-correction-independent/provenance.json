@@ -1,0 +1,40 @@
+{
+  "candidate": "f18ea8cd51d12168ec2766e1fc5cc34eeb775df2",
+  "candidateParent": "53485a708512de34443e63ee38132a4f5991f36e",
+  "reviewBase": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "originalReview": "3ff9808bc7b8102b5854ce5a634c1b29086b9cb9",
+  "acceptedDesign": "f5b0ad4b4db33ec20294bf3d3fa62e8b4a867737",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-b47cd02d",
+  "branch": "t3/review-jurisdiction-correction-independent",
+  "privateProbeRoot": "/tmp/jurisdiction-correction-independent-xv06g8c7",
+  "model": "gpt-6.1-sol",
+  "reasoning": "high",
+  "node": "v24.22.0",
+  "dependencies": {
+    "react": "19.2.3",
+    "react-dom": "19.2.3",
+    "typescript": "5.9.3",
+    "jsdom": "28.1.0",
+    "better-sqlite3": "12.8.0",
+    "next": "16.3.8",
+    "zod": "4.4.3"
+  },
+  "independentChecks": 30,
+  "harmlessSurvivors": 1,
+  "intendedAssertionFaults": 19,
+  "finalUnmutatedChecks": 30,
+  "nativePostgres": false,
+  "browser": false,
+  "fullSuiteOrBuild": false,
+  "candidateIntegrated": false,
+  "migration16Applied": false,
+  "failedTrials": [
+    "Report loader selected a directory before resolving index.ts; fixed isFile check. EISDIR is not proof.",
+    "Harmless controller prefixed JSON with a comment; corrected to TypeScript/TSX only. SyntaxError is not proof.",
+    "Initial campaign ended with outer exit143 after six cases; no inferred cause. Final serial campaign completes. DOM assertions now compare booleans with explicit diagnostics."
+  ],
+  "probeFiles": {
+    "probe.cjs": "ab7d350b00e65b8399c7b6eba4cf78b4cd9a2b678680795f786bdfc6a4138e5d",
+    "run.py": "ce6e8981a3e0b0eedb3978738cc2b975517cb8e7ca77facef3d43ab8d58a02cf"
+  }
+}

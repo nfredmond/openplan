@@ -1,0 +1,47 @@
+--- host-fix-384/run_attest_host.sh
++++ new-v2/run_attest_host.sh
+@@ -2,7 +2,7 @@
+ # Trusted host observer. Parent compares this file with the reviewed external hash.
+ set -eu
+ umask 077
+-ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015
++ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015
+ V3=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3
+ refuse() { /usr/bin/printf 'REFUSED host-attest: %s\n' "$1" >&2; exit 2; }
+ [ "$#" -eq 0 ] || refuse arguments
+@@ -11,7 +11,7 @@
+ [ "$(CDPATH= cd -P -- "$V3" && /bin/pwd -P)" = "$V3" ] || refuse v3-root
+ # Literal external pins precede trusting the private checksum list or any Python.
+ /usr/bin/sha256sum --check --strict --status <<'SEALED' || refuse external-seal
+-011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14  /home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/reviewed-v3-manifest.json
++011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14  /home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/reviewed-v3-manifest.json
+ 6200f71a07ef3559695ac007c18e438a9afb90f20771a604ce247013dc48067b  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/operation-files.sha256
+ 34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/run_stage_v3.sh
+ c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/app_binding_v1.py
+@@ -22,12 +22,23 @@
+ 56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/migrations.json
+ 75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/dependency-binding.json
+ 362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/recovery-active-binding.json
++c9439e729583c4312c2c8b2d5e96e6981fb81d485f8a7a639f9956f1c28e3002  /home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/attest_start_v2.py
++86080ad381490dd347b5cde5071a8d2444c1f471e795f4a88957e4726fca20ab  /usr/lib/node_modules/npm/lib/commands/run.js
++daceffb5ae860499cc8e0696c8c33ef5d705f62f597974858b6472fcd1215f79  /usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js
++94dea9ff50028869f4f88c4ec5e520d56fa7c2f6cc03422a9f06c44d291a0c34  /usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js
++d1647624f0ce227e5cff1c4570f3e754e0eaaf08041db354102ec2bdbbd721df  /usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/make-spawn-args.js
++bc023d0c2d0840074c9e81ac0bda0fed0ef75e64623fa670437a7706d05d3542  /usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/set-path.js
++ea1708fc7a766797a9e2fc1c019f2ed3de602dafc76e17b9330fc88766b00f72  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/build-result.json
++a9301eaa823c4b3689f72315a2cf849be2abde81765ed9ecf06c4d694e241dc4  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/build-files.json
++a254af2b2339b94c4857aad06bf0f2bae9c77c6fe20edc108af13069551cea3b  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/execution/start-intent.json
++9eed90869b609b5159c0e4c22b2cdf42b082b192f08d2d9cd0161c8c97303ddc  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan/.next/BUILD_ID
+ SEALED
+ [ ! -e "$V3/execution/runtime-start-attestation.json" ] && [ ! -L "$V3/execution/runtime-start-attestation.json" ] || refuse receipt-exists
++[ ! -e "$ROOT/runtime-start-attestation.json" ] && [ ! -L "$ROOT/runtime-start-attestation.json" ] || refuse new-receipt-exists
+ # An atomic directory reserves the one request, including a lost acknowledgement.
+-/bin/mkdir -m 700 "$ROOT/attempt-host-01" || refuse attempt-exists
++/bin/mkdir -m 700 "$ROOT/attempt-host-v2-01" || refuse attempt-exists
+ exec /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT" XDG_RUNTIME_DIR=/run/user/1000 \
+-  /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-21510042e-v3-attest-host-01 \
++  /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-21510042e-v3-attest-host-v2-01 \
+   -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
+   /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT" PYTHONDONTWRITEBYTECODE=1 \
+-  /usr/bin/python3 -B "$V3/attest_start_v1.py"
++  /usr/bin/python3 -B "$ROOT/attest_start_v2.py"

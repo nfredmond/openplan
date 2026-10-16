@@ -1,0 +1,321 @@
+{
+  "date": "2026-10-15",
+  "scope": "Local integration only",
+  "integrationSource": "28f44ffccb94a140dbfeaf13fa49014ff78d2ab6",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01",
+  "checks": [
+    {
+      "label": "dependency-versions",
+      "exitCode": 0,
+      "elapsedSeconds": 0.1139870950137265,
+      "argv": [
+        "node",
+        "-e",
+        "const fs=require('node:fs'),p=require('node:path');const mammoth=p.dirname(require.resolve('mammoth/package.json'));const argparse=require.resolve('argparse/package.json',{paths:[mammoth]});console.log(JSON.stringify({node:process.version,typescript:require('typescript/package.json').version,vitest:require('vitest/package.json').version,argparse:JSON.parse(fs.readFileSync(argparse)).version,argparsePath:argparse}));"
+      ]
+    },
+    {
+      "label": "focused",
+      "exitCode": 0,
+      "elapsedSeconds": 35.956493425008375,
+      "argv": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "--configLoader",
+        "runner",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/vitest.config.mts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "src/test/planner-copy-says-the-plain-thing.test.ts",
+        "src/test/engagement-synthesis-generation-worker.test.ts",
+        "src/test/write-policy-coverage-guard.test.ts",
+        "src/test/gtfs-claim-boundaries.test.ts",
+        "src/test/gtfs-coverage.test.ts",
+        "--maxWorkers=1",
+        "--no-file-parallelism",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/focused.vitest.json"
+      ],
+      "passed": 161,
+      "skipped": 0,
+      "failures": [],
+      "runtimeErrors": 0,
+      "files": [
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/engagement-synthesis-generation-worker.test.ts",
+          "passed": 40
+        },
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/gtfs-claim-boundaries.test.ts",
+          "passed": 91
+        },
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/gtfs-coverage.test.ts",
+          "passed": 10
+        },
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/planner-copy-says-the-plain-thing.test.ts",
+          "passed": 4
+        },
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/reference-count-projection-guard.test.ts",
+          "passed": 10
+        },
+        {
+          "name": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/src/test/write-policy-coverage-guard.test.ts",
+          "passed": 6
+        }
+      ]
+    },
+    {
+      "label": "scoped-types",
+      "exitCode": 0,
+      "elapsedSeconds": 3.952961320988834,
+      "argv": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/types.config.json"
+      ]
+    },
+    {
+      "label": "scoped-lint",
+      "exitCode": 0,
+      "elapsedSeconds": 2.6950842069927603,
+      "argv": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/test/supabase-call-sites.ts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "--max-warnings=0"
+      ]
+    }
+  ],
+  "resources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "414994432",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.peak": "0"
+  },
+  "dependencySource": "/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules, read-only bubblewrap mount",
+  "dependencyVersions": {
+    "node": "v24.22.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "argparse": "2.0.1",
+    "argparsePath": "/home/nathaniel/.local/state/openplan/project-geography-final-integration-20261015-01/tree/openplan/node_modules/argparse/package.json"
+  },
+  "freshMutationCampaign": false,
+  "priorEvidenceReadback": {
+    "priorEvidenceSha256": "e2f3b569b6c1492612daec11a6febccd4139dd219654cfc538c213eee1e66395",
+    "joinedSourceBindings": {
+      "openplan/src/test/supabase-call-sites.ts": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+      "openplan/src/test/reference-count-projection-guard.test.ts": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+      "openplan/src/test/migrations/schema-inventory.ts": "4ad4d32735ea602100f2c06be2dfaed96858cd5d42fb4dc8eac25374cbd8e4bd",
+      "openplan/src/lib/projects/project-jurisdiction.ts": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "openplan/package.json": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7",
+      "openplan/package-lock.json": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+      "docs/reviews/2026-10-15-projection-expression-shadow-fix/STATUS.md": "9a35d05a8f2486f4f96709c4471735299e1374866ec48687d51536d319984a04",
+      "docs/reviews/2026-10-15-projection-expression-shadow-fix/evidence.json": "7d7857d1b762fcd5fc90684c8da5619a60390e87972d264cd2f3839abf99236c",
+      "docs/reviews/2026-10-15-combined-project-guard-fixes/STATUS.md": "2b9836858c780d9feb16716ac0c179c13a02d84516cf9add71ffd3fd77609ea7",
+      "docs/reviews/2026-10-15-combined-qa-fix-independent/STATUS.md": "cd826df682bf40425be36a8fb21e40a28043de54bd96014a2a8a44d217af1744",
+      "docs/reviews/2026-10-15-combined-qa-fix-independent/evidence.json": "f3cba1d69769f3dba2219f379336f84e85d345be13f832222a6b43c5e3c01b1b",
+      "openplan/src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx": "097ffd2f698b5078e3946ba17352f55040444a8348661f5e81c37132ac8652e0",
+      "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": "b6c1bd972f71a421c262f5029d6de04b77adbb3e48dbd7c2d457c78d2cfae051",
+      "openplan/src/components/projects/project-jurisdiction-editor.tsx": "b7a8c7d83bc73330b53b501a5be00d9a16c3ebb78c0661821b64a30b58d9e190",
+      "openplan/src/components/projects/project-saved-map.tsx": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469",
+      "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031",
+      "openplan/src/test/engagement-synthesis-generation-worker.test.ts": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+      "openplan/src/lib/engagement/synthesis-generation-worker.ts": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce"
+    },
+    "allMatch": true,
+    "priorCensusReadback": [
+      {
+        "file": "/home/nathaniel/.local/state/openplan/projection-expression-shadow-independent-20261015-01/base-sites.json",
+        "sha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+        "bytes": 731267,
+        "siteCount": 2008
+      },
+      {
+        "file": "/home/nathaniel/.local/state/openplan/projection-expression-shadow-independent-20261015-01/fixed-sites.json",
+        "sha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+        "bytes": 731267,
+        "siteCount": 2008
+      }
+    ],
+    "priorProbeCount": 22,
+    "priorCensus": {
+      "counts": {
+        "total": 2008,
+        "unknown": 181,
+        "checkable": 1802
+      },
+      "byteIdentical": true,
+      "baseSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+      "fixedSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940"
+    },
+    "priorControls": [
+      {
+        "label": "fixed-baseline",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": 10,
+        "skipped": 0,
+        "failedAssertions": [],
+        "logSha256": "325c968829790cc37115ab658cdce1a993ba28fa6d378cb7bc90f4d44c0b3ff2"
+      },
+      {
+        "label": "harmless-survivor",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": 10,
+        "skipped": 0,
+        "failedAssertions": [],
+        "logSha256": "8ad79eabdbabc252052870b5bff029efb9f0e57f91de73308dedff256da58760"
+      },
+      {
+        "label": "old-reproducer",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "passed": 0,
+        "skipped": 8,
+        "failedAssertions": [
+          {
+            "name": "reference count projections keeps a named 'function' expression's self-binding unknown",
+            "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+          },
+          {
+            "name": "reference count projections keeps a named 'class' expression's self-binding unknown",
+            "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+          }
+        ],
+        "logSha256": "de74c35496ca2dce644293c79b6e62ba7136defd08ff97d869837457d15d05a7"
+      },
+      {
+        "label": "omit-function",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "passed": 1,
+        "skipped": 8,
+        "failedAssertions": [
+          {
+            "name": "reference count projections keeps a named 'function' expression's self-binding unknown",
+            "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+          }
+        ],
+        "logSha256": "5d2a228ca8bebb41efa5662bf45328ea5441c3a85cb19b013937444013f5d8a8"
+      },
+      {
+        "label": "omit-class",
+        "exitCode": 1,
+        "expectedExitCode": 1,
+        "passed": 1,
+        "skipped": 8,
+        "failedAssertions": [
+          {
+            "name": "reference count projections keeps a named 'class' expression's self-binding unknown",
+            "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+          }
+        ],
+        "logSha256": "b6717951afc4e2049b80d9c2d04b22fe4c44dd4dad0c7e26a05511db07e01300"
+      },
+      {
+        "label": "restored-focused",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "passed": 117,
+        "skipped": 0,
+        "failedAssertions": [],
+        "logSha256": "acd99d99d4e79243d031a337ff8cc525b3bbad4a4e468f8e4831c6d0f96be2ea"
+      },
+      {
+        "label": "independent-probe",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "logSha256": "624f7212d8b8892e4f4754f55a0c5b02b5ecd3057e58c863462055d473c52f56"
+      },
+      {
+        "label": "versions",
+        "exitCode": 0,
+        "expectedExitCode": 0,
+        "logSha256": "92bb3d3dbe4d81ed91db6a7b567ba80a24e8776c2edf9149c50a630d722a0e54"
+      }
+    ],
+    "priorRestoration": {
+      "src/test/supabase-call-sites.ts": {
+        "sha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+        "restored": true
+      },
+      "src/test/reference-count-projection-guard.test.ts": {
+        "sha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+        "restored": true
+      }
+    },
+    "freshMutationCampaign": false,
+    "reason": "No newly authored or altered repository test/guard. Exact accepted source and evidence joined; prior named controls retained and log hashes read back."
+  },
+  "failedTrials": [
+    {
+      "file": "parity-attempt01.log",
+      "cause": "Private row selector excluded S2a and W1, count 46 instead of 48. Diagnostic reconstructed from captured tool output. No repository source change."
+    },
+    {
+      "file": "parity-attempt02.log",
+      "cause": "Snapshot comparison followed tracked directory symlink .agents/skills with read_bytes; IsADirectoryError. Corrected to hash symlink text."
+    }
+  ],
+  "privateFileSha256": {
+    "run.py": "8a81049efb5ac326cdd4248b206c8a62ed5a2bfb9dbadaca4ee7cd5ff2fb7a47",
+    "vitest.config.mts": "dedd7a9f44f1920f16a2ca3a801d9fb84a5a9dd1dca50e3f7cb1ae8352ff8019",
+    "types.config.json": "af2f0da5dd7a684f0714544e46a47fc1b8918ed2b006e1b9e3005c1fc01355cb",
+    "run-results.json": "ddd97f5c105f0a904805a41669414d034cb5c2e58dda05419c36f235aa2f6bda",
+    "resources.json": "f26efcac5bbb76b2cb19985f9007ca3d94a6690dc7dc975bfe35977129c8f226",
+    "focused.vitest.json": "538c2994ac25690e7e829a6c8fc58e37134231228bee872e001ce3411df89d8f",
+    "focused.log": "ad8dd01295ea4ee07388e37f17d59f996f85b13ee6ec19c2208e26851303c4e5",
+    "scoped-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scoped-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "dependency-versions.log": "106a6d561f04208aea5b1b844c1423b1a78affde82756977416c360f1e683a1d",
+    "parity.py": "00ae23bb1803dc6316da54b2635acf75d063fcfe92bef2eeb1bc4bf197737ed6",
+    "parity-attempt01.py": "775d955ea3e154b8f635735a34a4c218a1b42335c2c6fa8b46fd43b6eafecf6b",
+    "parity-attempt01.log": "a281423e90da857a09e051bb8933840b13ab6061fdae2228c18c531da5702722",
+    "parity-attempt02.py": "acf2272d97c2f61c33a6134574323dc7265e33ca3f59992974286c5a1eeed7e0",
+    "parity-attempt02.log": "02631942a44b7fd8b491f13deb4d92609f7d3666b13ff71a0792e6ac3006e59e",
+    "parity-attempt03.log": "02e52bdce1189cc6fd2ccebcd826982d38ec68e60fe2dc2496a84402b8642251",
+    "parity.json": "7295bf40da5b168fb2f625fa4c8d291890e13fa49f187d8d729db2407148d2ff",
+    "prior-evidence-readback.json": "731d558d6a31738dcc977878ea2ead1d2b7ad83c2638d173611a6ac72d077573"
+  },
+  "limits": [
+    "Not full suite/build/type check/lint/database/browser/provider/research live-call evidence",
+    "Does not attest parent full QA result or later full-suite guard outcome",
+    "Preview packet remains pinned to 06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+    "No hosted migration, main delivery closure, hold lift or release acceptance",
+    "No new prod source or altered test/guard authored; exact accepted scanner correction and fixtures joined",
+    "Full v1, practitioner, public participant, independent operation and scientific acceptance remain open"
+  ],
+  "repositoryChecks": [
+    {
+      "command": "npm run product:direction:check",
+      "cwd": "openplan",
+      "sourceHead": "63d4db3a05f277d5399ad9cbd503e4323ec11c28",
+      "exitCode": 0,
+      "scope": "actual assigned nested app before lane; existing reminders retained"
+    },
+    {
+      "command": "npm run product:direction:check",
+      "cwd": "openplan",
+      "sourceHead": "28f44ffccb94a140dbfeaf13fa49014ff78d2ab6",
+      "exitCode": 0,
+      "scope": "actual assigned nested app after join; existing reminders retained"
+    },
+    {
+      "command": "git diff --check 06a108010ab39aa42eed4c2bcda3e1371b8aa813 HEAD",
+      "exitCode": 0,
+      "scope": "entire joined delta before report commit"
+    }
+  ]
+}

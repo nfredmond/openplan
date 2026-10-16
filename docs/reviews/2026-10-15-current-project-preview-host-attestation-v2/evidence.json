@@ -1,0 +1,663 @@
+{
+  "attestor-controls": {
+    "cases": [
+      {
+        "case": "harmless comment first",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "baseline exact npm child PATH",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "base-only",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "wrong-order",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "extra-entry",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "omitted-project-prefix",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "omitted-root-prefix",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "omitted-node-gyp",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "wrong-base",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "wrong full SHA",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "short full SHA",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "other sealed value",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "ambient proxy",
+        "outcome": "REFUSED",
+        "reason": "attest-ambient-environment"
+      },
+      {
+        "case": "inactive unit",
+        "outcome": "REFUSED",
+        "reason": "attest-unit"
+      },
+      {
+        "case": "missing listener PID",
+        "outcome": "REFUSED",
+        "reason": "attest-listener-pid"
+      },
+      {
+        "case": "wrong listener",
+        "outcome": "REFUSED",
+        "reason": "attest-listener"
+      },
+      {
+        "case": "wrong cwd",
+        "outcome": "REFUSED",
+        "reason": "attest-process-cwd"
+      },
+      {
+        "case": "wrong process group",
+        "outcome": "REFUSED",
+        "reason": "attest-process-cgroup"
+      },
+      {
+        "case": "swap enabled",
+        "outcome": "REFUSED",
+        "reason": "cgroup-memory"
+      },
+      {
+        "case": "HTTP status",
+        "outcome": "REFUSED",
+        "reason": "attest-http-status"
+      },
+      {
+        "case": "HTTP full SHA",
+        "outcome": "REFUSED",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "exclusive new receipt",
+        "outcome": "REFUSED",
+        "reason": "exclusive-receipt"
+      },
+      {
+        "case": "new entry baseline",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "wrong new entry",
+        "outcome": "REFUSED",
+        "reason": "attestor-root"
+      },
+      {
+        "case": "npm source bytes",
+        "outcome": "REFUSED",
+        "reason": "attest-npm-source:run.js"
+      },
+      {
+        "case": "wrong trusted base",
+        "outcome": "REFUSED",
+        "reason": "attest-base-path"
+      },
+      {
+        "case": "binding hash",
+        "outcome": "REFUSED",
+        "reason": "attest-binding-sha"
+      },
+      {
+        "case": "binding module path",
+        "outcome": "REFUSED",
+        "reason": "attest-binding-module"
+      },
+      {
+        "case": "exact restoration",
+        "outcome": "SURVIVED"
+      }
+    ],
+    "mutations": [
+      {
+        "mutation": "remove environment guard",
+        "detectedBy": "removed environment guard:accepted-broken-behavior"
+      },
+      {
+        "mutation": "omit ancestor",
+        "detectedBy": "npm-helper-parity"
+      },
+      {
+        "mutation": "omit node-gyp",
+        "detectedBy": "npm-helper-parity"
+      }
+    ],
+    "npmParity": {
+      "equal": true,
+      "derivedPathSha256": "ad753e22e76a38f64d18b5e4eceb9ce3d5ff73e58c7e0ef9b4b9e119566b794a",
+      "safePath": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan/node_modules/.bin:/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/node_modules/.bin:/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/node_modules/.bin:/home/nathaniel/.local/state/openplan/node_modules/.bin:/home/nathaniel/.local/state/node_modules/.bin:/home/nathaniel/.local/node_modules/.bin:/home/nathaniel/node_modules/.bin:/home/node_modules/.bin:/node_modules/.bin:/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/node-gyp-bin:/usr/bin:/bin",
+      "sources": {
+        "/usr/lib/node_modules/npm/lib/commands/run.js": "86080ad381490dd347b5cde5071a8d2444c1f471e795f4a88957e4726fca20ab",
+        "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script.js": "daceffb5ae860499cc8e0696c8c33ef5d705f62f597974858b6472fcd1215f79",
+        "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/run-script-pkg.js": "94dea9ff50028869f4f88c4ec5e520d56fa7c2f6cc03422a9f06c44d291a0c34",
+        "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/make-spawn-args.js": "d1647624f0ce227e5cff1c4570f3e754e0eaaf08041db354102ec2bdbbd721df",
+        "/usr/lib/node_modules/npm/node_modules/@npmcli/run-script/lib/set-path.js": "bc023d0c2d0840074c9e81ac0bda0fed0ef75e64623fa670437a7706d05d3542"
+      },
+      "binPaths": false
+    },
+    "producerPayload": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-15T11:57:19.527Z",
+      "deployment": {
+        "commit": "21510042e94b",
+        "version": "0.68.0",
+        "migrations": {
+          "expected": 419,
+          "latest": "20261017000016"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "restored": true,
+    "limits": [
+      "Operational HTTP/proc/systemd/recovery acquisition uses explicit fixture adapters. Actual full attestor function and binding consumers run.",
+      "No actual readiness, source/global/Storage or runtime identity acquisition.",
+      "No hostile same-user or loader protection."
+    ]
+  },
+  "new-guard-controls": {
+    "cases": [
+      {
+        "case": "harmless guard campaign first",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "removed PATH replacement refuses actual helper PATH",
+        "outcome": "REFUSED",
+        "reason": "attest-process-environment"
+      },
+      {
+        "case": "restored after guard faults",
+        "outcome": "SURVIVED"
+      }
+    ],
+    "guardRemovalDetections": [
+      {
+        "mutation": "remove preimport source hash",
+        "detectedBy": "accepted-broken-behavior:attest-binding-sha"
+      },
+      {
+        "mutation": "remove imported module path/hash",
+        "detectedBy": "accepted-broken-behavior:attest-binding-module"
+      },
+      {
+        "mutation": "remove npm source hashes",
+        "detectedBy": "accepted-broken-behavior:attest-npm-source:run.js"
+      },
+      {
+        "mutation": "remove trusted base PATH guard",
+        "detectedBy": "accepted-broken-behavior:attest-base-path"
+      },
+      {
+        "mutation": "remove new file guard",
+        "detectedBy": "remove new file guard:accepted-broken-behavior"
+      },
+      {
+        "mutation": "remove PATH replacement",
+        "detectedBy": "attest-process-environment"
+      }
+    ],
+    "restored": true,
+    "limits": [
+      "Same explicit operational fixture adapters as verify_attestor.py.",
+      "The original binding module is read and imported, never rewritten. Hash acquisition faults are in-memory adapters."
+    ]
+  },
+  "npm-context": {
+    "directHelperEqualsPython": true,
+    "makeSpawnArgsEqualsPython": true,
+    "runSuppliesNoBinPaths": true,
+    "pkgDefaultBinPaths": false,
+    "derivedPathSha256": "ad753e22e76a38f64d18b5e4eceb9ce3d5ff73e58c7e0ef9b4b9e119566b794a",
+    "harmlessSurvives": true,
+    "wrongPathRefuses": "npm-spawn-helper-parity",
+    "limits": [
+      "No npm command, shell script, script spawn or actual startup. Inspected pinned run.js call and run-script-pkg default establish this fixed context."
+    ]
+  },
+  "runner-controls": {
+    "cases": [
+      {
+        "case": "harmless comment first",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-v2-standin-r3-01",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "7241728",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "baseline host composition",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-v2-standin-r3-02",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "6918144",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "args",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "arguments",
+        "unit": "openplan-host-attest-v2-standin-r3-03",
+        "payload": null
+      },
+      {
+        "case": "entry",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "runner-identity",
+        "unit": "openplan-host-attest-v2-standin-r3-04",
+        "payload": null
+      },
+      {
+        "case": "root",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "runner-root",
+        "unit": "openplan-host-attest-v2-standin-r3-05",
+        "payload": null
+      },
+      {
+        "case": "v3",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "v3-root",
+        "unit": "openplan-host-attest-v2-standin-r3-06",
+        "payload": null
+      },
+      {
+        "case": "attestor",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "external-seal",
+        "unit": "openplan-host-attest-v2-standin-r3-07",
+        "payload": null
+      },
+      {
+        "case": "npm",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "external-seal",
+        "unit": "openplan-host-attest-v2-standin-r3-08",
+        "payload": null
+      },
+      {
+        "case": "old-input",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "external-seal",
+        "unit": "openplan-host-attest-v2-standin-r3-09",
+        "payload": null
+      },
+      {
+        "case": "new-receipt",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "new-receipt-exists",
+        "unit": "openplan-host-attest-v2-standin-r3-10",
+        "payload": null
+      },
+      {
+        "case": "old-receipt",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "receipt-exists",
+        "unit": "openplan-host-attest-v2-standin-r3-11",
+        "payload": null
+      },
+      {
+        "case": "attempt",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "attempt-exists",
+        "unit": "openplan-host-attest-v2-standin-r3-12",
+        "payload": null
+      },
+      {
+        "case": "parent harmless first",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-v2-standin-r3-30",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "7192576",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "parent changed runner refuses",
+        "exit": 2,
+        "reachedPayload": false,
+        "reason": "parent-hash",
+        "unit": "openplan-host-attest-v2-standin-r3-31",
+        "payload": null
+      },
+      {
+        "case": "exact restored composition",
+        "exit": 0,
+        "reachedPayload": true,
+        "reason": null,
+        "unit": "openplan-host-attest-v2-standin-r3-33",
+        "payload": {
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "peerCwd": true,
+          "peerEnvironmentHash": "9274cb6c41d8274c1fb8363e0e3bfc82724472573e1ae1cf808320a586fb11eb",
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+            "memory.peak": "6950912",
+            "memory.swap.current": "0"
+          },
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      }
+    ],
+    "guardRemovalDetections": [
+      {
+        "case": "removed arguments",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed runner-identity",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed runner-root",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed v3-root",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed seal",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed new-receipt-exists",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed receipt-exists",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "removed attempt-exists",
+        "detectedBy": "dispatch-before-refusal"
+      },
+      {
+        "case": "parent removed hash gate",
+        "detectedBy": "dispatch-before-refusal"
+      }
+    ],
+    "restored": true,
+    "limits": [
+      "Final payload is an owned proc-reading peer stand-in, never business attestation.",
+      "Actual POSIX shell/systemd context, fixture paths/hashes and unit names. Controllers retain same-user authority; resource caps do not confine.",
+      "Old 24-case runner campaign is prior evidence, not replayed."
+    ]
+  },
+  "final-checks": {
+    "originalFunctionExactDelta": true,
+    "exactDeltaControls": [
+      "harmless-header-survives",
+      "changed-original-guard-detected"
+    ],
+    "selectedPreservationFiles": 679,
+    "selectedPreservationUnchanged": true,
+    "preservationControls": [
+      {
+        "case": "harmless-metadata",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "changed-bytes",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "changed-mode",
+        "outcome": "DETECTED"
+      }
+    ],
+    "privacyControls": [
+      {
+        "case": "harmless-text",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "known-value-00",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-01",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-02",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-03",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-04",
+        "outcome": "DETECTED"
+      }
+    ],
+    "runnerMatchesExternalManifest": true,
+    "externalPinsUnchanged": true,
+    "originalWebInvocationUnchanged": true,
+    "noActualHostAttemptReserved": true,
+    "noRuntimeReceipt": true,
+    "limits": [
+      "Selected fixed code/input/receipt files only. V3 candidate and execution cache naturally change while web runs.",
+      "No logical database or Storage preservation acquisition; no live attestation.",
+      "Known-value screen cannot detect unknown secrets.",
+      "Hash comparisons trust reviewed bytes, ordinary host tools and same-user custody."
+    ]
+  },
+  "harness-failures": [
+    {
+      "unit": "function-01",
+      "invocation": "0740701bcaac4e70b9c266e0996a7224",
+      "reason": "Fixture assertion required deployment to omit valid version. No attestor business function reached.",
+      "sourceSha256": "1386d926b0f148aa747704687ae71473808956c331b23840ece20c12cd735205",
+      "correction": "Assert the two contracted deployment fields; preserve version."
+    },
+    {
+      "unit": "composition-controller-01",
+      "invocation": "5c8c448787d4416db0135cb195486f6e",
+      "reason": "Removed runner-root guard reached owned stand-in, whose lexical alias cwd assertion refused.",
+      "sourceSha256": "02d45bd6865344b867b0889ba2c515800f4e9e5a9c982ea5871f27d4f5cabb41",
+      "stderr": "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/specimens/v2-case-22/stderr.txt",
+      "correction": "Stand-in resolves its root and HOME before comparing owned peer cwd. Production runner unchanged."
+    }
+  ],
+  "unit-records": [
+    {
+      "unit": "openplan-host-attest-v2-direction-01.service",
+      "invocation": "bf6487ce7a30434fa401223c96d4bfcc",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "a79570884f31d539ab4b7971bea6fc560d4aeeb605cbfd9e456c3901a22f3db8",
+      "managerJournalBytes": 3908,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-function-01.service",
+      "invocation": "0740701bcaac4e70b9c266e0996a7224",
+      "observedCommandExit": 1,
+      "managerJournalSha256": "7daa4ff305372c4b9027f7e76364b941136d215d5a1c9b3c28d95e5bd69322d9",
+      "managerJournalBytes": 4986,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-function-02.service",
+      "invocation": "b4c83361cbb642929d260262abdce29d",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "6ff5d712ca285aa3d1f2cbfa1b6476a31441d6f576aecc89b42506aa71449cf6",
+      "managerJournalBytes": 3625,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-composition-controller-01.service",
+      "invocation": "5c8c448787d4416db0135cb195486f6e",
+      "observedCommandExit": 1,
+      "managerJournalSha256": "36b36ed3ffd61fb7b39a6cb5b6ea465de37ba7ef7b92a58f72d26a10080945fa",
+      "managerJournalBytes": 4718,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-composition-controller-02.service",
+      "invocation": "b45594fe31434ae49c4f93b78c4aabb2",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "60dc56e3f46b5544ff7175a3e3b190797ab34e9cdf8a5a7f6140f7bf9303a6b5",
+      "managerJournalBytes": 1803,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-composition-controller-03.service",
+      "invocation": "47a6591505854adb959dfbb5f2c04a12",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "b3700bafa7daa12d6555c832e747bab04b1a2cf5412696703bad8373006e19c9",
+      "managerJournalBytes": 1803,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-newguards-01.service",
+      "invocation": "d2a0f77a158445b79d619d3e3c9d3625",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "d2b51cebe96a5ae31490fc93bea4370cb674f244cdfe247a62595949e0c03d76",
+      "managerJournalBytes": 3628,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-npm-context-01.service",
+      "invocation": "4faafefb402f43ea930e6c0ed6a49a4a",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "6d269dad78448794ea4f6b927b2aa6bb036042b1f0c5692ad4a28b2a65ebfa09",
+      "managerJournalBytes": 2136,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-final-01.service",
+      "invocation": "a51376343a8748f9b88c12cc9bb5537e",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "56afeaa819f9ebc35e703e34d8266857160b660094abecbe09b046df06befa3d",
+      "managerJournalBytes": 2149,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-newguards-02.service",
+      "invocation": "28f914abee5b446a926f4aa6d079c535",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "de788c4143d1bdf2f5d5d4d8f16edde588c5400a45c0ca2ef9ff1fab37f1a681",
+      "managerJournalBytes": 3628,
+      "missingAccountingIsNull": true
+    },
+    {
+      "unit": "openplan-host-attest-v2-final-02.service",
+      "invocation": "523ebe8c25c24c988c1f89a0e8381c18",
+      "observedCommandExit": 0,
+      "managerJournalSha256": "1bf003c57a930f13ae061a4271e10d608153e5564bdf67220d9a154bc5469dc4",
+      "managerJournalBytes": 2148,
+      "missingAccountingIsNull": true
+    }
+  ],
+  "preparationOnly": true,
+  "actualAttestationExecuted": false,
+  "subjectHashes": {
+    "attest_start_v2.py": "c9439e729583c4312c2c8b2d5e96e6981fb81d485f8a7a639f9956f1c28e3002",
+    "run_attest_host.sh": "9a6ebbb0c8a6a095d16ba9277181966c16e4693937e99f23b14231ddc1414d5c",
+    "attestor-diff.patch": "b0ba1f8fe6ac65fbda4f8d651aa9798139c805076a49267aeb3bb5a29439daff",
+    "runner-diff.patch": "13c030191216884ba71435e3642c1543592d2026624778d4087733724d28dc61"
+  },
+  "baseCommit": "5c4570c9d2fedda8f7f8dd4091faf2ebdcdedf2c",
+  "accountingLimits": "Manager journal and captured command exit retained. Per-stand-in payloads record actual cgroup caps/events/peak. Missing pure-unit event accounting remains unavailable; no zeros inferred.",
+  "publicationCheckCorrection": "Five intentional blank unified-diff context prefixes triggered staged whitespace warnings. Regenerated exact attestor diff with zero context; no runtime source changes."
+}

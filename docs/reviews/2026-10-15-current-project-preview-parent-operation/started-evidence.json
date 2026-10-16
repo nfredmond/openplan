@@ -1,0 +1,41 @@
+{
+  "at": "2026-10-15T11:08:23.309561+00:00",
+  "candidate": "807c89b29692e1e56ae1d8e3d34714480e72ede7",
+  "review": "4eb906b32fd1d6cd74c435e662d396a768438f8e",
+  "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "activeCheck": {
+    "exit": 0,
+    "seconds": 10.512,
+    "peakRounded": "54.7M",
+    "swap": "0B"
+  },
+  "checkout": {
+    "exit": 0,
+    "seconds": 25.86,
+    "peakRounded": "512M",
+    "swap": "0B",
+    "ready": {
+      "head": "67828c17c4c270529468eef1edd144e4a52b693a",
+      "environmentSha256": "f432d6a313e595774cd22c93e472a9682e6e0a871c722594066ba303cc1e3d4f",
+      "migrationDigest": "1f7ce06758c8a3e64d4a89cb4359d4035a38ffb5f18f9ce84c552876906c8ad4",
+      "dependencyBindingSha256": "5bff54066d812bfaabb4a864ff8f50e90e616e68aed0c0097bf392d2e832834c"
+    }
+  },
+  "build": {
+    "state": "started once; awaiting accepted result",
+    "unit": "openplan-current-project-preview-app-678-v1-build.service",
+    "invocation": "c24248dcd7ba45c4959c78cc280ca97f",
+    "parentExecSession": 81770,
+    "packet": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2",
+    "memoryMax": 10737418240,
+    "memorySwapMax": 0,
+    "CPUQuota": "50%",
+    "observerTask": "node:delegated-task:command%3Amcp%3A3f015e30-501a-44ae-80ba-38a5ed25d5ba%3Adelegate-task%3Asol-current-project-preview-build-observation-20261015-01"
+  },
+  "limits": [
+    "No accepted build result yet",
+    "No application start/attestation/browser acceptance",
+    "Checkout resource peak is rounded; its memory event counters were not captured",
+    "No hosted mutation, migration, provider, release or main merge"
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "named_assertion_accepted": true,
+  "harmless_survivor_accepted": true,
+  "generic_failure_rejected": true,
+  "wrong_assertion_rejected": true,
+  "wrong_test_rejected": true,
+  "empty_selection_rejected": true,
+  "crash_exit_rejected": true,
+  "skipped_selection_rejected": true
+}

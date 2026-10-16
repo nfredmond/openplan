@@ -1,0 +1,347 @@
+{
+  "artifacts_before": {
+    "legacy-jurisdiction.json": {
+      "sha256": "596ba6935c137ec15af31737ea7d74bc366fb2780a5dad1b69e5ca943983b89e",
+      "bytes": 10483
+    },
+    "legacy-jurisdiction-three-shapes.gpkg": {
+      "sha256": "8d22afe023086ad2b61dc0983913093af52e9a18e9b9a8667018b88d16e69ae6",
+      "bytes": 139264
+    },
+    "unresolved-jurisdiction.json": {
+      "sha256": "6da53cccf07f1e948da53a515edf73a0ff3e724ea9820348efb5e88b6b98825e",
+      "bytes": 888
+    },
+    "unresolved-three-shapes.gpkg": {
+      "sha256": "00558cd03fe652e2034fb4310b4ca9b48528aaf18dee196b7e0b4d702f144d28",
+      "bytes": 131072
+    },
+    "unresolved-portfolio.xlsx": {
+      "sha256": "72c9837fe7dd89607a5c5b95eb9ae092c529db28007302b573e4b86cd42dec4e",
+      "bytes": 10756
+    },
+    "two-unverified-jurisdictions.json": {
+      "sha256": "ee22c88f2660bde4c49a663560194991ad088a8ab9cf63e490c485feaa5b66bf",
+      "bytes": 14184
+    },
+    "two-unverified-jurisdictions-three-shapes.gpkg": {
+      "sha256": "06a135d2ef54fb1f56cb4466060a5395ee67fff34fa608b71745b9d967f467c1",
+      "bytes": 143360
+    }
+  },
+  "artifacts_after": {
+    "legacy-jurisdiction.json": {
+      "sha256": "596ba6935c137ec15af31737ea7d74bc366fb2780a5dad1b69e5ca943983b89e",
+      "bytes": 10483
+    },
+    "legacy-jurisdiction-three-shapes.gpkg": {
+      "sha256": "8d22afe023086ad2b61dc0983913093af52e9a18e9b9a8667018b88d16e69ae6",
+      "bytes": 139264
+    },
+    "unresolved-jurisdiction.json": {
+      "sha256": "6da53cccf07f1e948da53a515edf73a0ff3e724ea9820348efb5e88b6b98825e",
+      "bytes": 888
+    },
+    "unresolved-three-shapes.gpkg": {
+      "sha256": "00558cd03fe652e2034fb4310b4ca9b48528aaf18dee196b7e0b4d702f144d28",
+      "bytes": 131072
+    },
+    "unresolved-portfolio.xlsx": {
+      "sha256": "72c9837fe7dd89607a5c5b95eb9ae092c529db28007302b573e4b86cd42dec4e",
+      "bytes": 10756
+    },
+    "two-unverified-jurisdictions.json": {
+      "sha256": "ee22c88f2660bde4c49a663560194991ad088a8ab9cf63e490c485feaa5b66bf",
+      "bytes": 14184
+    },
+    "two-unverified-jurisdictions-three-shapes.gpkg": {
+      "sha256": "06a135d2ef54fb1f56cb4466060a5395ee67fff34fa608b71745b9d967f467c1",
+      "bytes": 143360
+    }
+  },
+  "originals_unchanged": true,
+  "findings": {
+    "legacy": {
+      "context_source": "legacy_study_place",
+      "context_state": null,
+      "entries": 1,
+      "project_revision": "2026-10-15T13:16:01.112469+00:00",
+      "payload_sha256": "d86d998d9dae3f05291bab70581b9de6130ac0fe4f6760c2572befe4914a219e",
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ]
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ]
+        }
+      }
+    },
+    "unresolved": {
+      "context_source": "project_declaration",
+      "context_state": "unresolved",
+      "entries": 0,
+      "project_revision": "2026-10-15T13:20:12.214511+00:00",
+      "payload_sha256": "4fd0affe20306297dd83b5f761e7e380ef07447ff583ccc683a66957d0f5cb0f",
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ]
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ]
+        }
+      }
+    },
+    "two_declarations": {
+      "context_source": "project_declaration",
+      "context_state": "declared",
+      "entries": 2,
+      "project_revision": "2026-10-15T13:24:43.736076+00:00",
+      "payload_sha256": "7e3d9d17155fe369de905f4261587823ce5040d0165ccbfc43f7f80fefc6b923",
+      "geometries": {
+        "project_area": {
+          "sha256": "e24c64d176c2a904a87fbad896bde8ce36cfaa3bde45761836ed1eb159505d52",
+          "wkb_type": 3,
+          "vertices": 2548,
+          "bounds": [
+            -122.355881,
+            37.631714,
+            -122.114793,
+            37.885355
+          ]
+        },
+        "project_location": {
+          "sha256": "1663a670e7d3da64f086c27d0ccdd7581a2d1fdf3d4f2fc5d5bb90260deb9949",
+          "wkb_type": 1,
+          "vertices": 1,
+          "bounds": [
+            -122.2711,
+            37.8044,
+            -122.2711,
+            37.8044
+          ]
+        },
+        "project_corridors": {
+          "sha256": "06ceb8ea7d96a99bd66441a993c9efa340cb7520f004bf7f021d36e767fc6f65",
+          "wkb_type": 2,
+          "vertices": 3,
+          "bounds": [
+            -122.28,
+            37.8,
+            -122.26,
+            37.82
+          ]
+        }
+      }
+    },
+    "workbook": {
+      "zip_members": 11,
+      "sheets": [
+        "Projects",
+        "Read me"
+      ],
+      "dimensions": [
+        "A1:S2",
+        "A1:B24"
+      ],
+      "string_cells": 84,
+      "formulas": 0,
+      "project_rows": 1,
+      "generated_at": "2026-10-15T13:20:56.953Z"
+    }
+  },
+  "controls": [
+    {
+      "name": "harmless JSON whitespace",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "canonical checksum tamper",
+      "outcome": "jurisdiction: canonical payload checksum"
+    },
+    {
+      "name": "explicit unresolved becomes legacy",
+      "outcome": "jurisdiction: explicit unresolved without legacy fallback"
+    },
+    {
+      "name": "staff declaration consistently promoted",
+      "outcome": "jurisdiction: explicit declaration identity"
+    },
+    {
+      "name": "SQLite stored constraint corruption",
+      "outcome": "sqlite: integrity"
+    },
+    {
+      "name": "GeoPackage application id",
+      "outcome": "metadata: GeoPackage application/version"
+    },
+    {
+      "name": "layer SRS changed",
+      "outcome": "metadata: layer SRS/dimensionality"
+    },
+    {
+      "name": "registered extent changed",
+      "outcome": "metadata: feature extent"
+    },
+    {
+      "name": "point coordinate order reversed",
+      "outcome": "geometry: finite longitude/latitude"
+    },
+    {
+      "name": "line vertices reversed",
+      "outcome": "geometry: exact line vertex order"
+    },
+    {
+      "name": "area coordinate changed in one snapshot",
+      "outcome": "geometry: unchanged geometry across snapshots"
+    },
+    {
+      "name": "JSON/GeoPackage mismatch",
+      "outcome": "parity: canonical JSON/GeoPackage payload"
+    },
+    {
+      "name": "unavailable becomes zero",
+      "outcome": "metadata: unavailable distinct from zero"
+    },
+    {
+      "name": "actor UUID inserted",
+      "outcome": "privacy: internal actor field absent"
+    },
+    {
+      "name": "known fixture actor UUID inserted",
+      "outcome": "privacy: known fixture account identifier/credential absent"
+    },
+    {
+      "name": "known fixture email inserted",
+      "outcome": "privacy: known fixture account identifier/credential absent"
+    },
+    {
+      "name": "ZIP member CRC corrupted",
+      "outcome": "workbook: ZIP CRC/unique members"
+    },
+    {
+      "name": "worksheet relationship shifted",
+      "outcome": "workbook: worksheet relationship targets"
+    },
+    {
+      "name": "external relationship inserted",
+      "outcome": "workbook: no external relationship"
+    },
+    {
+      "name": "formula injected",
+      "outcome": "workbook: literal values only"
+    },
+    {
+      "name": "text cell changed to numeric",
+      "outcome": "workbook: string literal cell type"
+    },
+    {
+      "name": "header renamed",
+      "outcome": "workbook: header/cell schema"
+    },
+    {
+      "name": "workbook revision tampered",
+      "outcome": "workbook: same unresolved project lineage"
+    },
+    {
+      "name": "import limit removed",
+      "outcome": "workbook: declared import/geometry/reference/formula limits"
+    }
+  ],
+  "copies_restored": true,
+  "fixture_account_sets_checked": 3,
+  "review": {
+    "at": "2026-10-15T13:34:19.825570+00:00",
+    "checkout_base": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+    "branch": "t3/browser-download-artifact-review",
+    "app_commit": "21510042e94bcaf80f262205ad156a7bb639e35c",
+    "build_id": "u1jUSo57HKk72eLd1Qv43",
+    "version": "0.68.0",
+    "sqlite_version": "3.46.1",
+    "runtime_contacted": false,
+    "browser_operated": false,
+    "database_service_contacted": false
+  },
+  "frozen_browser_provenance": {
+    "browser-identity.json": {
+      "bytes": 472,
+      "sha256": "86ce3ca9b7e66c441ccabd7bf68dad8a8093daba2e7b4f061b8bbf5aaa983d0b"
+    },
+    "frontdoor-evidence.json": {
+      "bytes": 2967,
+      "sha256": "59035eeeb0af83b78805fb04a576635eb36d9e8fa0aacdf3b021d23f22409ae9"
+    }
+  },
+  "source_context_at_app_commit": {
+    "openplan/src/lib/projects/portfolio-export.ts": {
+      "bytes": 7472,
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c"
+    },
+    "openplan/src/lib/projects/portfolio-round-trip-contract.ts": {
+      "bytes": 1241,
+      "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec"
+    },
+    "openplan/src/lib/jurisdiction-readiness/payload.ts": {
+      "bytes": 4933,
+      "sha256": "e16cd5539dac55e13b4c889fc897bd8ed2429b6ece7caeda7031d17edbaf805c"
+    },
+    "openplan/src/lib/runtime/action-metadata.ts": {
+      "bytes": 9050,
+      "sha256": "6bcb15a4e2ba59f29211ef7121ea8789d9b87e8986be5d89e967ca4a2050efae"
+    }
+  },
+  "probe_sha256": "ec5011917fdc18a7a90f667082334b79be9470d9ee76997521f9fbe57062aa95"
+}

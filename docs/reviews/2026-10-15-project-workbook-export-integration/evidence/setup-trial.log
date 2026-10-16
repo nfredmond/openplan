@@ -1,0 +1,1 @@
+Initial setup command used app cwd with repository-relative paths. ln failed with No such file or directory; direction log redirect failed before npm started. Owned empty misplaced directories removed with rmdir. Corrected cwd and paths; no test ran in this trial.

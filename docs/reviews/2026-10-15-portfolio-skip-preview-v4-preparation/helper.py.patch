@@ -1,0 +1,305 @@
+--- /home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/launcher.py
++++ helper.py
+@@ -1,3 +1,4 @@
+-"""Private parent-operated preview preparation. Default command is pure controls.
+-
+-No cleanup, migrations, global role changes, hosted calls, downloads or resets.
++"""Parent-only v4 operating stages. Preparation never dispatches these stages.
++
++Only the new target receives the exact migration-17 upgrade. No source capture,
++global role changes, hosted calls, downloads, cleanup or resets.
+@@ -26 +27 @@
+-OLD = OUT.parent / 'stage-a-main323-preview-20261015'
++OLD = Path('/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/stage-a-main323-preview-20261015')
+@@ -50 +51,5 @@
+-    with path.open('x') as stream:json.dump(value,stream,indent=2);stream.write('\n')
++    with path.open('x') as stream:
++        json.dump(value,stream,indent=2);stream.write('\n');stream.flush();os.fsync(stream.fileno())
++    fd=os.open(path.parent,os.O_RDONLY|os.O_DIRECTORY)
++    try:os.fsync(fd)
++    finally:os.close(fd)
+@@ -127 +132 @@
+-    for port in [29948,3585]:
++    for port in [29949,3586]:
+@@ -143,0 +149 @@
++    p.native_rest_uri(read('envs-private.json')['rest']['PGRST_DB_URI'])
+@@ -171,0 +178 @@
++    preserve()
+@@ -184,2 +191,3 @@
+-def clone():
+-    plan=pinned_files();source_check();unchanged_inputs();free_ports()
++def restore():
++    plan=pinned_files();source_check();unchanged_inputs();free_ports();fresh_target()
++    p.exact({'target':TARGET},{'target':read('preflight-ready.json')['target']},'preflight-readiness')
+@@ -191,8 +199,2 @@
+-    dump=OUT/'source-private.dump'
+-    dump_args=p.source_dump_args();p.dump_command(dump_args)
+-    with dump.open('xb') as stream:
+-        result=subprocess.run(dump_args,stdout=stream,stderr=subprocess.PIPE,timeout=300)
+-    write('dump-result.json',{'returncode':result.returncode,'bytes':dump.stat().st_size,'sha256':sha(dump)})
+-    (OUT/'dump-private.log').write_bytes(result.stderr)
+-    p.exact({'ok':True},{'ok':result.returncode==0 and 0<dump.stat().st_size<=128*1024**2},'dump')
+-    source_check()
++    dump=FROZEN/'source-private.dump'
++    retained_dump()
+@@ -206 +208 @@
+-    p.exact({'sha256':read('dump-result.json')['sha256']},{'sha256':sha(dump)},'dump-bytes')
++    p.exact({'sha256':DUMP_SHA},{'sha256':sha(dump)},'dump-bytes')
+@@ -212 +214 @@
+-    p.exact({'sha256':read('dump-result.json')['sha256']},{'sha256':sha(dump)},'dump-bytes')
++    p.exact({'sha256':DUMP_SHA},{'sha256':sha(dump)},'dump-bytes')
+@@ -252 +254 @@
+-        bindings={'8000/tcp':[{'HostIp':p.HOST,'HostPort':'29948'}]} if kind=='gateway' else {},
++        bindings={'8000/tcp':[{'HostIp':p.HOST,'HostPort':'29949'}]} if kind=='gateway' else {},
+@@ -275 +277 @@
+-    plan=pinned_files();db_check();target_check()
++    plan=pinned_files();db_check();target_check();upgrade_ready()
+@@ -287 +289 @@
+-    plan=pinned_files();source_check();unchanged_inputs();free_ports();target_check()
++    plan=pinned_files();source_check();unchanged_inputs();free_ports();target_check();upgrade_ready()
+@@ -302 +304 @@
+-        if kind=='gateway':args+=['--publish',p.HOST+':29948:8000']
++        if kind=='gateway':args+=['--publish',p.HOST+':29949:8000']
+@@ -323,84 +325,134 @@
+-def checkout():
+-    pinned_files()
+-    # Uses local objects only, never fetches or touches the parent integration tree.
+-    run(['git','-C',REPO,'worktree','add','--detach',str(OUT/'candidate'),p.HEAD],log='checkout-private.log')
+-    p.exact({'head':p.HEAD},{'head':run(['git','-C',str(APP),'rev-parse','HEAD']).decode().strip()},'checkout')
+-    for name in ['.env','.env.local','.env.production','.env.production.local','.env.development','.env.development.local','.env.test','.env.test.local']:
+-        if (APP/name).exists():raise ValueError('candidate-inherited-env')
+-    values=read('app-env-private.json')
+-    with (APP/'.env.local').open('x') as stream:
+-        for key,value in values.items():stream.write(key+'='+json.dumps(value)+'\n')
+-    write('app-env-binding.json',{'sha256':sha(APP/'.env.local')})
+-    print('Isolated candidate checkout configured. Dependencies and build remain parent operations.')
+-
+-
+-def app_check():
+-    plan=pinned_files();verify_services()
+-    values=read('app-env-private.json')
+-    p.exact({'sha256':read('app-env-binding.json')['sha256']},{'sha256':sha(APP/'.env.local')},'app-env')
+-    other=[str(f) for f in APP.glob('.env*') if f.name not in ['.env.local','.env.example'] and f.is_file()]
+-    p.exact({'otherEnv':[]},{'otherEnv':other},'app-env')
+-    p.exact({'head':p.HEAD,'clean':True,'path':str(APP)},dict(
+-        head=run(['git','-C',str(APP),'rev-parse','HEAD']).decode().strip(),
+-        clean=not run(['git','-C',str(APP),'status','--porcelain']).strip(),path=str(APP.resolve())),'app')
+-    p.exact({'values':values},{'values':{key:json.loads(value) for key,value in (line.split('=',1) for line in (APP/'.env.local').read_text().splitlines())}},'app-values')
+-    # The sealed allowlist retains only the three authorized optional source keys.
+-    p.exact({'api':p.API,'web':p.WEB,'head':p.HEAD,'gtfs':'0'},dict(api=values['NEXT_PUBLIC_SUPABASE_URL'],
+-        web=values['NEXT_PUBLIC_APP_URL'],head=values['OPENPLAN_COMMIT_SHA'],gtfs=values['OPENPLAN_GTFS_MANAGED_INGESTION']),'app-values')
+-    bindings=read('candidate-migrations.json')
+-    p.files(bindings,{name:sha(OUT/'candidate'/name) for name in bindings})
+-    return plan,values
+-
+-
+-def clean_env(values,heap):
+-    # Do not inherit NODE_OPTIONS, dotenv switches, proxy settings or provider secrets.
+-    env={key:os.environ[key] for key in ['HOME','USER','LOGNAME','LANG','LC_ALL','TZ'] if key in os.environ}
+-    env.update(PATH='/usr/local/bin:/usr/bin:/bin',NODE_OPTIONS='--max-old-space-size='+str(heap),NEXT_TELEMETRY_DISABLED='1')
+-    env.update(values)
+-    return env
+-
+-
+-def cgroup():
+-    group=Path('/sys/fs/cgroup')/Path('/proc/self/cgroup').read_text().split('0::',1)[1].strip().lstrip('/')
+-    return {name:(group/name).read_text().strip() for name in ['memory.max','memory.swap.max','memory.events']}
+-
+-
+-def build():
+-    app_check();source_check()
+-    # Parent launches this phase in a separate systemd scope with 10GiB/zero swap.
+-    resources=cgroup()
+-    p.exact({'memory.max':str(10*1024**3),'memory.swap.max':'0'},resources,'build-budget')
+-    available=int(next(line.split()[1] for line in Path('/proc/meminfo').read_text().splitlines() if line.startswith('MemAvailable:')))*1024
+-    p.exact({'memory':True,'disk':True},dict(memory=available>=10*1024**3,disk=shutil.disk_usage(APP).free>=8*1024**3),'build-headroom')
+-    write('build-intent.json',{'head':p.HEAD,'environmentSha256':sha(APP/'.env.local')})
+-    started=time.monotonic()
+-    result=subprocess.run(['npm','run','build'],cwd=APP,env=clean_env(read('app-env-private.json'),6144),capture_output=True,timeout=900)
+-    (OUT/'build-private.log').write_bytes(result.stdout+result.stderr)
+-    report=dict(head=p.HEAD,returncode=result.returncode,seconds=time.monotonic()-started,envHash=sha(APP/'.env.local'),
+-        build=(APP/'.next/BUILD_ID').read_text().strip() if (APP/'.next/BUILD_ID').exists() else '',resources=cgroup(),
+-        serviceReceiptHash=sha(OUT/'service-receipts-private.json'))
+-    write('build-result.json',report)
+-    p.exact({'returncode':0},{'returncode':result.returncode},'build')
+-    app_check();source_check()
+-    write('build-files.json',inventory(APP/'.next'))
+-    print('Candidate build finished. No browser acceptance is claimed.')
+-
+-
+-def start():
+-    plan,values=app_check();source_check();unchanged_inputs()
+-    report=read('build-result.json');resources=cgroup()
+-    events=dict(line.split() for line in report['resources']['memory.events'].splitlines())
+-    expected=dict(head=p.HEAD,clean=True,app=str(APP),build=report['build'],buildHash=p.digest(read('build-files.json')),
+-        envHash=report['envHash'],sourceHash=read('clone-ready.json')['sourceSha256'],
+-        receiptHash=report['serviceReceiptHash'],api=p.API,web=p.WEB,disabledGTFS=True,
+-        absentAI=True,freePort=True,services=True,noOom=True,bounded=True)
+-    with socket.socket() as probe:probe.bind((p.HOST,3585))
+-    actual={**expected,'build':(APP/'.next/BUILD_ID').read_text().strip(),'buildHash':p.digest(inventory(APP/'.next')),
+-        'envHash':sha(APP/'.env.local'),'receiptHash':sha(OUT/'service-receipts-private.json'),
+-        'noOom':report['returncode']==0 and bool(events) and all(events.get(k)=='0' for k in ['oom','oom_kill','oom_group_kill']),
+-        'bounded':resources['memory.max']==str(p.LIMIT) and resources['memory.swap.max']=='0'}
+-    # Service verification and identity acquisition occur above, not trusted receipt booleans.
+-    p.launch(expected,actual)
+-    write('preview-start.json',{'observed':actual,'launcherHash':sha(Path(__file__)),'boundary':'Unproven until parent runs identified desktop/390px journeys, console and artifact checks.'})
+-    os.chdir(APP)
+-    os.execve('/usr/bin/npm',['npm','run','start','--','--hostname',p.HOST,'--port','3585'],clean_env(values,320))
++
++
++
++
++# V4 additions use only this new target. Old operational entrypoints are absent.
++FROZEN = Path('/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015')
++DUMP_SHA = '181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398'
++MIG_SHA = 'b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b'
++TARGET = 'openplan_project_portfolio_preview_8f43260b95a071cc4e6d2b90'
++FUNCTION = 'public.commit_project_portfolio_import_v2(uuid,uuid,uuid,uuid,text,text,text,jsonb,jsonb)'
++
++
++def retained_dump():
++    f=FROZEN/'source-private.dump'
++    p.exact({'regular':True,'bytes':16232305,'sha256':DUMP_SHA},
++        {'regular':f.is_file() and not f.is_symlink(),'bytes':f.stat().st_size,'sha256':sha(f)},'retained-dump')
++
++
++def fresh_target():
++    plan=read('plan-private.json')
++    p.exact({'target':TARGET},{'target':plan['target']},'fixed-target')
++    existing=json.loads(sql('postgres',"SELECT coalesce(jsonb_agg(datname),'[]') FROM pg_database;"))
++    p.exact({'fresh':True},{'fresh':TARGET not in existing},'target-reserved')
++    names=[json.loads(line) for line in run(['docker','ps','-a','--format','{{json .Names}}']).decode().splitlines()]
++    p.exact({'fresh':True},{'fresh':not set(names).intersection(plan['names'].values())},'helper-reserved')
++    p.exact({'clean':True},{'clean':not any((OUT/n).exists() or (OUT/n).is_symlink() for n in
++        ['clone-intent.json','target-identity.json','services-intent.json','candidate'])},'operation-reserved')
++
++
++def preserve():
++    for name,expected in read('preservation-files.json').items():
++        f=Path(name)
++        p.exact({'regular':True,'mode':expected['mode'],'sha256':expected['sha256']},
++            {'regular':f.is_file() and not f.is_symlink(),'mode':f.stat().st_mode&0o777,'sha256':sha(f)},'old-packet')
++    protected_web()
++    # Full live protected helper configurations are captured by parent preflight.
++    if (OUT/'protected-runtime-before.json').exists():
++        frozen=read('protected-runtime-before.json')
++        for identity,expected in frozen['helpers'].items():
++            i=inspect(identity)
++            current={k:i[k] for k in ['Id','Name','Image','Config','HostConfig','Mounts']}
++            p.exact({'sha256':expected},{'sha256':p.digest(current)},'protected-helper')
++        for database,expected in frozen['databases'].items():
++            p.exact({'snapshot':expected},{'snapshot':snapshot(database)},'protected-database')
++
++
++
++def protected_web():
++    unit='openplan-current-project-preview-app-21510042e-v3-web.service'
++    text=run(['/usr/bin/systemctl','--user','show',unit,'--property=ActiveState,InvocationID,MainPID,ControlGroup']).decode()
++    properties=dict(line.split('=',1) for line in text.splitlines())
++    p.exact({'ActiveState':'active','InvocationID':'34615ba06b554482b0f79c90fe999a61'},properties,'protected-web')
++    receipt=json.loads(Path('/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/runtime-start-attestation.json').read_text())
++    rows=run(['/usr/bin/ss','-H','-ltnp','sport = :3585']).decode().splitlines()
++    pid=receipt['listenerPid']
++    p.exact({'socket':True},{'socket':len(rows)==1 and rows[0].split()[3]=='127.74.19.10:3585' and 'pid='+pid+',' in rows[0]},'protected-web')
++    proc=Path('/proc')/pid
++    p.exact({'cwd':str(Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/candidate/openplan')),
++        'cgroup':'0::'+properties['ControlGroup']},
++        {'cwd':str((proc/'cwd').resolve()),'cgroup':(proc/'cgroup').read_text().strip()},'protected-web')
++    environment=dict(item.split('=',1) for item in (proc/'environ').read_bytes().decode().split('\0') if '=' in item)
++    p.exact({'digest':receipt['processEnvironmentDigest']},{'digest':p.digest(environment)},'protected-web-env')
++
++
++def preflight():
++    pinned_files();retained_dump();source_check();unchanged_inputs();free_ports();fresh_target()
++    p.exact({'disk':True},{'disk':shutil.disk_usage(OUT).free>=8*1024**3},'preflight')
++    # Read only receipts; inspect IDs directly. Never invoke old launcher actions.
++    original=json.loads((FROZEN/'rest-uri-recovery-01/active-service-receipts-private.json').read_text())
++    helpers={}
++    for receipt in original.values():
++        i=inspect(receipt['id'])
++        p.exact({'running':True},{'running':i['State']['Running']},'protected-active')
++        helpers[i['Id']]=p.digest({k:i[k] for k in ['Id','Name','Image','Config','HostConfig','Mounts']})
++    databases={database:snapshot(database) for database in read('protected-databases.json')}
++    write('protected-runtime-before.json',{'helpers':helpers,'databases':databases})
++    write('preflight-ready.json',{'target':TARGET,'sourceAnchor':p.SOURCE_ANCHOR,'dumpSHA256':DUMP_SHA})
++
++
++def upgrade_state():
++    target_check()
++    return json.loads(sql(TARGET,"SELECT jsonb_build_object('database',current_database(),'historyCount',(SELECT count(*) FROM supabase_migrations.schema_migrations),'latest',(SELECT max(version) FROM supabase_migrations.schema_migrations),'versions',(SELECT jsonb_agg(version ORDER BY version) FROM supabase_migrations.schema_migrations),'body',(SELECT prosrc FROM pg_proc WHERE oid="+literal(FUNCTION)+"::regprocedure),'statusConstraint',(SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.project_portfolio_import_rows'::regclass AND conname='project_portfolio_import_rows_resolved_status_check'),'phaseConstraint',(SELECT pg_get_constraintdef(oid) FROM pg_constraint WHERE conrelid='public.project_portfolio_import_rows'::regclass AND conname='project_portfolio_import_rows_resolved_delivery_phase_check'),'priorHistoryDigest',(SELECT md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),'')) FROM supabase_migrations.schema_migrations t WHERE version<>'20261017000017'),'historySQL',(SELECT statements FROM supabase_migrations.schema_migrations WHERE version='20261017000017'));"))
++
++
++def upgraded(actual):
++    expected=read('upgrade-expectations.json')
++    p.exact({'database':TARGET,'historyCount':420,'latest':'20261017000017','versions':sorted(expected['versions']+['20261017000017']),
++        'body':expected['newBody'],'priorHistoryDigest':expected['history']['digest'],'historySQL':[(OUT/'candidate17.sql').read_text()]},actual,'upgrade-state')
++    # The receipt below pins the exact server-normalized CHECK definitions too.
++    for key in ['statusConstraint','phaseConstraint']:
++        p.exact({'check':True},{'check':isinstance(actual.get(key),str) and "decision <> 'create'::text" in actual[key]},'upgrade-'+key)
++
++
++def upgrade_ready():
++    receipt=read('upgrade-ready.json')
++    p.exact({'target':TARGET,'migrationSHA256':MIG_SHA},{'target':receipt['target'],'migrationSHA256':receipt['migrationSHA256']},'upgrade-receipt')
++    actual=upgrade_state();upgraded(actual)
++    p.files(receipt['state'],actual)
++
++
++def upgrade_sql():
++    expected=read('upgrade-expectations.json')
++    p.exact({'sha256':MIG_SHA},{'sha256':sha(OUT/'candidate17.sql')},'candidate17')
++    hist=expected['history']
++    return "\n".join([
++        'BEGIN;', "SET LOCAL ROLE postgres;", "SET LOCAL statement_timeout='60s';", "SET LOCAL lock_timeout='3s';", "SET LOCAL idle_in_transaction_session_timeout='60s';", "SET LOCAL work_mem='16MB';",
++        'SELECT pg_advisory_xact_lock(20261017,17);',
++        'LOCK TABLE supabase_migrations.schema_migrations IN EXCLUSIVE MODE;',
++        "DO $exclusive$ BEGIN IF EXISTS(SELECT 1 FROM pg_stat_activity WHERE datname=current_database() AND pid<>pg_backend_pid()) THEN RAISE EXCEPTION 'upgrade-target-connections'; END IF; END $exclusive$;",
++        "DO $ready$ BEGIN IF current_database()<>"+literal(TARGET)+" OR (SELECT count(*) FROM supabase_migrations.schema_migrations)<>419 OR (SELECT max(version) FROM supabase_migrations.schema_migrations)<>'20261017000016' OR EXISTS(SELECT 1 FROM supabase_migrations.schema_migrations WHERE version='20261017000017') THEN RAISE EXCEPTION 'upgrade-history419-target'; END IF;",
++        "IF (SELECT md5(coalesce(string_agg(md5(to_jsonb(t)::text),'' ORDER BY md5(to_jsonb(t)::text)),'')) FROM supabase_migrations.schema_migrations t)<>"+literal(hist['digest'])+" THEN RAISE EXCEPTION 'upgrade-history-bytes'; END IF;",
++        "IF (SELECT prosrc FROM pg_proc WHERE oid="+literal(FUNCTION)+"::regprocedure) IS DISTINCT FROM "+literal(expected['oldBody'])+" THEN RAISE EXCEPTION 'upgrade-original-body'; END IF; END $ready$;",
++        (OUT/'candidate17.sql').read_text(),
++        "INSERT INTO supabase_migrations.schema_migrations(version,name,statements) VALUES ('20261017000017','portfolio_skip_invalid_classifications',ARRAY["+literal((OUT/'candidate17.sql').read_text())+"]::text[]);",
++        "DO $after$ BEGIN IF (SELECT count(*) FROM supabase_migrations.schema_migrations)<>420 OR (SELECT max(version) FROM supabase_migrations.schema_migrations)<>'20261017000017' THEN RAISE EXCEPTION 'upgrade-history420'; END IF; END $after$;",
++        "NOTIFY pgrst, 'reload schema';", 'COMMIT;'])
++
++
++def upgrade():
++    pinned_files();retained_dump();source_check();unchanged_inputs();target_check()
++    p.exact({'target':TARGET},{'target':read('clone-ready.json')['target']},'restored-readiness')
++    p.exact({'target':TARGET},{'target':read('preflight-ready.json')['target']},'preflight-readiness')
++    before=snapshot(TARGET)
++    projection=lambda rows:[x for x in rows if 'table' in x or 'versions' in x or 'sequences' in x or 'properties' in x]
++    p.exact({'data':projection(read('source-binding-private.json')['snapshot'])},{'data':projection(before)},'upgrade-original-data')
++    statement=upgrade_sql()
++    write('upgrade-intent.json',{'target':TARGET,'migrationSHA256':MIG_SHA,'SQLSHA256':hashlib.sha256(statement.encode()).hexdigest()})
++    run(['docker','exec','-i',p.DB_ID,'psql','-Xq','-U','supabase_admin','-d',TARGET,'-v','ON_ERROR_STOP=1'],data=statement.encode(),log='upgrade-private.log')
++    state=upgrade_state();upgraded(state)
++    # All original rows, auth data and sequences stay exact. Only migration history differs.
++    unchanged=lambda rows:[x for x in rows if ('table' in x and x['table']!='supabase_migrations.schema_migrations') or 'sequences' in x or 'properties' in x]
++    p.exact({'data':unchanged(before)},{'data':unchanged(snapshot(TARGET))},'upgrade-data-preserved')
++    source_check();unchanged_inputs()
++    write('upgrade-ready.json',{'target':TARGET,'migrationSHA256':MIG_SHA,'state':state})
+@@ -411,4 +463 @@
+-    command=sys.argv[1] if len(sys.argv)>1 else 'controls'
+-    if command=='controls':
+-        import controls
+-        print(json.dumps(controls.run(),indent=2));return
++    os.environ.clear();os.environ.update(PATH='/usr/bin:/bin',HOME=str(OUT/'tmp'),PYTHONDONTWRITEBYTECODE='1',XDG_RUNTIME_DIR='/run/user/'+str(os.getuid()))
+@@ -416,4 +465,3 @@
+-    operations={'check':lambda:(pinned_files(),source_check(),unchanged_inputs(),free_ports()),
+-        'clone':clone,'services':services,'checkout':checkout,'build':build,'start':start,'verify-services':verify_services}
+-    if command not in operations:raise ValueError('unknown-operation')
+-    try:operations[command]()
++    operations={'preflight':preflight,'restore':restore,'upgrade':upgrade,'services':services,'verify-services':verify_services}
++    if len(sys.argv)!=2 or sys.argv[1] not in operations:raise ValueError('unknown-operation')
++    try:operations[sys.argv[1]]()
+@@ -421,7 +469,2 @@
+-        # Preserve failures without printing exceptions containing connection strings.
+-        write('failure-'+command+'-'+secrets.token_hex(6)+'.json',{'phase':command,'type':type(error).__name__,
+-            'reason':str(error) if isinstance(error,ValueError) else 'See private logs; no cleanup performed.'})
+-        print('REFUSED '+command+'; retained private failure evidence.',file=sys.stderr)
+-        raise SystemExit(1)
+-
+-
++        write('failure-'+sys.argv[1]+'-'+secrets.token_hex(6)+'.json',{'phase':sys.argv[1],'type':type(error).__name__,'reason':str(error) if type(error) is ValueError else 'See private logs; preserve partial state.'})
++        print('REFUSED '+sys.argv[1]+'; retained private evidence.',file=sys.stderr);raise SystemExit(1)

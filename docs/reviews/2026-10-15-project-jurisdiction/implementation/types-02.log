@@ -1,0 +1,7 @@
+Running as unit: openplan-jurisdiction-types-02.service; invocation ID: eb98ec27dad344a6a90571659a21a542
+src/test/project-jurisdiction-editor.test.tsx(17,52): error TS2339: Property 'toBeDisabled' does not exist on type 'Assertion<HTMLElement>'.
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=2/INVALIDARGUMENT
+               Service runtime: 4.431s
+             CPU time consumed: 9.439s
+                   Memory peak: 743.6M (swap: 0B)

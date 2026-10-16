@@ -1,0 +1,489 @@
+{
+  "applicationTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "testInputVariants": {
+    "beforeTypeAnnotation": {
+      "head": "80943a00724b973d241b866d8f8e1a769be757cd",
+      "files": {
+        "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c468c208925e1322762988b1f24f2513625459d8c8b57687fe4ddf23dab6e192",
+        "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+        "openplan/src/test/report-generate-route.test.ts": "47d2475c4b3be27827bbffce0c3ac700ea4808b41c2d4b8226e785f07d887415",
+        "openplan/src/test/pending-schema-missing-column.test.ts": "13a98f51307e1e51d0b3a846f6777040bb792211de1197b9f8dac7ba0e822077"
+      }
+    },
+    "final": {
+      "head": "80943a00724b973d241b866d8f8e1a769be757cd",
+      "files": {
+        "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c468c208925e1322762988b1f24f2513625459d8c8b57687fe4ddf23dab6e192",
+        "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+        "openplan/src/test/report-generate-route.test.ts": "8dfc582bca8f5dad934d74b881dee228ec8dce09313defe0357a455eb3800f6f",
+        "openplan/src/test/pending-schema-missing-column.test.ts": "13a98f51307e1e51d0b3a846f6777040bb792211de1197b9f8dac7ba0e822077"
+      }
+    },
+    "typedCampaign": "Final annotation; earlier controls use the prior test bytes. Production route and parser bytes are identical."
+  },
+  "retainedInitialTypeFailure": {
+    "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/pretype-scoped-types.json",
+    "sha256": "e293421d4809b58ba79e873b1994e0dcb98a93cf84b3b1b802a3219ac54162e3",
+    "diagnostic": "TS2345 at report-generate-route.test.ts:4373, tuple-inferred comparison argument"
+  },
+  "baseCommit": "80943a00724b973d241b866d8f8e1a769be757cd",
+  "branch": "t3/pr330-report-guard-correction",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934",
+  "sourceHashes": {
+    "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c468c208925e1322762988b1f24f2513625459d8c8b57687fe4ddf23dab6e192",
+    "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+    "openplan/src/test/report-generate-route.test.ts": "8dfc582bca8f5dad934d74b881dee228ec8dce09313defe0357a455eb3800f6f",
+    "openplan/src/test/pending-schema-missing-column.test.ts": "13a98f51307e1e51d0b3a846f6777040bb792211de1197b9f8dac7ba0e822077"
+  },
+  "unchangedGuardAndScannerHashes": {
+    "openplan/src/test/reference-count-projection-guard.test.ts": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+    "openplan/src/test/one-pending-schema-classifier.test.ts": "b3ea640fbc9c1eb11060605160d6fb573969688bd1fc173e4c96fa29e985c24b",
+    "openplan/src/test/supabase-call-sites.ts": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e"
+  },
+  "booleanClassifierUnchanged": true,
+  "initialProjectionParity": {
+    "columns": 28,
+    "oldComputedValue": "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude",
+    "newLiteralValue": "id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at, jurisdiction_context, place_source, place_kind, place_ref, place_label, place_country_code, place_subdivision_code, place_min_lon, place_min_lat, place_max_lon, place_max_lat, place_geometry_geojson, place_set_at, estimated_cost_amount, estimated_cost_currency, estimated_cost_basis_year, estimated_cost_source_document_id, latitude, longitude"
+  },
+  "originalCiLogs": {
+    "shuffled-759-job.log": {
+      "path": "/home/nathaniel/.local/state/openplan/pr330-combined-corrections-checks-20261015/shuffled-759-job.log",
+      "sha256": "a7ecdbbcc3cbb7cf2d2db058453b0cf91339ae22825ba7f26206afa5bd5ca1e6",
+      "run": 38773672471,
+      "job": 116556241675,
+      "commit": "75931937aa85950da68577abef1246d7f3c8ff13",
+      "passed": 22969,
+      "skipped": 1662,
+      "failed": 2
+    },
+    "qa-gate-759-job.log": {
+      "path": "/home/nathaniel/.local/state/openplan/pr330-combined-corrections-checks-20261015/qa-gate-759-job.log",
+      "sha256": "58eda766b46bea8bbcc633d878a148fd6168b12a172c7df3a581af37aca2917d",
+      "run": 38773672471,
+      "job": 116556241944,
+      "commit": "75931937aa85950da68577abef1246d7f3c8ff13",
+      "passed": 22969,
+      "skipped": 1662,
+      "failed": 2
+    }
+  },
+  "checks": {
+    "baseline-guards": {
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/baseline-guards.json",
+      "sha256": "94f096debe7f3e379dfdef303a529f6f1c5db57eb6c894d64cf831f2488022f0",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/reference-count-projection-guard.test.ts",
+        "src/test/one-pending-schema-classifier.test.ts",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--sequence.shuffle",
+        "--sequence.seed",
+        "723279",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/baseline-guards.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/openplan",
+      "exitCode": 1,
+      "elapsedSeconds": 22.889,
+      "memoryPeakBytes": 429424640
+    },
+    "corrected-focused": {
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/corrected-focused.json",
+      "sha256": "e3521665de6073ca7b8c5a957b806c686d5897dda144427053dfaa9db3747359",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/pending-schema-missing-column.test.ts",
+        "src/test/report-generate-route.test.ts",
+        "src/test/report-html-accepted-narrative.test.ts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "src/test/one-pending-schema-classifier.test.ts",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--sequence.shuffle",
+        "--sequence.seed",
+        "723279",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/corrected-focused.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 51.912,
+      "memoryPeakBytes": 559001600
+    },
+    "final-focused": {
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/final-focused.json",
+      "sha256": "309917a80cd9af13b9561494985008699d9edc1ae24597234e7f01613bf6f8cc",
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/pending-schema-missing-column.test.ts",
+        "src/test/report-generate-route.test.ts",
+        "src/test/report-html-accepted-narrative.test.ts",
+        "src/test/reference-count-projection-guard.test.ts",
+        "src/test/one-pending-schema-classifier.test.ts",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--sequence.shuffle",
+        "--sequence.seed",
+        "723279",
+        "--reporter",
+        "json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/final-focused.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 49.987,
+      "memoryPeakBytes": 550506496
+    },
+    "scoped-types": {
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/scoped-types.json",
+      "sha256": "eb6bfdec89a2ef6d3e61f962976a3921cf1be3be31aa1b3ab527f9cf80c2d290",
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 16.981,
+      "memoryPeakBytes": 834564096
+    },
+    "changed-eslint": {
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/changed-eslint.json",
+      "sha256": "f51e8e9d6ab8ce3bac9b5fec8ffebaa9891432514c0d20628e5ac55baae9cd24",
+      "command": [
+        "node",
+        "node_modules/eslint/bin/eslint.js",
+        "src/app/api/reports/[reportId]/generate/route.ts",
+        "src/lib/supabase/pending-schema.ts",
+        "src/test/report-generate-route.test.ts",
+        "src/test/pending-schema-missing-column.test.ts",
+        "--max-warnings",
+        "0"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/openplan",
+      "exitCode": 0,
+      "elapsedSeconds": 7.423,
+      "memoryPeakBytes": 436781056
+    }
+  },
+  "finalFocusedReport": {
+    "path": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/final-focused.vitest.json",
+    "sha256": "b8a7bea95bd9fea5e4c7339b1eb3302d3ae8d2adcc6e8f7fe22a3efa7f2f0656",
+    "passed": 180,
+    "failed": 0,
+    "skipped": 0,
+    "seed": 723279,
+    "files": {
+      "one-pending-schema-classifier.test.ts": 26,
+      "reference-count-projection-guard.test.ts": 10,
+      "report-html-accepted-narrative.test.ts": 14,
+      "report-generate-route.test.ts": 96,
+      "pending-schema-missing-column.test.ts": 34
+    }
+  },
+  "acceptedControls": [
+    {
+      "label": "harmless",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "SURVIVED",
+      "executedTests": 180,
+      "diagnostics": null,
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-harmless.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/harmless.vitest.json",
+      "memoryPeakBytes": 570986496,
+      "receiptSha256": "f913b797ab8800ad7d562ffa96dd3805fb1980a4858c51d17cf70477b19f1e27",
+      "reportSha256": "466c7eddc35c1ffe2bd3aef53bbd22b8a2dd7f0214f8d9bdb6cde2b8ec6eb801"
+    },
+    {
+      "label": "computed-projection",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "KILLED",
+      "executedTests": 2,
+      "diagnostics": {
+        "guards the guard": "expected 182 to be less than 182",
+        "keeps the initial project projection literal": "Source guard resolves the actual initial projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-computed-projection.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/computed-projection.vitest.json",
+      "memoryPeakBytes": 528494592,
+      "receiptSha256": "55aa94349b2a7d189a9d96edc60ccb70977971ff88f4d63482e2c271362f6314",
+      "reportSha256": "2e5905fd448a0f652c2ef3905440ef7c053c4f478d66f4a9a8ec5a8aa4372501"
+    },
+    {
+      "label": "inline-private-parser",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "adds no new file": "these files test a pending-schema regex inline"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-inline-private-parser.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/inline-private-parser.vitest.json",
+      "memoryPeakBytes": 254406656,
+      "receiptSha256": "85e89250bbf3664a15b3932c1629e685ea08b800aeedaa9b04c36ca3b387484c",
+      "reportSha256": "ee246b8b859af115d4394724c0471af48cd8a5a1aeefc552cbd3b9f204de533e"
+    },
+    {
+      "label": "initial-projection-omission",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "keeps the initial project projection literal": "Actual initial projection retains every group in order"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-initial-projection-omission.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/initial-projection-omission.vitest.json",
+      "memoryPeakBytes": 425943040,
+      "receiptSha256": "a527d29b90ca1bf8e00793a6023af35e330a80aace6058163a7d297455e74462",
+      "reportSha256": "6825da3ea3581f267fda1d64c64f162045adce2db302361418c4541dc1ffddb9"
+    },
+    {
+      "label": "extra-fallback-omission",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "KILLED",
+      "executedTests": 4,
+      "diagnostics": {
+        "removes exactly the confirmed optional group": "Fallback removes the complete named group and nothing else"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-extra-fallback-omission.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/extra-fallback-omission.vitest.json",
+      "memoryPeakBytes": 431980544,
+      "receiptSha256": "0c28611b4d0da460f0b26941907585ea0e502aec7893b6d018b3dd06a09468af",
+      "reportSha256": "b272aaa8a086d65a7645454866cc29cc625c70ebde4c081280d69f8cd1aa43cd"
+    },
+    {
+      "label": "parser-returns-no-column",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 9,
+      "diagnostics": {
+        "reads the supported": "Supported missing column retains its identity",
+        "uses the supplied relation": "expected null to be",
+        "preserves quoted column": "Quoted names retain case"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-parser-returns-no-column.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/parser-returns-no-column.vitest.json",
+      "memoryPeakBytes": 216596480,
+      "receiptSha256": "25a9cfff7fd2ec736f97d260e5f8db757d63033091bc48cd1c1faecdb11d5b27",
+      "reportSha256": "f56b48f4874834d08a93782a81bdc62cc7c6da3cf6ae798fe8b22240f836fc84"
+    },
+    {
+      "label": "parser-unknown-accepted",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 22,
+      "diagnostics": {
+        "refuses an unrecognized": "Unknown forms must refuse narrowing",
+        "refuses an unsupported": "Relation argument must be a simple name"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-parser-unknown-accepted.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/parser-unknown-accepted.vitest.json",
+      "memoryPeakBytes": 232812544,
+      "receiptSha256": "12d5bd53acfb2fd860836c710ea1489c38d979c66b1de78ce151350efae09f5f",
+      "reportSha256": "4b24e137a2427c29fb5d4f456a9d92c9059db3195eff1c055b240d9b8ab85b06"
+    },
+    {
+      "label": "boolean-classifier-changed",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "leaves the ordinary boolean": "Existing boolean classification is unchanged"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-boolean-classifier-changed.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/boolean-classifier-changed.vitest.json",
+      "memoryPeakBytes": 215474176,
+      "receiptSha256": "50d8642cfd52015211046b32fd126c951669c52e0eed69b9441f9754e2e3af18",
+      "reportSha256": "dfeafaa6a2c65205bc5dc1fad1556d9a0775104e26d2fe2ea7d6bad21ead46a9"
+    },
+    {
+      "label": "harmless",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "SURVIVED",
+      "executedTests": 180,
+      "diagnostics": null,
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/supplemental-harmless.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/supplemental/harmless.vitest.json",
+      "memoryPeakBytes": 565821440,
+      "receiptSha256": "f0d5727d99822d1d41e85108e93ed8885b5d6c55c0f925ed8916465fb7c6bbb0",
+      "reportSha256": "937f9c3a948a3b5cb05aa57eb6147fcde85f2e2c8bbbb28aa862bb713642b742"
+    },
+    {
+      "label": "parser-relation-bypass",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 2,
+      "diagnostics": {
+        "refuses a different relation": "Named relation must match",
+        "refuses unclassified project read errors without dropping fields": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/supplemental-parser-relation-bypass.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/supplemental/parser-relation-bypass.vitest.json",
+      "memoryPeakBytes": 424230912,
+      "receiptSha256": "54f0b56a6e60734b3a6abaf67f75b7be119995f4f1877a73451a775837ea8b35",
+      "reportSha256": "f850ed8b9f8c5a0d0e332e2f1f58bcfb32cd70b090f53651a32bdb77f5021c63"
+    },
+    {
+      "label": "cache-relation-bypass",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 2,
+      "diagnostics": {
+        "refuses a different relation": "Named relation must match",
+        "refuses unclassified project read errors without dropping fields": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/supplemental-cache-relation-bypass.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/supplemental/cache-relation-bypass.vitest.json",
+      "memoryPeakBytes": 423124992,
+      "receiptSha256": "9337feb5986742f026a8df0ec25817e9fded8a18ceba94b6380d234080cc0cf7",
+      "reportSha256": "628cf7f4cdb8532731e2cb1098474aa694dfb42ae304b93b52738b54a4b05e95"
+    },
+    {
+      "label": "quoted-column-folded",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 2,
+      "diagnostics": {
+        "preserves quoted column": "Quoted names retain case",
+        "refuses unclassified project read errors without dropping fields": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/supplemental-quoted-column-folded.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/supplemental/quoted-column-folded.vitest.json",
+      "memoryPeakBytes": 415866880,
+      "receiptSha256": "19e8c35914744f8cb492e3c717223438571fb1b6ae34007ee568a3951c490795",
+      "reportSha256": "5e84f2c2365b0ebb64a572c6951f02265949fde397f96f3f939846301435265c"
+    },
+    {
+      "label": "permission-prefix-accepted",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 2,
+      "diagnostics": {
+        "refuses an unrecognized": "Unknown forms must refuse narrowing",
+        "refuses unclassified project read errors without dropping fields": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/supplemental-permission-prefix-accepted.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/supplemental/permission-prefix-accepted.vitest.json",
+      "memoryPeakBytes": 418758656,
+      "receiptSha256": "aae025a83089e50d4659a0cfe6097e80777f06a24966476763ae169d23db5d69",
+      "reportSha256": "d3802656b4aefff1ac86f625bb72c44ff793cba22385f0342778a4c97460367a"
+    },
+    {
+      "label": "harmless",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "SURVIVED",
+      "executedTests": 180,
+      "diagnostics": null,
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/typed-harmless.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/typed/harmless.vitest.json",
+      "memoryPeakBytes": 549203968,
+      "receiptSha256": "1ae1fa875e972369d893710bbd5475809751e80ca2af3ce26b534ba9c813cb29",
+      "reportSha256": "cd32716b45691fdbefa0c1e7ae27cdd548b9675d9f9fd2436a715ee94556f51d"
+    },
+    {
+      "label": "extra-fallback-omission",
+      "source": "openplan/src/app/api/reports/[reportId]/generate/route.ts",
+      "outcome": "KILLED",
+      "executedTests": 4,
+      "diagnostics": {
+        "removes exactly the confirmed optional group": "Fallback removes the complete named group and nothing else"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/typed-extra-fallback-omission.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/typed/extra-fallback-omission.vitest.json",
+      "memoryPeakBytes": 433217536,
+      "receiptSha256": "d88e40b276a1f5a7848925db48a98f5b05a417f7dcbee273a36782d087423de6",
+      "reportSha256": "fb0ff531a28683f789101ef2555f2c3f49eb1e38f55bec19c9a87eeb5b5bbd0b"
+    }
+  ],
+  "incompleteInitialRouteSelections": [
+    {
+      "label": "parser-relation-bypass",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "refuses a different relation": "Named relation must match",
+        "refuses unclassified project read errors": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-parser-relation-bypass.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/parser-relation-bypass.vitest.json",
+      "memoryPeakBytes": 415379456
+    },
+    {
+      "label": "cache-relation-bypass",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "refuses a different relation": "Named relation must match",
+        "refuses unclassified project read errors": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-cache-relation-bypass.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/cache-relation-bypass.vitest.json",
+      "memoryPeakBytes": 417480704
+    },
+    {
+      "label": "quoted-column-folded",
+      "source": "openplan/src/lib/supabase/pending-schema.ts",
+      "outcome": "KILLED",
+      "executedTests": 1,
+      "diagnostics": {
+        "preserves quoted column": "Quoted names retain case",
+        "refuses unclassified project read errors": "Unclassified failure never retries a narrower projection"
+      },
+      "receipt": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/logs/control-quoted-column-folded.json",
+      "report": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls/quoted-column-folded.vitest.json",
+      "memoryPeakBytes": 415793152
+    }
+  ],
+  "controlDrivers": {
+    "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015/controls-driver-v1.py": "091b406a095382ecd5a6e1be43911fd070435d880431d9c9ad7b576949aa45f2",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-6c781934/docs/reviews/2026-10-15-pr330-ci-report-guard-correction/verify_controls.py": "27dcd5aa4c9cede5e3a10442e01d52b1344517e165378e2a684e9814b7251de7"
+  },
+  "restoration": {
+    "exactSourceHashes": {
+      "openplan/src/app/api/reports/[reportId]/generate/route.ts": "c468c208925e1322762988b1f24f2513625459d8c8b57687fe4ddf23dab6e192",
+      "openplan/src/lib/supabase/pending-schema.ts": "26d930545ccce66c33d7c01b251cfd2565f5d7d98dc906878ac4a7b343b6cfae",
+      "openplan/src/test/report-generate-route.test.ts": "8dfc582bca8f5dad934d74b881dee228ec8dce09313defe0357a455eb3800f6f",
+      "openplan/src/test/pending-schema-missing-column.test.ts": "13a98f51307e1e51d0b3a846f6777040bb792211de1197b9f8dac7ba0e822077"
+    },
+    "campaigns": [
+      "controls",
+      "supplemental",
+      "typed"
+    ]
+  },
+  "privateDirectory": "/home/nathaniel/.local/state/openplan/pr330-ci-report-guard-correction-20261015"
+}

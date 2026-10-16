@@ -1,9 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { readFileSync } from "node:fs";
+import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 import { collectSupabaseSelectSites, type SupabaseSelectSite } from "./supabase-call-sites";
 import { loadSchemaInventory } from "./migrations/schema-inventory";
 import { MODEL_LINK_TARGETS } from "@/lib/models/link-targets";
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 
 /**
  * REGRESSION GUARD — a query may not name a column the table might not have.
@@ -30,9 +32,10 @@ import { MODEL_LINK_TARGETS } from "@/lib/models/link-targets";
  * 1,100+ of them.
  *
  * NOT ASSERTED: columns inside PostgREST embedded resources
- * (`stages:model_run_stages(id, status)`), and projections built from imported
- * constants. Both are skipped, and both counts are pinned below so the skipped
- * set cannot quietly grow into the whole codebase. Views are skipped too —
+ * (`stages:model_run_stages(id, status)`), and computed imported projections.
+ * Direct named exports of string literals are checked. The skipped counts are
+ * pinned so the skipped set cannot quietly grow into the whole codebase. Views
+ * remain outside this inventory because
  * `schema-inventory` does not parse view column lists, on purpose; the nightly
  * `migration-schema-drift` check covers them against information_schema.
  */
@@ -125,6 +128,73 @@ function checkableSites(): SupabaseSelectSite[] {
 }
 
 describe("reference count projections", () => {
+  it("checks the new project jurisdiction reader's imported literal against the schema", () => {
+    const sites = selectSites.filter((site) => site.file === "src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts");
+    expect(sites).toHaveLength(1);
+    expect(sites[0]).toMatchObject({ table: "projects", projection: PROJECT_JURISDICTION_COLUMNS });
+    expect(projectionColumns(sites[0].projection as string)).toEqual([
+      "id", "updated_at", "jurisdiction_context", "place_label", "place_country_code", "place_subdivision_code",
+    ]);
+    expect(projectionColumns(sites[0].projection as string).every((column) => schema.hasColumn("projects", column))).toBe(true);
+  });
+
+  it("resolves direct imported literals while retaining computed, mutable and shadowed unknowns", () => {
+    const directory = mkdtempSync(path.join(tmpdir(), "openplan-projection-"));
+    const file = path.join(directory, "reader.ts");
+    try {
+      writeFileSync(path.join(directory, "columns.ts"), `
+        export const COLUMNS = "id, jurisdiction_context";
+        export const COMPUTED = chooseColumns();
+        export const TEMPLATE = \`id, \${extra}\`;
+        export let MUTABLE = "id";
+        const PRIVATE = "id";
+      `);
+      writeFileSync(file, `
+        import { COLUMNS as literal, COLUMNS as renamed, COLUMNS as parameter, COLUMNS as beforeInit, COMPUTED, TEMPLATE, MUTABLE, PRIVATE } from "./columns";
+        import { MISSING } from "./absent";
+        import { EXTERNAL } from "package";
+        import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
+        db.from("projects").select(literal);
+        db.from("projects").select(PROJECT_JURISDICTION_COLUMNS);
+        db.from("projects").select(COMPUTED);
+        db.from("projects").select(TEMPLATE);
+        db.from("projects").select(MUTABLE);
+        db.from("projects").select(PRIVATE);
+        db.from("projects").select(MISSING);
+        db.from("projects").select(EXTERNAL);
+        { const renamed = dynamicColumns(); db.from("projects").select(renamed); }
+        function read(parameter) { db.from("projects").select(parameter); }
+        { db.from("projects").select(beforeInit); let beforeInit; }
+      `);
+      const sites = collectSupabaseSelectSites({ files: [file] });
+      expect(sites.map((site) => site.projection)).toEqual([
+        "id, jurisdiction_context", PROJECT_JURISDICTION_COLUMNS, null, null, null, null, null, null, null, null, null,
+      ]);
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
+  it.each([
+    { kind: "function", expression: 'function COLUMNS() { db.from("projects").select(COLUMNS); }' },
+    { kind: "class", expression: 'class COLUMNS { read() { db.from("projects").select(COLUMNS); } }' },
+  ])("keeps a named $kind expression's self-binding unknown", ({ expression }) => {
+    const directory = mkdtempSync(path.join(tmpdir(), "openplan-projection-shadow-"));
+    const file = path.join(directory, "reader.ts");
+    try {
+      writeFileSync(path.join(directory, "columns.ts"), 'export const COLUMNS = "id, jurisdiction_context";');
+      writeFileSync(file, `
+        import { COLUMNS } from "./columns";
+        const read = ${expression};
+      `);
+      const sites = collectSupabaseSelectSites({ files: [file] });
+      expect(sites).toHaveLength(1);
+      expect(sites[0]).toMatchObject({ table: "projects", projectionExpression: "COLUMNS", projection: null });
+    } finally {
+      rmSync(directory, { recursive: true, force: true });
+    }
+  });
+
   it("never names a column on a table it cannot see", () => {
     const missing = checkableSites().flatMap((site) =>
       projectionColumns(site.projection as string)
@@ -260,7 +330,9 @@ describe("reference count projections", () => {
 
     // What is deliberately not checked, pinned so the skipped set cannot grow
     // into the whole codebase without someone noticing.
-    expect(selectSites.filter((site) => site.projection === null).length).toBeLessThan(250);
+    // Resolving direct imported literals banks 69 checked sites, including the
+    // new jurisdiction reader. Keep the previous one-site growth sensitivity.
+    expect(selectSites.filter((site) => site.projection === null).length).toBeLessThan(182);
     // Reads of a VIEW are not column-checked, because the schema inventory is
     // built from CREATE TABLE. The list is pinned so that exemption cannot grow
     // quietly: a new entry means a new unchecked projection, and it should only

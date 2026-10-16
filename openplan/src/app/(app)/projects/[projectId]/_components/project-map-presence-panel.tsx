@@ -2,17 +2,15 @@ import Link from "next/link";
 import { Download, Map as MapIcon } from "lucide-react";
 import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { ProjectMapPresence } from "@/components/projects/project-map-presence";
+import { ProjectSavedMap } from "@/components/projects/project-saved-map";
 import { Button } from "@/components/ui/button";
 import type { ProjectCorridor } from "@/lib/cartographic/project-corridor-record";
 import { projectGeoPackageCoreInventory } from "@/lib/projects/project-geopackage";
+import { isCorridorLineGeoJson } from "@/lib/cartographic/corridor-line-geojson";
 
 /**
- * The project's presence on the cartographic backdrop: its marker and its study
- * corridors.
- *
- * Both were read-only for the life of the product — the columns existed and the
- * backdrop drew them, but the only writer was a demo seed. See
- * `src/components/projects/project-map-presence.tsx`.
+ * Saved project geography and its editors. The project page owns this map;
+ * ordinary project routes do not mount the workspace cartographic backdrop.
  */
 export function ProjectMapPresencePanel({
   projectId,
@@ -44,6 +42,21 @@ export function ProjectMapPresencePanel({
   });
   const featureNoun = packageInventory.featureCount === 1 ? "feature" : "features";
   const rejectedNoun = packageInventory.rejectedFeatureCount === 1 ? "shape" : "shapes";
+  const savedFeatures: GeoJSON.Feature[] = [];
+  // The export inventory validates the complete geometry before it reaches
+  // this map. Unwrap a Feature without changing rings, vertices or precision.
+  if (packageInventory.layers[0].featureCount > 0) {
+    let area = projectAreaGeometry as GeoJSON.Geometry | GeoJSON.Feature;
+    while (area.type === "Feature") area = area.geometry;
+    savedFeatures.push({ type: "Feature", geometry: area, properties: { layer: "project_area" } });
+  }
+  if (packageInventory.layers[1].featureCount > 0) {
+    savedFeatures.push({ type: "Feature", geometry: { type: "Point", coordinates: [longitude!, latitude!] }, properties: { layer: "project_location" } });
+  }
+  for (const corridor of corridors) {
+    if (!isCorridorLineGeoJson(corridor.geometry)) continue;
+    savedFeatures.push({ type: "Feature", id: corridor.id, geometry: corridor.geometry, properties: { layer: "project_corridors", name: corridor.name } });
+  }
 
   return (
     <article id="project-map-presence" className="module-section-surface scroll-mt-24">
@@ -55,9 +68,8 @@ export function ProjectMapPresencePanel({
           <div className="module-section-heading">
             <h2 className="module-section-title">Where this project is</h2>
             <p className="module-section-description">
-              Put the project on the map and add its corridors — draw them here, or upload the map
-              files you already have. Everything set here appears on the workspace map, and in the
-              layer counts beside it.
+              Review the saved project boundary, site marker and corridors together. Draw or upload a
+              location or corridor below. Save changes to include them on this map and in exports.
             </p>
           </div>
         </div>
@@ -104,6 +116,10 @@ export function ProjectMapPresencePanel({
         <p className="mt-2 text-sm font-medium text-foreground">
           {packageInventory.layers.length} core layers · {packageInventory.featureCount} {featureNoun} included · {packageInventory.unavailableLayerCount} unavailable · {packageInventory.rejectedFeatureCount} rejected {rejectedNoun}
         </p>
+      </div>
+
+      <div className="mt-4">
+        <ProjectSavedMap collection={{ type: "FeatureCollection", features: savedFeatures }} />
       </div>
 
       {corridorsPending ? (

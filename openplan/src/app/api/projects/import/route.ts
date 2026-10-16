@@ -100,6 +100,22 @@ type PriorImportRow = {
   row_fingerprint: string; created_project_id: string;
 };
 
+/** Drain stable pages so database response limits cannot truncate duplicate or retry checks. */
+async function readDuplicatePages<T>(
+  readPage: (from: number, to: number) => PromiseLike<{ data: T[] | null; error: { code?: string } | null }>
+): Promise<{ data: T[]; error: { code?: string } | null }> {
+  const rows: T[] = [];
+  const pageSize = 500;
+  for (let offset = 0; ; ) {
+    const result = await readPage(offset, offset + pageSize - 1);
+    if (result.error) return { data: [], error: result.error };
+    const page = result.data ?? [];
+    if (page.length === 0) return { data: rows, error: null };
+    rows.push(...page);
+    offset += page.length;
+  }
+}
+
 function importError(error: PortfolioImportError | PortfolioWorkbookError): NextResponse {
   return NextResponse.json({ error: error.message, code: error.code }, { status: error.code === "size_limit" ? 413 : 400 });
 }
@@ -217,10 +233,13 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     }
 
     const [projectsResult, priorResult] = await Promise.all([
-      supabase.from("projects").select("id, name").eq("workspace_id", parsed.data.workspaceId),
-      supabase.from("project_portfolio_import_rows")
+      readDuplicatePages<{ id: string; name: string }>((from, to) =>
+        supabase.from("projects").select("id, name").eq("workspace_id", parsed.data.workspaceId)
+          .order("id", { ascending: true }).range(from, to)),
+      readDuplicatePages<PriorImportRow>((from, to) => supabase.from("project_portfolio_import_rows")
         .select("source_sha256, worksheet_index, source_row_number, row_fingerprint, created_project_id")
-        .eq("workspace_id", parsed.data.workspaceId).eq("source_sha256", source.checksum).eq("outcome", "created"),
+        .eq("workspace_id", parsed.data.workspaceId).eq("source_sha256", source.checksum).eq("outcome", "created")
+        .order("id", { ascending: true }).range(from, to)),
     ]);
     if (projectsResult.error || priorResult.error) {
       audit.error("portfolio_import_duplicate_check_failed", { code: projectsResult.error?.code ?? priorResult.error?.code ?? null });
@@ -297,7 +316,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
       if (code === "23505") return NextResponse.json({ error: "Another import created one of these source rows first. No part of this batch was saved; review again.", code: "import_race" }, { status: 409 });
       if (code === "22023") return NextResponse.json({ error: "The source or current duplicate checks changed before the transaction. No part of this batch was saved; review again.", code: "import_stale" }, { status: 409 });
       if (code === POSTGRES_INSUFFICIENT_PRIVILEGE) return NextResponse.json({ error: "Your current workspace role no longer allows project imports" }, { status: 403 });
-      return NextResponse.json({ error: "The portfolio import transaction failed. No projects or import batch were saved." }, { status: 500 });
+      return NextResponse.json({ error: "The portfolio import result could not be confirmed. Review selections again before retrying; rows already created from this source will be locked to skip." }, { status: 500 });
     }
     const summary = committed as { batchId: string; created: number; skipped: number; conflicted: number; invalid: number; previouslyCreated: number; projectIds: string[] };
     audit.info("portfolio_import_committed", {

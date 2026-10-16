@@ -9,6 +9,8 @@ import { CORRIDOR_COLUMNS, type ProjectCorridorRow } from "@/lib/cartographic/pr
 import { buildEvidenceDescriptor } from "@/lib/evidence/evidence-descriptor";
 import { countyRunDisplayableClaim, isModelingClaimStatus } from "@/lib/models/evidence-backbone";
 import { buildJurisdictionReadinessEvidenceFile } from "@/lib/jurisdiction-readiness/evidence-bundle";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import type { ProjectJurisdictionRow } from "@/lib/projects/project-jurisdiction";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import {
   buildProjectGeoPackage,
@@ -62,7 +64,7 @@ const PERSONAL_IDENTIFIER_KEYS = new Set([
   "linked_by", "linkedBy", "generated_by", "generatedBy", "submitted_by", "submittedBy",
   "decided_by", "decidedBy", "frozen_by", "frozenBy", "approved_by", "approvedBy",
   "assigned_approver_id", "assignedApproverId", "assignee_user_id", "assigneeUserId",
-  "user_id", "userId",
+  "user_id", "userId", "recorded_by", "recordedBy",
 ]);
 
 /** External handoffs retain record custody without exporting internal user identifiers. */
@@ -397,9 +399,12 @@ export async function loadProjectEvidenceGeneratedFiles(
   }
   const engagementGeometries = campaignRead.data ?? [];
 
-  const projectRecord = withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>;
+  // Keep the trusted row intact for strict parsing; external context is a different schema.
+  const trustedProject = projectRead.data as ProjectJurisdictionRow & { id: string };
+  const externalReadiness = buildProjectJurisdictionReadinessExportPayload(trustedProject, jurisdictionReadinessRegistrySha256());
+  const projectRecord = { ...(withoutPersonalIdentifiers(projectRead.data) as Record<string, unknown>), jurisdiction_context: externalReadiness.context };
   const gpkg = buildProjectGeoPackage({
-    project: projectRecord as unknown as ProjectGeoPackageProject,
+    project: trustedProject as ProjectGeoPackageProject,
     corridors: (corridorRead.data ?? []) as ProjectCorridorRow[],
     generatedAt,
     crashes,
@@ -657,11 +662,7 @@ export async function loadProjectEvidenceGeneratedFiles(
     ? sourceRevision(withoutPersonalIdentifiers(selectedPlan))
     : null;
   const jurisdictionReadinessFile = buildJurisdictionReadinessEvidenceFile(
-    projectRecord as ProjectScope & {
-      place_label?: string | null;
-      place_country_code?: string | null;
-      place_subdivision_code?: string | null;
-    },
+    trustedProject,
     jurisdictionReadinessRegistrySha256(),
   );
 

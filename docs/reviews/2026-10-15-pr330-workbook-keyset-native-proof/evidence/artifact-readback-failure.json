@@ -1,0 +1,1 @@
+{"stage": "independent artifact readback", "error": "artifact exact estimated_cost_basis_year", "cause": "XML decoder preserved an empty <v/> as None instead of an empty cell string.", "parserSha256": "54b164cda7ffd93cbc3e5521ba7b212047f8bb129c08d784dd21eb1356300952"}

@@ -1,0 +1,19 @@
+{
+  "mechanicalHelperAndAppEnvironmentRebind": true,
+  "aclOnlyNewTarget": true,
+  "roleURIPasswordAndQueryBytesPreserved": true,
+  "retainedTypedHelperConfigurationMatches": 8,
+  "helperMetadataFreshlyAcquired": false,
+  "publicPrivateReportsEqual": 10,
+  "reusedHelperFunctionsEqual": 4,
+  "reusedJournalFunctionsEqual": 5,
+  "comparator": {
+    "harmless": "survived",
+    "badDigest": "binding mismatch",
+    "removedComparator": "missing binding refusal"
+  },
+  "blindCategories": [
+    "retained helper metadata, not current state or API health",
+    "small exact binding comparisons, not execution or acceptance"
+  ]
+}

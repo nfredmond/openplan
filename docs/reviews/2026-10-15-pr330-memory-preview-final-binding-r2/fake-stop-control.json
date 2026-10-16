@@ -1,0 +1,13 @@
+{
+  "preparedOnly": true,
+  "fakeUnit": "openplan-pr330-r2-fake-stop-b8857bd87b2d",
+  "actualApplication": false,
+  "actualHelper": false,
+  "managerReturncode": 9,
+  "stopCode": "exited",
+  "stopStatus": "9",
+  "durableIntentBeforeRequest": true,
+  "exactPrivateStreamsAndStopHashes": true,
+  "sourceUnchanged": true,
+  "boundary": "One failed fake unit only. Not web startup, readiness, tmpfs/native application or recovery acceptance."
+}

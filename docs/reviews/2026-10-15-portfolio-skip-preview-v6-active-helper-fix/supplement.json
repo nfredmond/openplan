@@ -1,0 +1,90 @@
+{
+  "scope": "N1 additional exact identity, unknown inspection and new V5 preservation guards only. Copied full final composition, synthetic observations.",
+  "cases": [
+    {
+      "case": "supplement-healthy-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "unknown-active-inspect",
+      "outcome": "REFUSED",
+      "reason": "inspect-unknown"
+    },
+    {
+      "case": "descriptor-null",
+      "outcome": "REFUSED",
+      "reason": "protected-active-descriptor:mapping"
+    },
+    {
+      "case": "descriptor-list",
+      "outcome": "REFUSED",
+      "reason": "protected-active-descriptor:mapping"
+    },
+    {
+      "case": "descriptor-text",
+      "outcome": "REFUSED",
+      "reason": "protected-active-descriptor:mapping"
+    },
+    {
+      "case": "codefault-exact-id-set",
+      "outcome": "REFUSED",
+      "reason": "protected-active-set:ids"
+    },
+    {
+      "case": "remove-baseline-exact-id-set",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-baseline-exact-id-set",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-exact-id-set"
+    },
+    {
+      "case": "codefault-role-id-identity",
+      "outcome": "REFUSED",
+      "reason": "files:rest"
+    },
+    {
+      "case": "remove-baseline-role-id-identity",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-baseline-role-id-identity",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-role-id-identity"
+    },
+    {
+      "case": "V5-packet-inventory-drift",
+      "outcome": "REFUSED",
+      "reason": "file-set:keys"
+    },
+    {
+      "case": "codefault-V5-packet",
+      "outcome": "REFUSED",
+      "reason": "file-set:keys"
+    },
+    {
+      "case": "remove-V5-packet-preservation",
+      "mutation": "harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "remove-V5-packet-preservation",
+      "mutation": "fault",
+      "outcome": "KILLED",
+      "reason": "missing-refusal:codefault-V5-packet"
+    }
+  ],
+  "counts": {
+    "SURVIVED": 4,
+    "REFUSED": 8,
+    "KILLED": 3
+  },
+  "finallyRestored": true,
+  "sealedInputsUnchanged": true,
+  "operatingStages": 0
+}

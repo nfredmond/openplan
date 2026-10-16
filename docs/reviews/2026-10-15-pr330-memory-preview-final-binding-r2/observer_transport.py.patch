@@ -1,0 +1,16 @@
+--- retained-v6/observer_transport.py
++++ memory/observer_transport.py
+@@ -8,0 +9 @@
++import journal as j
+@@ -10,3 +11,3 @@
+-ROOT=Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6')
+-OBSERVER_SHA='2ebe4e3b238413db916d211181bab81fbd2337da063f2b0a8e1badf73c008a36'
+-UNIT='openplan-portfolio-v6-preserved-web-observer'
++ROOT=Path('/dev/shm/openplan-pr330-preview-20261015')
++OBSERVER_SHA='869ff3c3d30198fd06b17303a9eb1c319e0a8518783cfc15a1e66039d44ac2ca'
++UNIT='openplan-pr330-memory-r2-preserved-web-observer'
+@@ -19,0 +21 @@
++    j.record(str(path.relative_to(ROOT)),value)
+@@ -55 +57 @@
+-    result=subprocess.run(argv(nonce),env=ENV,capture_output=True,timeout=45)
++    result=j.execute('observer-'+nonce,argv(nonce),env=ENV,timeout=45)

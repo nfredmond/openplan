@@ -1,0 +1,45 @@
+{
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan",
+  "cacheRoot": "/home/nathaniel/.local/state/openplan/pr330-study-place-wording-awm0vsz1",
+  "heapMiB": 1024,
+  "maxWorkers": 1,
+  "directionExitCode": 0,
+  "sourceRestoredExactly": true,
+  "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 20,
+      "failed": 0,
+      "failedTitles": [],
+      "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 20,
+      "failed": 0,
+      "failedTitles": [],
+      "sourceSha256": "fda1f489f26ccd8d91d15fd8f94b3f3991d77832940786d81ec8def66d2d19e8"
+    },
+    {
+      "case": "old-inference",
+      "exitCode": 1,
+      "passed": 19,
+      "failed": 1,
+      "failedTitles": [
+        "keeps resolved study-place identity separate from jurisdiction and legal authority"
+      ],
+      "sourceSha256": "4cee16f36e2a3d25720a5d6e985b68a95cfca86857e812d96812b0878d1e2bd4"
+    },
+    {
+      "case": "restored",
+      "exitCode": 0,
+      "passed": 20,
+      "failed": 0,
+      "failedTitles": [],
+      "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa"
+    }
+  ]
+}

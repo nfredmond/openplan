@@ -1,0 +1,198 @@
+{
+  "reviewedCommit": "f29968d67c8177f33122691ad5879c675d457e08",
+  "verdict": "Two P2 findings block the unchanged execution recipe. No P1 identified.",
+  "consumer": {
+    "cases": 47,
+    "refusals": 43,
+    "mutations": 14,
+    "harmlessSurvivors": 1,
+    "restored": true
+  },
+  "attestation": {
+    "cases": 16,
+    "mutations": 6,
+    "harmlessSurvivors": 1,
+    "restored": true
+  },
+  "small": {
+    "cases": 7,
+    "mutations": 4,
+    "harmlessSurvivors": 1,
+    "restored": true,
+    "actualPythonCgroup": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "31526912",
+      "memory.swap.current": "0"
+    }
+  },
+  "suppliedSingleBoundary": {
+    "observations": 5,
+    "faults": 2,
+    "restored": true
+  },
+  "independentSingleBoundary": [
+    {
+      "case": "baseline",
+      "outcome": "survived",
+      "observed": {
+        "symlinkPreserved": true,
+        "reads": 3,
+        "EROFS": 3,
+        "privateWrites": 6,
+        "privateDevNull": true
+      }
+    },
+    {
+      "case": "harmless source comment",
+      "outcome": "survived",
+      "observed": {
+        "symlinkPreserved": true,
+        "reads": 3,
+        "EROFS": 3,
+        "privateWrites": 6,
+        "privateDevNull": true
+      }
+    },
+    {
+      "case": "writable resolved donor",
+      "outcome": "detected",
+      "reason": "write-permitted:package.json"
+    },
+    {
+      "case": "writable env",
+      "outcome": "detected",
+      "reason": "write-permitted:.env.local"
+    },
+    {
+      "case": "restored",
+      "outcome": "survived",
+      "observed": {
+        "symlinkPreserved": true,
+        "reads": 3,
+        "EROFS": 3,
+        "privateWrites": 6,
+        "privateDevNull": true
+      }
+    }
+  ],
+  "healthProbe": {
+    "routeSha256": "d9e42a2ca04795334020528a866eb937126933dbcb5b83fbb65fd00d4938e4b1",
+    "sourcePayload": {
+      "status": "ok",
+      "service": "openplan",
+      "checkedAt": "2026-10-15T10:08:37.021Z",
+      "deployment": {
+        "commit": "67828c17c4c2",
+        "version": "probe",
+        "migrations": {
+          "expected": 419,
+          "latest": "20261017000016"
+        }
+      },
+      "checks": {
+        "app": "ok",
+        "database": "not_checked"
+      }
+    },
+    "rows": [
+      {
+        "case": "synthetic full SHA control",
+        "outcome": "survived"
+      },
+      {
+        "case": "harmless comment retains synthetic success",
+        "outcome": "survived"
+      },
+      {
+        "case": "actual route payload rejects correct app",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "fixture-only prefix correction accepts actual payload",
+        "outcome": "survived"
+      },
+      {
+        "case": "fixture-only correction refuses wrong commit",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      },
+      {
+        "case": "restored source again rejects actual payload",
+        "outcome": "refused",
+        "reason": "attest-http-identity"
+      }
+    ],
+    "restored": true,
+    "blindCategory": "Imported commit/migration functions are explicit inputs. No Next route, web process or HTTP request runs."
+  },
+  "nestedProbe": [
+    {
+      "phase": "build",
+      "case": "harmless comment first",
+      "exit": 1,
+      "stderr": "bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>.\n",
+      "childReached": false
+    },
+    {
+      "phase": "build",
+      "case": "restored source",
+      "exit": 1,
+      "stderr": "bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>.\n",
+      "childReached": false
+    },
+    {
+      "phase": "start",
+      "case": "harmless comment first",
+      "exit": 1,
+      "stderr": "bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>.\n",
+      "childReached": false
+    },
+    {
+      "phase": "start",
+      "case": "restored source",
+      "exit": 1,
+      "stderr": "bwrap: No permissions to create a new namespace, likely because the kernel does not allow non-privileged user namespaces. See <https://deb.li/bubblewrap> or <file:///usr/share/doc/bubblewrap/README.Debian.gz>.\n",
+      "childReached": false
+    }
+  ],
+  "preservation": {
+    "frozen": {
+      "entries": 20639,
+      "filesAndLinks": 18502,
+      "unchanged": true
+    },
+    "app_packet": {
+      "entries": 3232,
+      "filesAndLinks": 3141,
+      "unchanged": true
+    }
+  },
+  "privacy": {
+    "knownUniqueValues": 9,
+    "harmlessSurvives": true,
+    "eachInjectionDetected": true,
+    "blindCategory": "Unknown secrets, short identifiers and external/future files."
+  },
+  "privateEvidenceHashes": {
+    "input-audit-01.json": "18820d777bd8877095ce8537aa9d880b3d3f543868abf342e1c3b905e764837d",
+    "controls-baseline-05.json": "2fee62a178e42a2059379931a530b44a8eac362ccfdd21717994e6d671b54723",
+    "controls-restored-05.json": "2fee62a178e42a2059379931a530b44a8eac362ccfdd21717994e6d671b54723",
+    "mutations-05.json": "fd965c965dcb421429fafa8a27ea32a97828c199437eef88b0aaca1ee2b3b624",
+    "attestation-controls-01.json": "f57fa0f06f946184a1732f3ea5165b68f439baa48de5617314dcf15995f79d20",
+    "boundary-controls-02.json": "aa5876262bcd2bce46e86c5e1ead3e7df392e909642a6f797a9b18f77f941afd",
+    "small-guard-controls-01.json": "e1820a3898cd86f86b462ee46e36157cdbf589ddd468dba6097ef4e7dc046387",
+    "independent-boundary-02.json": "48110e871ead565760fa4f9312cb836937e23847045219256184d0afbd6b2923",
+    "health-probe-02.json": "0265ca97d98a115cb1ec7dfad5b56a59104ae4c333c58cff2e9181f8fac41e93",
+    "nested-constructor-01.json": "ff63611443dfe4ce2a454374417c0635c3533943cd071a7586c894a055503143",
+    "preservation-before-private.json": "9441ef7c44df9831089f7c68b1cf18a5c8f23eac62bb2547ee762ac13aa30da2",
+    "preservation-after-private.json": "9441ef7c44df9831089f7c68b1cf18a5c8f23eac62bb2547ee762ac13aa30da2",
+    "preservation-assay-01.json": "458c06282b874093f9676b9fe6eebca7e3740c7c2f78b62ce7d4b42adaffb330",
+    "unit-journals-private.json": "3c7a56aae1703ce6b24119aa2c51a776e7da920930d1f5ba7174278afa74e4bb"
+  },
+  "prohibitedOperations": "No application checkout/build/start, helper operation, DB query/write, provider/HTTP call, install, browser, full suite, nested agent, push, PR or main merge.",
+  "applicationExecutionAccepted": false
+}

@@ -1,0 +1,348 @@
+{
+  "baseCommit": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "branch": "t3/fix-projection-expression-shadow",
+  "worktree": "/home/nathaniel/.t3/worktrees/openplan/t3-f20bf395",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/projection-expression-shadow-fix-20261015-01",
+  "sourceBindings": {
+    "openplan/src/test/supabase-call-sites.ts": {
+      "baseSha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+      "fixedSha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+      "privateSnapshotMatches": true
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "baseSha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74",
+      "fixedSha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+      "privateSnapshotMatches": true
+    }
+  },
+  "direction": {
+    "exitCode": 0,
+    "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-f20bf395/openplan",
+    "preservedReminders": [
+      "jurisdiction readiness registry expired 2026-09-28",
+      "capability matrix and registry expired 2026-10-05",
+      "review v0.66.0 versus package v0.68.0",
+      "review predates substantive changes"
+    ]
+  },
+  "before": {
+    "testExitCode": 1,
+    "passed": 8,
+    "failed": [
+      "reference count projections keeps a named 'function' expression's self-binding unknown",
+      "reference count projections keeps a named 'class' expression's self-binding unknown"
+    ],
+    "intendedDiffConfirmed": true,
+    "controllerError": "Expected unquoted parameter names; Vitest quotes function and class in interpolated names. Original controller and raw results retained."
+  },
+  "checks": [
+    {
+      "label": "corrected",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 10,
+      "skipped": 0,
+      "failedAssertions": []
+    },
+    {
+      "label": "harmless-survivor",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 10,
+      "skipped": 0,
+      "failedAssertions": []
+    },
+    {
+      "label": "missing-function-binding",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": 1,
+      "skipped": 8,
+      "failedAssertions": [
+        "reference count projections keeps a named 'function' expression's self-binding unknown"
+      ]
+    },
+    {
+      "label": "missing-class-binding",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": 1,
+      "skipped": 8,
+      "failedAssertions": [
+        "reference count projections keeps a named 'class' expression's self-binding unknown"
+      ]
+    },
+    {
+      "label": "focused-restored",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 117,
+      "skipped": 0,
+      "failedAssertions": []
+    },
+    {
+      "label": "census-after",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    },
+    {
+      "label": "scoped-types",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    },
+    {
+      "label": "scoped-lint",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    }
+  ],
+  "matrix": {
+    "results": [
+      {
+        "name": "named",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "alias",
+        "expected": "id, jurisdiction_context",
+        "actual": "id, jurisdiction_context",
+        "pass": true
+      },
+      {
+        "name": "at-alias",
+        "expected": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "actual": "id, updated_at, jurisdiction_context, place_label, place_country_code, place_subdivision_code",
+        "pass": true
+      },
+      {
+        "name": "static-template",
+        "expected": "id",
+        "actual": "id",
+        "pass": true
+      },
+      {
+        "name": "MUTABLE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "COMPUTED",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "PRIVATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TEMPLATE",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "reexport",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "type-only",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "package",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "destructured-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "rest-parameter",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "catch",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "TDZ",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "function-declaration",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-function-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      },
+      {
+        "name": "named-class-expression",
+        "expected": null,
+        "actual": null,
+        "pass": true
+      }
+    ],
+    "harmlessSurvived": true,
+    "targetedFunctionOmission": [
+      {
+        "name": "named-function-expression",
+        "expected": null,
+        "actual": "id, jurisdiction_context",
+        "pass": false
+      }
+    ]
+  },
+  "census": {
+    "counts": {
+      "total": 2008,
+      "unknown": 181,
+      "checkable": 1802
+    },
+    "allSiteObjectsByteIdentical": true,
+    "baselineSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+    "fixedSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940"
+  },
+  "resources": {
+    "before-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "373579776",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "after-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "410329088",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "matrix-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "100147200",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "matrix-readback-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "102387712",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    }
+  },
+  "restoration": {
+    "src/test/supabase-call-sites.ts": {
+      "sha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+      "restored": true
+    },
+    "src/test/reference-count-projection-guard.test.ts": {
+      "sha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+      "restored": true
+    }
+  },
+  "sourceReports": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-33a0e222/docs/reviews/2026-10-15-combined-qa-fix-independent/STATUS.md": "cd826df682bf40425be36a8fb21e40a28043de54bd96014a2a8a44d217af1744",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-33a0e222/docs/reviews/2026-10-15-combined-qa-fix-independent/evidence.json": "f3cba1d69769f3dba2219f379336f84e85d345be13f832222a6b43c5e3c01b1b",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-f20bf395/docs/reviews/2026-10-15-combined-project-guard-fixes/STATUS.md": "2b9836858c780d9feb16716ac0c179c13a02d84516cf9add71ffd3fd77609ea7"
+  },
+  "privateFileHashes": {
+    "06a-counts.json": "6fbfb71dcf1980ceaa8c02e893e9e439a632046eab7e9d7ad8cf23ee0cb93dee",
+    "06a-sites.json": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+    "after-resources.json": "af687167a0c81b34a99355cd9ff04f404cb27fb1b4db7160eace3768ee805612",
+    "after-restoration.json": "53a0808ea7f94457b0d4cf8c799dc1bbb288b2f318834a7f882ae1b61e45f751",
+    "after-results.json": "2927484b806e6fe8d4b69d4144a168082b6de8d25bd855e9fd6f7358e750303a",
+    "before-readback.json": "ed5cf4bd097f2e5369c3196264265cc8c2704281b85b712482d53b3ed30566af",
+    "before-resources.json": "110b17ba50099bca412989110961720ea10ba37229caff9014a86422c39309d5",
+    "before-restoration.json": "0d02ac376fae124ae428e75c2db05f3a7cd422b0241f29905e68200f1f71affe",
+    "before-results.json": "e8d0c042ed8284d49723bed0510e24bca6caa53000b0555a0e48e77243b60120",
+    "census-after.log": "b7f78eaa7bec132b075f0293a9d87f1e9ce357a17b607af28e0ad28078a7a474",
+    "census-before.log": "b7f78eaa7bec132b075f0293a9d87f1e9ce357a17b607af28e0ad28078a7a474",
+    "census.cjs": "ebaad6174d9848fbac059ed952bc60f3ccc7175fe180be481e9548b7967af44d",
+    "corrected.json": "47a4e1a75098d26c0db7828acea3ceb1367c6fc560fe66421485d200bd225f97",
+    "corrected.log": "ba7268dbc18cc10b30113ec7c3bf6bc377bc42b12ca2d90a387b4e62db936930",
+    "evidence-attempt01.json": "b168d5fd4d071e95edd3b743aef588e1b5cc8ba125b9415eadbb4462b0ccb7fc",
+    "fixed-counts.json": "6fbfb71dcf1980ceaa8c02e893e9e439a632046eab7e9d7ad8cf23ee0cb93dee",
+    "fixed-sites.json": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+    "focused-restored.json": "987af428170edc03b9f09eeb7e8800d6c5fd630825d68d71c0e20e53ec324cb2",
+    "focused-restored.log": "cd74ec2786a3ba53e5f03493f01374d1da10fb3fde077d6b7affc685c464a511",
+    "harmless-survivor.json": "9707e90c03a6f3b6c65bc947d001e0a2fdc1f337ad511cae94fa1813adb8fd3d",
+    "harmless-survivor.log": "a2f14d903641a425c72c5b5f7cbcc5bd48e5d67d1ed433215c791af297d0380e",
+    "matrix-readback-resources.json": "324fb098109f57527534a2fcd768198953c79320e107ad868855fb2712cb3c08",
+    "matrix-resources.json": "a3db5b6fb5356c8625006cc86be57b9cbfb07995ed934574f4c66327a7342bd1",
+    "matrix-results.json": "0e9d16cd267205d5100be62e6dd33d17a313a1645963c72b4902655e061730e0",
+    "matrix-runner-results.json": "9517d11821b493483089e8e9acda0260cc06ed555e7030e6966f0e66cc54fc5b",
+    "matrix.cjs": "a9184a91e3227d7ab33a5c7fbac2695c788e7815257aaac7438d10e885ea415c",
+    "missing-class-binding.json": "c6ff5f08c37aca46c0d91380e26069c4c1b62a682710a8760220f811bacde7e6",
+    "missing-class-binding.log": "0af40d6e414004c6f6c878e6c20d8f0ef2fa31015fa8244914b2e1ef969dac5a",
+    "missing-function-binding.json": "ebe650818c43b2c3182a5d014c3f502e72875ef3627fa0dc5de13052b46f01f9",
+    "missing-function-binding.log": "de90174a01ba77cfee6816d9d34c4c6f087d3ad58eed57da3b5c8cd871c2ae73",
+    "receipt-readback-error.json": "fc9e58c08aac3f6906f629bf3a65e5c449549f19fbe35dc9280928f58e4b57e7",
+    "refusal-matrix-readback.log": "b9fbabb4bb648cad40d9fd35cd54545ea1f2d2167244e4b87c9ac863643f356f",
+    "refusal-matrix.log": "b9fbabb4bb648cad40d9fd35cd54545ea1f2d2167244e4b87c9ac863643f356f",
+    "reproduced-before.json": "754e56f47721174f22cfd96f7a65f5f9d1060bd7048b7f5170e2e1c9cecf9f0a",
+    "reproduced-before.log": "c909e67773c98f5905f29dfebe972265ccba7cdb96031f25f46eca155b01eb18",
+    "run-attempt01.py": "d5e8bc85b5ee6bb9b5adc96d2036d57db5fa6629ee0147201ce6ff8cc69d62fc",
+    "run-matrix-attempt01.py": "fd21c392daacebe34bc725707cca312dfbba20bdb2e2140cbb787d8f90fc058f",
+    "run-matrix.py": "0ee37c0e7a98ac0bd54eec38733462ed8157b816e3c19b2bd4d88277bf66d204",
+    "run.py": "b9c2b25b1a6782709658411f369138b61aeacdaaa131a4b91791245d84c87001",
+    "scoped-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scoped-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "types.config.json": "3000dec159ace74dad9d0c4e1eb9262e8c91ec92d989e275d45c30f8a2041370",
+    "vitest.config.mts": "944b498eb91ec92732b0db6d2d484fc53bd422ba1f8f937d4e2bc41baba9ef61"
+  },
+  "limits": [
+    "Syntax-based scanner; conservative file-wide shadow refusal, not full symbol/data-flow analysis.",
+    "Census excludes src/test and depends on recognizable from/select chains and configured source roots.",
+    "Computed, mutable, private, re-exported and package imports remain unknown.",
+    "Embedded-resource/view columns, installed schema, RLS, actual results, browser workflows and recovery remain unverified.",
+    "Borrowed dependencies are read-only, but not lockfile-exact; known Mammoth argparse 1.0.10 versus lock 2.0.1 remains.",
+    "Parent full QA, historical failures, and operational acceptance remain outside this patch."
+  ],
+  "matrixController": [
+    {
+      "label": "refusal-matrix-readback",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    }
+  ],
+  "receiptRecovery": {
+    "error": "TypeError: list indices must be integers or slices, not str",
+    "cause": "run-matrix.py invoked with matrix label overwrote matrix-results.json with controller summary.",
+    "effect": "Committed evidence matrix receipt was a summary instead of its 19 detailed cases. Matrix command exited zero before overwriting.",
+    "correction": "Re-run only private matrix using distinct controller output label matrix-runner, retain original evidence and this error.",
+    "firstRecoveryError": "FileExistsError: refusal-matrix-cache already exists; corrected private driver uses a new run label and resource receipt."
+  }
+}

@@ -1,0 +1,51 @@
+{
+  "at": "2026-10-15T16:24:14.941503+00:00",
+  "applicationHead": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "buildId": "7X3x8RgohlUwVf_lPZa5r",
+  "web": "http://127.74.19.11:3586",
+  "targetOid": "6150036",
+  "migrations": {
+    "count": 420,
+    "latest": "20261017000017"
+  },
+  "runtimeAttestationSHA256": "1700d98c21249705d1eb6c355a2151799c9e05a4db8598144beff5abc49f1fb7",
+  "frozenCaptureRoot": "/home/nathaniel/.local/state/openplan/v6-project-browser-journey-20261015",
+  "captureInventorySHA256": "d23057e90c730f51ddcd8efc6533c3e748e7d4e8cf556049871a2089a7845abc",
+  "captureFiles": 50,
+  "sourceSha256": "b6c01c67c37506a56301c37301f0eb84d9d21dcacb415a4988c21f0e00e7e0a7",
+  "approvedPreviewSha256": "b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508",
+  "browserImportHTTP": 201,
+  "created": 1,
+  "invalidOutcome": 1,
+  "skipDecisionRetained": true,
+  "repeatPreviewPreviouslyCreated": 1,
+  "repeatCommitRequested": false,
+  "auditReadbackSHA256": "d685d897ca62c0153f71c2826834ff3e4db2a3e4a5f13c0869f55e95a2a73aba",
+  "ownerReadbackSHA256": "c70f9b4370c91047a47047824f10e55e87dbd3a7d1bf08e50de7bc0317d8dc16",
+  "postJourneySHA256": "f09ae98bddf25c150cdef74cbb792eb1589b28ce85c99c37fdeae389e38b8607",
+  "console": {
+    "errors": 0,
+    "warnings": 4,
+    "warningType": "WebGL ReadPixels GPU stall"
+  },
+  "browser": "Root-owned Playwright MCP tab1 after two T3 snapshot timeouts; blank tab0 unchanged",
+  "toolFailureLimits": [
+    "Two T3 snapshot calls: Preview automation snapshot timed out after 15000ms.",
+    "Some ambiguous or stale selectors refused before corrected locators.",
+    "saved-area-map-390.png captured hidden Overview map attempt; it is not map evidence. Use saved-area-visible-390.png.",
+    "Immediate resize captures jurisdiction-unresolved-390.png and declared-corrected-desktop.png include navigation transition displacement. Use declared-corrected-390.png and declared-settled-desktop.png for settled declaration views.",
+    "Initial overlap selector used invalid value overlapping; parent erroneously continued and saved sovereign twice. Wrong trial preserved. Parent corrected second entry through UI using actual value overlap."
+  ],
+  "geometryArtifactReview": {
+    "status": "complete; bounded noP1/P2",
+    "sourceCommit": "01c35811ebc9ca6409e8e22ad335a2013a77560a",
+    "join": "46bab44aa",
+    "parentReadFullReportCheckerControls": true,
+    "eightInputsEightSourceBindingsMatch": true,
+    "harmlessSurvivors": 1,
+    "targetedFaultsDetected": 16,
+    "copiesRestored": true
+  },
+  "workbookArtifactReviewCommit": "2b3353a4246c430d6f963427e6ba67447c145e18",
+  "humanNativeApplicationScientificHostedAcceptance": false
+}

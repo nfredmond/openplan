@@ -1,0 +1,8 @@
+--- /home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5/app_binding_v1.py
++++ app_binding_v1.py
+@@ -18 +18 @@
+-ROOT = Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5')
++ROOT = Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v6')
+@@ -29 +29 @@
+-HELPERS = {'helper.py': 'c451aa229eff5a5deb1bc48dedb7c3f53b65fc19ab8eca653381eb796ab85c43', 'policy.py': '8aa93e4fb983738612d0a1aa49c9b78a34b7b9bfd6ffb2e94452e3921c1f87fd'}
++HELPERS = {'helper.py': '0d58b5523890386d0758abe311dbe50d6fcbcea4661f4e31646fa5060b6e1bf9', 'policy.py': 'e5e04b367ea0ac150bed38cea021ceb74b3e49f2de5df216a10d1b14efab8535'}

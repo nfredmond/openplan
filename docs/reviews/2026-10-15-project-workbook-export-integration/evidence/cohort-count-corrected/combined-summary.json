@@ -1,0 +1,43 @@
+{
+  "exitCode": 0,
+  "passed": 75,
+  "files": [
+    {
+      "file": "src/test/portfolio-import-review.test.ts",
+      "passed": 12
+    },
+    {
+      "file": "src/test/portfolio-price-year.test.ts",
+      "passed": 11
+    },
+    {
+      "file": "src/test/portfolio-workbook-export.test.ts",
+      "passed": 5
+    },
+    {
+      "file": "src/test/portfolio-workbook-import.test.ts",
+      "passed": 16
+    },
+    {
+      "file": "src/test/project-portfolio-export-route.test.ts",
+      "passed": 5
+    },
+    {
+      "file": "src/test/project-portfolio-import-route.test.ts",
+      "passed": 11
+    },
+    {
+      "file": "src/test/project-portfolio-importer.test.tsx",
+      "passed": 3
+    },
+    {
+      "file": "src/test/project-workbook-export-pagination.test.ts",
+      "passed": 9
+    },
+    {
+      "file": "src/test/refused-project-portfolio-import-action.test.ts",
+      "passed": 3
+    }
+  ],
+  "importCorrectionIntegrated": false
+}

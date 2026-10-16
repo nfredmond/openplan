@@ -1,0 +1,222 @@
+{
+  "classifier": {
+    "empty_rejected": true,
+    "crash_rejected": true,
+    "type_error_rejected": true,
+    "wrong_assertion_rejected": true,
+    "harmless_accepted": true,
+    "intended_accepted": true
+  },
+  "cases": [
+    {
+      "mode": "harmless",
+      "exit": 0,
+      "expectedExit": 0,
+      "expectedDiagnostic": null,
+      "outcome": true,
+      "result": "SURVIVED",
+      "diagnostic": null,
+      "checksReached": 30
+    },
+    {
+      "mode": "epoch:userId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 0
+    },
+    {
+      "mode": "epoch:workspaceId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 2
+    },
+    {
+      "mode": "epoch:projectId",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 4
+    },
+    {
+      "mode": "epoch:revision",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 6
+    },
+    {
+      "mode": "epoch:canWrite",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "original intent must not submit",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "original intent must not submit after committed scope round trip\n\n1 !== 0\n",
+      "checksReached": 8
+    },
+    {
+      "mode": "restart",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "restart clears original draft",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "restart clears original draft\n\ntrue !== false\n",
+      "checksReached": 1
+    },
+    {
+      "mode": "inflight",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "1 !== 0",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Expected values to be strictly equal:\n\n1 !== 0\n",
+      "checksReached": 12
+    },
+    {
+      "mode": "error",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "prior-scope error must remain hidden",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "prior-scope error must remain hidden\n\ntrue !== false\n",
+      "checksReached": 13
+    },
+    {
+      "mode": "actor",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "external actor identifier must be omitted",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "external actor identifier must be omitted",
+      "checksReached": 0
+    },
+    {
+      "mode": "parser",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "missing actor must not pass export parser",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Missing expected exception: missing actor must not pass export parser",
+      "checksReached": 1
+    },
+    {
+      "mode": "hashbytes",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "Expected values to be strictly equal",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'e2247e2d0a18ae64dddde4817edc2667df1a8edc117b95edbe27cd640cd7d64f'\n- 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9'\n",
+      "checksReached": 2
+    },
+    {
+      "mode": "hash",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "generation clock must not enter canonical material",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "generation clock must not enter canonical material\n+ actual - expected\n... Skipped lines\n\n  {\n    attribution: 'Recorded time and source attribution retained; internal actor identifier omitted.',\n    context: {\n      entries: [\n        {\n...\n    ],\n+   generatedAt: '2031-02-03T04:05:06.000Z',\n+   payloadSha256: 'ae57a64b67831c2af686fd72c0af88b5a8659848f388eeabe6abd9e8f9746b2f',\n-   generatedAt: '2026-10-15T06:21:01.240Z',\n-   payloadSha256: '7df71d63066efe34c40daaba660c9fdd48dc26585fe8fd29f74bde98345df18d',\n    projectId: 'review-project',\n    projectRevision: '2026-10-15T01:00:00.000Z',\n    registrySha256: '531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158',\n    registryVersion: '2026-10-11.1',\n    schema: 'openplan.project-jurisdiction-readiness-export.v3',\n",
+      "checksReached": 5
+    },
+    {
+      "mode": "null",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "legacy_study_place",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Expected values to be strictly equal:\n+ actual - expected\n\n+ 'project_declaration'\n- 'legacy_study_place'\n",
+      "checksReached": 3
+    },
+    {
+      "mode": "sovereign",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "unassessed",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "The expression evaluated to a falsy value:\n\n  assert.ok(payload.entries[i].assessment.reports.every(r=>r.status==='unassessed'))\n",
+      "checksReached": 4
+    },
+    {
+      "mode": "adapter",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "bundle.projectRecord",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "The expression evaluated to a falsy value:\n\n  assert.ok(!JSON.stringify(bundle.projectRecord).includes(actor))\n",
+      "checksReached": 6
+    },
+    {
+      "mode": "gpkg",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "GeoPackage must retain canonical readiness hash",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "GeoPackage must retain canonical readiness hash\n+ actual - expected\n\n+ 'broken-hash'\n- 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9'\n",
+      "checksReached": 8
+    },
+    {
+      "mode": "report",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "report must render canonical hash",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "report must render canonical hash",
+      "checksReached": 10
+    },
+    {
+      "mode": "auth",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "200 !== 401",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Expected values to be strictly equal:\n\n200 !== 401\n",
+      "checksReached": 12
+    },
+    {
+      "mode": "api",
+      "exit": 1,
+      "expectedExit": 1,
+      "expectedDiagnostic": "Expected values to be strictly deep-equal",
+      "outcome": true,
+      "result": "AssertionError",
+      "diagnostic": "Expected values to be strictly deep-equal:\n+ actual - expected\n... Skipped lines\n\n  {\n-   attribution: 'Recorded time and source attribution retained; internal actor identifier omitted.',\n    context: {\n      entries: [\n        {\n          countryCode: 'US',\n          identity: 'staff_declared',\n...\n      recordedAt: '2026-10-15T00:00:00.000Z',\n+     recordedBy: '33333333-3333-4333-8333-333333333333',\n-     schema: 'openplan.project-jurisdiction-context-export.v1',\n      state: 'declared',\n+     version: 1\n    },\n    contextSource: 'project_declaration',\n    disclosure: 'Human-declared project context. Resolved identity does not establish adopting authority or legal applicability. Registry guidance assesses administrative state-level scope only.',\n    entries: [\n      {\n...\n    ],\n+   payloadSha256: 'cef159e7d708fcb152949d22b7ae871f71ba7f4c9848cd56002670a21807f13f',\n-   payloadSha256: 'ef7de4958a21746ddc2657bce0b1329bce458a01e1da50ed3f07519dd8c9e0f9',\n    projectId: 'review-project',\n    projectRevision: '2026-10-15T01:00:00.000Z',\n    registrySha256: '531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158',\n+   schema: 'openplan.project-jurisdiction-readiness-response.v2'\n-   registryVersion: '2026-10-11.1',\n-   schema: 'openplan.project-jurisdiction-readiness-export.v3',\n-   scope: 'external_handoff'\n  }\n",
+      "checksReached": 14
+    },
+    {
+      "mode": "baseline",
+      "exit": 0,
+      "expectedExit": 0,
+      "expectedDiagnostic": null,
+      "outcome": true,
+      "result": "SURVIVED",
+      "diagnostic": null,
+      "checksReached": 30
+    }
+  ]
+}

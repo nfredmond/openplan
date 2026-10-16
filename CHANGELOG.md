@@ -20,6 +20,14 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Portfolio import skip correction, candidate:** migration
+`20261017000017_portfolio_skip_invalid_classifications.sql` lets skipped rows
+retain invalid source status and delivery phase in immutable audit records.
+Selected rows still pass project classification, cost, confirmation, source
+custody and duplicate checks in the same transaction. Apply the migration before
+claiming this correction on an installation. Native rollback checks pass on an
+isolated test target; browser retry remains pending. See the [candidate evidence](docs/reviews/2026-10-15-portfolio-skip-invalid-transaction-fix/STATUS.md).
+
 **Integration secret rotation, candidate:** the optional private
 `OPENPLAN_INTEGRATION_KEY_PREVIOUS_SECRET` reads retained workspace keys and
 sealed worker credentials while new writes use the primary. Prepare both
@@ -30,6 +38,14 @@ records, and no hosted secret is changed. Follow the
 and retain the [verification limits](docs/reviews/2026-10-15-integration-secret-rotation/STATUS.md).
 
 **Node queue process observations, candidate:** eight existing queue commands record private process states under one captured instance and build. Deep health keeps missing, stale, stopped and unavailable observations separate from job completion. Candidate migration `20261017000015_node_queue_process_observations.sql` must precede deployment; hosted application is pending. Existing worker handlers retain shutdown ownership. The caller checker allows 30 seconds for three serial probes. See the [scope and proof limits](docs/reviews/2026-10-14-node-queue-observation/STATUS.md).
+
+**Project jurisdiction context, candidate:** the existing project editor separates
+human-declared jurisdictions from study geometry. Multiple declarations and explicit
+unresolved state carry through project readiness, new reports and evidence exports.
+Workspace readiness keeps its single-place contract. Candidate migration
+`20261017000016_project_jurisdiction_context.sql` is additive and unapplied by this
+lane. Isolated native authorization, upgrade/restore, build and browser evidence
+remain required before rollout. See the [implementation record](docs/reviews/2026-10-15-project-jurisdiction/implementation/STATUS.md).
 
 **Explicit owned worker command, candidate:** private operator settings, credential
 roles and preset options start the existing owned service through

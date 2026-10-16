@@ -1,0 +1,25 @@
+{
+  "target": "openplan_pr330_native_32e91518d541497fbe62e201",
+  "cluster": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "source": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "dump": {
+    "path": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/source-private.dump",
+    "bytes": 16232305,
+    "sha256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398"
+  },
+  "freeDiskBytes": 3462832128,
+  "availableMemoryBytes": 15654584320,
+  "createdAt": "2026-10-15T17:04:43.586233+00:00",
+  "sourceBytes": 110668947,
+  "server": "PostgreSQL 17.6 on x86_64-pc-linux-gnu, compiled by gcc (GCC) 15.2.0, 64-bit",
+  "history": {
+    "count": 419,
+    "latest": "20261017000016",
+    "sha256": "938ea2f8a59897de545b0d6c2c575cf8f6920c627b82e3973d6728e7d4ffeee8"
+  },
+  "catalog": {
+    "oid": 6165620,
+    "datname": "openplan_pr330_native_32e91518d541497fbe62e201",
+    "datdba": "postgres"
+  }
+}

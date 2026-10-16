@@ -1,0 +1,146 @@
+{
+  "subjectCommit": "df968613b36ea221c7ae510e5a0bb7bba046720a",
+  "cases": [
+    {
+      "case": "seal-harmless-note-survives",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "seal-changed-helper-refuses",
+      "outcome": "REFUSED",
+      "reason": "seal-byte-mismatch"
+    },
+    {
+      "case": "private-config-actual-pure-consumer",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "application-binding-actual-pure-consumer",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "new-helper-import-actual-pure-consumer",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "fixed-dump-actual-pure-consumer",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "bus-spy-harmless-existing-XDG",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-copied-app-main-missing-bus-confirmed",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-copied-app-main-memory-repair-reaches-bus",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R1-copied-attestor-main-missing-bus-confirmed",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R2-protected-and-source-drift-not-consumed",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R2-source-drift-direct-oracle",
+      "outcome": "REFUSED",
+      "reason": "source-drift"
+    },
+    {
+      "case": "R2-protected-drift-direct-oracle",
+      "outcome": "REFUSED",
+      "reason": "protected-drift"
+    },
+    {
+      "case": "R2-candidate-compose-detects-drift",
+      "outcome": "REFUSED",
+      "reason": "protected-drift"
+    },
+    {
+      "case": "R3-upgrade-state-harmless-note",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-missing-token-refuses",
+      "outcome": "REFUSED",
+      "reason": "upgrade-statusConstraint"
+    },
+    {
+      "case": "R3-unconditional-constraints-accepted",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-weak-first-readback-and-receipt-accepted",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-proposed-exact-comparator-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "R3-proposed-exact-comparator-rejects-weak",
+      "outcome": "REFUSED",
+      "reason": "exact-check:statusConstraint"
+    },
+    {
+      "case": "fixed-upgrade-SQL-assembly-only",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "fresh-target-command-shape-harmless",
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "old-target-command-shape-refuses",
+      "outcome": "REFUSED",
+      "reason": "target:valid"
+    }
+  ],
+  "busSpyObservations": [
+    {
+      "hasXDG": true,
+      "hasDBus": false
+    },
+    {
+      "hasXDG": false,
+      "hasDBus": false
+    },
+    {
+      "hasXDG": true,
+      "hasDBus": false
+    },
+    {
+      "hasXDG": false,
+      "hasDBus": false
+    }
+  ],
+  "finalVerifierTrace": [
+    "db_check",
+    "target_check",
+    "upgrade_ready",
+    "health",
+    "db_check",
+    "target_check",
+    "upgrade_ready",
+    "health"
+  ],
+  "sealedImmediateFilesUnchanged": 36,
+  "all25ManifestFilesMatch": true,
+  "fivePublicPrivateTemplatesAndDiffsMatch": true,
+  "candidateAbsent": true,
+  "executionEmpty": true,
+  "realTransportsBlocked": true,
+  "environmentRestored": true,
+  "blindCategories": [
+    "No actual PostgreSQL parsing, restore, transaction, data or ACL verification.",
+    "No host user-bus, /proc, namespace, Docker, readiness or port-race runtime test.",
+    "No compiler, build, generated declarations, browser or corrected-import journey.",
+    "Spies prove Python propagation and call composition, not the real bus error.",
+    "Constraint observations are controlled readbacks, not evidence a real target currently has weak checks."
+  ]
+}

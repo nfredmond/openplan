@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-short-page-harmless",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "continues after a short capped page until the scoped portfolio is exhausted",
+  "exitCode": 0,
+  "marker": null,
+  "classification": "SURVIVED"
+}

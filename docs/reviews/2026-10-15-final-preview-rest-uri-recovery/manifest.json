@@ -1,0 +1,37 @@
+{
+  "base": "47a51fa9c7ced49d57216417a7dd9b34140c3296",
+  "appHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "templates": {
+    "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+    "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+    "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+  },
+  "privateInputManifestSha256": "f4699a12503ed9f4d7488394f72edd5595d1c16b74e6b657fd2cec7af24881e8",
+  "templateManifestSha256": "ec975c09f74b16a0a66d3e43423640d2362009d4b173032cd948d143bbbd71b6",
+  "originalFiles": {
+    "template-binding.json": "522594cb0ab70af1cce07f148d73e2f385519ead46c9f334af57207f836b6f04",
+    "private-bindings.json": "eba8c9af486fcdbe4c16ff68345db8f39dd7c9c4047c5cc2f2ed9c85da54010a",
+    "envs-private.json": "7327047a321a8f1c811fad24a86e395d0199236ccac10dc7a66acf40b61b5f7d",
+    "rest-private.env": "9d90e53f85c618595c9f54946be095c613dfa66268b1bd34a448eadd9e530fd2",
+    "service-receipts-private.json": "80585fc4cbf3e4767685d401412dd7be9c697ef2771abeb4cc0e0abf657f91c7",
+    "rest-receipt-private.json": "0192eeb72e0a4c45f2a1ba2e64fd348372fa64af60c2ba6b56dfa1223df81767",
+    "target-identity.json": "09b7bc53867f2ed20e0df045ab0e52ffe4878c9e35709172f32c4caee5128e04",
+    "clone-ready.json": "ec2aeffb6297cf5bf21e8450442309cd75a8e44ee4e2c342993e233993e89d50",
+    "dump-result.json": "bcb9263fc0014484f0609c2f91046b7c19cd473ff92d161102563145572d2088",
+    "app-env-binding.json": "086c6dde91f89ccb2edf73dc30c6dc9459f1d167a265f912672426a71d919435"
+  },
+  "newInputHashes": {
+    "envs-v1-private.json": "1b903a32093290164e866949cf83ea4a027d7ac218b68dd6ff57971da4bc88cd",
+    "rest-v1-private.env": "8f4079ae326c2dfa804534ab52274e231d0c3c86b8d204c73ca4f942bffa5fc3",
+    "old-rest-inspect-private.json": "79aa124753195df358935a4d3c7e43f041af7b88182c514380c403cbefe4f157",
+    "auth-inspect-private.json": "b00bcb306e312c62a6e1d711c01128f4f8227e02af499aea6f4efa39014e66fb",
+    "storage-inspect-private.json": "787786dd346ef6e9d80b72e5f7c57ce8010faff230af6adb803c2575abc2d6aa",
+    "gateway-inspect-private.json": "80a238fc86f5ffba2bd54ebc6d31d821496f4f8fc0152f3921065ccaaa73ecc6",
+    "rest-image-inspect-private.json": "41f7d60d90429dfabcb9e316e5f4c9dfeb8515a8b282e46acccc3a641ff9540b",
+    "auth-image-inspect-private.json": "2d0110f59662f2559e4a558682150fceff7df1013709e3a14960f1beb47f5dcb",
+    "storage-image-inspect-private.json": "6235b138f2d7fc14de9db6e30e9ca60b5021a45b51bb4444e9dda164bf78530d",
+    "gateway-image-inspect-private.json": "a79971961b456cb14523a7d9fa38226807f7cb0b71fae82abfe3a0765c10cc42"
+  },
+  "uriChange": "REST options=-c+search_path%3Dpublic%2Cextensions to options=-c%20search_path%3Dpublic%2Cextensions",
+  "execution": "Prepared only. No replacement, actual REST readiness, build or start."
+}

@@ -1,0 +1,99 @@
+{
+  "schema": "openplan.pr330-combined-correction-checks.v1",
+  "testedHead": "bba8ceb6893243322a0fab06710bde3ec418a776",
+  "applicationTree": "c89e9ec4eeddfc973641e8683df7bc9d38113838",
+  "headAndAppTreeUnchangedDuringChecks": true,
+  "tsconfigSha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+  "trackedApplicationChangesAfterChecks": false,
+  "generatedNextTypesPresent": true,
+  "checks": {
+    "combined-focused": {
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "src/test/project-detail-page.test.tsx",
+        "src/test/workspace-membership-current.test.ts",
+        "src/test/workspace-membership-required.test.tsx",
+        "src/test/workspace-membership-query-guard.test.ts",
+        "src/test/project-workbook-export-pagination.test.ts",
+        "src/test/project-portfolio-export-route.test.ts",
+        "src/test/portfolio-workbook-export.test.ts",
+        "src/test/report-generate-route.test.ts",
+        "src/test/report-html-accepted-narrative.test.ts",
+        "--config",
+        "/home/nathaniel/.local/state/openplan/pr330-combined-corrections-checks-20261015/vitest.config.mts",
+        "--configLoader",
+        "runner",
+        "--maxWorkers",
+        "1",
+        "--no-file-parallelism",
+        "--sequence.shuffle",
+        "--sequence.seed=330",
+        "--reporter=json",
+        "--outputFile",
+        "/home/nathaniel/.local/state/openplan/pr330-combined-corrections-checks-20261015/logs/combined-focused.vitest.json"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+      "elapsedSeconds": 40.421,
+      "metrics": {
+        "memory.max": "1610612736",
+        "memory.swap.max": "0",
+        "memory.peak": "631390208",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      },
+      "nodeOptions": "--max-old-space-size=1024",
+      "receiptSha256": "f4ad9492445cc7b1838903a0ac0e1c1529d74040f00f2b9d5098aae6ff6bd334"
+    },
+    "combined-full-types": {
+      "exitCode": 0,
+      "command": [
+        "node",
+        "node_modules/typescript/bin/tsc",
+        "--project",
+        "tsconfig.json",
+        "--noEmit",
+        "--incremental",
+        "false"
+      ],
+      "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359/openplan",
+      "elapsedSeconds": 186.389,
+      "metrics": {
+        "memory.max": "8589934592",
+        "memory.swap.max": "0",
+        "memory.peak": "6098300928",
+        "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+        "cpu.max": "50000 100000"
+      },
+      "nodeOptions": "--max-old-space-size=7168",
+      "receiptSha256": "490879b3f142cd9de28585860b917c80f224b5318794aa443639f05624ede15f"
+    }
+  },
+  "individualMutationEvidence": [
+    "../2026-10-15-pr330-project-membership-fix/evidence.json",
+    "../2026-10-15-pr330-workbook-stable-pagination-fix/evidence.json",
+    "../2026-10-15-pr330-report-pending-schema-fix/evidence.json"
+  ],
+  "independentReviews": [
+    "../2026-10-15-pr330-project-membership-independent-review/STATUS.md",
+    "../2026-10-15-pr330-workbook-stable-pagination-independent-review/REVIEW.md",
+    "../2026-10-15-pr330-report-pending-schema-independent-review/REPORT.md"
+  ],
+  "limits": [
+    "Database/authentication mocked in focused cohort",
+    "No changed-head native transport, live RLS, browser, PDF, Storage, build or hosted acceptance",
+    "Compiler checks current application tsconfig roots; generated build types only if present",
+    "No atomic workbook content snapshot or all concurrent insert/delete guarantee",
+    "Hosted promotion remains held; no release authorized"
+  ],
+  "tests": {
+    "passed": 217,
+    "failed": 0,
+    "pending": 0,
+    "files": 9,
+    "seed": 330,
+    "reportSha256": "351810ed85e53c4761803e4814bfa51f18146f0bb5f284da32527d49f6b5cd59"
+  }
+}

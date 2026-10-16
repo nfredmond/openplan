@@ -1,0 +1,156 @@
+{
+  "priorPacketCommit": "c636b7eecbd66970217421da7bead960f262323b",
+  "independentReviewCommit": "93b2aa1fe01df1960dd311a2b51527ce28058eef",
+  "independentReviewSha256": "8b09679ae8a59fc04e00be4360cc44ec124766d592d886eb89291794e1c0617a",
+  "finding": "F1",
+  "assignedTreeBase": "4ea6a8ca3b43c6712952fc4e527a8538237a9adb",
+  "candidate": "b4dbcac21a58f61bd480ccade4dec69383dacbc7",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-combined-preview-cors-20261015",
+  "sourceDatabase": "openplan_jurisdiction_native_3d281df106064b8cbb9e0c82_up",
+  "plannedTargetDatabase": "openplan_project_combined_preview_44eed2f8f58a9c7623c1e7e0",
+  "postgresContainerId": "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+  "schema": {
+    "migrations": 419,
+    "latest": "20261017000016"
+  },
+  "api": "http://127.74.19.10:29948",
+  "web": "http://127.74.19.10:3585",
+  "helperNames": {
+    "rest": "openplan-combined-cors-rest-b399aefd4f8c",
+    "auth": "openplan-combined-cors-auth-f9ef142a8eb4",
+    "storage": "openplan-combined-cors-storage-175a61f8d3da",
+    "gateway": "openplan-combined-cors-gateway-6b6cc2d85007"
+  },
+  "templateSha256": {
+    "launcher.py": "6c23a4888b4a4a1a2395dddf2faa5d6264d3a74d5fc1de450fd093066ac144ba",
+    "controls.py": "5ce62be0c8014884c394844ec0ff4e71ff3161f14d48fe5e6445be388c70a949",
+    "policy.py": "be78f468864ac7ff639fb70816917f9f9d0089745f874476edefe025fa9ccd49",
+    "mutation_controls.py": "d29b7dafbbf1d168f78a6edcf75b2c525fa1694ab4f4963b4ad655038cbfa51b"
+  },
+  "templateBindingManifestSha256": "e57630ebb36e6da1232f9a87a2c92a1a458a87bfe1d783ed9aa44dd59b64cdaa",
+  "privateBindingManifestSha256": "7bce46a41838b4d70f07d11c1ad917307f9e58e87fdeb3d267d2e19d4ae53ccc",
+  "sourceLogicalFingerprintSha256": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "configuredSource": {
+    "path": "/home/nathaniel/.local/state/openplan/project-map-integration-20261015/openplan/.env.local",
+    "selectedKeys": [
+      "CENSUS_API_KEY",
+      "NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN",
+      "OPENPLAN_INTEGRATION_KEY_SECRET"
+    ],
+    "allThreePresent": true,
+    "valuesAndFullSourceHashRemainPrivate": true,
+    "boundSourceBytesUnchanged": true
+  },
+  "localJwtApiCredentialsFresh": true,
+  "engineRoleCredentialsUnchanged": true,
+  "corsOriginListUnchanged": true,
+  "syntheticControls": {
+    "total": 607,
+    "survived": 99,
+    "intended_refusal": 508,
+    "addedRealHealthAcquisitionRows": 40,
+    "semanticallyRevisedHistoricalHealthRows": 17,
+    "namedFaultsKilled": 9,
+    "harmlessMutationSurvived": true,
+    "unrelatedRuntimeErrorsCountedAsKills": false,
+    "restoration": "Exact function identity, full control rows, and original template bytes after each named mutation."
+  },
+  "readonlyPreflight": {
+    "runs": 2,
+    "bothSucceeded": true,
+    "sourceAnchorNotRecaptured": true
+  },
+  "custody": {
+    "readonlyPreflight": true,
+    "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+    "priorPacketsByteModeIdentical": true,
+    "targetDatabaseExists": false,
+    "ownedHelperContainers": {
+      "rest": 0,
+      "auth": 0,
+      "storage": 0,
+      "gateway": 0
+    },
+    "operationalArtifactsAbsent": true,
+    "privateModes": true,
+    "noBytecode": true,
+    "historical": {
+      "historicalCount": 567,
+      "historicalAlwaysRefusesBlindSpotReproduced": true,
+      "historicalSerializedRowsEqualNewPrefix": true,
+      "semanticallyRevisedHealthRows": 17,
+      "originalC636HealthRefusesPinnedFixedHeader": true,
+      "exactRestoration": true
+    }
+  },
+  "failedAuditTrial": {
+    "type": "JSONDecodeError",
+    "cause": "Separate target-absence audit treated PostgreSQL f as JSON after successful launcher check.",
+    "correction": "SELECT to_json(EXISTS(...)); corrected audit succeeds. No launcher or source-binding change.",
+    "retainedPrivate": true
+  },
+  "resourceUnits": [
+    {
+      "unit": "openplan-cors-controls-20261015-01",
+      "result": "success",
+      "memoryPeak": "19.3 MiB",
+      "swap": "0 B"
+    },
+    {
+      "unit": "openplan-cors-mutations-20261015-01",
+      "result": "success",
+      "memoryPeak": "25.4 MiB",
+      "swap": "0 B"
+    },
+    {
+      "unit": "openplan-cors-custody-20261015-01",
+      "result": "failed post-preflight audit only",
+      "memoryPeak": "69 MiB",
+      "swap": "0 B"
+    },
+    {
+      "unit": "openplan-cors-custody-20261015-02",
+      "result": "success",
+      "memoryPeak": "73.7 MiB",
+      "swap": "0 B"
+    },
+    {
+      "unit": "openplan-cors-mutations-20261015-02",
+      "result": "success",
+      "memoryPeak": "24.8 MiB",
+      "swap": "0 B"
+    },
+    {
+      "unit": "openplan-cors-final-audit-20261015-01",
+      "result": "success",
+      "memoryPeak": "15.9 MiB",
+      "swap": "0 B"
+    }
+  ],
+  "operationallyProved": false,
+  "notExecuted": [
+    "capture / rebaseline",
+    "clone / dump / restore / ACL",
+    "Docker create / services",
+    "candidate checkout",
+    "dependency installation",
+    "build",
+    "start",
+    "browser",
+    "provider request",
+    "full suite / live RLS",
+    "PR",
+    "push",
+    "merge"
+  ],
+  "finalFileAudit": {
+    "templateAndManifestHashes": true,
+    "syntax": true,
+    "publicCredentialScan": {
+      "harmlessSurvivor": true,
+      "injectedFullSecretOrUriRefusals": 15,
+      "exactRestoration": true
+    },
+    "priorPacketFileByteModeEquality": true
+  }
+}

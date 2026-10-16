@@ -1,0 +1,65 @@
+--- retained-v3/run_stage_v3.sh
++++ NEW/run_attest_host.sh
+@@ -1,32 +1,33 @@
+ #!/bin/sh
+-# Reviewed trusted controller arrangement. This file has a fixed private root.
++# Trusted host observer. Parent compares this file with the reviewed external hash.
+ set -eu
+ umask 077
+-ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3
+-[ "$#" -eq 1 ] || exit 2
+-/usr/bin/sha256sum --check --strict "$ROOT/operation-files.sha256" >/dev/null
+-case "$1" in
+-  build)
+-    exec /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-21510042e-v3-build \
+-      -p MemoryMax=10G -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
+-      /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" build
+-    ;;
+-  start)
+-    exec /usr/bin/systemd-run --user --unit=openplan-current-project-preview-app-21510042e-v3-web \
+-      -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
+-      /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" start
+-    ;;
+-  active-check|checkout|attest)
+-    stage=$1
+-    if [ "$stage" = attest ]; then
+-      set -- /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/attest_start_v1.py"
+-    else
+-      set -- /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT/home" PYTHONDONTWRITEBYTECODE=1 /usr/bin/python3 -B "$ROOT/app_binding_v1.py" "$stage"
+-    fi
+-    exec /usr/bin/systemd-run --user --wait --pipe --unit="openplan-current-project-preview-app-21510042e-v3-$stage" \
+-      -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
+-      /usr/bin/bwrap --die-with-parent --ro-bind / / --dev /dev --proc /proc \
+-      --bind "$ROOT" "$ROOT" --bind "$ROOT/tmp" /tmp "$@"
+-    ;;
+-  *) exit 2 ;;
+-esac
++ROOT=/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015
++V3=/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3
++refuse() { /usr/bin/printf 'REFUSED host-attest: %s\n' "$1" >&2; exit 2; }
++[ "$#" -eq 0 ] || refuse arguments
++[ "$0" = "$ROOT/run_attest_host.sh" ] && [ ! -L "$0" ] || refuse runner-identity
++[ "$(CDPATH= cd -P -- "$ROOT" && /bin/pwd -P)" = "$ROOT" ] || refuse runner-root
++[ "$(CDPATH= cd -P -- "$V3" && /bin/pwd -P)" = "$V3" ] || refuse v3-root
++# Literal external pins precede trusting the private checksum list or any Python.
++/usr/bin/sha256sum --check --strict --status <<'SEALED' || refuse external-seal
++011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14  /home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/reviewed-v3-manifest.json
++6200f71a07ef3559695ac007c18e438a9afb90f20771a604ce247013dc48067b  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/operation-files.sha256
++34339836f8503af3e583ca24ed5b74ddb6d764c6802b52d830809c8c1796353e  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/run_stage_v3.sh
++c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/app_binding_v1.py
++0f62106d862c4f691cd87ffdaee6c277f93f01908cadfbcf7c686c365fd27665  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/attest_start_v1.py
++493af5c631b4b420d6f5b6c0723879e9d555240395a41aca7dde367051f0070f  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/binding-private.json
++a62b271a418901db0965f77e54b3e646196e0b3912230efd819f1849ad36f205  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/app-env-private.json
++a283c64f3002d46ad879ea313f618166b94ff7712e3c9d7fd8dba11f977b69f9  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/app-v1.env
++56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/migrations.json
++75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/dependency-binding.json
++362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b  /home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3/recovery-active-binding.json
++SEALED
++[ ! -e "$V3/execution/runtime-start-attestation.json" ] && [ ! -L "$V3/execution/runtime-start-attestation.json" ] || refuse receipt-exists
++# An atomic directory reserves the one request, including a lost acknowledgement.
++/bin/mkdir -m 700 "$ROOT/attempt-host-01" || refuse attempt-exists
++exec /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT" XDG_RUNTIME_DIR=/run/user/1000 \
++  /usr/bin/systemd-run --user --wait --pipe --unit=openplan-current-project-preview-app-21510042e-v3-attest-host-01 \
++  -p MemoryMax=512M -p MemorySwapMax=0 -p CPUQuota=50% -p UMask=0077 \
++  /usr/bin/env -i PATH=/usr/bin:/bin HOME="$ROOT" PYTHONDONTWRITEBYTECODE=1 \
++  /usr/bin/python3 -B "$V3/attest_start_v1.py"

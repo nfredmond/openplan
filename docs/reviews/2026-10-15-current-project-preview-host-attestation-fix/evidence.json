@@ -1,0 +1,481 @@
+{
+  "preparationOnly": true,
+  "actualHostAttestationExecuted": false,
+  "webInvocation": "34615ba06b554482b0f79c90fe999a61",
+  "retainedFailedAttestInvocation": "be8cba835bbe4c14af8ed007cd61bbb2",
+  "runnerControls": {
+    "cases": [
+      {
+        "case": "harmless-comment-survives",
+        "exit": 0,
+        "reachedPayload": true,
+        "refusal": null,
+        "unit": "openplan-host-attest-fix-test04-01",
+        "unitAbsentAfterRefusal": null,
+        "payload": {
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.peak": "6758400",
+            "memory.swap.current": "0",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+          },
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "cwdExact": true,
+          "peerEnvironmentSha256": "95c786f8861dd7f99a078b7bdef53ac8ac549d1b5505fb84e846040fbd1b0a39",
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "baseline-host-composition",
+        "exit": 0,
+        "reachedPayload": true,
+        "refusal": null,
+        "unit": "openplan-host-attest-fix-test04-02",
+        "unitAbsentAfterRefusal": null,
+        "payload": {
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.peak": "7622656",
+            "memory.swap.current": "0",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+          },
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "cwdExact": true,
+          "peerEnvironmentSha256": "95c786f8861dd7f99a078b7bdef53ac8ac549d1b5505fb84e846040fbd1b0a39",
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      },
+      {
+        "case": "extra-argument",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "arguments",
+        "unit": "openplan-host-attest-fix-test04-03",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "old-root-argument",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "arguments",
+        "unit": "openplan-host-attest-fix-test04-04",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "old-unit-argument",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "arguments",
+        "unit": "openplan-host-attest-fix-test04-05",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "alternate-entry-identity",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "runner-identity",
+        "unit": "openplan-host-attest-fix-test04-06",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "symlink-entry-identity",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "runner-identity",
+        "unit": "openplan-host-attest-fix-test04-07",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-reviewed-v3-manifest.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-08",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-operation-files.sha256",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-09",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-run_stage_v3.sh",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-10",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-app_binding_v1.py",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-11",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-attest_start_v1.py",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-12",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-binding-private.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-13",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-app-env-private.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-14",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-app-v1.env",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-15",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-migrations.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-16",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-dependency-binding.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-17",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "seal-recovery-active-binding.json",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-18",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "coherent-private-reseal",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "external-seal",
+        "unit": "openplan-host-attest-fix-test04-19",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "existing-runtime-receipt",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "receipt-exists",
+        "unit": "openplan-host-attest-fix-test04-20",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "reserved-attempt",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "attempt-exists",
+        "unit": "openplan-host-attest-fix-test04-21",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "root-alias",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "runner-root",
+        "unit": "openplan-host-attest-fix-test04-26",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "v3-alias",
+        "exit": 2,
+        "reachedPayload": false,
+        "refusal": "v3-root",
+        "unit": "openplan-host-attest-fix-test04-27",
+        "unitAbsentAfterRefusal": true,
+        "payload": null
+      },
+      {
+        "case": "restored-host-composition",
+        "exit": 0,
+        "reachedPayload": true,
+        "refusal": null,
+        "unit": "openplan-host-attest-fix-test04-32",
+        "unitAbsentAfterRefusal": null,
+        "payload": {
+          "resources": {
+            "memory.max": "536870912",
+            "memory.swap.max": "0",
+            "cpu.max": "50000 100000",
+            "memory.peak": "7409664",
+            "memory.swap.current": "0",
+            "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+          },
+          "sameUserNamespace": true,
+          "sameNetworkNamespace": true,
+          "cwdExact": true,
+          "peerEnvironmentSha256": "95c786f8861dd7f99a078b7bdef53ac8ac549d1b5505fb84e846040fbd1b0a39",
+          "cleanEnvironment": true,
+          "pythonB": true
+        }
+      }
+    ],
+    "guardRemovalDetections": [
+      {
+        "mutation": "removed-argument-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-identity-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-external-seal",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-root-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-v3-root-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-receipt-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      },
+      {
+        "mutation": "removed-attempt-guard",
+        "detectedBy": "dispatch-before-refusal",
+        "reachedPayload": true
+      }
+    ],
+    "limits": [
+      "Final payload is an owned stand-in, not the original attestor. No application operation runs.",
+      "Fixture substitutions replace fixed roots/unit and pinned fixture hashes only.",
+      "Source-reviewed controller has ordinary same-user permissions. Caps do not confine it."
+    ]
+  },
+  "parentEntryControls": [
+    {
+      "case": "harmless-entry-comment",
+      "exit": 0,
+      "reachedPayload": true,
+      "outcome": "SURVIVED"
+    },
+    {
+      "case": "changed-runner-unit-refuses",
+      "exit": 2,
+      "reachedPayload": false,
+      "outcome": "DETECTED before unit and interpreter"
+    },
+    {
+      "case": "removed-external-runner-gate",
+      "exit": 0,
+      "reachedPayload": true,
+      "outcome": "dispatch-before-refusal"
+    }
+  ],
+  "hostVisibility": {
+    "namespaces": {
+      "user": "user:[4026531837]",
+      "pid": "pid:[4026531836]",
+      "net": "net:[4026531833]"
+    },
+    "oneExactListener": true,
+    "listenerPids": [
+      "4104299"
+    ],
+    "cwdExact": true,
+    "webCgroupExact": true,
+    "environment": {
+      "sha256": "e01f8862797c560ebc302feb7fabff25ba6c53c3157fb6be41ac12a224707c21",
+      "sealedValuesMatch": true,
+      "fullAppShaMatch": true
+    }
+  },
+  "oldWrapperVisibility": {
+    "namespaces": {
+      "user": "user:[4026540332]",
+      "pid": "pid:[4026531836]",
+      "net": "net:[4026531833]"
+    },
+    "oneExactListener": true,
+    "listenerPids": [],
+    "cwdExact": false,
+    "webCgroupExact": true,
+    "environError": {
+      "type": "PermissionError",
+      "errno": 13
+    }
+  },
+  "finalChecks": {
+    "selectedPreservationFiles": 240,
+    "selectedPreservationUnchanged": true,
+    "preservationControls": [
+      {
+        "case": "harmless-metadata",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "changed-bytes",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "changed-mode",
+        "outcome": "DETECTED"
+      }
+    ],
+    "privacyControls": [
+      {
+        "case": "harmless-text",
+        "outcome": "SURVIVED"
+      },
+      {
+        "case": "known-value-00",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-01",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-02",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-03",
+        "outcome": "DETECTED"
+      },
+      {
+        "case": "known-value-04",
+        "outcome": "DETECTED"
+      }
+    ],
+    "runnerMatchesExternalManifest": true,
+    "externalPinsUnchanged": true,
+    "originalWebInvocationUnchanged": true,
+    "noActualHostAttemptReserved": true,
+    "noRuntimeReceipt": true,
+    "limits": [
+      "Selected fixed code/input/receipt files only. V3 candidate and execution cache naturally change while web runs.",
+      "No logical database or Storage preservation acquisition; no live attestation.",
+      "Known-value screen cannot detect unknown secrets.",
+      "Hash comparisons trust reviewed bytes, ordinary host tools and same-user custody."
+    ]
+  },
+  "privateProofs": {
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/controls-01.log": "2b56c61a5b441f33d67eff8d6d0a9c7591b607ec1bd1e2702cc44b9cb93fe2b5",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/controls-02.log": "e7aee914787c46ae3e89232950be987ae05d73261c16e37f249a8b74fa6f174d",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/controls-03.log": "f89d6f0e30e22a10c7a3aaf8eb5d26d0bfd68017fc0afd21cc644a27a5f3b321",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/controls-04.log": "3810a728d1f20c482d15582ca859992bb3448da0b467ff5939d05493c8a96622",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/direction-02.log": "4bc34a6ab65b8386f8c3a6e0dccefed35d20c85e026389558241b631826f54c1",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/export-failed-01.json": "7209967ff00231f22cc361e1deab7b4695eae1e9b921a89d191969c23abf8792",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/external-pins.json": "078188e43008f95606d4a1f08a5b275f5048f301ab3cfcfd541edc7a9c093705",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/final-01.log": "a0ddaeaba31d2c7872071db8559d57b1687ffd7506eaae1557420c5a592f152e",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/final-02.log": "c583bf27fcd5806ff7ee98cd688521c0eaff407b51a0c1139e5cc3e8b0588f87",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/final-checks.json": "e1d5f5f668f73fa57b1df3d134158774321d1009a81971d902d33a199e971b68",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/parent-entry-01.log": "dbd3230737f0da62a5a05d1a40fa226e97475e28c6feb93a0ab524c209801e7f",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/parent-entry-controls.json": "46d9a698a58deb8718c760244df505476075069b26dc8639e77696483f672d04",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/prepare.py": "2188a7cfc44d81c7797152ec52f8b2a9a81b6932de6ab7e225fc401245053ea0",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/preservation-before.json": "f30a52f87adec6eb553fca0acfee3c59bb6bf7e11c0ab8aff4bb051afa3b8942",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/preservation-specimen": "aaa8d3c8d74ad3e8f6b1772aa9c7e0eaa528cb42fc93599ce2f125b00d4c424c",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/reviewed-v3-manifest.json": "011bdb57b4eb347660fbbde6c5bbdb88738995314b22bf6ba82b2a226e3fae14",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/run_attest_host.sh": "640c666db673aa70a758654722eec625e7491c8120aad3ebe17b57faff19cef3",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/runner-controls.json": "518b0071852466f41eaf1843c509065ec2e74c18a74db1082771398d911e9629",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/verify-runner-failed-01.py": "c798e4055d5bd73a8d0497902af625dc7a8a70a51203345f70c81e605bf96014",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/visibility-host.json": "2004c2a114189f042ff24582399af2cb543aa23e5efa85dd754083d027385d9d",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/visibility-host.log": "f5f34ee1bcb831769a4e15f9bda458f3834e580bc83ae0d25b52ac24dc7caf36",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/visibility-wrapped.json": "70654314d37f4e547ab4513f61613a27375b0ab34cfc49a82bfd88e31d09e21d",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/visibility-wrapped.log": "4b98edc58d9614f5aceee9f4cae748b71fb03a462fd562d79634b4a25847966f",
+    "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/final-03.log": "59753da783c56ab031d9d6746b9a58b2472733e0f58017c83ab6576ce183c59e"
+  },
+  "setupFailures": [
+    {
+      "kind": "fixture-relocation",
+      "unit": "openplan-host-attest-fix-controls-01.service",
+      "invocation": "df8ccb2b0c8e46abb992f66bc3b31446",
+      "exit": 1,
+      "reason": "v3-root refusal from doubly relocated fixture path before unit dispatch",
+      "source": "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/verify-runner-failed-01.py",
+      "journal": "/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-fix-20261015/controls-01.log"
+    },
+    {
+      "kind": "direction-procedure",
+      "exit": 0,
+      "limits": "Initial direction command lacks requested flock/caps/private caches. Constrained direction-02 is retained and used."
+    },
+    {
+      "stage": "final export",
+      "exit": 1,
+      "error": "FileNotFoundError for docs/reviews/2026-10-15-current-project-preview-host-attestation-fix/manifest.json",
+      "cause": "Repository-relative path used while command cwd was already the new review directory",
+      "secondary": "sha256sum reports SHA256SUMS absent because export stopped before creating it",
+      "effect": "No subject bytes changed; no application operation or proof check succeeded"
+    }
+  ],
+  "successfulUnits": {
+    "controls-04.log": "Running as unit: openplan-host-attest-fix-controls-04.service; invocation ID: 88455a71eba14c6c9444d53781c2af18\n{\"cases\": 24, \"guardRemovalDetections\": 7, \"restored\": true}\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 1.748s\n             CPU time consumed: 760ms\n                   Memory peak: 18.6M (swap: 0B)\n",
+    "parent-entry-01.log": "Running as unit: openplan-host-attest-fix-parent-entry-01.service; invocation ID: 6e4f4946dd7646a7b32c9c17f1f13640\n{\"parentEntryControls\": [{\"case\": \"harmless-entry-comment\", \"exit\": 0, \"reachedPayload\": true, \"outcome\": \"SURVIVED\"}, {\"case\": \"changed-runner-unit-refuses\", \"exit\": 2, \"reachedPayload\": false, \"outcome\": \"DETECTED before unit and interpreter\"}, {\"case\": \"removed-external-runner-gate\", \"exit\": 0, \"reachedPayload\": true, \"outcome\": \"dispatch-before-refusal\"}]}\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 278ms\n             CPU time consumed: 107ms\n                   Memory peak: 14.2M (swap: 0B)\n",
+    "visibility-host.log": "Running as unit: openplan-host-attest-fix-visibility-host-01.service; invocation ID: 33c6da94b9f34abe9181791b273f7449\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 104ms\n             CPU time consumed: 87ms\n                   Memory peak: 8.6M (swap: 0B)\n",
+    "visibility-wrapped.log": "Running as unit: openplan-host-attest-fix-visibility-wrapped-01.service; invocation ID: 3f6678b9208742088b1f365e744d1adb\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 252ms\n             CPU time consumed: 128ms\n                   Memory peak: 9.3M (swap: 0B)\n",
+    "direction-02.log": "Running as unit: openplan-host-attest-fix-direction-02.service; invocation ID: 530dcc8d338f4198b521d59cd0713ccf\n\n> openplan@0.68.0 product:direction:check\n> node scripts/ops/product-direction-review.mjs --check\n\nReview reminder: jurisdiction readiness registry review expired on 2026-09-28\nReview reminder: capability matrix review expired on 2026-10-05\nReview reminder: capability registry review expired on 2026-10-05\nReview reminder: latest review covers v0.66.0; package is v0.68.0\nReview reminder: latest direction review predates substantive changes: .gitattributes, .github/workflows/ci.yml, .github/workflows/integration-secret-rotation.yml, .github/workflows/node-queue-observation.yml, .github/workflows/odm-worker-regression.yml, .github/workflows/production-health.yml, .github/workflows/research-collector.yml, .github/workflows/restore-drill.yml\nProduct direction records checked; review deadline 2026-11-06: docs/reviews/product-direction/2026-10-06-integration-review.md (2 independent contexts, review v0.66.0, package v0.68.0).\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 1.673s\n             CPU time consumed: 847ms\n                   Memory peak: 86.5M (swap: 0B)\n",
+    "final-01.log": "Running as unit: openplan-host-attest-fix-final-01.service; invocation ID: 51e94bce6ab84123ad4ba09384df91fd\n{\"selectedFiles\": 240, \"preservation\": \"unchanged\", \"privacyControls\": 6, \"noActualAttestation\": true}\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 236ms\n             CPU time consumed: 109ms\n                   Memory peak: 10.6M (swap: 0B)\n",
+    "final-02.log": "Running as unit: openplan-host-attest-fix-final-02.service; invocation ID: 0bdba8093cbc4693acfd84de3815c467\n{\"selectedFiles\": 240, \"preservation\": \"unchanged\", \"privacyControls\": 6, \"noActualAttestation\": true}\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 242ms\n             CPU time consumed: 112ms\n                   Memory peak: 11.2M (swap: 0B)\n",
+    "final-03.log": "Running as unit: openplan-host-attest-fix-final-03.service; invocation ID: 39de8c42e8e94aa0b6bd87650318353f\n{\"selectedFiles\": 240, \"preservation\": \"unchanged\", \"privacyControls\": 6, \"noActualAttestation\": true}\n          Finished with result: success\nMain processes terminated with: code=exited, status=0/SUCCESS\n               Service runtime: 184ms\n             CPU time consumed: 106ms\n                   Memory peak: 11M (swap: 0B)\n"
+  }
+}

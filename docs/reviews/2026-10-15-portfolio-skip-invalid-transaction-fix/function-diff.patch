@@ -1,0 +1,38 @@
+--- original-v2-from-20260905000001
++++ candidate-v2-from-20261017000017
+@@ -140,9 +140,6 @@
+        OR COALESCE(v_row->>'fingerprint', '') !~ '^[0-9a-f]{64}$'
+        OR COALESCE(v_row->>'decision', '') NOT IN ('create','skip')
+        OR COALESCE(v_row->>'state', '') NOT IN ('clean','warning','blocked','created_before')
+-       OR COALESCE(v_row->>'planType', '') = '' OR char_length(v_row->>'planType') > 80
+-       OR COALESCE(v_row->>'status', '') NOT IN ('draft','active','on_hold','complete')
+-       OR COALESCE(v_row->>'deliveryPhase', '') NOT IN ('scoping','analysis','engagement','programming','delivery','complete')
+        OR jsonb_typeof(COALESCE(v_row->'formulaFields', '[]'::jsonb)) <> 'array'
+        OR jsonb_typeof(COALESCE(v_row->'errors', '[]'::jsonb)) <> 'array'
+        OR jsonb_typeof(COALESCE(v_row->'warnings', '[]'::jsonb)) <> 'array'
+@@ -154,6 +151,15 @@
+        ) THEN
+       RAISE EXCEPTION 'Portfolio workbook row is malformed or does not match its worksheet setup'
+         USING ERRCODE = '22023';
++    END IF;
++    -- Invalid source classifications still belong in skipped-row audit records.
++    -- Only rows selected for creation must satisfy project classification rules.
++    IF v_row->>'decision' = 'create' AND (
++      COALESCE(v_row->>'planType', '') = '' OR char_length(v_row->>'planType') > 80
++      OR COALESCE(v_row->>'status', '') NOT IN ('draft','active','on_hold','complete')
++      OR COALESCE(v_row->>'deliveryPhase', '') NOT IN ('scoping','analysis','engagement','programming','delivery','complete')
++    ) THEN
++      RAISE EXCEPTION 'Created project classification is invalid' USING ERRCODE = '22023';
+     END IF;
+     IF v_row->>'decision' = 'create' AND COALESCE((v_row->>'canCreate')::boolean, false) IS NOT TRUE THEN
+       RAISE EXCEPTION 'A blocked or unconfirmed row was selected for creation' USING ERRCODE = '22023';
+@@ -294,7 +300,8 @@
+       NULLIF(btrim(v_row->>'sourceLocationText'), ''),
+       COALESCE(v_row->'formulaFields', '[]'::jsonb), v_row->>'decision', v_outcome,
+       COALESCE(v_row->'errors', '[]'::jsonb), COALESCE(v_row->'warnings', '[]'::jsonb),
+-      btrim(v_row->>'planType'), v_row->>'status', v_row->>'deliveryPhase',
++      CASE WHEN v_row->>'decision' = 'create' THEN btrim(v_row->>'planType') ELSE v_row->>'planType' END,
++      v_row->>'status', v_row->>'deliveryPhase',
+       v_project_id, p_actor_id
+     );
+   END LOOP;

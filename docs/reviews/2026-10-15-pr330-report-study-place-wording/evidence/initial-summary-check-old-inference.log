@@ -1,0 +1,50 @@
+
+ RUN  v4.1.11 /home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan
+
+ ❯ src/test/packet-geography-figure.test.ts (20 tests | 1 failed) 38ms
+     ✓ labels a bar whose length matches the ground distance measured off the drawing 2ms
+     ✓ keeps the drawing's proportions honest against real ground distances 0ms
+     ✓ withholds the bar entirely when a flat scale would be wrong, and says why 0ms
+     ✓ shows no scale for a project whose only geography is one point 0ms
+     ✓ puts north at the top: a more northerly point gets a smaller y 0ms
+     ✓ draws the study area, every corridor and the marker when all three exist 1ms
+     ✓ draws nothing it does not have 0ms
+     ✓ says so plainly when there is nothing at all, instead of printing an empty box 0ms
+     ✓ names the workspace fallback when the project itself has no area 0ms
+     ✓ skips a corridor row whose geometry is unreadable, and discloses the skip 0ms
+     ✓ says the study area could not be read rather than that there is none 0ms
+     ✓ names a pending migration as the reason when that is the reason 0ms
+     ✓ always leads with what the drawing is, before anything else 0ms
+     ✓ refuses to let a hand-drawn area imply a jurisdiction 0ms
+     ✓ names an uploaded boundary without calling it hand drawn or inferring a jurisdiction 0ms
+     × keeps resolved study-place identity separate from jurisdiction and legal authority 5ms
+     ✓ draws a bbox-only area as a dashed box and refuses to call it a boundary 0ms
+     ✓ keeps a shape crossing the date line contiguous instead of spanning the globe 0ms
+     ✓ thins a dense outline instead of writing every position into the PDF 24ms
+     ✓ ignores a marker outside the globe rather than drawing it somewhere wrong 0ms
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 19 passed (20)
+   Start at  20:25:14
+   Duration  563ms (transform 56ms, setup 54ms, import 44ms, tests 38ms, environment 330ms)
+
+JSON report written to /home/nathaniel/.t3/worktrees/openplan/t3-e444198e/docs/reviews/2026-10-15-pr330-report-study-place-wording/evidence/old-inference.json
+{"cwd":"/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan","cacheDir":"/home/nathaniel/.local/state/openplan/pr330-study-place-wording-lsrp6i0p/old-inference/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709","maxWorkers":1,"pool":"forks","configFile":"/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan/vitest.config.ts"}
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/test/packet-geography-figure.test.ts > packet geography figure — the caveat travels with the drawing > keeps resolved study-place identity separate from jurisdiction and legal authority
+AssertionError: expected 'The project\'s area of record — a pla…' to contain 'Project jurisdiction requires a separ…'
+
+Expected: "Project jurisdiction requires a separate human declaration and assessment."
+Received: "The project's area of record — a place that was searched for, so the boundary, the county filter and the jurisdiction can all be re-derived from it."
+
+ ❯ src/test/packet-geography-figure.test.ts:388:37
+    386|     expect(figure.legend[0].label).toBe("Nevada County");
+    387|     expect(figure.legend[0].detail).toMatch(/area of record/);
+    388|     expect(figure.legend[0].detail).toContain(
+       |                                     ^
+    389|       "Project jurisdiction requires a separate human declaration and …
+    390|     );
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯

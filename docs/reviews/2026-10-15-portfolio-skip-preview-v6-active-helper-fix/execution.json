@@ -1,0 +1,85 @@
+{
+  "scope": "V6 preparation and N1 file/fixture controls only. No live observation or operating stage.",
+  "units": [
+    {
+      "unit": "openplan-portfolio-v6-prepare-01",
+      "invocation": "ecbe74e5ce2441b5a817058c1234e30a",
+      "exit": 0,
+      "runtimeMs": 362,
+      "cpuMs": 196,
+      "roundedMemoryPeak": "31.3M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-portfolio-v6-n1-controls-01",
+      "invocation": "8157a8cb6ec143309cbf3fe85bdd6dea",
+      "exit": 0,
+      "runtimeMs": 255,
+      "cpuMs": 141,
+      "roundedMemoryPeak": "25.6M",
+      "swap": "0B",
+      "observations": 70
+    },
+    {
+      "unit": "openplan-portfolio-v6-n1-supplement-01",
+      "invocation": "8d578a9de7b24ae3ba042af5476b4061",
+      "exit": 0,
+      "runtimeMs": 187,
+      "cpuMs": 117,
+      "roundedMemoryPeak": "26M",
+      "swap": "0B",
+      "observations": 15
+    },
+    {
+      "unit": "openplan-portfolio-v6-file-audit-01",
+      "invocation": "9fc1db25c7fa42b2a0d2b89bfeeb3560",
+      "exit": 1,
+      "runtimeMs": 346,
+      "cpuMs": 191,
+      "roundedMemoryPeak": "18.4M",
+      "swap": "0B",
+      "reason": "Bare policy packet-name literal omitted in AST comparison normalization. Failed source retained. No pass."
+    },
+    {
+      "unit": "openplan-portfolio-v6-file-audit-02",
+      "invocation": "56412f8ed159444db4ea8d22c2116e83",
+      "exit": 0,
+      "runtimeMs": 383,
+      "cpuMs": 202,
+      "roundedMemoryPeak": "34.8M",
+      "swap": "0B"
+    },
+    {
+      "unit": "openplan-portfolio-v6-file-audit-03",
+      "invocation": "70becd1b38704b5da7aab234e7b7b12d",
+      "exit": 0,
+      "runtimeMs": 380,
+      "cpuMs": 211,
+      "roundedMemoryPeak": "35.3M",
+      "swap": "0B",
+      "purpose": "Final public prose, recipe and privacy screen; same bounded file custody. No N1 campaign rerun."
+    },
+    {
+      "unit": "openplan-portfolio-v6-final-readback-01",
+      "invocation": "2dfce084eb384a1c96cfdf82abf0d0be",
+      "exit": 0,
+      "runtimeMs": 159,
+      "cpuMs": 80,
+      "roundedMemoryPeak": "19.7M",
+      "swap": "0B",
+      "purpose": "Independent ROUND2 commit/file bindings and current public known-value screen only."
+    }
+  ],
+  "limits": {
+    "MemoryMax": "512M",
+    "MemorySwapMax": "0",
+    "CPUQuota": "50%",
+    "flock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "serial": true,
+    "privateHomeAndCache": true,
+    "python": "-B, PYTHONDONTWRITEBYTECODE=1"
+  },
+  "eventCounters": "not captured; no zero-event claim",
+  "historicalV5ContextUnits": "Not rerun; V5 results remain historical.",
+  "operatingStages": 0
+}

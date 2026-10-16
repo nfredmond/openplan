@@ -1,0 +1,1 @@
+Controller rejected the prior-order mutation before applying it because the eight-space binding also matched the suffix of the ten-space project-order line. ValueError: mutation binding is not unique: route.ts. Added a newline anchor. All prior trials and this rejection remain retained. Finally restored both sources. No ambiguous mutation counted as killed.

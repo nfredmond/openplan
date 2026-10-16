@@ -1,0 +1,13 @@
+[
+  {
+    "label": "harmless survivor: retains original draft and blocks account props changes until explicit restart",
+    "source": "src/components/projects/project-jurisdiction-editor.tsx",
+    "suite": "project-jurisdiction-editor.test.tsx",
+    "test": "retains original draft and blocks account props changes until explicit restart",
+    "diagnostic": "Stale draft submission blocked",
+    "survives": true,
+    "exitCode": 0,
+    "expectedObserved": false,
+    "failures": []
+  }
+]

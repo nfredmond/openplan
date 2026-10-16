@@ -8,6 +8,7 @@ describe("jurisdiction readiness evidence handoff", () => {
     const file = buildJurisdictionReadinessEvidenceFile(
       {
         id: "33333333-3333-4333-8333-333333333333",
+        jurisdiction_context: null,
         place_label: "Puerto Rico",
         place_country_code: "US",
         place_subdivision_code: "PR",
@@ -20,8 +21,8 @@ describe("jurisdiction readiness evidence handoff", () => {
     expect(file.sourceId).toBe("jurisdiction_readiness");
     expect(file.revisionToken).toMatch(/^[0-9a-f]{64}$/);
     expect(payload.registrySha256).toBe("c".repeat(64));
-    expect(payload.jurisdiction.id).toBe("US-PR");
-    expect(payload.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
+    expect(payload.entries[0].assessment.jurisdiction.id).toBe("US-PR");
+    expect(payload.entries[0].assessment.reports.find((report: { job: { id: string } }) => report.job.id === "land-use-plan"))
       .toMatchObject({ status: "unavailable", sources: expect.any(Array) });
   });
 
@@ -29,6 +30,7 @@ describe("jurisdiction readiness evidence handoff", () => {
     const file = buildJurisdictionReadinessEvidenceFile(
       {
         id: "33333333-3333-4333-8333-333333333333",
+        jurisdiction_context: null,
         place_label: "A Nevada county",
         place_country_code: "US",
         place_subdivision_code: "NV",
@@ -38,7 +40,7 @@ describe("jurisdiction readiness evidence handoff", () => {
     const text = file.bytes.toString("utf8");
     const payload = JSON.parse(text);
 
-    expect(payload.reports.every((report: { status: string }) => report.status === "unassessed")).toBe(true);
+    expect(payload.entries[0].assessment.reports.every((report: { status: string }) => report.status === "unassessed")).toBe(true);
     expect(text).not.toContain("California");
   });
 

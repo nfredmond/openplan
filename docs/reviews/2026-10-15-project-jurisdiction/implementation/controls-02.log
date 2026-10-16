@@ -1,0 +1,42 @@
+Running as unit: openplan-jurisdiction-controls-02.service; invocation ID: 5d3b474a8a2246cea1e2516dff3164ae
+harmless comment survivor: SURVIVED as expected
+strict input provenance: ASSERTION FAILED as expected
+bounded declaration count: ASSERTION FAILED as expected
+reference guard: ASSERTION FAILED as expected
+resolver metadata: ASSERTION FAILED as expected
+resolver identity match: ASSERTION FAILED as expected
+unread projection: ASSERTION FAILED as expected
+stored metadata strictness: ASSERTION FAILED as expected
+explicit unresolved suppresses fallback: ASSERTION FAILED as expected
+staff declaration cannot become supported: ASSERTION FAILED as expected
+resolved administrative guidance: ASSERTION FAILED as expected
+retain every context: ASSERTION FAILED as expected
+freeze same revision: ASSERTION FAILED as expected
+payload hash: ASSERTION FAILED as expected
+server actor provenance: ASSERTION FAILED as expected
+CAS predicate: ASSERTION FAILED as expected
+workspace write predicate: ASSERTION FAILED as expected
+write projection: ASSERTION FAILED as expected
+independent command boundary: ASSERTION FAILED as expected
+assistant execution refusal: ASSERTION FAILED as expected
+browser origin refusal: ASSERTION FAILED as expected
+expected account refusal: ASSERTION FAILED as expected
+expected workspace refusal: ASSERTION FAILED as expected
+role authorization: ASSERTION FAILED as expected
+preflight revision conflict: ASSERTION FAILED as expected
+concurrent revision conflict: ASSERTION FAILED as expected
+failed identity HTTP status: ASSERTION FAILED as expected
+geometry preservation boundary: ASSERTION FAILED as expected
+cancel local only: ASSERTION FAILED as expected
+editor exact revision: ASSERTION FAILED as expected
+retain conflict draft: ASSERTION FAILED UNEXPECTED
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/prove.py", line 102, in <module>
+    if not valid: raise RuntimeError('Unexpected mutation outcome ' + c['label'])
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+RuntimeError: Unexpected mutation outcome retain conflict draft
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 33.100s
+             CPU time consumed: 47.218s
+                   Memory peak: 230.2M (swap: 0B)

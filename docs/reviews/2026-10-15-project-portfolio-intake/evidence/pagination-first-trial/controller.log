@@ -1,0 +1,10 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-890cd78c/docs/reviews/2026-10-15-project-portfolio-intake/verify_controls.py", line 134, in <module>
+    main()
+    ~~~~^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-890cd78c/docs/reviews/2026-10-15-project-portfolio-intake/verify_controls.py", line 106, in main
+    replace_once(ROUTE, before, after)
+    ~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-890cd78c/docs/reviews/2026-10-15-project-portfolio-intake/verify_controls.py", line 61, in replace_once
+    raise ValueError(f'mutation binding is not unique: {path.name}')
+ValueError: mutation binding is not unique: route.ts

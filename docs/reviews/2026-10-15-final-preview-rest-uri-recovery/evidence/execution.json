@@ -1,0 +1,207 @@
+{
+  "resourceEnvelope": {
+    "memoryMax": 536870912,
+    "memorySwapMax": 0,
+    "cpuQuota": "50%",
+    "python": "-B; PYTHONDONTWRITEBYTECODE=1",
+    "serial": true
+  },
+  "units": [
+    {
+      "unit": "openplan-rest-recovery-inventory-before-01",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [
+        "openplan-rest-recovery-inventory-before-01.service: Consumed 1.751s CPU time over 3.487s wall clock time, 512M memory peak."
+      ],
+      "observedMemoryPeakMiB": 512,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-prepare-01",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 39.4,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-native-01",
+      "outcome": "retained-failed-trial",
+      "reason": "PGDATABASE adapter fails peer authentication before any target query.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 21.7,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-native-02",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 19.5,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-images-01",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 27.1,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-controls-01",
+      "outcome": "retained-failed-trial",
+      "reason": "Aliased fixture changes both created and active receipt IDs.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 21.7,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-controls-02",
+      "outcome": "retained-failed-trial",
+      "reason": "Overwrite-intent fault reaches retained-rest:Name before the expected later assertion.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 29.9,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-controls-03",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 29.4,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-observations-01",
+      "outcome": "retained-failed-trial",
+      "reason": "Whole State comparison includes changing gateway Health logs.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 42.3,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-observations-02",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 37,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-refresh-01",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 6.6,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-controls-04",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 30.1,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-controls-05",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 30.2,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-inventory-after-01",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [
+        "openplan-rest-recovery-inventory-after-01.service: Consumed 1.902s CPU time over 3.838s wall clock time, 512M memory peak."
+      ],
+      "observedMemoryPeakMiB": 512,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-check-01",
+      "outcome": "retained-failed-trial",
+      "reason": "Old report boolean is mistaken for the historical control row array.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 30.4,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-check-02",
+      "outcome": "retained-failed-trial",
+      "reason": "Known-value scanner includes a short common platform identifier.",
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 30.3,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-check-03",
+      "outcome": "success",
+      "reason": null,
+      "resourceLines": [],
+      "observedMemoryPeakMiB": 30.1,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt; journal excerpts may omit short-unit accounting."
+    },
+    {
+      "unit": "openplan-rest-recovery-journals-01",
+      "outcome": "success",
+      "observedMemoryPeakMiB": 154.2,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt."
+    },
+    {
+      "unit": "openplan-rest-recovery-final-check-04",
+      "outcome": "success",
+      "observedMemoryPeakMiB": 30.1,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt."
+    },
+    {
+      "unit": "openplan-rest-recovery-inventory-after-02",
+      "outcome": "success",
+      "observedMemoryPeakMiB": 468.2,
+      "observedSwapBytes": 0,
+      "accountingSource": "systemd-run --wait --pipe tool receipt."
+    }
+  ],
+  "originalDirectionCheck": {
+    "nestedPackage": "openplan/",
+    "exitCode": 0,
+    "resourceUnit": null,
+    "note": "Initial short npm direction check runs directly, before proof units."
+  },
+  "finalControlResult": "controls-05.json",
+  "priorControlSnapshots": "prior-control-snapshots.json binds full private records; current public controls-05.json is authoritative.",
+  "originalFileCount": 16870,
+  "preexistingFileChanges": 0,
+  "preexistingFileRemovals": 0,
+  "realTransitionExecuted": false,
+  "actualRestHead": 503,
+  "independentReview": "Pending parent-owned review of this final packet.",
+  "privateTrialEvidence": "Private directories, native error captures, systemd journal excerpts, and public named failure summaries; --pipe process stdout remains in the tool transcript.",
+  "additionalReportTrials": [
+    "git diff --cached --check detects whitespace-only unified-diff context lines. Zero-context diff artifacts preserve the exact source delta without those lines; templates remain unchanged."
+  ]
+}

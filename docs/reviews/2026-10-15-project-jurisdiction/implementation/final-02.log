@@ -1,0 +1,316 @@
+Running as unit: openplan-jurisdiction-final-02.service; invocation ID: fa212033f95c47f1b05c16776aac0aee
+failed to load config from /home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/vitest.config.mts
+
+[31m⎯⎯⎯⎯⎯⎯⎯[39m[1m[41m Startup Error [49m[22m[31m⎯⎯⎯⎯⎯⎯⎯⎯[39m
+Error: Missing "./internal" specifier in "vite" package
+    at e (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:6667:8)
+    at n (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:6679:14)
+    at o (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:6707:10)
+    at resolveExportsOrImports (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:32907:45)
+    at resolveDeepImport (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:32921:22)
+    at tryNodeResolve (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:32796:70)
+    at ResolveIdContext.handler (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:32635:16)
+    at EnvironmentPluginContainer.resolveId (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:28797:56)
+    at async TransformPluginContext.resolve (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:29009:13)
+    at async normalizeUrl (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:27191:22) {
+  pos: 9396,
+  plugin: 'vite:import-analysis',
+  id: '/home/nathaniel/code/openplan/openplan/node_modules/@vitejs/plugin-react/dist/index.js',
+  pluginCode: 'import { readFileSync } from "node:fs";\n' +
+    'import { dirname, join } from "node:path";\n' +
+    'import { fileURLToPath } from "node:url";\n' +
+    'import { exactRegex, makeIdFiltersToMatchWithQuery } from "@rolldown/pluginutils";\n' +
+    'import * as vite from "vite";\n' +
+    'import { createFilter } from "vite";\n' +
+    '\n' +
+    '//#region ../common/refresh-utils.ts\n' +
+    'const runtimePublicPath = "/@react-refresh";\n' +
+    'const reactCompRE = /extends\\s+(?:React\\.)?(?:Pure)?Component/;\n' +
+    'const refreshContentRE = /\\$RefreshReg\\$\\(/;\n' +
+    'const preambleCode = `import { injectIntoGlobalHook } from "__BASE__${runtimePublicPath.slice(1)}";\n' +
+    'injectIntoGlobalHook(window);\n' +
+    'window.$RefreshReg$ = () => {};\n' +
+    'window.$RefreshSig$ = () => (type) => type;`;\n' +
+    'const getPreambleCode = (base) => preambleCode.replace("__BASE__", base);\n' +
+    'function addRefreshWrapper(code, pluginName, id, reactRefreshHost = "") {\n' +
+    '\tconst hasRefresh = refreshContentRE.test(code);\n' +
+    '\tconst onlyReactComp = !hasRefresh && reactCompRE.test(code);\n' +
+    '\tif (!hasRefresh && !onlyReactComp) return void 0;\n' +
+    '\tlet newCode = code;\n' +
+    '\tnewCode += `\n' +
+    '\n' +
+    'import * as RefreshRuntime from "${reactRefreshHost}${runtimePublicPath}";\n' +
+    "const inWebWorker = typeof WorkerGlobalScope !== 'undefined' && self instanceof WorkerGlobalScope;\n" +
+    'if (import.meta.hot && !inWebWorker) {\n' +
+    '  if (!window.$RefreshReg$) {\n' +
+    '    throw new Error(\n' +
+    '      "${pluginName} can\'t detect preamble. Something is wrong."\n' +
+    '    );\n' +
+    '  }\n' +
+    '\n' +
+    '  RefreshRuntime.__hmr_import(import.meta.url).then((currentExports) => {\n' +
+    '    RefreshRuntime.registerExportsForReactRefresh(${JSON.stringify(id)}, currentExports);\n' +
+    '    import.meta.hot.accept((nextExports) => {\n' +
+    '      if (!nextExports) return;\n' +
+    '      const invalidateMessage = RefreshRuntime.validateRefreshBoundaryAndEnqueueUpdate(${JSON.stringify(id)}, currentExports, nextExports);\n' +
+    '      if (invalidateMessage) import.meta.hot.invalidate(invalidateMessage);\n' +
+    '    });\n' +
+    '  });\n' +
+    '}\n' +
+    '`;\n' +
+    "\tif (hasRefresh) newCode += `function $RefreshReg$(type, id) { return RefreshRuntime.register(type, ${JSON.stringify(id)} + ' ' + id) }\n" +
+    'function $RefreshSig$() { return RefreshRuntime.createSignatureFunctionForTransform(); }\n' +
+    '`;\n' +
+    '\treturn newCode;\n' +
+    '}\n' +
+    'function virtualPreamblePlugin({ name, isEnabled }) {\n' +
+    '\treturn {\n' +
+    '\t\tname: "vite:react-virtual-preamble",\n' +
+    '\t\tresolveId: {\n' +
+    '\t\t\torder: "pre",\n' +
+    '\t\t\tfilter: { id: exactRegex(name) },\n' +
+    '\t\t\thandler(source) {\n' +
+    '\t\t\t\tif (source === name) return "\\0" + source;\n' +
+    '\t\t\t}\n' +
+    '\t\t},\n' +
+    '\t\tload: {\n' +
+    '\t\t\tfilter: { id: exactRegex("\\0" + name) },\n' +
+    '\t\t\thandler(id) {\n' +
+    '\t\t\t\tif (id === "\\0" + name) {\n' +
+    '\t\t\t\t\tif (isEnabled()) return preambleCode.replace("__BASE__", "/");\n' +
+    '\t\t\t\t\treturn "";\n' +
+    '\t\t\t\t}\n' +
+    '\t\t\t}\n' +
+    '\t\t}\n' +
+    '\t};\n' +
+    '}\n' +
+    '\n' +
+    '//#endregion\n' +
+    '//#region ../common/warning.ts\n' +
+    'const silenceUseClientWarning = (userConfig) => ({ rollupOptions: { onwarn(warning, defaultHandler) {\n' +
+    '\tif (warning.code === "MODULE_LEVEL_DIRECTIVE" && (warning.message.includes("use client") || warning.message.includes("use server"))) return;\n' +
+    '\tif (warning.code === "SOURCEMAP_ERROR" && warning.message.includes("resolve original location") && warning.pos === 0) return;\n' +
+    '\tif (userConfig.build?.rollupOptions?.onwarn) userConfig.build.rollupOptions.onwarn(warning, defaultHandler);\n' +
+    '\telse defaultHandler(warning);\n' +
+    '} } });\n' +
+    '\n' +
+    '//#endregion\n' +
+    '//#region src/index.ts\n' +
+    'const refreshRuntimePath = join(dirname(fileURLToPath(import.meta.url)), "refresh-runtime.js");\n' +
+    'let babel;\n' +
+    'async function loadBabel() {\n' +
+    '\tif (!babel) babel = await import("@babel/core");\n' +
+    '\treturn babel;\n' +
+    '}\n' +
+    'const defaultIncludeRE = /\\.[tj]sx?$/;\n' +
+    'const defaultExcludeRE = /\\/node_modules\\//;\n' +
+    'const tsRE = /\\.tsx?$/;\n' +
+    `const compilerAnnotationRE = /['"]use memo['"]/;\n` +
+    'function viteReact(opts = {}) {\n' +
+    '\tconst include = opts.include ?? defaultIncludeRE;\n' +
+    '\tconst exclude = opts.exclude ?? defaultExcludeRE;\n' +
+    '\tconst filter = createFilter(include, exclude);\n' +
+    '\tconst jsxImportSource = opts.jsxImportSource ?? "react";\n' +
+    '\tconst jsxImportRuntime = `${jsxImportSource}/jsx-runtime`;\n' +
+    '\tconst jsxImportDevRuntime = `${jsxImportSource}/jsx-dev-runtime`;\n' +
+    '\tconst isRolldownVite = "rolldownVersion" in vite;\n' +
+    '\tlet runningInVite = false;\n' +
+    '\tlet isProduction = true;\n' +
+    '\tlet projectRoot = process.cwd();\n' +
+    '\tlet skipFastRefresh = true;\n' +
+    '\tlet base;\n' +
+    '\tlet isBundledDev = false;\n' +
+    '\tlet runPluginOverrides;\n' +
+    '\tlet staticBabelOptions;\n' +
+    '\tconst importReactRE = /\\bimport\\s+(?:\\*\\s+as\\s+)?React\\b/;\n' +
+    '\tconst viteBabel = {\n' +
+    '\t\tname: "vite:react-babel",\n' +
+    '\t\tenforce: "pre",\n' +
+    '\t\tconfig(_userConfig, { command }) {\n' +
+    '\t\t\tif ("rolldownVersion" in vite) if (opts.jsxRuntime === "classic") return { oxc: {\n' +
+    '\t\t\t\tjsx: {\n' +
+    '\t\t\t\t\truntime: "classic",\n' +
+    '\t\t\t\t\trefresh: command === "serve",\n' +
+    '\t\t\t\t\tdevelopment: false\n' +
+    '\t\t\t\t},\n' +
+    '\t\t\t\tjsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),\n' +
+    '\t\t\t\tjsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude)\n' +
+    '\t\t\t} };\n' +
+    '\t\t\telse return {\n' +
+    '\t\t\t\toxc: {\n' +
+    '\t\t\t\t\tjsx: {\n' +
+    '\t\t\t\t\t\truntime: "automatic",\n' +
+    '\t\t\t\t\t\timportSource: opts.jsxImportSource,\n' +
+    '\t\t\t\t\t\trefresh: command === "serve"\n' +
+    '\t\t\t\t\t},\n' +
+    '\t\t\t\t\tjsxRefreshInclude: makeIdFiltersToMatchWithQuery(include),\n' +
+    '\t\t\t\t\tjsxRefreshExclude: makeIdFiltersToMatchWithQuery(exclude)\n' +
+    '\t\t\t\t},\n' +
+    '\t\t\t\toptimizeDeps: { rolldownOptions: { transform: { jsx: { runtime: "automatic" } } } }\n' +
+    '\t\t\t};\n' +
+    '\t\t\tif (opts.jsxRuntime === "classic") return { esbuild: { jsx: "transform" } };\n' +
+    '\t\t\telse return {\n' +
+    '\t\t\t\tesbuild: {\n' +
+    '\t\t\t\t\tjsx: "automatic",\n' +
+    '\t\t\t\t\tjsxImportSource: opts.jsxImportSource\n' +
+    '\t\t\t\t},\n' +
+    '\t\t\t\toptimizeDeps: { esbuildOptions: { jsx: "automatic" } }\n' +
+    '\t\t\t};\n' +
+    '\t\t},\n' +
+    '\t\tconfigResolved(config) {\n' +
+    '\t\t\trunningInVite = true;\n' +
+    '\t\t\tbase = config.base;\n' +
+    '\t\t\tif (config.experimental.bundledDev) isBundledDev = true;\n' +
+    '\t\t\tprojectRoot = config.root;\n' +
+    '\t\t\tisProduction = config.isProduction;\n' +
+    '\t\t\tskipFastRefresh = isProduction || config.command === "build" || config.server.hmr === false;\n' +
+    '\t\t\tconst hooks = config.plugins.map((plugin) => plugin.api?.reactBabel).filter(defined);\n' +
+    '\t\t\tif (hooks.length > 0) runPluginOverrides = (babelOptions, context) => {\n' +
+    '\t\t\t\thooks.forEach((hook) => hook(babelOptions, context, config));\n' +
+    '\t\t\t};\n' +
+    '\t\t\telse if (typeof opts.babel !== "function") {\n' +
+    '\t\t\t\tstaticBabelOptions = createBabelOptions(opts.babel);\n' +
+    '\t\t\t\tif ((isRolldownVite || skipFastRefresh) && canSkipBabel(staticBabelOptions.plugins, staticBabelOptions) && (opts.jsxRuntime === "classic" ? isProduction : true)) delete viteBabel.transform;\n' +
+    '\t\t\t}\n' +
+    '\t\t},\n' +
+    '\t\toptions(options) {\n' +
+    '\t\t\tif (!runningInVite) {\n' +
+    '\t\t\t\toptions.transform ??= {};\n' +
+    '\t\t\t\toptions.transform.jsx = {\n' +
+    '\t\t\t\t\truntime: opts.jsxRuntime,\n' +
+    '\t\t\t\t\timportSource: opts.jsxImportSource\n' +
+    '\t\t\t\t};\n' +
+    '\t\t\t\treturn options;\n' +
+    '\t\t\t}\n' +
+    '\t\t},\n' +
+    '\t\ttransform: {\n' +
+    '\t\t\tfilter: { id: {\n' +
+    '\t\t\t\tinclude: makeIdFiltersToMatchWithQuery(include),\n' +
+    '\t\t\t\texclude: makeIdFiltersToMatchWithQuery(exclude)\n' +
+    '\t\t\t} },\n' +
+    '\t\t\tasync handler(code, id, options) {\n' +
+    '\t\t\t\tconst [filepath] = id.split("?");\n' +
+    '\t\t\t\tif (!filter(filepath)) return;\n' +
+    '\t\t\t\tconst ssr = options?.ssr === true;\n' +
+    '\t\t\t\tconst babelOptions = (() => {\n' +
+    '\t\t\t\t\tif (staticBabelOptions) return staticBabelOptions;\n' +
+    '\t\t\t\t\tconst newBabelOptions = createBabelOptions(typeof opts.babel === "function" ? opts.babel(id, { ssr }) : opts.babel);\n' +
+    '\t\t\t\t\trunPluginOverrides?.(newBabelOptions, {\n' +
+    '\t\t\t\t\t\tid,\n' +
+    '\t\t\t\t\t\tssr\n' +
+    '\t\t\t\t\t});\n' +
+    '\t\t\t\t\treturn newBabelOptions;\n' +
+    '\t\t\t\t})();\n' +
+    '\t\t\t\tconst plugins = [...babelOptions.plugins];\n' +
+    '\t\t\t\tlet reactCompilerPlugin = getReactCompilerPlugin(plugins);\n' +
+    '\t\t\t\tif (reactCompilerPlugin && ssr) {\n' +
+    '\t\t\t\t\tplugins.splice(plugins.indexOf(reactCompilerPlugin), 1);\n' +
+    '\t\t\t\t\treactCompilerPlugin = void 0;\n' +
+    '\t\t\t\t}\n' +
+    '\t\t\t\tif (Array.isArray(reactCompilerPlugin) && reactCompilerPlugin[1]?.compilationMode === "annotation" && !compilerAnnotationRE.test(code)) {\n' +
+    '\t\t\t\t\tplugins.splice(plugins.indexOf(reactCompilerPlugin), 1);\n' +
+    '\t\t\t\t\treactCompilerPlugin = void 0;\n' +
+    '\t\t\t\t}\n' +
+    '\t\t\t\tconst isJSX = filepath.endsWith("x");\n' +
+    '\t\t\t\tconst useFastRefresh = !(isRolldownVite || skipFastRefresh) && !ssr && (isJSX || (opts.jsxRuntime === "classic" ? importReactRE.test(code) : code.includes(jsxImportDevRuntime) || code.includes(jsxImportRuntime)));\n' +
+    '\t\t\t\tif (useFastRefresh) plugins.push([await loadPlugin("react-refresh/babel"), { skipEnvCheck: true }]);\n' +
+    '\t\t\t\tif (opts.jsxRuntime === "classic" && isJSX) {\n' +
+    '\t\t\t\t\tif (!isProduction) plugins.push(await loadPlugin("@babel/plugin-transform-react-jsx-self"), await loadPlugin("@babel/plugin-transform-react-jsx-source"));\n' +
+    '\t\t\t\t}\n' +
+    '\t\t\t\tif (canSkipBabel(plugins, babelOptions)) return;\n' +
+    '\t\t\t\tconst parserPlugins = [...babelOptions.parserOpts.plugins];\n' +
+    '\t\t\t\tif (!filepath.endsWith(".ts")) parserPlugins.push("jsx");\n' +
+    '\t\t\t\tif (tsRE.test(filepath)) parserPlugins.push("typescript");\n' +
+    '\t\t\t\tconst result = await (await loadBabel()).transformAsync(code, {\n' +
+    '\t\t\t\t\t...babelOptions,\n' +
+    '\t\t\t\t\troot: projectRoot,\n' +
+    '\t\t\t\t\tfilename: id,\n' +
+    '\t\t\t\t\tsourceFileName: filepath,\n' +
+    '\t\t\t\t\tretainLines: reactCompilerPlugin ? false : !isProduction && isJSX && opts.jsxRuntime !== "classic",\n' +
+    '\t\t\t\t\tparserOpts: {\n' +
+    '\t\t\t\t\t\t...babelOptions.parserOpts,\n' +
+    '\t\t\t\t\t\tsourceType: "module",\n' +
+    '\t\t\t\t\t\tallowAwaitOutsideFunction: true,\n' +
+    '\t\t\t\t\t\tplugins: parserPlugins\n' +
+    '\t\t\t\t\t},\n' +
+    '\t\t\t\t\tgeneratorOpts: {\n' +
+    '\t\t\t\t\t\t...babelOptions.generatorOpts,\n' +
+    '\t\t\t\t\t\timportAttributesKeyword: "with",\n' +
+    '\t\t\t\t\t\tdecoratorsBeforeExport: true\n' +
+    '\t\t\t\t\t},\n' +
+    '\t\t\t\t\tplugins,\n' +
+    '\t\t\t\t\tsourceMaps: true\n' +
+    '\t\t\t\t});\n' +
+    '\t\t\t\tif (result) {\n' +
+    '\t\t\t\t\tif (!useFastRefresh) return {\n' +
+    '\t\t\t\t\t\tcode: result.code,\n' +
+    '\t\t\t\t\t\tmap: result.map\n' +
+    '\t\t\t\t\t};\n' +
+    '\t\t\t\t\treturn {\n' +
+    '\t\t\t\t\t\tcode: addRefreshWrapper(result.code, "@vitejs/plugin-react", id, opts.reactRefreshHost) ?? result.code,\n' +
+    '\t\t\t\t\t\tmap: result.map\n' +
+    '\t\t\t\t\t};\n' +
+    '\t\t\t\t}\n' +
+    '\t\t\t}\n' +
+    '\t\t}\n' +
+    '\t};\n' +
+    '\tconst viteRefreshWrapper = {\n' +
+    '\t\tname: "vite:react:refresh-wrapper",\n' +
+    '\t\tapply: "serve",\n' +
+    '\t\tasync applyToEnvironment(env) {\n' +
+    '\t\t\tif (env.config.consumer !== "client" || skipFastRefresh) return false;\n' +
+    '\t\t\tlet nativePlugin;\n' +
+    '\t\t\ttry {\n' +
+    '\t\t\t\tnativePlugin = (await import("vite/internal")).reactRefreshWrapperPlugin;\n' +
+    '\t\t\t} catch {}\n' +
+    '\t\t\tif (!nativePlugin || [\n' +
+    '\t\t\t\t"7.1.10",\n' +
+    '\t\t\t\t"7.1.11",\n' +
+    '\t\t\t\t"7.1.12"\n' +
+    '\t\t\t].includes(vite.version)) return true;\n' +
+    '\t\t\tdelete viteRefreshWrapper.transform;\n' +
+    '\t\t\treturn nativePlugin({\n' +
+    '\t\t\t\tcwd: process.cwd(),\n' +
+    '\t\t\t\tinclude: makeIdFiltersToMatchWithQuery(include),\n' +
+    '\t\t\t\texclude: makeIdFiltersToMatchWithQuery(exclude),\n' +
+    '\t\t\t\tjsxImportSource,\n' +
+    '\t\t\t\treactRefreshHost: opts.reactRefreshHost ?? ""\n' +
+    '\t\t\t});\n' +
+    '\t\t},\n' +
+    '\t\ttransform: {\n' +
+    '\t\t\tfilter: { id: {\n' +
+    '\t\t\t\tinclude: makeIdFiltersToMatchWithQuery(include),\n' +
+    '\t\t\t\texclude: makeIdFiltersToMatchWithQuery(exclude)\n' +
+    '\t\t\t} },\n' +
+    '\t\t\thandler('... 4017 more characters,
+  loc: {
+    file: '/home/nathaniel/code/openplan/openplan/node_modules/@vitejs/plugin-react/dist/index.js',
+    line: 246,
+    column: 33
+  },
+  frame: '244 |  \t\t\tlet nativePlugin;\n' +
+    '245 |  \t\t\ttry {\n' +
+    '246 |  \t\t\t\tnativePlugin = (await import("vite/internal")).reactRefreshWrapperPlugin;\n' +
+    '    |                                   ^\n' +
+    '247 |  \t\t\t} catch {}\n' +
+    '248 |  \t\t\tif (!nativePlugin || [',
+  runnerError: Error: RunnerError
+      at reviveInvokeError (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:476:64)
+      at Object.invoke (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:549:11)
+      at async ModuleRunner.getModuleInformation (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1086:7)
+      at async request (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1103:83)
+      at async eval (/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/docs/reviews/2026-10-15-project-jurisdiction/implementation/vitest.config.mts:6:31)
+      at async ESModulesEvaluator.runInlinedModule (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:913:3)
+      at async ModuleRunner.directRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1146:59)
+      at async ModuleRunner.cachedRequest (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1053:73)
+      at async ModuleRunner.import (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/module-runner.js:1014:10)
+      at async runnerImport (file:///home/nathaniel/code/openplan/openplan/node_modules/vite/dist/node/chunks/config.js:35282:20)
+}
+
+
+
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 310ms
+             CPU time consumed: 373ms
+                   Memory peak: 68.4M (swap: 0B)

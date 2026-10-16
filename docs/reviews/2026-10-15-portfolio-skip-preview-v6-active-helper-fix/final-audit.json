@@ -1,0 +1,53 @@
+{
+  "preparedOnly": true,
+  "operatingStages": 0,
+  "noLiveTransport": true,
+  "oldPacketBytesAndModesExact": true,
+  "packetEntries": {
+    "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v5": 92,
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad/docs/reviews/2026-10-15-portfolio-skip-preview-v5-corrections": 38,
+    "/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4": 42,
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9eeec4ad/docs/reviews/2026-10-15-portfolio-skip-preview-v4-preparation": 30
+  },
+  "fixedOldInputCount": 280,
+  "priorPacketsBeforeSHA256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3",
+  "priorPacketsAfterSHA256": "4620bc1d6b633232dfdc98f3565954f52d8bca0bb301b813056791905e54c4d3",
+  "fixedOldInputsBeforeSHA256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf",
+  "fixedOldInputsAfterSHA256": "2c807d1f2ab4617b39d6bfb5579e2ce917be5f8e5d14661dd86e78db506a7cbf",
+  "sealedFiles": 34,
+  "manifestSHA256": "bd8ff7c66be0e7869ed6553bb9fce51b2a313ebf5d2452d41a69fc768bdb830d",
+  "checksumListSHA256": "1bd2e70cc13cc1d9af8944ef96d4856da162db6b5dbc42d423a62340aaa73e3c",
+  "parentRecipeSHA256": "5342df59072e6083353151f410e9ce73f3cb3a1cedfa75a263eee8a6181a9168",
+  "mechanicalASTComparison": "All V5 module ASTs unchanged except preserve/preflight and two N1 functions. Fixed root/unit/name/digest literal deltas normalized.",
+  "externalPinsAndHashGraphExact": true,
+  "oneStageGateMechanicalMatch": true,
+  "publicPrivateTemplatesAndDiffsExact": true,
+  "immutableV5Files": [
+    "acl-private.json",
+    "app-env-private.json",
+    "app-v1.env",
+    "candidate17.sql",
+    "configured-source-private.json",
+    "dependency-binding.json",
+    "expected-checks.json",
+    "input-bindings-private.json",
+    "migrations.json",
+    "old-helper-bindings-private.json",
+    "preservation-files.json",
+    "protected-databases.json",
+    "source-binding-private.json",
+    "storage-binding-private.json",
+    "upgrade-expectations.json",
+    "v4-full-inventory-before.json",
+    "v4-full-inventory-binding.json"
+  ],
+  "APP49Unchanged": true,
+  "executionEmpty": true,
+  "knownSecretScreenAndHarmlessInjectionCodeFaultControlsPass": true,
+  "historicalWholeRootReceipt": "Retained byte-identical. The five older roots were not scanned in V6; no current whole-root custody claim.",
+  "blindCategories": [
+    "No actual helper state, DB, HTTP, old-web observer, clone, compiler, build or journey.",
+    "Filesystem and known-value screening do not prove unknown-secret absence or hostile-host security.",
+    "Typed checkpoints establish point-in-time active states only, not continuous availability or process identity."
+  ]
+}

@@ -1,0 +1,22 @@
+--- f299/templates/app_binding_v1.py
++++ v2/templates/app_binding_v1.py
+@@ -15,7 +15,7 @@
+ HELPER_HEAD = '06a108010ab39aa42eed4c2bcda3e1371b8aa813'
+ RECOVERY_PRODUCER = 'd71e0aa7aa1b2c3c945ee87a54ea49d6a5772378'
+ SOURCE_ANCHOR = '82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547'
+-ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015')
++ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v2')
+ FROZEN = Path('/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015')
+ SOURCE_REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-e33fc359')
+ DEPS_REPO = Path('/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan')
+--- f299/templates/attest_start_v1.py
++++ v2/templates/attest_start_v1.py
+@@ -56,7 +56,7 @@
+         a.require(response.status==200, 'attest-http-status')
+         health=json.loads(response.read(65536))
+     a.require(health['service']=='openplan' and health['status']=='ok' and
+-              health['deployment']['commit']==a.APP_HEAD and
++              health['deployment']['commit']==a.APP_HEAD[:12].lower() and
+               health['deployment']['migrations']=={'expected':419,'latest':'20261017000016'}, 'attest-http-identity')
+     a.require(a.acquire(r)==active and a.app_check(r)[0]==app, 'attest-input-race')
+     a.write_once(a.RUN/'runtime-start-attestation.json',{'schema':1,'unit':UNIT,'mainPid':properties['MainPID'],

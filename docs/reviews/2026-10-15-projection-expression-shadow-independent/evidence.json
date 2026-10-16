@@ -1,0 +1,582 @@
+{
+  "disposition": "P2 closed. No new finding in the bounded correction review. Parent integration and fresh full QA remain required.",
+  "reviewedCommit": "9368f0804bad2c6d0569d53331bd8fbe1ce08c38",
+  "baseCommit": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "branch": "t3/review-projection-expression-shadow-fix",
+  "worktree": "/home/nathaniel/.t3/worktrees/openplan/t3-bc779056",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/projection-expression-shadow-independent-20261015-01",
+  "findings": [],
+  "closedFinding": {
+    "priority": "P2",
+    "sourceReportCommit": "2a33a9829",
+    "file": "openplan/src/test/supabase-call-sites.ts",
+    "line": 613,
+    "reason": "Named function/class expression self-bindings now prevent imported literal fallback."
+  },
+  "direction": {
+    "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-bc779056/openplan",
+    "exitCode": 0,
+    "remindersRetained": true,
+    "log": "\n> openplan@0.68.0 product:direction:check\n> node scripts/ops/product-direction-review.mjs --check\n\nProduct direction records checked; review deadline 2026-11-06: docs/reviews/product-direction/2026-10-06-integration-review.md (2 independent contexts, review v0.66.0, package v0.68.0).\nReview reminder: jurisdiction readiness registry review expired on 2026-09-28\nReview reminder: capability matrix review expired on 2026-10-05\nReview reminder: capability registry review expired on 2026-10-05\nReview reminder: latest review covers v0.66.0; package is v0.68.0\nReview reminder: latest direction review predates substantive changes: .gitattributes, .github/workflows/ci.yml, .github/workflows/integration-secret-rotation.yml, .github/workflows/node-queue-observation.yml, .github/workflows/odm-worker-regression.yml, .github/workflows/production-health.yml, .github/workflows/restore-drill.yml, .github/workflows/rls-isolation.yml\n"
+  },
+  "sourceBindings": {
+    "openplan/src/test/supabase-call-sites.ts": {
+      "baseSha256": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+      "reviewedSha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e"
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "baseSha256": "f477f4802c88ba038803a8d9e0a46820dd2e141a26277044fde8ecee68145f74",
+      "reviewedSha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432"
+    },
+    "openplan/src/test/migrations/schema-inventory.ts": {
+      "baseSha256": "4ad4d32735ea602100f2c06be2dfaed96858cd5d42fb4dc8eac25374cbd8e4bd",
+      "reviewedSha256": "4ad4d32735ea602100f2c06be2dfaed96858cd5d42fb4dc8eac25374cbd8e4bd"
+    },
+    "openplan/src/lib/projects/project-jurisdiction.ts": {
+      "baseSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "reviewedSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d"
+    },
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+      "baseSha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "reviewedSha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc"
+    },
+    "openplan/package.json": {
+      "baseSha256": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7",
+      "reviewedSha256": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7"
+    },
+    "openplan/package-lock.json": {
+      "baseSha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+      "reviewedSha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965"
+    },
+    "docs/reviews/2026-10-15-projection-expression-shadow-fix/STATUS.md": {
+      "baseSha256": null,
+      "reviewedSha256": "9a35d05a8f2486f4f96709c4471735299e1374866ec48687d51536d319984a04"
+    },
+    "docs/reviews/2026-10-15-projection-expression-shadow-fix/evidence.json": {
+      "baseSha256": null,
+      "reviewedSha256": "7d7857d1b762fcd5fc90684c8da5619a60390e87972d264cd2f3839abf99236c"
+    },
+    "docs/reviews/2026-10-15-combined-project-guard-fixes/STATUS.md": {
+      "baseSha256": "2b9836858c780d9feb16716ac0c179c13a02d84516cf9add71ffd3fd77609ea7",
+      "reviewedSha256": "2b9836858c780d9feb16716ac0c179c13a02d84516cf9add71ffd3fd77609ea7"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-33a0e222/docs/reviews/2026-10-15-combined-qa-fix-independent/STATUS.md": {
+      "sha256": "cd826df682bf40425be36a8fb21e40a28043de54bd96014a2a8a44d217af1744"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-33a0e222/docs/reviews/2026-10-15-combined-qa-fix-independent/evidence.json": {
+      "sha256": "f3cba1d69769f3dba2219f379336f84e85d345be13f832222a6b43c5e3c01b1b"
+    }
+  },
+  "priorSourceReadback": {
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-jurisdiction-readiness.tsx": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "097ffd2f698b5078e3946ba17352f55040444a8348661f5e81c37132ac8652e0",
+      "unchangedFromBase": true
+    },
+    "openplan/src/app/(app)/projects/[projectId]/_components/project-map-presence-panel.tsx": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "b6c1bd972f71a421c262f5029d6de04b77adbb3e48dbd7c2d457c78d2cfae051",
+      "unchangedFromBase": true
+    },
+    "openplan/src/components/projects/project-jurisdiction-editor.tsx": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "b7a8c7d83bc73330b53b501a5be00d9a16c3ebb78c0661821b64a30b58d9e190",
+      "unchangedFromBase": true
+    },
+    "openplan/src/components/projects/project-saved-map.tsx": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "0df6ac6876349ff1af24de44e7ca3d283a4c867e5696dc2b765fd01709e77469",
+      "unchangedFromBase": true
+    },
+    "openplan/src/test/planner-copy-says-the-plain-thing.test.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "19ec1a9cd8c287d51339197d2eaf321ec0ed5438cad83f7c0d6d82916540b031",
+      "unchangedFromBase": true
+    },
+    "openplan/src/test/reference-count-projection-guard.test.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+      "unchangedFromBase": false
+    },
+    "openplan/src/test/supabase-call-sites.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+      "unchangedFromBase": false
+    },
+    "openplan/src/test/engagement-synthesis-generation-worker.test.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "a7e6a23ec6038cd53f7bc1d4e77bd16c62dd6d74b654d23c9c17c806008c67c2",
+      "unchangedFromBase": true
+    },
+    "openplan/src/lib/engagement/synthesis-generation-worker.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "92544532a249a470b69d496b34f007360540999122f30c79cfd9394e035651f2",
+      "unchangedFromBase": true
+    },
+    "workers/planner_agent_connector/connector-client.mjs": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+      "unchangedFromBase": true
+    },
+    "openplan/package.json": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "154335990cbbe60cfb540426288ad0dc32d6b6a5468e28a9d143f179627ee2c7",
+      "unchangedFromBase": true
+    },
+    "openplan/package-lock.json": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "40c30e5b8ae8aac104f242af61298b9e5a3e85fe7b004fee3c44d945c7cfe965",
+      "unchangedFromBase": true
+    },
+    "openplan/src/app/api/projects/[projectId]/jurisdiction-readiness/route.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "60e5a0b63b28fc6ddcbdd650d83c96f2694d811582d67a24aa326a61fb091edc",
+      "unchangedFromBase": true
+    },
+    "openplan/src/lib/projects/project-jurisdiction.ts": {
+      "baseMatchesPriorEvidence": true,
+      "reviewedSha256": "471e271740a66dd314637b0378513f5eb035b896774f5bf2916a774aefd6c24d",
+      "unchangedFromBase": true
+    }
+  },
+  "boundaries": {
+    "existingTestFileBytesUnchangedAfterRemovingAddedFixtureBlock": true,
+    "scannerOnlyAddsTwoSyntaxKinds": true,
+    "unknownCeiling": 182,
+    "schemaInventoryUnchanged": true,
+    "sourceRootsTraversalAndRecordFieldsUnchanged": true,
+    "exactScannerBaseAfterRemovingOnlyAddedKinds": true,
+    "exactParent": "06a108010ab39aa42eed4c2bcda3e1371b8aa813"
+  },
+  "checks": [
+    {
+      "label": "fixed-baseline",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 10,
+      "skipped": 0,
+      "failedAssertions": [],
+      "logSha256": "325c968829790cc37115ab658cdce1a993ba28fa6d378cb7bc90f4d44c0b3ff2"
+    },
+    {
+      "label": "harmless-survivor",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 10,
+      "skipped": 0,
+      "failedAssertions": [],
+      "logSha256": "8ad79eabdbabc252052870b5bff029efb9f0e57f91de73308dedff256da58760"
+    },
+    {
+      "label": "old-reproducer",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": 0,
+      "skipped": 8,
+      "failedAssertions": [
+        {
+          "name": "reference count projections keeps a named 'function' expression's self-binding unknown",
+          "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+        },
+        {
+          "name": "reference count projections keeps a named 'class' expression's self-binding unknown",
+          "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+        }
+      ],
+      "logSha256": "de74c35496ca2dce644293c79b6e62ba7136defd08ff97d869837457d15d05a7"
+    },
+    {
+      "label": "omit-function",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": 1,
+      "skipped": 8,
+      "failedAssertions": [
+        {
+          "name": "reference count projections keeps a named 'function' expression's self-binding unknown",
+          "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+        }
+      ],
+      "logSha256": "5d2a228ca8bebb41efa5662bf45328ea5441c3a85cb19b013937444013f5d8a8"
+    },
+    {
+      "label": "omit-class",
+      "exitCode": 1,
+      "expectedExitCode": 1,
+      "passed": 1,
+      "skipped": 8,
+      "failedAssertions": [
+        {
+          "name": "reference count projections keeps a named 'class' expression's self-binding unknown",
+          "failureMessagesSha256": "2ae24cb9c362c2e8655a7a149aa033a4507da0a5c6148484ad0570422d05682e"
+        }
+      ],
+      "logSha256": "b6717951afc4e2049b80d9c2d04b22fe4c44dd4dad0c7e26a05511db07e01300"
+    },
+    {
+      "label": "restored-focused",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "passed": 117,
+      "skipped": 0,
+      "failedAssertions": [],
+      "logSha256": "acd99d99d4e79243d031a337ff8cc525b3bbad4a4e468f8e4831c6d0f96be2ea"
+    },
+    {
+      "label": "independent-probe",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "logSha256": "624f7212d8b8892e4f4754f55a0c5b02b5ecd3057e58c863462055d473c52f56"
+    },
+    {
+      "label": "versions",
+      "exitCode": 0,
+      "expectedExitCode": 0,
+      "logSha256": "92bb3d3dbe4d81ed91db6a7b567ba80a24e8776c2edf9149c50a630d722a0e54"
+    }
+  ],
+  "supplementChecks": [
+    {
+      "label": "probe-harmless",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    },
+    {
+      "label": "probe-function-fault",
+      "exitCode": 1,
+      "expectedExitCode": 1
+    },
+    {
+      "label": "scoped-types",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    },
+    {
+      "label": "scoped-lint",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    },
+    {
+      "label": "dependency-versions",
+      "exitCode": 0,
+      "expectedExitCode": 0
+    }
+  ],
+  "independentProbe": {
+    "results": [
+      {
+        "name": "function-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "FunctionExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "class-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "ClassExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "async-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "FunctionExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "generator-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "FunctionExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "class-static-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "ClassExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "class-field-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "ClassExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "function-outer-conservative",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "class-outer-conservative",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "unrelated-function-name",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "unrelated-class-name",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "anonymous-function",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "anonymous-class",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "method-key-is-not-binding",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "unshadowed",
+        "old": "id, jurisdiction_context",
+        "fixed": "id, jurisdiction_context",
+        "expected": "id, jurisdiction_context",
+        "symbolKinds": [
+          "ImportSpecifier"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "alias-self",
+        "old": "id, jurisdiction_context",
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "FunctionExpression"
+        ],
+        "identityUnchanged": true
+      },
+      {
+        "name": "direct-literal",
+        "old": "id",
+        "fixed": "id",
+        "expected": "id",
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "MUTABLE",
+        "old": null,
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "COMPUTED",
+        "old": null,
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "TEMPLATE",
+        "old": null,
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "PRIVATE",
+        "old": null,
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "static-template",
+        "old": "id",
+        "fixed": "id",
+        "expected": "id",
+        "symbolKinds": null,
+        "identityUnchanged": true
+      },
+      {
+        "name": "parameter",
+        "old": null,
+        "fixed": null,
+        "expected": null,
+        "symbolKinds": [
+          "Parameter"
+        ],
+        "identityUnchanged": true
+      }
+    ],
+    "census": {
+      "counts": {
+        "total": 2008,
+        "unknown": 181,
+        "checkable": 1802
+      },
+      "byteIdentical": true,
+      "baseSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+      "fixedSha256": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940"
+    }
+  },
+  "resources": {
+    "resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "461139968",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "supplement-resources.json": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "362954752",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    }
+  },
+  "versions": {
+    "node": "v24.22.0",
+    "typescript": "5.9.3",
+    "vitest": "4.1.11",
+    "argparse": "1.0.10",
+    "argparsePath": "/home/nathaniel/.local/state/openplan/projection-expression-shadow-independent-20261015-01/tree/openplan/node_modules/mammoth/node_modules/argparse/package.json",
+    "rootArgparseLockVersion": "2.0.1"
+  },
+  "restoration": {
+    "src/test/supabase-call-sites.ts": {
+      "sha256": "dc101ef4680083388f9dfee42ea1523b772abe484b80893278300e7b4e37973e",
+      "restored": true
+    },
+    "src/test/reference-count-projection-guard.test.ts": {
+      "sha256": "069169b61ea1bef0f5c472bc169ff1e8bbaf18e8073c7648fb9bdf149dcd6432",
+      "restored": true
+    }
+  },
+  "borrowedDependencies": {
+    "path": "/home/nathaniel/code/openplan/openplan/node_modules",
+    "readOnlyBubblewrapMount": true,
+    "networkUnshared": true,
+    "nodeHeapMiB": 640,
+    "vitestWorkers": 1,
+    "cpuQuota": "100%",
+    "lockfileExactQA": false
+  },
+  "privateFileHashes": {
+    "base-scanner.ts": "168c47061dee5e7a8f9753ee1feb4e3e2bab10b5ba93c953b44eab0c5e2bf2a9",
+    "base-sites.json": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+    "boundary-checks.json": "e14a2253c7c123d3cce9dfae3183465eec981a97d855acfe716e48f0c66c9398",
+    "dependency-versions.log": "0ac69d4a446a96d0629b04e16a704ee484aa903b811292aebccf744d389e14f5",
+    "diff.patch": "cc567f28f0c169efaafd916155da7ef1703a289230e1a3af97757018809a335b",
+    "direction.log": "a08e4c067ede0701f74179c6093504e0ec766567870d7cabc746af6e941fe519",
+    "fixed-baseline.log": "325c968829790cc37115ab658cdce1a993ba28fa6d378cb7bc90f4d44c0b3ff2",
+    "fixed-baseline.vitest.json": "4e2bcf61fea1f43fabcaa1f6d798d2323c5fbdecd9061b77c95ad987d2458e4b",
+    "fixed-sites.json": "2738a5ccf92243023f04ece7c358296cfa85b3f152853f8122f78093efab6940",
+    "harmless-survivor.log": "8ad79eabdbabc252052870b5bff029efb9f0e57f91de73308dedff256da58760",
+    "harmless-survivor.vitest.json": "90bee513934dbd258136691b9a2de2470bca2911a7684c96361172bbaac9a671",
+    "independent-probe.log": "624f7212d8b8892e4f4754f55a0c5b02b5ecd3057e58c863462055d473c52f56",
+    "old-reproducer.log": "de74c35496ca2dce644293c79b6e62ba7136defd08ff97d869837457d15d05a7",
+    "old-reproducer.vitest.json": "062ca492e93ea531115e09e9e5522cf568ea9804c83213b2a91a5ea648519c7f",
+    "omit-class.log": "b6717951afc4e2049b80d9c2d04b22fe4c44dd4dad0c7e26a05511db07e01300",
+    "omit-class.vitest.json": "04ca6290521d79e253d055110c0c4d948df52b135de50b7c0b6a0a9eb02b905b",
+    "omit-function.log": "5d2a228ca8bebb41efa5662bf45328ea5441c3a85cb19b013937444013f5d8a8",
+    "omit-function.vitest.json": "b761dba6a65212d4750ef59311e1abdc8b9cf5edd178f3659d7b548339e1369c",
+    "prior-STATUS.md": "cd826df682bf40425be36a8fb21e40a28043de54bd96014a2a8a44d217af1744",
+    "prior-evidence.json": "f3cba1d69769f3dba2219f379336f84e85d345be13f832222a6b43c5e3c01b1b",
+    "prior-source-binding-readback.json": "7d84731f0bad23d5aa14e72a1b920112784e0006a5e2a55aff26d995e40f929f",
+    "probe-function-fault.log": "6ae8aa3339d1fa65fb0b8277679e1830fed2db9815336b1d278946fd27a4e65b",
+    "probe-harmless.log": "624f7212d8b8892e4f4754f55a0c5b02b5ecd3057e58c863462055d473c52f56",
+    "probe-results.json": "2f591a55a54073bf0ed130bccca5fe8c5f9f767eafc0a4874a7a974d10c0e7e9",
+    "probe.cjs": "9829eebb98204c585922aae93aaa64dc5c191ec437ccb83babf16f5f936453b6",
+    "resources.json": "80333f0b89d5256902d4440ccbc38995dd7ce99f486901aa0af005f7e8976a35",
+    "restoration.json": "53a0808ea7f94457b0d4cf8c799dc1bbb288b2f318834a7f882ae1b61e45f751",
+    "restored-focused.log": "acd99d99d4e79243d031a337ff8cc525b3bbad4a4e468f8e4831c6d0f96be2ea",
+    "restored-focused.vitest.json": "0b6356630cfaaf25eedf937a7f3d2fbbf7386ad215f60282ae01c93b2dee91cd",
+    "run-results.json": "a06fc044ef44f90c1485a1de07911d3ed0fa7c658a6fc70e8272e98133596c4e",
+    "run.py": "0c0d5ac793ad11435347313ff95174ce74099cf93d3b6a31bbe4560cc8431872",
+    "scoped-lint.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "scoped-types.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "source-bindings.json": "fe52f863043c8ec65088d0270fcfc6e389f8bc7720a6cd10ff23c5fe903f2584",
+    "supplement-resources.json": "9a9117e9776568386c36411d30a9af24ace5f85ef4978a232c3b460da211bf52",
+    "supplement-restoration.json": "74770103a3cd3b707e48bf080b4229391a8c904a18b2d176739649cf10bf328e",
+    "supplement-results.json": "fd9488444a869a7ab26355e50effaf54ab4f505a080445ebf93e4dc121c32c73",
+    "supplement.py": "ba77a86227425bcea4fea29b3184cc7a7ea06ba214aeb3e1a06878bc10f4f44d",
+    "types.config.json": "7ad86223786249f1b8b5114ec37ecfd79fc499bb0673300f46cff91c0523e3ff",
+    "versions.log": "92bb3d3dbe4d81ed91db6a7b567ba80a24e8776c2edf9149c50a630d722a0e54",
+    "vitest.config.mts": "944b498eb91ec92732b0db6d2d484fc53bd422ba1f8f937d4e2bc41baba9ef61"
+  },
+  "limits": [
+    "Scanner syntax and source-root/recognizable-chain coverage are not complete TypeScript symbol or runtime data-flow analysis.",
+    "File-wide shadow refusal intentionally permits conservative unknowns outside expression self-binding scope.",
+    "Existing same-file declaration resolution is unchanged; this review closes imported fallback self-binding defect only.",
+    "No embedded-resource or view-column proof, installed-schema check, RLS, real query result, recovery, browser journey or practitioner acceptance.",
+    "117 focused cases in four files; no full suite or original 175-case campaign rerun.",
+    "Borrowed dependencies are read-only but not lockfile-exact. Mammoth argparse 1.0.10 versus root lock 2.0.1 remains outside this correction.",
+    "No new broad security/integrity audit, delegation, provider/cloud operation, dependency installation, database, application service, push, PR or main merge."
+  ]
+}

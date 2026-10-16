@@ -1,4 +1,6 @@
 import * as XLSX from "xlsx";
+import JSZip from "jszip";
+import { formatReviewWorkbook } from "@/lib/export/review-workbook-layout";
 import { PORTFOLIO_IMPORT_MAX_ROWS } from "@/lib/projects/portfolio-workbook";
 import {
   PORTFOLIO_ROUND_TRIP_HEADERS,
@@ -43,10 +45,14 @@ function text(value: string | number | null | undefined): string {
   return value == null ? "" : String(value);
 }
 
-function addColumnWidths(sheet: XLSX.WorkSheet): void {
-  sheet["!cols"] = PORTFOLIO_ROUND_TRIP_HEADERS.map((header) => ({
-    wch: Math.min(44, Math.max(14, header.length + 2)),
-  }));
+const projectWidths = [32, 40, 44, 22, 16, 18, 22, 14, 18, 32, 18, 16, 24, 16, 20, 40, 30, 30, 30];
+
+/** Reserve space for wrapped text, explicit line breaks and wide glyphs at 11 points. */
+function rowHeight(row: string[], widths: number[]): { hpt: number } {
+  const lines = row.map((value, index) => value.split("\n").reduce((sum, line) =>
+    sum + Math.max(1, Math.ceil(Array.from(line).reduce((width, char) =>
+      width + (char.codePointAt(0)! >= 0x2e80 ? 2 : 1), 0) / (widths[index] - 2))), 0));
+  return { hpt: Math.min(409, Math.max(24, ...lines.map(count => count * 15 + 8))) };
 }
 
 /**
@@ -54,12 +60,12 @@ function addColumnWidths(sheet: XLSX.WorkSheet): void {
  * Strings beginning with spreadsheet operators remain text cells; no formulas
  * are emitted, and decimal costs stay strings so large values are not rounded.
  */
-export function buildPortfolioRoundTripWorkbook(input: {
+export async function buildPortfolioRoundTripWorkbook(input: {
   workspaceId: string;
   workspaceName: string;
   projects: PortfolioRoundTripProject[];
   generatedAt: Date;
-}): Uint8Array {
+}): Promise<Uint8Array> {
   if (input.projects.length > PORTFOLIO_IMPORT_MAX_ROWS) {
     throw new Error("portfolio_round_trip_row_limit");
   }
@@ -92,7 +98,8 @@ export function buildPortfolioRoundTripWorkbook(input: {
   projectsSheet["!autofilter"] = {
     ref: `A1:${XLSX.utils.encode_col(PORTFOLIO_ROUND_TRIP_HEADERS.length - 1)}${Math.max(1, projectRows.length + 1)}`,
   };
-  addColumnWidths(projectsSheet);
+  projectsSheet["!cols"] = projectWidths.map(wch => ({ wch }));
+  projectsSheet["!rows"] = [{ hpt: 40 }, ...projectRows.map(row => rowHeight(row, projectWidths))];
 
   const instructions = [
     ["OpenPlan portfolio round-trip workbook", `version ${PORTFOLIO_ROUND_TRIP_VERSION}`],
@@ -121,11 +128,13 @@ export function buildPortfolioRoundTripWorkbook(input: {
     ["Source-location text", PORTFOLIO_ROUND_TRIP_HEADERS[PORTFOLIO_ROUND_TRIP_MAPPING.sourceLocation]],
   ];
   const readmeSheet = XLSX.utils.aoa_to_sheet(instructions);
-  readmeSheet["!cols"] = [{ wch: 26 }, { wch: 100 }];
+  const readmeWidths = [28, 48];
+  readmeSheet["!cols"] = readmeWidths.map(wch => ({ wch }));
+  readmeSheet["!rows"] = instructions.map(row => rowHeight(row, readmeWidths));
 
   const workbook = XLSX.utils.book_new();
   workbook.Props = {
-    Title: `OpenPlan project portfolio — ${input.workspaceName}`,
+    Title: `OpenPlan project portfolio: ${input.workspaceName}`,
     Subject: "Reviewed create-only portfolio round-trip",
     Author: "OpenPlan",
     CreatedDate: input.generatedAt,
@@ -133,7 +142,17 @@ export function buildPortfolioRoundTripWorkbook(input: {
   XLSX.utils.book_append_sheet(workbook, projectsSheet, PORTFOLIO_ROUND_TRIP_SHEET);
   XLSX.utils.book_append_sheet(workbook, readmeSheet, "Read me");
 
-  return new Uint8Array(XLSX.write(workbook, { bookType: "xlsx", type: "buffer", compression: true }));
+  workbook.Workbook = { Names: [
+    { Name: "_xlnm.Print_Titles", Sheet: 0, Ref: "'Projects'!$1:$1" },
+    { Name: "_xlnm.Print_Area", Sheet: 0, Ref: `'Projects'!$A$1:$S$${projectRows.length + 1}` },
+    { Name: "_xlnm.Print_Area", Sheet: 1, Ref: `'Read me'!$A$1:$B$${instructions.length}` },
+  ] };
+  const zip = await JSZip.loadAsync(XLSX.write(workbook, { bookType: "xlsx", type: "buffer", compression: true }) as Buffer);
+  await formatReviewWorkbook(zip, { worksheets: [
+    { page: { orientation: "landscape", scale: 100 } },
+    { headerRows: [1, 14], freezeHeader: false, page: { orientation: "portrait", scale: 100 } },
+  ] });
+  return new Uint8Array(await zip.generateAsync({ type: "nodebuffer", compression: "DEFLATE" }));
 }
 
 export function portfolioRoundTripFilename(workspaceName: string, generatedAt: Date): string {

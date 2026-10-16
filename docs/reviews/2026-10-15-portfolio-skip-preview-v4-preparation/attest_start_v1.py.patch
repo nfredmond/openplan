@@ -1,0 +1,23 @@
+--- /home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015/attest_start_v2.py
++++ attest_start_v1.py
+@@ -10,3 +10,3 @@
+-NEW_ROOT = Path('/home/nathaniel/.local/state/openplan/current-project-preview-host-attestation-v2-20261015')
+-V3 = Path('/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015-v3')
+-BINDING_SHA = 'c195d3be5eb3bcafb016f8794bf77e704d940bbf878bd725a874d85559c58329'
++NEW_ROOT = Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4')
++V3 = Path('/home/nathaniel/.local/state/openplan/project-portfolio-skip-preview-20261015-v4')
++BINDING_SHA = '14f1341eee4143e8d9506223c8a782c7e178cd5b037790695912dddf6e8a6517'
+@@ -48 +48 @@
+-UNIT = 'openplan-current-project-preview-app-21510042e-v3-web.service'
++UNIT = 'openplan-portfolio-skip-preview-49e3fa200-v4-web.service'
+@@ -73,2 +73,2 @@
+-    rows=a.command(['/usr/bin/ss','-H','-ltnp','sport = :3585']).decode().splitlines()
+-    a.require(len(rows)==1 and rows[0].split()[3]==a.HOST+':3585', 'attest-listener')
++    rows=a.command(['/usr/bin/ss','-H','-ltnp','sport = :3586']).decode().splitlines()
++    a.require(len(rows)==1 and rows[0].split()[3]==a.HOST+':3586', 'attest-listener')
+@@ -98 +98 @@
+-              health['deployment']['migrations']=={'expected':419,'latest':'20261017000016'}, 'attest-http-identity')
++              health['deployment']['migrations']=={'expected':420,'latest':'20261017000017'}, 'attest-http-identity')
+@@ -114 +114 @@
+-    a.require(Path(__file__).resolve()==NEW_ROOT/'attest_start_v2.py','attestor-root')
++    a.require(Path(__file__).resolve()==NEW_ROOT/'attest_start_v1.py','attestor-root')

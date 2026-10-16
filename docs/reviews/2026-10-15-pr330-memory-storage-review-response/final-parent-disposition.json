@@ -1,0 +1,15 @@
+{
+  "at": "2026-10-15T18:40:16.989514+00:00",
+  "reviewCommit": "77da95d6373fcb3cbd83eed728611a96f2322364",
+  "candidateCommit": "2545bb5e87296f6e41e275b8be62e53467adbe13",
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "fullReportAndTwoPrivateDriversRead": true,
+  "reviewEvidencePinsMatched": 7,
+  "publicPrivateReviewResultsMatched": 2,
+  "acceptedPreparationDesign": true,
+  "capacityAdmitted": false,
+  "operatingAdmissionCreated": false,
+  "operatingStages": 0,
+  "limits": "No real tmpfs/application/DB/helper/browser/hosted/release acceptance. Capacity still refuses. Known source/native evidence limits retained."
+}

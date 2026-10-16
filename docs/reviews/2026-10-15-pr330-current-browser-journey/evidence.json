@@ -1,0 +1,71 @@
+{
+  "at": "2026-10-16T03:24:19.787285+00:00",
+  "head": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "buildId": "Z9s8u410cuLfXdEF5aeoi",
+  "databaseOid": 6181197,
+  "migrationCount": 420,
+  "latestMigration": "20261017000017",
+  "attestationSHA256": "09cbf3d01f1571a30961baf664649da708fb309e5cd8a0b3a02e2023a608c4e3",
+  "postJourneyWorkingSHA256": "579541c5078d5a1ca47fb6d0fbe396196f702433c8d3bab24cf3b87ef36e9950",
+  "privateEvidence": {
+    "import-native-receipt.json": {
+      "bytes": 5272,
+      "sha256": "27cb9781eab6a2811df535bffc8de2109075488dccdcae31f86e229caaa73309"
+    },
+    "project-native-geography.json": {
+      "bytes": 163917,
+      "sha256": "d591005aa9e00705c7514b3f8110f315c1e148bfd5fcac02e23e57d94b896078"
+    },
+    "project-native-report-context.json": {
+      "bytes": 1126,
+      "sha256": "88a75595ef859e77b4acf6fc5f9de3ebbc46f837bdd2dd76609d6f170d86a706"
+    },
+    "report-native-artifact.json": {
+      "bytes": 81265,
+      "sha256": "b1bacef600a4e5af01668328b6e62f2c2bc4fce3c2a23afbe58bfd7cfe301ba3"
+    },
+    "viewer-reverse-390-snapshot.json": {
+      "bytes": 15157,
+      "sha256": "0cf0550b4ba3ac48cd34c8d21bddd5e9c166221061e711169901f4e27dfb43c7"
+    },
+    "synthetic-corridor.geojson": {
+      "bytes": 187,
+      "sha256": "5876ca8916bec0ab8d68bee50ea409f0a8c1009c92a3f91ab925cab88b2c41aa"
+    },
+    "roles-native-receipt.json": {
+      "bytes": 499,
+      "sha256": "30c119b2365ddeae9050504803d3cf1879a96088d0d65774bcd9ce2dea66e525"
+    },
+    "capture-manifest.json": {
+      "bytes": 2374,
+      "sha256": "c21cede8ba466688e8b5b8117b989beeed6d7b6cc97021b234d608f407ccb92c"
+    },
+    "post-browser-web-resources.json": {
+      "bytes": 575,
+      "sha256": "75a89eeb8fdf9fc436f5fdd6942de658f91e93d79603ea62339ff3154fd05219"
+    },
+    "report-project-context-comparison.json": {
+      "bytes": 506,
+      "sha256": "1b94e5a973e441faad85ba6fa183ee23dc361eaaace05c3b5ce873d28a8d9913"
+    },
+    "report-project-context-typed-identity.json": {
+      "bytes": 592,
+      "sha256": "9ce39a38f65523c1935968ed3bd212743faaa79fcf977bfcadc8ab0ef466b860"
+    }
+  },
+  "artifactHashes": {
+    "workbook": "42d18a3e8e02906b826bd9afd38a19ea6c7c75ac417db669c13bffe113388b90",
+    "geopackage": "346a4840bb6de8c5c1b83b22020793938e5d676e18c5f76023a165e5289d95e5",
+    "legacyJurisdictionJSON": "16df13de92ef2d859443cdd396810b82cfd5712d3ffe04a6509a223254e51c52",
+    "declaredJurisdictionJSON": "6e353130edfbc2534221615de1af98bab959c3ff4dd7149c196052727a1f7973",
+    "html": "ae40a50aad7b4480476e2768e0038132c5f5aa92e9e640f8058fdfe0f593b500"
+  },
+  "boundary": "Local browser interactions, native read-only target data, artifact comparisons and protected-state checks; no raster/mobile visual, schema-pending, hosted, human, scientific or release acceptance.",
+  "durableReceiptHashes": {
+    "runtime-start-attestation.json": "209bc2b29c9b24fadfc0aa7f8cf609caf8b3e42c46949d0ed54b43ed82eebb2f",
+    "post-journey-result.json": "b9b266cb65e4b08768f55bb4b0d6792412d02042676d468141389d06375545f9",
+    "execution/start-intent.json": "f509c9a94d613e68f7cfd1f58a7c6a4acf22e2352859d6227add4f2ce84230ac"
+  },
+  "durableReceiptParsedValuesMatchWorking": true
+}

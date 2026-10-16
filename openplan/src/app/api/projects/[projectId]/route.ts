@@ -1,6 +1,8 @@
+import { requireProviderBrowserOrigin } from "@/lib/assistant/provider-server";
+import { projectJurisdictionInputSchema, resolveProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { loadProjectAccess } from "@/lib/programs/api";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -73,6 +75,8 @@ const estimatedCostSchema = z.object({
  */
 const patchProjectSchema = z
   .object({
+    jurisdiction: projectJurisdictionInputSchema.optional(),
+    expectedRevision: z.string().datetime({ offset: true }).optional(),
     name: projectNameSchema.optional(),
     summary: z.union([projectSummarySchema, z.null()]).optional(),
     status: projectStatusSchema.optional(),
@@ -110,6 +114,8 @@ const patchProjectSchema = z
       ])
       .optional(),
   })
+  .strict()
+  .refine((value) => value.jurisdiction ? Boolean(value.expectedRevision && Object.keys(value).length === 2) : value.expectedRevision === undefined, { message: "Save jurisdiction separately with the expected project revision." })
   .refine((value) => Object.values(value).some((field) => field !== undefined), {
     message: "Provide at least one field to update.",
   });
@@ -179,6 +185,33 @@ export async function PATCH(request: NextRequest, context: { params: Promise<{ p
     if ("response" in resolved) return resolved.response;
     const { access, userId, supabase } = resolved;
     const project = access.project!;
+
+    if (payload.data.jurisdiction) {
+      if (["x-openplan-assistant-execution-source", "x-openplan-assistant-input-hash", "x-openplan-assistant-approval-id"].some(key => request.headers.has(key))) {
+        return NextResponse.json({ error: "Project jurisdiction requires a human decision." }, { status: 403 });
+      }
+      try { requireProviderBrowserOrigin(request); } catch {
+        return NextResponse.json({ error: "Project jurisdiction requires the project browser form." }, { status: 403 });
+      }
+      if (request.headers.get("x-openplan-expected-user") !== userId || request.headers.get("x-openplan-expected-workspace") !== project.workspace_id) {
+        return NextResponse.json({ error: "The account or workspace changed. Keep your draft." }, { status: 403 });
+      }
+      if (project.updated_at !== payload.data.expectedRevision) {
+        return NextResponse.json({ error: "The project changed. Keep your draft and reload to compare before saving." }, { status: 409 });
+      }
+      let jurisdiction;
+      try { jurisdiction = await resolveProjectJurisdiction(payload.data.jurisdiction, userId, resolvePlaceBoundary); }
+      catch { return NextResponse.json({ error: "Jurisdiction identity could not be resolved. Keep your draft." }, { status: 503 }); }
+      // Only this field crosses the service seam. Access was checked with the user
+      // client above; workspace and revision remain predicates on the actual write.
+      const saved = await createServiceRoleClient().from("projects").update({ jurisdiction_context: jurisdiction })
+        .eq("id", project.id).eq("workspace_id", project.workspace_id).eq("updated_at", payload.data.expectedRevision!)
+        .select("id, updated_at, jurisdiction_context").maybeSingle();
+      if (saved.error) return NextResponse.json({ error: "Could not confirm jurisdiction save. Keep your draft." }, { status: 503 });
+      if (!saved.data) return NextResponse.json({ error: "The project changed. Keep your draft and reload to compare before saving." }, { status: 409 });
+      audit.info("project_jurisdiction_updated", { projectId: project.id, workspaceId: project.workspace_id, userId });
+      return NextResponse.json({ project: saved.data }, { headers: { "Cache-Control": "private, no-store" } });
+    }
 
     const updates: Record<string, unknown> = {};
     if (payload.data.name !== undefined) updates.name = payload.data.name;

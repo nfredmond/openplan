@@ -1,0 +1,63 @@
+{
+  "candidate": "2545bb5e87296f6e41e275b8be62e53467adbe13",
+  "head": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "publicPins": 45,
+  "preparationListPins": 44,
+  "runtimePins": 42,
+  "internalEdges": 43,
+  "sourceGitModeBlobSizeMatches": 17349,
+  "sourceBytes": 528310488,
+  "sourceSHA256ContentRecomputed": false,
+  "migrationGitContentPins": 420,
+  "v6Diffs": 7,
+  "priorReviewPins": 6,
+  "archive": {
+    "sha256": "39804679eb1409e60119647904de1df9cee08797f187c43d6ada110a59b792e9",
+    "bytes": 21425954,
+    "members": 665,
+    "filesCompared": 421,
+    "extractionOrRecovery": false
+  },
+  "retainedControlCounts": {
+    "controls.json": 22,
+    "storage-fixes.json": 8,
+    "journal-controls.json": 10,
+    "journal-boundary-controls.json": 4,
+    "admission-controls.json": 10,
+    "admission-mutations.json": 2
+  },
+  "independentFifoSpecimen": {
+    "harmlessComment": "survived",
+    "fifo": "metadata only; FIFO not opened",
+    "realRegularInputMismatch": "files:input.txt",
+    "disabledHasher": "missing real input refusal assertion",
+    "restored": true,
+    "actualProtectedRootsTouched": false
+  },
+  "resourcesBefore": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "10432512",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "resourcesAfter": {
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "memory.swap.current": "0",
+    "cpu.max": "50000 100000",
+    "memory.peak": "43098112",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+  },
+  "freeDiskBytes": 232853504,
+  "admissionJournalRuntimeAbsent": true,
+  "executionEmpty": true,
+  "blindCategories": [
+    "retained preservation receipts; no new complete protected-root/DB/helper/web census",
+    "source Git object identity versus inventory, not all 528 MB rehashed from source blobs",
+    "archive streaming content readback, not extraction/recovery/installation",
+    "private FIFO fixture and in-memory function mutation, not real application or DB operation"
+  ]
+}

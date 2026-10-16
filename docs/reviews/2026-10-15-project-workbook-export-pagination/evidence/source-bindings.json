@@ -1,0 +1,45 @@
+{
+  "baselineCommit": "b259d73e56d22d4935ef2789874cf69901786b33",
+  "branch": "t3/project-workbook-export-pagination",
+  "files": [
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "baselineSha256": "110a5bb8181b18ebd1d13307c6d38427d4f0b07fab6f7f47438f161891659cb7",
+      "candidateSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "baselineSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "candidateSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d"
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+      "baselineSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "candidateSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec"
+    },
+    {
+      "path": "openplan/src/lib/projects/project-place.ts",
+      "baselineSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "candidateSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344"
+    },
+    {
+      "path": "openplan/supabase/config.toml",
+      "baselineSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "candidateSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e"
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "baselineSha256": "3735b79c91d9eec88d158cf75c692ce11fba9bc269d76ec47f824647e73a3af9",
+      "candidateSha256": "3735b79c91d9eec88d158cf75c692ce11fba9bc269d76ec47f824647e73a3af9"
+    },
+    {
+      "path": "openplan/src/test/project-workbook-export-pagination.test.ts",
+      "baselineSha256": null,
+      "candidateSha256": "be5f01ad6b195f5726d041b281ce028cb1a43eccb5c0e261263dee4f922eb1a6"
+    }
+  ],
+  "reportedConcern": {
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-890cd78c/docs/reviews/2026-10-15-project-portfolio-intake/STATUS.md",
+    "sha256": "7b82483ed155e6c73f67ee659de48773f0b8ed32b8743588b71c74cf5255a517"
+  }
+}

@@ -1,5 +1,6 @@
+import { PROJECT_JURISDICTION_COLUMNS } from "@/lib/projects/project-jurisdiction";
 import { NextRequest, NextResponse } from "next/server";
-import { buildJurisdictionReadinessPayload } from "@/lib/jurisdiction-readiness/payload";
+import { buildProjectJurisdictionReadinessPayload, buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
 import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient } from "@/lib/supabase/server";
@@ -18,7 +19,7 @@ export async function GET(
 
   const read = await supabase
     .from("projects")
-    .select("id, place_label, place_country_code, place_subdivision_code")
+    .select(PROJECT_JURISDICTION_COLUMNS)
     .eq("id", projectId)
     .maybeSingle();
   if (read.error) {
@@ -27,24 +28,21 @@ export async function GET(
   }
   if (!read.data) return NextResponse.json({ error: "Project not found" }, { status: 404 });
 
-  const payload = buildJurisdictionReadinessPayload(
-    {
-      countryCode: read.data.place_country_code ?? null,
-      subdivisionCode: read.data.place_subdivision_code ?? null,
-      label: read.data.place_label ?? null,
-    },
-    jurisdictionReadinessRegistrySha256(),
-  );
   const download = new URL(request.url).searchParams.get("download") === "1";
+  let payload;
+  try { payload = (download ? buildProjectJurisdictionReadinessExportPayload : buildProjectJurisdictionReadinessPayload)(read.data, jurisdictionReadinessRegistrySha256()); }
+  catch {
+    return NextResponse.json({ error: "Saved project jurisdiction is invalid or was not read. Readiness is unavailable." }, { status: 500 });
+  }
   audit.info("project_jurisdiction_readiness_read", {
     projectId,
-    jurisdictionId: payload.jurisdiction.id,
+    contextSource: payload.contextSource,
     download,
     registrySha256: payload.registrySha256,
   });
   return NextResponse.json(payload, {
     headers: download
-      ? { "content-disposition": `attachment; filename="jurisdiction-readiness-${projectId}.json"` }
-      : undefined,
+      ? { "Cache-Control": "private, no-store", "content-disposition": `attachment; filename="jurisdiction-readiness-${projectId}.json"` }
+      : { "Cache-Control": "private, no-store" },
   });
 }

@@ -1,0 +1,317 @@
+{
+  "status": "scope-limited; no production formatting change",
+  "sourcePin": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "nativeReviewCommit": "8e664f31b60b674c68b79d5ea3248e09a1640e58",
+  "sourceParity": [
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "expectedSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "currentSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "equal": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "expectedSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "currentSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "equal": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+      "expectedSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "currentSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "equal": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-workbook.ts",
+      "expectedSha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "currentSha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "equal": true
+    },
+    {
+      "path": "openplan/src/lib/projects/project-place.ts",
+      "expectedSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "currentSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "equal": true
+    },
+    {
+      "path": "openplan/supabase/config.toml",
+      "expectedSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "currentSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "equal": true
+    }
+  ],
+  "priorNativeParityReusedReadOnly": [
+    {
+      "records": 0,
+      "allTypedCellsEqual": true,
+      "xlsxSha256": "40ae4e85dd62644adc529332d49918ff92e7438a44c9bfbae54104f32168fa6c",
+      "odsSha256": "2d808e233ba3a7f7a8083d361ff3d2000392800efc1eb323b3d3a9cf38681b2f"
+    },
+    {
+      "records": 1000,
+      "allTypedCellsEqual": true,
+      "xlsxSha256": "13cf9d52d34ae21e794f2f841994c65d61c56072ef7ae2d49cbc36e11cd0ab34",
+      "odsSha256": "18055b4db903d8e0dac854c0655310b05da29ab27836e908866bb76ae1defae0"
+    },
+    {
+      "records": 2000,
+      "allTypedCellsEqual": true,
+      "xlsxSha256": "5178026f4834555fc151efc934f2a162b9dfe17cc527dd3bd76561398d9e880c",
+      "odsSha256": "a13d2cac185268a7571b6a06a5ff8b0d9f3d73237f59d02d967c4e953a258a59"
+    }
+  ],
+  "originalsPreserved": true,
+  "installedWriterVersion": "0.20.3",
+  "observations": {
+    "baseline": {
+      "wrapAlignments": 0,
+      "fonts": 1,
+      "pageSetupElements": [
+        0,
+        0
+      ],
+      "customRows": [
+        0,
+        0
+      ],
+      "readmeWidths": [
+        {
+          "min": "1",
+          "max": "1",
+          "customWidth": "1",
+          "width": "26.83203125"
+        },
+        {
+          "min": "2",
+          "max": "2",
+          "customWidth": "1",
+          "width": "100.83203125"
+        }
+      ],
+      "printTitles": [],
+      "parts": {
+        "xl/styles.xml": "1cd6076bd97af399158ba1214d7fd77dbd74d8cc497de99c755dea4f0da0e1ae",
+        "xl/worksheets/sheet1.xml": "32f8b8741707c6c438d07e368b36c190078285e375e926826d11a1148b10f374",
+        "xl/worksheets/sheet2.xml": "e451d999d1a880e347e881dfb20f60127fc5f027542b5f72272ca08ada4c15e0"
+      }
+    },
+    "style-only": {
+      "wrapAlignments": 0,
+      "fonts": 1,
+      "pageSetupElements": [
+        0,
+        0
+      ],
+      "customRows": [
+        0,
+        0
+      ],
+      "readmeWidths": [
+        {
+          "min": "1",
+          "max": "1",
+          "customWidth": "1",
+          "width": "26.83203125"
+        },
+        {
+          "min": "2",
+          "max": "2",
+          "customWidth": "1",
+          "width": "100.83203125"
+        }
+      ],
+      "printTitles": [],
+      "parts": {
+        "xl/styles.xml": "1cd6076bd97af399158ba1214d7fd77dbd74d8cc497de99c755dea4f0da0e1ae",
+        "xl/worksheets/sheet1.xml": "32f8b8741707c6c438d07e368b36c190078285e375e926826d11a1148b10f374",
+        "xl/worksheets/sheet2.xml": "e451d999d1a880e347e881dfb20f60127fc5f027542b5f72272ca08ada4c15e0"
+      }
+    },
+    "supported-metadata-trial": {
+      "wrapAlignments": 0,
+      "fonts": 1,
+      "pageSetupElements": [
+        0,
+        0
+      ],
+      "customRows": [
+        1,
+        24
+      ],
+      "readmeWidths": [
+        {
+          "min": "1",
+          "max": "1",
+          "width": "30.83203125",
+          "customWidth": "1"
+        },
+        {
+          "min": "2",
+          "max": "2",
+          "width": "58.83203125",
+          "customWidth": "1"
+        }
+      ],
+      "printTitles": [
+        {
+          "name": "_xlnm.Print_Titles",
+          "localSheetId": "0",
+          "ref": "'Projects'!$1:$1"
+        }
+      ],
+      "parts": {
+        "xl/styles.xml": "1cd6076bd97af399158ba1214d7fd77dbd74d8cc497de99c755dea4f0da0e1ae",
+        "xl/worksheets/sheet1.xml": "6cf5a65d1c7172b649f40fd508360a3f53cc248475c4897474663e9187b637f5",
+        "xl/worksheets/sheet2.xml": "664627ce5f04d36cd97833fc187d309b9a89a69aa93938215f2a40cb293ad0c7"
+      }
+    }
+  },
+  "styleOnlyPartsEqualBaseline": true,
+  "emptyTrialNativeTypedCellsEqual": true,
+  "reusedOracleControls": [
+    {
+      "case": "harmless dictionary metadata",
+      "outcome": "survived"
+    },
+    {
+      "case": "renamed sheet",
+      "outcome": "detected",
+      "diagnostic": "sheet names and order"
+    },
+    {
+      "case": "changed header",
+      "outcome": "detected",
+      "diagnostic": "exact nineteen headers"
+    },
+    {
+      "case": "dropped row",
+      "outcome": "detected",
+      "diagnostic": "complete project record count"
+    },
+    {
+      "case": "duplicate ID",
+      "outcome": "detected",
+      "diagnostic": "unique project IDs"
+    },
+    {
+      "case": "swapped first and last IDs",
+      "outcome": "detected",
+      "diagnostic": "stable complete ID order including first and last"
+    },
+    {
+      "case": "formula marker on literal",
+      "outcome": "detected",
+      "diagnostic": "literal cells without formulas"
+    },
+    {
+      "case": "missing last column",
+      "outcome": "detected",
+      "diagnostic": "nineteen project cells"
+    },
+    {
+      "case": "decimal text cast to number",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "unknown price year replaced by zero",
+      "outcome": "detected",
+      "diagnostic": "decimal text and unknown blank semantics"
+    },
+    {
+      "case": "changed description",
+      "outcome": "detected",
+      "diagnostic": "all project literal text values"
+    },
+    {
+      "case": "changed Read me row count",
+      "outcome": "detected",
+      "diagnostic": "complete Read me metadata and instructions"
+    },
+    {
+      "case": "runtime error",
+      "outcome": "refused"
+    },
+    {
+      "case": "wrong assertion",
+      "outcome": "refused"
+    }
+  ],
+  "privateBudgetControls": [
+    {
+      "case": "harmless extra field",
+      "refused": false
+    },
+    {
+      "case": "memory beyond 1 GiB",
+      "refused": true
+    },
+    {
+      "case": "swap enabled",
+      "refused": true
+    },
+    {
+      "case": "full CPU quota",
+      "refused": true
+    },
+    {
+      "case": "two CPUs",
+      "refused": true
+    }
+  ],
+  "scopedTests": {
+    "numTotalTests": 5,
+    "numPassedTests": 5,
+    "numFailedTests": 0,
+    "numPendingTests": 0
+  },
+  "nativeResources": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "memory.peak": "87400448",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "cpu.max": "50000 100000",
+    "affinity": [
+      23
+    ]
+  },
+  "nativeArtifacts": {
+    "odsSha256": "300854c1b99f65530b20d92e8d5fefdfc2e70c6f2e751398f02f0795346cf76f",
+    "pdfSha256": "0771aa8bd43712780c656c08a4dd10a4c4454087be27ec40bf31993e1fb8fec3",
+    "pdfPageRange": "1-12",
+    "pdfPages": 8,
+    "inspectedPages": [
+      7,
+      8
+    ],
+    "pngDPI": 100,
+    "pngs": {
+      "trial-page-7.png": "93d0828cf34b92cb9facd6ed51a9a931abb1c1e0ae664cc1a0f3497645526a95",
+      "trial-page-8.png": "3d3a95c523f76329129ce7acab9a25819af2228d32ec1e816d7f41a4ba8a706f"
+    }
+  },
+  "privateRunners": {
+    "capability.cjs": "2ad5045ac6b5249356898c23caacbd280cbc996f7b4e04720586761f54607323",
+    "run-03/native-probe.py": "ce817707ca9e205c4e1e661baf82b0ed83e82abb1ffc74304fa1a29a73c71f63",
+    "finish-evidence.py": "8d4b663407aae1db7f1e55f38aa3433a6a973665a39ca83dabaa64dbc76dac2c"
+  },
+  "priorRunners": {
+    "review.py": "12b88e575dd07bba10dbd5116e156da96ebcff4d8382ac61653cfa970e6b28ed",
+    "supplement.py": "24257626394b7432b8c3dc604792a897ffff10ee38fd4eb873c756e9cf478b7c"
+  },
+  "directionLogSha256": "2349b0ee7d422190abfd0f0f90f5ca367d8e91bc77de43d491bb98690fffad87",
+  "failures": [
+    {
+      "trial": "initial native attempt",
+      "reason": "ERROR: no valid pipe path found.",
+      "resolution": "Fresh attempt mounts a private tmpfs at /tmp."
+    },
+    {
+      "trial": "supported-metadata native attempt",
+      "reason": "exact nineteen headers",
+      "resolution": "Existing ODS parser omits Calc table-header-rows. Retain failure; do not call it data loss or native acceptance. Use style-only trial for the writer limit."
+    }
+  ],
+  "blind": "No implementation candidate, populated candidate print acceptance, interactive worksheet acceptance, Excel, browser download, 390px journey or complete V1 claim.",
+  "nativeReviewReportSha256": "8622cfac0d5edde8748f5d91f377cde7249392cf85f070ba65e9c027727a15cf"
+}

@@ -1,0 +1,283 @@
+{
+  "status": "PREPARATION ONLY; local Git blobs, no live verification",
+  "sourceHead": "43ae7e44ecec74eefadd14431822e0a521bbec24",
+  "sourceTree": "a0b425d6a6d0e4b18b5f3379df0a8d3b84faab33",
+  "applicationTree": "bed283ab0c937ead65378a2e9d26c177ceee6938",
+  "datedHostedCommit": "ced6aced9ddc6bf839891fb8e44d67c2d1dfe053",
+  "baselineMigrationTree": "66ab98595f41938d4843c0b5b2364816bb2cb13a",
+  "candidateMigrationTree": "13879efd2e597bf44006192c9c37da401fd2ff9b",
+  "baselineSourceMigrationCount": 418,
+  "candidateSourceMigrationCount": 420,
+  "changedOrRemovedBaselineFiles": [],
+  "addedMigrationFiles": [
+    "openplan/supabase/migrations/20261017000016_project_jurisdiction_context.sql",
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql"
+  ],
+  "sources": [
+    {
+      "path": "AGENTS.md",
+      "gitBlob": "3c06bc08b33ea2a077c471a3d118a26d0d94b849",
+      "sha256": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+      "bytes": 15766
+    },
+    {
+      "path": "docs/product/V1_PRODUCT_CONTRACT.md",
+      "gitBlob": "9341d233956db380c390039d2fbb4e67556cfe96",
+      "sha256": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+      "bytes": 22959
+    },
+    {
+      "path": "docs/product/DEVELOPMENT_RELEASE_POLICY.md",
+      "gitBlob": "26e7f356ffea80ac1209b7765e03661922cbf0b1",
+      "sha256": "460346812fb5535c3bf35f84bae6cb5f33983a50913c7a568a06a217cdf6ae09",
+      "bytes": 5888
+    },
+    {
+      "path": "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+      "gitBlob": "c82e3b73af3a48361d91f631947f02e7a863f04c",
+      "sha256": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+      "bytes": 41302
+    },
+    {
+      "path": "docs/ROADMAP.md",
+      "gitBlob": "88e7470521e92446043f678d8bc2f82cbe85d744",
+      "sha256": "5634ff62ebc543f17b6bd2a493f2210887f437159b315bb7b8b3678cd3fd6ef9",
+      "bytes": 16788
+    },
+    {
+      "path": "docs/reviews/product-direction/2026-10-06-integration-review.md",
+      "gitBlob": "6a0e124f7550af645b0328a8eea88c7c00591134",
+      "sha256": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+      "bytes": 7260
+    },
+    {
+      "path": "docs/ARCHITECTURE.md",
+      "gitBlob": "ebf829c986fca3178852933f1ae8ebe589ba74a2",
+      "sha256": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+      "bytes": 31233
+    },
+    {
+      "path": "docs/ops/KNOWN_ISSUES.md",
+      "gitBlob": "1bba76f8326a05af07f791f2ce966f66a82a49b9",
+      "sha256": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+      "bytes": 120384
+    },
+    {
+      "path": "docs/ops/HOSTED_LIVE_2026-10-11.md",
+      "gitBlob": "0e3d0ed42b174be83f62d2d263dc3476e9b50fc0",
+      "sha256": "d0a8d150d8e1466bf131bd5b81f002e755fc24528a883a0f8fb55e1386810c3e",
+      "bytes": 15502
+    },
+    {
+      "path": "docs/ops/HOSTED_RELAUNCH_2026-10-10.md",
+      "gitBlob": "9cf087a4437d25df3cdce08075ff41b4f0a89ce3",
+      "sha256": "eb461219678356999ff433c4f7e028b3c275fd2cc1cb011cb48d508e26c0f9eb",
+      "bytes": 22283
+    },
+    {
+      "path": "openplan/docs/SELF_HOSTING.md",
+      "gitBlob": "bc6181b1430228b201fc0e587b94d6266e7c24f2",
+      "sha256": "90053933d65cfb5e1d761ec1afa97f37e146b0af4c21161fd0b1141b0934ade0",
+      "bytes": 36525
+    },
+    {
+      "path": "openplan/docs/ops/HOSTED_OPERATIONS.md",
+      "gitBlob": "a07f038b72c3cdcaad46f9923bf73b1c31921214",
+      "sha256": "eac75dae31e056d81bfdd676a97e6612fb829a2dadfd8e1b14e78a9ba45663e3",
+      "bytes": 9352
+    },
+    {
+      "path": "openplan/docs/ops/HOSTED_RECOVERY.md",
+      "gitBlob": "2b0a5b37e89fc6492c4e2c276dce9a8604719e6f",
+      "sha256": "b93e59cde0ad0c2d1768273b29ace4bade93b104c3b146e04b4c97d62e479e95",
+      "bytes": 10435
+    },
+    {
+      "path": "openplan/docs/ops/BACKUP_AND_RESTORE.md",
+      "gitBlob": "6fc8686824dd6077a283e0827efd60acb631555b",
+      "sha256": "3b43d427ba165fcf82c372701d967c782d9d200d552174346b5e57f6fce0ae15",
+      "bytes": 31420
+    },
+    {
+      "path": "openplan/docs/ops/RUNBOOK.md",
+      "gitBlob": "c5e654e2fc948b85ae0d11b347eb37f8b37a9a49",
+      "sha256": "7aad0f46117af9a1b0e933413fe920c89cabd480c16c30023734d3b8c3b5de11",
+      "bytes": 29536
+    },
+    {
+      "path": "workers/hosted-backup/DEPLOY.md",
+      "gitBlob": "742ecd0b55666b4e9a1c69e784af8dca7b875484",
+      "sha256": "394fe6f05da480afa40262257f520c857dbd97c044a9043c0e503a7c341ba98d",
+      "bytes": 4198
+    },
+    {
+      "path": "workers/hosted-node/DEPLOY.md",
+      "gitBlob": "2c16914779d055b125fef5287fa8cd6ac8019106",
+      "sha256": "9175b73a58e46187c978058ccc3b717f9aecd581da31d38365029c33a101a3ac",
+      "bytes": 2928
+    },
+    {
+      "path": "workers/hosted-models/DEPLOY.md",
+      "gitBlob": "2c0bf7d2dac997ae450cb0c92b177f67cfa2e133",
+      "sha256": "e98d1a07602172a9126092b16a8947242144a98485ad4ef9ceccc3674405404f",
+      "bytes": 4205
+    },
+    {
+      "path": "workers/ocr_worker/DEPLOY.md",
+      "gitBlob": "d2272ebe7006fa26dd5080e088090bc6ea6af248",
+      "sha256": "d6bd292a2a51d8495f9bfcf067b55192b3df445c238892cdeec79730e6d2945a",
+      "bytes": 14209
+    },
+    {
+      "path": "openplan/vercel.json",
+      "gitBlob": "c82dd0cdf97f42eb93c8ed7271cee2161fe2d1c0",
+      "sha256": "31b698297f25e698d8ff925d02ded4fedb98a843d34afb648bf38fe8e96b3613",
+      "bytes": 870
+    },
+    {
+      "path": "openplan/package.json",
+      "gitBlob": "5d057fb537d5a0fe0cef75ad2b146817a4544863",
+      "sha256": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71",
+      "bytes": 13767
+    },
+    {
+      "path": ".github/workflows/upgrade-path.yml",
+      "gitBlob": "c7316c12216e7fef06731dd9c0cb0b306d199f3d",
+      "sha256": "ed80867b784c6160fb73f5f077c064853c05f2e68c1b401b8fc52652a79fd1f8",
+      "bytes": 13826
+    },
+    {
+      "path": ".github/workflows/production-health.yml",
+      "gitBlob": "f0ef54c93b434580a31462116cc1a9019e3cdebe",
+      "sha256": "69bc6cd30195630cc7e7f87d7752baf70d3955d813101939c53f94417926bbf9",
+      "bytes": 2353
+    },
+    {
+      "path": "openplan/scripts/ops/check-prod-health.mjs",
+      "gitBlob": "2bbfae8ff4dc25efd39e652039c0bcf8175db97e",
+      "sha256": "2df634499bb512137fda76573dd2d2a22a4c1a643f64a7832271f47b6b25b6f0",
+      "bytes": 5124
+    },
+    {
+      "path": "openplan/scripts/ops/check-deep-health.mjs",
+      "gitBlob": "6418aa090eba96e8dc09b17838afd8c52b2e0337",
+      "sha256": "797339e703a722119c0822ab8b99ea5837aa8aab8b9aaffcc2b00d9943460d23",
+      "bytes": 9720
+    },
+    {
+      "path": "openplan/scripts/ops/check-migration-inventory.mjs",
+      "gitBlob": "d773898747d5e4393816dcbbaea66fba6649ec88",
+      "sha256": "e06e5aeb626294a995183b831940342d5492e7a77f7fb7d6767601a4bc8af369",
+      "bytes": 9321
+    },
+    {
+      "path": "openplan/src/app/api/health/route.ts",
+      "gitBlob": "139d03408d653e59d5ef7ccaac25b3a47ea6ea35",
+      "sha256": "d9e42a2ca04795334020528a866eb937126933dbcb5b83fbb65fd00d4938e4b1",
+      "bytes": 2521
+    },
+    {
+      "path": "openplan/src/app/api/health/deep/route.ts",
+      "gitBlob": "9a26e782e473ccf3d13e833ce24d365bcb53b2d9",
+      "sha256": "341d5485688dd13c9c759f565dacfd7c8b435906f6570c3a80a4303de383f475",
+      "bytes": 6392
+    },
+    {
+      "path": "openplan/src/lib/ops/migration-manifest.ts",
+      "gitBlob": "7f0846e8db27fb0e1e80287f13b91275465b37e8",
+      "sha256": "1128e4efaaa8b5da5208c934e4b674b1f0c68d08a24710e7f2d49b6cb9a00954",
+      "bytes": 2366
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017000016_project_jurisdiction_context.sql",
+      "gitBlob": "f9f37bbddee2304c722f93c059a395d31afd73ff",
+      "sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+      "bytes": 5380
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql",
+      "gitBlob": "63017f66cc311ce56712d99b0d3c8aab5eda1555",
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+      "bytes": 15938
+    },
+    {
+      "path": "docs/reviews/2026-10-15-main329-delivery-readback/DELIVERY_VERIFIED.md",
+      "gitBlob": "5948660d9077c585d990e35cc0402da3bebb7ee9",
+      "sha256": "29d655857fae101cefd2b4093ee8edbb87be9315a459f5762c7b565ba7974278",
+      "bytes": 6044
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-jurisdiction-native/REPORT.md",
+      "gitBlob": "c40d0a87ad8045c07d314e2ce7a03aa948da13b7",
+      "sha256": "dfe12f92edf03ceb6ffc2370ae4f604f195327614394f9f4496cd750c0ed91bc",
+      "bytes": 17659
+    },
+    {
+      "path": "docs/reviews/2026-10-15-project-jurisdiction-native/proof.json",
+      "gitBlob": "372c761033e61ea80f77b813ada58b8184596189",
+      "sha256": "58480c547e0a37da363f46fd9c09953d74e496e9023391d92235ce43ece9ad19",
+      "bytes": 102690
+    },
+    {
+      "path": "docs/reviews/2026-10-15-portfolio-skip-invalid-native/STATUS.md",
+      "gitBlob": "62d6713f15c86c99befed77680a6f589ed383947",
+      "sha256": "b09a653a5f977f29a46aa77c0785955d1bdbed92e98c93eb0617e5df173eb268",
+      "bytes": 8178
+    },
+    {
+      "path": "docs/reviews/2026-10-15-portfolio-skip-invalid-native/evidence.json",
+      "gitBlob": "86765f0ba254779e599e15bfbd114eceb5ffcdc6",
+      "sha256": "c4263e4124c71e68b7ea4e9afb5af6f2b70dac88144edb27c3dda06e9171f16f",
+      "bytes": 9648
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-review-response/native-parent-readback.json",
+      "gitBlob": "e8fc981aed6cf26aa42ee59e6c557027a92fbaf7",
+      "sha256": "81ca07c7fb1fd7877d75002585ee4d5977f846fca78975b921b12ef99789e37a",
+      "bytes": 1536
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-current-browser-journey/STATUS.md",
+      "gitBlob": "fe8cc76edfc39892d4066f76fbef0b2b43aba198",
+      "sha256": "95b9934646318412e4837617c36fec9a5c7aa28f7c420232b9c0a14e7b05c879",
+      "bytes": 9559
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-current-browser-journey/INTEGRATION.md",
+      "gitBlob": "9dfeaf655f0449070952e1c80b0dd7300b4f4478",
+      "sha256": "7f020576d0747786e26cbe08748a8651a446e2d9d3d2eccbfa19a082a3625a0b",
+      "bytes": 2018
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-current-browser-journey/evidence.json",
+      "gitBlob": "6682a382642b3a9a2e36b4491a1a11716e032107",
+      "sha256": "1e723993a60752e34fd3e2cb456bd6225c81ad4f6bd504d0072aeb6c8d292181",
+      "bytes": 3242
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-report-pending-schema-fix/STATUS.md",
+      "gitBlob": "15d5ae0a1ddafa8d2f9d58ce4f145a02786929a3",
+      "sha256": "bbaaf3b8691ba6776777e354b560a34b36add7032be66504fb7e0b700aa3e604",
+      "bytes": 8780
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-report-study-place-wording/REPORT.md",
+      "gitBlob": "20b7cebb247f94dc0bcaefe08a95b4ba6871fffd",
+      "sha256": "7a1bf126493b2af5f5f0f536abf7c55848cf8c13989d878a63c499ef584cf809",
+      "bytes": 5062
+    },
+    {
+      "path": "docs/reviews/2026-10-15-pr330-workbook-keyset-native-proof/REPORT.md",
+      "gitBlob": "0ce1ce0cdbc5c13cef5c1619bf2f6527299bf700",
+      "sha256": "ef326acfa56739ea8eab51648b3b544a7dce9a7a138c31e6e4d74b4b9fd6a32b",
+      "bytes": 19204
+    }
+  ],
+  "rehearsalIntermediate": {
+    "commit": "21510042e94bcaf80f262205ad156a7bb639e35c",
+    "migrationTree": "5b9f586f19ecc4e90d6b47b99b75eb198aa63ef0",
+    "sourceMigrationCount": 419,
+    "baselineDifference": "only addition of exact candidate migration 16",
+    "migration16GitBlob": "f9f37bbddee2304c722f93c059a395d31afd73ff"
+  }
+}

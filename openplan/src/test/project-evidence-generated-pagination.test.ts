@@ -3,7 +3,7 @@ vi.mock("server-only", () => ({}));
 vi.mock("@/lib/project-evidence-bundles/engagement-export-privacy", () => ({ loadPublishableProjectEngagementGeometry: async () => ({ data: [], error: null }) }));
 import { loadProjectEvidenceGeneratedFiles } from "@/lib/project-evidence-bundles/generated-records";
 
-const project = { id: "11111111-1111-4111-8111-111111111111", workspace_id: "22222222-2222-4222-8222-222222222222", name: "Synthetic complete export", status: "active", plan_type: "corridor_plan", delivery_phase: "planning", created_at: "2026-10-01T00:00:00Z", updated_at: "2026-10-01T00:00:00Z" };
+const project = { jurisdiction_context: null, id: "11111111-1111-4111-8111-111111111111", workspace_id: "22222222-2222-4222-8222-222222222222", name: "Synthetic complete export", status: "active", plan_type: "corridor_plan", delivery_phase: "planning", created_at: "2026-10-01T00:00:00Z", updated_at: "2026-10-01T00:00:00Z" };
 function fixture(failSecondPage: false | string = false) {
  const tables: Record<string, Record<string, unknown>[]> = {};
  for (const table of ["models", "model_runs", "model_run_artifacts", "county_runs", "modeling_source_manifests", "modeling_validation_results", "modeling_claim_decisions", "modeling_validation_assessments", "modeling_validation_structural_diagnoses", "modeling_validation_instrument_v2_custody", "model_attempt_instrument_custody", "modeling_structural_demand_diagnosis_custody", "modeling_distributed_work_loading_custody", "data_dataset_project_links"]) {
@@ -34,6 +34,9 @@ describe("generated project evidence complete reads", () => {
  it("preserves every model, run and custody record under a smaller response cap", async () => {
   const { client, calls } = fixture();
   const result = await loadProjectEvidenceGeneratedFiles(client, project, new Date(project.updated_at));
+  expect(calls.find(call => call.table === "projects")?.projection).toBe("*");
+  expect(JSON.parse(result.files.find(file => file.path === "project/project.json")!.bytes.toString()).jurisdiction_context).toBeNull();
+  expect(JSON.parse(result.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString()).contextSource).toBe("legacy_study_place");
   const file = result.files.find(file => file.sourceId === "modeling_evidence")!;
   const modeling = JSON.parse(file.bytes.toString("utf8"));
   for (const key of ["models", "modelRuns", "modelArtifacts", "countyRuns", "sourceManifests", "validationResults", "validationAssessments", "structuralDiagnoses", "comparableObservationCustody", "attemptInstrumentCustody", "structuralDemandCustody", "distributedWorkLoadingCustody", "claimDecisions"]) expect(modeling[key], key).toHaveLength(7);

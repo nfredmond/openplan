@@ -1,0 +1,35 @@
+{
+  "artifactHarmless": "survived",
+  "artifactFaults": [
+    "id",
+    "name",
+    "estimated_cost_amount",
+    "updated_at"
+  ],
+  "exactInputRestore": true,
+  "replayedAcceptedTrials": [
+    "cap-1000/fault-header",
+    "cap-1000/fault-inclusive",
+    "cap-1000/fault-partial-error",
+    "cap-1000/fault-sentinel",
+    "cap-1000/fault-serializer",
+    "cap-1000/fault-short",
+    "cap-137/baseline",
+    "cap-2/fault-old-offset",
+    "cap-2/harmless",
+    "cap-2/restored",
+    "failed-attempt-03-cap-1000/fault-limit",
+    "failed-attempt-03-cap-1000/fault-order",
+    "failed-attempt-03-cap-1000/fault-projection",
+    "failed-attempt-03-cap-1000/fault-scope",
+    "failed-attempt-03-cap-1000/remaining-rls"
+  ],
+  "oldReaderCount": 4,
+  "oldReaderDuplicate": [
+    "4972d4a4-d88b-5914-bf14-1d95b822545a"
+  ],
+  "oldReaderOmitted": [
+    "804caf17-6e7c-50ec-82fb-e61a803cda2f"
+  ],
+  "blind": "Artifact/XML readback proves these retained workbook cell values, not native Excel behavior, cookie login, Next HTTP, or arbitrary future serializer changes."
+}

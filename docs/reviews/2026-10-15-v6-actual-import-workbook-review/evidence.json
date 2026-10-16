@@ -1,0 +1,222 @@
+{
+  "inputs": {
+    "imported-project-workbook.xlsx": {
+      "bytes": 10970,
+      "sha256": "0b1b75fadfe597c545a00a0d558ee16b890be6bbc86f22bcb537c3832d035225"
+    },
+    "confirm-request.json": {
+      "bytes": 722,
+      "sha256": "e773ecb376414166ca46c5051e9d48ae0e834f2c990308fe9ccc6dcc0e355e01"
+    },
+    "confirm-response.json": {
+      "bytes": 4900,
+      "sha256": "5d74dbfcad56e464731556d1f7cbc0b753f8598327b30281368fbcfd6f7dcb25"
+    },
+    "repeat-preview-response.json": {
+      "bytes": 4908,
+      "sha256": "b82c35ead16bdfaf90cd55ab18da0592eaeba7ed74509abf0e009883a293644c"
+    },
+    "approved-review-response.json": {
+      "bytes": 4710,
+      "sha256": "d7e53501108e935ddb4a20039bd5a5561204c7ddbf0ba40b0db5171acbb54dcc"
+    }
+  },
+  "inventory_sha256": "b4f2b1cf7c3184fe8a97197db3c1ae4cde967ba4963381ebcee394b68e9c768d",
+  "baseline": {
+    "zip_members": 11,
+    "project_rows": 2,
+    "project_cells": 57,
+    "readme_cells": 46,
+    "all_cells_literal_strings": true,
+    "recomputed_preview_hashes": [
+      "b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508",
+      "b8d13529a3267b9b733a3ec80181494615d44c4940e833866bf691da006d0508",
+      "42bdae1e13a4097303267ea5d82694217ac7595fd2294bc763a7e91a8587ec33"
+    ],
+    "source_hash_in_workbook": false,
+    "approval_hash_in_workbook": false,
+    "batch_id_in_workbook": false
+  },
+  "controls": [
+    {
+      "name": "JSON whitespace and ZIP comment",
+      "expected": "survived",
+      "observed": "survived",
+      "restored": true
+    },
+    {
+      "name": "wrong copied file byte under pinned inventory",
+      "expected": "custody: frozen inventory",
+      "observed": "custody: frozen inventory",
+      "restored": true
+    },
+    {
+      "name": "changed approved review payload",
+      "expected": "receipt: recomputed preview hash",
+      "observed": "receipt: recomputed preview hash",
+      "restored": true
+    },
+    {
+      "name": "changed source hash metadata",
+      "expected": "receipt: source linkage",
+      "observed": "receipt: source linkage",
+      "restored": true
+    },
+    {
+      "name": "changed approved request hash",
+      "expected": "receipt: exact approval and decisions",
+      "observed": "receipt: exact approval and decisions",
+      "restored": true
+    },
+    {
+      "name": "invalid skipped row promoted to valid",
+      "expected": "receipt: reviewed row semantics",
+      "observed": "receipt: reviewed row semantics",
+      "restored": true
+    },
+    {
+      "name": "wrong commit count",
+      "expected": "receipt: commit outcome",
+      "observed": "receipt: commit outcome",
+      "restored": true
+    },
+    {
+      "name": "repeat claims second commit",
+      "expected": "receipt: repeat preview lock",
+      "observed": "receipt: repeat preview lock",
+      "restored": true
+    },
+    {
+      "name": "malformed worksheet XML",
+      "expected": "package: ZIP/XML",
+      "observed": "package: ZIP/XML",
+      "restored": true
+    },
+    {
+      "name": "external relationship",
+      "expected": "package: external/macro",
+      "observed": "package: external/macro",
+      "restored": true
+    },
+    {
+      "name": "macro content declaration",
+      "expected": "package: external/macro",
+      "observed": "package: external/macro",
+      "restored": true
+    },
+    {
+      "name": "wrong worksheet target",
+      "expected": "package: sheet relationships",
+      "observed": "package: sheet relationships",
+      "restored": true
+    },
+    {
+      "name": "formula injected in literal name",
+      "expected": "workbook: no formulas",
+      "observed": "workbook: no formulas",
+      "restored": true
+    },
+    {
+      "name": "cost converted to numeric",
+      "expected": "workbook: literal cell types",
+      "observed": "workbook: literal cell types",
+      "restored": true
+    },
+    {
+      "name": "changed header",
+      "expected": "workbook: exact headers",
+      "observed": "workbook: exact headers",
+      "restored": true
+    },
+    {
+      "name": "skipped project substituted",
+      "expected": "workbook: exactly two project rows",
+      "observed": "workbook: exactly two project rows",
+      "restored": true
+    },
+    {
+      "name": "literal formula text evaluated",
+      "expected": "workbook: created literal and classifications",
+      "observed": "workbook: created literal and classifications",
+      "restored": true
+    },
+    {
+      "name": "unknown year replaced with current year",
+      "expected": "workbook: cost and unknown year",
+      "observed": "workbook: cost and unknown year",
+      "restored": true
+    },
+    {
+      "name": "wrong cost source document",
+      "expected": "workbook: cost provenance and timestamps",
+      "observed": "workbook: cost provenance and timestamps",
+      "restored": true
+    },
+    {
+      "name": "source text promoted to project place",
+      "expected": "workbook: geography remains distinct",
+      "observed": "workbook: geography remains distinct",
+      "restored": true
+    },
+    {
+      "name": "removed create-only warning",
+      "expected": "workbook: workspace and import declarations",
+      "observed": "workbook: workspace and import declarations",
+      "restored": true
+    },
+    {
+      "name": "actor field injected in properties",
+      "expected": "privacy: named fields and credential patterns",
+      "observed": "privacy: named fields and credential patterns",
+      "restored": true
+    }
+  ],
+  "restored_baseline_matches": true,
+  "frozen_originals_unchanged": true,
+  "source_app_commit": "49e3fa2004c1336ffa36c134a8f21bcc2d72d327",
+  "review_base_commit": "864974054d187e92e2cd3ab5525c0ae545215d62",
+  "app_subtree_git_object": "bdd3096b04212d944844c063fd33ad1fb4a2c957",
+  "source_bindings": {
+    "openplan/src/lib/projects/portfolio-export.ts": {
+      "sha256": "06591e3aa6cd922495575f5b0675ca66539be9fa646c562f3b614d52a27a0b0c",
+      "app_commit_bytes_match": true
+    },
+    "openplan/src/lib/projects/portfolio-round-trip-contract.ts": {
+      "sha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "app_commit_bytes_match": true
+    },
+    "openplan/src/app/api/projects/export/workbook/route.ts": {
+      "sha256": "64fd96d9caae5f8808b5825dbabc23f788fb9883d5a52ff9b974275884304265",
+      "app_commit_bytes_match": true
+    },
+    "openplan/src/lib/projects/portfolio-import.ts": {
+      "sha256": "23d6ac5a56d6f5fa4eb63167e80c8ac910677c06b73ae1bee365993db68999c6",
+      "app_commit_bytes_match": true
+    },
+    "openplan/src/app/api/projects/import/route.ts": {
+      "sha256": "15a244fb60d281da3d880a14f8c44881576b900539b255a2b8d4d3027079715f",
+      "app_commit_bytes_match": true
+    },
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql": {
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+      "app_commit_bytes_match": true
+    }
+  },
+  "probe_sha256": "a322db8854ab194f45efb23dad3beed72f05f2ad9574be1c2e1e529fb5299a39",
+  "private_expected_linkage_sha256": "c5c4e380d5a697ebd6cef8a2211e0b5a06b3e46fc059eec0a27998f590ed39c6",
+  "harness_history": [
+    {
+      "stage": "first invocation",
+      "error": "SyntaxError: closing parenthesis does not match opening bracket in sheet relationship list",
+      "script_sha256": "b514cef94e88c00251ab579c26a5267bd8eabfb9182f13ea5a2c0ea1717d6a6e",
+      "product_finding": false
+    },
+    {
+      "stage": "first parsed baseline",
+      "error": "macro substring scan matched unused Default Extension=bin content type. No bin member exists.",
+      "script_sha256": "abc6e05a81f34b26920f1e9e4fa48594abbc7b8569f3772615dd965a36d4c52c",
+      "resolution": "Evaluate content type effective for actual package members and retain payload/relationship checks.",
+      "product_finding": false
+    }
+  ]
+}

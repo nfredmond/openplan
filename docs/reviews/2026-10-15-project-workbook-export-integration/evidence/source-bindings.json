@@ -1,0 +1,75 @@
+{
+  "candidateCommit": "702ee1270de23cb9e469711398c580d9a977878b",
+  "branch": "t3/workbook-export-pagination-legacy-tests",
+  "importCorrectionCommit": "536d4ccbd6",
+  "importCorrectionIntegrated": false,
+  "files": [
+    {
+      "path": "openplan/src/app/api/projects/export/workbook/route.ts",
+      "candidateSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "integrationSha256": "efd81d2e4a2bc9b181dca617d60c5ce6b21f9db65b596f306f4fa1d11257bbd9",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-export-route.test.ts",
+      "candidateSha256": "3735b79c91d9eec88d158cf75c692ce11fba9bc269d76ec47f824647e73a3af9",
+      "integrationSha256": "4cfa8720b9382ebbd83a49e459e4db175bc8c6c7d87612774960e80f27e223c9",
+      "unchanged": false
+    },
+    {
+      "path": "openplan/src/test/project-workbook-export-pagination.test.ts",
+      "candidateSha256": "be5f01ad6b195f5726d041b281ce028cb1a43eccb5c0e261263dee4f922eb1a6",
+      "integrationSha256": "be5f01ad6b195f5726d041b281ce028cb1a43eccb5c0e261263dee4f922eb1a6",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-export.ts",
+      "candidateSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "integrationSha256": "24f201a4eed2fa91dabecca90352c6620a7f5d4d8ead442d4b1d7457bfa54e5d",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-round-trip-contract.ts",
+      "candidateSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "integrationSha256": "ad012e38746d24039fbc0d7da7206e5254088e83958410baeeb03349de89d7ec",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-import.ts",
+      "candidateSha256": "23d6ac5a56d6f5fa4eb63167e80c8ac910677c06b73ae1bee365993db68999c6",
+      "integrationSha256": "23d6ac5a56d6f5fa4eb63167e80c8ac910677c06b73ae1bee365993db68999c6",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/lib/projects/portfolio-workbook.ts",
+      "candidateSha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "integrationSha256": "beb55521add02d4ca6a0ddc8788fa5094fbbd0528cac96a79d672442be178e89",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/app/api/projects/import/route.ts",
+      "candidateSha256": "03a6d19c92f0ccca87ce96aa140d880bdf1f8e5d601118d7e2b30f5dbc97a3d6",
+      "integrationSha256": "03a6d19c92f0ccca87ce96aa140d880bdf1f8e5d601118d7e2b30f5dbc97a3d6",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/test/project-portfolio-import-route.test.ts",
+      "candidateSha256": "8072429a003c79b551afd021aa7bec33f17115ed9994d69f5776b770cd348d4c",
+      "integrationSha256": "8072429a003c79b551afd021aa7bec33f17115ed9994d69f5776b770cd348d4c",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/src/lib/projects/project-place.ts",
+      "candidateSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "integrationSha256": "dbb2f5013264076454d5be031d29f30d530cf99e813ce8fa69344a081496f344",
+      "unchanged": true
+    },
+    {
+      "path": "openplan/supabase/config.toml",
+      "candidateSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "integrationSha256": "a91e2c6282775296f9470066696530618d8768ca0adc21fad8a9b4b3e7bf105e",
+      "unchanged": true
+    }
+  ],
+  "controllerSha256": "a8cb09314e5d956cf09979bfeacfb9c6e2dffdab9b6024e68031ced2358ec0e8"
+}

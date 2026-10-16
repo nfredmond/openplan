@@ -1,0 +1,8 @@
+{
+  "trial": "pagination-short-page-fault",
+  "testFile": "src/test/project-workbook-export-pagination.test.ts",
+  "test": "continues after a short capped page until the scoped portfolio is exhausted",
+  "exitCode": 1,
+  "marker": "short server pages must not truncate the workbook",
+  "classification": "KILLED"
+}

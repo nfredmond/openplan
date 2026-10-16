@@ -1,0 +1,8 @@
+Traceback (most recent call last):
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-ffbdeb11/docs/reviews/2026-10-15-project-workbook-export-independent/run_review.py", line 238, in <module>
+    main()
+    ~~~~^^
+  File "/home/nathaniel/.t3/worktrees/openplan/t3-ffbdeb11/docs/reviews/2026-10-15-project-workbook-export-independent/run_review.py", line 171, in main
+    assert code == 0 and report['numPassedTests'] == 17 and report['success']
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError

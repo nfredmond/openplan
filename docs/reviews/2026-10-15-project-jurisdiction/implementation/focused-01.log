@@ -1,0 +1,33 @@
+Running as unit: openplan-jurisdiction-focused-01.service; invocation ID: 80b15f08f9d94356b49444431cbe6305
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.11 [39m[90m/home/nathaniel/.t3/worktrees/openplan/t3-85a6a802/openplan[39m
+
+ [32m✓[39m src/test/project-jurisdiction.test.ts [2m([22m[2m7 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-route.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+[90mstdout[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mreturns the same evidence-backed Oregon cells with an exact registry hash
+[22m[39m{"ts":"2026-10-15T05:16:03.306Z","subsystem":"openplan/api","route":"workspaces.jurisdiction_readiness.read","level":"info","event":"workspace_jurisdiction_readiness_read","requestId":"00b9c7ba-3f6e-472d-ae32-f486fc0fcc23","method":"GET","path":"/api/workspaces/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"22222222-2222-4222-8222-222222222222","jurisdictionId":"US-OR","download":true,"registrySha256":"531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158"}}
+
+[90mstdout[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2muses the project place and keeps Puerto Rico's unavailable claims visible
+[22m[39m{"ts":"2026-10-15T05:16:03.317Z","subsystem":"openplan/api","route":"projects.jurisdiction_readiness.read","level":"info","event":"project_jurisdiction_readiness_read","requestId":"601cd72b-3dd4-43c9-b9fc-2a81fb10edd1","method":"GET","path":"/api/projects/33333333-3333-4333-8333-333333333333/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"projectId":"33333333-3333-4333-8333-333333333333","contextSource":"legacy_study_place","download":true,"registrySha256":"531dca87cc6621786d4cff27b0fb52dd5b99105c3a78c6307a9a35322201c158"}}
+
+[90mstderr[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mdoes not turn a failed project read into an unassessed jurisdiction
+[22m[39m{"ts":"2026-10-15T05:16:03.319Z","subsystem":"openplan/api","route":"projects.jurisdiction_readiness.read","level":"error","event":"project_jurisdiction_readiness_failed","requestId":"58dd5dbe-d835-4bb5-8f04-57b0518fb84f","method":"GET","path":"/api/projects/33333333-3333-4333-8333-333333333333/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"projectId":"33333333-3333-4333-8333-333333333333","message":"database unavailable"}}
+
+[90mstderr[2m | src/test/jurisdiction-readiness-routes.test.ts[2m > [22m[2mjurisdiction readiness APIs[2m > [22m[2mdoes not turn a failed workspace read into an unassessed jurisdiction
+[22m[39m{"ts":"2026-10-15T05:16:03.320Z","subsystem":"openplan/api","route":"workspaces.jurisdiction_readiness.read","level":"error","event":"workspace_jurisdiction_readiness_failed","requestId":"14d35c28-0b98-406d-a7a4-2abf03380b07","method":"GET","path":"/api/workspaces/jurisdiction-readiness","userAgent":"unknown","clientIp":"unknown","context":{"workspaceId":"22222222-2222-4222-8222-222222222222","message":"database unavailable"}}
+
+ [32m✓[39m src/test/jurisdiction-readiness-routes.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+ [32m✓[39m src/test/project-jurisdiction-editor.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 232[2mms[22m[39m
+ [32m✓[39m src/test/jurisdiction-readiness-evidence-bundle.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32m✓[39m src/test/refused-project-jurisdiction-action.test.ts [2m([22m[2m1 test[22m[2m)[22m[32m 3[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m6 passed[39m[22m[90m (6)[39m
+[2m      Tests [22m [1m[32m29 passed[39m[22m[90m (29)[39m
+[2m   Start at [22m 22:16:01
+[2m   Duration [22m 4.00s[2m (transform 273ms, setup 191ms, import 686ms, tests 343ms, environment 2.15s)[22m
+
+          Finished with result: success
+Main processes terminated with: code=exited, status=0/SUCCESS
+               Service runtime: 4.363s
+             CPU time consumed: 5.852s
+                   Memory peak: 257.8M (swap: 0B)

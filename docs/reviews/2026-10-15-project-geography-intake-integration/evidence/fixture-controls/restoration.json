@@ -1,0 +1,10 @@
+{
+  "openplan/src/app/(app)/projects/[projectId]/page.tsx": {
+    "sha256": "1dae1462e32857bcea2ff737d6ab2061ffb0aa4d94308c32b0d1df99801c0710",
+    "restored": true
+  },
+  "openplan/src/test/project-detail-page.test.tsx": {
+    "sha256": "2d7143c5bb322826bdc887900a1b63d1374d085134cdbc3a4c42acdb291535bb",
+    "restored": true
+  }
+}

@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "appHead": "67828c17c4c270529468eef1edd144e4a52b693a",
+  "helperHead": "06a108010ab39aa42eed4c2bcda3e1371b8aa813",
+  "recoveryProducer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+  "sourceAnchor": "82fda3004c8dd5d3f1e26eb179e11d1da159eb79a33253a636de37ef68213547",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/current-project-preview-app-binding-20261015",
+  "frozenRoot": "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015",
+  "templates": {
+    "app_binding_v1.py": "407e85754e9f075318dff36d0f4d6e79462fd13ee7a12874a547391a90f206cc",
+    "attest_start_v1.py": "f65afb51641f76962d0d80ce1d42b666f75a6d95b4ecceafd5ffe130ae52fcf7"
+  },
+  "bindingSha256": "dcfd57967ec906ac77d786a809cbfaa9b8313ee319d3dc8d2fe43db59b422aa5",
+  "privateInputs": {
+    "app_binding_v1.py": "407e85754e9f075318dff36d0f4d6e79462fd13ee7a12874a547391a90f206cc",
+    "app-env-private.json": "c793c1e3b0c09c492584fc60e41495cc8a9171e248266e9e2c100ae3b2f8b730",
+    "app-v1.env": "f432d6a313e595774cd22c93e472a9682e6e0a871c722594066ba303cc1e3d4f",
+    "migrations.json": "56c984affb04f643bd3ccc74e7c4258771253cb7bbadcbbe6d130039cccc5317",
+    "dependency-binding.json": "75ffc3b6ddf0e6f934f9c0a070f475b648209b1f3c4cad67cf21142ed4571b3d",
+    "recovery-active-binding.json": "362c039646e1e561c1ae37fb5cab2fc45d80f6aedd7123ba46379960caf9416b",
+    "attest_start_v1.py": "f65afb51641f76962d0d80ce1d42b666f75a6d95b4ecceafd5ffe130ae52fcf7"
+  },
+  "helperModules": {
+    "rest_uri_recovery_01_launcher.py": "259fd6712429fcf4b4eafea7d9eef0a07685c5d7e6cc216b6d347a06700ff5fd",
+    "rest_uri_recovery_01_policy.py": "b8cd15dd1284aef71a302a2614724b1cb34e9783ee7049028eb08e16309df156",
+    "rest_uri_recovery_01_controller.py": "0a2abd7530658eedb033ba4c235393612ff364210f064a32b4ff3d903134f175"
+  },
+  "activeBinding": {
+    "producer": "d71e0aa7aa1b2c3c945ee87a54ea49d6a5772378",
+    "restId": "140c68675574a3705fa68aa46543d806d66d1f20739bf63273d6126108d5430d",
+    "files": {
+      "replacement-receipt-private.json": "a7b5210ad7e117ba9ee2c81eb92b7875ce1c6be70ad2e63f660856db98a35582",
+      "replacement-started-private.json": "445c90a887ab2d4839885892848bd2220f63a5a036392bd0759227564531168d",
+      "active-service-receipts-private.json": "89042f1acf194f483ab6e1e0b1e7e64c4ec217d3984200d167a589c43e215e8d",
+      "active-binding-private.json": "eb59fad42679f11ac2a6cd97f6267adbb21c25ea6298efcf10e2e578b37da72e"
+    },
+    "operationObservationSha256": "7353b5f98398c3f1f5ed0d08c48d92be08175dc6c7b5c8db3258b9331f0f09fc"
+  },
+  "migrationCount": 419,
+  "nonRootLockEntries": 1143,
+  "installedLockEntries": 969,
+  "applicationEnvironmentDelta": [
+    "OPENPLAN_COMMIT_SHA"
+  ],
+  "candidateExists": false,
+  "executionFiles": []
+}

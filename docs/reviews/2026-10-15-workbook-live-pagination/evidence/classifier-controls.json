@@ -1,0 +1,16 @@
+{
+  "harmless": "survived",
+  "namedAssertion": "killed",
+  "refused": [
+    "empty",
+    "wrong-file",
+    "wrong-name",
+    "nonzero-success",
+    "false-kill",
+    "runtime",
+    "wrong-assertion",
+    "embedded-diagnostic",
+    "timeout"
+  ],
+  "blind": "Report classification cannot establish native database or fixture fidelity."
+}

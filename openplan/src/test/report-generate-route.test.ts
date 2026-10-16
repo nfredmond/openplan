@@ -1,4 +1,15 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { PROJECT_PLACE_COLUMN_NAMES } from "@/lib/projects/project-place";
+import { collectSupabaseSelectSites } from "./supabase-call-sites";
+import Database from "better-sqlite3";
+import { canonicalizeActionPayload } from "@/lib/runtime/action-metadata";
+import { buildProjectGeoPackage } from "@/lib/projects/project-geopackage";
+import { loadProjectEvidenceGeneratedFiles } from "@/lib/project-evidence-bundles/generated-records";
+vi.mock("server-only", () => ({}));
+import { actor as jurisdictionActor, exportProject } from "./project-jurisdiction-export-fixture";
+import { buildProjectJurisdictionReadinessExportPayload } from "@/lib/jurisdiction-readiness/payload";
+import { readProjectJurisdiction } from "@/lib/projects/project-jurisdiction";
+import { jurisdictionReadinessRegistrySha256 } from "@/lib/jurisdiction-readiness/custody";
+import { assert, beforeEach, describe, expect, it, vi } from "vitest";
 import { NextRequest } from "next/server";
 import { expectProvenanceLanguageOnly } from "./provenance-language-guards";
 import { pagingFake } from "./helpers/paging-fake";
@@ -42,7 +53,7 @@ const rtpCycleSelectMock = vi.fn(() => ({ eq: rtpCycleEqMock }));
 
 const projectMaybeSingleMock = vi.fn();
 const projectEqMock = vi.fn(() => ({ maybeSingle: projectMaybeSingleMock }));
-const projectSelectMock = vi.fn(() => ({ eq: projectEqMock }));
+const projectSelectMock = vi.fn((_columns: string) => ({ eq: projectEqMock }));
 
 const sectionsOrderMock = vi.fn();
 const sectionsEqMock = vi.fn(() => ({ order: sectionsOrderMock }));
@@ -755,6 +766,7 @@ describe("POST /api/reports/[reportId]/generate", () => {
         delivery_phase: "analysis",
         created_at: "2026-03-13T00:00:00.000Z",
         updated_at: "2026-03-14T01:00:00.000Z",
+        jurisdiction_context: null,
         place_label: "Nevada County, California",
         place_country_code: "US",
         place_subdivision_code: "CA",
@@ -1535,7 +1547,8 @@ describe("POST /api/reports/[reportId]/generate", () => {
       artifactId: "artifact-1",
       format: "html",
     });
-    expect(artifactsInsertMock).toHaveBeenCalledWith(
+    expect(projectSelectMock).toHaveBeenCalledWith(expect.stringContaining("jurisdiction_context"));
+    expect(artifactsInsertMock, "Report freezes external readiness version").toHaveBeenCalledWith(
       expect.objectContaining({
         report_id: "11111111-1111-4111-8111-111111111111",
         artifact_kind: "html",
@@ -1545,13 +1558,15 @@ describe("POST /api/reports/[reportId]/generate", () => {
           sourceContext: expect.objectContaining({
             linkedRunCount: 1,
             jurisdictionReadiness: expect.objectContaining({
-              jurisdiction: expect.objectContaining({ id: "US-CA" }),
-              reports: expect.arrayContaining([
-                expect.objectContaining({
-                  job: expect.objectContaining({ id: "project-evidence-handoff" }),
-                  status: "supported",
+              schema: "openplan.project-jurisdiction-readiness-export.v3",
+              contextSource: "legacy_study_place",
+              payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+              entries: expect.arrayContaining([expect.objectContaining({
+                assessment: expect.objectContaining({
+                  jurisdiction: expect.objectContaining({ id: "US-CA" }),
+                  reports: expect.arrayContaining([expect.objectContaining({ job: expect.objectContaining({ id: "project-evidence-handoff" }), status: "supported" })]),
                 }),
-              ]),
+              })]),
             }),
             evidenceChainSummary: expect.objectContaining({
               linkedRunCount: 1,
@@ -4289,4 +4304,234 @@ describe("POST /api/reports/[reportId]/generate", () => {
       expect.anything()
     );
   });
+  // Answer from the actual projection. An omitted column never reappears in a fallback row.
+  function pendingProjectSchema(missing: string[], style: "postgres" | "cache" = "postgres", malformed = false) {
+    const row: Record<string, unknown> = { ...exportProject,
+      jurisdiction_context: malformed ? { invalid: true } : exportProject.jurisdiction_context,
+      estimated_cost_amount: 125000, estimated_cost_currency: "EUR",
+      estimated_cost_basis_year: 2026, estimated_cost_source_document_id: null,
+    };
+    projectMaybeSingleMock.mockImplementation(async () => {
+      const columns = projectSelectMock.mock.calls.at(-1)![0].split(",").map(column => column.trim());
+      const unavailable = missing.find(column => columns.includes(column));
+      if (unavailable) return { data: null, error: {
+        message: style === "postgres" ? `column projects.${unavailable} does not exist`
+          : `Could not find the '${unavailable}' column of 'projects' in the schema cache`,
+        code: style === "postgres" ? "42703" : "PGRST204",
+      } };
+      return { data: Object.fromEntries(columns.filter(column => column in row).map(column => [column, row[column]])), error: null };
+    });
+  }
+
+  async function generatePendingSchemaReport() {
+    return postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+  }
+
+  function generatedPendingSchemaOutput() {
+    const inserted = artifactsInsertMock.mock.calls.at(-1)?.[0];
+    assert(inserted?.metadata_json, "Pending-schema report records artifact metadata");
+    const source = inserted.metadata_json.sourceContext;
+    assert(source && typeof source === "object" && "jurisdictionReadiness" in source, "Pending-schema report records readiness custody");
+    const readiness = source.jurisdictionReadiness;
+    assert(readiness && typeof readiness === "object", "Pending-schema readiness is an object");
+    const html = serviceStorageUploadMock.mock.calls.findLast(call => String(call[0]).endsWith(".html"))?.[1].toString();
+    assert(typeof html === "string", "Pending-schema report uploads actual HTML");
+    expect(inserted.metadata_json.htmlContent, "Stored HTML snapshot matches uploaded report").toBe(html);
+    return { readiness: readiness as Record<string, unknown>, html,
+      contextText: new DOMParser().parseFromString(html, "text/html").querySelector("#project-jurisdiction-context")?.textContent ?? "",
+      source: source as Record<string, unknown> };
+  }
+
+  it("keeps the initial project projection literal and equal to every optional group", async () => {
+    const expected = [
+      "id", "workspace_id", "name", "summary", "status", "plan_type", "delivery_phase", "created_at", "updated_at",
+      "jurisdiction_context", ...PROJECT_PLACE_COLUMN_NAMES,
+      "estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id",
+      "latitude", "longitude",
+    ].join(", ");
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    expect(projectSelectMock.mock.calls[0][0], "Actual initial projection retains every group in order").toBe(expected);
+    const sites = collectSupabaseSelectSites().filter(site =>
+      site.file === "src/app/api/reports/[reportId]/generate/route.ts" && site.table === "projects"
+    );
+    expect(sites.filter(site => site.projection !== null).map(site => site.projection), "Source guard resolves the actual initial projection").toEqual([expected]);
+    expect(sites.filter(site => site.projection === null), "Computed fallback stays honestly unchecked").toHaveLength(1);
+  });
+
+  it.each([
+    ["jurisdiction_context"], [...PROJECT_PLACE_COLUMN_NAMES],
+    ["estimated_cost_amount", "estimated_cost_currency", "estimated_cost_basis_year", "estimated_cost_source_document_id"],
+    ["latitude", "longitude"],
+  ])("removes exactly the confirmed optional group beginning %s", async (...columns: string[]) => {
+    pendingProjectSchema([columns[0]]);
+    expect((await generatePendingSchemaReport()).status, "Single-group recovery generates").toBe(200);
+    const projections = projectSelectMock.mock.calls.map(call => call[0]);
+    expect(projections, "Single missing group takes exactly one retry").toHaveLength(2);
+    expect(projections[1], "Fallback removes the complete named group and nothing else").toBe(
+      projections[0].split(", ").filter(column => !columns.includes(column)).join(", ")
+    );
+  });
+
+  it.each(["postgres", "cache"] as const)("generates schema-pending jurisdiction with readable place and cost (%s)", async style => {
+    pendingProjectSchema(["jurisdiction_context"], style);
+    const response = await generatePendingSchemaReport();
+    expect(response.status, "Schema-pending jurisdiction still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Jurisdiction-only fallback is bounded").toHaveLength(2);
+    const [wide, fallback] = projectSelectMock.mock.calls.map(call => call[0]);
+    expect(wide, "Initial projection reads jurisdiction").toContain("jurisdiction_context");
+    expect(fallback, "Fallback removes only unavailable jurisdiction").not.toContain("jurisdiction_context");
+    for (const column of ["place_geometry_geojson", "place_label", "estimated_cost_amount", "estimated_cost_currency", "latitude", "longitude"]) {
+      expect(fallback, `Fallback retains readable ${column}`).toContain(column);
+    }
+    expect(projectEqMock.mock.calls, "Fallback retains project predicate").toEqual([["id", "44444444-4444-4444-8444-444444444444"], ["id", "44444444-4444-4444-8444-444444444444"]]);
+    const { readiness, html, contextText, source } = generatedPendingSchemaOutput();
+    expect(readiness, "Pending custody never invents a human declaration or registry assessment").toEqual({
+      schema: "openplan.report-project-jurisdiction-schema-pending.v1", scope: "external_handoff",
+      projectId: exportProject.id, projectRevision: exportProject.updated_at,
+      registrySha256: jurisdictionReadinessRegistrySha256(),
+      jurisdictionReadState: "schema_pending", studyAreaReadState: "ok",
+      disclosure: "SCHEMA-PENDING: Project jurisdiction could not be read because this deployment's database is missing the jurisdiction column. Declaration status, adopting authority and legal applicability are unknown. No jurisdiction readiness or support assessment is made. Study geography has a separate read state.",
+      payloadSha256: expect.stringMatching(/^[a-f0-9]{64}$/),
+    });
+    const { payloadSha256, ...material } = readiness;
+    expect(payloadSha256, "Pending custody hashes its actual disclosed read state").toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));
+    expect(contextText, "Actual HTML discloses schema-pending jurisdiction").toContain("SCHEMA-PENDING");
+    expect(contextText, "Actual HTML retains truthful pending disclosure").toContain(String(readiness.disclosure));
+    expect(contextText, "Actual HTML prints pending payload hash").toContain(String(payloadSha256));
+    expect(contextText, "Actual HTML prints pending schema identity").toContain(String(readiness.schema));
+    expect(contextText, "Pending HTML never substitutes an unset or unresolved declaration").not.toMatch(/No separate declaration|explicitly unresolved|Legacy study-place context|Human-declared project context/);
+    expect(source.projectGeographyReadState, "Custody retains readable study geography").toBe("ok");
+    expect(html, "Actual report retains readable study boundary").toContain("Uploaded study boundary");
+    expect(html, "Actual report retains readable project cost").toContain("EUR");
+    expect(html, "Actual report retains readable project cost amount").toContain("125,000");
+    expect(html, "External report does not leak actor").not.toContain(jurisdictionActor);
+  });
+
+  it.each([["place_label", "jurisdiction_context"], ["jurisdiction_context", "place_label"]])("generates truthful older place and jurisdiction schema disclosure (%j, %j)", async (first, second) => {
+    pendingProjectSchema([first, second]);
+    expect((await generatePendingSchemaReport()).status, "Older schema still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Older-schema fallback remains bounded").toHaveLength(3);
+    const { readiness, html, source } = generatedPendingSchemaOutput();
+    expect(readiness.jurisdictionReadState, "Older schema never claims jurisdiction read success").toBe("schema_pending");
+    expect(readiness.studyAreaReadState, "Pending payload records missing study geography").toBe("schema_pending");
+    expect(source.projectGeographyReadState, "Custody records missing study geography").toBe("schema_pending");
+    expect(html, "Actual HTML discloses unread study area").toContain("This project&#39;s study area could not be read at generation time");
+    expect(html, "Older schema retains independently readable cost").toContain("125,000");
+    const { payloadSha256, ...material } = readiness;
+    expect(payloadSha256, "Older-schema hash reflects actual read states").toBe(createHash("sha256").update(canonicalizeActionPayload(material)).digest("hex"));
+  });
+
+  it("keeps schema-pending custody identical across generation clocks", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] });
+    try {
+      pendingProjectSchema(["jurisdiction_context"]);
+      vi.setSystemTime(new Date("2028-01-01T00:00:00Z"));
+      expect((await generatePendingSchemaReport()).status).toBe(200);
+      const first = generatedPendingSchemaOutput().readiness;
+      vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
+      expect((await generatePendingSchemaReport()).status).toBe(200);
+      expect(generatedPendingSchemaOutput().readiness, "Pending custody excludes the generation clock").toEqual(first);
+    } finally { vi.useRealTimers(); }
+  });
+
+  it("retains strict jurisdiction validation when only place schema is pending", async () => {
+    pendingProjectSchema(["place_label"]);
+    expect((await generatePendingSchemaReport()).status).toBe(200);
+    const { readiness, source } = generatedPendingSchemaOutput();
+    expect(projectSelectMock.mock.calls.at(-1)![0], "Place fallback still selects jurisdiction").toContain("jurisdiction_context");
+    expect(readiness.schema, "Readable jurisdiction retains strict external contract").toBe("openplan.project-jurisdiction-readiness-export.v3");
+    expect(readiness.contextSource, "Readable jurisdiction stays a declaration").toBe("project_declaration");
+    expect(source.projectGeographyReadState).toBe("schema_pending");
+  });
+
+  it("recovers the older core projection only after each optional group is confirmed missing", async () => {
+    pendingProjectSchema(["place_label", "jurisdiction_context", "estimated_cost_amount", "latitude"]);
+    expect((await generatePendingSchemaReport()).status, "Old core projection still generates").toBe(200);
+    expect(projectSelectMock.mock.calls, "Every optional group is retried at most once").toHaveLength(5);
+    expect(projectSelectMock.mock.calls.at(-1)![0], "Final fallback retains the documented core projection").toBe("id, workspace_id, name, summary, status, plan_type, delivery_phase, created_at, updated_at");
+    const { readiness } = generatedPendingSchemaOutput();
+    expect(readiness.jurisdictionReadState).toBe("schema_pending");
+    expect(readiness.studyAreaReadState).toBe("schema_pending");
+  });
+
+  it("refuses malformed existing jurisdiction even with pending place schema", async () => {
+    pendingProjectSchema(["place_label"], "postgres", true);
+    expect((await generatePendingSchemaReport()).status, "Malformed saved jurisdiction fails closed").toBe(500);
+    expect(serviceStorageUploadMock, "Malformed jurisdiction writes no artifact").not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+    expect(() => readProjectJurisdiction({ id: "project" }), "Ordinary readers still reject missing projection").toThrow("Project jurisdiction was not read.");
+  });
+
+  it.each([
+    "permission denied for table projects", "connection terminated unexpectedly",
+    "column projects.unrecognized_field does not exist", "schema cache unavailable",
+    "column projects.unrelated_place_label does not exist",
+    "schema cache connection lost while reading jurisdiction_context",
+    "column reports.jurisdiction_context does not exist",
+    "Could not find the 'jurisdiction_context' column of 'reports' in the schema cache",
+    "permission denied: column projects.jurisdiction_context does not exist",
+    'column projects."Jurisdiction_Context" does not exist',
+  ])("refuses unclassified project read errors without dropping fields: %s", async message => {
+    projectMaybeSingleMock.mockResolvedValue({ data: null, error: { message } });
+    expect((await generatePendingSchemaReport()).status, "Unclassified failure refuses report").toBe(500);
+    expect(projectSelectMock.mock.calls, "Unclassified failure never retries a narrower projection").toHaveLength(1);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("refuses a failed fallback read instead of generating a partial artifact", async () => {
+    projectMaybeSingleMock.mockResolvedValueOnce({ data: null, error: { message: "column projects.jurisdiction_context does not exist" } })
+      .mockResolvedValueOnce({ data: null, error: { message: "permission denied for table projects" } });
+    expect((await generatePendingSchemaReport()).status, "Failed fallback refuses report").toBe(500);
+    expect(projectSelectMock).toHaveBeenCalledTimes(2);
+    expect(serviceStorageUploadMock).not.toHaveBeenCalled();
+    expect(artifactsInsertMock).not.toHaveBeenCalled();
+  });
+
+  it("freezes non-null export-safe report readiness with canonical hash parity", async () => {
+    vi.useFakeTimers({ toFake: ["Date"] }); vi.setSystemTime(new Date("2028-01-01T00:00:00Z"));
+    try {
+    projectMaybeSingleMock.mockResolvedValue({ data: exportProject, error: null });
+    const expected = buildProjectJurisdictionReadinessExportPayload(exportProject, jurisdictionReadinessRegistrySha256());
+    const response = await postGenerate(new NextRequest("http://localhost/api/reports/1/generate", {
+      method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ format: "html" }),
+    }), { params: Promise.resolve({ reportId: "11111111-1111-4111-8111-111111111111" }) });
+    expect(response.status).toBe(200);
+    const inserted = artifactsInsertMock.mock.calls[0][0];
+    assert(inserted.metadata_json, "Generated report includes metadata");
+    const sourceContext = inserted.metadata_json.sourceContext;
+    assert(
+      typeof sourceContext === "object" && sourceContext !== null && "jurisdictionReadiness" in sourceContext,
+      "Generated report metadata includes jurisdiction readiness source context"
+    );
+    const reportReadiness = sourceContext.jurisdictionReadiness;
+    expect(reportReadiness, "Report metadata shares external canonical material").toEqual(expected);
+    expect(JSON.stringify(reportReadiness), "Report readiness omits internal actor").not.toContain(jurisdictionActor);
+    const html = serviceStorageUploadMock.mock.calls.find(call => String(call[0]).endsWith(".html"))?.[1].toString();
+    expect(html, "Actual generated report prints shared canonical hash").toContain(expected.payloadSha256);
+    expect(html, "Actual generated report excludes jurisdiction actor UUID").not.toContain(jurisdictionActor);
+    vi.setSystemTime(new Date("2030-01-01T00:00:00Z"));
+    const client = { from() {
+      const query = { select() { return query; }, eq() { return query; }, in() { return query; }, order() { return query; }, range() { return query; },
+        async maybeSingle() { return { data: exportProject, error: null }; },
+        then(resolve: (value: unknown) => unknown) { return Promise.resolve(resolve({ data: [], error: null })); },
+      }; return query;
+    } };
+    const bundle = await loadProjectEvidenceGeneratedFiles(client, exportProject, new Date());
+    const json = JSON.parse(bundle.files.find(file => file.path === "project/jurisdiction-readiness.json")!.bytes.toString());
+    expect(json, "Actual report and bundle JSON share canonical material across clocks").toEqual(reportReadiness);
+    const standalone = buildProjectGeoPackage({ project: exportProject, corridors: [], generatedAt: new Date() });
+    for (const bytes of [standalone.bytes, bundle.files.find(file => file.path === "project/project.gpkg")!.bytes]) {
+      const db = new Database(bytes, { readonly: true });
+      try {
+        const row = db.prepare("SELECT payload_sha256, readiness_payload_json FROM project_jurisdiction_context").get() as { payload_sha256: string; readiness_payload_json: string };
+        expect(row.payload_sha256, "Actual report JSON and both GeoPackages share a hash across clocks").toBe(expected.payloadSha256);
+        expect(row.readiness_payload_json, "Actual report JSON and both GeoPackages share canonical bytes").toBe(canonicalizeActionPayload(expected));
+      } finally { db.close(); }
+    }
+    } finally { vi.useRealTimers(); }
+  });
+
 });

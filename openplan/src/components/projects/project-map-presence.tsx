@@ -171,8 +171,8 @@ export function ProjectMapPresence({
 
       setLocationMessage(
         nextLatitude === null
-          ? "Location cleared. This project no longer appears on the map."
-          : "Location saved. This project now appears on the map backdrop."
+          ? "Site marker cleared. The saved study area and corridors remain on the project map."
+          : "Location saved. The project map and exports now include this site marker."
       );
       setLocationFileNotes([]);
       router.refresh();
@@ -296,8 +296,8 @@ export function ProjectMapPresence({
             <h3 className="text-sm font-semibold tracking-tight">Map location</h3>
             <p className="mt-1 text-xs text-muted-foreground">
               {hasLocation
-                ? "This project has a marker on the cartographic backdrop."
-                : "This project has no location yet, so it does not appear on the cartographic backdrop."}
+                ? "The saved project map includes this site marker."
+                : "No site marker is saved. A study area or corridor can still appear on the project map."}
             </p>
           </div>
         </div>
@@ -417,7 +417,7 @@ export function ProjectMapPresence({
           <div>
             <h3 className="text-sm font-semibold tracking-tight">Study corridors</h3>
             <p className="mt-1 text-xs text-muted-foreground">
-              Planning-level corridor lines drawn on the backdrop. These are display corridors, not a
+              Planning-level corridor lines shown on the saved project map. These are display corridors, not a
               transportation-model network package.
             </p>
           </div>

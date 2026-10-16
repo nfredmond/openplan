@@ -1,0 +1,30 @@
+{
+  "at": "2026-10-15T17:30:04.519216+00:00",
+  "head": "75931937aa85950da68577abef1246d7f3c8ff13",
+  "runId": 38773672471,
+  "jobId": 116556241675,
+  "jobUrl": "https://github.com/nfredmond/openplan/actions/runs/38773672471/job/116556241675",
+  "seed": 723279,
+  "passedTests": 22969,
+  "skippedTests": 1662,
+  "failedTests": 2,
+  "passedFiles": 1661,
+  "skippedFiles": 106,
+  "failedFiles": 2,
+  "logSha256": "a7ecdbbcc3cbb7cf2d2db058453b0cf91339ae22825ba7f26206afa5bd5ca1e6",
+  "failures": [
+    {
+      "file": "src/test/reference-count-projection-guard.test.ts",
+      "test": "reference count projections > guards the guard",
+      "actual": 182,
+      "requirement": "unresolved projections <182"
+    },
+    {
+      "file": "src/test/one-pending-schema-classifier.test.ts",
+      "test": "no inline pending-schema regex > adds no new file",
+      "actual": "src/app/api/reports/[reportId]/generate/route.ts"
+    }
+  ],
+  "finding": "Source guard failures in report correction. No order-dependent state defect established. Do not raise guard limits or classify as flake.",
+  "retrieval": "gh runview refused while run still active; completed joblogs API succeeded; no rerun requested"
+}

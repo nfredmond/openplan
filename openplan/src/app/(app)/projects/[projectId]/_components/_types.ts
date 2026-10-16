@@ -29,6 +29,8 @@ export type ProjectRow = {
   updated_at: string;
   rtp_posture: ProjectRtpPosture | null;
   rtp_posture_updated_at: string | null;
+  /** Selected raw JSON; null is legacy context. Validate before interpreting. */
+  jurisdiction_context: unknown;
   /** Backdrop marker position — the project SITE. Null until a planner places the project. */
   latitude: number | null;
   longitude: number | null;

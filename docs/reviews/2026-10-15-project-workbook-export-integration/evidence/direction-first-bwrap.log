@@ -1,0 +1,21 @@
+
+> openplan@0.68.0 product:direction:check
+> node scripts/ops/product-direction-review.mjs --check
+
+Review reminder: jurisdiction readiness registry review expired on 2026-09-28
+Review reminder: capability matrix review expired on 2026-10-05
+Review reminder: capability registry review expired on 2026-10-05
+Review reminder: latest review covers v0.66.0; package is v0.68.0
+file:///home/nathaniel/.t3/worktrees/openplan/t3-32433c82/openplan/scripts/ops/product-direction-review.mjs:146
+  throw new Error(`Product-direction review check failed: ${message}`);
+        ^
+
+Error: Product-direction review check failed: reviewed_commit is not available: 380aad49770d856a9c4b577ccc9793baf39d3ddf
+    at fail (file:///home/nathaniel/.t3/worktrees/openplan/t3-32433c82/openplan/scripts/ops/product-direction-review.mjs:146:9)
+    at runCheck (file:///home/nathaniel/.t3/worktrees/openplan/t3-32433c82/openplan/scripts/ops/product-direction-review.mjs:550:5)
+    at file:///home/nathaniel/.t3/worktrees/openplan/t3-32433c82/openplan/scripts/ops/product-direction-review.mjs:715:29
+    at ModuleJob.run (node:internal/modules/esm/module_job:561:25)
+    at async node:internal/modules/esm/loader:647:26
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:101:5)
+
+Node.js v24.22.0

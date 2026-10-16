@@ -1,0 +1,32 @@
+[
+  {
+    "privateFile": "failed-3c4f075ae1.json",
+    "type": "AssertionError",
+    "firstDiagnostic": "native control runner, inspect private controller log"
+  },
+  {
+    "privateFile": "failed-e6af2f0c0a.json",
+    "type": "AssertionError",
+    "firstDiagnostic": "native control runner, inspect private controller log"
+  },
+  {
+    "privateFile": "failed-d71ca63e66.json",
+    "type": "RuntimeError",
+    "firstDiagnostic": "command failed: /usr/bin/python3; private logs retained"
+  },
+  {
+    "privateFile": "failed-06302e4a1d.json",
+    "type": "CheckViolation",
+    "firstDiagnostic": "new row for relation \"projects\" violates check constraint \"projects_place_coherent\""
+  },
+  {
+    "privateFile": "failed-287e11b431.json",
+    "type": "CheckViolation",
+    "firstDiagnostic": "new row for relation \"projects\" violates check constraint \"projects_estimated_cost_coherence_check\""
+  },
+  {
+    "privateFile": "failed-5004c0c73c.json",
+    "type": "AssertionError",
+    "firstDiagnostic": "native control runner, inspect private controller log"
+  }
+]

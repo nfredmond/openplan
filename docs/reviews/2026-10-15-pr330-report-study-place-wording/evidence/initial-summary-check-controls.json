@@ -1,0 +1,27 @@
+{
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-e444198e/openplan",
+  "cacheRoot": "/home/nathaniel/.local/state/openplan/pr330-study-place-wording-lsrp6i0p",
+  "heapMiB": 1024,
+  "maxWorkers": 1,
+  "directionExitCode": 0,
+  "sourceRestoredExactly": true,
+  "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa",
+  "cases": [
+    {
+      "case": "baseline",
+      "exitCode": 0,
+      "passed": 20,
+      "failed": 0,
+      "failedTitles": [],
+      "sourceSha256": "8218090f7ab3c6c39610691883021228c428c52706a80b2c506bd0251c9968aa"
+    },
+    {
+      "case": "harmless-comment",
+      "exitCode": 0,
+      "passed": 20,
+      "failed": 0,
+      "failedTitles": [],
+      "sourceSha256": "fda1f489f26ccd8d91d15fd8f94b3f3991d77832940786d81ec8def66d2d19e8"
+    }
+  ]
+}
