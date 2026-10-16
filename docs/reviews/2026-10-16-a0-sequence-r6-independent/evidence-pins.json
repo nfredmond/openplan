@@ -1,0 +1,49 @@
+{
+  "candidate": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "scope": "Fresh independent source/metadata review only; no diagnostic or native admission",
+  "public": {
+    "REVIEW.md": {
+      "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125",
+      "bytes": 17274,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "checks.json": {
+      "sha256": "6e8ce08839eb8d8e544ea9f0700d6214eeac66c585c76f2c017ae3467828bd6d",
+      "bytes": 2335,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "source-pins.json": {
+      "sha256": "e1d15c52e41dab72b7574a2bdaca00f2b1b8df808e06b15c25bb9e027f7d716f",
+      "bytes": 4153,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-sequence-r6-independent-20261016",
+  "privateManifest": {
+    "path": "review-private-pins.json",
+    "sha256": "aa78fbc72ba370de1dd6d3b07438b66bb7793fe978e28f7befc69a7ca9444299",
+    "bytes": 1711,
+    "mode": "0o600",
+    "uid": 1000,
+    "gid": 1000,
+    "entries": 9
+  },
+  "nativeDispatches": 0,
+  "testsRun": 0,
+  "flockAcquisitions": 0,
+  "newStageOrAdmission": false,
+  "disposition": "SCOPED SOURCE APPROVAL; no P1/P2 source finding",
+  "missingAcceptance": [
+    "PostgreSQL parsing and sequence semantics",
+    "Native R6 observe/allocation/restore and subsequent stage custody",
+    "Diagnostic parent implementation and admission",
+    "Provider/account consent and installed-client recordings",
+    "Route/reader/browser/recovery/T1/T15/full V1"
+  ]
+}

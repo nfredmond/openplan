@@ -1,0 +1,35 @@
+{
+  "status": "AUTHORIZED_METADATA_EOF_ONLY_EXCEPTION",
+  "preservedOriginalR2Commit": "bc70cfa8f031021ab8661c34003793f0820bd964",
+  "originalFailedMetadataCheck": {
+    "command": "git diff --cached --check",
+    "exitCode": 2,
+    "output": "docs/reviews/2026-10-16-project-budget-native-proof-corrections/verify_text.py:302: new blank line at EOF.\n",
+    "disposition": "FAILED_METADATA_CHECK_PRESERVED; original commit followed it incorrectly, no amendment"
+  },
+  "reader": {
+    "testedPrivateSha256": "26c899a676d597b6cf8a952101c3df925d6265ce2ab5cb745b72da7f910b78e0",
+    "testedBytes": 18993,
+    "beforePublicSha256": "26c899a676d597b6cf8a952101c3df925d6265ce2ab5cb745b72da7f910b78e0",
+    "beforeBytes": 18993,
+    "finalPublicSha256": "91c7463be3d1cbfb8aa66bd3e3ec5e84510726cc75b7075c9f56749bc280a6bc",
+    "finalBytes": 18992,
+    "removedBytes": "one final newline byte 0a",
+    "diff": "--- TEXT01-tested-reader\n+++ final-public-reader\n@@ -299,4 +299,3 @@\n \n if __name__ == '__main__':\n     main()\n-\n"
+  },
+  "metadataASTComparison": {
+    "method": "stdlib ast.parse plus ast.dump(include_attributes=False), no source import/execution",
+    "exactMatch": true,
+    "testedDumpSha256": "263141173fe4ce8cf8ee9193fca802f0440de4e46e6d7dcd1b1d5cfa164c136c",
+    "finalDumpSha256": "263141173fe4ce8cf8ee9193fca802f0440de4e46e6d7dcd1b1d5cfa164c136c"
+  },
+  "claimException": "TEXT01 validates the tested hash, not final public byte identity. Only redundant EOF newline differs; executable AST matches exactly. No test or native rerun.",
+  "privateArtifactsChanged": false,
+  "correctedMetadataCheck": {
+    "command": "git diff --cached --check 7c07549714f5b2afdd5816557fedd697bf743adc",
+    "exitCode": 0,
+    "output": "",
+    "runs": 1,
+    "scope": "All staged final R2 content before this result receipt and seal serialization; no executable change afterward"
+  }
+}

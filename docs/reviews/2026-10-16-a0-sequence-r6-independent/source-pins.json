@@ -1,0 +1,84 @@
+{
+  "candidate": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "reviewBase": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "authorRoot": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52",
+  "applicationSource": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "applicationTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+  "SQL18SHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+  "packageSHA256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+  "planSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "authorPublicSealSHA256": "720ec74f9ec380d05df9df9bed38a94257d7086d583358e24a6fb6fad83912a0",
+  "packetManifestSHA256": "6aebae963c661f87cd6b80f1e6052fec5e14936d743b595133e12786251812d5",
+  "correctionManifestSHA256": "d3ee8377aa0ec14975df32394b6e1852a4e4a9882f5ffaa7850654ca7f69c2de",
+  "runtimeFiles": {
+    "controller.py": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+    "cases.py": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+    "fixture.py": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+    "journal.py": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+    "policy.py": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+    "run_stage.sh": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+    "sql/assertions.sql": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+    "sql/post_rollback.sql": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+    "sql/shadows.sql": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+  },
+  "historicalReviews": [
+    {
+      "commit": "332925ed4c9763300d846101293f60a6e0156448",
+      "path": "docs/reviews/2026-10-16-a0-usage-limit-native-wrapper-independent/REVIEW.md",
+      "sha256": "5618c06a15780145593add11b024a0e5e2aa0cf520e727b53b2062c6006bb919",
+      "bytes": 12248
+    },
+    {
+      "commit": "857453290c6c490beede5f328079243e0fb091fd",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-r2-independent/REVIEW.md",
+      "sha256": "15b87d2da1523102fedfcf097ec27b7b68a528171eb629591866c444e03c916c",
+      "bytes": 13690
+    },
+    {
+      "commit": "7468c58b8c84c860dbaf3a484d7c7e274a480e48",
+      "path": "docs/reviews/2026-10-16-a0-native-wrapper-r3-independent/REVIEW.md",
+      "sha256": "8c64007b2b758777c48261f2a7ba929ca360bbc01854fb8083f33c333e56c626",
+      "bytes": 11731
+    },
+    {
+      "commit": "6c12e7efc7c5682d551f6d845c55a7ce23f4f4f8",
+      "path": "docs/reviews/2026-10-16-a0-native-oid-r4-independent/REVIEW.md",
+      "sha256": "4e1268da23011df31c5e6616b2212207246a90e204ddfc4da51be1c8c1e7ad2c",
+      "bytes": 13937
+    },
+    {
+      "commit": "133e1957e188382fbf57df10ca6590e2d41aa52c",
+      "path": "docs/reviews/2026-10-16-a0-case-temp-oid-r5-independent/REVIEW.md",
+      "sha256": "3b4bc006137f360fb6065306eddeca7d5135d891e2bcd72b5d8c621f1de99287",
+      "bytes": 15148
+    },
+    {
+      "commit": "98cff4cf63ab760dc6be8550263470a019be1ec7",
+      "path": "docs/reviews/2026-10-16-a0-r5-restore419-admission-independent/REVIEW.md",
+      "sha256": "bfedfa199bc98e72f3efc54102b8defda9500d67203e54ff14747845865ecf14",
+      "bytes": 20042
+    },
+    {
+      "commit": "579c496f14a7dc43ab1c75e803c5c4eb5f0b96ab",
+      "path": "docs/reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md",
+      "sha256": "9af158c8341444e302d90fa5d23ac54d0b6e299f7a1196fe757adb09d3e37de2",
+      "bytes": 14935
+    }
+  ],
+  "privateInputBefore": {
+    "sha256": "c314eeb1d10d68fb924c99aed73ff34379406b022f9706b06cdeccff875b3a8f",
+    "bytes": 1013596,
+    "mode": "0o600",
+    "uid": 1000,
+    "gid": 1000
+  },
+  "privateInputAfter": {
+    "sha256": "c314eeb1d10d68fb924c99aed73ff34379406b022f9706b06cdeccff875b3a8f",
+    "bytes": 1013596,
+    "mode": "0o600",
+    "uid": 1000,
+    "gid": 1000
+  },
+  "scope": "Full reviewed runtime; all current packet/correction manifests; selected historical source/evidence only. Counts overlap."
+}

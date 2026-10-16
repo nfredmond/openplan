@@ -1,0 +1,250 @@
+{
+  "status": "R2_AUTHOR_PURE_TEXT_VALIDATION_NOT_NATIVE_ADMISSION",
+  "originalPacketCommit": "7c07549714f5b2afdd5816557fedd697bf743adc",
+  "originalPreservation": {
+    "packetFiles": 11,
+    "privateFiles": 33,
+    "hashLengthModeMatch": true
+  },
+  "independentReviewInput": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-native-proof-corrections-20261016",
+  "privateFiles": {
+    "original-inventory-after.json": {
+      "sha256": "0bb706591108744178200a87ae68a308f64215e2f04ac6322ce5a769b6979dbc",
+      "bytes": 7700
+    },
+    "manager-terminal.txt": {
+      "sha256": "985c3867e695cbd7899293ae24e6fbc2ea1f3231ca2e2f9ec6bbdad87f699f69",
+      "bytes": 67
+    },
+    "host-netns.json": {
+      "sha256": "f98c31612b7b5e625cbc7a4c3fc46684486cf686a7b5c572abc3c830d3ec8c3c",
+      "bytes": 37
+    },
+    "original-inventory-before.json": {
+      "sha256": "e4116ffc955ee6f0ca6ad6f2d2dbb0e7575c9c4328cd406406118127f0adb2b1",
+      "bytes": 7428
+    },
+    "controller.py": {
+      "sha256": "2795c729c2837f0772988d92343789b234fc69f12e80d8058ff7614b554c7eb7",
+      "bytes": 1201
+    },
+    "resources-after.json": {
+      "sha256": "0607eed7e542825232f553189f7b4854aad5e27553c89bac545745b7e134a072",
+      "bytes": 981
+    },
+    "working.json": {
+      "sha256": "b501ba1ce29f72ef3ed8db7bf6e9cb76409284226b1dbe22b57405e9cb4ef7f1",
+      "bytes": 367195
+    },
+    "working.sql": {
+      "sha256": "4e7b364a0b66720d108d186ff5e9c504c68828e8159330315c67165d587a858e",
+      "bytes": 1213246
+    },
+    "manager-stream.txt": {
+      "sha256": "02693feda102164d34a3c0057d071367b938898c3059ecf3e59498f104a2f7fe",
+      "bytes": 1519
+    },
+    "lock-release.json": {
+      "sha256": "7003394da4460d1297aef20fb439d17053b10f9040146af5bbc53751655426fd",
+      "bytes": 60
+    },
+    "window-request.json": {
+      "sha256": "50867e92809de591d3cd2549e9563b4eaf080bd01e0dbf7fd54d6d6414302144",
+      "bytes": 1902
+    },
+    "results.json": {
+      "sha256": "6f7e281676cfa645d2b1136fd67fb2fa6d8026864aadea38612d7c6097ff245a",
+      "bytes": 5553
+    },
+    "resources-before.json": {
+      "sha256": "5e2e2ffd040397224ed6a5aad37d29501ac7202add0e2fd8d5a86d0e46170ef5",
+      "bytes": 664
+    },
+    "review-readback-draft.json": {
+      "sha256": "9135fed5f1e96b19487cfa6b9ec4ebf6c053d562fb2460bca6dd66c9f1d41b0b",
+      "bytes": 733
+    },
+    "admission.json": {
+      "sha256": "d1452583aa66216569bc9e299fe8ed622ae38601be6960a80bbdb0ab6c0eba68",
+      "bytes": 1081
+    },
+    "review-private-readback.json": {
+      "sha256": "433de6e4df7c89069b1c06a771f7ef125cef22e4c14775446405b6d35d32bf05",
+      "bytes": 89
+    },
+    "run.sh": {
+      "sha256": "e859d31cbe0513e5159811a6c76434218ef00b0a3b160bc0aedb4ac1f445dbe7",
+      "bytes": 655
+    },
+    "SEALS.json": {
+      "sha256": "aa68c06e644f47836fe0e6e96a114d961eb91b44178820abe03f2d52ee01f362",
+      "bytes": 4532
+    },
+    "final-source-readback.json": {
+      "sha256": "9e98782ebf69a6a95eac589e70da67bf2f28f53ab56f9a75af97a243dcdff730",
+      "bytes": 400
+    },
+    "subject/verify_text.py": {
+      "sha256": "26c899a676d597b6cf8a952101c3df925d6265ce2ab5cb745b72da7f910b78e0",
+      "bytes": 18993
+    },
+    "subject/generate.py": {
+      "sha256": "3b20d0b176e00486aa2aca01605704a1f6e8cdd9e053ec87f6f744c20b871f56",
+      "bytes": 12082
+    },
+    "generated/ordinary.json": {
+      "sha256": "b501ba1ce29f72ef3ed8db7bf6e9cb76409284226b1dbe22b57405e9cb4ef7f1",
+      "bytes": 367195
+    },
+    "generated/max-79.sql": {
+      "sha256": "724bdf794cc7d006c5cf8ba9a6dd5e5033a658f3eeb5eb7ee05e5ca2727a5fe2",
+      "bytes": 71451
+    },
+    "generated/max-90.json": {
+      "sha256": "566d80f9825ede0b017ed9c26c717d9d29be7cc80e52a6accaec8028405dbdc1",
+      "bytes": 23996
+    },
+    "generated/max-1001.sql": {
+      "sha256": "c4b7d790a773208e59ef11591754d0a878652c8ce79fc1e2df0b9be7ea45aba3",
+      "bytes": 887102
+    },
+    "generated/max-101.json": {
+      "sha256": "c6463c239d0e29e7284d365f3e4e5b8b1dbd05aa3b762f7559ef1fa8abf4b53f",
+      "bytes": 26797
+    },
+    "generated/max-89.json": {
+      "sha256": "e67483c28e3132579285a2a601e2a718b285f74fa9e10c0096d81254fd5b61bd",
+      "bytes": 23742
+    },
+    "generated/max-1001.json": {
+      "sha256": "88172c7f052569a45a959323ffb17248228695d0d3a81297a2470c26feaab465",
+      "bytes": 255404
+    },
+    "generated/ordinary.sql": {
+      "sha256": "4e7b364a0b66720d108d186ff5e9c504c68828e8159330315c67165d587a858e",
+      "bytes": 1213246
+    },
+    "generated/max-33.sql": {
+      "sha256": "807eebfac845871f39d14068a14b81ef292a81082aedeb9a6c60002a5706ae17",
+      "bytes": 30902
+    },
+    "generated/max-101.sql": {
+      "sha256": "92a736c9cfb7fc32dd219dc7db24d3cd1c3eb94cba4590cb620d2050d1d7669c",
+      "bytes": 90948
+    },
+    "generated/max-79.json": {
+      "sha256": "021987b4b60fee69c4c7294ed15eb2c20a55fef110ac55653c71b24690dcb3c0",
+      "bytes": 21202
+    },
+    "generated/max-89.sql": {
+      "sha256": "79b2c55d6b605abb53b5a3b5475ba91f4769f39a5dc326d8591827815515d338",
+      "bytes": 80266
+    },
+    "generated/max-90.sql": {
+      "sha256": "2c98be0940b3565cee39e504fde0ef2c15b276421283ae6df659c0600046ae0c",
+      "bytes": 81167
+    },
+    "generated/max-33.json": {
+      "sha256": "cf8db6ae3a769f5fa6001573a7979cbe7126975b6bd98addab799279ebb2a003",
+      "bytes": 9518
+    }
+  },
+  "packetFiles": {
+    "NUMERIC_BOUNDARY.md": {
+      "sha256": "a62e5a519232f855392bc599438bcdaa6d9588fae7db8d2c643cb366663e2bc9",
+      "bytes": 3969
+    },
+    "VALIDATION.md": {
+      "sha256": "ed9f86794910a7bf285267669600409bebfb3fe52803899ba40309620b339c97",
+      "bytes": 5882
+    },
+    "verify_text.py": {
+      "sha256": "91c7463be3d1cbfb8aa66bd3e3ec5e84510726cc75b7075c9f56749bc280a6bc",
+      "bytes": 18992
+    },
+    "MVCC_LIFECYCLE.md": {
+      "sha256": "a2449267ab52fc251eed92f594b91e6c5ca9e997c413b2020ca3b8c2840d92c6",
+      "bytes": 4159
+    },
+    "README.md": {
+      "sha256": "a88558f44fa0418e3eb2ae5f08256f1aa5f23033b04063b85fb9ef1518e7f373",
+      "bytes": 3828
+    },
+    "controls.py": {
+      "sha256": "02aa709e533920bf826d54f85187ff0cf2984bf1cf0a84d58e73ebf374214869",
+      "bytes": 2376
+    },
+    "generate.py": {
+      "sha256": "3b20d0b176e00486aa2aca01605704a1f6e8cdd9e053ec87f6f744c20b871f56",
+      "bytes": 12082
+    },
+    "catalog.sql": {
+      "sha256": "8f0a5467b7ac6cfe2269ce765f43072933a1e410cea8167304be5436dafa4926",
+      "bytes": 6099
+    },
+    "DESIGN.md": {
+      "sha256": "88e7a21491ed0e39d4e1d56b34bd568da1f4be329cdf4a8480614ff4852fa1aa",
+      "bytes": 16275
+    },
+    "EOF_METADATA.json": {
+      "sha256": "3aee8b3991496d254e6d91d6c21e69df459e1b9b166a9b66e9ebe1d572e4b853",
+      "bytes": 1888
+    },
+    "source-pins.json": {
+      "sha256": "cb10bd78a97c1bdbc5eba95c7999c0d140bc2a8634f05ba6ac048a8d99482843",
+      "bytes": 2960
+    },
+    "REPORT.md": {
+      "sha256": "e4225120c3ab8572d89b7146a91ff37c3627145b5b6e2b932b77996e5d7c4618",
+      "bytes": 7184
+    },
+    "receipts.template.json": {
+      "sha256": "306934639d3279251e7e3de4479db1d618eadda14c2d21960d4a146a1adc41ea",
+      "bytes": 2152
+    },
+    "SOURCE_COMPATIBILITY.md": {
+      "sha256": "d8ffbd3c904787ef17d4fdcef12c59b000f78cf8ab667f768cb4b19242dabc6a",
+      "bytes": 6978
+    }
+  },
+  "counts": {
+    "cases": 7,
+    "harmlessSurvivors": 1,
+    "namedFaults": 11,
+    "finalRestoredBaseline": true
+  },
+  "claimBoundary": {
+    "authorValidation": true,
+    "freshIndependentApproval": false,
+    "nativeSQLTransportAllocatedTarget": false,
+    "actualRLSLifecycleMVCC": false,
+    "sourceCheckpoint": "d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8",
+    "appTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+    "nativeIdentity": null,
+    "automaticNextOperation": false
+  },
+  "resources": {
+    "runtimeSeconds": 4.893,
+    "measuredPeakBytes": 45481984,
+    "allMemoryEventsZero": true,
+    "limitBytes": 536870912,
+    "swapBytes": 0,
+    "cpuPercent": 50,
+    "tasks": 32,
+    "oneNonblockingFlockReleased": true,
+    "mountScope": "named root RO/private RW only; inherited submount writability unassessed"
+  },
+  "metadataEOFCorrection": {
+    "receipt": "EOF_METADATA.json",
+    "originalR2Commit": "bc70cfa8f031021ab8661c34003793f0820bd964",
+    "testedReaderSha256": "26c899a676d597b6cf8a952101c3df925d6265ce2ab5cb745b72da7f910b78e0",
+    "finalPublicReaderSha256": "91c7463be3d1cbfb8aa66bd3e3ec5e84510726cc75b7075c9f56749bc280a6bc",
+    "exactBytesMatch": false,
+    "ASTMatchWithoutAttributes": true,
+    "privateArtifactsChanged": false,
+    "testRerun": false,
+    "correctedDiffCheckExit": 0,
+    "privateSealsPreserved": true
+  }
+}

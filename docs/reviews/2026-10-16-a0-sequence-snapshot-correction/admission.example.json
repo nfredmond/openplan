@@ -1,0 +1,23 @@
+{
+  "notice": "PREPARED R6 PLACEHOLDER. Fresh independent exact-source review and separate root admission required. Nulls grant no admission.",
+  "stage": null,
+  "packageSHA256": null,
+  "planSHA256": null,
+  "predecessorSHA256": null,
+  "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "memoryBytes": 1073741824,
+  "swapBytes": 0,
+  "cpuPercent": 50,
+  "independentReviewSHA256": null,
+  "systemIdentifier": null,
+  "observedSHA256": null,
+  "functionPins": null,
+  "priorFunctionPins": null,
+  "missingInputs": [
+    "Fresh independent review of this wrapper, retained guard trials and SQL cases",
+    "Root admission and allocation, including disk admission in the separate parent lane",
+    "Actual container-local socket and supabase_admin identity, observed system identifier and original scope",
+    "Exact installed function-definition SHA256, owner, volatility, security, proconfig and expanded ACL independently reviewed from apply18 output"
+  ]
+}

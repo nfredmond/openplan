@@ -1,0 +1,79 @@
+{
+  "candidate": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "disposition": "SCOPED SOURCE APPROVAL; no new P1/P2; no native/diagnostic admission",
+  "method": "Source and retained metadata only; no subject import, test, compiler, npm, lock or manager",
+  "groups": {
+    "public": 32,
+    "manifestSeals": 2,
+    "packet-private-pins.json": 73,
+    "correction-private-pins.json": 1919,
+    "selectedPrivate": 9,
+    "selectedOldCurrent": 1126,
+    "runtime": 9,
+    "publicRuntime": 9,
+    "bindings": 5,
+    "sourcePins": 1126,
+    "precedingHelpers": 7,
+    "preparedSQL": 56,
+    "candidateGitFiles": 33,
+    "nativeJournalStreams": 104,
+    "nativeJournalInputs": 51,
+    "managerStreams": 6,
+    "failedProof145": 145,
+    "sequenceTrialStreams": 24,
+    "sequenceRestored": 108,
+    "continuityRestored": 36,
+    "testStepStreams": 12,
+    "preparedCodeRuntime": 9,
+    "preparedCodeHelpers": 7,
+    "diagnosticSQL": 3
+  },
+  "uniqueInputFiles": 3152,
+  "historicalSelectedPins": 1126,
+  "full17376FileCampaignRehashed": false,
+  "retainedTrials": {
+    "sequence-controls-01": {
+      "outcomes": {
+        "PASS": 2,
+        "SURVIVED": 1,
+        "KILLED": 9
+      },
+      "rows": 12
+    },
+    "case-continuity-01": {
+      "outcomes": {
+        "PASS": 6,
+        "SURVIVED": 3,
+        "KILLED": 3
+      },
+      "rows": 12
+    }
+  },
+  "independentTestsRun": 0,
+  "authorTestsReexecuted": false,
+  "initialReaderErrors": [
+    [
+      "raw419-history"
+    ]
+  ],
+  "resolvedReaderErrors": 1,
+  "unresolvedMetadataErrors": [],
+  "finalChangedInputFiles": 0,
+  "authorHead": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "authorClean": true,
+  "nativeDispatches": 0,
+  "diagnosticAdmission": false,
+  "nativeStageAdmission": false,
+  "wrapperAcceptance": false,
+  "priorFailedR5TargetFenced": true,
+  "freshR6Target": "openplan_a0_limit_c730358675ac8bb47ac15fdd",
+  "testWindowRequested": false,
+  "newTestOrRuntimeGuard": false,
+  "blind": [
+    "No PostgreSQL parsing, sequence read or native transaction acceptance",
+    "Retained inert Popen controls are not independently reexecuted",
+    "Selected historical custody is not exhaustive old campaign hashing",
+    "No universal mount isolation, hostile-owner or power-loss guarantee",
+    "Timeout/closed input does not establish backend absence or rollback"
+  ]
+}

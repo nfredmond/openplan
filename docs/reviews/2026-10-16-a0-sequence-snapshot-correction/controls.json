@@ -1,0 +1,1218 @@
+{
+  "sequence": {
+    "rows": [
+      {
+        "trial": "baseline",
+        "outcome": "PASS",
+        "assertion": null,
+        "exitCode": 0,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "trial": "harmless-comment",
+        "outcome": "SURVIVED",
+        "assertion": null,
+        "exitCode": 0,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "trial": "whole-sequence-row",
+        "outcome": "KILLED",
+        "assertion": "sequence-snapshot-readback-not-reached",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "d79a9763d1ad0b7f6bf15c398c8cb3be5b31c04c20d6c13feb286af65145ec4e"
+      },
+      {
+        "trial": "last-value-omitted",
+        "outcome": "KILLED",
+        "assertion": "sequence-state-fields-differ",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "0a1a424f23f582a831584b426b380aabc5f9e6b661a8504ec4b8aeffd31d19ae"
+      },
+      {
+        "trial": "log-cnt-omitted",
+        "outcome": "KILLED",
+        "assertion": "sequence-state-fields-differ",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "0a1a424f23f582a831584b426b380aabc5f9e6b661a8504ec4b8aeffd31d19ae"
+      },
+      {
+        "trial": "is-called-omitted",
+        "outcome": "KILLED",
+        "assertion": "sequence-state-fields-differ",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "0a1a424f23f582a831584b426b380aabc5f9e6b661a8504ec4b8aeffd31d19ae"
+      },
+      {
+        "trial": "unqualified-builder",
+        "outcome": "KILLED",
+        "assertion": "sequence-builder-not-catalog-qualified",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "8eccb6741536a6b769f4cc72a594b78e1a8fd916af8b9c7e6667b5ecdfad283e"
+      },
+      {
+        "trial": "sequence-kind-omitted",
+        "outcome": "KILLED",
+        "assertion": "sequence-map-entry-missing",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "0069b1dd1e3a67e9be646e731fe0df40ddead3d4dea6470611c2e0962e435546"
+      },
+      {
+        "trial": "table-only-omitted",
+        "outcome": "KILLED",
+        "assertion": "snapshot-table-only-hash-missing",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "d78cea9080345578b071ec7003f17af73f9508b74c628c96f2527e643c4ddc28"
+      },
+      {
+        "trial": "census-omitted",
+        "outcome": "KILLED",
+        "assertion": "snapshot-sequence-census-missing",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "9973d6a00ade27c6269374e954a3442aa4bd02f30126117ae7ea6f1c7bdd99df"
+      },
+      {
+        "trial": "tables-omitted",
+        "outcome": "KILLED",
+        "assertion": "snapshot-table-map-differs",
+        "exitCode": 1,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "62bdf78599b3fe4329a93de1edc86329286e46bd04de7dbb80f2f15a3b4e242f"
+      },
+      {
+        "trial": "restored",
+        "outcome": "PASS",
+        "assertion": null,
+        "exitCode": 0,
+        "restored": {
+          "controller.py": {
+            "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+            "bytes": 31146,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "cases.py": {
+            "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+            "bytes": 12821,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "fixture.py": {
+            "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+            "bytes": 7731,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "journal.py": {
+            "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+            "bytes": 4331,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "policy.py": {
+            "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+            "bytes": 6126,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "run_stage.sh": {
+            "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+            "bytes": 199,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/assertions.sql": {
+            "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+            "bytes": 794,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/post_rollback.sql": {
+            "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+            "bytes": 654,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          },
+          "sql/shadows.sql": {
+            "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+            "bytes": 489,
+            "mode": "0o600",
+            "uid": 1000,
+            "gid": 1000
+          }
+        },
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "nativeOperations": 0,
+    "blind": "Captured actual query and synthetic output establish builder/transport/policy composition only. No native parsing, sequence state or restoration acceptance."
+  },
+  "continuity": {
+    "rows": [
+      {
+        "trial": "baseline",
+        "scenario": "ordinary-zero",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "ordinary-zero",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "baseline",
+        "scenario": "shadow",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "shadow",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "baseline",
+        "scenario": "expected-validator-failure",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "expected-validator-failure",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "harmless",
+        "scenario": "ordinary-zero",
+        "outcome": "SURVIVED",
+        "detail": {
+          "scenario": "ordinary-zero",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "harmless",
+        "scenario": "shadow",
+        "outcome": "SURVIVED",
+        "detail": {
+          "scenario": "shadow",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "harmless",
+        "scenario": "expected-validator-failure",
+        "outcome": "SURVIVED",
+        "detail": {
+          "scenario": "expected-validator-failure",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "case-cast-removed",
+        "scenario": "ordinary-zero",
+        "outcome": "KILLED",
+        "detail": {
+          "scenario": "ordinary-zero",
+          "error": "case-native-session-custody",
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case"
+          ],
+          "sqlRequests": 5,
+          "PopenCalls": 10,
+          "caseReceipt": false,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "case-cast-removed",
+        "scenario": "shadow",
+        "outcome": "KILLED",
+        "detail": {
+          "scenario": "shadow",
+          "error": "case-native-session-custody",
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case"
+          ],
+          "sqlRequests": 5,
+          "PopenCalls": 10,
+          "caseReceipt": false,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "case-cast-removed",
+        "scenario": "expected-validator-failure",
+        "outcome": "KILLED",
+        "detail": {
+          "scenario": "expected-validator-failure",
+          "error": "case-native-session-custody",
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case"
+          ],
+          "sqlRequests": 5,
+          "PopenCalls": 10,
+          "caseReceipt": false,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "restored",
+        "scenario": "ordinary-zero",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "ordinary-zero",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "restored",
+        "scenario": "shadow",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "shadow",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      },
+      {
+        "trial": "restored",
+        "scenario": "expected-validator-failure",
+        "outcome": "PASS",
+        "detail": {
+          "scenario": "expected-validator-failure",
+          "error": null,
+          "queries": [
+            "native",
+            "scope",
+            "definitions",
+            "snapshot",
+            "case",
+            "absence",
+            "snapshot",
+            "definitions",
+            "scope"
+          ],
+          "sqlRequests": 9,
+          "PopenCalls": 18,
+          "caseReceipt": true,
+          "nativeOperations": 0,
+          "evidence": "synthetic replies through inert Popen; no native pg_my_temp_schema observation"
+        }
+      }
+    ],
+    "nativeOperations": 0,
+    "reuse": "Exact R5 probe implementation, with capture path rebound to immutable R3 and new private subject paths. Not an independent fake-SQL implementation.",
+    "blind": "Three actual case/transport compositions with inert Popen; no native sequence or case acceptance. Full 15-fault campaign is not rerun."
+  },
+  "smallControls": {
+    "runner": [
+      {
+        "trial": "baseline",
+        "outcome": "PASS"
+      },
+      {
+        "trial": "harmless",
+        "outcome": "SURVIVED"
+      },
+      {
+        "trial": "guard-omitted",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "restored",
+        "outcome": "PASS"
+      }
+    ],
+    "diagnostic": [
+      {
+        "trial": "harmless-comment",
+        "outcome": "SURVIVED"
+      },
+      {
+        "trial": "sequence-write",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "table-write",
+        "outcome": "KILLED"
+      },
+      {
+        "trial": "restored",
+        "outcome": "PASS"
+      }
+    ],
+    "blind": "Pure value guard and finite SQL source scan only; not a SQL parser, live transaction or native permissions proof."
+  }
+}

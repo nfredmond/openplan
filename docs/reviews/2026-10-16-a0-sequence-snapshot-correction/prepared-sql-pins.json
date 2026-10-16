@@ -1,0 +1,232 @@
+{
+  "files": {
+    "fixture.sql": {
+      "bytes": 9569,
+      "sha256": "973841a5e75d958327159f957edd70f96f86913552dd3e7cec3164bd5c2fa020"
+    },
+    "case-configuration.sql": {
+      "bytes": 5211,
+      "sha256": "5ba0c2e0368d01213f5895a35ac0066af89f9a9ed14433275a3c0c7b82c2b442"
+    },
+    "case-shadow.sql": {
+      "bytes": 6054,
+      "sha256": "dd846091ed5cda5cd8b5241a74530416a3d0fb46ef540f8122fc3e53348fbdd5"
+    },
+    "case-limited.sql": {
+      "bytes": 4535,
+      "sha256": "fae5386237e2b467a226a7e75ec028c722111f43d6ef22300dfdf31067ea7617"
+    },
+    "case-reported-reset.sql": {
+      "bytes": 4604,
+      "sha256": "1571d3880a24d1780c7e99e7f6085ca10b42a480d2f3377f67651d08b2abaf2f"
+    },
+    "case-exact-replay.sql": {
+      "bytes": 5564,
+      "sha256": "e4e84197cf96d56cc1424a3cf9cee7f7ec5c20611a485a544baa623374ec1d07"
+    },
+    "case-changed-replay.sql": {
+      "bytes": 6606,
+      "sha256": "46354f9b6d9a445f1a6569a716b368aa7914ba5a9979e69110aae68a9ac305f1"
+    },
+    "case-wrong-token.sql": {
+      "bytes": 2748,
+      "sha256": "7f0e51292551ea53e6f14e73a59c4e751371578a8912f311d1e8cb11c5c1679a"
+    },
+    "case-cross-connection.sql": {
+      "bytes": 2753,
+      "sha256": "f487abeaad8f0f0ae2aa4008c9074e8a547b2aceecf355639a454c3d77550a6e"
+    },
+    "case-ambiguous-actor.sql": {
+      "bytes": 2788,
+      "sha256": "38bd82d832a8974f23a8cf6473d1a4f529fbf88cfdaf5f1d5cd85c994a7ff4b5"
+    },
+    "case-revoked.sql": {
+      "bytes": 2871,
+      "sha256": "4ed83bd84a0debf36dec2ba76a51f1561eee073bc63d219e9fbe92f860dc83e8"
+    },
+    "case-expired-connection.sql": {
+      "bytes": 2946,
+      "sha256": "a8f7ccf16134bd31e4af98fc4ecfd7931a756a96d34a85614b96471c13e6d82c"
+    },
+    "case-membership-removed.sql": {
+      "bytes": 2902,
+      "sha256": "feeca48b2f721c76e81af907feba0188420eb13f2a22036b4c3bfd719f3a44e3"
+    },
+    "case-project-moved.sql": {
+      "bytes": 2878,
+      "sha256": "4e14c3a26f77da604af96fb6b587ccfb4e892993800d98a82d31aaf813a6e02f"
+    },
+    "case-stale-attempt.sql": {
+      "bytes": 2750,
+      "sha256": "b5cdc33e1290ec687d4bb3c5412f164131c4c67dfaa2a2b65296be7518ca30fa"
+    },
+    "case-expired-lease.sql": {
+      "bytes": 3061,
+      "sha256": "7a36203963cb163e9126ed41dfefafb57b102d7a071d22fd1206e9d0267e0ee7"
+    },
+    "case-cancelled.sql": {
+      "bytes": 2871,
+      "sha256": "046a1e2f30d5a8e39840a3b1d7cb2a6a1fe58650d50d92b94ff28a813bd033d9"
+    },
+    "case-answer-with-failure.sql": {
+      "bytes": 2795,
+      "sha256": "c96eebd3284cb50219e881fc046d3f88c10565c30c9811925f2b42543c017e1c"
+    },
+    "case-arbitrary-failure.sql": {
+      "bytes": 2756,
+      "sha256": "044b00e055f983577779fb2636f2f99d88d2dfc5af054352474c3e2b072d9aca"
+    },
+    "case-invalid-version.sql": {
+      "bytes": 3649,
+      "sha256": "bb13aabc00f438712d3a3bc158a07e14d35ff332d0154ceb86c310321fe1a74c"
+    },
+    "case-extra-private-field.sql": {
+      "bytes": 3695,
+      "sha256": "54c5476cc10c7a7ebf4f188c1f3adbec67de69d5f613658b1e269b798983d2cb"
+    },
+    "case-invalid-reset.sql": {
+      "bytes": 3695,
+      "sha256": "d4619cc2aee39683dfded2ccb48a091a913282c60140f0852692b89f8e0a4293"
+    },
+    "case-invalid-reset-source.sql": {
+      "bytes": 3693,
+      "sha256": "a1e23c8a38adef3d95181979e49563c423a98bbaad2a77a1472b354891048d88"
+    },
+    "case-invalid-native-id.sql": {
+      "bytes": 3641,
+      "sha256": "9c91e6a32e802dfb6ea118194f430a0b871ac45ce0064f2487a1872d131436e4"
+    },
+    "case-claude-refusal.sql": {
+      "bytes": 3672,
+      "sha256": "fca21e00c9208941a70ea39231f0715197edc2a7e64160d91cdaf44fada96a41"
+    },
+    "case-opencode-refusal.sql": {
+      "bytes": 3660,
+      "sha256": "d1cdf688dae8c4a69a9897c61726fea0bee25de2fb63b11a175935f2860a3af5"
+    },
+    "case-anthropic-refusal.sql": {
+      "bytes": 3750,
+      "sha256": "1c49a4ad5b74cfd7d6d3863d0472e9be0c421a77450fdaf9d1d00f49e058b29f"
+    },
+    "case-v1-success.sql": {
+      "bytes": 3450,
+      "sha256": "4ea30705fe2deee816b1dec3620cf18f2cefca2287140c85efcf5842bbcf5f6f"
+    },
+    "case-v1-proposal.sql": {
+      "bytes": 4069,
+      "sha256": "c9d2703f06f63ebf7f739dbca992534adc6943a3d9d0bfd323e5a3f6d697f68e"
+    },
+    "case-v1-bad-proposal.sql": {
+      "bytes": 2552,
+      "sha256": "ce23737711cdee9e19095dac5a426948f22d6ceec57e9c332040d3b4e847d416"
+    },
+    "case-v1-changed-replay.sql": {
+      "bytes": 4087,
+      "sha256": "3c15efc185ff72ddde814db9f4838d02d6a826c8f6654b1c6111570d2f67c7f1"
+    },
+    "case-api-success.sql": {
+      "bytes": 2859,
+      "sha256": "1eb89271f9ca97c77b21176ee76731b370e7825fd395fe83efdde1aff301c407"
+    },
+    "case-api-exact-replay.sql": {
+      "bytes": 2859,
+      "sha256": "1eb89271f9ca97c77b21176ee76731b370e7825fd395fe83efdde1aff301c407"
+    },
+    "case-api-changed-replay.sql": {
+      "bytes": 3098,
+      "sha256": "26f734e906295efe1f12d327ec2d93298a98a6aa88b636a6c695e68cfb21e6b9"
+    },
+    "case-api-v2-refusal.sql": {
+      "bytes": 3480,
+      "sha256": "1269a4caa56e426816cf56e05de98122f759b9727c725dc9657704400d97b29f"
+    },
+    "case-api-failure.sql": {
+      "bytes": 2905,
+      "sha256": "ed1ade4aa7cd2f47a9af20e7d909803f585cfdd16b049a7262fd354c844e6270"
+    },
+    "case-api-ambiguous.sql": {
+      "bytes": 2836,
+      "sha256": "f1bc122bcd00a4af4c114eebe282704cb71dae5fe1a7cf1888cbb6d32dcdb93a"
+    },
+    "case-reader-wrong-actor.sql": {
+      "bytes": 1915,
+      "sha256": "8dbe901ec3e474c50bb598404ae5fa6fd4dc9d8e82ed3f7ab930de6624acb54d"
+    },
+    "case-rls-owner.sql": {
+      "bytes": 2096,
+      "sha256": "1feba84ded33045c7a3524003c9493eae748f3f86a63fcda1a07711f79927f2d"
+    },
+    "case-rls-other-actor.sql": {
+      "bytes": 2102,
+      "sha256": "18e0f04e89c10bd7dcedce5c3f1d1088f3d1ab2c4f3ddb0b9c6a82fceadd32c6"
+    },
+    "case-rls-anon-refusal.sql": {
+      "bytes": 2003,
+      "sha256": "f7e13c389133afd86fad815520ef3382407c61b7a75bc9fbb869a37857d7b32d"
+    },
+    "case-scope-userId.sql": {
+      "bytes": 3591,
+      "sha256": "4b9deb0a7a87bebac989edf788c6c27d7aa04d8c17ab7ef4fc2ad64814e9a5d2"
+    },
+    "case-scope-workspaceId.sql": {
+      "bytes": 3601,
+      "sha256": "e8041bd5debe1f982f02f7e1d64c075a8df4229aeee8e90fe3305d7b29dabb7c"
+    },
+    "case-scope-projectId.sql": {
+      "bytes": 3597,
+      "sha256": "3faf404e73cda74157a2ee9bd2ee3e91d0b188075ee96549014e15e376a9c752"
+    },
+    "case-scope-connectionId.sql": {
+      "bytes": 3603,
+      "sha256": "d4c14b76a41ae2dd6342fa7fcfcbcbcc0eea1a268161f4752db830648fc11448"
+    },
+    "case-scope-requestId.sql": {
+      "bytes": 3597,
+      "sha256": "63502ad41ea745b783c76a36312e3a914cd41578ecb8d4ce0621894f7f21ac29"
+    },
+    "case-scope-turnId.sql": {
+      "bytes": 3591,
+      "sha256": "c421390acc76b00fa32b8027b08cd34c135e41c7f9b805d877c8ca449caa6c5c"
+    },
+    "case-scope-attemptId.sql": {
+      "bytes": 3597,
+      "sha256": "6ea8b5270f73ac2d22d2147d0c8c01580ad8bdf6e4532136e51056b7d5f71d04"
+    },
+    "case-scope-packetHash.sql": {
+      "bytes": 3543,
+      "sha256": "555864322fda1b29808d5f8d521e7c3ee3dca9cbea17955839a6456a6817e65f"
+    },
+    "case-scope-model.sql": {
+      "bytes": 3639,
+      "sha256": "61e1ea49e86a77e4dfe3d8748a7a290262cbca61a48c00527ccad52bbd6ceca7"
+    },
+    "case-scope-authMode.sql": {
+      "bytes": 3653,
+      "sha256": "c258b83d41de127d85a21f4cf074cab7f46aa76ddb1e886643eebfdb4af2a4af"
+    },
+    "mutation-harmless.sql": {
+      "bytes": 360,
+      "sha256": "7085574aea56fa585496f97c5f69df095643d561bd669508215bf5f58e277bca"
+    },
+    "mutation-finish-path.sql": {
+      "bytes": 543,
+      "sha256": "f8ddb922f3715a5746e630d5221c5c1c631f167ae1a4533dc4a5d6ce330be7a5"
+    },
+    "mutation-validator-path.sql": {
+      "bytes": 468,
+      "sha256": "216c34d3e99b0136b89e1f418cb13700bf48eb80a8d6a9863ab3cdd8eb3bd398"
+    },
+    "mutation-validator-accept-all.sql": {
+      "bytes": 583,
+      "sha256": "8a443ac1881389ff73773e486cc0b9d4cc36866191c99624c4dec3c4469e781d"
+    },
+    "mutation-finish-drop-receipt.sql": {
+      "bytes": 7271,
+      "sha256": "75171cb90b1f5c95e58fb21c85ef18173b7938a4207b682fdd0f557d741fec4d"
+    }
+  },
+  "planSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "parsedByPostgres": false,
+  "executed": false,
+  "authority": "Controller builds actual admitted inputs; artifacts grant no admission."
+}
