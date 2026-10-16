@@ -54,7 +54,7 @@ const unbilledEntries = [
   { id: "te-3", staff_id: "staff-2", labor_category: "GIS Analyst", hours: 4, billable: true, billed_line_item_id: null },
 ];
 
-function stubFetch({ nteWarning }: { nteWarning?: { billedToDate: number; notToExceed: number; overBy: number } } = {}) {
+function stubFetch({ nteWarning }: { nteWarning?: import("@/lib/invoicing/receivables").EngagementNteWarning } = {}) {
   const fetchMock = vi.fn(async (url: string, init?: { method?: string }) => {
     if (!init?.method || init.method === "GET") {
       expect(url).toContain("/api/invoicing/time-entries?");
@@ -212,7 +212,7 @@ describe("ClientInvoiceComposer", () => {
   });
 
   it("renders the server's not-to-exceed overrun as a warning, never a block", async () => {
-    stubFetch({ nteWarning: { billedToDate: 61000, notToExceed: 50000, overBy: 11000 } });
+    stubFetch({ nteWarning: { basis: "legacy_terms_unassessed", billedToDate: 60000, projectedBilledToDate: "44999999999999.55", notToExceed: 50000, overBy: "44999999949999.55", currencyCode: "EUR" } });
     render(<ClientInvoiceComposer {...baseProps} />);
     fillRequiredHeader();
     await pullUnbilledTime();
@@ -222,7 +222,7 @@ describe("ClientInvoiceComposer", () => {
 
     await waitFor(() =>
       expect(
-        screen.getByText(/\$61,000\.00 billed against its \$50,000\.00 not-to-exceed — \$11,000\.00 over\. Recorded as a warning; nothing was blocked\./)
+        screen.getByText(/€44,999,999,999,999\.55 projected gross billing against its €50,000\.00 legacy not-to-exceed, €44,999,999,949,999\.55 over\. Agreement terms unassessed\. Recorded as a warning; nothing was blocked\./)
       ).toBeInTheDocument()
     );
     // The save still succeeded alongside the warning.

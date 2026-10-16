@@ -81,7 +81,7 @@ type InvoiceQueryChain = {
   then: (resolve: (value: unknown) => void) => void;
 };
 const invoiceQueryChain: InvoiceQueryChain = {
-  eq: () => invoiceQueryChain,
+  eq: vi.fn(() => invoiceQueryChain),
   order: () => ({ limit: invoiceLimitMock }),
   single: invoiceDetailSingleMock,
   then: (resolve) => resolve(invoiceListResultMock()),
@@ -813,9 +813,54 @@ describe("POST /api/invoicing/client-invoices", () => {
     expect(response.status).toBe(201);
     const body = await response.json();
     // 8000 billed + 5000 this invoice = 13000 against a 10000 ceiling.
-    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, notToExceed: 10000, overBy: 3000 });
+    expect(body.nteWarning).toEqual({ basis: "legacy_terms_unassessed", billedToDate: 8000, projectedBilledToDate: 13000, notToExceed: 10000, overBy: 3000, currencyCode: null });
     expect(body.invoice).toMatchObject({ id: INVOICE });
   });
+  for (const [count, projectedCents, overCents] of [
+    [45, "4500000000000056", "4400000000000057"],
+    [91, "9100000000000010", "9000000000000011"],
+    [100, "10000000000000001", "9900000000000002"],
+  ] as const) {
+    it(`serializes exact projected warning cents from ${count} legitimate rows`, async () => {
+      engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "999999999999.99" }, error: null });
+      invoiceListResultMock.mockReturnValueOnce({ data: Array.from({ length: count }, (_, i) => ({ id: `prior-${i}`, engagement_id: ENGAGEMENT, status: i % 2 ? "sent" : "paid", subtotal_amount: "999999999999.99" })), error: null });
+      const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", { ...invoicePayload, currencyCode: "EUR", lineItems: [{ description: "New work", amount: 1.01 }] }));
+      expect(response.status).toBe(201);
+      const body = await response.json();
+      // Parse the JSON decimal spelling independently, without production money helpers.
+      function cents(value: number | string) {
+        expect(String(value)).toMatch(/^\d+(?:\.\d{1,2})?$/);
+        const [whole, fraction = ""] = String(value).split(".");
+        return BigInt(whole + fraction.padEnd(2, "0"));
+      }
+      expect(cents(body.nteWarning.projectedBilledToDate)).toBe(BigInt(projectedCents));
+      expect(cents(body.nteWarning.overBy)).toBe(BigInt(overCents));
+      expect(body.nteWarning.basis).toBe("legacy_terms_unassessed");
+      expect(body.nteWarning.currencyCode).toBe("EUR");
+      expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+      expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
+      expect(engagementSelectMock).toHaveBeenCalledWith("id, workspace_id, client_id, project_id, not_to_exceed_amount");
+      expect(invoiceInsertMock).toHaveBeenCalled();
+    });
+  }
+
+  it("audits unavailable billed position and still accepts invoice creation", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: 10 }, error: null });
+    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: null }], error: null });
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toBeUndefined();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_unavailable", expect.objectContaining({ unavailable: { billedToDate: "missing" } }));
+  });
+
+  it("audits an invalid ceiling and still accepts invoice creation", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, workspace_id: WORKSPACE, client_id: CLIENT, project_id: null, not_to_exceed_amount: "10junk" }, error: null });
+    const response = await postClientInvoice(jsonRequest("http://localhost/api/invoicing/client-invoices", "POST", invoicePayload));
+    expect(response.status).toBe(201);
+    expect((await response.json()).nteWarning).toBeUndefined();
+    expect(mockAudit.warn).toHaveBeenCalledWith("nte_position_unavailable", expect.objectContaining({ unavailable: { notToExceed: "invalid" } }));
+  });
+
 });
 
 describe("GET /api/invoicing/client-invoices", () => {

@@ -22,7 +22,7 @@ type InvoiceQueryChain = {
   then: (resolve: (value: unknown) => void) => void;
 };
 const invoiceQueryChain: InvoiceQueryChain = {
-  eq: () => invoiceQueryChain,
+  eq: vi.fn(() => invoiceQueryChain),
   single: invoiceDetailSingleMock,
   then: (resolve) => resolve(invoiceListResultMock()),
 };
@@ -320,6 +320,30 @@ describe("GET /api/invoicing/client-invoices/[invoiceId]/pdf", () => {
 
     expect(response.status).toBe(403);
     expect(renderReportPdfMock).not.toHaveBeenCalled();
+  });
+
+  it("retains exact aggregate cents through artifact assembly and HTML", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, title: "Precision fixture", not_to_exceed_amount: "999999999999.99" }, error: null });
+    invoiceListResultMock.mockReturnValueOnce({ data: Array.from({ length: 45 }, () => ({ engagement_id: ENGAGEMENT, status: "sent", subtotal_amount: "999999999999.99" })), error: null });
+    const response = await getInvoicePdf(new NextRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}/pdf`), context);
+    expect(response.status).toBe(200);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("billed to date 44999999999999.55 (currency unassessed) gross before retention");
+    expect(html).toContain("remaining -43999999999999.56 (currency unassessed)");
+    expect(invoiceSelectMock).toHaveBeenCalledWith("id, status, engagement_id, subtotal_amount, retention_percent, retention_amount, total_amount");
+    expect(invoiceQueryChain.eq).toHaveBeenCalledWith("engagement_id", ENGAGEMENT);
+    expect(engagementSelectMock).toHaveBeenCalledWith("id, title, reference_code, not_to_exceed_amount");
+  });
+
+  it("keeps an invoice artifact usable with an unavailable billed bucket", async () => {
+    engagementSingleMock.mockResolvedValueOnce({ data: { id: ENGAGEMENT, title: "Missing fixture", not_to_exceed_amount: "bad" }, error: null });
+    invoiceListResultMock.mockReturnValueOnce({ data: [{ engagement_id: ENGAGEMENT, status: "sent" }, { engagement_id: ENGAGEMENT, status: "draft", subtotal_amount: 2 }], error: null });
+    const response = await getInvoicePdf(new NextRequest(`http://localhost/api/invoicing/client-invoices/${INVOICE}/pdf`), context);
+    expect(response.status).toBe(200);
+    const html = renderReportPdfMock.mock.calls[0][0] as string;
+    expect(html).toContain("Gross billed calculation unavailable (missing amount)");
+    expect(html).toContain("Legacy ceiling calculation unavailable (invalid amount)");
+    expect(html).toContain("gross draft 2.00 (currency unassessed)");
   });
 
   it("renders through renderReportPdf and streams application/pdf as an attachment named for the invoice", async () => {

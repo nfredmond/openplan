@@ -5,7 +5,9 @@ import {
   buildEngagementBilledSummary,
   computeLineItemAmount,
   summarizeClientInvoiceTotals,
+  type EngagementNteWarning,
 } from "@/lib/invoicing/receivables";
+import { compareMoney, subtractMoney, sumMoney, type ExactMoneyAmount } from "@/lib/money/optional-amount";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { createClient, createServiceRoleClient } from "@/lib/supabase/server";
 import { BODY_LIMITS, readJsonOrNullWithLimit } from "@/lib/http/body-limit";
@@ -386,8 +388,8 @@ export async function POST(request: NextRequest) {
 
     // Billed position BEFORE this invoice, for the not-to-exceed warning. Read
     // ahead of the insert so the new invoice cannot count against itself.
-    let priorBilledToDate: number | null = null;
-    let notToExceed: number | null = null;
+    let priorBilledToDate: ExactMoneyAmount | null = null;
+    let notToExceed: ExactMoneyAmount | null = null;
 
     if (engagement) {
       const { data: engagementInvoices, error: engagementInvoicesError } = await supabase
@@ -402,6 +404,13 @@ export async function POST(request: NextRequest) {
         );
         priorBilledToDate = summary.billedToDate;
         notToExceed = summary.notToExceed;
+        if (summary.unavailable) {
+          audit.warn("nte_position_unavailable", {
+            workspaceId: parsed.data.workspaceId,
+            engagementId: engagement.id,
+            unavailable: summary.unavailable,
+          });
+        }
       } else {
         // The warning is best-effort; a failed read must not block the create,
         // but it is audited so a silent NTE blind spot cannot form.
@@ -563,16 +572,26 @@ export async function POST(request: NextRequest) {
     // Not-to-exceed overruns WARN and never block: the ceiling is the
     // engagement's business context, and the planner composing the invoice is
     // the one who has to negotiate it — hiding the invoice would not.
-    let nteWarning: { billedToDate: number; notToExceed: number; overBy: number; basis: "legacy_terms_unassessed" } | undefined;
+    let nteWarning: EngagementNteWarning | undefined;
     if (notToExceed !== null && priorBilledToDate !== null) {
-      const projected = Math.round((priorBilledToDate + totals.subtotalAmount) * 100) / 100;
-      if (projected > notToExceed) {
-        nteWarning = {
-          basis: "legacy_terms_unassessed",
-          billedToDate: priorBilledToDate,
-          notToExceed,
-          overBy: Math.round((projected - notToExceed) * 100) / 100,
-        };
+      try {
+        const projected = sumMoney([priorBilledToDate, totals.subtotalAmount]);
+        if (compareMoney(projected, notToExceed) > 0) {
+          nteWarning = {
+            basis: "legacy_terms_unassessed",
+            billedToDate: priorBilledToDate,
+            projectedBilledToDate: projected,
+            notToExceed,
+            overBy: subtractMoney(projected, notToExceed),
+            currencyCode: parsed.data.currencyCode ?? null,
+          };
+        }
+      } catch {
+        audit.warn("nte_projection_unavailable", {
+          workspaceId: parsed.data.workspaceId,
+          engagementId: engagement?.id ?? null,
+          reason: "Invalid money amount in projected gross billing",
+        });
       }
     }
 

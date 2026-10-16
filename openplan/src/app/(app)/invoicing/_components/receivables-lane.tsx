@@ -224,8 +224,7 @@ export async function ReceivablesLane({
     clientId: engagement.client_id,
     projectId: engagement.project_id,
     title: engagement.title,
-    notToExceedAmount:
-      engagement.not_to_exceed_amount == null ? null : Number(engagement.not_to_exceed_amount),
+    notToExceedAmount: engagement.not_to_exceed_amount,
   }));
   const deliverableOptions = deliverables.map((deliverable) => ({
     id: deliverable.id,
@@ -407,7 +406,7 @@ export async function ReceivablesLane({
                               />
                             </div>
                             <div className="mt-2">
-                              <EngagementNteBar summary={billed} />
+                              <EngagementNteBar summary={billed} currencyCode={null} />
                             </div>
                           </li>
                         );

@@ -10,6 +10,7 @@ import { ActionFeedback } from "@/components/ui/action-feedback";
 import {
   computeLineItemAmount,
   summarizeClientInvoiceTotals,
+  type EngagementNteWarning,
 } from "@/lib/invoicing/receivables";
 import {
   groupUnbilledTime,
@@ -26,7 +27,7 @@ export type InvoiceEngagementOption = {
   clientId: string;
   projectId: string | null;
   title: string;
-  notToExceedAmount: number | null;
+  notToExceedAmount: number | string | null;
 };
 export type InvoiceProjectOption = { id: string; name: string };
 export type InvoiceDeliverableOption = { id: string; projectId: string; title: string };
@@ -367,7 +368,7 @@ export function ClientInvoiceComposer({
       const payload = (await response.json()) as {
         error?: string;
         details?: string;
-        nteWarning?: { billedToDate: number; notToExceed: number; overBy: number };
+        nteWarning?: EngagementNteWarning;
       };
       if (!response.ok) {
         throw new Error(payload.details || payload.error || "Failed to save client invoice");
@@ -375,7 +376,7 @@ export function ClientInvoiceComposer({
 
       if (payload.nteWarning) {
         setNteNotice(
-          `This invoice takes the engagement to ${formatMoney(payload.nteWarning.billedToDate, { precision: "cents" })} billed against its ${formatMoney(payload.nteWarning.notToExceed, { precision: "cents" })} not-to-exceed — ${formatMoney(payload.nteWarning.overBy, { precision: "cents" })} over. Recorded as a warning; nothing was blocked.`
+          `This invoice takes the engagement to ${formatInvoiceMoney(payload.nteWarning.projectedBilledToDate, payload.nteWarning.currencyCode)} projected gross billing against its ${formatInvoiceMoney(payload.nteWarning.notToExceed, payload.nteWarning.currencyCode)} legacy not-to-exceed, ${formatInvoiceMoney(payload.nteWarning.overBy, payload.nteWarning.currencyCode)} over. Agreement terms unassessed. Recorded as a warning; nothing was blocked.`
         );
       }
 
@@ -768,7 +769,7 @@ export function ClientInvoiceComposer({
           </dl>
           {selectedEngagement?.notToExceedAmount != null ? (
             <p className="mt-5 border-l-2 border-[color:var(--pine)] bg-[color:var(--pine)]/6 px-3 py-3 text-sm text-foreground">
-              {selectedEngagement.title} carries a {formatMoney(selectedEngagement.notToExceedAmount, { precision: "cents" })} not-to-exceed.
+              {selectedEngagement.title} carries a {formatInvoiceMoney(selectedEngagement.notToExceedAmount, null)} not-to-exceed.
               Billing past it records a warning on save — it never blocks.
             </p>
           ) : null}

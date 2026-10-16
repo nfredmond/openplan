@@ -3,7 +3,7 @@ import { downloadEngagementReview } from "@/lib/engagement/review-export-downloa
 import { readFile } from "node:fs/promises";
 import path from "node:path";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { buildEngagementBilledSummary } from "@/lib/invoicing/receivables";
+import { buildEngagementBilledSummary, type EngagementBilledSummary } from "@/lib/invoicing/receivables";
 import {
   buildClientInvoiceHtml,
   type ClientInvoicePdfClient,
@@ -235,7 +235,7 @@ export async function resolveInvoicePdfBytes(
   }
 
   let engagement: ClientInvoicePdfEngagement = null;
-  let engagementBilled = null;
+  let engagementBilled: EngagementBilledSummary | null = null;
   if (invoice.engagement_id) {
     const engagementRead = await caller
       .from("invoicing_engagements")
