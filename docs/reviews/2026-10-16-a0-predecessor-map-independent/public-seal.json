@@ -1,0 +1,25 @@
+{
+  "admissionApproved": false,
+  "candidate": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "files": {
+    "REPORT.md": {
+      "bytes": 16561,
+      "sha256": "79a9d4e8f45358006c0474da3369dcff5ff6e15f7d8d4f47147fe36328759af9"
+    },
+    "VALIDATION.md": {
+      "bytes": 5332,
+      "sha256": "eabffbd551b78fa32bbbfcc4774c78c40f47a55f57a59332f2e67b8bad66320e"
+    },
+    "evidence-seal.json": {
+      "bytes": 3365,
+      "sha256": "8754d34724a969c2ea67b009e32b89501755f2b329eae9d874ebfdb5613ae92d"
+    },
+    "source-pins.json": {
+      "bytes": 22204,
+      "sha256": "adfb69761806e3ac2645dbf419f147a1470f7847691bb1a3ec6b6d79403e267f"
+    }
+  },
+  "nativeAccepted": false,
+  "notice": "Seal excludes itself. Later local commit receipt remains private and separate.",
+  "verdict": "P2-CONTINUE17-1 source correction supported; PREPARATION ONLY; no whole continuation approval"
+}
