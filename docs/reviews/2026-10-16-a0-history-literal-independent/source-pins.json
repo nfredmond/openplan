@@ -1,0 +1,276 @@
+{
+  "all26GitObjectsMatch": true,
+  "custodyAfter": {
+    "changedSelectedInputs": [],
+    "metadataOnly": true,
+    "noRuntimeOrTestInvocations": true,
+    "noSubjectImports": true,
+    "selectedInputs": 1830
+  },
+  "disposition": "PREPARATION ONLY; original P2-APPLY17-1 source correction supported; separate P2-CONTINUE17-1 remains.",
+  "keyPrivateInputs": [
+    {
+      "bytes": 1495,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/bindings/package-pins.json",
+      "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2"
+    },
+    {
+      "bytes": 61975,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/plan.json",
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5"
+    },
+    {
+      "bytes": 126449,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/bindings/external-predecessor.json",
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    {
+      "bytes": 133616,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/proposed-admission.json",
+      "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3"
+    },
+    {
+      "bytes": 1168313,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/private-manifest.json",
+      "sha256": "76c0d0bb22567aeffc5ef45543ad1fb23177ec282960fe64cf3b4ed305e18316"
+    },
+    {
+      "bytes": 4661,
+      "path": "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/local-commit.json",
+      "sha256": "7e51241b69e20b13156909e149cc6bdbfaeafee9e6f9b413f3db500d485ac9d8"
+    },
+    {
+      "bytes": 41476,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419/snapshot.json",
+      "sha256": "936054d47550fa7003177ddbf877fb1fd1b3c529e10536637bfbb1d85118d3db"
+    },
+    {
+      "bytes": 7140,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419/definitions.json",
+      "sha256": "51ee25e367f5b665a090011c6b8a173b6c0bb5db6d3f2a731ae6a5fab4a1808a"
+    },
+    {
+      "bytes": 254,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419/complete.json",
+      "sha256": "fc590a9ed0285dbfcb3de75137ffc627efbe4398446995eddfa58407475cca0f"
+    },
+    {
+      "bytes": 52,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419/manager-terminal.json",
+      "sha256": "460ea32ef732dfb51b1c60d819d82e59eed858543e4ccbdc6adac1e54c654311"
+    }
+  ],
+  "model": "gpt-6.1-sol",
+  "parentThread": "1401bb6a-70e4-42eb-a1f1-98045485f8cc",
+  "privateEvidence": [
+    {
+      "bytes": 567259,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/input-pins-before.json",
+      "sha256": "42fcc08d2acc7b9dbbdf4bf407f4484c6a4ced7bf7f57dc64ba0fa91b793eda4"
+    },
+    {
+      "bytes": 370531,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/comparisons.json",
+      "sha256": "f6fb031f75ff47b9afde13fbcf34119a2da16b3e7e05142c42112944a1328f27"
+    },
+    {
+      "bytes": 1229,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/metadata-summary.json",
+      "sha256": "aa245b2fa01368fdef55ad28a5aff98ecd6df2ebdcc0a4dbba5ef89576ca8255"
+    },
+    {
+      "bytes": 20111,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/retained-semantics.json",
+      "sha256": "587078762d8fadc21b50e051a56b684a23998a368fc26fba727ccee503bd76c7"
+    },
+    {
+      "bytes": 150,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/input-custody-after.json",
+      "sha256": "2f15fe22959bd405529c8507ca669a582683bb9b24c3e35c9ddb4f00bc95a643"
+    },
+    {
+      "bytes": 3532,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/subject-git-tree.txt",
+      "sha256": "151c4805c6926f374022e0cada4b74cd9f65fa32ebe1d7f634be811b889703c4"
+    },
+    {
+      "bytes": 6681,
+      "path": "/home/nathaniel/.local/state/openplan/a0-history-literal-independent-20261016/git-object-comparisons.json",
+      "sha256": "80d795440d9742aaa2be3650e6a01577b5e8a42a3f6450f103d5a17dad906a54"
+    }
+  ],
+  "privateManifestScope": "Author manifest hash and 4577-entry count only; selected receipts and all 413 external records independently compared.",
+  "reasoningEffort": "high",
+  "reviewBase": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "scope": "Independent exact-source and selected retained-metadata review only. No native or test execution.",
+  "selectedMetadata": {
+    "absenceLexists": {
+      "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/admissions": false,
+      "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/stages": false,
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/admissions/apply17.json": false,
+      "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/apply17": false
+    },
+    "comparisons": 1837,
+    "manifestEntries": 4577,
+    "manifestScope": "Hash and entry count only, not full 4577-entry expansion",
+    "metadataOnly": true,
+    "mismatches": [],
+    "publicSealSHA256": "9f2492b5288a0faf26b8477f24a922d7393855f665215f5a2b088b6e40be9862",
+    "restorations": {
+      "ambiguous": 10,
+      "baseline": 10,
+      "earlysend": 10,
+      "exactread": 10,
+      "harmless": 10,
+      "hex": 10,
+      "identity": 10,
+      "newline": 10,
+      "nul": 10,
+      "pid": 10,
+      "predecessor": 10,
+      "priorhistory": 10,
+      "projection": 10,
+      "readbackcall": 10,
+      "restored": 10,
+      "rowcount": 10,
+      "scs": 10,
+      "sourcehash": 10
+    },
+    "selectedExternal": 413,
+    "selectedPrivate": 42,
+    "subject": "34e67a05ad8fc54b67345726d1d43a553b8c54c7"
+  },
+  "subjectCommit": "34e67a05ad8fc54b67345726d1d43a553b8c54c7",
+  "subjectFiles": [
+    {
+      "bytes": 11390,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/DESIGN.md",
+      "sha256": "12b07b3b888de12f2606ee3d13ca42667a933324c4258197b02f258393790b8a"
+    },
+    {
+      "bytes": 4565,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/PARENT_RECIPE.md",
+      "sha256": "4ce37a65133c0866cfa0e0180140bba22b58a6d51445a39acb39024c3d42ec35"
+    },
+    {
+      "bytes": 8135,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/STATUS.md",
+      "sha256": "ae81b4495f12ebc38bb23d05300470657032db37e561ebd3681ecd74bd7e49a7"
+    },
+    {
+      "bytes": 7829,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/checks.json",
+      "sha256": "b5701ad1a19ec57158ca42894121ae53354819eb3025d9328d6ae43186c37c10"
+    },
+    {
+      "bytes": 18134,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/controls.py",
+      "sha256": "03d2bf930ba799f9a1f1a4925c42fa5c9dda08aa8877fc4417913da7c74ed963"
+    },
+    {
+      "bytes": 9031,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/evidence-pins.json",
+      "sha256": "a3d60eb2f3a8d072cd2ca5cc0e36fa20294791052489a560705002de85749d02"
+    },
+    {
+      "bytes": 126449,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/external-predecessor-pins.json",
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    {
+      "bytes": 4354,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/final_checks.py",
+      "sha256": "f5f69a92f672d6c3e2d79fe39228b411b46b0cddf01482ab970d94fcffd29d4c"
+    },
+    {
+      "bytes": 1495,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/package-pins.json",
+      "sha256": "3fcc19fb18b09c0b38ed7fc262c58c06a73f155fc5bc1ec4ea02aea3e5164dc2"
+    },
+    {
+      "bytes": 5592,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/prepare.py",
+      "sha256": "adca346882ad78a8929e3ad5f2ffa37280908eec1965cb6fbdce77ed46bcac29"
+    },
+    {
+      "bytes": 593,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/prior-function-pins.json",
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9"
+    },
+    {
+      "bytes": 133616,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/proposed-admission.json",
+      "sha256": "bf6d72e8687188f912510616dbee6bb72a37b8a1186cdb15db13b10e76031ee3"
+    },
+    {
+      "bytes": 4169,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/public-seal.json",
+      "sha256": "9f2492b5288a0faf26b8477f24a922d7393855f665215f5a2b088b6e40be9862"
+    },
+    {
+      "bytes": 3636,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/review-pins.json",
+      "sha256": "1de634e1fbc73fdc2e0ddaf29ab5fdfc6fae53f4ccfdb398dd11dbb9be4fd331"
+    },
+    {
+      "bytes": 12821,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/cases.py",
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    {
+      "bytes": 32321,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/controller.py",
+      "sha256": "ff7e69534f7ade3b486030d655c7b3302105224439e513614fe524118dabe55b"
+    },
+    {
+      "bytes": 7731,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/fixture.py",
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    {
+      "bytes": 4331,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/journal.py",
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    {
+      "bytes": 7675,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/literal_history.py",
+      "sha256": "a1e84629e61aa29070c517d65352c1c1901cd1049b2f417bba3ebf342b699c90"
+    },
+    {
+      "bytes": 6126,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/policy.py",
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    {
+      "bytes": 199,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/run_stage.sh",
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    {
+      "bytes": 794,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/assertions.sql",
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    {
+      "bytes": 654,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/post_rollback.sql",
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    {
+      "bytes": 489,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/runtime/sql/shadows.sql",
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    {
+      "bytes": 201496,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/source-pins.json",
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    {
+      "bytes": 6870,
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-migration-history-literal-correction/window.py",
+      "sha256": "1d62168bed9fd7db2ce5b732bb6f32f2a1c846aa27b57eb271978ee87407711a"
+    }
+  ]
+}
