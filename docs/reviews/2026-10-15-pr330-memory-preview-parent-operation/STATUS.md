@@ -181,9 +181,9 @@ not establish broader hosted reuse or revoke access to old protected helpers.
 
 
 Strict attestation completes with exit zero in 142.324 seconds. Actual listener
-PID935032 belongs to the exact application checkout and web cgroup. Its source,
+PID 935032 belongs to the exact application checkout and web cgroup. Its source,
 environment digest, npm child path, built bytes and HTTP identity match. Web
-resources show 512 MiB, zero swap, CPU50 percent, peak296243200 bytes and zero
+resources show 512 MiB, zero swap, CPU 50 percent, peak 296243200 bytes and zero
 memory events at attestation. Working attestation SHA-256 is
 `09cbf3d01f1571a30961baf664649da708fb309e5cd8a0b3a02e2023a608c4e3`.
 
@@ -198,13 +198,13 @@ The actual emitted report also exposes a study-place wording concern. A bounded
 Sol-high source correction runs in its own checkout; the frozen f0 build stays
 unchanged. No new full suite or build is requested.
 
-The single post-journey preservation check exits zero in68.707 seconds,
-invocation`fb44c48d5fc84c0fab491e1fd45023dc`. Original source, five protected DBs,
+The single post-journey preservation check exits zero in 68.707 seconds,
+invocation `fb44c48d5fc84c0fab491e1fd45023dc`. Original source, five protected DBs,
 eight old helpers, packets, Storage binding and nonce-observed old web match.
 The working result SHA-256 is
 `579541c5078d5a1ca47fb6d0fbe396196f702433c8d3bab24cf3b87ef36e9950`.
 Intentional new-preview writes are excluded from old-data equality. This does not
 resolve the separate cause-unknown catalog comparison. A later web observation
-retains the same invocation, peak407396352 bytes, zero swap and zero memory events.
-The original services failure, credential incident, hosted420-versus418 hold and
+retains the same invocation, peak 407396352 bytes, zero swap and zero memory events.
+The original services failure, credential incident, hosted 420-versus-418 hold and
 no-release boundary remain. No operational stage retries occur.

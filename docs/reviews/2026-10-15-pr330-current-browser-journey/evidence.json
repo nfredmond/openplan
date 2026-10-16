@@ -61,5 +61,11 @@
     "declaredJurisdictionJSON": "6e353130edfbc2534221615de1af98bab959c3ff4dd7149c196052727a1f7973",
     "html": "ae40a50aad7b4480476e2768e0038132c5f5aa92e9e640f8058fdfe0f593b500"
   },
-  "boundary": "Local browser interactions, native read-only target data, artifact comparisons and protected-state checks; no raster/mobile visual, schema-pending, hosted, human, scientific or release acceptance."
+  "boundary": "Local browser interactions, native read-only target data, artifact comparisons and protected-state checks; no raster/mobile visual, schema-pending, hosted, human, scientific or release acceptance.",
+  "durableReceiptHashes": {
+    "runtime-start-attestation.json": "209bc2b29c9b24fadfc0aa7f8cf609caf8b3e42c46949d0ed54b43ed82eebb2f",
+    "post-journey-result.json": "b9b266cb65e4b08768f55bb4b0d6792412d02042676d468141389d06375545f9",
+    "execution/start-intent.json": "f509c9a94d613e68f7cfd1f58a7c6a4acf22e2352859d6227add4f2ce84230ac"
+  },
+  "durableReceiptParsedValuesMatchWorking": true
 }
