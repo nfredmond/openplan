@@ -1,0 +1,22 @@
+{
+  "privateRoot": "/home/nathaniel/.local/state/openplan/root-f0-preview-retirement-20261016-01",
+  "privateManifestSHA256": "ad45d514b4591a6502fd3827163f97f7c619aaebb20dc5234d260bd74dea3dee",
+  "privateFiles": 20,
+  "beforeMemAvailableKiB": 12051260,
+  "afterMemAvailableKiB": 12613344,
+  "servicesStopped": 5,
+  "allFiveTerminalCommandsExit": 0,
+  "oldSourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "preservation": {
+    "buildArchive": {
+      "path": "/home/nathaniel/.local/state/openplan/pr330-memory-preview-20261015-r2/build-record/build.tar.gz",
+      "bytes": 649411351,
+      "sha256": "70bed04fb9b6574cdc1f935dd59ac288a63b13ce05edc239e3f0d1718f548c87",
+      "matchesOriginalArchiveReceipt": true
+    },
+    "runtimeInputsSHA256": "667bbb25dfb56c6f8e79cd1a9440f62e37752811911b87f1d28e6a9d25981b14",
+    "runtimeInputsCurrentMatch": true,
+    "scope": "Archive and pinned runtime sources only; not whole live log/proof directories or database contents."
+  },
+  "newBuildAdmitted": false
+}
