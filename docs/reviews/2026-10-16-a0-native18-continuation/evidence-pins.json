@@ -1,0 +1,370 @@
+{
+  "privateManifest": {
+    "bytes": 622193,
+    "gid": 1000,
+    "mode": 384,
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/private-manifest.json",
+    "sha256": "2a22f3e5a2aff8649d70d1ddf0db61a12d1c178ac411b4890f446ac8cf0720ac",
+    "uid": 1000
+  },
+  "receipts": {
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-raw-trace-metadata.json": {
+      "bytes": 85481,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2934cefc3a699ea8529d596e9d2ad8f5ab53f534c1a9b9727985e4dae06ac7b1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-source-inspection.json": {
+      "bytes": 6712,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d926935b74d751077f3ca0d7201a3dde4254f00d51c25db57de44b589e442490",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/bindings/package-pins.json": {
+      "bytes": 1832,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "dcec759dced617d0e629923dcabda617901df34fe7e178a58c9654308d70f889",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/baseline/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/custody-removed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/harmless/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/line-collapsed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/manager-removed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/map-removed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/partial-results.json": {
+      "bytes": 3758,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f44e1d2182e0bfc09a25697c033a8b616ee043cd09c879aeb9f8b670c9112b5b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/postbody-removed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/reader-controls.json": {
+      "bytes": 373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "98994615f82b0d0196f14596487f5487e71eb558d857a2b0a43c373b81b343e2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/restored/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/result.json": {
+      "bytes": 4210,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5348ad3b5d772b3dfcb904cbd12ecf5d70b72e99184f30e8454195db40bdaef7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/root-removed/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/continuation-controls-01/send-altered/restoration.json": {
+      "bytes": 1373,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2b5b54a49c69f1911a2ce20af81f7dec2aecc8771b1586be766676d90c8d4b2b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/final-checks.json": {
+      "bytes": 1171,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "4df572df0b06e6cfb6223fbb9bf722ae7ff97a0c230d3f604b36305a8772af50",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/prepared-custody-after.json": {
+      "bytes": 5090,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "fc8011f88a5661484cc9e9fe58ffca41a61890fc03b870afa7831029ad85b4ec",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/prepared-window-pins.json": {
+      "bytes": 9882,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "ba06c2ca84b82bd5f79ff6ad27c21740dbdbcf3558e777f79df5280652282bf2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/proposed-admission.json": {
+      "bytes": 209635,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "21a63657c6d3305e91922b8cf92e8fe7e91b3352c42e629436c93172402aae6c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/pure-window-request.json": {
+      "bytes": 1316,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2c258357e103c34de446f3f94de96251b597cf4d815280b9cc7e0d6005acd1d2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/pure-window-terminal.json": {
+      "bytes": 997,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "4d50a29c7697e6335e9b48833da45f5c53775a05b91dd74baa3d958a19c12ba6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/root-pure-window-grant.json": {
+      "bytes": 1054,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1ff9510cc62de69bbe2102fe50b077bda52213596e5c15b4abb3b865e3e193e9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/static-source-inspection.json": {
+      "bytes": 3162,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7388c2c8fd6e1d9a1ce82a236cb4f7a2305ff909c8ead42f636c5ae5f3927046",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-1/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1b7665d627d3c67ddead90c97c287db34ea1379f0c6bbd4060fadc33e0138a0f",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-1/intent.json": {
+      "bytes": 258,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "46567052a5a7e2dead49e844d4b369f73e0b3f296244f2f4923e203d599e3b34",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-1/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c891f95eae9d182ef6d6b6eea38fb786d2105ff1163e6326be485041d41d0af5",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-1/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-1/stdout.bin": {
+      "bytes": 240,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "65fc60a0b00d5be9ead6d3fa2b969aa9b51ad56a8cc9064b718add0ffd0c21ea",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-2/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "df0f4c412d4b4cf28874d9e365571c4c7867b5cdb78e207e13030ce4104996da",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-2/intent.json": {
+      "bytes": 177,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0cb28d2dddb0b915cee27cfb43c4c66e9b18e2762a4bbae3640393137f59f5cd",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-2/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "4db9b9c6a5f446775943bb65b1d4f36fa299363e019679a9f37c480f129532a2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-2/stderr.bin": {
+      "bytes": 648,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-2/stdout.bin": {
+      "bytes": 286,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-3/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0bb161c88bfd2635913ecf47c12cfeb9f246f10fe5cd395fef233bf7856253bd",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-3/intent.json": {
+      "bytes": 259,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "6e7844a98e3cd6b45bfbc4711b9efaa1c4bd7a561d5c35ca2d9c5fe625738e6c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-3/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "dda9abf214d1fa4ff60e37e85c4f6543539b4664d51bad2a17c9b40ab26f12a6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-3/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-3/stdout.bin": {
+      "bytes": 53,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d0f380fbdf4283aa062889ef9ddbb0adaef1e417063c59148798ef930c06dc45",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-4/exit.json": {
+      "bytes": 207,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0e1045c8b280af8860a42f36049e612db1d1db9735ae06987b51cb4c9c1d7070",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-4/intent.json": {
+      "bytes": 263,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "aaf7f89cf452c2d40a937b1d85a1e6897e776f9828001e83381d1fca31e1d13f",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-4/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "cc4aa05c8cd3eb2c8afc9f205a88dcf7e62e339f7458c788a79460f431f04c52",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-4/stderr.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/step-4/stdout.bin": {
+      "bytes": 955,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "fdb8b9e795892195134ae53420685b81fa9a1c0d6075b1fc515fd530b0554d98",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-readonly-probes.json": {
+      "bytes": 335,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e7ddafd0f4210722774e8f0cf71106a7fa3693581c1d53035ef3fd9d412dd3e1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-resources.json": {
+      "bytes": 146496,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e73780f2d61c23af737f38a2681f337de3231ae924d470a043e89bc081c9e8a7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-unit-01/exit.json": {
+      "bytes": 324,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "3c89785384d0826297559f357003202caeca7daa8b13d46a53196a5f06ebf363",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-unit-01/intent.json": {
+      "bytes": 5866,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2e5ff15d261b14c376d8687888bf6655f6afceb438b3ea2c24e95926843a044c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-unit-01/returned-process.json": {
+      "bytes": 21,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2005956fdb32b8b258cd69185153936c3215974a84df3416aa86c5f21638ad2e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-unit-01/stderr.bin": {
+      "bytes": 294,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1bd09f959ef5cf456c8ba8ab3e4ab3727ec53434be566735d789500238a8e886",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/test-unit-01/stdout.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    }
+  },
+  "sourceLimits": "Pure fake-process composition only; native18/parser/function/ACL acceptance remains unproved. No actual admission/stage. Fresh root-owned independent review required."
+}

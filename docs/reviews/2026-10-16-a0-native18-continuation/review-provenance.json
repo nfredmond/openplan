@@ -1,0 +1,20 @@
+{
+  "actual17Inspection": {
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-source-inspection.json",
+    "sha256": "d926935b74d751077f3ca0d7201a3dde4254f00d51c25db57de44b589e442490"
+  },
+  "assignedParent": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "mapOperationReviewCommit": "ed21e54f6448eeabaf1740a55740bbd1994bf7b1",
+  "mapSourceReviewCommit": "0eb98a5080f155cb73d581bbe0bbd19dc60cd26c",
+  "proofBoundary": "Source/files only. No subject imports/tests/native requests/diagnostics.",
+  "rawTraceMetadata": {
+    "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-raw-trace-metadata.json",
+    "sha256": "2934cefc3a699ea8529d596e9d2ad8f5ab53f534c1a9b9727985e4dae06ac7b1"
+  },
+  "reports": {
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-operation-REPORT.md": "7a16820d41b2af65ee678fcc9743d1b6ad493a51d4dc40335f3cad644f5a084f",
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-operation-VALIDATION.md": "30f005e3f0c9c3bc40b4e6dfffd4e4a407cd1da269ddd962b37aee699d3f85c2",
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-source-REPORT.md": "79a9d4e8f45358006c0474da3369dcff5ff6e15f7d8d4f47147fe36328759af9",
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-source-VALIDATION.md": "eabffbd551b78fa32bbbfcc4774c78c40f47a55f57a59332f2e67b8bad66320e"
+  }
+}
