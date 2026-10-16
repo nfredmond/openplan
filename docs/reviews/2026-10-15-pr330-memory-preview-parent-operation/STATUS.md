@@ -106,3 +106,105 @@ Current GitHub CI run metadata confirms exact head f0 and success. No issue or
 inline review comment appears after the f0 push in the fresh read. PR watching
 will resume while the existing build/observer completes. These local operation
 notes do not change the frozen candidate source.
+
+
+The sole build completes with parent and domain exit zero after 658.954 seconds.
+Actual BUILD_ID is `Z9s8u410cuLfXdEF5aeoi`. Runtime and durable receipt values
+match, although their JSON serialization hashes differ. Both bind f0/appa13,
+the source/environment/dependency inventory and target OID 6181197. Final
+controller resources record 7,957,655,552 bytes peak under 10 GiB, zero swap,
+CPU 50 percent and zero memory-limit/OOM counters. The existing Sol-high observer
+still owns emitted inventory and manifest readback. Root has not requested
+archive, startup, attestation or browser stages.
+
+
+The completed observer report `988bd69456b4d95eb6e15dde667ed6428a226379`
+independently matches all 2,587 emitted files, 1,860,182,021 bytes, the exact
+source inventory, dependency/environment bindings and 420 emitted migration
+versions. Root reads its full report, final disposition and the handling note,
+then checks five retained evidence hashes. Working receipts preserve insertion
+order; durable receipts sort keys. Their values agree, and custody retains each
+representation's exact named hash. The original false byte-equality observation
+and observer Git-threading failure remain visible. Root accepts the build's
+bounded evidence and requests exactly one durable archive. Its result is pending.
+
+## The observer records an actual credential-handling incident
+
+One observer tool result prints the private webpack-build intent, including its
+environment values. This violates the output restriction. The affected nonempty
+credential-related fields are CENSUS_API_KEY, OPENPLAN_INTEGRATION_KEY_SECRET,
+SUPABASE_SERVICE_ROLE_KEY, NEXT_PUBLIC_MAPBOX_ACCESS_TOKEN and
+NEXT_PUBLIC_SUPABASE_ANON_KEY. The last two are public client variables; they
+are not classified as private service keys. Root repeats no values. All five
+equal their frozen V6 application values. Broader hosted reuse is not established.
+Root screens committed observer files against the actual values and finds none.
+Subsequent output uses key names, hashes and booleans only. Raw incident evidence
+stays retained privately; no secret or configuration changes occur.
+
+A separate Sol-high task prepares a concrete rotation scope and staged plan from
+source, public provider documentation and this sanitized key-name/boolean record.
+It cannot read credential files or raw environment/history, generate keys, rotate
+anything or alter protected/hosted state. The earlier instruction against hosted
+configuration changes remains. Exact provider/installation scope and validation
+need review before any authorization request. The local private archive and QA
+continue under the existing reviewed source and preserve all frozen evidence.
+
+
+The archive completes with exit zero in 63.499 seconds. Streaming readback covers
+24,047 entries and 2,538,469,323 raw file bytes. The retained archive contains
+649,411,351 compressed bytes, SHA-256
+`70bed04fb9b6574cdc1f935dd59ac288a63b13ce05edc239e3f0d1718f548c87`.
+The manifest SHA-256 is
+`c2ad290252e5c52bb1481eed93ba866efc43af22ee85b5171e155a13cebb68d3`.
+These identify archive custody, not a completed recovery or installation.
+
+The single start request receives manager acknowledgement with exit zero in
+0.203 seconds, invocation `0091bad4bcf34d8c89051034629cd377`. Its durable
+start intent names those archive hashes and build `Z9s8u410cuLfXdEF5aeoi`.
+A separate bounded readiness observation receives HTTP 200 after 55.465 seconds.
+Health identifies f0, expected migration count 420 and latest17; its database
+check explicitly remains `not_checked`. Health receipt SHA-256 is
+`cce6a618980ed22be55c868f8ffe7dd433826f428053082c346f19a7af907806`.
+
+Root requests exactly one strict attestation, parent session 35770, invocation
+`fa3230a1c9bb46868aa54ffca39a369b`. It is running at this checkpoint. No
+process-attestation pass or browser journey is claimed yet. The old tab is no
+longer attached; fresh T3 status reports unavailable, then preview_open creates
+owned incognito tab9 successfully. It stays blank pending attestation.
+
+The separate credential plan completes as `e6159c1e67e031c9a88526b48d0b6811ec9a3878`.
+Root reads the full report and matches all 18 source bindings, then joins its
+documentation. Its proposed read-only inventory is distinct from authorization
+to rotate credentials or alter protected services. No credential generation,
+rotation, provider request or hosted configuration change occurs. The plan does
+not establish broader hosted reuse or revoke access to old protected helpers.
+
+
+Strict attestation completes with exit zero in 142.324 seconds. Actual listener
+PID935032 belongs to the exact application checkout and web cgroup. Its source,
+environment digest, npm child path, built bytes and HTTP identity match. Web
+resources show 512 MiB, zero swap, CPU50 percent, peak296243200 bytes and zero
+memory events at attestation. Working attestation SHA-256 is
+`09cbf3d01f1571a30961baf664649da708fb309e5cd8a0b3a02e2023a608c4e3`.
+
+Root completes normal T3 sign-in/navigation, mixed CSV import, repeat review,
+workbook and GeoPackage downloads, synthetic point/corridor and separate
+sovereign/overlap declarations, ordinary HTML report generation/download and both
+reverse active-workspace/project-role interactions. Independent artifact
+readbacks and exact-target native observations remain separately scoped in
+[the journey record](../2026-10-15-pr330-current-browser-journey/STATUS.md).
+The raster captures remain distorted, so mobile visual acceptance is incomplete.
+The actual emitted report also exposes a study-place wording concern. A bounded
+Sol-high source correction runs in its own checkout; the frozen f0 build stays
+unchanged. No new full suite or build is requested.
+
+The single post-journey preservation check exits zero in68.707 seconds,
+invocation`fb44c48d5fc84c0fab491e1fd45023dc`. Original source, five protected DBs,
+eight old helpers, packets, Storage binding and nonce-observed old web match.
+The working result SHA-256 is
+`579541c5078d5a1ca47fb6d0fbe396196f702433c8d3bab24cf3b87ef36e9950`.
+Intentional new-preview writes are excluded from old-data equality. This does not
+resolve the separate cause-unknown catalog comparison. A later web observation
+retains the same invocation, peak407396352 bytes, zero swap and zero memory events.
+The original services failure, credential incident, hosted420-versus418 hold and
+no-release boundary remain. No operational stage retries occur.
