@@ -25,3 +25,9 @@ Upgrade exits zero, invocation `480bc4a8d49a42419229387de3f25c2e`, 178.893 secon
 The service stage exits one, invocation `ad0472a59578427192312e9a9d89b48c`, 81.925 seconds, 512M peak and zero swap. All four new helper create/start commands return zero and retain exact IDs before dependent requests. The first combined readiness check raises `ConnectionResetError`. This stage remains failed. Root subsequently observes all four returned IDs running, which alone does not establish API readiness. Root requests one separately reviewed read-only active check in session82160. It reruns no create/start command. No checkout/build or browser success is claimed.
 
 Three source lanes continue independently: A0 native-wrapper corrections after three P2 findings, official bootstrap runner closure, and project-budget input completeness. The A0 native wrapper remains unadmitted. These lanes do not change this preview's frozen source identity.
+
+## Separate active check passes; checkout begins
+
+The separate read-only active check exits zero, invocation `45298f45b421497eb8d9f9934063d519`, 80.565 seconds, 512M peak and zero swap. It verifies all four exact helper bindings, API/CORS and upgrade identity, then reacquires source and protected-input checks. It starts no helper. This successful observation does not change the failed service-stage result.
+
+Root reads its actual exit before requesting one checkout, session49811, for exact607/application treebed. Checkout and build acceptance remain unproved at this checkpoint.

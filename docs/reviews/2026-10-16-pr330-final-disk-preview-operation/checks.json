@@ -25,5 +25,9 @@
   "servicesFailure": "ConnectionResetError",
   "servicesInvocation": "ad0472a59578427192312e9a9d89b48c",
   "activeCheckSession": 82160,
-  "activeCheckState": "running"
+  "activeCheckState": "terminal success",
+  "activeCheckExit": 0,
+  "activeCheckInvocation": "45298f45b421497eb8d9f9934063d519",
+  "checkoutSession": 49811,
+  "checkoutState": "running"
 }
