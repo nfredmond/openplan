@@ -1,0 +1,56 @@
+[
+  {
+    "path": "AGENTS.md",
+    "sha256": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+    "gitBlob": "3c06bc08b33ea2a077c471a3d118a26d0d94b849",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/product/V1_PRODUCT_CONTRACT.md",
+    "sha256": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+    "gitBlob": "9341d233956db380c390039d2fbb4e67556cfe96",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/ROADMAP.md",
+    "sha256": "fb84929939dc76376445bcbe68d7d2b06c6fe419e4e2b53004a262b707e6fa63",
+    "gitBlob": "2380d43ba294f78228f3061ba965b8ab70c1fd41",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/product/MILESTONES.md",
+    "sha256": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+    "gitBlob": "ec92cc3950f4a2ca73d37627293862dfe0154222",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/product/CORE_REQUIREMENTS_LEDGER.md",
+    "sha256": "8126f9489cffd5798e67d7bd59f772f4ace5fc1cdc501f8fcce72bd66cd7e024",
+    "gitBlob": "45800b4ffb243756c806751d355ce6f59509c05c",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/product/US_PLANNING_CAPABILITY_MATRIX.md",
+    "sha256": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+    "gitBlob": "c82e3b73af3a48361d91f631947f02e7a863f04c",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/ops/KNOWN_ISSUES.md",
+    "sha256": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+    "gitBlob": "1bba76f8326a05af07f791f2ce966f66a82a49b9",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/ARCHITECTURE.md",
+    "sha256": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+    "gitBlob": "ebf829c986fca3178852933f1ae8ebe589ba74a2",
+    "currentMatchesSubject": true
+  },
+  {
+    "path": "docs/reviews/product-direction/2026-10-06-integration-review.md",
+    "sha256": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+    "gitBlob": "6a0e124f7550af645b0328a8eea88c7c00591134",
+    "currentMatchesSubject": true
+  }
+]

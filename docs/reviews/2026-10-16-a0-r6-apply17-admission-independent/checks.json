@@ -1,0 +1,80 @@
+{
+  "P1": 0,
+  "P2": [
+    {
+      "finding": "History literal retains backslashes only under an unverified effective standard_conforming_strings setting. Postcommit checks do not compare expected history text.",
+      "id": "P2-APPLY17-1",
+      "kind": "source preparation blocker",
+      "location": "runtime/controller.py:273; runtime/fixture.py:6; runtime/policy.py:59"
+    }
+  ],
+  "authority": "Current contract and sole ROADMAP A0, T1/T15 and full V1 remain intact; existing dated direction receipts only.",
+  "blindCategories": [
+    "No actual apply17 SQL/role/transaction/consumer/cancellation evidence.",
+    "Raw ACL continuity does not map role OIDs or capture ALTER DEFAULT PRIVILEGES.",
+    "Captured source sequence log_cnt/is_called have no independent source reference map.",
+    "Selected hashes do not certify transient effects, protected rows, physical durability or hostile same-user behavior.",
+    "No provider/route/browser/installation/recovery/human/scientific acceptance."
+  ],
+  "dispositions": {
+    "apply17": "PREPARATION ONLY: P2-APPLY17-1 must be resolved before publication or dispatch.",
+    "priorFinish": "Conditionally acceptable exact preservation descriptor; named-role/default-ACL semantics unassessed."
+  },
+  "executed": {
+    "flock": false,
+    "manager": false,
+    "native": false,
+    "network": false,
+    "publisherOrRunner": false,
+    "subjectImports": false,
+    "tests": false
+  },
+  "metadata": {
+    "actual59RetainedRequestsMatch": true,
+    "actualSourceBodyIdentical": true,
+    "allSuppliedExactPinsMatch": true,
+    "counts": {
+      "688c783586fbdccad8d685656786e9fb85536d7d": 4,
+      "71456da158df2f2dc660fa239eb67dab37e218cc": 4,
+      "7c7f8eb57c232987d3b93e059b031ccbe932783e": 4,
+      "actual-allocate-proof": 131,
+      "actual-observe-proof": 89,
+      "actual-restore419-proof": 169,
+      "b35dd7126939d7e1ad24e9ddbf887653275317c1": 33,
+      "fb77c74fc76622f762c39045a1919e94ea509a63": 4,
+      "helpers": 7,
+      "package-bindings": 5,
+      "package-files": 9,
+      "sourcePins": 1126
+    },
+    "exactOuterDiffMatches": true,
+    "finalAdmissionStageOuterAbsence": [
+      {
+        "absentIncludingDanglingSymlink": true,
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/admissions/apply17.json"
+      },
+      {
+        "absentIncludingDanglingSymlink": true,
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/apply17"
+      },
+      {
+        "absentIncludingDanglingSymlink": true,
+        "path": "/home/nathaniel/.local/state/openplan/a0-native-wrapper-r6-apply17-parent-operation-20261016"
+      }
+    ],
+    "originalActualDefinitionCopyIdentical": true,
+    "pinDifferences": [],
+    "selectedBeforeAfterDifferences": 0,
+    "uniqueSelectedFiles": 1602
+  },
+  "privateEvidenceRoot": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-independent-20261016",
+  "scope": "SOURCE/METADATA ONLY",
+  "sourceFootprint": {
+    "containerInspections": 11,
+    "controllerRequests": 27,
+    "executed": false,
+    "gitRequests": 5,
+    "managerRequests": 1,
+    "sqlRequests": 11
+  }
+}

@@ -1,0 +1,42 @@
+{
+  "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/docs/reviews/2026-10-16-engagement-currency-label-correction/SHA256SUMS": {
+    "manifestSha256": "4473116ea07e0368a1532a97763bd0b00e7b7868b07abc8421676a10d6bed781",
+    "count": 13,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-9a9c35f8/docs/reviews/2026-10-16-engagement-currency-label-correction/private-evidence.sha256": {
+    "manifestSha256": "3f4097e5ecf1680a8e572d9b6efbbdaad27a392e36b4341ccf0d584a38aebba6",
+    "count": 1223,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/SHA256SUMS": {
+    "manifestSha256": "9650034415a6b86cda5795ee3a6b84ae7caf44e7e3ca94b33e3f8b499e2d3d0b",
+    "count": 4,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-be1591bb/docs/reviews/2026-10-16-engagement-billed-precision-probe/private-evidence.sha256": {
+    "manifestSha256": "87d20b5b6e92351e4b1df013ede258c4eee3953f3f34f4d972654601a65489b1",
+    "count": 30,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/docs/reviews/2026-10-16-engagement-billed-exact-money-correction/SHA256SUMS": {
+    "manifestSha256": "636b50039140f9ceb0f0642a6d4c1acab9b9b129a03b4782241717264162f77c",
+    "count": 6,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-9679fd10/docs/reviews/2026-10-16-engagement-billed-exact-money-correction/private-evidence.sha256": {
+    "manifestSha256": "b743671a9cf74c50524fce14273678925cd52f4d2374737226f9dc42e0655bd9",
+    "count": 255,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/SHA256SUMS": {
+    "manifestSha256": "6621721cba619caee58d273976a50ecf254c139b8a541421a6b4896e0ea312a6",
+    "count": 6,
+    "allMatch": true
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-6cab117f/docs/reviews/2026-10-16-engagement-billed-exact-independent/private-evidence.sha256": {
+    "manifestSha256": "ec3ebc098cf307068c527f5cc1f035025d385358424bd4eb05ef315aa7808434",
+    "count": 5,
+    "allMatch": true
+  }
+}

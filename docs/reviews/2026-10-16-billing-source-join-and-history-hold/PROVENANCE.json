@@ -1,0 +1,114 @@
+{
+  "sourceHead": "14bef38bd3fde0c7f06c5dad04d6b0c149113d74",
+  "appTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "copiedReports": [
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/REPORT.md",
+      "sha256": "0f896ce600cbe8de4cbdb760513d775818a29c674ae8f4393c6afaa8b76f2175",
+      "bytes": 15723
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/SHA256SUMS",
+      "sha256": "61a60d67472162011aedfcd49dbdc210b8e4f0d5ea305faf3d435df5da897b4d",
+      "bytes": 744
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/authority-pins.json",
+      "sha256": "28e79cd6f05b82b057a142052ecc427fe620e6daf41dd29e0f3781f1399c7aff",
+      "bytes": 2080
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/binding.json",
+      "sha256": "b9a51744fb506dc8dea2d14118afc0e578a458e3f5dcdb7aae18c69398a595f2",
+      "bytes": 1140
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/evidence-pins.json",
+      "sha256": "256de3f1b53c352ef803b8ac6525f8b25171b9f2b978564cf8f1d6a785a44674",
+      "bytes": 2158
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/evidence.json",
+      "sha256": "edcfcd881862a591f3295839909c63a23fea4d66e152c97726a731bee7d46878",
+      "bytes": 4469
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/findings.json",
+      "sha256": "bcdc0d9ec9ccaaa154a8edff200a7f5e3975178d302df1f8f2467bf780223c24",
+      "bytes": 1431
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/private-evidence.sha256",
+      "sha256": "be90b66df1ceecf190f35bb07e1ce5657ace6bfa0cc60fc48a11960cf120bd9f",
+      "bytes": 1845
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/source-excerpts.md",
+      "sha256": "b32297701bca1decd49afa2f3595dfbcf4c4fc1050edfdb2ce2b5508d2b98d68",
+      "bytes": 16553
+    },
+    {
+      "sourceCommit": "9876a9787af6bb49c5c97444a9e70c87b13ac8a8",
+      "path": "docs/reviews/2026-10-16-engagement-currency-label-independent/source-pins.json",
+      "sha256": "385a62f5b83967a7e0df25be58db8267344393e38ba76c16af4a3cc6c7c97552",
+      "bytes": 7260
+    },
+    {
+      "sourceCommit": "a846dd3f08c1ed0cfbc7f71725bf457dc873da7f",
+      "path": "docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/REVIEW.md",
+      "sha256": "6c467c1bf0c7861953ab1f380fa3301265f6bfa47a5c9338b3e4b3faa32b19f2",
+      "bytes": 24369
+    },
+    {
+      "sourceCommit": "a846dd3f08c1ed0cfbc7f71725bf457dc873da7f",
+      "path": "docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/checks.json",
+      "sha256": "0bf128071408b3b3db9ff8931eea776c03714b0efe72c5a432957172e45cacb5",
+      "bytes": 3180
+    },
+    {
+      "sourceCommit": "a846dd3f08c1ed0cfbc7f71725bf457dc873da7f",
+      "path": "docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/evidence-pins.json",
+      "sha256": "5c90244ec0090702e05d7df72cf43fdd7b8d81fb29240d91b46046640afeae55",
+      "bytes": 559
+    },
+    {
+      "sourceCommit": "a846dd3f08c1ed0cfbc7f71725bf457dc873da7f",
+      "path": "docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/source-pins.json",
+      "sha256": "28f8acbe8318f95e9bc32a3d33921b6a6eb699f8a478cc20c47d8cc6101a9a35",
+      "bytes": 20734
+    },
+    {
+      "sourceCommit": "201ef3062be85b5747e641d6d8cd7b8f9f7c2089",
+      "path": "docs/reviews/2026-10-16-postgres-history-literal-semantics/RESEARCH.md",
+      "sha256": "9dcc4096d76eb121d15455b4e5fb303f7529c8a05a67942d84b017cb31b20570",
+      "bytes": 16653
+    },
+    {
+      "sourceCommit": "201ef3062be85b5747e641d6d8cd7b8f9f7c2089",
+      "path": "docs/reviews/2026-10-16-postgres-history-literal-semantics/SOURCES.md",
+      "sha256": "ab91c8f94a15cb335d0e5a4bb68a998855f5ae95ef5b74f4a11d6524bfae48e1",
+      "bytes": 6344
+    },
+    {
+      "sourceCommit": "201ef3062be85b5747e641d6d8cd7b8f9f7c2089",
+      "path": "docs/reviews/2026-10-16-postgres-history-literal-semantics/STATUS.md",
+      "sha256": "dd015804ed00ea90c5af54da114a72f17b83554b01501d09c952edbdfba3f68d",
+      "bytes": 2362
+    },
+    {
+      "sourceCommit": "201ef3062be85b5747e641d6d8cd7b8f9f7c2089",
+      "path": "docs/reviews/2026-10-16-postgres-history-literal-semantics/source-pins.json",
+      "sha256": "9685e33d6351802ed1d8a0d6204fb8d9ef383ac91845a40b49e5306314da549e",
+      "bytes": 13830
+    }
+  ]
+}

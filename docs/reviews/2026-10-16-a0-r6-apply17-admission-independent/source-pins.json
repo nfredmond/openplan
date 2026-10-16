@@ -1,0 +1,494 @@
+{
+  "applicationSource": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "currentReviewGitFiles": [
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/DIAGNOSTIC_PROPOSAL.md",
+      "sha256": "b4eb96dbfecab212bf01e453a283f52bec83cb81082abe77ee3d9b8a07b16b71"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/HANDOFF.md",
+      "sha256": "854a1a527bd379b5ee7197549c7ea201bfb848623289963a17bcd55adf01993b"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/PARENT_RECIPE.md",
+      "sha256": "91ea810c5619769563ee9db27fcf03d2afaaec2d28cf2dafa05dca6c575bfe78"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/SEQUENCE_AUDIT.md",
+      "sha256": "2c1dcfc77b42331cc893924fbb1e3c2678f83ae65cf202aa53832dafdc20605e"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/STATUS.md",
+      "sha256": "73d3c794bd422ea44bfdc4a6f54803ded944e2451e2c35f9c7b2535838e3c8ee"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/admission.example.json",
+      "sha256": "de13dc7860cea652fd379b0fa48ced4e5f5bdcc7263aa7cfa01ea8c1d6a82a43"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/case_continuity.py",
+      "sha256": "6e7d0655ecd2774947ec85066c5eb34ca3f4ca81731edd114bf175a5334ffaab"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/checks.json",
+      "sha256": "448fc12f9f53219f2f9b5d468537829213710d51302bae74cb29e6bcbfd4cf02"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/controls.json",
+      "sha256": "754d7640874c9f43bd9760abfb1d99c521f8d384d1f993ad5e769bb62b21b950"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/diagnostic-proposal.json",
+      "sha256": "8863552ff0e2e9d2741df735799dbb7ff1a87efca9d6b71a01e54cee1ab61f99"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/diagnostic_proposal.py",
+      "sha256": "4305e52ac9f06abfe019a9ab3de65ac894d89d77a8252b5ef0c913b04dd6dc9c"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/evidence-pins.json",
+      "sha256": "720ec74f9ec380d05df9df9bed38a94257d7086d583358e24a6fb6fad83912a0"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/final_checks.py",
+      "sha256": "83fcf88e4edb0c9e27f9c8fb04dc794b01c2650b938c927a41e4619ea93c9bd2"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/inventory.json",
+      "sha256": "0f60410e76ab075d6647258c3d5143762d198b6939dacb2c490a8b703a6692d8"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/package-pins.json",
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/preceding-helper-pins.json",
+      "sha256": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/prepare.py",
+      "sha256": "e3e50145212162b88bbd2d2ef3f275b4d14ab7275622a4de24aa5e5bf8f326de"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/prepared-sql-pins.json",
+      "sha256": "2cf4df94eec6c3438ebaf9b705a1f236c3ae8d743186c115e0b7a1c9f858cef9"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/proposed-target.json",
+      "sha256": "337e7002e5bcf16b498227305f492b0ab4cde7ef3b286810526ae6862e0c7d3d"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/run_tests.py",
+      "sha256": "38253269940d47478b5fe2bbf777c4e4f6464041b0d9c5572deed6a866c02482"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/cases.py",
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/controller.py",
+      "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/fixture.py",
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/journal.py",
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/policy.py",
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/run_stage.sh",
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/sql/assertions.sql",
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/sql/post_rollback.sql",
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/runtime/sql/shadows.sql",
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/seal.py",
+      "sha256": "51c505e3f8f5e31bc63084d38806bba93b42478c185b5859b3655f4263eb2b31"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/sequence_controls.py",
+      "sha256": "8334e91a20215d4100951bc1520d45cb9c307c1ee95ae24370e11f5c7d144bc9"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/source-pins.json",
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    {
+      "commit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+      "path": "docs/reviews/2026-10-16-a0-sequence-snapshot-correction/terminal.json",
+      "sha256": "d00344ca2a9cad5d18c7c4b175c18b9ffb42f6ac7eb7c2cc93b6e7f55c566fce"
+    },
+    {
+      "commit": "688c783586fbdccad8d685656786e9fb85536d7d",
+      "path": "docs/reviews/2026-10-16-a0-sequence-r6-independent/REVIEW.md",
+      "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125"
+    },
+    {
+      "commit": "688c783586fbdccad8d685656786e9fb85536d7d",
+      "path": "docs/reviews/2026-10-16-a0-sequence-r6-independent/checks.json",
+      "sha256": "6e8ce08839eb8d8e544ea9f0700d6214eeac66c585c76f2c017ae3467828bd6d"
+    },
+    {
+      "commit": "688c783586fbdccad8d685656786e9fb85536d7d",
+      "path": "docs/reviews/2026-10-16-a0-sequence-r6-independent/evidence-pins.json",
+      "sha256": "49fd4aafaaa084a8c85a4535f0c36c9ece382e2a1be0144a87006d1ee2fa8af1"
+    },
+    {
+      "commit": "688c783586fbdccad8d685656786e9fb85536d7d",
+      "path": "docs/reviews/2026-10-16-a0-sequence-r6-independent/source-pins.json",
+      "sha256": "e1d15c52e41dab72b7574a2bdaca00f2b1b8df808e06b15c25bb9e027f7d716f"
+    },
+    {
+      "commit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "path": "docs/reviews/2026-10-16-a0-r6-observe-admission-independent/REVIEW.md",
+      "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8"
+    },
+    {
+      "commit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "path": "docs/reviews/2026-10-16-a0-r6-observe-admission-independent/checks.json",
+      "sha256": "11527cf51d8c1393629e17edda0b442c8031f0e5675c4c5a14399d4877a21a8c"
+    },
+    {
+      "commit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "path": "docs/reviews/2026-10-16-a0-r6-observe-admission-independent/evidence-pins.json",
+      "sha256": "870a0c3f64da79ab9ea9bf460590f60cc1cac5dcf6146e3116b925dc2b64b1e4"
+    },
+    {
+      "commit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+      "path": "docs/reviews/2026-10-16-a0-r6-observe-admission-independent/source-pins.json",
+      "sha256": "683f21255d129b362b4ad3d6a717efe312aa368e6ca0b78a3b05f720ada0c2ae"
+    },
+    {
+      "commit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "path": "docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/REVIEW.md",
+      "sha256": "74d11bdf7ad0c77b7c6d10514fef761cd0a0ee766b30fe0e2214432941fcb745"
+    },
+    {
+      "commit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "path": "docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/checks.json",
+      "sha256": "1bce32107f8e33549787aabf346a483b44c2820e8fd4a124644d362583d20ab8"
+    },
+    {
+      "commit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "path": "docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/evidence-pins.json",
+      "sha256": "08a265e014b23da6a315c1715ce6f0088035546caef56943cdf12e8c4d469239"
+    },
+    {
+      "commit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+      "path": "docs/reviews/2026-10-16-a0-r6-allocate-admission-independent/source-pins.json",
+      "sha256": "c97e03a3d7cfb45d45170db108483291afdc3f822992e1c5657b620948277ccb"
+    },
+    {
+      "commit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "path": "docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/REVIEW.md",
+      "sha256": "f3cdc9bece92ab5caf000d4aed3a72e3c1473ae4190de366204cea71c6bfe3c5"
+    },
+    {
+      "commit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "path": "docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/checks.json",
+      "sha256": "12cfdb282a0290629713a524cfd23c03f7d1b881ebce628d272253b7eeb2844e"
+    },
+    {
+      "commit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "path": "docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/evidence-pins.json",
+      "sha256": "f914b5034028a2d72629a7c1baafb9c2456195d252173a9636e8bf48b97bcf18"
+    },
+    {
+      "commit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "path": "docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/source-pins.json",
+      "sha256": "cb6c4863e11fdeaf981c1194e804e075b819fe58640ccee778010da511b6f234"
+    }
+  ],
+  "files": [
+    {
+      "bytes": 61975,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json",
+      "regular": true,
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 1446,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/package-pins.json",
+      "regular": true,
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 201496,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/source-pins.json",
+      "regular": true,
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 1648,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/preceding-helper-pins.json",
+      "regular": true,
+      "sha256": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 3629,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-parent-runner-20261016.py",
+      "regular": true,
+      "sha256": "e4687aa8d813df25b1b4e299c755aa5c6c7b038a8832be2e527103bac3a4f150",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 2302,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016/apply17-proposal.json",
+      "regular": true,
+      "sha256": "3c88370b4874ec6a623dda06ab5433ec288c0a24e9825a723eb8574acd5c0385",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 2523,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016/outer-runner-diff.patch",
+      "regular": true,
+      "sha256": "2ed210dcc1d6acc39524cdd492b2dba26e1759913b9502a6bed03f397af26ad4",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 593,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016/prior-function-pins.json",
+      "regular": true,
+      "sha256": "2832c3fc24d5b247161a3a2c4b1616fa22d47c4f87cdfa0a6527dd50f02db3e7",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 7140,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016/actual-prior-definitions.json",
+      "regular": true,
+      "sha256": "51ee25e367f5b665a090011c6b8a173b6c0bb5db6d3f2a731ae6a5fab4a1808a",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 615,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-r6-apply17-admission-proposal-20261016/proposal-custody.json",
+      "regular": true,
+      "sha256": "31e2153ac109eb1c0d7cba0d38c52de63d0ec6b1665278b13ced55d067cee932",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 31146,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/controller.py",
+      "regular": true,
+      "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 12821,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/cases.py",
+      "regular": true,
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 7731,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/fixture.py",
+      "regular": true,
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 4331,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/journal.py",
+      "regular": true,
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 6126,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/policy.py",
+      "regular": true,
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 199,
+      "gid": 1000,
+      "mode": "0o700",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/run_stage.sh",
+      "regular": true,
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 794,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/sql/assertions.sql",
+      "regular": true,
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 654,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/sql/post_rollback.sql",
+      "regular": true,
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 489,
+      "gid": 1000,
+      "mode": "0o600",
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/sql/shadows.sql",
+      "regular": true,
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 25521,
+      "gid": 1000,
+      "mode": "0o664",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/openplan/supabase/migrations/20261010000001_assistant_provider_connections.sql",
+      "regular": true,
+      "sha256": "4587a1362d8e412af1f15db6c79feb2dd9ca9dd3ba7d2bee7d49521fa2daff47",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 25389,
+      "gid": 1000,
+      "mode": "0o664",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/openplan/supabase/migrations/20261012000002_assistant_api_turns.sql",
+      "regular": true,
+      "sha256": "4830318b9ee8981cf018e2fd93866cdf015f6217d86576cadf1e4ff1290f6ee4",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 21063,
+      "gid": 1000,
+      "mode": "0o664",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql",
+      "regular": true,
+      "sha256": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 15938,
+      "gid": 1000,
+      "mode": "0o664",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql",
+      "regular": true,
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+      "symlink": false,
+      "uid": 1000
+    },
+    {
+      "bytes": 9284,
+      "gid": 1000,
+      "mode": "0o664",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql",
+      "regular": true,
+      "sha256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+      "symlink": false,
+      "uid": 1000
+    }
+  ],
+  "sourceOnly": true,
+  "subjectCommit": "b35dd7126939d7e1ad24e9ddbf887653275317c1"
+}

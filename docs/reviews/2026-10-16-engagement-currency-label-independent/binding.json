@@ -1,0 +1,22 @@
+{
+  "reviewCwd": "/home/nathaniel/.t3/worktrees/openplan/t3-1db03f5f",
+  "initialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "branch": "t3/engagement-currency-label-independent-review",
+  "initialStatus": "",
+  "subject": "2b39558916f9748b5bfcfb65eab4cacd4518aaa8",
+  "parent": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "appTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "operations": "source and metadata only; no subject/dependency execution",
+  "t3ThreadId": "thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-m11-currency-label-independent-20261016-round2",
+  "t3WorktreePath": "/home/nathaniel/.t3/worktrees/openplan/t3-1db03f5f",
+  "t3Branch": "t3/engagement-currency-label-independent-review",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "reasoning": "high, injected runtime",
+  "parentThreadId": "1401bb6a-70e4-42eb-a1f1-98045485f8cc",
+  "relationshipToParent": "subagent",
+  "subjectAppInReviewerCheckout": false,
+  "authorStatus": "",
+  "authorHead": "2b39558916f9748b5bfcfb65eab4cacd4518aaa8",
+  "authorBranch": "t3/engagement-currency-label-correction"
+}

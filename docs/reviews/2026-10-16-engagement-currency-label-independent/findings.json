@@ -1,0 +1,27 @@
+{
+  "subjectCommit": "2b39558916f9748b5bfcfb65eab4cacd4518aaa8",
+  "parent": "89237c0c13c85995d52fbcf1c6ee59c389bacf1b",
+  "appTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+  "disposition": "ACCEPTABLE_BY_INDEPENDENT_SOURCE_REVIEW_WITH_RETAINED_LIMITS",
+  "priorFinding": {
+    "id": "M11-EXACT-CURRENCY-01",
+    "priority": "P2",
+    "originalDisposition": "whole 892 patch withheld; arithmetic source acceptable conditional on presentation correction",
+    "currentDisposition": "RESOLVED_AT_SOURCE_REVIEW_BOUNDARY",
+    "basis": [
+      "No warning currency inference in producer or type",
+      "One-argument wrapper formats unknown context with exact cents",
+      "Composer and PDF disclose aggregate currency, legacy ceiling currency, cross-record agreement, numerical-only comparison and unassessed terms",
+      "Invoice own amounts retain their stated currency",
+      "Exact arithmetic, prior/projected fields, audit and warn-only creation unchanged"
+    ]
+  },
+  "newP1P2Findings": [],
+  "nonblockingMetadataObservation": {
+    "id": "EVIDENCE-PREPARATION-FIELDS",
+    "file": "author evidence.json",
+    "description": "Top-level runtimeGranted:false and dependenciesExecuted:0 are stale preparation fields. Actual nested trial/terminal evidence is not zero-execution. This does not invalidate the saved tests or source correction."
+  },
+  "integrationNativeBrowserHumanAccepted": false,
+  "noNewRuntime": true
+}
