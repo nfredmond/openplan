@@ -1,0 +1,108 @@
+{
+  "baseCommit": "40d8227dc25cb94084de077a4e8f47b107cc7a08",
+  "originalImplementationCommit": "7048efd372edce210e8af5438aa7775f7d359739",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-c1880cd3",
+  "branch": "t3/a0-usage-limit-receipt",
+  "lock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+  "heapMB": 1024,
+  "ordinaryRootTarget": {
+    "command": [
+      "node",
+      "--test",
+      "workers/planner_agent_connector/test/usage-limit.test.mjs"
+    ],
+    "exitCode": 0,
+    "OPENPLAN_USAGE_TEST_TMP": "unset",
+    "TMPDIR": "unset",
+    "testOwnedTemporaryDirectoriesCleaned": true,
+    "fullGlobOrGateExecuted": false
+  },
+  "ordinaryNestedTargets": {
+    "command": [
+      "node",
+      "--test",
+      "--test-concurrency=1",
+      "../workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "../workers/planner_agent_connector/test/usage-limit-source.test.mjs"
+    ],
+    "cwd": "openplan/",
+    "OPENPLAN_USAGE_TEST_TMP": "unset",
+    "TMPDIR": "unset",
+    "exitCode": 0,
+    "wholePackageGlobExecuted": false
+  },
+  "node": {
+    "exitCode": 0,
+    "passed": 18,
+    "skipped": 0,
+    "concurrency": 1,
+    "files": [
+      "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+      "workers/planner_agent_connector/test/codex-session.test.mjs"
+    ],
+    "log": "node-final.log",
+    "OPENPLAN_USAGE_TEST_TMP": "unset"
+  },
+  "vitest": {
+    "exitCode": 0,
+    "passed": 114,
+    "files": [
+      "src/test/provider-usage-limit-adapter.test.ts",
+      "src/test/provider-usage-limit.test.tsx",
+      "src/test/provider-routes.test.ts",
+      "src/test/project-provider-panel.test.tsx"
+    ],
+    "maxWorkers": 1,
+    "fileParallelism": false,
+    "config": "/home/nathaniel/.local/state/openplan/a0-usage-limit-corrections-20261016/vitest.config.mts",
+    "log": "vitest-final.log"
+  },
+  "typescript": {
+    "exitCode": 0,
+    "config": "/home/nathaniel/.local/state/openplan/a0-usage-limit-corrections-20261016/tsconfig.json",
+    "log": "typescript.log",
+    "fullProjectGate": false
+  },
+  "lint": {
+    "exitCode": 0,
+    "files": [
+      "src/test/provider-usage-limit-adapter.test.ts"
+    ],
+    "log": "lint.log"
+  },
+  "direction": {
+    "exitCode": 0,
+    "remindersRetained": true,
+    "log": "direction.log"
+  },
+  "controls": {
+    "trials": 12,
+    "harmlessSurvivors": 3,
+    "intendedTestProcessFailures": 8,
+    "cleanupOracleRejectionsWithNodeExitZero": 1,
+    "allRestorationsMatchCurrentBytes": true,
+    "firstRejectedTrialRetained": "trial1/"
+  },
+  "preservedInputs": {
+    "files": 83,
+    "allMatch": true,
+    "donorCacheUnchanged": true,
+    "originalIncidentPreserved": true
+  },
+  "notExecuted": [
+    "full connector glob/package suite/QA gate",
+    "SQL/migration application",
+    "native configuration fragment",
+    "database/RLS/PostgREST",
+    "provider/native CLI/account/model/recording",
+    "services",
+    "browser desktop/390px",
+    "full project suite/build",
+    "CI/cloud",
+    "push/PR/release"
+  ],
+  "nativeConfigurationProbe": "prepared fragment only; NEW root identity-bound wrapper and review still required",
+  "T1Complete": false,
+  "T15Complete": false
+}

@@ -1,0 +1,53 @@
+{
+  "inventoryFileCount": 420,
+  "inventorySHA256": "52af268219cba4dc59c307c0016aa417d6739276703fd527431d532438d92404",
+  "allFinishMentions": [
+    {
+      "path": "openplan/supabase/migrations/20261010000001_assistant_provider_connections.sql",
+      "sha256": "4587a1362d8e412af1f15db6c79feb2dd9ca9dd3ba7d2bee7d49521fa2daff47",
+      "mentions": [
+        {
+          "line": 196,
+          "text": "CREATE FUNCTION public.finish_assistant_provider_turn(p_turn_id uuid,p_attempt_id uuid,p_user_id uuid,p_connection_id uuid,p_token_hash text,"
+        },
+        {
+          "line": 264,
+          "text": "REVOKE ALL ON FUNCTION public.finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text) FROM PUBLIC,anon,authenticated;"
+        },
+        {
+          "line": 265,
+          "text": "GRANT EXECUTE ON FUNCTION public.finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text) TO service_role;"
+        }
+      ]
+    },
+    {
+      "path": "openplan/supabase/migrations/20261012000002_assistant_api_turns.sql",
+      "sha256": "4830318b9ee8981cf018e2fd93866cdf015f6217d86576cadf1e4ff1290f6ee4",
+      "mentions": [
+        {
+          "line": 208,
+          "text": "CREATE OR REPLACE FUNCTION public.finish_assistant_provider_turn(p_turn_id uuid,p_attempt_id uuid,p_user_id uuid,p_connection_id uuid,p_token_hash text,"
+        },
+        {
+          "line": 293,
+          "text": "REVOKE ALL ON FUNCTION public.finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text) FROM PUBLIC,anon,authenticated;"
+        },
+        {
+          "line": 294,
+          "text": "GRANT EXECUTE ON FUNCTION public.finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text) TO service_role;"
+        }
+      ]
+    },
+    {
+      "path": "openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql",
+      "sha256": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+      "mentions": [
+        {
+          "line": 60,
+          "text": "ALTER FUNCTION public.finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text) SET search_path = pg_catalog, public, pg_temp;"
+        }
+      ]
+    }
+  ],
+  "configurationRead": "CREATE headers plus every later ALTER SET search_path; source only"
+}

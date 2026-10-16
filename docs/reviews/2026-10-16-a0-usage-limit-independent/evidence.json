@@ -1,0 +1,283 @@
+{
+  "candidateCommit": "7048efd372edce210e8af5438aa7775f7d359739",
+  "candidateParent": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-461f76fb",
+  "reviewBranch": "t3/review-a0-usage-limit-candidate",
+  "disposition": "three P2 findings: standard test integration, reset bucket attribution, explicit pg_temp ordering; no native acceptance",
+  "findings": [
+    {
+      "id": "P2-1",
+      "severity": "P2",
+      "path": "workers/planner_agent_connector/test/usage-limit.test.mjs",
+      "line": 14,
+      "evidenceTier": "targeted test-file load failure with env absent plus source runner tracing",
+      "result": "exit 1 before test registration",
+      "affectedCommands": [
+        "README root node test glob",
+        "npm run test:provider-connector",
+        "npm run qa:gate (CI QA job)"
+      ],
+      "fullCommandsExecuted": false
+    },
+    {
+      "id": "P2-2",
+      "severity": "P2",
+      "path": "workers/planner_agent_connector/codex-usage-limit.mjs",
+      "line": 12,
+      "relatedLine": 27,
+      "evidenceTier": "pure function observations plus supplied schema and production call-chain review",
+      "result": "generic usageLimitExceeded retains old default reset despite exhausted other-model bucket with known or unknown reset",
+      "providerCauseIndependentlyAuthenticated": false
+    },
+    {
+      "severity": "P2",
+      "path": "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql",
+      "line": 30,
+      "relatedLine": 4,
+      "baselineConfigurationPath": "openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql",
+      "baselineConfigurationLine": 60,
+      "requiredPath": "pg_catalog, public, pg_temp",
+      "candidatePath": "pg_catalog,public",
+      "evidenceTier": "source configuration regression; no exploit executed",
+      "id": "P2-3"
+    }
+  ],
+  "candidateChangedFilesSHA256": {
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/NATIVE_PROBE.sql": "84998baf7a50735924d3352d68479809c7102df0bb0a76dcbd55d4ce0492c32b",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/STATUS.md": "bdaa9f7a49199831a5f20b2784c16850caf0a76742f105b2ea889e010b01b368",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/checks.json": "bcce7c128d8639e2698af14d71d43aa737afa639e7202d2ca159dd5aba928d2b",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/controls.json": "e76514be26e7173c273cb9414f0f86e2c0bf5f570abe349614881470619fdc71",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/evidence-integrity.json": "f78b45b414e5250510d03ac2015e970347e65e3cdaf6f2bed90bcc97e1055f7d",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/source-integrity.json": "3dea9c5990b9bd7151544176a8c5ca0da7ca0ab094d274e9e657a53fe370096a",
+    "openplan/src/app/api/assistant/providers/native/route.ts": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5",
+    "openplan/src/components/assistant/project-provider-panel.tsx": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5",
+    "openplan/src/lib/assistant/provider-server.ts": "e2d4fc56add4837ccc3fcb294582f37f6b0a591d34f8f6eda1259b0c12f67bd7",
+    "openplan/src/lib/assistant/provider-usage-limit.ts": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14",
+    "openplan/src/test/provider-usage-limit-adapter.test.ts": "bb89adba26f2234c543ab28e629b8ebd2d3f0d27e26365819fbb8dfbbe7a7f63",
+    "openplan/src/test/provider-usage-limit.test.tsx": "6a9e499ee671592087ac29bce26481cf1ab13ca4ad33ee978f283987e867acda",
+    "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql": "664b18edccfffc3f49a10b384103d5225e85893716cb53d0c77abad743e9ed31",
+    "workers/planner_agent_connector/codex-provider.mjs": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140",
+    "workers/planner_agent_connector/codex-session.mjs": "07d6a9fc0aa86f5dee531aa3857e33a9039588c6fae8827808dbab53c7ececf8",
+    "workers/planner_agent_connector/codex-usage-limit.mjs": "431041d3f382a14893e50a3d5636e1e97e3ce9003ef179d9b4e1cfd926470866",
+    "workers/planner_agent_connector/connector-worker.mjs": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9",
+    "workers/planner_agent_connector/test/usage-limit-frames.mjs": "fccec3b863077f498e8bbc6e7e2385a2f99a914b03863de440b00df64e5404f8",
+    "workers/planner_agent_connector/test/usage-limit.test.mjs": "c4e075caf6c837b793c41ad6cd1491b58bd528b3ce68eed7296ca3e1da3a50c6",
+    "workers/planner_agent_connector/usage-limit-receipt.mjs": "fa00af4974749e77610937be433e94c0c59b945b5694dacc82b4554f86eafb42"
+  },
+  "additionalReadSourcesSHA256": {
+    "AGENTS.md": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+    "openplan/supabase/migrations/20261012000002_assistant_api_turns.sql": "4830318b9ee8981cf018e2fd93866cdf015f6217d86576cadf1e4ff1290f6ee4",
+    "openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+    "openplan/supabase/migrations/20261010000001_assistant_provider_connections.sql": "4587a1362d8e412af1f15db6c79feb2dd9ca9dd3ba7d2bee7d49521fa2daff47",
+    "workers/planner_agent_connector/connector-client.mjs": "6a26291c3ed01de49e46096024e3caf753e73532659556b4cab3b735e44bf4ce",
+    "workers/planner_agent_connector/native-provider.mjs": "0ce2c8d9e0e328b4e35d42dbb7c10c3916cceb66cc9a67469c489b90b1f548d8",
+    "openplan/src/app/api/assistant/providers/turns/route.ts": "04d3d65fd58f30e2033a983d5fd8ead1561bdc8d88c2e2253a733785171c8573",
+    "workers/planner_agent_connector/test/codex-session.test.mjs": "192e8764a411f446dfb6b1ac1b87df62c582bb4a35b6bfd290662967c0e3b35e",
+    "workers/planner_agent_connector/test/connector-worker.test.mjs": "409dad020c46276d1f3b10f467ba209c70cbd2b2d7b378e9fed167ba7ef47f40",
+    "openplan/src/test/provider-routes.test.ts": "b18179fb42c3b35926b3746474bc109450afb813fcb541055912fc7669e29041",
+    "openplan/src/test/project-provider-panel.test.tsx": "07ae96f5b237a32f6ee7660ab1f78388abaa03aa99e14f9324fddec33cf014a9",
+    "openplan/vitest.config.ts": "2af1a9ecbe50bde256b20197cfbff00f34cfc57534a86234c83ee55425cb8da5",
+    "workers/planner_agent_connector/README.md": "7f9ec8c62a3ec3f08d870310c228d1bca73e19e46375b7d757669e83d388d343",
+    "openplan/package.json": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71",
+    ".github/workflows/ci.yml": "4fc7dcf25d61c6f67041a99e386d6e18175944983c1e283a085f6a28e20a6896",
+    "openplan/scripts/ops/test-workers.mjs": "abcbd3df69041c5f84f512515448b72a02fa18843721a0d0a5985c1f78af12a9"
+  },
+  "implementationManifestResults": {
+    "sourceEntries": 15,
+    "publicEntries": 5,
+    "privateEntries": 42,
+    "allMatch": true,
+    "wrongHashControlMatches": false
+  },
+  "retainedChecks": {
+    "nodePassed": 42,
+    "vitestPassed": 110,
+    "vitestFiles": 4,
+    "scopedTypeScriptReportedExitCode": 0,
+    "scopedLintReportedExitCode": 0,
+    "independentlyRerun": false
+  },
+  "retainedMutationReceipts": [
+    {
+      "label": "survivor-node",
+      "logSHA256": "f7c8ad5b13844925a141af81aa7f8f4484f67610f432666b8335e5b611e40761",
+      "reportedExitCode": 0,
+      "namedAssertionPresent": null,
+      "failureCategoryPresent": false,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "survivor-app",
+      "logSHA256": "3f2b4ead0b5dabf6358be2fcf51d99b3853e535f1a4c408225b93bb297e306a2",
+      "reportedExitCode": 0,
+      "namedAssertionPresent": null,
+      "failureCategoryPresent": false,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "final-event-freeze",
+      "logSHA256": "2583d9aa14dfd5773f4da6ebf56586b1d130f4a49b70b51dd9bf35d6268c7366",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "sparse-merge",
+      "logSHA256": "0e9a8b85bc75c0c9c9be822cfafba30eb81981579148d9121248451a86f0409a",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "reset-bounds",
+      "logSHA256": "a52544ffcd90551a4bf31f8ba3aaa7eed9d99144019edce21dccc7762d95285e",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "structured-classification",
+      "logSHA256": "4ea9abd12dacb5f712e49ec7acad5d4f38b3d7c50d65d9f2b7d853d0b6ea5d5f",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "journal-retention",
+      "logSHA256": "0dae7a32141b344286c223817d3a28d7464fd4dc836f0500d0e398cc6e089bc6",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "journal-custody",
+      "logSHA256": "4036aab744f05c559accc5e2a472528c63e9b82b6795fe1c00ff8b6b3eb2a643",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "attempt-initial-read",
+      "logSHA256": "445efcb1bf3458d89d2fbe495833b123bcbf3f951bad49e74f67d00e8ebe83f6",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "route-custody",
+      "logSHA256": "208bf7a4c663ab2c5c9becd9530330cef781cbbe0b25d70e84b051136a13671a",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "failure-receipt-refusal",
+      "logSHA256": "196ab6ac49a81c808cf48bb654a6a9208757711c824febb63214b4846e2fddac",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "reader-custody",
+      "logSHA256": "1dd596dfcad7057591fd9d25ee3d9410cec3dee8690f70f3112871780ff5d526",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "app-reset-bounds",
+      "logSHA256": "01b07724748992f2e745f0af0c690d4010991b0f6bf3752583b68f40e27b295a",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "limited-state",
+      "logSHA256": "8fbc71f296f0c627c0ce5caea255fc6fa5e45007975754c6ad3700e378245b76",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "unknown-reset",
+      "logSHA256": "2648647f72cf4eb7c7fb7a0c6f4d672d7f3a85ff5b5d1b3862f5e6ac51645c71",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "unknown-tokens-cost",
+      "logSHA256": "2d3efc2ba4c23f9062640e717f6d6e82c0f0ffc07a4eaa7ea7093cf4369d4083",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    },
+    {
+      "label": "cancellation-code",
+      "logSHA256": "67913450639267f14bcdf66cc32a8a32739a9554edd5d362eb6ea678bcf44c4b",
+      "reportedExitCode": 1,
+      "namedAssertionPresent": true,
+      "failureCategoryPresent": true,
+      "restoredSourceHashMatches": true
+    }
+  ],
+  "harmlessSurvivors": 2,
+  "targetedFailures": 15,
+  "reviewExecuted": [
+    "local git ancestry/status/diff and ff-only update",
+    "source and receipt reads",
+    "SHA-256 comparisons and wrong-hash control",
+    "dependency-free tracker and receipt function observations",
+    "one isolated Node test-file load with OPENPLAN_USAGE_TEST_TMP removed; no test body executed",
+    "pure known-default/nondefault bucket ambiguity observations"
+  ],
+  "reviewDidNotExecute": [
+    "Vitest",
+    "dependency installation or donor cache access",
+    "database or SQL",
+    "native CLI",
+    "model or account call",
+    "service or network",
+    "browser",
+    "build or full suite",
+    "nested delegation",
+    "push or release"
+  ],
+  "privateReviewEvidenceSHA256": {
+    "pure-observations.json": "1ec6e4d83784d9934f539b07f3791e55070c9863bbf73c3e96f8a4bafe7fe39a",
+    "bucket-ambiguity.json": "c0edb670954287d593c63bc30c05be2c18c916d182833b3d74e214ea1b5b6b33",
+    "sql-source-comparison.json": "b747312ae2ec17d119d4bc4459b604222d1c154758b561476ec89081d6f7c493",
+    "unset-worker-test.json": "104b1793e790ffff8d4b7da9e0f37c136dcb85ab51cec58bd1611ae4a403ee6c",
+    "integrity.json": "c074f75dd32b4807a3d879d04537b4597aeed59f33043f698273ad7d2c752380",
+    "unset-worker-test.log": "6f520d11bbf406e2327527fc2f16ce749ddd282490ad6160ee1ea4cc7c584ee4"
+  },
+  "suppliedProtocolInputSHA256": "3c0aa46b13e1984e57d85769640e64460ccb797762f33e3c88378c62a08ab29e",
+  "historicalProtocolSourceClaimSHA256": "7b9e7d385fffef8d428cc5490b56ce9c393bd3ed7bc7ccd730956387e723ec05",
+  "originalHistoricalSchemaReopened": false,
+  "donorIncidentRetained": true,
+  "nativeAcceptance": false,
+  "T1Complete": false,
+  "parentStandardCommandEvidence": {
+    "privateRoot": "/home/nathaniel/.local/state/openplan/a0-parent-standard-command-20261016",
+    "filesSHA256": {
+      "result.json": "dd3a1c173c1a8c3e9fde351252f1add986be84a2504f7838c84cf963bc108fda",
+      "standard-env.log": "2d5659f94200016a0e5754f19d71d4ba0752fbe1c57ed40fbf8f63a343619479"
+    },
+    "reportedLogHashMatches": true
+  },
+  "candidateSourceStillMatches": true
+}

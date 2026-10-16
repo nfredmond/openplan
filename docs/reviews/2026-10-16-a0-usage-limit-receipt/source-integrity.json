@@ -1,0 +1,20 @@
+{
+  "baseCommit": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "files": {
+    "openplan/src/app/api/assistant/providers/native/route.ts": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5",
+    "openplan/src/components/assistant/project-provider-panel.tsx": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5",
+    "openplan/src/lib/assistant/provider-server.ts": "e2d4fc56add4837ccc3fcb294582f37f6b0a591d34f8f6eda1259b0c12f67bd7",
+    "openplan/src/lib/assistant/provider-usage-limit.ts": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14",
+    "openplan/src/test/provider-usage-limit-adapter.test.ts": "bb89adba26f2234c543ab28e629b8ebd2d3f0d27e26365819fbb8dfbbe7a7f63",
+    "openplan/src/test/provider-usage-limit.test.tsx": "6a9e499ee671592087ac29bce26481cf1ab13ca4ad33ee978f283987e867acda",
+    "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql": "664b18edccfffc3f49a10b384103d5225e85893716cb53d0c77abad743e9ed31",
+    "workers/planner_agent_connector/codex-provider.mjs": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140",
+    "workers/planner_agent_connector/codex-session.mjs": "07d6a9fc0aa86f5dee531aa3857e33a9039588c6fae8827808dbab53c7ececf8",
+    "workers/planner_agent_connector/codex-usage-limit.mjs": "431041d3f382a14893e50a3d5636e1e97e3ce9003ef179d9b4e1cfd926470866",
+    "workers/planner_agent_connector/connector-worker.mjs": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9",
+    "workers/planner_agent_connector/test/usage-limit-frames.mjs": "fccec3b863077f498e8bbc6e7e2385a2f99a914b03863de440b00df64e5404f8",
+    "workers/planner_agent_connector/test/usage-limit.test.mjs": "c4e075caf6c837b793c41ad6cd1491b58bd528b3ce68eed7296ca3e1da3a50c6",
+    "workers/planner_agent_connector/usage-limit-receipt.mjs": "fa00af4974749e77610937be433e94c0c59b945b5694dacc82b4554f86eafb42",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/NATIVE_PROBE.sql": "84998baf7a50735924d3352d68479809c7102df0bb0a76dcbd55d4ce0492c32b"
+  }
+}
