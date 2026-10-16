@@ -31,7 +31,10 @@ Post-terminal metadata matches all482 pinned source/runtime/external records,
 all923 failed01 sealed copies and all900 original failed01 private files.
 Trial02 working/template bytes equal the four production runtime files. Full
 source/proof custody and both terminal tool receipts remain private. evidence/
-contains exact requests, grants, intents, results, streams and inventory pins.
+contains grants, intents, results, streams and inventory pins. For trial01,
+`evidence/trial01/granted-request-20526.json` supplies the exact granted request;
+the unchanged generic `window-request.json` is a superseded, unexecuted draft.
+PREP_1_RESPONSE records the independent finding and this additive correction.
 The wrapper returns before root receives terminal/release notice. No new manager,
 lock, subject, native call, SQL, socket, helper or automatic successor follows.
 

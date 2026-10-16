@@ -1,0 +1,345 @@
+{
+  "files": {
+    "DESIGN.md": {
+      "bytes": 9915,
+      "mode": "0o664",
+      "sha256": "9ddbc19ef275c9713006ecb0d96f719e834ed545150b5c7bfad95cdd3dbc3f71",
+      "uid": 1000
+    },
+    "HISTORY_CORRECTION.md": {
+      "bytes": 4909,
+      "mode": "0o664",
+      "sha256": "3172d0d5da18b95d6afd93e427ffcf4fe1d93d3d81662fb7fea9f06df08695dc",
+      "uid": 1000
+    },
+    "PARENT_RECIPE.md": {
+      "bytes": 8998,
+      "mode": "0o664",
+      "sha256": "01447c9244c3af0a4c3f4ca21f76fd97c0f683fafe34845a92cc453d9d168694",
+      "uid": 1000
+    },
+    "REVIEW.md": {
+      "bytes": 2416,
+      "mode": "0o664",
+      "sha256": "8ef04471ceaa522d8af5c5751a35aa7ed13044be479183423f1e61823d82f178",
+      "uid": 1000
+    },
+    "STATUS.md": {
+      "bytes": 2415,
+      "mode": "0o664",
+      "sha256": "ff0bb45186e4c1b987e9ce5f14a7ece65c5c5abf6c941b24adc980ca868eb6eb",
+      "uid": 1000
+    },
+    "TRIAL02.md": {
+      "bytes": 2416,
+      "mode": "0o664",
+      "sha256": "fe6fc0cf59a6b8b6bfbba3f3e15bac5e7e51a7c884d5966b14e7781a8a640202",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 8802,
+      "mode": "0o664",
+      "sha256": "b5115f32bac1e76fe8442a3f381be34085b71ca0f16fb1054496b83ed499367c",
+      "uid": 1000
+    },
+    "admission.example.json": {
+      "bytes": 972,
+      "mode": "0o600",
+      "sha256": "a99956b1936c7367f9354319125d3ad687829dbf7679099720192e48594f2bae",
+      "uid": 1000
+    },
+    "controls.py": {
+      "bytes": 28435,
+      "mode": "0o664",
+      "sha256": "99cc7306120c466bb474309362903286bb1fb8ced9de3ea6777d11ff7e962a58",
+      "uid": 1000
+    },
+    "evidence/failed01-inventory.json": {
+      "bytes": 356902,
+      "mode": "0o664",
+      "sha256": "7204b3389d70346111a81aa675495ccffb4b48f6946341880f50df83a932bdac",
+      "uid": 1000
+    },
+    "evidence/trial01/controls.json": {
+      "bytes": 1486,
+      "mode": "0o664",
+      "sha256": "c8e6e1fec7f19280359a1353f791ec08fd72503ae485743fda14424bf9d41106",
+      "uid": 1000
+    },
+    "evidence/trial01/dispatch-intent.json": {
+      "bytes": 3362,
+      "mode": "0o664",
+      "sha256": "fd0df6bef74aef557319a8e0f7b8397435220389dbb69f2960240a25384dea7e",
+      "uid": 1000
+    },
+    "evidence/trial01/grant.json": {
+      "bytes": 884,
+      "mode": "0o664",
+      "sha256": "13ccb931598b36ed0ac01e36658f59dd1af40d6312cf8b6822c5f86dae72b5cb",
+      "uid": 1000
+    },
+    "evidence/trial01/host-netns.txt": {
+      "bytes": 17,
+      "mode": "0o664",
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86",
+      "uid": 1000
+    },
+    "evidence/trial01/operation-tool-receipt.json": {
+      "bytes": 1522,
+      "mode": "0o664",
+      "sha256": "0a34f9c42a215936a204234ab7619e05cb62a40723c67b63e471f1c0dc21c5fe",
+      "uid": 1000
+    },
+    "evidence/trial01/resource-controls.json": {
+      "bytes": 770,
+      "mode": "0o664",
+      "sha256": "206d23a3a0565c6955b9ea9c5b50bc1639b5234d0bba5476315da9d071a3f019",
+      "uid": 1000
+    },
+    "evidence/trial01/resources-after.json": {
+      "bytes": 594,
+      "mode": "0o664",
+      "sha256": "2096de2e0b44129248ecf147b483ca49af6c6c665b4002168b0e5744e40029c7",
+      "uid": 1000
+    },
+    "evidence/trial01/resources-before.json": {
+      "bytes": 556,
+      "mode": "0o664",
+      "sha256": "19791ec4e0539cc7bd45d760e010cd019640668df47b187c5952f7ca05f3ab63",
+      "uid": 1000
+    },
+    "evidence/trial01/unexpected-failure.txt": {
+      "bytes": 692,
+      "mode": "0o664",
+      "sha256": "c14f2b7287ffa00799215d4f9e664f36ffdc100cce39252b0f89baf9cfe54c68",
+      "uid": 1000
+    },
+    "evidence/trial01/window-request.json": {
+      "bytes": 10760,
+      "mode": "0o664",
+      "sha256": "d4a1079b2b20770b3aeb509375efd3cafd9fa911faab7f52fcb76f2289126f26",
+      "uid": 1000
+    },
+    "evidence/trial02/controls-reader.diff": {
+      "bytes": 5287,
+      "mode": "0o664",
+      "sha256": "9ee4f6ca5e63981f6f39147a64bd30f3577e33a2d66f3d3d02eeca7fb7715706",
+      "uid": 1000
+    },
+    "evidence/trial02/controls.json": {
+      "bytes": 5084,
+      "mode": "0o664",
+      "sha256": "036033976c49aeaf84891cfda1e10415a8dfe1595b08a189e90fdc77144cfd77",
+      "uid": 1000
+    },
+    "evidence/trial02/direction.json": {
+      "bytes": 148,
+      "mode": "0o664",
+      "sha256": "34884041e0681654ea75f2c47369735da2de631dd5a87d29b3302f8a3f57c7bd",
+      "uid": 1000
+    },
+    "evidence/trial02/direction.stderr": {
+      "bytes": 648,
+      "mode": "0o664",
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "uid": 1000
+    },
+    "evidence/trial02/direction.stdout": {
+      "bytes": 286,
+      "mode": "0o664",
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "uid": 1000
+    },
+    "evidence/trial02/dispatch-intent.json": {
+      "bytes": 3088,
+      "mode": "0o664",
+      "sha256": "c0050865d580b0aa0d66d6e9c44961864064f6cbddde58bb2dd4d76bc7151e29",
+      "uid": 1000
+    },
+    "evidence/trial02/failed01-private-preservation.json": {
+      "bytes": 59,
+      "mode": "0o664",
+      "sha256": "016fb5345ace89761f33f4f1e04369e0ea6b1e2baeb42ed2c7422896903d4def",
+      "uid": 1000
+    },
+    "evidence/trial02/grant.json": {
+      "bytes": 923,
+      "mode": "0o664",
+      "sha256": "1f6cfe38bef9ed3071eebbea3d8a932b0f149ccd512ba1d6af1d01b76f2eb577",
+      "uid": 1000
+    },
+    "evidence/trial02/granted-packet-preparation-inventory.json": {
+      "bytes": 4984,
+      "mode": "0o664",
+      "sha256": "ccc561e55496362eea3e194b0f39f3087ff1cb0c37b4830cecaf05f9d92781bf",
+      "uid": 1000
+    },
+    "evidence/trial02/host-netns.txt": {
+      "bytes": 17,
+      "mode": "0o664",
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86",
+      "uid": 1000
+    },
+    "evidence/trial02/operation-tool-receipt.json": {
+      "bytes": 884,
+      "mode": "0o664",
+      "sha256": "703fee7d93531613237d4374ca300396648ecef919debe66e89c4dc419befdb7",
+      "uid": 1000
+    },
+    "evidence/trial02/post-terminal-custody.json": {
+      "bytes": 97946,
+      "mode": "0o664",
+      "sha256": "023afea51ecacb3caec426398ca76d6892c6fd452604ba0072bf546629b968cd",
+      "uid": 1000
+    },
+    "evidence/trial02/resources-after.json": {
+      "bytes": 604,
+      "mode": "0o664",
+      "sha256": "4436a8c5933fb71aa2092e7cf267c8b7e138af5f785f3d2b343b3e8837280830",
+      "uid": 1000
+    },
+    "evidence/trial02/resources-before.json": {
+      "bytes": 564,
+      "mode": "0o664",
+      "sha256": "a073c33809de431d06d29fdf7e0421e6119fc6d6eee119553d27d5d2f7e40598",
+      "uid": 1000
+    },
+    "evidence/trial02/reuse-pins.json": {
+      "bytes": 7221,
+      "mode": "0o664",
+      "sha256": "b8e14a2c834050881177349c53f9f011649884c5e22ad50d7d3eaac2dc09c710",
+      "uid": 1000
+    },
+    "evidence/trial02/static-anchor-reader-inspection.json": {
+      "bytes": 6295,
+      "mode": "0o664",
+      "sha256": "a2055c3ed61023ab3a068ed263c3a826e6c6558e8e30ee52a460666752096e5c",
+      "uid": 1000
+    },
+    "evidence/trial02/terminal-inventory.json": {
+      "bytes": 291590,
+      "mode": "0o664",
+      "sha256": "62649c7deb6380ab72df4c327ae2911a60858d52d55cfc5f1b2371c9773b5964",
+      "uid": 1000
+    },
+    "evidence/trial02/window-request.json": {
+      "bytes": 13894,
+      "mode": "0o664",
+      "sha256": "67a51ee5d91a7d9c9e2a4cc4e26b58054992505060f60dfab72013fbdbbba345",
+      "uid": 1000
+    },
+    "plan.json": {
+      "bytes": 54746,
+      "mode": "0o600",
+      "sha256": "ee0cc8e1413414a961d9a757fd4d6fed2403ed96696d3e410ed6fd43328d812a",
+      "uid": 1000
+    },
+    "profiles/allocate.json": {
+      "bytes": 1171,
+      "mode": "0o600",
+      "sha256": "7bf3c984ac749d055f2c1a5c5a89003b8d1a4c8e81e91b2669dd0890a47d3cba",
+      "uid": 1000
+    },
+    "profiles/apply17.json": {
+      "bytes": 1182,
+      "mode": "0o600",
+      "sha256": "6a859d78beb5beea44df5a2445d99e72e1a21035932f48abd1ba6525eb8ed606",
+      "uid": 1000
+    },
+    "profiles/apply18.json": {
+      "bytes": 1193,
+      "mode": "0o600",
+      "sha256": "7b28d12031e0661eb56daffae1ceeb5e89a7a1c9a6d9b0552095b27952291f2f",
+      "uid": 1000
+    },
+    "profiles/apply19.json": {
+      "bytes": 1181,
+      "mode": "0o600",
+      "sha256": "ad148ff9a74a176d9b3648b86f9364e0d74447f910c00f1f203cb9318ec3dde6",
+      "uid": 1000
+    },
+    "profiles/observe.json": {
+      "bytes": 1161,
+      "mode": "0o600",
+      "sha256": "f3bf717e8b5d41a32ad04797d0ccf0510e048b2a43e6299142e4da3c419e6e9b",
+      "uid": 1000
+    },
+    "profiles/render419.json": {
+      "bytes": 1192,
+      "mode": "0o600",
+      "sha256": "1e8ea824e79cc2d229a9f9eb0bdab62b7b564e953256c2f1c0cbb01749b233e2",
+      "uid": 1000
+    },
+    "profiles/restore419.json": {
+      "bytes": 1204,
+      "mode": "0o600",
+      "sha256": "760323431421c94b7e29a37c1759aa0b28ac0bd93acd74621bf0b3ca1f8d3312",
+      "uid": 1000
+    },
+    "run-pure-window.sh": {
+      "bytes": 830,
+      "mode": "0o664",
+      "sha256": "dbadab756fd938110a895e078e3fc137fd22c5c5858e9dc28a54acf532fa623c",
+      "uid": 1000
+    },
+    "run-trial02-window.sh": {
+      "bytes": 838,
+      "mode": "0o600",
+      "sha256": "9a9ffc123a9817e6ca878d3d02d839060a95f6bb7acc9a5ba2b46c8e9d3ccd7e",
+      "uid": 1000
+    },
+    "runtime/controller.py": {
+      "bytes": 23660,
+      "mode": "0o664",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "runtime/journal.py": {
+      "bytes": 6172,
+      "mode": "0o664",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "runtime/policy.py": {
+      "bytes": 5369,
+      "mode": "0o664",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "runtime/sql.py": {
+      "bytes": 17422,
+      "mode": "0o664",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    },
+    "source-pins.json": {
+      "bytes": 117112,
+      "mode": "0o600",
+      "sha256": "c56b2cf133c792260c449a6dc228ea0c0cf4c4b44a80299923db81f8c41cbe20",
+      "uid": 1000
+    },
+    "trial02_controls.py": {
+      "bytes": 29076,
+      "mode": "0o600",
+      "sha256": "6c2e2315ce071807e4c6fbe9ae82dda7c214eeaf2aa62d8c91c8e194974b8d53",
+      "uid": 1000
+    },
+    "trial02_window_runner.py": {
+      "bytes": 3252,
+      "mode": "0o600",
+      "sha256": "1bc4008e36f59c422ad59c5c7d9ca9be04c29d95a3b615c064b83c685c67dc3a",
+      "uid": 1000
+    },
+    "window_runner.py": {
+      "bytes": 4099,
+      "mode": "0o664",
+      "sha256": "e4fea3355309e1fccdc20d132692fcb9374c6aa7dbf26600bc68c2d5bb757c66",
+      "uid": 1000
+    }
+  },
+  "nativeTarget": "UNALLOCATED_NOT_AVAILABLE_UNADMITTED",
+  "privateTrial01": "failed01-sealed/inventory.json",
+  "privateTrial02": "trial02/terminal-inventory.json",
+  "selfExcluded": true,
+  "status": "IMPLEMENTATION_CANDIDATE_FOR_ROOT_INDEPENDENT_REVIEW"
+}
