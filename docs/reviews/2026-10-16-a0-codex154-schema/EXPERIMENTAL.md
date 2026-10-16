@@ -44,6 +44,13 @@ pins those files. The preceding namespace, predicate and path controls remain
 their stated evidence; this is another actual metadata command, not another
 provider compatibility campaign.
 
+The direct helper does not enter the preceding capture main's umask setup.
+ROOT records the new output modes, then normalizes only this new private root
+to 0700 directories and 0600 files. Every preceding byte hash stays equal.
+The prior public pin set remains in commit history; the new pin set records the
+permission correction. The original default capture retains all 343 byte/mode
+pins unchanged. These generated schemas contain type metadata, not account data.
+
 Full schema reproduction establishes the retained type artifact's reproducibility
 with this exact binary and mode. It does not establish native account/model
 compatibility, real usage limits, route-to-database publication, SQL18/RLS,
