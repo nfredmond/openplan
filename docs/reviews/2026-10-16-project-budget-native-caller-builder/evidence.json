@@ -1,0 +1,666 @@
+{
+  "claim": "AUTHOR_PURE_PREPARATION_ONLY_NOT_NATIVE_ADMISSION",
+  "checkout": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082",
+  "branch": "t3/budget-native-caller-builder-prep",
+  "base": "da3d95304e36e539af154aeff610d2909b29e119",
+  "initial": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "source": "d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8",
+  "appTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "sql19Sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+  "orderedSourceMigrationCount": 422,
+  "migrationOrdinals": {
+    "20261017000016": 419,
+    "20261017000017": 420,
+    "20261017000018": 421,
+    "20261017000019": 422
+  },
+  "approvedR2": "0e8b59d59523cdae67451e18df8965b333d684d3",
+  "independentR2": "2822ed35e5770243b8465702e942dd7c10115d76",
+  "originalFindingPreserved": "PREP-1 remains against original7c075; no old generator/packet/private-proof edit/import/execution",
+  "oldR2EOFException": "Retained historical tested26c899a6 versus final91c7463b; no exception applies to new tested inputs",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016",
+  "privateSeals": {
+    "sha256": "60ca07248c8cb0349770cf9bd34bade82de5a057190f784e1474113a533cbd05",
+    "bytes": 10395,
+    "mode": "0o664"
+  },
+  "privateFiles": {
+    "controller.py": {
+      "sha256": "5986008d3c742ced1aeddaff492312b1288ce84229f4974cc84d6bf1d265868f",
+      "bytes": 3122,
+      "mode": "0o600"
+    },
+    "emitted-identity.sql": {
+      "sha256": "ad751f0775d92d432f775e8282c0f7b63d1c7b1e780eb42f97aa77e353b673e6",
+      "bytes": 3613,
+      "mode": "0o664"
+    },
+    "emitted-ordinary.sql": {
+      "sha256": "49015ee04fce7d85fe6c29d6c189779c4a99256bf2fa3ad7850d127482f3d944",
+      "bytes": 4062,
+      "mode": "0o664"
+    },
+    "emitted-provision.sql": {
+      "sha256": "bab26e87aa4b865044347b5bc305d14ff52a04fb941a7828a50f74539c4de9a1",
+      "bytes": 13224,
+      "mode": "0o664"
+    },
+    "emitted-r2-prerequisites.json": {
+      "sha256": "27fcb3e1f0f6d007a04b8670f9e5b81c85fb300e8893ddd386c0cf2d49b0c384",
+      "bytes": 449,
+      "mode": "0o664"
+    },
+    "executable-pins.sha256": {
+      "sha256": "f938582306bd0f714065426fa6b8eafde68aba984f5b40f2ff071ede86931168",
+      "bytes": 332,
+      "mode": "0o600"
+    },
+    "final-metadata.json": {
+      "sha256": "3ca115f6ecd4721dcc20105939f885814e8bf3e043f9f233b56fe2f88433c270",
+      "bytes": 2786,
+      "mode": "0o664"
+    },
+    "final-private-input-readback.txt": {
+      "sha256": "5aee8b141b56860bd2cdb342a399bb7b1aa8cdf1993510e983cecfbefbbaede1",
+      "bytes": 968,
+      "mode": "0o664"
+    },
+    "grant-v3.json": {
+      "sha256": "301677359c71f18598d5a6bc18513fc33685ed4351b5a19ea1cad7ca81c9dbdb",
+      "bytes": 829,
+      "mode": "0o600"
+    },
+    "host-netns.txt": {
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86",
+      "bytes": 17,
+      "mode": "0o664"
+    },
+    "independent-after-readback.txt": {
+      "sha256": "9598d4b86ea74901b973390bdfc91c381462e9095e84e1fa5ad094e64931d2a5",
+      "bytes": 386,
+      "mode": "0o600"
+    },
+    "independent-before.sha256": {
+      "sha256": "65f19e470b5edf82bca0c1288175073d5ba55d6c34bbf066376c50475756343d",
+      "bytes": 572,
+      "mode": "0o664"
+    },
+    "independent-final-readback.txt": {
+      "sha256": "9598d4b86ea74901b973390bdfc91c381462e9095e84e1fa5ad094e64931d2a5",
+      "bytes": 386,
+      "mode": "0o664"
+    },
+    "initial-text01/controller.py": {
+      "sha256": "e500c22582379f7345ed83b74b28f3afd10375a3afd080b59548cc8fed626f08",
+      "bytes": 1266,
+      "mode": "0o600"
+    },
+    "initial-text01/run.sh": {
+      "sha256": "2e343ddca2470eb0a051fc1481ebc13396ed21c8eeb2d108d2e3908d654c9a06",
+      "bytes": 647,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/build.py": {
+      "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+      "bytes": 6437,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/identity.sql.in": {
+      "sha256": "225f3ecdad7c380a5662903fc5b9b6a671bfa1dec60d08c2f18fa6488ac1eadb",
+      "bytes": 3310,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/manifest.json": {
+      "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+      "bytes": 1331,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/ordinary.sql.in": {
+      "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+      "bytes": 3625,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/provision.sql.in": {
+      "sha256": "fee3cb08e195f49ac957b2ccc2b0059fef3dcab6b47cf9510a816d82f71ca82f",
+      "bytes": 5068,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/readback.py": {
+      "sha256": "79e1b29b78ee1dc5259ae57915ca2caff45f9051649581f5b10ea13f7343ae43",
+      "bytes": 4924,
+      "mode": "0o600"
+    },
+    "initial-text01/subject/verify_text.py": {
+      "sha256": "75c7fcbf747099b6ac10b6face7282c6589077f80eccd721f34b96e56de68ecb",
+      "bytes": 12988,
+      "mode": "0o600"
+    },
+    "initial-text01/window-inputs.sha256": {
+      "sha256": "0e022e6df42b012f6588ef9176ca624343a46d3733ac6ce817012b9f592eb9d1",
+      "bytes": 1526,
+      "mode": "0o600"
+    },
+    "intent-v3.json": {
+      "sha256": "001508039543d83ce7fb73fef9b49fe0a75be735fec7163b892a946d0a89de1e",
+      "bytes": 564,
+      "mode": "0o600"
+    },
+    "lock-release.txt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    },
+    "manager-postwait-loadstate.txt": {
+      "sha256": "0fcacdcd026495a96a213c7ae83b5acd5e1c39bdcc5ded8162899fb231b4d6a8",
+      "bytes": 130,
+      "mode": "0o664"
+    },
+    "manager-stream.txt": {
+      "sha256": "ec512c792357a7a55539e494ff78aaaa8c9d51ab41942d895880fa574c9e0d37",
+      "bytes": 3034,
+      "mode": "0o664"
+    },
+    "manager-terminal.txt": {
+      "sha256": "21b2c49c8e321a742708bee663e1399c3eba4213c5b2abc490bd92ec196ad6e3",
+      "bytes": 250,
+      "mode": "0o664"
+    },
+    "metadata-edit-error.txt": {
+      "sha256": "82f9a3e73110430923acd3b0328ccb0de9f38909ea1370a8c5a81089883f2beb",
+      "bytes": 463,
+      "mode": "0o664"
+    },
+    "predispatch-executable-verification.txt": {
+      "sha256": "749d0afc5307eca4d3a1b8e94a671e780b43b08a8746823c32ed2413ea2bbc25",
+      "bytes": 84,
+      "mode": "0o600"
+    },
+    "predispatch-input-verification.txt": {
+      "sha256": "5aee8b141b56860bd2cdb342a399bb7b1aa8cdf1993510e983cecfbefbbaede1",
+      "bytes": 968,
+      "mode": "0o600"
+    },
+    "r2-after-readback.txt": {
+      "sha256": "a96f5f21322cc9baab2d26e17df9770f0a38f3102ca53ae46c6abff5c5043bac",
+      "bytes": 2014,
+      "mode": "0o600"
+    },
+    "r2-before.sha256": {
+      "sha256": "6d5f89ad77059102422c211c9fb081af12ea19a93db5cc8438a534195fe71da3",
+      "bytes": 2944,
+      "mode": "0o664"
+    },
+    "r2-final-readback.txt": {
+      "sha256": "a96f5f21322cc9baab2d26e17df9770f0a38f3102ca53ae46c6abff5c5043bac",
+      "bytes": 2014,
+      "mode": "0o664"
+    },
+    "resource-controls.json": {
+      "sha256": "de051964fe80478157e4d8afa70e1e9cbd5418c700bfcdad99e5efa119e45188",
+      "bytes": 756,
+      "mode": "0o664"
+    },
+    "resources-after.json": {
+      "sha256": "d77238b91e6246a1d8413f02bc4ca99d1b318c08aa95bc025bcfe404bcc70cd0",
+      "bytes": 836,
+      "mode": "0o664"
+    },
+    "resources-before.json": {
+      "sha256": "63147b452bf2fe72d8dece5ca84cf788554b1eb7235d6608b3c58dec34311ebc",
+      "bytes": 795,
+      "mode": "0o664"
+    },
+    "results.json": {
+      "sha256": "9bbce85efc8f5fb74b82e4fa88cc30da9c390c6af7fa8b6999148784de483074",
+      "bytes": 3520,
+      "mode": "0o664"
+    },
+    "run.sh": {
+      "sha256": "a7e01f575dfa31f3189522b5345c0227cb4b16128c7e83e9c8223a9f549deae6",
+      "bytes": 707,
+      "mode": "0o600"
+    },
+    "subject/build.py": {
+      "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+      "bytes": 6437,
+      "mode": "0o600"
+    },
+    "subject/identity.sql.in": {
+      "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+      "bytes": 3425,
+      "mode": "0o600"
+    },
+    "subject/manifest.json": {
+      "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+      "bytes": 1331,
+      "mode": "0o600"
+    },
+    "subject/ordinary.sql.in": {
+      "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+      "bytes": 3625,
+      "mode": "0o600"
+    },
+    "subject/provision.sql.in": {
+      "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+      "bytes": 6628,
+      "mode": "0o600"
+    },
+    "subject/readback.py": {
+      "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+      "bytes": 5225,
+      "mode": "0o600"
+    },
+    "subject/verify_text.py": {
+      "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+      "bytes": 15833,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/build.py": {
+      "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+      "bytes": 6437,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/identity.sql.in": {
+      "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+      "bytes": 3425,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/manifest.json": {
+      "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+      "bytes": 1331,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/ordinary.sql.in": {
+      "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+      "bytes": 3625,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/provision.sql.in": {
+      "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+      "bytes": 6628,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/readback.py": {
+      "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+      "bytes": 5225,
+      "mode": "0o600"
+    },
+    "superseded-v2/subject/verify_text.py": {
+      "sha256": "587e0b5b2b89f2ddeec801ff2caad15ca54b5e525604956f5ace2a5eb864581b",
+      "bytes": 13616,
+      "mode": "0o600"
+    },
+    "superseded-v2/window-inputs-v2.sha256": {
+      "sha256": "616ca9e9ac55684842558d88736ee26e396422697da0b1bb70285bc4b236f028",
+      "bytes": 1526,
+      "mode": "0o600"
+    },
+    "superseded-v2/window-request-v2.json": {
+      "sha256": "08e81e219d0ebca1646d8485163fdc677cdb3b92bf39ed2cf87c13d40ecc0ba0",
+      "bytes": 847,
+      "mode": "0o600"
+    },
+    "window-inputs-v2.sha256": {
+      "sha256": "616ca9e9ac55684842558d88736ee26e396422697da0b1bb70285bc4b236f028",
+      "bytes": 1526,
+      "mode": "0o664"
+    },
+    "window-inputs-v3.sha256": {
+      "sha256": "b4ad7a7b045afe32f59124d39e5019d31969dd22a89a8bde9f3987aad568f031",
+      "bytes": 1526,
+      "mode": "0o600"
+    },
+    "window-inputs.sha256": {
+      "sha256": "0e022e6df42b012f6588ef9176ca624343a46d3733ac6ce817012b9f592eb9d1",
+      "bytes": 1526,
+      "mode": "0o600"
+    },
+    "window-request-v2.json": {
+      "sha256": "08e81e219d0ebca1646d8485163fdc677cdb3b92bf39ed2cf87c13d40ecc0ba0",
+      "bytes": 847,
+      "mode": "0o600"
+    },
+    "window-request-v3.json": {
+      "sha256": "a43ed63e0de95579f529760f75e43f813a0f9d74bdeec8cd115c55b91bd2ff55",
+      "bytes": 1032,
+      "mode": "0o600"
+    },
+    "working.json": {
+      "sha256": "6431b61eeb70e743f81a82b7ec2bde53fa581bf198b9d8d234f5c1b3ca1294c4",
+      "bytes": 21724,
+      "mode": "0o664"
+    }
+  },
+  "finalPublicTestedIdentity": {
+    "verify_text.py": {
+      "public": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833,
+        "mode": "0o664"
+      },
+      "testedPrivate": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "ordinary.sql.in": {
+      "public": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625,
+        "mode": "0o664"
+      },
+      "testedPrivate": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "readback.py": {
+      "public": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225,
+        "mode": "0o664"
+      },
+      "testedPrivate": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "build.py": {
+      "public": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437,
+        "mode": "0o600"
+      },
+      "testedPrivate": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "identity.sql.in": {
+      "public": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425,
+        "mode": "0o664"
+      },
+      "testedPrivate": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "manifest.json": {
+      "public": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331,
+        "mode": "0o600"
+      },
+      "testedPrivate": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    },
+    "provision.sql.in": {
+      "public": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628,
+        "mode": "0o664"
+      },
+      "testedPrivate": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628,
+        "mode": "0o600"
+      },
+      "bytesEqual": true
+    }
+  },
+  "unit": "op-budget-caller-builder-text01.service",
+  "invocation": "b736a9ce89c54c138f0bd7b7ccf0b8a0",
+  "terminalExit": 0,
+  "managerRuntimeMilliseconds": 143,
+  "managerCpuMilliseconds": 82,
+  "managerReceiptLimit": "Transient unit unloaded postwait; exact systemd-run --wait stream retains returned invocation/terminal result.",
+  "newResults": {
+    "claim": "NEW_AUTHOR_PURE_TEXT_ONLY",
+    "mutations": [
+      {
+        "name": "harmless-comment",
+        "outcome": "SURVIVED"
+      },
+      {
+        "name": "wrong-uuid",
+        "outcome": "KILLED",
+        "reason": "literal-user-uuid-set"
+      },
+      {
+        "name": "viewer-promoted",
+        "outcome": "KILLED",
+        "reason": "literal-membership-roleset"
+      },
+      {
+        "name": "wrong-target-oid",
+        "outcome": "KILLED",
+        "reason": "target-name-positive-oid-guard"
+      },
+      {
+        "name": "wrong-system",
+        "outcome": "KILLED",
+        "reason": "exact-system-guard"
+      },
+      {
+        "name": "wrong-admin",
+        "outcome": "KILLED",
+        "reason": "exact-admin-actor-guard"
+      },
+      {
+        "name": "missing-record-binding",
+        "outcome": "KILLED",
+        "reason": "external-record-binding-guard"
+      },
+      {
+        "name": "disabled-trigger-accepted",
+        "outcome": "KILLED",
+        "reason": "active-signup-trigger-guard"
+      },
+      {
+        "name": "lost-auto-rows",
+        "outcome": "KILLED",
+        "reason": "automatic-sideeffect-row-receipt"
+      },
+      {
+        "name": "lost-before",
+        "outcome": "KILLED",
+        "reason": "complete-before-after-selected-rows"
+      },
+      {
+        "name": "bypass-caller",
+        "outcome": "KILLED",
+        "reason": "ordinary-effective-rls-context"
+      },
+      {
+        "name": "false-owner-alias",
+        "outcome": "KILLED",
+        "reason": "honest-creator-assignee-aliases"
+      },
+      {
+        "name": "grant-fix",
+        "outcome": "KILLED",
+        "reason": "no-schema-role-policy-grant-text"
+      },
+      {
+        "name": "transport-import-text",
+        "outcome": "KILLED",
+        "reason": "text-only-builder-imports"
+      },
+      {
+        "name": "outsider-extra-membership",
+        "outcome": "KILLED",
+        "reason": "readback-ordinary-own-memberships"
+      },
+      {
+        "name": "viewer-write-eligibility",
+        "outcome": "KILLED",
+        "reason": "readback-ordinary-writer-roleset"
+      },
+      {
+        "name": "lost-auto",
+        "outcome": "KILLED",
+        "reason": "readback-one-automatic-owner-per-user"
+      },
+      {
+        "name": "wrong-auto-slug",
+        "outcome": "KILLED",
+        "reason": "readback-auto-name-slug"
+      },
+      {
+        "name": "cutoff-sideeffect",
+        "outcome": "KILLED",
+        "reason": "readback-cutoff-rows-preserved"
+      },
+      {
+        "name": "unexpected-baseline",
+        "outcome": "KILLED",
+        "reason": "readback-new-workspace-baseline-absence"
+      }
+    ],
+    "allocationFaults": [
+      {
+        "name": "oid-bool",
+        "reason": "positive-typed-oid-databaseOid"
+      },
+      {
+        "name": "oid-zero",
+        "reason": "positive-typed-oid-databaseOid"
+      },
+      {
+        "name": "system-zero",
+        "reason": "positive-system-identifier"
+      },
+      {
+        "name": "foreign-target",
+        "reason": "allocation-target-exclusive"
+      },
+      {
+        "name": "not-exclusive",
+        "reason": "allocation-target-exclusive"
+      },
+      {
+        "name": "source-rebind",
+        "reason": "source-binding"
+      },
+      {
+        "name": "admin-as-ordinary",
+        "reason": "ordinary-admin-separation"
+      },
+      {
+        "name": "admitted-manifest",
+        "reason": "proposal-status"
+      },
+      {
+        "name": "wrong-member-role",
+        "reason": "membership-exact-set"
+      },
+      {
+        "name": "false-creator-role",
+        "reason": "actor-aliases"
+      },
+      {
+        "name": "native-claim",
+        "reason": "no-native-claim"
+      }
+    ],
+    "suppliedCallerCases": 9,
+    "workingRestoredExact": true,
+    "subjectRestoredExact": true
+  },
+  "resourceComparatorControls": [
+    {
+      "name": "harmless-resource-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "memory.max",
+      "outcome": "KILLED",
+      "reason": "preflight-memory.max"
+    },
+    {
+      "name": "memory.swap.max",
+      "outcome": "KILLED",
+      "reason": "preflight-memory.swap.max"
+    },
+    {
+      "name": "cpu.max",
+      "outcome": "KILLED",
+      "reason": "preflight-cpu.max"
+    },
+    {
+      "name": "pids.max",
+      "outcome": "KILLED",
+      "reason": "preflight-pids.max"
+    },
+    {
+      "name": "root-ro",
+      "outcome": "KILLED",
+      "reason": "preflight-root-ro"
+    },
+    {
+      "name": "private-rw",
+      "outcome": "KILLED",
+      "reason": "preflight-private-rw"
+    },
+    {
+      "name": "unshared-net",
+      "outcome": "KILLED",
+      "reason": "preflight-unshared-net"
+    }
+  ],
+  "resourcesAfter": {
+    "cgroup": "/sys/fs/cgroup/user.slice/user-1000.slice/user@1000.service/app.slice/op-budget-caller-builder-text01.service",
+    "limits": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64",
+      "memory.peak": "12066816",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "mountinfoNamed": [
+      "20169 4760 259:4 / / ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21009 20169 259:4 /home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016 /home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016 rw,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "networkNamespace": "net:[4026533038]",
+    "elapsedSeconds": 0.0780072589404881
+  },
+  "lockRelease": {
+    "exactPath": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "matchingHolders": 0,
+    "receipt": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o664"
+    }
+  },
+  "claimLimits": [
+    "Author text/supplied-row controls only, not independent final-byte approval",
+    "No SQL parser/trigger/catalog/ACL/RLS/JWT/commit/transport or native acceptance",
+    "Selected controls do not constitute complete branch mutation coverage",
+    "Named mounts only; inherited nested/pseudo writability unassessed",
+    "No actual allocation/target/helper/admission; dummy positive input values are text-only",
+    "Raw eight-MiB/deadline capture, actual Supabase loader, RLS/MVCC, upgrade/restore and journeys need later stage implementation",
+    "Full M11/practitioner/finance/scientific/v1 requirements remain open"
+  ],
+  "nativeIdentity": null,
+  "nativeAdmission": null,
+  "automaticRetry": false,
+  "automaticSuccessor": false
+}

@@ -1,0 +1,150 @@
+{
+  "allocationReviewCommit": "fb77c74fc76622f762c39045a1919e94ea509a63",
+  "applicationCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "completeSelectedManifest": {
+    "bytes": 439301,
+    "gid": 1000,
+    "mode": "0o600",
+    "path": "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-independent-20261016/selected-before.json",
+    "sha256": "daa034b33970312966c335026a8f802a4422cd84ed21902c128a6afd804c9601",
+    "uid": 1000
+  },
+  "observeReviewCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+  "selectedInputs": {
+    "/home/nathaniel/.local/state/openplan/a0-r5-restore419-root-decision-20261016/failed-proof-pins.json": {
+      "bytes": 38137,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "f74881c859719cbc4f41625470352a2c70bfb7a505fa8af4f4fbc1b157324564",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-allocate-root-decision-20261016/native-proof-pins.json": {
+      "bytes": 40288,
+      "gid": 1000,
+      "mode": "0o664",
+      "sha256": "0dc20c99be7152cb8e70b947c669f4bd84fae38b5a3bd2df30fe59f15282c4d8",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-root-decision-20261016/native-proof-pins.json": {
+      "bytes": 27176,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "befbbdba4d74fb50f8e67facc0d6e885f82942d72c7e2643dbefa547d13307a0",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/outer-runner-diff.patch": {
+      "bytes": 2196,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "5d00f781cda8162981084ee7f3e027ee9f4786eadf09559c6f21dc9b0bc3eb23",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/proposal-custody.json": {
+      "bytes": 1165,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "8b7539ba613a1eb5f5306db3013999904c1397602c580c34b328eadb33537951",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/restore419-proposal.json": {
+      "bytes": 1902,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "bf18b39c92d308ca7324a5556ac490881b31d8256498d327e6e4dd3d38264985",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/unexecuted-binding-draft/DISPOSITION.json": {
+      "bytes": 249,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "65f1df0dada625fa63a280644546963525f54d670664237b90870f9cf7fb634a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/unexecuted-binding-draft/a0-r6-restore419-parent-runner-20261016.py": {
+      "bytes": 3650,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f5008420ac1d76b0a0c3de37e9ab655d82835341afcf968d8813f82fd4032a64",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/unexecuted-binding-draft/outer-runner-diff.patch": {
+      "bytes": 2197,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "007aa9673281bdb5ff3818045b6ca93675fe00557b81eb7997d4b64ac8bef632",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-proposal-20261016/unexecuted-binding-draft/proposal-custody.json": {
+      "bytes": 1017,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "c65644aaa758a9a64d7b7d282f31ff02315eac5308972ddc494ea5ef5e4791fd",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-restore419-parent-runner-20261016.py": {
+      "bytes": 3650,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "ec482e26ed6f5dd955ae8a990198fca89b5b33744440a6d52f36b7b801b0b4b6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/package-pins.json": {
+      "bytes": 1446,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/preceding-helper-pins.json": {
+      "bytes": 1648,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/source-pins.json": {
+      "bytes": 201496,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json": {
+      "bytes": 61975,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/allocate/complete.json": {
+      "bytes": 252,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "43a1cc485381aed6bf783f43929f257ac62fa5e9e4be21f972e5a3c6f0ae855f",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/allocate/manager-terminal.json": {
+      "bytes": 50,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "be9344e424b90499442bcf9a851ca20d97b01ba9eb82cff4f61ab7f82207d7f9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/allocate/target.json": {
+      "bytes": 339,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "b7d05c90a4c1e221704d00615fa1ff8d968416e3cf9650a424bc11760b00b58c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/observe/observed.json": {
+      "bytes": 116802,
+      "gid": 1000,
+      "mode": "0o600",
+      "sha256": "7a34265a6df548c051d8b7ea58eeb86eac4d8469067d55449f257d39ea3b86d8",
+      "uid": 1000
+    }
+  },
+  "sourceReviewCommit": "688c783586fbdccad8d685656786e9fb85536d7d",
+  "subjectCommit": "b35dd7126939d7e1ad24e9ddbf887653275317c1"
+}

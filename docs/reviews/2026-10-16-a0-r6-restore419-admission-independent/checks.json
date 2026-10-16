@@ -1,0 +1,75 @@
+{
+  "blindCategories": [
+    "Retained selected bytes and metadata, not all transient effects or power-loss durability.",
+    "Trusted same-user records, not hostile-owner authentication.",
+    "Static source ordering, not native SQL parsing, roles/RLS, exact state, lifecycle, cancellation or restore acceptance.",
+    "Initial source comparator is exact ordinary-table map and pg_sequences census only; direct sequence states have no frozen per-sequence source reference.",
+    "Current capacity, unit availability, target emptiness, protected row contents and cross-connection exclusion remain operating gates.",
+    "Inert controls do not establish real provider/account, browser, installation, human or scientific acceptance."
+  ],
+  "comparisonMismatches": 0,
+  "counts": {
+    "2026-10-16-a0-r6-allocate-admission-independentGit": 4,
+    "2026-10-16-a0-r6-observe-admission-independentGit": 4,
+    "allocateNativeProof": 131,
+    "allocatePrepublication": 1271,
+    "bindings": 5,
+    "failedR5": 145,
+    "helpers": 7,
+    "observeNativeProof": 89,
+    "observePrepublication": 1155,
+    "packetManifest": 73,
+    "public": 32,
+    "runtime": 9,
+    "selectedCorrection": 9,
+    "source": 1126,
+    "sourceReviewGit": 4,
+    "subjectGit": 33
+  },
+  "disposition": "SCOPED_NO_NEW_P1_P2; conditional root consideration only; no permission or operation acceptance",
+  "journals": 33,
+  "localOnly": true,
+  "namespaceAbsent": [
+    {
+      "absent": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/admissions/restore419.json"
+    },
+    {
+      "absent": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/restore419"
+    },
+    {
+      "absent": true,
+      "path": "/home/nathaniel/.local/state/openplan/a0-native-wrapper-r6-restore419-parent-operation-20261016"
+    }
+  ],
+  "noNativeContactOrPublication": true,
+  "noTestsOrSubjectImports": true,
+  "outerRunnerMechanicalDiffMatches": true,
+  "proposalTypeSensitiveFields": 11,
+  "reviewPrivateRoot": "/home/nathaniel/.local/state/openplan/a0-r6-restore419-admission-independent-20261016",
+  "scope": "NEW SOURCE/METADATA ONLY restore419 proposal review",
+  "selectedUnchanged": true,
+  "sourceSequenceComparator": {
+    "explicitStateCaptured": [
+      "last_value",
+      "log_cnt",
+      "is_called"
+    ],
+    "independentSourcePerSequenceReferenceMap": false,
+    "initialExplicitStateSourceEquivalenceClaimed": false,
+    "ordinaryTableRecords": 376,
+    "pgSequencesMD5": "d906d887079dd69d2b018752258ca3b5"
+  },
+  "supplementary": {
+    "eightRuntimeFilesUnchanged": true,
+    "migrationCount": true,
+    "oldSelectedBeforeAfter": true,
+    "properties": true,
+    "sourceHistory": true,
+    "sourceReviewHash": true,
+    "sourceTableDigests": true,
+    "sourceVersions": true
+  },
+  "uniqueSelectedBeforeAfter": 1513
+}

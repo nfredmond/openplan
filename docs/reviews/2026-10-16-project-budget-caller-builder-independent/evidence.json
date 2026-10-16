@@ -1,0 +1,799 @@
+{
+  "claim": "INDEPENDENT_CONDITIONAL_SOURCE_METADATA_PREPARATION_APPROVAL_ONLY",
+  "disposition": "No new preparation blocker or P1/P2 application defect established in inspected scope; no native use authorized",
+  "reviewer": "GPT-6.1 Sol HIGH; no nested agents",
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4",
+  "reviewBranch": "t3/project-budget-caller-builder-independent-review",
+  "initialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "subjectCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+  "sourceCommit": "d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8",
+  "appTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "sql19Sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+  "start": {
+    "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4",
+    "head": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+    "branch": "t3/project-budget-caller-builder-independent-review",
+    "status": "",
+    "docAbsent": true,
+    "privateAbsent": true,
+    "authorHead": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+    "authorStatus": "",
+    "activeSessionBoundary": "Task brief retains root compiler/native window; separate review branch and docs/private paths only; no manager or process control."
+  },
+  "counts": {
+    "packetFiles": 14,
+    "packetPins": 13,
+    "privateFileEntries": 61,
+    "sourcePins": 18,
+    "orderedMigrations": 422,
+    "finalTestedInputs": 7,
+    "v3Inputs": 9
+  },
+  "packet": {
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md": {
+      "blobOid": "212215010a6f376ec4e93cd43eec268e85adc959",
+      "gitBlob": {
+        "sha256": "614012982046d9b0b8f077719c11b8995fc578655d9b86869a0a400c232f369d",
+        "bytes": 16265
+      },
+      "working": {
+        "sha256": "614012982046d9b0b8f077719c11b8995fc578655d9b86869a0a400c232f369d",
+        "bytes": 16265,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md": {
+      "blobOid": "49a3b7f8744d5767a3cb7d9db52776558dd9b814",
+      "gitBlob": {
+        "sha256": "f9b6b0a2093a560f2e0dcd9472214847e71991067ca17d4054fc9b1ffe460ae9",
+        "bytes": 6727
+      },
+      "working": {
+        "sha256": "f9b6b0a2093a560f2e0dcd9472214847e71991067ca17d4054fc9b1ffe460ae9",
+        "bytes": 6727,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md": {
+      "blobOid": "dab81413b19ce41eaa7ed626df13b7757ed9095f",
+      "gitBlob": {
+        "sha256": "906a96646557e583f09f90680df4624e391efe52290e216d36ab3b1a89f34c1c",
+        "bytes": 7995
+      },
+      "working": {
+        "sha256": "906a96646557e583f09f90680df4624e391efe52290e216d36ab3b1a89f34c1c",
+        "bytes": 7995,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py": {
+      "blobOid": "f60bb4e2d1c65c5c4bb06b8146b6a1e5bd36a14e",
+      "gitBlob": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437
+      },
+      "working": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437,
+        "mode": "0o600"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json": {
+      "blobOid": "6b93022530082e5b1147a7c37250c66a4ee7bcd7",
+      "gitBlob": {
+        "sha256": "eaf1998ade9017e67edef7122894b83f4c4df28b8fcd5934363425f5a790dea9",
+        "bytes": 21333
+      },
+      "working": {
+        "sha256": "eaf1998ade9017e67edef7122894b83f4c4df28b8fcd5934363425f5a790dea9",
+        "bytes": 21333,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in": {
+      "blobOid": "f18bbe7f9ff4cfb1703ae7fa055522aa59296a22",
+      "gitBlob": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425
+      },
+      "working": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json": {
+      "blobOid": "d3a2965cd5165b318de37ec573ef70d143683473",
+      "gitBlob": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331
+      },
+      "working": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331,
+        "mode": "0o600"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256": {
+      "blobOid": "dc431bd10c1d3b23f75180e775cf92584b63aa18",
+      "gitBlob": {
+        "sha256": "c00627c03d6f17188367ce01ca5cd2285b7526d8b33bbd59db4534aaaa37d28b",
+        "bytes": 60284
+      },
+      "working": {
+        "sha256": "c00627c03d6f17188367ce01ca5cd2285b7526d8b33bbd59db4534aaaa37d28b",
+        "bytes": 60284,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in": {
+      "blobOid": "94f4cb861787ea7520a14ba1dc132b348c675dc3",
+      "gitBlob": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625
+      },
+      "working": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/packet.sha256": {
+      "blobOid": "6f6c5e08b1d8c4afb8ab092fbc2c767486b5ba95",
+      "gitBlob": {
+        "sha256": "38c49bdf16d43845e38f5586f1d583463c1c281527eaa5b9095d7caacebb6667",
+        "bytes": 1851
+      },
+      "working": {
+        "sha256": "38c49bdf16d43845e38f5586f1d583463c1c281527eaa5b9095d7caacebb6667",
+        "bytes": 1851,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in": {
+      "blobOid": "f5b8ce1041a0c9d2bc5fc71cfde093baad7fa0e8",
+      "gitBlob": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628
+      },
+      "working": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py": {
+      "blobOid": "1bee893de1aaef5cb1637787aa1a4d80ab921ec3",
+      "gitBlob": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225
+      },
+      "working": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256": {
+      "blobOid": "1a0fba663bd648e4b893bf33a23e0d1261573b6e",
+      "gitBlob": {
+        "sha256": "f65caded9c32dbdc54866639b6da7b9b433facf9085aa0610374226511225463",
+        "bytes": 2525
+      },
+      "working": {
+        "sha256": "f65caded9c32dbdc54866639b6da7b9b433facf9085aa0610374226511225463",
+        "bytes": 2525,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py": {
+      "blobOid": "cfcf25611f080157e56758cbf4c0a767b4de40e2",
+      "gitBlob": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833
+      },
+      "working": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833,
+        "mode": "0o664"
+      },
+      "exactBytes": true
+    }
+  },
+  "packetPinComparisons": [
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256",
+      "matches": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json",
+      "matches": true
+    }
+  ],
+  "privateAuthorSeal": {
+    "actual": {
+      "sha256": "60ca07248c8cb0349770cf9bd34bade82de5a057190f784e1474113a533cbd05",
+      "bytes": 10395,
+      "mode": "0o664"
+    },
+    "matchesEvidence": true,
+    "entryCount": 61,
+    "entrySetMatchesEvidence": true,
+    "rootMode": "0o700"
+  },
+  "finalTestedInputIdentity": {
+    "verify_text.py": {
+      "finalGit": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833
+      },
+      "testedPrivate": {
+        "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+        "bytes": 15833
+      },
+      "exactBytes": true
+    },
+    "ordinary.sql.in": {
+      "finalGit": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625
+      },
+      "testedPrivate": {
+        "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+        "bytes": 3625
+      },
+      "exactBytes": true
+    },
+    "readback.py": {
+      "finalGit": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225
+      },
+      "testedPrivate": {
+        "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+        "bytes": 5225
+      },
+      "exactBytes": true
+    },
+    "build.py": {
+      "finalGit": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437
+      },
+      "testedPrivate": {
+        "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+        "bytes": 6437
+      },
+      "exactBytes": true
+    },
+    "identity.sql.in": {
+      "finalGit": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425
+      },
+      "testedPrivate": {
+        "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+        "bytes": 3425
+      },
+      "exactBytes": true
+    },
+    "manifest.json": {
+      "finalGit": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331
+      },
+      "testedPrivate": {
+        "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+        "bytes": 1331
+      },
+      "exactBytes": true
+    },
+    "provision.sql.in": {
+      "finalGit": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628
+      },
+      "testedPrivate": {
+        "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+        "bytes": 6628
+      },
+      "exactBytes": true
+    }
+  },
+  "v3InputPins": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/controller.py",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/run.sh",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/build.py",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/identity.sql.in",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/manifest.json",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/ordinary.sql.in",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/provision.sql.in",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/readback.py",
+      "matches": true
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-native-caller-builder-20261016/subject/verify_text.py",
+      "matches": true
+    }
+  ],
+  "sourcePins": {
+    "openplan/supabase/migrations/20260219000002_workspace_schema.sql": {
+      "gitBlob": {
+        "sha256": "9bd09e12685b0fdf9ebf2a5fc0691d447037acbb4e5915e387500eccadbdba5f",
+        "bytes": 2822
+      },
+      "working": {
+        "sha256": "9bd09e12685b0fdf9ebf2a5fc0691d447037acbb4e5915e387500eccadbdba5f",
+        "bytes": 2822,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260225000003_fix_handle_new_user_trigger.sql": {
+      "gitBlob": {
+        "sha256": "7f4719d8d0e0bcabff8d4872ca3c4114a8131e842bb9d79d073ca354b198bfb4",
+        "bytes": 1126
+      },
+      "working": {
+        "sha256": "7f4719d8d0e0bcabff8d4872ca3c4114a8131e842bb9d79d073ca354b198bfb4",
+        "bytes": 1126,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260225000004_workspace_slug_normalization.sql": {
+      "gitBlob": {
+        "sha256": "1fb5d28340acb3a243fd48a67aab96fe41e384ea055ede38d852371e94a1fc41",
+        "bytes": 943
+      },
+      "working": {
+        "sha256": "1fb5d28340acb3a243fd48a67aab96fe41e384ea055ede38d852371e94a1fc41",
+        "bytes": 943,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260316000024_fix_workspace_members_rls_recursion.sql": {
+      "gitBlob": {
+        "sha256": "805ccef79b1d8aec3095c1763b254ec3187e468e01c640065a7ed7b2ab725a1b",
+        "bytes": 179
+      },
+      "working": {
+        "sha256": "805ccef79b1d8aec3095c1763b254ec3187e468e01c640065a7ed7b2ab725a1b",
+        "bytes": 179,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260728000003_viewer_role.sql": {
+      "gitBlob": {
+        "sha256": "c6ede1a9c2c0a07bd7dfd357efec7efd25165867f7e0288ee636245816e9982d",
+        "bytes": 4291
+      },
+      "working": {
+        "sha256": "c6ede1a9c2c0a07bd7dfd357efec7efd25165867f7e0288ee636245816e9982d",
+        "bytes": 4291,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260728000004_workspace_owner_floor.sql": {
+      "gitBlob": {
+        "sha256": "5c6f50a2bff31c7b86ef388f91df18d90518b191bf001a289a4ec828c1ecb07f",
+        "bytes": 3895
+      },
+      "working": {
+        "sha256": "5c6f50a2bff31c7b86ef388f91df18d90518b191bf001a289a4ec828c1ecb07f",
+        "bytes": 3895,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260728000006_workspace_write_role_gate.sql": {
+      "gitBlob": {
+        "sha256": "02dffba9d0365d29a6fe686eb8910ed8764278aa29c37b321e0a68d16f6c9e57",
+        "bytes": 8777
+      },
+      "working": {
+        "sha256": "02dffba9d0365d29a6fe686eb8910ed8764278aa29c37b321e0a68d16f6c9e57",
+        "bytes": 8777,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260728000007_workspace_write_role_gate_children.sql": {
+      "gitBlob": {
+        "sha256": "ddf0820b8f2f3f126eb892e8e2db0b8740215d1b448a9e6177aa2aedd72dc795",
+        "bytes": 7582
+      },
+      "working": {
+        "sha256": "ddf0820b8f2f3f126eb892e8e2db0b8740215d1b448a9e6177aa2aedd72dc795",
+        "bytes": 7582,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20261017000007_workspace_time_zone.sql": {
+      "gitBlob": {
+        "sha256": "e8f413b72752df79a09396fe8d73ba7e867818bbb0fb9e0a807bfac5accb26e9",
+        "bytes": 5011
+      },
+      "working": {
+        "sha256": "e8f413b72752df79a09396fe8d73ba7e867818bbb0fb9e0a807bfac5accb26e9",
+        "bytes": 5011,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20261017000019_project_budget_complete_inputs.sql": {
+      "gitBlob": {
+        "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+        "bytes": 6046
+      },
+      "working": {
+        "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+        "bytes": 6046,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/src/lib/auth/role-matrix.ts": {
+      "gitBlob": {
+        "sha256": "e9613bca5d3f1d3b3f7b704ce1848eb47d21dfabb323eb20d9e0db38d794e020",
+        "bytes": 5087
+      },
+      "working": {
+        "sha256": "e9613bca5d3f1d3b3f7b704ce1848eb47d21dfabb323eb20d9e0db38d794e020",
+        "bytes": 5087,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-15-project-jurisdiction-native/native_proof.py": {
+      "gitBlob": {
+        "sha256": "4f48445c0c69d0bb3ef52a3ea2101ad22de2d8a0210ff8800f043c789bc6d8ea",
+        "bytes": 48488
+      },
+      "working": {
+        "sha256": "4f48445c0c69d0bb3ef52a3ea2101ad22de2d8a0210ff8800f043c789bc6d8ea",
+        "bytes": 48488,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql": {
+      "gitBlob": {
+        "sha256": "141a24d1e90c8d668941307725064e6721eac75f4f5f66f54acf0b5582c6fe4f",
+        "bytes": 4891
+      },
+      "working": {
+        "sha256": "141a24d1e90c8d668941307725064e6721eac75f4f5f66f54acf0b5582c6fe4f",
+        "bytes": 4891,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql": {
+      "gitBlob": {
+        "sha256": "0742d591195ecc2971e861c64d6e21cb2c1f14df6258428e6329d2be229c5041",
+        "bytes": 4607
+      },
+      "working": {
+        "sha256": "0742d591195ecc2971e861c64d6e21cb2c1f14df6258428e6329d2be229c5041",
+        "bytes": 4607,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql": {
+      "gitBlob": {
+        "sha256": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+        "bytes": 21063
+      },
+      "working": {
+        "sha256": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+        "bytes": 21063,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260420000061_pin_function_search_paths.sql": {
+      "gitBlob": {
+        "sha256": "e3cc1a0f34d8e729ca9f429f807b4f4749fd4d1abbaa824c8605aa1bc2b4997b",
+        "bytes": 4008
+      },
+      "working": {
+        "sha256": "e3cc1a0f34d8e729ca9f429f807b4f4749fd4d1abbaa824c8605aa1bc2b4997b",
+        "bytes": 4008,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260805000001_us_federal_default_stage_gate_template.sql": {
+      "gitBlob": {
+        "sha256": "0c28ba0aedc72fc98807bac871a1fe63f234e6beb53e6db4613927d721fadff1",
+        "bytes": 1599
+      },
+      "working": {
+        "sha256": "0c28ba0aedc72fc98807bac871a1fe63f234e6beb53e6db4613927d721fadff1",
+        "bytes": 1599,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    },
+    "openplan/supabase/migrations/20260824000004_workspace_stage_gate_template_selection.sql": {
+      "gitBlob": {
+        "sha256": "0e6b8ebece8db7eb873acb4b696eea250697525f6e610622c96985e2e0a6b455",
+        "bytes": 1304
+      },
+      "working": {
+        "sha256": "0e6b8ebece8db7eb873acb4b696eea250697525f6e610622c96985e2e0a6b455",
+        "bytes": 1304,
+        "mode": "0o664"
+      },
+      "matchesPin": true,
+      "workingEqualsGit": true
+    }
+  },
+  "orderedMigrationSetMatchesGit": true,
+  "migrationOrdinals": {
+    "20261017000016": 419,
+    "20261017000017": 420,
+    "20261017000018": 421,
+    "20261017000019": 422
+  },
+  "priorPublicReports": {
+    "docs/reviews/2026-10-16-project-budget-native-preparation-independent/REPORT.md": {
+      "commit": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+      "gitBlob": {
+        "sha256": "ad05213347682de779efb6ca53b656ce4744ffdff7aac9602cbd8e08b04aa8c0",
+        "bytes": 10394
+      },
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-preparation-independent/VALIDATION.md": {
+      "commit": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+      "gitBlob": {
+        "sha256": "85a2122e2f931241532f9d2145b59afdae707493d3b3038e2df3e97faed603bc",
+        "bytes": 5294
+      },
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-preparation-independent/evidence.json": {
+      "commit": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+      "gitBlob": {
+        "sha256": "46d6937c360a27dca19d338502abfba7b8628354fbf2ff68508da280d0f61fec",
+        "bytes": 6697
+      },
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-r2-independent/REPORT.md": {
+      "commit": "2822ed35e5770243b8465702e942dd7c10115d76",
+      "gitBlob": {
+        "sha256": "532f92643a4bc72fd9a40398d219ad431f32c17e3afe4864dad32aea04ea79e9",
+        "bytes": 17407
+      },
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-r2-independent/VALIDATION.md": {
+      "commit": "2822ed35e5770243b8465702e942dd7c10115d76",
+      "gitBlob": {
+        "sha256": "ca9522ad7a234c087096254dcdf4dcea2c06b7536983787920a4b10f397c3a39",
+        "bytes": 6247
+      },
+      "workingEqualsGit": true
+    },
+    "docs/reviews/2026-10-16-project-budget-native-r2-independent/evidence.json": {
+      "commit": "2822ed35e5770243b8465702e942dd7c10115d76",
+      "gitBlob": {
+        "sha256": "2a1a7268841104522989986a7efadfc4102d10877e9bfff4628d5115f5507f12",
+        "bytes": 10967
+      },
+      "workingEqualsGit": true
+    }
+  },
+  "authorV3": {
+    "claim": "AUTHOR_RECEIPTS_READ_WITHOUT_REPRODUCTION",
+    "unit": "op-budget-caller-builder-text01.service",
+    "invocation": "b736a9ce89c54c138f0bd7b7ccf0b8a0",
+    "exit": 0,
+    "runtimeMs": 143,
+    "cpuMs": 82,
+    "peakBytes": 12066816,
+    "memoryBytes": 536870912,
+    "swapBytes": 0,
+    "cpuPercent": 50,
+    "tasks": 64,
+    "deadlineSeconds": 120,
+    "subjectHarmless": 1,
+    "subjectNamedFaults": 19,
+    "typedInputRefusals": 11,
+    "suppliedCallerCases": 9,
+    "resourceHarmless": 1,
+    "resourceNamedFaults": 7,
+    "restoration": "working and subject exact according to retained result and current metadata",
+    "managerLimit": "Transient unloaded; terminal stream supplies exact invocation result",
+    "mountLimit": "Named root RO/private RW and net separation; inherited nested/pseudo writability UNASSESSED"
+  },
+  "custody": {
+    "comparisonEntries": 522,
+    "mismatches": [],
+    "authorStatus": "",
+    "authorHead": "700fc2b08dd70f0cfb99a022592481a0bb52176e"
+  },
+  "privateReviewRoot": "/home/nathaniel/.local/state/openplan/project-budget-caller-builder-independent-20261016",
+  "privateReviewMode": "0o700",
+  "privateReviewSeals": {
+    "sha256": "77910180c45770afb8c2eb85df5911c733d7ac57f8f4fa8df4d52dc114533243",
+    "bytes": 752,
+    "mode": "0o664"
+  },
+  "privateReviewFiles": {
+    "final-custody.json": {
+      "sha256": "1581585adda1188e605275597b4971348341ac2f9c3c0e9b4d3a0c15849e46a4",
+      "bytes": 190520,
+      "mode": "0o664"
+    },
+    "metadata-before.json": {
+      "sha256": "cf695649a68080a720bdd4b271cf082c1b8802b5e4e18beaaf43da66d695fbf0",
+      "bytes": 144159,
+      "mode": "0o664"
+    },
+    "receipt-readback.json": {
+      "sha256": "41224b1e151ffc4a4df97a530f4b50fb259f5255948118feceb7d991ab50ac3d",
+      "bytes": 5962,
+      "mode": "0o664"
+    },
+    "session-inventory.json": {
+      "sha256": "908a287e434d687258886f4184b48e4a53ead4bd0fe1d71a5f89ac987028aac2",
+      "bytes": 4657,
+      "mode": "0o664"
+    }
+  },
+  "reportFiles": {
+    "REPORT.md": {
+      "sha256": "b8a309eaea1f80b4b86a88eb06704688fb19d35b8e223ddda3e465ef26554de8",
+      "bytes": 13970,
+      "mode": "0o664"
+    },
+    "VALIDATION.md": {
+      "sha256": "b85f10cf46f65f46b54fa7f8df6b25ccb15bc2aba7b32eab159076ce676533ce",
+      "bytes": 7590,
+      "mode": "0o664"
+    }
+  },
+  "execution": {
+    "subjectImports": 0,
+    "subjectCalls": 0,
+    "newExecutableTestsOrGuards": 0,
+    "campaigns": 0,
+    "dependencies": 0,
+    "directionCommands": 0,
+    "managerCalls": 0,
+    "flockCalls": 0,
+    "nativeOperations": 0,
+    "testGrantRequested": false,
+    "testGrantConsumed": false
+  },
+  "retainedHistory": {
+    "original": "7c07549714f5b2afdd5816557fedd697bf743adc",
+    "originalIndependent": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+    "originalFinding": "PREP-1 remains attached to original emitted sequence",
+    "r2": "0e8b59d59523cdae67451e18df8965b333d684d3",
+    "r2Independent": "2822ed35e5770243b8465702e942dd7c10115d76",
+    "r2EOFException": "Historical tested26c899 versus final91c746 one newline, prior AST equality not final execution; not reproduced or extended",
+    "oldPrivateProofRootsEntered": false,
+    "parentChecksumError": "Task-supplied root-continuation-readback-20261016 wrong cwd retained; independent author-root 13-entry checksum exit0"
+  },
+  "nativeIdentity": null,
+  "nativeAdmission": null,
+  "targetStatus": "UNALLOCATED_NOT_AVAILABLE_UNADMITTED",
+  "automaticReplay": false,
+  "automaticSuccessor": false,
+  "blindCategories": [
+    "Native SQL grammar, defaults and trigger execution",
+    "Real allocation, cluster/installed history/catalog, inherited role ownership and effective ACL truth",
+    "Supabase Auth/JWT and ordinary connection identity",
+    "Raw bounded8MiB/deadline transport and actual SDK/loader/math",
+    "Native typmod, optional-origin, query cancellation, RLS and MVCC",
+    "Durable native intent, real commit ACK and independent connection rows",
+    "Upgrade/history, representative restore, API/editor/browser/artifacts",
+    "Human planner and independent finance, science, M11, full V1"
+  ]
+}
