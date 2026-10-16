@@ -1,0 +1,41 @@
+{
+  "baseHead": "82d33de8d3d2d901e2feddad757ee9aaaec9daba",
+  "sourcePins": {
+    "workers/planner_agent_connector/connector.mjs": "12917da60441f0a8fe25c613e6da536cb9f78acc93cc156b750451d339f4e8c9",
+    "workers/planner_agent_connector/README.md": "dca6ea8a5302277cec3fdf8b70578258df78a0e00dea37f5f1297386d0410256",
+    "workers/planner_agent_connector/test/connector-installer-guidance.test.mjs": "a2847e2753c7369c471aa01726b626669618eafd38fa8ea7e61c24dea6399bbd",
+    "docs/reviews/2026-10-16-a0-installer-cli-integration/verify-controls.py": "b9d64c322c9a6dc1ca1e743699cd51c89715725bdc46eb467ff11f4c4af2125e",
+    "docs/reviews/2026-10-16-a0-installer-cli-integration/controls.json": "e4693f45226522f230a6d9eeac6438821cdd96d16503de1b7d0669081477e868"
+  },
+  "focused": {
+    "command": "node --test --test-concurrency=1 workers/planner_agent_connector/test/connector-installer-guidance.test.mjs workers/planner_agent_connector/test/connector-cli.test.mjs workers/planner_agent_connector/test/installer-guidance.test.mjs",
+    "unit": "openplan-a0-installer-cli-focused-20261016-02",
+    "invocationId": "2925e429e15749f9bc71c3f0d2a75bcd",
+    "exitCode": 0,
+    "passed": 15,
+    "failed": 0,
+    "skipped": 0,
+    "sourceLimit": "Final focused output log contains the completion chunk. First two test output lines remain in parent tool activity; aggregate count is in completion.",
+    "completionSHA256": "2686296c8c4de9835dc186a11e57cbab34c27c56a0d69d46c5faf49da081a24f"
+  },
+  "controls": {
+    "unit": "openplan-a0-installer-cli-controls-20261016-01",
+    "invocationId": "d2a7d489332044e9835092413d03f810",
+    "exitCode": 0,
+    "trials": 14,
+    "harmlessSurvivors": 1,
+    "namedFailures": 11,
+    "exactSourceRestored": true,
+    "privateReceiptSHA256": "e4693f45226522f230a6d9eeac6438821cdd96d16503de1b7d0669081477e868"
+  },
+  "resourceBoundary": {
+    "memoryBytes": 1073741824,
+    "swapBytes": 0,
+    "cpuPercent": 50,
+    "nodeHeapMiB": 256,
+    "sharedFlock": true,
+    "workers": 1
+  },
+  "runtimeAcceptance": false,
+  "independentReview": "pending"
+}
