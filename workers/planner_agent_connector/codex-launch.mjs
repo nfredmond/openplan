@@ -2,8 +2,9 @@ import { execFile } from "node:child_process";
 import { promisify } from "node:util";
 import { realpath, readdir, lstat, mkdir, writeFile } from "node:fs/promises";
 import { dirname, join, isAbsolute, parse } from "node:path";
+import { assertTestedCliVersion, testedCliRecord } from "./tested-cli-versions.mjs";
 
-export const CODEX_PROTOCOL_VERSION = "0.154.0";
+export const CODEX_PROTOCOL_VERSION = testedCliRecord("codex").version;
 
 // The CLI owns auth.json, including atomic refresh. Every other existing profile
 // entry is hidden in this process's mount namespace; the source is never edited.
@@ -16,7 +17,8 @@ export async function codexLaunch({ binaryPath, providerHome, scratchPath, model
   const version = await promisify(execFile)(binary, ["--version"], {
     timeout: 5_000, maxBuffer: 8_192, env: { PATH: "/usr/bin:/bin" },
   }).catch(() => { throw new Error("native_version_unavailable"); });
-  if (version.stdout.trim() !== `codex-cli ${CODEX_PROTOCOL_VERSION}` || dirname(binary).split("/").at(-1) !== "bin") {
+  assertTestedCliVersion("codex", version.stdout);
+  if (dirname(binary).split("/").at(-1) !== "bin") {
     throw new Error("native_version_unsupported");
   }
   const profile = await realpath(providerHome);
