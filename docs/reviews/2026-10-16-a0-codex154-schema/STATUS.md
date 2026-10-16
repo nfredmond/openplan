@@ -111,3 +111,11 @@ Stream and file hashes do not establish physical power-loss durability. A lost
 acknowledgement or timeout leaves an incomplete operation fenced; this capture
 has no automatic retry. The finite wait and outer unit limit do not prove every
 process-lifetime case. Independent review of this new proof is pending.
+
+## Later experimental capture resolves the full-bundle difference
+
+The separate [experimental follow-up](EXPERIMENTAL.md) uses the same retained
+binary with `--experimental`. Its full v2 output reproduces the historical bundle
+byte for byte. This supersedes the earlier unassessed difference for these two
+observed modes. It preserves the original default capture and its limits, and
+does not establish historical invocation provenance or provider acceptance.
