@@ -1,0 +1,58 @@
+{
+  "privateRoot": "/home/nathaniel/.local/state/openplan/pr330-frozen607-build-capacity-refusal-report-20261016",
+  "inputPinsSHA256": "e5eec01c7eb0f01a92b56365d5b4a86fdd7eea67073438fee72cd5aeb77e859c",
+  "failureSummarySHA256": "3149aced0333d5bdf1f94601ae4ac648eead232b48d40f7509d880959c983d61",
+  "inputPins": 13,
+  "summary": {
+    "unit": {
+      "ActiveState": "failed",
+      "SubState": "failed",
+      "InvocationID": "aac9a50d5f0e41cc8a787a1f54e6577f",
+      "MainPID": "0",
+      "Result": "exit-code",
+      "ExecMainStatus": "1",
+      "MemoryPeak": "1552904192",
+      "MemorySwapPeak": "0",
+      "CPUUsageNSec": "8469645000",
+      "CPUQuotaPerSecUSec": "500ms",
+      "MemoryMax": "10737418240",
+      "MemorySwapMax": "0"
+    },
+    "capacityProducer": {
+      "capacity": {
+        "available": 13030060032,
+        "workingFree": 481254170624,
+        "durableFree": 481254170624,
+        "sourceBytes": 528937508,
+        "stagedBytes": 675139863,
+        "outputReservation": 3221225472,
+        "unitCap": 10737418240,
+        "hostReservation": 2147483648,
+        "memoryRequired": 12884901888,
+        "workingRequired": 3611894029,
+        "archiveRequired": 4598339686,
+        "durableRequired": 8210233715,
+        "storage": "disk"
+      },
+      "head": "607ee0895a79457181eda1d2ebbda1de4f2a4d40",
+      "appTree": "bed283ab0c937ead65378a2e9d26c177ceee6938",
+      "result": "capacity accepted; no build request or admission emitted"
+    },
+    "controllerExit": {
+      "returncode": 1,
+      "seconds": 87.95179077307694,
+      "unitLogSHA256": "a8f40485ccdd716b70691562963b051530b3369de0b5ec66ce4e4f7de1c6bd6e"
+    },
+    "failure": "disk-memory-total-budget",
+    "rawAvailableAtFailureRecorded": false,
+    "buildIntentPresent": false,
+    "webpackJournalPresent": false,
+    "buildResultPresent": false,
+    "candidateNextPresent": false,
+    "runtimeInputsStillMatch": true,
+    "oldRequestFenceRetained": true,
+    "nextAttemptAdmitted": false,
+    "sourceHead": "607ee0895a79457181eda1d2ebbda1de4f2a4d40",
+    "appTree": "bed283ab0c937ead65378a2e9d26c177ceee6938"
+  }
+}
