@@ -1,0 +1,378 @@
+{
+  "RateLimitSnapshot": {
+    "properties": {
+      "credits": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/CreditsSnapshot"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "individualLimit": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/SpendControlLimitSnapshot"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "limitId": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "limitName": {
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "normalModelSlug": {
+        "description": "Normal model whose display name and reasoning options describe this quota alias.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "planType": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/PlanType"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "primary": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/RateLimitWindow"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "rateLimitReachedType": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/RateLimitReachedType"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "secondary": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/RateLimitWindow"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "spendControlReached": {
+        "description": "Backend-reported spend-control state. `None` is unavailable, not a sparse-update recovery.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      }
+    },
+    "type": "object"
+  },
+  "RateLimitWindow": {
+    "properties": {
+      "resetsAt": {
+        "format": "int64",
+        "type": [
+          "integer",
+          "null"
+        ]
+      },
+      "usedPercent": {
+        "format": "int32",
+        "type": "integer"
+      },
+      "windowDurationMins": {
+        "format": "int64",
+        "type": [
+          "integer",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "usedPercent"
+    ],
+    "type": "object"
+  },
+  "RateLimitReachedType": {
+    "enum": [
+      "rate_limit_reached",
+      "workspace_owner_credits_depleted",
+      "workspace_member_credits_depleted",
+      "workspace_owner_usage_limit_reached",
+      "workspace_member_usage_limit_reached"
+    ],
+    "type": "string"
+  },
+  "GetAccountRateLimitsResponse": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "properties": {
+      "accountId": {
+        "description": "Account associated with this usage snapshot, when supplied by the backend.",
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "ordinaryUsageAllowed": {
+        "description": "Backend permission for ordinary included usage, validated against the active account. Null means unavailable; clients must not infer recovery from percentages or reset times.",
+        "type": [
+          "boolean",
+          "null"
+        ]
+      },
+      "rateLimitResetCredits": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/RateLimitResetCreditsSummary"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "rateLimitUpsell": {
+        "description": "Optional backend-owned banner from the same usage read. Its nested keys retain the backend's snake_case contract; an absent banner leaves the client's existing UI unchanged."
+      },
+      "rateLimits": {
+        "allOf": [
+          {
+            "$ref": "#/definitions/RateLimitSnapshot"
+          }
+        ],
+        "description": "Backward-compatible single-bucket view; mirrors the historical payload."
+      },
+      "rateLimitsByLimitId": {
+        "additionalProperties": {
+          "$ref": "#/definitions/RateLimitSnapshot"
+        },
+        "description": "Multi-bucket view keyed by metered `limit_id` (for example, `codex`).",
+        "type": [
+          "object",
+          "null"
+        ]
+      }
+    },
+    "required": [
+      "rateLimits"
+    ],
+    "title": "GetAccountRateLimitsResponse",
+    "type": "object"
+  },
+  "AccountRateLimitsUpdatedNotification": {
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "description": "Sparse rolling rate-limit update.\n\nClients should merge available values into the most recent `account/rateLimits/read` response or refetch that snapshot. Nullable account metadata may be unavailable in a rolling update and does not clear a previously observed value.",
+    "properties": {
+      "rateLimits": {
+        "$ref": "#/definitions/RateLimitSnapshot"
+      }
+    },
+    "required": [
+      "rateLimits"
+    ],
+    "title": "AccountRateLimitsUpdatedNotification",
+    "type": "object"
+  },
+  "TurnError": {
+    "properties": {
+      "additionalDetails": {
+        "default": null,
+        "type": [
+          "string",
+          "null"
+        ]
+      },
+      "codexErrorInfo": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/CodexErrorInfo"
+          },
+          {
+            "type": "null"
+          }
+        ]
+      },
+      "message": {
+        "type": "string"
+      },
+      "misalignment": {
+        "anyOf": [
+          {
+            "$ref": "#/definitions/MisalignmentErrorDetails"
+          },
+          {
+            "type": "null"
+          }
+        ],
+        "default": null,
+        "description": "Optional public explanation and continuation instruction for a misalignment block."
+      }
+    },
+    "required": [
+      "message"
+    ],
+    "type": "object"
+  },
+  "CodexErrorInfo": {
+    "description": "This translation layer make sure that we expose codex error code in camel case.\n\nWhen an upstream HTTP status is available (for example, from the Responses API or a provider), it is forwarded in `httpStatusCode` on the relevant `codexErrorInfo` variant.",
+    "oneOf": [
+      {
+        "enum": [
+          "contextWindowExceeded",
+          "sessionBudgetExceeded",
+          "usageLimitExceeded",
+          "rateLimitExceeded",
+          "serverOverloaded",
+          "cyberPolicy",
+          "misalignmentPolicyViolation",
+          "internalServerError",
+          "unauthorized",
+          "badRequest",
+          "threadRollbackFailed",
+          "sandboxError",
+          "other"
+        ],
+        "type": "string"
+      },
+      {
+        "additionalProperties": false,
+        "properties": {
+          "httpConnectionFailed": {
+            "properties": {
+              "httpStatusCode": {
+                "format": "uint16",
+                "minimum": 0.0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "httpConnectionFailed"
+        ],
+        "title": "HttpConnectionFailedCodexErrorInfo",
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "description": "Failed to connect to the response SSE stream.",
+        "properties": {
+          "responseStreamConnectionFailed": {
+            "properties": {
+              "httpStatusCode": {
+                "format": "uint16",
+                "minimum": 0.0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "responseStreamConnectionFailed"
+        ],
+        "title": "ResponseStreamConnectionFailedCodexErrorInfo",
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "description": "The response SSE stream disconnected in the middle of a turn before completion.",
+        "properties": {
+          "responseStreamDisconnected": {
+            "properties": {
+              "httpStatusCode": {
+                "format": "uint16",
+                "minimum": 0.0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "responseStreamDisconnected"
+        ],
+        "title": "ResponseStreamDisconnectedCodexErrorInfo",
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "description": "Reached the retry limit for responses.",
+        "properties": {
+          "responseTooManyFailedAttempts": {
+            "properties": {
+              "httpStatusCode": {
+                "format": "uint16",
+                "minimum": 0.0,
+                "type": [
+                  "integer",
+                  "null"
+                ]
+              }
+            },
+            "type": "object"
+          }
+        },
+        "required": [
+          "responseTooManyFailedAttempts"
+        ],
+        "title": "ResponseTooManyFailedAttemptsCodexErrorInfo",
+        "type": "object"
+      },
+      {
+        "additionalProperties": false,
+        "description": "Returned when `turn/start` or `turn/steer` is submitted while the current active turn cannot accept same-turn steering, for example `/review` or manual `/compact`.",
+        "properties": {
+          "activeTurnNotSteerable": {
+            "properties": {
+              "turnKind": {
+                "$ref": "#/definitions/NonSteerableTurnKind"
+              }
+            },
+            "required": [
+              "turnKind"
+            ],
+            "type": "object"
+          }
+        },
+        "required": [
+          "activeTurnNotSteerable"
+        ],
+        "title": "ActiveTurnNotSteerableCodexErrorInfo",
+        "type": "object"
+      }
+    ]
+  }
+}
