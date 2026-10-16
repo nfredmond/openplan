@@ -1,0 +1,41 @@
+{
+  "head": "e75c12bacbd02535207a317187c0981ba6178638",
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "command": [
+    "node",
+    "--test",
+    "--test-concurrency=1",
+    "--test-reporter=tap",
+    "workers/planner_agent_connector/test/usage-limit.test.mjs",
+    "workers/planner_agent_connector/test/usage-limit-source.test.mjs",
+    "workers/planner_agent_connector/test/codex-session.test.mjs",
+    "workers/planner_agent_connector/test/connector-installer-guidance.test.mjs",
+    "workers/planner_agent_connector/test/connector-cli.test.mjs",
+    "workers/planner_agent_connector/test/installer-guidance.test.mjs"
+  ],
+  "exitCode": 0,
+  "passed": 33,
+  "failed": 0,
+  "seconds": 5.078877574997023,
+  "afterHead": "e75c12bacbd02535207a317187c0981ba6178638",
+  "nativeProviderUse": false,
+  "logSHA256": "ac47f494d6d64a6c3c49441c1ce1789d11015e7cd7554718e7fdec5c6381034a",
+  "checksReused": {
+    "usageLimitSourceReview": "579c496f14a7dc43ab1c75e803c5c4eb5f0b96ab",
+    "installCheckSourceReview": "579c496f14a7dc43ab1c75e803c5c4eb5f0b96ab",
+    "usageLimitVitestTests": 114,
+    "usageLimitVitestRerun": false,
+    "appTreeMatchesReviewedUsageLimit": true,
+    "nativeMigration18Executed": false
+  },
+  "unit": {
+    "name": "openplan-a0-reviewed-combined-20261016-01",
+    "invocationId": "1681d2c340ea466289543bdda45b773b",
+    "requestedMemoryBytes": 1073741824,
+    "requestedSwapBytes": 0,
+    "requestedCpuPercent": 50,
+    "managerPeak": "63.5M",
+    "managerSwap": "0B",
+    "sharedFlock": true
+  }
+}
