@@ -1,0 +1,58 @@
+{
+  "sourceHead": "f0cbeddff5ae3fc37e0dd8b91c02601429d977a6",
+  "appTree": "a13c491da3ad3ba5b237ca5fa8802b236c4ef27b",
+  "stages": {
+    "allocate": {
+      "returncode": 0,
+      "seconds": 0.447,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-allocate.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "dd4ab6c36961cee989f6deb77d05273fb4b262a777c6ee4f535e06313944d0bf"
+    },
+    "preflight": {
+      "returncode": 0,
+      "seconds": 69.547,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-preflight.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "0b79b951fae50e025a19d34b98e7505e22cab98d849a481c810897c4596e4b38"
+    },
+    "restore": {
+      "returncode": 0,
+      "seconds": 150.892,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-restore.service",
+      "stdoutSHA256": "19c53a7c60d6cff904e22d4d0fa3610c690d43ead3dcaf1548d896d872ad9e07",
+      "stderrSHA256": "213b4a1ce61b0ea2f3a27594f21073d50ce727320e2f5af3627754367c0cfc8a"
+    },
+    "upgrade": {
+      "returncode": 0,
+      "seconds": 156.537,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-upgrade.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "8071f87c6b8781c2ebb8d96d3b7a336be1e8c1d6be651bd96385dce78e1a4e93"
+    },
+    "services": {
+      "returncode": 1,
+      "seconds": 70.059,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-services.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "36eab79968b764afc8ac1b58e9a6ec5e576f960a60bb7535e8ce084931828b08"
+    },
+    "active-check": {
+      "returncode": 0,
+      "seconds": 69.6,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-active-check.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "e51d3cb47edbedd6b8963759b4d09019f75f6b29bfc15e03ed40734862edb110"
+    },
+    "checkout": {
+      "returncode": 0,
+      "seconds": 145.217,
+      "unit": "openplan-pr330-memory-f0cbeddff-r2-checkout.service",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stderrSHA256": "74d51320de79a2b90310f0750e93805c4291e7820d08eccb162af8450d822667"
+    }
+  },
+  "servicesDisposition": "Original failed stage retained. No mutator retry/restart. Subsequent already-reviewed read-only active check succeeds.",
+  "build": "RUNNING; not acceptance",
+  "buildObserverTask": "node:delegated-task:command%3Amcp%3A4129311c-65d7-4581-bdf7-2121310d6492%3Adelegate-task%3Asol-pr330-memory-preview-build-observation-20261015-r2-01"
+}
