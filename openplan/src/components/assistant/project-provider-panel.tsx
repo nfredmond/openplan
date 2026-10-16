@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import type { AssistantChatProposal } from "@/lib/assistant/chat-tools";
 import { plannerAgentDefaultModelId } from "@/lib/ai/model-policy";
 import { providerApiConnectionPage, providerApiRevisionMetadata, type ApiListedConnection } from "@/lib/integrations/provider-api-metadata";
+import { checkedNativeUsageLimit } from "@/lib/assistant/provider-usage-limit";
 
 const connectionSchema = z.object({ id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
   provider: z.enum(["codex", "claude", "opencode"]), device_label: z.string(), expected_auth_mode: z.enum(["chatgpt", "apiKey", "claude_subscription", "opencode_api"]), expires_at: z.string(), revoked_at: z.string().nullable(), last_status: z.string() });
@@ -16,6 +17,7 @@ const proposalSchema = z.object({ status: z.literal("proposed"), kind: z.literal
     title: z.string().min(1).max(160), submittalType: z.enum(["authorization_packet", "invoice_backup", "environmental_package", "hearing_record", "ps_e", "reimbursement", "progress_report", "other"]),
     status: z.literal("draft").optional(), notes: z.string().max(4000).optional() }).strict() }).strict();
 const turnBaseSchema = z.object({ id: z.string().uuid(), request_id: z.string().uuid(), workspace_id: z.string().uuid(), project_id: z.string().uuid(),
+  user_id: z.string().uuid().optional(), connection_id: z.string().uuid().nullable().optional(), attempt_id: z.string().uuid().nullable().optional(), provider_receipt: z.unknown().optional(),
   provider: z.enum(["codex", "claude", "opencode", "anthropic"]), model_id: z.string(), auth_mode: z.string(), question: z.string(), packet_hash: z.string().regex(/^[a-f0-9]{64}$/),
   state: z.enum(["queued", "running", "succeeded", "failed", "cancelled", "interrupted"]), failure_code: z.string().nullable(), created_at: z.string(),
   result: z.object({ answer: z.string(), citations: z.array(z.object({ id: z.string(), label: z.string(), href: z.string() })).length(1), proposal: proposalSchema.nullable() }).strict().nullable() });
@@ -305,11 +307,19 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
       <div className="space-y-3 border-t border-white/15 pt-3"><h3 className="text-sm font-semibold">Saved project requests</h3>
         <p className="text-xs">The latest 20 requests stay here after reloading. Failed or interrupted attempts never restart automatically.</p>
         {turns.length === 0 && <p className="text-sm">No saved requests for this project.</p>}
-        {turns.map(turn => <article className="space-y-2 rounded border border-white/15 p-3" key={turn.id} aria-label={`Provider request: ${turn.question}`}>
+        {turns.map(turn => {
+          const usageLimit = checkedNativeUsageLimit(turn);
+          return <article className="space-y-2 rounded border border-white/15 p-3" key={turn.id} aria-label={`Provider request: ${turn.question}`}>
           <p className="whitespace-pre-wrap break-words text-sm font-semibold">{turn.question}</p>
           <p className="break-words text-xs">{turn.provider === "codex" ? "Installed Codex" : turn.provider === "claude" ? "Installed Claude Code" : turn.provider === "opencode" ? "Installed OpenCode" : turn.provider === "api_connection" ? "Saved API" : "Anthropic API"} · {turn.model_id} · {authLabels[turn.auth_mode] ?? turn.auth_mode}</p>
           {turn.provider === "api_connection" && <p className="text-xs [overflow-wrap:anywhere]">Original destination: {providerApiRevisionMetadata.shape.configuration.parse(JSON.parse(turn.api_configuration_canonical)).endpoint}</p>}
-          <p role="status" className="text-xs">Status: {turn.state}</p>
+          <p role="status" className="text-xs">Status: {usageLimit ? "limited" : turn.state}</p>
+          {usageLimit && <div className="space-y-1 text-sm">
+            <p>{usageLimit.signal.resetAtUnixSeconds === null ? "Reset not reported" :
+              `Provider-reported reset: ${new Date(usageLimit.signal.resetAtUnixSeconds! * 1000).toISOString()}`}</p>
+            <p>Tokens not reported. Cost not reported.</p>
+            <p>This connector report does not confirm restored access. No automatic retry will start.</p>
+          </div>}
           {turn.failure_code && <p className="text-sm">{readableError(turn.failure_code)}</p>}
           {["queued", "running"].includes(turn.state) && <Button type="button" variant="outline" className={outlineButtonClass} size="sm" disabled={busy || cancelling === turn.id} onClick={() => void cancelTurn(turn)}>Cancel request</Button>}
           {turn.state === "succeeded" && turn.result && <>
@@ -318,7 +328,7 @@ export function ProjectProviderPanel({ workspaceId, projectId, busy, onReview }:
             {turn.result.proposal && <Button type="button" variant="outline" className={outlineButtonClass} disabled={busy || saving} onClick={() => { onReview({ id: turn.id, question: turn.question, answer: turn.result!.answer, proposal: turn.result!.proposal! }); setExpanded(false); }}>Review draft submittal in conversation</Button>}
           </>}
           <details className="text-xs"><summary className="cursor-pointer">Retained request identity</summary><p className="mt-1 break-all">Request {turn.request_id}<br />Packet SHA-256 {turn.packet_hash}{turn.provider === "api_connection" && <><br />API connection {turn.api_connection_id}<br />API revision {turn.api_revision_id}<br />Configuration SHA-256 {turn.api_configuration_hash}</>}</p></details>
-        </article>)}
+        </article>; })}
       </div>
     </div>}
   </section>;
