@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { parseOptionalAmount } from "@/lib/money/optional-amount";
 import { ArrowRight, ClipboardCheck, FileClock, Target } from "lucide-react";
 import { SetupPendingNotice } from "@/components/ui/setup-pending-notice";
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -639,17 +640,16 @@ export function ProjectDeliveryBoard({
                       <p className="module-record-summary">{deliverable.summary || "No summary yet."}</p>
                     </div>
                     {/*
-                      The deliverable lane's write control. Budget and progress
-                      seed src/lib/projects/budget.ts, which refuses a pace
-                      verdict without them — so without this control the chips
-                      above are stuck at their refusal forever.
+                      Prefill from readable deliverable fields, even when an
+                      unrelated financial read withholds the calculated chips.
+                      The control still sends only fields the planner touches.
                     */}
                     <DeliverableUpdateControls
                       projectId={project.id}
                       deliverableId={deliverable.id}
                       currentStatus={deliverable.status}
-                      currentBudgetAmount={budgetSummary?.budgetAmount ?? null}
-                      currentPercentComplete={budgetSummary?.percentComplete ?? null}
+                      currentBudgetAmount={parseOptionalAmount(deliverable.budget_amount)}
+                      currentPercentComplete={parseOptionalAmount(deliverable.percent_complete)}
                     />
                     {/*
                       Reassignment. `assignee_user_id` is UNDEFINED here when the

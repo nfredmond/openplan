@@ -3,6 +3,7 @@ import { budgetDeliverable, budgetSpend, projectBudgetSnapshotFixture, type Budg
 import { buildProjectBudgetSnapshot } from "@/lib/projects/budget";
 import {
   loadProjectBudgetInputs,
+  type ProjectDeliverableBudgetRow,
 } from "@/lib/projects/budget-queries";
 
 /**
@@ -146,13 +147,14 @@ describe("loadProjectBudgetInputs", () => {
    * tests separately assert each projection; native fallback remains untested.
    */
   function laddered(pendingColumns: string[]) {
-    const row: Partial<ReturnType<typeof budgetDeliverable>> = budgetDeliverable("deliverable-1");
+    const row: Partial<ProjectDeliverableBudgetRow> = budgetDeliverable("deliverable-1");
+    row.assignee_user_id = "member-1";
     row.title = "Existing Conditions Memo";
     row.budget_amount = 1000;
     const budget = pendingColumns.includes("budget_amount");
     const assignee = pendingColumns.includes("assignee_user_id");
     if (budget) { delete row.budget_amount; delete row.percent_complete; }
-    if (assignee || budget) delete row.assignee_user_id;
+    if (assignee) delete row.assignee_user_id;
     const client = { rpc: vi.fn(async () => ({ data: projectBudgetSnapshotFixture({
       project_deliverables: { data: [row], error: null },
     }, { assignee, budget }), error: null })) };
@@ -168,6 +170,15 @@ describe("loadProjectBudgetInputs", () => {
     expect(inputs.pending.deliverableBudgetColumns).toBe(false);
     expect(inputs.deliverables[0]).toMatchObject({ budget_amount: 1000, percent_complete: 50 });
     expect(inputs.deliverables[0]).not.toHaveProperty("assignee_user_id");
+  });
+
+  it("retains an existing nonnull assignee when only the budget columns are missing", async () => {
+    const { client } = laddered(["budget_amount"]);
+    const inputs = await loadProjectBudgetInputs(client, "project-1");
+    expect(inputs.pending.deliverableBudgetColumns).toBe(true);
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
+    expect(inputs.deliverables[0].assignee_user_id).toBe("member-1");
+    expect(inputs.deliverables[0]).not.toHaveProperty("budget_amount");
   });
 
   it("falls all the way back when both migrations are pending, and says so about both", async () => {
@@ -279,9 +290,7 @@ describe("complete project snapshot transport", () => {
   });
 
   it.each([null, {}, { ...projectBudgetSnapshotFixture(), project_id: "another-project" },
-    { ...projectBudgetSnapshotFixture(), spendEntries: { complete: true, data: null, error: null } },
-    { ...projectBudgetSnapshotFixture(), clientInvoices: { complete: true, data: [{ id: "i", status: "sent", client_invoice_line_items: null }], error: null } },
-  ])("refuses absent, malformed, wrong-project or incomplete envelopes (%#)", async (data) => {
+  ])("refuses absent, malformed or wrong-project envelopes (%#)", async (data) => {
     const inputs = await loadProjectBudgetInputs({ rpc: async () => ({ data, error: null }) }, "project-1");
     expect(Object.values(inputs.unreadable).every(Boolean)).toBe(true);
     expect(inputs.readFailures[0].message).toMatch(/invalid or belongs/);

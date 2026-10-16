@@ -10,7 +10,7 @@ describe("project budget complete-inputs SQL contract", () => {
   it("returns a scalar aggregate from one stable snapshot without row windows", () => {
     expect(sql).toMatch(/RETURNS jsonb LANGUAGE plpgsql STABLE SECURITY INVOKER/);
     expect(sql).not.toMatch(/\b(?:LIMIT|OFFSET|SETOF|VOLATILE)\b/i);
-    expect(sql.match(/jsonb_agg\(/g) ?? []).toHaveLength(6);
+    expect(sql.match(/jsonb_agg\(/g) ?? []).toHaveLength(4);
     expect(sql).toContain("'complete', true, 'data', rows, 'error', NULL");
     expect(sql.match(/'complete', false, 'data', NULL/g) ?? []).toHaveLength(4);
   });
@@ -25,7 +25,7 @@ describe("project budget complete-inputs SQL contract", () => {
   });
 
   it("scopes every source and aggregates every nested invoice line by its parent identity", () => {
-    expect(sql.match(/WHERE d.project_id = (?:\$1|p_project_id)/g) ?? []).toHaveLength(3);
+    expect(sql.match(/WHERE d.project_id = (?:\$1|p_project_id)/g) ?? []).toHaveLength(1);
     expect(sql).toContain("FROM public.projects p WHERE p.id = p_project_id");
     expect(sql).toContain("FROM public.project_spend_entries s WHERE s.project_id = p_project_id");
     expect(sql).toContain("WHERE i.project_id = p_project_id AND i.status IN ('sent', 'paid')");
@@ -36,15 +36,19 @@ describe("project budget complete-inputs SQL contract", () => {
     expect(sql).toMatch(/jsonb_agg\(jsonb_build_object\(\s*'id', l.id, 'deliverable_id', l.deliverable_id, 'amount', l.amount\s*\) ORDER BY l.id\)/);
   });
 
-  it("projects the existing budget and assignment ladder without widening confidential fields", () => {
-    const projections = [...sql.matchAll(/projection := '([^']+)'/g)].map((match) => match[1]);
-    expect(projections).toEqual([
-      "d.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at, d.budget_amount, d.percent_complete, d.assignee_user_id",
-      "d.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at, d.budget_amount, d.percent_complete",
-    ]);
-    expect(sql.match(/EXCEPTION WHEN undefined_column THEN/g) ?? []).toHaveLength(2);
-    expect(sql).toContain("assignee_pending := true");
-    expect(sql).toContain("budget_pending := true");
+  it("selects optional fields independently from this table catalog and preserves unknown read errors", () => {
+    expect(sql).toContain("IF to_regclass('public.project_deliverables') IS NULL THEN");
+    expect(sql).toContain("WHERE a.attrelid = to_regclass('public.project_deliverables')");
+    expect(sql).toContain("AND a.attnum > 0 AND NOT a.attisdropped");
+    expect(sql).toContain("INTO assignee_pending, budget_amount_pending, percent_complete_pending");
+    for (const [flag, column] of [["assignee_pending", "assignee_user_id"],
+      ["budget_amount_pending", "budget_amount"], ["percent_complete_pending", "percent_complete"]]) {
+      expect(sql).toContain(`NOT coalesce(bool_or(a.attname = '${column}'), false)`);
+      expect(sql).toContain(`IF NOT ${flag} THEN\n      projection := projection || ', d.${column}';`);
+    }
+    expect(sql).toContain("budget_pending := budget_amount_pending OR percent_complete_pending;");
+    expect(sql).toContain("projection := 'd.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at';");
+    expect(sql).not.toMatch(/EXCEPTION WHEN undefined_column|assignee_pending := true|budget_pending := true/);
     expect(sql).toContain("'deliverableAssigneeColumnPending', assignee_pending");
     expect(sql).toContain("'deliverableBudgetColumnsPending', budget_pending");
     expect(sql).toContain("SELECT s.id, s.deliverable_id, s.entry_date, s.amount, s.description, s.vendor_label, s.created_at");
@@ -52,7 +56,7 @@ describe("project budget complete-inputs SQL contract", () => {
   });
 
   it("orders display rows with primary-key tie-breakers while reading each identity once", () => {
-    expect(sql.match(/ORDER BY r.updated_at DESC, r.id/g) ?? []).toHaveLength(3);
+    expect(sql.match(/ORDER BY r.updated_at DESC, r.id/g) ?? []).toHaveLength(1);
     expect(sql).toContain("ORDER BY r.entry_date DESC, r.id");
     expect(sql).toContain("to_jsonb(r) ORDER BY r.id");
     expect(sql).not.toMatch(/\bDISTINCT\b/i);

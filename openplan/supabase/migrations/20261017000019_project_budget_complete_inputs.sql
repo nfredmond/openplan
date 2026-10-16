@@ -12,6 +12,8 @@ DECLARE
   projection text;
   assignee_pending boolean := false;
   budget_pending boolean := false;
+  budget_amount_pending boolean := false;
+  percent_complete_pending boolean := false;
 BEGIN
   -- Inaccessible and nonexistent projects both refuse, never report zero money.
   IF p_project_id IS NULL OR NOT EXISTS (
@@ -22,29 +24,35 @@ BEGIN
 
   result := jsonb_build_object('version', 1, 'project_id', p_project_id);
   BEGIN
-    -- Narrow projections prevent new confidential columns from entering the API.
-    -- Dynamic SELECT permits the historical assignee/budget fallback ladder.
-    projection := 'd.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at, d.budget_amount, d.percent_complete, d.assignee_user_id';
-    BEGIN
-      EXECUTE 'SELECT coalesce(jsonb_agg(to_jsonb(r) - ''updated_at'' ORDER BY r.updated_at DESC, r.id), ''[]''::jsonb)
-        FROM (SELECT ' || projection || ', d.updated_at FROM public.project_deliverables d WHERE d.project_id = $1) r'
-        INTO rows USING p_project_id;
-    EXCEPTION WHEN undefined_column THEN
-      assignee_pending := true;
-      projection := 'd.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at, d.budget_amount, d.percent_complete';
-      BEGIN
-        EXECUTE 'SELECT coalesce(jsonb_agg(to_jsonb(r) - ''updated_at'' ORDER BY r.updated_at DESC, r.id), ''[]''::jsonb)
-          FROM (SELECT ' || projection || ', d.updated_at FROM public.project_deliverables d WHERE d.project_id = $1) r'
-          INTO rows USING p_project_id;
-      EXCEPTION WHEN undefined_column THEN
-        budget_pending := true;
-        SELECT coalesce(jsonb_agg(to_jsonb(r) - 'updated_at' ORDER BY r.updated_at DESC, r.id), '[]'::jsonb)
-          INTO rows FROM (
-            SELECT d.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at, d.updated_at
-            FROM public.project_deliverables d WHERE d.project_id = p_project_id
-          ) r;
-      END;
-    END;
+    -- Establish optional-column absence from this relation's catalog. A read
+    -- dependency failing with undefined_column must not invent a migration gap.
+    IF to_regclass('public.project_deliverables') IS NULL THEN
+      RAISE EXCEPTION 'relation "public.project_deliverables" does not exist' USING ERRCODE = '42P01';
+    END IF;
+    SELECT NOT coalesce(bool_or(a.attname = 'assignee_user_id'), false),
+           NOT coalesce(bool_or(a.attname = 'budget_amount'), false),
+           NOT coalesce(bool_or(a.attname = 'percent_complete'), false)
+      INTO assignee_pending, budget_amount_pending, percent_complete_pending
+      FROM pg_catalog.pg_attribute a
+      WHERE a.attrelid = to_regclass('public.project_deliverables')
+        AND a.attnum > 0 AND NOT a.attisdropped;
+    budget_pending := budget_amount_pending OR percent_complete_pending;
+
+    -- Preserve each readable optional field. Fixed projections avoid widening
+    -- confidential fields; the only query parameter is the bound project id.
+    projection := 'd.id, d.title, d.summary, d.owner_label, d.due_date, d.status, d.created_at';
+    IF NOT budget_amount_pending THEN
+      projection := projection || ', d.budget_amount';
+    END IF;
+    IF NOT percent_complete_pending THEN
+      projection := projection || ', d.percent_complete';
+    END IF;
+    IF NOT assignee_pending THEN
+      projection := projection || ', d.assignee_user_id';
+    END IF;
+    EXECUTE 'SELECT coalesce(jsonb_agg(to_jsonb(r) - ''updated_at'' ORDER BY r.updated_at DESC, r.id), ''[]''::jsonb)
+      FROM (SELECT ' || projection || ', d.updated_at FROM public.project_deliverables d WHERE d.project_id = $1) r'
+      INTO rows USING p_project_id;
     result := result || jsonb_build_object('deliverables', jsonb_build_object('complete', true, 'data', rows, 'error', NULL));
   EXCEPTION WHEN OTHERS THEN
     result := result || jsonb_build_object('deliverables', jsonb_build_object('complete', false, 'data', NULL,

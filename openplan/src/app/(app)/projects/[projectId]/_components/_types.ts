@@ -377,6 +377,9 @@ export type DeliverableRow = {
   due_date: string | null;
   status: string;
   created_at: string;
+  /** Read values remain independent of financial calculation availability. */
+  budget_amount?: number | string | null;
+  percent_complete?: number | string | null;
 };
 
 export type RiskRow = {

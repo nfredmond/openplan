@@ -2264,18 +2264,37 @@ describe("ProjectDetailPage", () => {
       expect(screen.getByText(/permission denied for table projects/i)).toBeInTheDocument();
     });
 
-    it("withholds delivery pace when the direct-spend source cannot be read", async () => {
+    it.each([
+      { label: "read failure", answer: { data: null, error: { message: "spend read failed" } } },
+      { label: "invalid required amount", answer: { data: [{ id: "s", deliverable_id: "d1", entry_date: "2026-10-16",
+        amount: null, description: "Invalid source amount", vendor_label: null, created_at: "2026-10-16" }], error: null } },
+    ])("withholds delivery pace when the direct-spend source cannot be read ($label)", async ({ answer }) => {
       deliverablesLimitMock.mockResolvedValue({ data: [{
         id: "d1", title: "Budgeted deliverable", summary: null, owner_label: null, due_date: null,
         status: "in_progress", created_at: "2026-10-16", budget_amount: 1000, percent_complete: 0,
         assignee_user_id: null,
       }], error: null });
-      spendEntriesLimitMock.mockResolvedValue({ data: null, error: { message: "spend read failed" } });
+      spendEntriesLimitMock.mockResolvedValue(answer);
       await renderPage("delivery");
       const board = document.getElementById("project-deliverables") as HTMLElement;
       expect(within(board).getByText("Budgeted deliverable")).toBeInTheDocument();
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1000);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(0);
       expect(within(board).queryByText("On pace")).not.toBeInTheDocument();
       expect(within(board).queryByText(/Spending below recorded progress/)).not.toBeInTheDocument();
+    });
+
+    it("retains nonzero budget and progress prefills when other financial sources are readable", async () => {
+      deliverablesLimitMock.mockResolvedValue({ data: [{
+        id: "d1", title: "Readable values", summary: null, owner_label: null, due_date: null,
+        status: "in_progress", created_at: "2026-10-16", budget_amount: "1250.25", percent_complete: "12.50",
+        assignee_user_id: null,
+      }], error: null });
+      await renderPage("delivery");
+      const board = document.getElementById("project-deliverables") as HTMLElement;
+      expect(within(board).getByLabelText("Budget (not to exceed)")).toHaveValue(1250.25);
+      expect(within(board).getByLabelText("Percent complete")).toHaveValue(12.5);
+      expect(within(board).getByText("Spending below recorded progress")).toBeInTheDocument();
     });
 
     it("discloses nothing about the budget when all four reads answer", async () => {

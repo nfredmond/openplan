@@ -40,7 +40,7 @@ export type ProjectSpendEntryRow = {
   id: string;
   deliverable_id: string | null;
   entry_date: string | null;
-  amount: number | string | null;
+  amount: number | string;
   description: string;
   vendor_label: string | null;
   created_at: string;
@@ -106,21 +106,32 @@ export type ProjectBudgetReadFailure = {
   message: string;
 };
 
-const amount = z.union([z.number().finite().nonnegative(), z.string().regex(/^\d+(?:\.\d+)?$/), z.null()]);
+/** Admit the source NUMERIC(14,2) domain, not arbitrary parseFloat input.
+ * This per-row boundary does not prove aggregate cent precision in budget.ts.
+ */
+function supportedAmount(value: number | string): boolean {
+  if (typeof value === "string" && !/^\d{1,12}(?:\.\d{1,2})?$/.test(value)) return false;
+  const numeric = Number(value);
+  return Number.isFinite(numeric) && numeric >= 0 && numeric <= 999999999999.99 &&
+    Number(numeric.toFixed(2)) === numeric;
+}
+const requiredAmount = z.union([z.number(), z.string()]).refine(supportedAmount);
+const optionalBudgetAmount = requiredAmount.nullable();
+const optionalProgress = requiredAmount.refine((value) => Number(value) <= 100).nullable();
 const deliverable = z.object({
   id: z.string().min(1), title: z.string(), summary: z.string().nullable(),
   owner_label: z.string().nullable(), due_date: z.string().nullable(), status: z.string(),
-  created_at: z.string(), budget_amount: amount.optional(), percent_complete: amount.optional(),
+  created_at: z.string(), budget_amount: optionalBudgetAmount.optional(), percent_complete: optionalProgress.optional(),
   assignee_user_id: z.string().nullable().optional(),
 });
 const spend = z.object({
   id: z.string().min(1), deliverable_id: z.string().nullable(), entry_date: z.string().nullable(),
-  amount, description: z.string(), vendor_label: z.string().nullable(), created_at: z.string(),
+  amount: requiredAmount, description: z.string(), vendor_label: z.string().nullable(), created_at: z.string(),
 });
 const invoice = z.object({
   id: z.string().min(1), status: z.enum(["sent", "paid"]),
   client_invoice_line_items: z.array(z.object({
-    id: z.string().min(1), deliverable_id: z.string().nullable(), amount,
+    id: z.string().min(1), deliverable_id: z.string().nullable(), amount: requiredAmount,
   })),
 });
 const sourceError = z.object({ message: z.string(), code: z.string().optional() });
@@ -134,8 +145,11 @@ const snapshotEnvelope = z.object({
   version: z.literal(1), project_id: z.string(),
   deliverableAssigneeColumnPending: z.boolean(), deliverableBudgetColumnsPending: z.boolean(),
   deliverables: lane(z.array(deliverable)),
-  statedBudget: lane(z.object({ budget_amount: amount })),
-  spendEntries: lane(z.array(spend)), clientInvoices: lane(z.array(invoice)),
+  statedBudget: lane(z.object({ budget_amount: optionalBudgetAmount })),
+  spendEntries: lane(z.array(spend)).catch({ complete: false, data: null,
+    error: { message: "Complete budget snapshot direct-spend source is invalid." } }),
+  clientInvoices: lane(z.array(invoice)).catch({ complete: false, data: null,
+    error: { message: "Complete budget snapshot client-invoice source is invalid." } }),
 });
 
 /** Repeated primary keys indicate a broken snapshot, not costs to silently deduplicate. */
@@ -145,8 +159,22 @@ function requireUniqueIds(rows: { id: string }[]) {
   }
 }
 
+/** Recognize only this public RPC, never a missing dependency inside it.
+ * Unqualified/unsupported messages remain unreadable, with the original text.
+ */
+function missingSnapshotRpc(error: { code?: string; message?: string }): boolean {
+  const name = '(?:public|"public")\\.(?:project_budget_inputs_v1|"project_budget_inputs_v1")';
+  const message = error.message?.trim() ?? "";
+  if (error.code === "42883") {
+    return new RegExp(`^function ${name}\\((?:uuid|p_project_id => uuid)\\) does not exist$`).test(message);
+  }
+  return error.code === "PGRST202" && new RegExp(
+    `^Could not find the function ${name}(?:\\(p_project_id\\)| with parameter p_project_id)? in the schema cache$`
+  ).test(message);
+}
+
 function unavailableInputs(error: { message?: string; code?: string }): ProjectBudgetInputs {
-  const pending = error.code === "PGRST202" || error.code === "42883" || looksLikePendingSchema(error.message);
+  const pending = missingSnapshotRpc(error);
   return {
     deliverables: [], statedBudgetAmount: null, spendEntries: [], billedLines: [],
     pending: {
@@ -188,7 +216,11 @@ export async function loadProjectBudgetInputs(
       return unavailableInputs({ message: "Complete budget snapshot omitted required deliverable columns." });
     }
 
-    const pending = (source: { error: { message?: string } | null }) => looksLikePendingSchema(source.error?.message);
+    const pending = (source: { error: { message?: string; code?: string } | null }) => source === snapshot.deliverables
+      // Catalog-selected optional columns cannot explain a query's undefined
+      // column. A policy/helper failure is unreadable, not an optional gap.
+      ? source.error?.code === "42P01" && /^relation "(?:public\.)?project_deliverables" does not exist$/.test(source.error.message ?? "")
+      : looksLikePendingSchema(source.error?.message);
     const failed = (source: { error: { message?: string } | null }) => Boolean(source.error) && !pending(source);
     return {
       deliverables,

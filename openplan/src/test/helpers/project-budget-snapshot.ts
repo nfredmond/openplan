@@ -14,7 +14,7 @@ export function projectBudgetSnapshotFixture(
   };
   return {
     version: 1, project_id: projectId,
-    deliverableAssigneeColumnPending: pending.assignee || pending.budget,
+    deliverableAssigneeColumnPending: pending.assignee,
     deliverableBudgetColumnsPending: pending.budget,
     deliverables: source("project_deliverables", []),
     statedBudget: source("projects", { budget_amount: null }),
