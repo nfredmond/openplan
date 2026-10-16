@@ -1,0 +1,92 @@
+{
+  "independentSourceReview": "c9ed9aee7e8006b5d096efe139d0392d0d80b87e",
+  "privateProof": "/home/nathaniel/.local/state/openplan/engagement-summary-root-full-types-20261016",
+  "proofFiles": {
+    "before.json": {
+      "bytes": 674,
+      "mode": 384,
+      "sha256": "226b218481a10c4dee7d9968d9bc0cb4441b8e001717e823638b9ad4c97bc3af"
+    },
+    "binding.json": {
+      "bytes": 6602,
+      "mode": 384,
+      "sha256": "da31ebb010e2f4790ea5978e3dc4b7d206bed6b6a594891bcb408207a98393f1"
+    },
+    "check.py": {
+      "bytes": 3652,
+      "mode": 384,
+      "sha256": "d57caf93cf152f9b77695912d3c138af0cf5d3b560b77060409d3e8e553b9abf"
+    },
+    "compiler-intent.json": {
+      "bytes": 789,
+      "mode": 384,
+      "sha256": "96cc738ca6af636374f131f6ffc5cf82e7c86a8c813e7171c5b1071c051e1ea4"
+    },
+    "compiler.stderr": {
+      "bytes": 0,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "compiler.stdout": {
+      "bytes": 0,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "dispatch-intent.json": {
+      "bytes": 814,
+      "mode": 384,
+      "sha256": "ddd561cb86d4d33e60855edbd141daab846b35677c2b3f40fcd4268c7355a0c3"
+    },
+    "host-network.txt": {
+      "bytes": 17,
+      "mode": 384,
+      "sha256": "fe50dd5e5a7f72627cc0c52a6cb6ca6c043032fd15edfa678477400ba07a9e86"
+    },
+    "parent-terminal.json": {
+      "bytes": 921,
+      "mode": 384,
+      "sha256": "764c98edf3b430892c49a796d76bc8a45adcb980fff15ccc61444cad6bb2e167"
+    },
+    "resource-controls.json": {
+      "bytes": 479,
+      "mode": 384,
+      "sha256": "2e0148814436000f615f1715d94b2e1c7e554ce026d74964a7b152bfa1da89a6"
+    },
+    "result.json": {
+      "bytes": 578,
+      "mode": 384,
+      "sha256": "eca59a7758d838cf55ac5465265a0ab16533df49ea4945b7592fa7f547d89ad4"
+    },
+    "run.sh": {
+      "bytes": 966,
+      "mode": 384,
+      "sha256": "a0829f0841906eb85abae80dee7ab7161ec38979d2041f58e61da5353acc2fdf"
+    }
+  },
+  "retainedAdmissionFloorBytes": 9663676416,
+  "sourceCandidate": "6ca955851ba53437c68a171d523c2539184971e4",
+  "sourcePinCount": 50,
+  "terminal": {
+    "actualKernelResources": {
+      "cpu.max": "50000 100000",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.max": "7516192768",
+      "memory.peak": "5804785664",
+      "memory.swap.max": "0",
+      "pids.events": "max 0",
+      "pids.max": "64",
+      "pids.peak": "23"
+    },
+    "actualUnit": "openplan-engagement-summary-full-types-20261016-01",
+    "appTree": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+    "compilerExitCode": 0,
+    "invocation": "23725090a68646dcb1dda3441be6a5c3",
+    "managerMainExitCode": 0,
+    "managerResult": "success",
+    "managerRuntimeSeconds": 202.074,
+    "parentExitCode": 0,
+    "scope": "Full actual configured TypeScript source project; no generated Next route types/build/browser/native/CI acceptance. Reused already-passing lint and145 tests, not repeated.",
+    "sessionId": 1095,
+    "sourceHead": "fc79c45a2e96d35a2310877460bd9d72dc995bcf"
+  }
+}
