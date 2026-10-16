@@ -1,0 +1,133 @@
+{
+  "candidate": "e41f3cb75ae61feabf8ce89b5bc8ed8fcdec600c",
+  "soleParent": "bbbcfcc56e293cbf5fad105d0bfaf3ce94da1ffc",
+  "baselineAndRestored": {
+    "namedTests": 8,
+    "pass": 8,
+    "fail": 0,
+    "skipped": 0
+  },
+  "harmlessSurvivors": 2,
+  "intendedFaults": [
+    {
+      "label": "pin-version",
+      "test": "npm entry guidance pins all providers without executing or changing files",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly deep-equal:\n    + actual - expected\n    \n      {\n        args: [\n          'install',\n          '--global',\n          '--prefix',\n          '/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/tmp/openplan-installer-guidance-5lLQS1',\n    +     '@openai/codex@latest'\n    -     '@openai/codex@0.154.0'\n        ],\n        executable: 'npm'\n      }",
+      "logSHA256": "2f76f024e8b3a5d8cadf87c3a48ebc7c9ec901f580f86046a34f388de0b4e2b0"
+    },
+    {
+      "label": "owning-prefix",
+      "test": "npm command stays in the inspected global prefix",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly deep-equal:\n    + actual - expected\n    \n      [\n        'install',\n        '--global',\n    +   '@openai/codex@0.154.0'\n    -   '--prefix',\n    -   '/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/tmp/openplan-installer-guidance-iv5gFL'\n      ]",
+      "logSHA256": "4c0fade0a38eae7f9b1c711a0998874e175aeae3fd7ec424088526e97e4f4f95"
+    },
+    {
+      "label": "npm-layout",
+      "test": "npm command stays in the inspected global prefix",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "3274e69ab6acd0c6bc2cad71aeb77dd390f9b1566401f87e429cdae1705e8620"
+    },
+    {
+      "label": "installer-declaration",
+      "test": "installer and platform need explicit supported declarations",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "d804a16b99e5bdda95b45cfa93e1ed95aad0c92a6306fa2236f4859b0b6120ef"
+    },
+    {
+      "label": "platform",
+      "test": "installer and platform need explicit supported declarations",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "993832c6ae409fbd926318890e634e12cdeb7693f2c4ac151347d40e3c5cffcb"
+    },
+    {
+      "label": "binary-entry",
+      "test": "a declared global root must own the exact selected binary",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "b49aefb928a78795b384a61130581f440db55e74bbab2758f9445acefc894585"
+    },
+    {
+      "label": "entry-boundary",
+      "test": "package entries cannot escape their declared package",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "37a1da782cdf23c30bbe11cf14f953fac25222ba97ddab38d3dda771cdec9e5e"
+    },
+    {
+      "label": "metadata-size",
+      "test": "metadata must be bounded regular provider metadata",
+      "scope": "diagnostic; secondary read-size guard still refuses",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    + actual - expected\n    \n    + 'package_metadata_changed'\n    - 'package_metadata_invalid'\n                        ^",
+      "logSHA256": "545e7cd17cf443b967e1ebf3419b18a593e67266b4b1e25b65943202844c4378"
+    },
+    {
+      "label": "metadata-provider",
+      "test": "metadata must be bounded regular provider metadata",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "0b454e0f15a225324eb4bcd00162e174a7c325d0ef5cb550fd9a61ecae85c2c7"
+    },
+    {
+      "label": "metadata-symlink",
+      "test": "linked package metadata does not produce an update command",
+      "scope": "behavior",
+      "assertion": "|-\n    Expected values to be strictly equal:\n    \n    'npm' !== 'unknown'",
+      "logSHA256": "a80d20decbc23c47fd777385329758c60aa711ee2ad5966441d50d29c1d9b824"
+    },
+    {
+      "label": "duplicate-flags",
+      "test": "CLI enforces complete unique flags and emits safe metadata only",
+      "scope": "behavior",
+      "assertion": "'Missing expected rejection.'",
+      "logSHA256": "a8dab66bd5d1872ead7d9e26d4a50f48abc8c73bb5b75dfe004b4fb4cd76fb4e"
+    },
+    {
+      "label": "unknown-flags",
+      "test": "CLI enforces complete unique flags and emits safe metadata only",
+      "scope": "behavior",
+      "assertion": "'Missing expected rejection.'",
+      "logSHA256": "57dade4101164cd40aabbbddb55899d2a8ea864fda32e6d58717674235370672"
+    },
+    {
+      "label": "execute-binary",
+      "test": "npm entry guidance pins all providers without executing or changing files",
+      "scope": "behavior; only synthetic fixture shell binary executes",
+      "assertion": "|-\n    Expected values to be strictly deep-equal:\n    + actual - expected\n    \n      {\n    +   '/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/tmp/openplan-installer-guidance-CmBTTW/UNEXPECTED-EXECUTION': 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',\n        '/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/tmp/openplan-installer-guidance-CmBTTW/lib/node_modules/@openai/codex/bin/codex': 'b0754f8fade4689fdeb11495fe7cd2d8176198441a0bd415698678e0d404eff2',\n        '/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/tmp/openplan-installer-guidance-CmBTTW/lib/node_modules/@openai/codex/package.json': 'd7b47fceeabe5f8d38a18c520613793ded0eb1b01aff64e7f197c02be0e9ea8c'\n      }",
+      "logSHA256": "522ccd96404441a4c6127a4c755cf97be51add59062cb54720973489432d1a0f"
+    }
+  ],
+  "behaviorFaultCount": 12,
+  "diagnosticFaultCount": 1,
+  "sourceAndPrivateCopyRestored": true,
+  "campaignLogSHA256": "222513ec781eee3f3b3f996f3a3bb1275110144da418f063fba83a344cadbd91",
+  "driverAdaptation": {
+    "originalSHA256": "26477776394737be6d8857a73a1fc685ee342ba8f207d14037b11c9093d9bbf9",
+    "adaptedSHA256": "719f1d7aa0d8bc67351f4bbb4cf4b632a3c3aefd1ea6336d6733b83d3025c468",
+    "onlyChange": {
+      "before": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-installer-guidance-20261016/controls-02')",
+      "after": "PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-installer-guidance-independent-20261016/controls')"
+    }
+  },
+  "bounds": {
+    "memoryMaxBytes": 1073741824,
+    "memorySwapMaxBytes": 0,
+    "nodeHeapMiB": 256,
+    "cpuQuota": "50%",
+    "sharedLock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "reportedPeak": "42.8M",
+    "runtimeSeconds": 4.237
+  },
+  "limitations": [
+    "Operator declaration does not authenticate installer ownership.",
+    "Metadata version is not native compatibility.",
+    "Inventory detects fixture regular-file content and added marker files, not all filesystem mutations.",
+    "Named mutation failures cover selected faults, not every guard independently.",
+    "No installed provider, npm, update, model, account, network, database, browser, full suite or build ran.",
+    "Hostile filesystem races and forced-termination restoration remain unproved."
+  ]
+}

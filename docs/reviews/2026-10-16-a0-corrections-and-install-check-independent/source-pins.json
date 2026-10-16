@@ -1,0 +1,78 @@
+{
+  "algorithm": "SHA256",
+  "A": {
+    "docs/reviews/2026-10-16-a0-usage-limit-corrections/NATIVE_CONFIGURATION_PROBE.sql": "6186eca531ec205a24f27518bd6cdeb72d0eea0a9f8ea020db43397d6d70faa3",
+    "docs/reviews/2026-10-16-a0-usage-limit-corrections/NATIVE_RUNTIME_BOUNDARY.md": "4e01e165a0ecb10c5634c504aa9457e73ca8bc9cf4085f09e9764f9e0b8af139",
+    "docs/reviews/2026-10-16-a0-usage-limit-receipt/NATIVE_PROBE.sql": "84998baf7a50735924d3352d68479809c7102df0bb0a76dcbd55d4ce0492c32b",
+    "openplan/src/app/api/assistant/providers/native/route.ts": "4a1d9930b8dad2e323177b149115ac7fef8015aed036b12437d9cb73ee5975b5",
+    "openplan/src/components/assistant/project-provider-panel.tsx": "6084457baeac20756ee076d8d5faffdb2568aad6b83af11eb7fa1245b58512c5",
+    "openplan/src/lib/assistant/provider-server.ts": "e2d4fc56add4837ccc3fcb294582f37f6b0a591d34f8f6eda1259b0c12f67bd7",
+    "openplan/src/lib/assistant/provider-usage-limit.ts": "c1d88308dbfeaf216c396e5529e1a99740884739114d746a37f04564695dda14",
+    "openplan/src/test/provider-usage-limit-adapter.test.ts": "1c086316352562d21e2c14a3be25d92419ddb8c50db02d60761cb5c28c2d820b",
+    "openplan/src/test/provider-usage-limit.test.tsx": "6a9e499ee671592087ac29bce26481cf1ab13ca4ad33ee978f283987e867acda",
+    "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+    "workers/planner_agent_connector/codex-provider.mjs": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140",
+    "workers/planner_agent_connector/codex-session.mjs": "07d6a9fc0aa86f5dee531aa3857e33a9039588c6fae8827808dbab53c7ececf8",
+    "workers/planner_agent_connector/codex-usage-limit.mjs": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f",
+    "workers/planner_agent_connector/connector-worker.mjs": "38f5a3d6d3f72d693ead71a5e34d49831423cc8fe3a215d2981b19f4d5fd4ed9",
+    "workers/planner_agent_connector/test/usage-limit-frames.mjs": "00846aab076ea086babe2c8f12f03efdbd2cf04a2bf4d580cde0b6d2d47f4840",
+    "workers/planner_agent_connector/test/usage-limit-source.test.mjs": "cd4db86c61fbfa67a7e4d2de6273caf107f0036c8dd092aad3da5b1cfed15f99",
+    "workers/planner_agent_connector/test/usage-limit.test.mjs": "5d854eda799fdf5ce236afaa5b6ae679cd4ac376bed6f147dd68642b9142531c",
+    "workers/planner_agent_connector/usage-limit-receipt.mjs": "fa00af4974749e77610937be433e94c0c59b945b5694dacc82b4554f86eafb42"
+  },
+  "B": {
+    "workers/planner_agent_connector/connector.mjs": "12917da60441f0a8fe25c613e6da536cb9f78acc93cc156b750451d339f4e8c9",
+    "workers/planner_agent_connector/README.md": "dca6ea8a5302277cec3fdf8b70578258df78a0e00dea37f5f1297386d0410256",
+    "workers/planner_agent_connector/test/connector-installer-guidance.test.mjs": "a2847e2753c7369c471aa01726b626669618eafd38fa8ea7e61c24dea6399bbd",
+    "docs/reviews/2026-10-16-a0-installer-cli-integration/verify-controls.py": "b9d64c322c9a6dc1ca1e743699cd51c89715725bdc46eb467ff11f4c4af2125e",
+    "docs/reviews/2026-10-16-a0-installer-cli-integration/controls.json": "e4693f45226522f230a6d9eeac6438821cdd96d16503de1b7d0669081477e868"
+  },
+  "BInherited": [
+    {
+      "path": "docs/reviews/2026-10-16-a0-installer-guidance/STATUS.md",
+      "sha256": "015a7f04d28f3db86338ab5306070ce05822d8fc9ca043d45edf4a53e8c7ebe3",
+      "matchesInherited": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-a0-installer-guidance/controls.json",
+      "sha256": "3ba8c4a8cf9dab686e39193b80088f8dc3a9ec2d1cf6d5dfa3c478ad44009900",
+      "matchesInherited": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-a0-installer-guidance/verify-controls.py",
+      "sha256": "26477776394737be6d8857a73a1fc685ee342ba8f207d14037b11c9093d9bbf9",
+      "matchesInherited": true
+    },
+    {
+      "path": "workers/planner_agent_connector/installer-guidance.mjs",
+      "sha256": "737cd7d0ed6ffe2a093b14b59f8fa479f4d6402da2b519ab6b1ec4f765d2e688",
+      "matchesInherited": true
+    },
+    {
+      "path": "workers/planner_agent_connector/installer-guidance-cli.mjs",
+      "sha256": "8aea6c6242132643097f4cbf4279c72f6ca2deb1df509b89cfb63a8836e5a0ef",
+      "matchesInherited": true
+    },
+    {
+      "path": "workers/planner_agent_connector/test/installer-guidance.test.mjs",
+      "sha256": "1512b34781a4640371d82ea131410522aaeda9ffc41813381822db46a35e0284",
+      "matchesInherited": true
+    },
+    {
+      "path": "workers/planner_agent_connector/tested-cli-versions.mjs",
+      "sha256": "4110f452a7b6eb08232bd5dc84fb367c041251c69d9d39137bb1c74b508abc71",
+      "matchesInherited": true
+    },
+    {
+      "path": "workers/planner_agent_connector/tested-cli-versions.json",
+      "sha256": "0a32b6136c2bdef170223f43e6806aa2bc002a6d33b641cf37612ddee2931d3b",
+      "matchesInherited": true
+    }
+  ],
+  "AActualPriorMigrationInventory": {
+    "count": 420,
+    "literalFinishMentionFiles": 3,
+    "privateInventorySHA256": "b8e3dffcea23b92ba990eac9b1caee5d9e89301cc450d92fb1da96d3f4e7a21b",
+    "finishDefinitionComparisonSHA256": "70520c2b71ecd7dcd25e52627e334e568fcd273df25ae36d119aa62f9fd7d8cd"
+  }
+}

@@ -1,0 +1,794 @@
+{
+  "reviewDate": "2026-10-16",
+  "reviewer": {
+    "model": "gpt-6.1-sol",
+    "reasoning": "high"
+  },
+  "verdict": "approve bounded offline metadata evidence; no P1 or P2 finding in scope",
+  "subjectCommit": "8c6a9e988be4ec135638448740402986aa929a9c",
+  "sourceBase": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "initialReviewCommit": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "ancestry": "clean review checkout, verified ancestor, local fast-forward only",
+  "authorCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-e04f0f77",
+  "reviewCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-2958ae57",
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-codex154-schema-independent-20261016",
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+  "subjectPublicPins": [
+    {
+      "path": "EXPERIMENTAL.md",
+      "expected": "a23426a87a7e4da55eceb3accc233a5d453205756a179ca8513e3d7a5f23cde0",
+      "actual": "a23426a87a7e4da55eceb3accc233a5d453205756a179ca8513e3d7a5f23cde0"
+    },
+    {
+      "path": "STATUS.md",
+      "expected": "8010b4ad52c1d61f3c56605f2cade13bce275f51ceea8fc26165673832ec2170",
+      "actual": "8010b4ad52c1d61f3c56605f2cade13bce275f51ceea8fc26165673832ec2170"
+    },
+    {
+      "path": "capture.py",
+      "expected": "0a61b8443ce68ada44f4f840fd5121da33cd7b48a47f0ffdaa90176cc2f39c74",
+      "actual": "0a61b8443ce68ada44f4f840fd5121da33cd7b48a47f0ffdaa90176cc2f39c74"
+    },
+    {
+      "path": "check_capture.py",
+      "expected": "c41f759222d4463d81014b3c97496e84361010599887948bda9e901c65eee385",
+      "actual": "c41f759222d4463d81014b3c97496e84361010599887948bda9e901c65eee385"
+    },
+    {
+      "path": "check_isolation.py",
+      "expected": "a0dc7f17abdb05a5bb64c0e4bd87e2cf51a63a9c8ee3c8712687061efd0122f1",
+      "actual": "a0dc7f17abdb05a5bb64c0e4bd87e2cf51a63a9c8ee3c8712687061efd0122f1"
+    },
+    {
+      "path": "check_primitives.py",
+      "expected": "a8c95529aa7963119dba388356148eed0ec620efc7aa6a0d9181a445e0abd11c",
+      "actual": "a8c95529aa7963119dba388356148eed0ec620efc7aa6a0d9181a445e0abd11c"
+    },
+    {
+      "path": "evidence.json",
+      "expected": "52287067dfaae45de81bbd8947b0b53d64d8bd0da01c5126fcb9a022c61ebc47",
+      "actual": "52287067dfaae45de81bbd8947b0b53d64d8bd0da01c5126fcb9a022c61ebc47"
+    },
+    {
+      "path": "experimental-evidence.json",
+      "expected": "2989dcf87f4a4e654394530f76873278b455eb226753c779a0a0ae35ee8e69b1",
+      "actual": "2989dcf87f4a4e654394530f76873278b455eb226753c779a0a0ae35ee8e69b1"
+    },
+    {
+      "path": "isolation.py",
+      "expected": "fc1236a1bad9dfb2d5583582a4d8fe1b0fad2330b2e2c0f829cf3debb86ab041",
+      "actual": "fc1236a1bad9dfb2d5583582a4d8fe1b0fad2330b2e2c0f829cf3debb86ab041"
+    },
+    {
+      "path": "selected-definitions.json",
+      "expected": "8d728d0ac1b8aeffeab2a6744862804536aaaa0b14c6bccade20b5188f8b6e77",
+      "actual": "8d728d0ac1b8aeffeab2a6744862804536aaaa0b14c6bccade20b5188f8b6e77"
+    }
+  ],
+  "subjectPrivatePinChecks": {
+    "evidence.json": {
+      "count": 343,
+      "mismatches": []
+    },
+    "experimental-evidence.json": {
+      "count": 442,
+      "mismatches": []
+    }
+  },
+  "inventories": {
+    "a0-codex154-schema-20261016": {
+      "files": 305,
+      "bytes": 3492670
+    },
+    "a0-codex154-experimental-schema-20261016": {
+      "files": 426,
+      "bytes": 4210655
+    }
+  },
+  "schemaComparison": {
+    "previousPacketSHA256": "3c0aa46b13e1984e57d85769640e64460ccb797762f33e3c88378c62a08ab29e",
+    "defaultSHA256": "f3487938786b729cb6773dbc9e83a7efab9c78c845db7094e8f539f373cbacc9",
+    "experimentalSHA256": "7b9e7d385fffef8d428cc5490b56ce9c393bd3ed7bc7ccd730956387e723ec05",
+    "historicalSHA256": "7b9e7d385fffef8d428cc5490b56ce9c393bd3ed7bc7ccd730956387e723ec05",
+    "experimentalHistoricalBytesEqual": true,
+    "selected": {
+      "RateLimitSnapshot": {
+        "allEqual": true,
+        "properties": [
+          "credits",
+          "individualLimit",
+          "limitId",
+          "limitName",
+          "normalModelSlug",
+          "planType",
+          "primary",
+          "rateLimitReachedType",
+          "secondary",
+          "spendControlReached"
+        ]
+      },
+      "RateLimitWindow": {
+        "allEqual": true,
+        "properties": [
+          "resetsAt",
+          "usedPercent",
+          "windowDurationMins"
+        ]
+      },
+      "RateLimitReachedType": {
+        "allEqual": true,
+        "properties": []
+      },
+      "GetAccountRateLimitsResponse": {
+        "allEqual": true,
+        "properties": [
+          "accountId",
+          "ordinaryUsageAllowed",
+          "rateLimitResetCredits",
+          "rateLimitUpsell",
+          "rateLimits",
+          "rateLimitsByLimitId"
+        ]
+      },
+      "AccountRateLimitsUpdatedNotification": {
+        "allEqual": true,
+        "properties": [
+          "rateLimits"
+        ]
+      },
+      "TurnError": {
+        "allEqual": true,
+        "properties": [
+          "additionalDetails",
+          "codexErrorInfo",
+          "message",
+          "misalignment"
+        ]
+      },
+      "CodexErrorInfo": {
+        "allEqual": true,
+        "properties": []
+      }
+    }
+  },
+  "schemaDifferenceCounts": {
+    "defaultHistoricalDifferencePaths": 191,
+    "experimentalHistoricalDifferencePaths": 0
+  },
+  "receiptAndHistoricalPermissionCorrelations": {
+    "scope": "Computed review data, not a runtime admission gate.",
+    "nativeReceiptCorrelations": [
+      {
+        "command": "version",
+        "exactOfflineArgvMatchesInspectedConstructorAndFixedTail": true,
+        "providerGeneration": false,
+        "pid": 2700728,
+        "returncode": 0,
+        "stdoutHashMatches": true,
+        "stderrHashMatches": true
+      },
+      {
+        "command": "schema-help",
+        "exactOfflineArgvMatchesInspectedConstructorAndFixedTail": true,
+        "providerGeneration": false,
+        "pid": 2700780,
+        "returncode": 0,
+        "stdoutHashMatches": true,
+        "stderrHashMatches": true
+      },
+      {
+        "command": "schema",
+        "exactOfflineArgvMatchesInspectedConstructorAndFixedTail": true,
+        "providerGeneration": false,
+        "pid": 2700811,
+        "returncode": 0,
+        "stdoutHashMatches": true,
+        "stderrHashMatches": true
+      },
+      {
+        "command": "schema-experimental",
+        "exactOfflineArgvMatchesInspectedConstructorAndFixedTail": true,
+        "providerGeneration": false,
+        "pid": 2856505,
+        "returncode": 0,
+        "stdoutHashMatches": true,
+        "stderrHashMatches": true
+      }
+    ],
+    "defaultInventoryMatchesCaptureResult": true,
+    "experimentalInventoryMatchesRecorded": true,
+    "defaultDifferencePathsMatchRecorded": true,
+    "historicalExperimentalPinCount": 441,
+    "historicalExperimentalBytesAllPreserved": true,
+    "historicalExperimentalModeChanges": 434,
+    "normalizationBeforeModesMatchHistoricalPins": true,
+    "normalizationNamedChangedFilesMatch": true,
+    "packageChecks": {
+      "evidence.json": {
+        "packageBeforeAfterEqualRecomputed": true,
+        "packageCurrentMatchesRecorded": true
+      },
+      "experimental-evidence.json": {
+        "packageBeforeAfterEqualRecomputed": true,
+        "packageCurrentMatchesRecorded": true
+      }
+    },
+    "copiedHelpersMatchReviewedSources": {
+      "check_primitives.py": true,
+      "check_isolation.py": true,
+      "check_capture.py": true,
+      "isolation.py": true,
+      "capture.py": true
+    }
+  },
+  "controlUnit": {
+    "unit": "openplan-a0-codex154-independent-controls-20261016-01",
+    "invocation": "d6d307441bac4f41b5da719c31a449e8",
+    "managerReturncode": 0,
+    "runtimeSeconds": 4.363,
+    "requestedRuntimeMaxSec": 120,
+    "sharedFlock": "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock",
+    "resources": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "memory.peak": "86642688",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "cpu.max": "50000 100000"
+    },
+    "campaigns": [
+      {
+        "script": "check_capture.py",
+        "returncode": 0,
+        "stdoutSHA256": "663f570b01d45cff41c8b6fa1864376a5536662434061a2a49df6c7d90946e92",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "controls": {
+          "rows": [
+            {
+              "case": "baseline",
+              "checks": 7
+            },
+            {
+              "case": "harmless",
+              "checks": 7
+            },
+            {
+              "case": "metadata",
+              "namedFailure": "missing-refusal:metadata"
+            },
+            {
+              "case": "version",
+              "namedFailure": "missing-refusal:version"
+            },
+            {
+              "case": "kind",
+              "namedFailure": "missing-refusal:kind"
+            },
+            {
+              "case": "bytes",
+              "namedFailure": "missing-refusal:bytes"
+            },
+            {
+              "case": "package",
+              "namedFailure": "missing-refusal:package"
+            },
+            {
+              "case": "empty",
+              "namedFailure": "missing-refusal:empty"
+            }
+          ],
+          "restored": true,
+          "nativeCommands": false
+        }
+      },
+      {
+        "script": "check_primitives.py",
+        "returncode": 0,
+        "stdoutSHA256": "646186033560c065041fdf1d7e4838ce4a2e32d93485434880894f588d564ba2",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "controls": {
+          "rows": [
+            {
+              "case": "baseline",
+              "refusals": 5
+            },
+            {
+              "case": "harmless",
+              "refusals": 5
+            },
+            {
+              "case": "relative",
+              "namedFailure": "missing-refusal:relative"
+            },
+            {
+              "case": "symlink",
+              "namedFailure": "missing-refusal:symlink"
+            },
+            {
+              "case": "missing",
+              "namedFailure": "missing-refusal:missing"
+            },
+            {
+              "case": "donor-checkout",
+              "namedFailure": "missing-refusal:donor-checkout"
+            },
+            {
+              "case": "donor-private",
+              "namedFailure": "missing-refusal:donor-private"
+            },
+            {
+              "case": "record-baseline",
+              "preserved": true
+            },
+            {
+              "case": "record-harmless",
+              "preserved": true
+            },
+            {
+              "case": "exclusive-record",
+              "namedFailure": "missing-refusal:exclusive-record"
+            }
+          ],
+          "restored": true,
+          "nativeCommands": false
+        }
+      },
+      {
+        "script": "check_isolation.py",
+        "returncode": 0,
+        "stdoutSHA256": "9e682538f449ace4033f219b8a7fabd9bb5e843d323e7dc5dd618059b9a89bc0",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "controls": {
+          "rows": [
+            {
+              "case": "donor-read-and-write-refusal",
+              "returncode": 0
+            },
+            {
+              "case": "harmless-comment",
+              "returncode": 0
+            },
+            {
+              "case": "writable-donor-override",
+              "namedFailure": "donor-write-reached"
+            },
+            {
+              "case": "restored-donor",
+              "sha256": "25718360e05d3c2d0963d1381e9dd4dae5fca789244ee4b9f861adcc0cc96218"
+            },
+            {
+              "case": "offline-network-and-profile-boundary",
+              "returncode": 0
+            },
+            {
+              "case": "omit-network-namespace",
+              "namedFailure": "host-network-visible"
+            },
+            {
+              "case": "expose-owned-profile-specimen",
+              "namedFailure": "host-profile-visible"
+            },
+            {
+              "case": "offline-harmless-and-restored",
+              "returncode": 0
+            }
+          ],
+          "sharedDonorTouched": false,
+          "blind": "Owned kernel specimens, not native provider or Vitest acceptance."
+        }
+      }
+    ],
+    "accountingCounterfactuals": [
+      {
+        "case": "pin-baseline",
+        "mismatches": 0
+      },
+      {
+        "case": "pin-harmless-unrelated",
+        "mismatches": 0
+      },
+      {
+        "case": "pin-broken-bytes",
+        "namedFailure": "sha256-mismatch"
+      },
+      {
+        "case": "pin-broken-mode",
+        "namedFailure": "mode-mismatch"
+      },
+      {
+        "case": "schema-harmless-json-copy",
+        "differences": 0
+      },
+      {
+        "case": "schema-broken-type",
+        "namedFailure": "/definitions/Owned/type"
+      },
+      {
+        "case": "pin-and-schema-restored",
+        "equal": true
+      }
+    ]
+  },
+  "preservation": {
+    "equal": true,
+    "roots": {
+      "/home/nathaniel/.local/state/openplan/a0-codex154-schema-20261016": 353,
+      "/home/nathaniel/.local/state/openplan/a0-codex154-experimental-schema-20261016": 448,
+      "/home/nathaniel/.local/state/openplan/t3-raster-diagnostic-20261016-01": 3
+    },
+    "packageCurrent": {
+      "bin/codex": {
+        "mode": "0o755",
+        "bytes": 262858016,
+        "kind": "file",
+        "sha256": "3188814c35471432d4123203e0eb38e5bddc60226e3d7ddf0e59e649ea140022"
+      },
+      "codex-package.json": {
+        "mode": "0o644",
+        "bytes": 205,
+        "kind": "file",
+        "sha256": "b039964d28d57b2a7e929ee9986303582501c7cc9787f6c018b6d3c7b35c87d7"
+      }
+    },
+    "packageMatchesBefore": true
+  },
+  "rasterPinMismatches": [],
+  "nativeSubjectExecutedByReviewer": false,
+  "scope": "Source, recorded metadata, computed artifact comparisons, inert predicates and owned-fixture kernel controls. No provider/account/model/auth/generation/reset-credit execution.",
+  "blindCategories": [
+    "No full-provider or account/model acceptance",
+    "No SQL/database/RLS or native wrapper admission",
+    "No browser/raster/mobile/application acceptance",
+    "No general security, hostile-owner, race or power-loss proof",
+    "Finite waits do not prove every process-lifetime case; output bound is post-generation",
+    "Experimental original cgroup settings/events not captured",
+    "Old two unit manager streams remain parent activity, not reconstructed here",
+    "Earlier donor-cache preceding bytes remain unknown; no blanket preservation",
+    "No human/scientific/installation/milestone or release acceptance"
+  ],
+  "report": {
+    "sha256": "e3291788678521739b652c21c0365c5a2df49851690bcaf3352588edb3db5c28",
+    "bytes": 12797,
+    "mode": "0o664"
+  },
+  "inputPins": {
+    "docs/reviews/2026-10-16-a0-codex154-schema/EXPERIMENTAL.md": {
+      "sha256": "a23426a87a7e4da55eceb3accc233a5d453205756a179ca8513e3d7a5f23cde0",
+      "bytes": 3748,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/SHA256SUMS": {
+      "sha256": "ff47273f4dfa30f5f3e97f29b46326b41716cadd83685484f5537097172bec12",
+      "bytes": 833,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/STATUS.md": {
+      "sha256": "8010b4ad52c1d61f3c56605f2cade13bce275f51ceea8fc26165673832ec2170",
+      "bytes": 7148,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/capture.py": {
+      "sha256": "0a61b8443ce68ada44f4f840fd5121da33cd7b48a47f0ffdaa90176cc2f39c74",
+      "bytes": 4012,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/check_capture.py": {
+      "sha256": "c41f759222d4463d81014b3c97496e84361010599887948bda9e901c65eee385",
+      "bytes": 3788,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/check_isolation.py": {
+      "sha256": "a0dc7f17abdb05a5bb64c0e4bd87e2cf51a63a9c8ee3c8712687061efd0122f1",
+      "bytes": 4160,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/check_primitives.py": {
+      "sha256": "a8c95529aa7963119dba388356148eed0ec620efc7aa6a0d9181a445e0abd11c",
+      "bytes": 4046,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/evidence.json": {
+      "sha256": "52287067dfaae45de81bbd8947b0b53d64d8bd0da01c5126fcb9a022c61ebc47",
+      "bytes": 79989,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/experimental-evidence.json": {
+      "sha256": "2989dcf87f4a4e654394530f76873278b455eb226753c779a0a0ae35ee8e69b1",
+      "bytes": 83245,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/isolation.py": {
+      "sha256": "fc1236a1bad9dfb2d5583582a4d8fe1b0fad2330b2e2c0f829cf3debb86ab041",
+      "bytes": 1864,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-a0-codex154-schema/selected-definitions.json": {
+      "sha256": "8d728d0ac1b8aeffeab2a6744862804536aaaa0b14c6bccade20b5188f8b6e77",
+      "bytes": 9857,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-t3-blank-capture/STATUS.md": {
+      "sha256": "b2ed6268ebfe0f61d0b40cbda53ccc89907bd836beddfa0946168cd6cc7e268e",
+      "bytes": 2421,
+      "mode": "0o664"
+    },
+    "docs/reviews/2026-10-16-t3-blank-capture/evidence.json": {
+      "sha256": "c0600667c3ca86eda4e9cba087260104023a2130e9fd040a508286f3e3c260d6",
+      "bytes": 560,
+      "mode": "0o664"
+    },
+    "AGENTS.md": {
+      "sha256": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+      "bytes": 15766,
+      "mode": "0o664"
+    },
+    "docs/product/V1_PRODUCT_CONTRACT.md": {
+      "sha256": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+      "bytes": 22959,
+      "mode": "0o664"
+    },
+    "docs/ROADMAP.md": {
+      "sha256": "fb84929939dc76376445bcbe68d7d2b06c6fe419e4e2b53004a262b707e6fa63",
+      "bytes": 17049,
+      "mode": "0o664"
+    },
+    "docs/product/MILESTONES.md": {
+      "sha256": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+      "bytes": 170271,
+      "mode": "0o664"
+    },
+    "docs/product/CORE_REQUIREMENTS_LEDGER.md": {
+      "sha256": "8126f9489cffd5798e67d7bd59f772f4ace5fc1cdc501f8fcce72bd66cd7e024",
+      "bytes": 99862,
+      "mode": "0o664"
+    },
+    "docs/product/US_PLANNING_CAPABILITY_MATRIX.md": {
+      "sha256": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+      "bytes": 41302,
+      "mode": "0o664"
+    },
+    "docs/reviews/product-direction/2026-10-06-integration-review.md": {
+      "sha256": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+      "bytes": 7260,
+      "mode": "0o664"
+    },
+    "docs/ops/KNOWN_ISSUES.md": {
+      "sha256": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+      "bytes": 120384,
+      "mode": "0o664"
+    },
+    "docs/ARCHITECTURE.md": {
+      "sha256": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+      "bytes": 31233,
+      "mode": "0o664"
+    },
+    "workers/planner_agent_connector/codex-provider.mjs": {
+      "sha256": "48d21d52a71400e15a7c9f494d45051817135840bbd1719b3b6d2616a1105140",
+      "bytes": 5417,
+      "mode": "0o664"
+    },
+    "workers/planner_agent_connector/codex-usage-limit.mjs": {
+      "sha256": "94e4336553940d2fc33778082d2bf6036b94c6acf5ecf155a1bd3769192ee57f",
+      "bytes": 1621,
+      "mode": "0o664"
+    }
+  },
+  "privatePins": {
+    "accounting-fixture/harmless.txt": {
+      "sha256": "a85ae823ba6bbcfe022ee1af70fcecc09ee0ea648725217b07517aec40e05e37",
+      "bytes": 21,
+      "mode": "0o600"
+    },
+    "accounting-fixture/owned.json": {
+      "sha256": "91b8053a278ac57125060ba99bbdd3de4c7c2f8b6968bf59aeb9cebf1c249295",
+      "bytes": 15,
+      "mode": "0o600"
+    },
+    "analysis-manager-stream.log": {
+      "sha256": "4250cc74ea7b26e383f998446bdafe46a8ca2450f5f8410610af00751e29499c",
+      "bytes": 2744,
+      "mode": "0o600"
+    },
+    "audit.json": {
+      "sha256": "03c775583bc6070bb9c93f77cf73668a8b2f10ffeec52b0716d4c068943a523b",
+      "bytes": 429605,
+      "mode": "0o600"
+    },
+    "audit.py": {
+      "sha256": "ba65811c00e4fddf091aec57d0c26c74558dd885fbf3c7210fb0b1e3b4d37c39",
+      "bytes": 6674,
+      "mode": "0o600"
+    },
+    "check_capture/capture-controls.json": {
+      "sha256": "7f696b7e8dbf0eaf7b0baf8e9f183d6009e34c5d426d64b3732da7770e14f7ef",
+      "bytes": 683,
+      "mode": "0o600"
+    },
+    "check_capture/review-exit.json": {
+      "sha256": "3fe297aade5c89d7099ae9cad32d31c8ca1141d3535b9c9d81524d27c0049bcc",
+      "bytes": 226,
+      "mode": "0o600"
+    },
+    "check_capture/review-intent.json": {
+      "sha256": "52413e29546754ed3257143c2cd9b44fb980a8e6f35138f9d2e6de5eb9fdea3a",
+      "bytes": 298,
+      "mode": "0o600"
+    },
+    "check_capture/review-process.json": {
+      "sha256": "2bd34484be9d3f09cc6c3a6f5094f1469897039cab2d4a336901b287300d8d31",
+      "bytes": 21,
+      "mode": "0o600"
+    },
+    "check_capture/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "check_capture/stdout.log": {
+      "sha256": "663f570b01d45cff41c8b6fa1864376a5536662434061a2a49df6c7d90946e92",
+      "bytes": 89,
+      "mode": "0o600"
+    },
+    "check_isolation/isolation-controls.json": {
+      "sha256": "4c05130a2001a0a7562e967d0a6b30ef82473273fb3ee50c96507d721cf0e8bc",
+      "bytes": 880,
+      "mode": "0o600"
+    },
+    "check_isolation/review-exit.json": {
+      "sha256": "26f639b98d004a58595fc714a1523aa1a589f050248d823e56a1cb8649f9850b",
+      "bytes": 228,
+      "mode": "0o600"
+    },
+    "check_isolation/review-intent.json": {
+      "sha256": "59ab18f367289d7e0cff5a4c6f1347e84328a0654ae971af9d5a0f9442f40b12",
+      "bytes": 302,
+      "mode": "0o600"
+    },
+    "check_isolation/review-process.json": {
+      "sha256": "ffba6b59dd243b0dbfb6cc032f22158ab396d90dd1426faca5d4622a8bdeaa6b",
+      "bytes": 21,
+      "mode": "0o600"
+    },
+    "check_isolation/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "check_isolation/stdout.log": {
+      "sha256": "9e682538f449ace4033f219b8a7fabd9bb5e843d323e7dc5dd618059b9a89bc0",
+      "bytes": 76,
+      "mode": "0o600"
+    },
+    "check_primitives/primitive-controls.json": {
+      "sha256": "7c094d9a7a4f88b6d811201acb1603a3e2207f44be0e60cdd44efcd3d517085e",
+      "bytes": 885,
+      "mode": "0o600"
+    },
+    "check_primitives/review-exit.json": {
+      "sha256": "fa397676cd409861bff57623e1d28c67f468476ebf97cd87f9c7011604847a27",
+      "bytes": 229,
+      "mode": "0o600"
+    },
+    "check_primitives/review-intent.json": {
+      "sha256": "de3ac692027e540278e8ea3d2999183f840115c6caf4a8553e925b7f5f7b13c2",
+      "bytes": 304,
+      "mode": "0o600"
+    },
+    "check_primitives/review-process.json": {
+      "sha256": "6e81d28f50d287b0d319ada1c544e002cb00c214c1772ffbf4f062571800fa92",
+      "bytes": 21,
+      "mode": "0o600"
+    },
+    "check_primitives/stderr.log": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0o600"
+    },
+    "check_primitives/stdout.log": {
+      "sha256": "646186033560c065041fdf1d7e4838ce4a2e32d93485434880894f588d564ba2",
+      "bytes": 49,
+      "mode": "0o600"
+    },
+    "controls-manager-exit.json": {
+      "sha256": "d6b22a705027a9799738f0041a33a44909d18dca700d01c8d86efc41cfefbf95",
+      "bytes": 17,
+      "mode": "0o600"
+    },
+    "controls-manager-intent.txt": {
+      "sha256": "157bc348fee10e6f08d92d09aabc404457f919d694e2038bbe58adf8a89307a3",
+      "bytes": 380,
+      "mode": "0o600"
+    },
+    "controls-manager-stream.log": {
+      "sha256": "fdafe3a33d3ab9fc04dca86288a5e6db1b9050eeb8ca4d85ec7b9804c1649d5d",
+      "bytes": 1246,
+      "mode": "0o600"
+    },
+    "controls-result.json": {
+      "sha256": "a02b36596a384bc7b30937db1d662f2c33f8a3b665f4306c70dc8f0caf8e93e9",
+      "bytes": 5112,
+      "mode": "0o600"
+    },
+    "correlate.py": {
+      "sha256": "7871d2b28981ab80603e8cff0061bc4c5ef8f0e0fee80ad24dfa124d6366cfdc",
+      "bytes": 4546,
+      "mode": "0o600"
+    },
+    "correlations-manager-exit.json": {
+      "sha256": "d6b22a705027a9799738f0041a33a44909d18dca700d01c8d86efc41cfefbf95",
+      "bytes": 17,
+      "mode": "0o600"
+    },
+    "correlations-manager-stream.log": {
+      "sha256": "d5a44998a5577e8826b2d70556788325b21783baf0c95a34413556184ed64f07",
+      "bytes": 2313,
+      "mode": "0o600"
+    },
+    "correlations.json": {
+      "sha256": "255e0f2ac715b35e77e9fce04090e615fd06327e7a3ee91fb2541eb9826e9acd",
+      "bytes": 71653,
+      "mode": "0o600"
+    },
+    "experimental-pre-normalization-public.json": {
+      "sha256": "cc1bd327b1ec714c8dab7eb611f702b7801ea6b611d0acc4d8ece868b5fd3bce",
+      "bytes": 82887,
+      "mode": "0o600"
+    },
+    "preservation-after.json": {
+      "sha256": "b61b0ed60ebf19a3294b97e429b9f0ad6bd5c3b75ef59ae78a5b9ab50df688bd",
+      "bytes": 708,
+      "mode": "0o600"
+    },
+    "preservation-before.json": {
+      "sha256": "15ccc6a7f3268bf99328d5d9720026fe37fc5d9c26acbe6256d56e0f9649dc11",
+      "bytes": 163605,
+      "mode": "0o600"
+    },
+    "preservation-manager-exit.json": {
+      "sha256": "d6b22a705027a9799738f0041a33a44909d18dca700d01c8d86efc41cfefbf95",
+      "bytes": 17,
+      "mode": "0o600"
+    },
+    "preservation-manager-stream.log": {
+      "sha256": "6d6714f7e59906fe6a4bea63bc79196262fdcbbf6af37fc3fe1065fbfaf1a81a",
+      "bytes": 919,
+      "mode": "0o600"
+    },
+    "publish_evidence.py": {
+      "sha256": "5b58e21d625b971333c406f34da5f589618f640c80be7bc7feb32cc155da5c37",
+      "bytes": 4950,
+      "mode": "0o600"
+    },
+    "run_controls.py": {
+      "sha256": "6ff3b8ccf320877a8bd739cbcd4147285e2a6b74d11fc34634eb9b6e89e8e16a",
+      "bytes": 4617,
+      "mode": "0o600"
+    },
+    "subjects/capture.py": {
+      "sha256": "0a61b8443ce68ada44f4f840fd5121da33cd7b48a47f0ffdaa90176cc2f39c74",
+      "bytes": 4012,
+      "mode": "0o600"
+    },
+    "subjects/check_capture.py": {
+      "sha256": "c41f759222d4463d81014b3c97496e84361010599887948bda9e901c65eee385",
+      "bytes": 3788,
+      "mode": "0o600"
+    },
+    "subjects/check_isolation.py": {
+      "sha256": "a0dc7f17abdb05a5bb64c0e4bd87e2cf51a63a9c8ee3c8712687061efd0122f1",
+      "bytes": 4160,
+      "mode": "0o600"
+    },
+    "subjects/check_primitives.py": {
+      "sha256": "a8c95529aa7963119dba388356148eed0ec620efc7aa6a0d9181a445e0abd11c",
+      "bytes": 4046,
+      "mode": "0o600"
+    },
+    "subjects/isolation.py": {
+      "sha256": "fc1236a1bad9dfb2d5583582a4d8fe1b0fad2330b2e2c0f829cf3debb86ab041",
+      "bytes": 1864,
+      "mode": "0o600"
+    }
+  },
+  "pinScope": "Private publication unit stream/exit excluded because still being written during publication; no acceptance claim relies on them."
+}

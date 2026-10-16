@@ -1,0 +1,82 @@
+{
+  "verifiedLogs": [
+    {
+      "label": "controls-baseline",
+      "logSHA256": "740a24ea8300aa0b5088b75b38beb1f697ecfc2547bbbadc50b52c4b1e78073f"
+    },
+    {
+      "label": "harmless-installer-guidance",
+      "logSHA256": "8204af3250540e30e06eefd719cde8e06d05316a5cabe60188526f8128ec5f58"
+    },
+    {
+      "label": "harmless-installer-guidance-cli",
+      "logSHA256": "a9675df54787fe45c8a3a056a0f36472bf56c2e77fa786b655c3a25f33ba94d9"
+    },
+    {
+      "label": "pin-version",
+      "logSHA256": "92e3dc76d52262d64f31d36f7148fa20897a2b1a0bec7cff550831555bcf5572"
+    },
+    {
+      "label": "owning-prefix",
+      "logSHA256": "4b2cf46b935bd751122014230aa4eb58a08447ef7854e9ede9e784ce645738e0"
+    },
+    {
+      "label": "npm-layout",
+      "logSHA256": "d8dcaecdee08dd773957ea74ba6f22a49467faa0eeb91ec6b1b5f1b62fc8ed93"
+    },
+    {
+      "label": "installer-declaration",
+      "logSHA256": "efad376115a301ccb3583bd9d04c0a9687014c5b68e1fbce35293daec462b4d9"
+    },
+    {
+      "label": "platform",
+      "logSHA256": "7a8590e90e9d9014154268229622663f9d66305f2584606e83cd78f8d54e75aa"
+    },
+    {
+      "label": "binary-entry",
+      "logSHA256": "c3848397bb337f7f1266310c7acd6f838b12e2797f7f562f4160b2f105b4baa1"
+    },
+    {
+      "label": "entry-boundary",
+      "logSHA256": "f261efbc65b43efc8c70dd6e6446f67a821ce4c6832bdc9541093776cdd6b187"
+    },
+    {
+      "label": "metadata-size",
+      "logSHA256": "9c1a3cfe20c254c959ec71b2e425fc859a000c0ff22c8f356d13fcf2c7c854a7"
+    },
+    {
+      "label": "metadata-provider",
+      "logSHA256": "cbd0d764e0c34727a7ca8fa655d62361873d4ee3a895ce93ceb0c8187866223a"
+    },
+    {
+      "label": "metadata-symlink",
+      "logSHA256": "d09410e3e44b0828f79d4be93bbacfb4cde7b258d451e87e05d6b05f7bea1e81"
+    },
+    {
+      "label": "duplicate-flags",
+      "logSHA256": "c7e64c2eaa3c92680efbaa3b404e948f87573d1b606644c09b0c11dee625117b"
+    },
+    {
+      "label": "unknown-flags",
+      "logSHA256": "ebd357b0cdd5691a0c595b4f0ef1b61da41fd80e359a1022889c3d46014bca08"
+    },
+    {
+      "label": "execute-binary",
+      "logSHA256": "968026d2345d1d44048321209af971c7151bb1611a639e9aa9d9040c005abff2"
+    },
+    {
+      "label": "controls-restored",
+      "logSHA256": "6cbcd9de52d5985f0b4913cfc451f8597e8af66977900c1457c144e2564af0bd"
+    }
+  ],
+  "campaignLogMatched": true,
+  "driverMatched": true,
+  "sourceRestorationPinsMatched": true,
+  "earlierFailure": "Running as unit: openplan-a0-installer-guidance-focused-20261016-01.service; invocation ID: 9c03783275f148cf9cbb4783c21e864e\nCould not find 'workers/planner_agent_connector/test/installer-guidance.test.mjs'\n          Finished with result: exit-code\nMain processes terminated with: code=exited, status=1/FAILURE\n               Service runtime: 58ms\n             CPU time consumed: 36ms\n                   Memory peak: 12.1M (swap: 0B)\n",
+  "earlierCampaignSHA256": "5b1fbe0b6d777070b5323a14ed86ceb78a063f20438f0d00d03bc236ddf676b3",
+  "earlierSourcesSHA256": {
+    "installer-guidance.test.mjs": "7d0bccba529787ae724ea30f38cd45823b096b327f48aeeac3b31e88faef1f08",
+    "verify-controls.py": "93fefa2863d548e18a641b5ed0d50049d63bcf5e7f6ac3f0eee8ec96cda05211",
+    "installer-guidance.mjs": "60246cbd2d32f1e389d5a067bf22f13c68a477734bc98bd19688becae4a2e33b"
+  }
+}
