@@ -140,7 +140,7 @@ describe("publication SQL intent, without database execution", () => {
   });
   it("verifies the canonical packet before returning an existing pointer", () => {
     expect(sql).toContain("report_row.workspace_id IS DISTINCT FROM p_workspace_id");
-    expect(sql).toContain("html_count<>1");
+    expect(sql).toContain("artifact_count<>1");
     expect(sql).toContain("artifact.metadata_json->'frozenSnapshot' IS DISTINCT FROM adopted.frozen_snapshot");
     expect(sql).toContain("artifact.metadata_json->>'adoptionManifestHash' IS DISTINCT FROM decision.adoption_manifest_hash");
   });

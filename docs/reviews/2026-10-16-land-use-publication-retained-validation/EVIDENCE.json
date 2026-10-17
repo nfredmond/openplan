@@ -1,0 +1,409 @@
+{
+  "reviewSubject": "3ce1a92e017e96c8d0c15230b2ab8d1836969f7f",
+  "reviewCommit": "6b94c19b472ac16c82ee2551e59933fce2c58036",
+  "reviewVerdict": "REQUEST_CHANGES_TWO_P2",
+  "reviewSHA256": "34bf1a4a237c30c511876b4a46c37ddc1c78c268febbbb10e1df95183cffdcec",
+  "parent": "65ec771d3b45a7297fac7f007404ff7730a82a73",
+  "priorMigrationSHA256": "15d1904db83f83d7ac93bc7aa7910de042f2e94ac256c4579906d48a036d2272",
+  "sourcePins": {
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/publication.ts": {
+      "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+      "bytes": 2757,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts": {
+      "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+      "bytes": 13030,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql": {
+      "sha256": "fd3b9979cad3acdff2dc74bee4765f85bdea601bdd9fa9d4696edd774735abba",
+      "bytes": 10616,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-transaction.test.ts": {
+      "sha256": "55f577fbfb8f346ecfece77f84edefc0caec4954638017aaff386d1e3e922014",
+      "bytes": 11038,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts": {
+      "sha256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+      "bytes": 35072,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts": {
+      "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "bytes": 283,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "bytes": 3140,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json": {
+      "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "bytes": 735,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/report-adoption.ts": {
+      "sha256": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+      "bytes": 2636,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts": {
+      "sha256": "ed9c43470afe67a8a41d7c1de435b8a832b41aade6816909314040339fcd44d6",
+      "bytes": 6585,
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+  "privateManifestSHA256": "79e819b24f873de2ce9750bde9591c1d30ec25d1c308653997548572ab9bc830",
+  "privateFiles": 2601,
+  "priorCustodyEntriesExact": 3119,
+  "preparedSHA256": "a42e68d83b60c53a99a3103a37ae0470a2f402be88dc96b2984885d616098db5",
+  "grantSHA256": "6bfb078d30e8ba00cd67dc210d8eafa2e668e812c590bb12aad56103c6094ea2",
+  "unit": "openplan-land-use-publication-retained-checks-20261016-01",
+  "invocationFromEntry": "af42b94683474b90abbe78374be5713a",
+  "parentTerminal": {
+    "backendDeath": "UNASSESSED",
+    "classification": "terminal-zero",
+    "deadlineSeconds": 200,
+    "elapsedSeconds": 84.71200391999446,
+    "failure": null,
+    "parentPID": 199973,
+    "returncode": 0,
+    "streams": {
+      "stderr": {
+        "limit": 65536,
+        "observedBytes": 320,
+        "retainedBytes": 320,
+        "sha256": "aa2edb42d3905657ece2b34a74c4cbc202635917c4abdb295b99e23a83d8bb96"
+      },
+      "stdout": {
+        "limit": 1048576,
+        "observedBytes": 0,
+        "retainedBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wrapperPID": 199978
+  },
+  "result": {
+    "status": "FOCUSED_SOURCE_CHECKS_COMPLETE",
+    "baseline": 21,
+    "restored": 21,
+    "harmless": "SURVIVED",
+    "namedFaults": 12,
+    "stages": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "stdoutSHA256": "e8343fcb073e0501075b9294a438ed3e1cf61266bf4d6bc87472923e0d8e6c4a",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "baseline",
+        "exit": 0,
+        "stdoutSHA256": "b536e2ca46a27d56a798d73b8a18f0566bda82f4e319da2a88b7e7b70f6b2a09",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "html-only-count",
+        "exit": 1,
+        "stdoutSHA256": "43c40b7d381172fc5aa9fddc6036e7a393ffd093c5780a0fa94bafe2fa091039",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "multi-artifact-guard",
+        "exit": 1,
+        "stdoutSHA256": "5480c6ae650ceafde231263b450909a6859840b94d022920baf5bf13fb61da62",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "wrong-artifact-kind",
+        "exit": 1,
+        "stdoutSHA256": "5fa8cb74473bb825b41c5bc0d662f2a7e593207c449259ba154af5df8d2e8d0a",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "implementation-kind",
+        "exit": 1,
+        "stdoutSHA256": "df550e2328f00d4f26b560c2ab25559b800912e930fed4e29f2a37bb3bed2805",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "object-shape",
+        "exit": 1,
+        "stdoutSHA256": "5edddad06fa5014d2437548ccc3faea1779d8d8190ef1a0e35684e4d2a64f991",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "required-keys",
+        "exit": 1,
+        "stdoutSHA256": "cfad6d0ff54c21c3a3d9c172826a1b318f91aef81fad58b8665d2b408265885a",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "string-type",
+        "exit": 1,
+        "stdoutSHA256": "0b08b65e34b4ed7476d7c5cd0a271ad7a991d1252d79d1770d4d1a0aae4c684a",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "nullable-type",
+        "exit": 1,
+        "stdoutSHA256": "3110828a8582502558178672c3d8a0ddfbb384b9e2c9409752d8456bb56975cb",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "blank-native",
+        "exit": 1,
+        "stdoutSHA256": "9be89c346c660e1394c975847667e0ecb953331f92f7b3f25255741fba90a077",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "calendar-range",
+        "exit": 1,
+        "stdoutSHA256": "43337d7685b205a9638e1417ce9baa406dbd714bffbbbed8a46773413220d994",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "native-values",
+        "exit": 1,
+        "stdoutSHA256": "4f132e5f61b7507e86d897d9e2a43d1a6cba8c1a5d38466c0748b2e6a8d2e463",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "reader-invalid-status",
+        "exit": 1,
+        "stdoutSHA256": "8d85b85477548bdd960aefc668f135383431afcd85c28e4ab658f3fa06722cea",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "restored",
+        "exit": 0,
+        "stdoutSHA256": "857bbfcce3f8eac224da7fdecfc49b0973882de618caacd7383222214ce6ec0c",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "types",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "direction",
+        "exit": 0,
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+      }
+    ],
+    "nativeSQLExecuted": false,
+    "SQLAssertions": "TEXT_INTENT_ONLY_NOT_DATABASE_TRANSACTION_PROOF",
+    "browserAccepted": false,
+    "elapsedSeconds": 84.53814793506172
+  },
+  "lateResources": {
+    "memory.peak": "387313664",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.swap.current": "0",
+    "pids.peak": "43",
+    "pids.events": "max 0"
+  },
+  "all10SourcePinsExact": true,
+  "allPreservationPinsExact": true,
+  "faults": [
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution counts every artifact so newer PDFs and timestamp ties cannot pass singleton verification",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'SELECT count(*) INTO artifact_count F\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:64:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "html-only-count",
+      "resultSHA256": "dc6931d761e0c9c2af1ef8ae3a66e4f173846ca44ef40b8bca0e22c301dbb8f7",
+      "testJSONSHA256": "b3f81f04a83079199732ded159203761294cab22dc7df4b746df9de291616747"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution counts every artifact so newer PDFs and timestamp ties cannot pass singleton verification",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'IF artifact_count<>1 THEN RAISE EXCEP\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:65:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 2,
+      "id": "multi-artifact-guard",
+      "resultSHA256": "c93a0f5c9a250d4b853c3826d4b92f147a17ab4a8ef7dae17156885316d784c6",
+      "testJSONSHA256": "e017b3c0573fd5244dfdcebba968b5dd5a7577f7614b66db0dfd8869257a7480"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution counts every artifact so newer PDFs and timestamp ties cannot pass singleton verification",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'IF NOT FOUND OR artifact.artifact_kin\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:67:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "wrong-artifact-kind",
+      "resultSHA256": "7ddccdc9956693eb7da47c364001d63cae2913633eeeacec7e995f6f4e1472b4",
+      "testJSONSHA256": "ac39b1d922cd7ded468d374015bea17eb8bbb452377d13555cd7961089ab7d07"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution rejects the reader-disqualifying implementation report marker",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'OR artifact.metadata_json->>\\'kind\\'=\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:70:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "implementation-kind",
+      "resultSHA256": "ecbc5310dc2ae58b9c80dadcfc05b721c50c5ea04f067036fbf951576e3522fd",
+      "testJSONSHA256": "f3c82fcfe0e85ffa12a384b773e873f60695ae8c43832744a05d4f9d895e5aa3"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution requires an object and every required decision key before publication",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'IF jsonb_typeof(manifest_decision) IS\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:73:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "object-shape",
+      "resultSHA256": "47339d40d984b12ebc18b6cdf0a536eabac9078f31ee2c3aa9c36e9622f4999f",
+      "testJSONSHA256": "7925c688c810b3b6e682762147ea088bf43bd7b8606ca5b7173cd35424ad44d9"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution requires an object and every required decision key before publication",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain '(manifest_decision ?& ARRAY[\\'kind\\',\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:74:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "required-keys",
+      "resultSHA256": "d9b21755951efb93ce5ede6716218679fd6d2aaa99f191e05b1532e34b1ac578",
+      "testJSONSHA256": "f1960d5aa8af7cf3c82a6e0849e017ddcf2a8a8facb54c2b2d0da06123f3bdf2"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution keeps scalar types and required nullable fields distinct from missing values",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'jsonb_typeof(manifest_decision->\\'bod\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:79:19\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "string-type",
+      "resultSHA256": "33a3914eb39daa3bbd0605808dd5efc62cb0bb68b64df849587e742432492174",
+      "testJSONSHA256": "96baf5bcb644047d9be49af0a0a0c6314c994213bafefbebc79ae5fdecfdb6ab"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution keeps scalar types and required nullable fields distinct from missing values",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'coalesce(jsonb_typeof(manifest_decisi\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:82:19\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "nullable-type",
+      "resultSHA256": "92cd00e775017dc9af65ff098968da92dd2c77d3b3e3975276fd84896cf47cbe",
+      "testJSONSHA256": "5a4f1122c749354d391776a3a019844385edba2c707404a653dbca893bbf32c3"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution rejects reader-blank native text and dates outside four-digit calendar years",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'btrim(decision.decision_body,trim_cha\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:87:19\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "blank-native",
+      "resultSHA256": "312aa5a75864531d4d97b7f16859780039241c0d6ff02c90f1a4da8a128eed2a",
+      "testJSONSHA256": "bfcbb87aa10c53f86bfc751d2393b742f9cf58e72100ffceb897b6c8e29dffdc"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution rejects reader-blank native text and dates outside four-digit calendar years",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain 'decision.decided_on NOT BETWEEN DATE \u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:90:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "calendar-range",
+      "resultSHA256": "6b33e5e37e06a318b118b90a3f6d3009ab862b162708a88abffabb7093b99494",
+      "testJSONSHA256": "83b53ca2b03e1fb04345d01a965c9e3ce93a9cb2762e4d37af84a77004fce0cc"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication SQL composition, not database execution compares all retained decision values to native columns without rewriting the manifest",
+      "failureMessages": [
+        "AssertionError: expected '-- Concurrent publication calls retai\u2026' to contain '\\'kind\\',decision.decision_kind,\\'bod\u2026'\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:95:17\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:2956:64"
+      ],
+      "failedAssertions": 1,
+      "id": "native-values",
+      "resultSHA256": "342bd30edffe5f3e5208cec02ce8224a75ecc1c1eaa94ffabda114108e8f6aef",
+      "testJSONSHA256": "7122b3e4445b832ac60f178f39f30b7f94a8ff53d62e983918f7d2075c645cf6"
+    },
+    {
+      "outcome": "KILLED",
+      "exactFullName": "retained publication decision reader boundary refuses a missing nested decision before a native query",
+      "failureMessages": [
+        "AssertionError: expected 'absent' to be 'invalid' // Object.is equality\n    at /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts:40:27\n    at processTicksAndRejections (node:internal/process/task_queues:104:5)\n    at file:///home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ],
+      "failedAssertions": 13,
+      "id": "reader-invalid-status",
+      "resultSHA256": "a8bb34677afb91c1fb4e2f81ed1eef8e7eb02e9c677a7d9029332c708bf0950c",
+      "testJSONSHA256": "599b4548166d4d3088ca38f632ffad6af4be225256fa843eb47d58d0a5216bda"
+    }
+  ],
+  "limits": {
+    "memory.max": "1073741824",
+    "memory.swap.max": "0",
+    "cpu.max": "50000 100000",
+    "pids.max": "64"
+  },
+  "namedMounts": [
+    {
+      "path": "/",
+      "mount": "/",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+      "mount": "/",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+      "mount": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+      "options": "ro,nosuid,nodev,relatime"
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+      "mount": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+      "options": "rw,nosuid,nodev,relatime"
+    }
+  ],
+  "hostwideConfinementClaim": false,
+  "nativeSQL": false,
+  "migration425Applied": false,
+  "browserArtifactPractitionerAccepted": false,
+  "freshIndependentFinalSourceReviewRequired": true
+}
