@@ -199,6 +199,16 @@ evidence must have one implementation used by all consumers.
 
 ## V1 acceptance evidence
 
+**October 17, 2026 acceptance policy.** Agent-run planner and public-participant
+workflow checks can satisfy milestone and v1 acceptance. Human feedback moves
+after v1 and does not gate implementation, merging, releases or milestone
+closure. Apply this policy to older human-observation requirements throughout
+the active product guidance. Do not recruit human reviewers or ask Nathaniel
+for feedback as a prerequisite. Report agent-run results as agent-run results.
+The complete capability, geography, scientific, accessibility, security and
+operating requirements remain in force. This policy does not grant an agent
+authority to make an agency's adoption, spending or publication decisions.
+
 The v1 tag requires all of the following on one candidate commit:
 
 - every required planner-role, organization, geography, and capability cell is
@@ -207,8 +217,8 @@ The v1 tag requires all of the following on one candidate commit:
   workflow gates, with the additional California proof above;
 - all end-to-end planning journeys reach the intended outcome from visible UI
   entry points and produce usable artifacts;
-- an independent person installs, operates, backs up, restores, and upgrades the
-  product without Nathaniel;
+- an agent installs, operates, backs up, restores, and upgrades the product
+  through the documented self-service path without Nathaniel;
 - accessibility, responsive, keyboard, screen-reader, print, and public-artifact
   checks pass for every core journey;
 - live RLS, worker suites, mutation samples, restore and upgrade rehearsals,

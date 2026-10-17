@@ -29,11 +29,21 @@ These are outcomes, not automatic release numbers. An implementation may take se
 
 ## Shared definition of done
 
+**October 17, 2026 acceptance policy.** Agent-run checks of representative
+planner, operator and public-participant tasks can satisfy every milestone and
+v1 acceptance requirement below. This supersedes older requirements for human
+observation or practitioner feedback before completion. Human feedback is
+post-v1; do not recruit reviewers or ask Nathaniel for it. Keep the required
+roles, jobs, geography, sources, artifacts and technical and scientific checks.
+Record who or what performed each check. This change does not regrade earlier
+partial or failed results, or authorize real agency decisions on an agent's own
+initiative.
+
 Every milestone must name the planner, organization, actual job, geography/authority, evidence sources, roles and artifact recipient. Record the candidate SHA and deployed identity. A definition of done cannot substitute a page, a test count or a prose assertion for a completed job.
 
 For a visible workflow, start at the real navigation entry, reach the intended outcome at desktop and 390px, inspect the console, exercise keyboard use, and inspect the resulting stored/exported data. Apply screen-reader, contrast, localization, public-artifact and print requirements to the actual job. Name supported language scope and manual alternatives; preserve source and reviewed translated versions. Exercise slow/interrupted connections, upload retry and useful non-map access. These requirements apply throughout the product, not only engagement or the website; they do not imply unrequested full offline synchronization. Prove each changed consequential guard with a surviving harmless mutation and targeted failures. Record unknowns and unsupported states instead of forcing a success.
 
-For data, retain exact geometry, CRS/axis order, units, time/cost basis, identifiers, source vintage, license, completeness, transformations and claim limits. For an approval, bind the responsible human to the exact version/payload. For operations, exercise interruption, recovery and the relevant migration/restore path. Human professional usefulness requires direct observation, separately from agent regression testing.
+For data, retain exact geometry, CRS/axis order, units, time/cost basis, identifiers, source vintage, license, completeness, transformations and claim limits. For an approval, bind the responsible human to the exact version/payload. For operations, exercise interruption, recovery and the relevant migration/restore path. Assess professional usefulness through agent-run planning tasks and inspect the resulting work, separately from unit regression testing.
 
 Use existing local computers and free resources. Measure compute time, peak RAM, disk growth, bandwidth and external-service use in milestone evidence. Any proposed paid dependency returns to Nathaniel before provisioning. No model run or inaccessible human study is described as completed because time or credits ran out.
 
@@ -560,8 +570,8 @@ The [October 15, 2026 amendment](#october-15-2026-amendment-operating-patterns-f
 
 - **Planning outcome:** agencies, consultants, individual planners and the public can adopt OpenPlan as a trustworthy, maintainable planning system.
 - **Dependencies/scope:** all required milestones and coverage interactions; no unresolved Blocker/High defect hidden in a dated closed list. One candidate commit binds required CI, worker, RLS, migration, restore, artifact, accessibility, user and scientific evidence.
-- **Done:** every required core job works across the stated geographic/organization scope; both models pass their published uses; independent humans install/operate/recover and complete/reuse representative work; public artifacts are accessible and approved; governance, security reporting, licensing and source maintenance have owners.
-- **Verification:** release evidence manifest rejects missing/skipped/expired/wrong-commit/failed checks; clean installs and upgrades from supported releases; full recovery on separate hardware/storage; actual user observation; independent adversarial reviews; all scientific custody and use gates; no harmless-mutation false kill.
+- **Done:** every required core job works across the stated geographic/organization scope; both models pass their published uses; agents install/operate/recover and complete/reuse representative work through documented paths; public artifacts are accessible and approved; governance, security reporting, licensing and source maintenance have owners.
+- **Verification:** release evidence manifest rejects missing/skipped/expired/wrong-commit/failed checks; clean installs and upgrades from supported releases; full recovery on separate hardware/storage; agent-run planner and public-participant journeys; independent adversarial reviews; all scientific custody and use gates; no harmless-mutation false kill.
 - **Risks/questions/cost:** the final campaign will discover defects and reopen cells. Fix them and repeat the affected evidence; do not rename them polish. Publish measured operating costs and limits. Tag v1 only when the binding contract is true.
 
 ## W1. Nat Ford Planning website presents OpenPlan as the main product
@@ -615,8 +625,8 @@ Rules for every row:
 
 The disposition record also lists the T3 families not adopted now: relays and tunnels, push notifications, native apps and offline caches, agent-authored HTML and MCP Apps, plugins, task graphs and others. Deferral is a prioritization judgment, not a ban. Reviewed visualization, extension mechanisms and later mobile or offline work can return through an appropriate scoped review. A new module or consequential product-direction change requires the whole-product review already specified by the contract. AI-reviewed automatic approval stays excluded by the existing human-approval boundary.
 
-## Human observation and product decisions
+## Post-v1 feedback and product decisions
 
-Use the [human observation protocol](../product/PLANNER_OBSERVATION_PROTOCOL.md) to prepare research tasks and accessible consent materials before recruitment. Nathaniel owns outreach. Observe an agency planner, a consultant serving multiple clients, a small/rural organization, a tribal government, a state/distributed agency, a nonprofit/community organization, an approver/records steward and public participants. Use their existing work with permission; include failed recovery and external artifact reuse. Agent journeys discover regressions but cannot establish usefulness, trust, language quality or representative participation.
+Before v1, agents exercise the agency, consultant, small/rural, tribal, state/distributed, nonprofit/community, approver/records and public-participant workflows. Use permitted source records or explicitly labeled fixtures; include failed recovery and external artifact reuse. Inspect usefulness, language quality, accessible participation and the resulting work. Record observed outcomes and limits without claiming actual human participation. The [human observation protocol](PLANNER_OBSERVATION_PROTOCOL.md) remains available for optional post-v1 research, only when Nathaniel requests it.
 
-Bring Nathaniel decisions about territory depth, the first engagement/capital case, actual administering and fiscal authority, confidentiality/public-record and personal-AI policies, and meaningful planning outcomes. Do not ask whether the early priorities or restored contract/RTP requirements belong in scope again; he has already decided that. Obtain permitted agreement/prior-plan observation cases and practitioner feedback on actual decisions. Do not ask him to choose libraries, schemas, queue mechanics or test frameworks. When observation changes priority, amend this single queue with evidence while preserving the full v1 destination and previous dated decisions.
+Bring Nathaniel only unresolved product judgments or actual authority that the work requires. Do not ask whether the early priorities or restored contract/RTP requirements belong in scope again; he has already decided that. Use permitted agreement/prior-plan cases without requiring practitioner feedback. Do not ask him to choose libraries, schemas, queue mechanics or test frameworks. When new evidence changes priority, amend the roadmap while preserving the full v1 destination and previous dated decisions.

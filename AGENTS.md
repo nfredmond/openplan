@@ -112,8 +112,11 @@ A visible workflow requires an identified-build journey from real navigation,
 desktop and 390px evidence, console review and usable artifacts. Green unit
 tests, screenshots without provenance and server health do not establish that.
 Use the local browser skill before opening OpenPlan; never interfere with another
-session's browser, accounts or workers. Agent journeys do not replace observation
-with practicing planners and public participants.
+session's browser, accounts or workers. Nathaniel's October 17, 2026 direction
+makes agent-run planner and public-participant workflow checks valid acceptance
+evidence for milestones and v1. Human feedback is post-v1, not a release gate.
+Do not recruit reviewers or ask Nathaniel for human feedback. Label agent-run
+results accurately and retain technical, scientific and workflow requirements.
 
 Use the existing action registry for agent writes or record an executable
 refusal. Preserve distinct authorship, exact approved-payload hashes, route-local
