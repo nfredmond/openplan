@@ -1,0 +1,435 @@
+{
+  "actualRootIntentPath": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/root-observe-outer-intent.json",
+  "additionalWrapperControlFootprint": "One NB exclusive flock acquisition, one systemd-run manager launch/wait, one fixed systemctl post-show. These are outside the fourteen controller journal requests. Root outer tool/parent launch and filesystem metadata reads/writes are additional custody footprint.",
+  "collectorParameterization": {
+    "BOUNDS": {
+      "stderr": 65536,
+      "stdout": 1048576
+    },
+    "DEADLINE": 335,
+    "bytes": 11991,
+    "forbidden": [
+      "main",
+      "ready",
+      "correlate",
+      "source_pins"
+    ],
+    "globals": "Assign ARGV/DEADLINE/BOUNDS in collect.__globals__, not runpy's returned mapping.",
+    "onlyCall": "collect(folder) plus existing private/read/sha/sync/record/manager_env helpers",
+    "path": "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py",
+    "runName": "openplan_observe_collect_definitions",
+    "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc"
+  },
+  "controller": {
+    "argv": [
+      "/usr/bin/python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py",
+      "--run",
+      "observe"
+    ],
+    "claimBoundary": "OBSERVE may establish name absence at its census and exact baseline/final full catalog-scope equality. Capture has not established absence. No allocation, target connection, config capture, render, restore, migration, role/grant/settings write, caller/Auth/SDK/provider/hosted claim.",
+    "containerEnvironment": "Cleared env in nativeArgv; fixed absent PGPASSFILE/PGSERVICEFILE, local Unix socket, supabase_admin, -w; strict zero stderr for every journaled request.",
+    "managerRuntimeSeconds": 300,
+    "nativeEnvironment": {
+      "HOME": "/nonexistent",
+      "LANG": "C.UTF-8",
+      "PATH": "/usr/bin:/bin"
+    },
+    "payload": {
+      "bytes": 175,
+      "meaning": "Exact canonical stage/source/target/scopeSchema JSON, not operator SQL.",
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-input.json",
+      "sha256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca"
+    },
+    "requestCount": 14,
+    "requestCounts": {
+      "credentialAbsence": 1,
+      "dockerInspect": 5,
+      "localGit": 3,
+      "maintenanceSQL": 4,
+      "managerSelf": 1
+    },
+    "requests": [
+      {
+        "argv": [
+          "/usr/bin/systemctl",
+          "--user",
+          "show",
+          "openplan-budget-settings-v2-observe.service",
+          "--no-pager",
+          "--property=Id,InvocationID,MainPID,ControlGroup,ActiveState,SubState,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax"
+        ],
+        "index": 1,
+        "kind": "manager-self",
+        "stderrLimit": 16384,
+        "stdoutLimit": 16384,
+        "timeoutSeconds": 5
+      },
+      {
+        "argv": [
+          "/usr/bin/git",
+          "-C",
+          "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74",
+          "merge-base",
+          "--is-ancestor",
+          "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+          "HEAD"
+        ],
+        "index": 2,
+        "kind": "local-git",
+        "stderrLimit": 4096,
+        "stdoutLimit": 4096,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/git",
+          "-C",
+          "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74",
+          "rev-parse",
+          "HEAD:openplan"
+        ],
+        "index": 3,
+        "kind": "local-git",
+        "stderrLimit": 4096,
+        "stdoutLimit": 4096,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/git",
+          "-C",
+          "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74",
+          "diff",
+          "--quiet",
+          "HEAD",
+          "--",
+          "openplan"
+        ],
+        "index": 4,
+        "kind": "local-git",
+        "stderrLimit": 4096,
+        "stdoutLimit": 4096,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ],
+        "index": 5,
+        "kind": "inspect",
+        "stderrLimit": 65536,
+        "stdoutLimit": 65536,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "/usr/bin/find",
+          "-P",
+          "/",
+          "-mindepth",
+          "1",
+          "-maxdepth",
+          "1",
+          "-name",
+          "nonexistent",
+          "-print"
+        ],
+        "index": 6,
+        "kind": "credential-absence",
+        "stderrLimit": 4096,
+        "stdoutLimit": 4096,
+        "timeoutSeconds": 5
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ],
+        "index": 7,
+        "kind": "inspect",
+        "stderrLimit": 65536,
+        "stdoutLimit": 65536,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "HOME=/nonexistent",
+          "PGPASSFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pgpass",
+          "PGSERVICEFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pg_service.conf",
+          "PGCONNECT_TIMEOUT=5",
+          "psql",
+          "-XqAt",
+          "-h",
+          "/var/run/postgresql",
+          "-p",
+          "5432",
+          "-w",
+          "-U",
+          "supabase_admin",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1"
+        ],
+        "index": 8,
+        "kind": "sql-identity",
+        "query": "CATALOG_BEGIN + IDENTITY + ';\\nROLLBACK;\\n'; identity=False",
+        "stderrLimit": 1048576,
+        "stdoutLimit": 16777216,
+        "timeoutSeconds": 90
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ],
+        "index": 9,
+        "kind": "inspect",
+        "stderrLimit": 65536,
+        "stdoutLimit": 65536,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "HOME=/nonexistent",
+          "PGPASSFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pgpass",
+          "PGSERVICEFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pg_service.conf",
+          "PGCONNECT_TIMEOUT=5",
+          "psql",
+          "-XqAt",
+          "-h",
+          "/var/run/postgresql",
+          "-p",
+          "5432",
+          "-w",
+          "-U",
+          "supabase_admin",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1"
+        ],
+        "index": 10,
+        "kind": "sql-original-scope",
+        "query": "CATALOG_BEGIN + guard(catalogIdentity,'postgres') + SCOPE + ';\\nROLLBACK;\\n'",
+        "stderrLimit": 1048576,
+        "stdoutLimit": 16777216,
+        "timeoutSeconds": 90
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ],
+        "index": 11,
+        "kind": "inspect",
+        "stderrLimit": 65536,
+        "stdoutLimit": 65536,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "HOME=/nonexistent",
+          "PGPASSFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pgpass",
+          "PGSERVICEFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pg_service.conf",
+          "PGCONNECT_TIMEOUT=5",
+          "psql",
+          "-XqAt",
+          "-h",
+          "/var/run/postgresql",
+          "-p",
+          "5432",
+          "-w",
+          "-U",
+          "supabase_admin",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1"
+        ],
+        "index": 12,
+        "kind": "sql-database-names",
+        "query": "CATALOG_BEGIN + guard(catalogIdentity,'postgres') + CATALOG_NAMES + ';\\nROLLBACK;\\n'",
+        "stderrLimit": 1048576,
+        "stdoutLimit": 16777216,
+        "timeoutSeconds": 90
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "inspect",
+          "--format",
+          "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\" ).NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+        ],
+        "index": 13,
+        "kind": "inspect",
+        "stderrLimit": 65536,
+        "stdoutLimit": 65536,
+        "timeoutSeconds": 30
+      },
+      {
+        "argv": [
+          "/usr/bin/docker",
+          "exec",
+          "-i",
+          "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+          "/usr/bin/env",
+          "-i",
+          "PATH=/usr/bin:/bin",
+          "LANG=C.UTF-8",
+          "HOME=/nonexistent",
+          "PGPASSFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pgpass",
+          "PGSERVICEFILE=/nonexistent/openplan-budget-catalog-v2-20261016.pg_service.conf",
+          "PGCONNECT_TIMEOUT=5",
+          "psql",
+          "-XqAt",
+          "-h",
+          "/var/run/postgresql",
+          "-p",
+          "5432",
+          "-w",
+          "-U",
+          "supabase_admin",
+          "-d",
+          "postgres",
+          "-v",
+          "ON_ERROR_STOP=1"
+        ],
+        "index": 14,
+        "kind": "sql-final-original-scope",
+        "query": "CATALOG_BEGIN + guard(catalogIdentity,'postgres') + SCOPE + ';\\nROLLBACK;\\n'",
+        "stderrLimit": 1048576,
+        "stdoutLimit": 16777216,
+        "timeoutSeconds": 90
+      }
+    ],
+    "resourceCaps": {
+      "CPUQuota": "50%",
+      "MemoryMax": 536870912,
+      "MemorySwapMax": 0,
+      "TasksMax": 64,
+      "UMask": "0077"
+    },
+    "sourceBytes": 24313,
+    "sourceSHA256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
+    "transaction": "Four separate fixed maintenance-postgres REPEATABLE READ READ ONLY transactions. search_path pg_catalog; statement15s/lock3s/idle10s/work_mem16MB; ROLLBACK. First IDENTITY has no generated guard but typed/pinned identity validation follows. Remaining queries prepend exact source guard from admitted system/database/actor IDs.",
+    "unitName": "openplan-budget-settings-v2-observe"
+  },
+  "effectiveNativeParent": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/native-observe-parent",
+  "effectiveParentEntryArgv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/parent-recorder.py",
+    "--record-once"
+  ],
+  "effectiveWrapperArgv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-observe-window.sh"
+  ],
+  "externalBoundaries": "Existing PostgreSQL container/server resources remain outside unit caps. Four separate read-only transactions, not one global snapshot. No automatic replay or successor.",
+  "futureWrites": {
+    "controller": "stages/observe: intent.json; request-001..014 each intent/input/returned-process/stdout/stderr/terminal; manager-ack.json; stage-input.bin; before-catalog.json; observation.json; complete.json OR failure.json. Setup/unit kill can leave only partials.",
+    "parent": "intent.json, returned-process.json, stdout.bin, stderr.bin, terminal.json, source-final-readback.json, recorder-result.json under effective native parent, reserved once.",
+    "root": "Final runtime-v2 reviews/observe.md, windows/observe.json, publications/observe.json, admissions/observe.json; root-observe-outer-intent.json at effective path; new 0700 stages parent if admitted. No such record created by review.",
+    "rootAfterActualAudit": "manager-terminal.json and separate acceptance/outer receipt only after actual audited custody, never precreated success."
+  },
+  "lock": "ONE NB EX FD9 held across --wait and fixed postshow. No second lock acquisition/read or manager query; release only on actual wrapper terminal.",
+  "managerArgv": [
+    "/usr/bin/systemd-run",
+    "--user",
+    "--wait",
+    "--pipe",
+    "--unit=openplan-budget-settings-v2-observe",
+    "-p",
+    "RuntimeMaxSec=300",
+    "-p",
+    "MemoryMax=512M",
+    "-p",
+    "MemorySwapMax=0",
+    "-p",
+    "CPUQuota=50%",
+    "-p",
+    "TasksMax=64",
+    "-p",
+    "UMask=0077",
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py",
+    "--run",
+    "observe"
+  ],
+  "managerEnvironment": {
+    "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus",
+    "HOME": "/home/nathaniel",
+    "LANG": "C.UTF-8",
+    "PATH": "/usr/bin:/bin",
+    "XDG_RUNTIME_DIR": "/run/user/1000"
+  },
+  "nativeOperationGranted": false,
+  "outerBounds": {
+    "bytesPerStream": 1048576,
+    "deadlineSeconds": 365
+  },
+  "outerSourceCommit": "59105b0ac8b87276f674ee493c13cf091ef9e410",
+  "pathDelta": "The a97 proposed wrapper and parent placeholders remain absent and are superseded here by the exact frozen outer-preparation paths. No controller/runtime/query/guard rebind.",
+  "postShowArgv": [
+    "/usr/bin/systemctl",
+    "--user",
+    "show",
+    "openplan-budget-settings-v2-observe.service",
+    "--no-pager",
+    "--property=Id,InvocationID,Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax"
+  ],
+  "schema": 1,
+  "sourceProposalCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "status": "REVIEWED_CONDITIONAL_PROPOSAL_NOT_AUTHORITY",
+  "successorGranted": false
+}

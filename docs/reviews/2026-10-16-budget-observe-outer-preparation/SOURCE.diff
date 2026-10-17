@@ -1,0 +1,871 @@
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-observe-window.sh b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-observe-window.sh
+new file mode 100644
+index 000000000..ac5c2a509
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-observe-window.sh
+@@ -0,0 +1,19 @@
++#!/bin/bash
++# SOURCE PREPARATION ONLY. Root separately admits one OBSERVE operation.
++set -euo pipefail
++umask 077
++exec 9<>/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock
++/usr/bin/flock -n -x 9
++set +e
++/usr/bin/systemd-run --user --wait --pipe --unit=openplan-budget-settings-v2-observe \
++ -p RuntimeMaxSec=300 -p MemoryMax=512M -p MemorySwapMax=0 \
++ -p CPUQuota=50% -p TasksMax=64 -p UMask=0077 \
++ /usr/bin/python3 -B \
++ /home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py \
++ --run observe
++observe_manager_code=$?
++set -e
++# Keep the same exclusive FD across the one fixed raw post-show.
++/usr/bin/systemctl --user show openplan-budget-settings-v2-observe.service \
++ --no-pager --property=Id,InvocationID,Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax
++exit "$observe_manager_code"
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-recorder.py b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-recorder.py
+new file mode 100644
+index 000000000..420aff336
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-recorder.py
+@@ -0,0 +1,127 @@
++#!/usr/bin/python3
++"""Record one wrapper only. Native authority remains controller.ready."""
++import hashlib
++import os
++from pathlib import Path
++import runpy
++import sys
++
++ROOT = Path("/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016")
++WRAPPER = ROOT/'run-observe-window.sh'
++RECORDER = Path('/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py')
++RECORDER_SHA = '05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc'
++ARGV = ['/bin/bash', str(WRAPPER)]
++FILES = {
++    "controllerSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py"),
++    "journalSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/journal.py"),
++    "policySHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/policy.py"),
++    "sqlSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/sql.py"),
++    "packageSHA256": Path("/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/source-pins.json"),
++    "planSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/plan.json"),
++    "inputSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-input.json"),
++    "catalogSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/catalog.json"),
++    "scopeSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/original-scope.json"),
++    "captureAckSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/manager-ack.json"),
++    "captureCompleteSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/complete.json"),
++    "captureCollectedSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent/complete.json"),
++    "captureManagerTerminalSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-manager-terminal.json"),
++    "captureOuterTerminalSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-outer-terminal.json"),
++    "captureAcceptanceSHA256": Path("/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/acceptance.json"),
++    "admissionSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/admissions/observe.json"),
++    "reviewSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/reviews/observe.md"),
++    "windowSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/windows/observe.json"),
++    "publicationSHA256": Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/publications/observe.json")
++}
++KNOWN = {
++    "controllerSHA256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
++    "journalSHA256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
++    "policySHA256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
++    "sqlSHA256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
++    "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
++    "planSHA256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
++    "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
++    "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
++    "scopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
++    "captureAckSHA256": "757422de49bbcfffc27f229fc70ee5df0b2ca1537f326eaea71b2acb4f3c73a1",
++    "captureCompleteSHA256": "62152a732385a9499e27f0c913d55d801ae7482d3e50e22c6dc175efacf85a08",
++    "captureCollectedSHA256": "0b999332cea61652b95055ff733fcca6fdf1fb1e1d7f7daeb34189a3f35b56f1",
++    "captureManagerTerminalSHA256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e",
++    "captureOuterTerminalSHA256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5",
++    "captureAcceptanceSHA256": "1358666689e0346bb888d5b55631d194c737e79245258a8ab3b64b34e29bc2a7"
++}
++
++
++def require(value, reason):
++    if not value:
++        raise ValueError(reason)
++
++
++def sha(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def configure(namespace):
++    collect = namespace['collect']
++    globs = collect.__globals__
++    globs['ARGV'] = list(ARGV)
++    globs['DEADLINE'] = 335
++    globs['BOUNDS'] = {'stdout': 1048576, 'stderr': 65536}
++    return collect
++
++
++def main():
++    os.umask(0o077)
++    require(sys.argv[1:] == ['--record-once'], 'fixed-observe-recorder-entry')
++    require(sha(RECORDER) == RECORDER_SHA, 'exact-retained-recorder')
++    namespace = runpy.run_path(str(RECORDER), run_name='openplan_observe_collect_definitions')
++    private, read, record = namespace['private'], namespace['read'], namespace['record']
++    private(ROOT, True)
++    private(Path(__file__))
++    private(WRAPPER)
++    intent_path = ROOT/'root-observe-outer-intent.json'
++    intent = read(intent_path)
++    expected = {'schema': 1, 'purpose': 'RECORD_ONE_ROOT_ADMITTED_OBSERVE_NO_AUTHORITY',
++        'stage': 'observe', 'argv': ARGV, 'environment': namespace['manager_env'](),
++        'deadlineSeconds': 335, 'stdoutLimit': 1048576, 'stderrLimit': 65536,
++        'retry': 'FORBIDDEN', 'recorderGrantsNativeAuthority': False,
++        'recorderSHA256': RECORDER_SHA, 'wrapperSHA256': sha(WRAPPER),
++        'parentSourceSHA256': sha(Path(__file__))}
++    for key, path in FILES.items():
++        private(path)
++        actual = sha(path)
++        if key in KNOWN:
++            require(actual == KNOWN[key], 'pinned-file:'+key)
++        expected[key] = actual
++    for key, value in expected.items():
++        require(type(intent.get(key)) is type(value) and intent.get(key) == value,
++                'root-observe-intent:'+key)
++    folder = ROOT/'native-observe-parent'
++    folder.mkdir(mode=0o700)
++    namespace['sync'](ROOT)
++    record(folder/'intent.json', dict(expected, rootIntentSHA256=sha(intent_path),
++        parentPID=os.getpid(), uid=os.getuid(), nativeAcceptance='UNASSESSED'))
++    terminal = configure(namespace)(folder)
++    final = {'recorderSHA256': sha(RECORDER), 'wrapperSHA256': sha(WRAPPER),
++        'parentSourceSHA256': sha(Path(__file__)), 'rootIntentSHA256': sha(intent_path),
++        'files': {key: sha(path) for key, path in FILES.items()}}
++    exact = (final['recorderSHA256'] == RECORDER_SHA and
++        final['wrapperSHA256'] == expected['wrapperSHA256'] and
++        final['parentSourceSHA256'] == expected['parentSourceSHA256'] and
++        final['rootIntentSHA256'] == read(folder/'intent.json')['rootIntentSHA256'] and
++        all(final['files'][key] == expected[key] for key in FILES))
++    record(folder/'source-final-readback.json', dict(final, sourceExact=exact))
++    require(exact, 'observe-recorder-input-drift')
++    require(terminal.get('returncode') == 0 and terminal.get('failure') is None,
++            'outer-transport-refused')
++    record(folder/'recorder-result.json', {'status': 'RECORDED_TRANSPORT_ONLY',
++        'terminalSHA256': sha(folder/'terminal.json'), 'backendDeath': 'UNASSESSED',
++        'nativeAcceptance': 'UNASSESSED_REQUIRES_INDEPENDENT_ROOT_ACK_STAGE_AUDIT',
++        'successorGranted': False})
++
++
++if __name__ == '__main__':
++    try:
++        main()
++    except BaseException:
++        print('STOP: retain intent/partial streams; no replay or successor', file=sys.stderr)
++        raise SystemExit(1)
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/controls.py b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/controls.py
+new file mode 100644
+index 000000000..5093a6f19
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/controls.py
+@@ -0,0 +1,203 @@
++#!/usr/bin/python3
++"""Four focused NEW source controls. No wrapper or retained collector process runs."""
++import hashlib
++import json
++import os
++from pathlib import Path
++import runpy
++import sys
++import types
++
++REAL_RUN_PATH = runpy.run_path
++REASONS = {
++    'wrapper-exclusive': 'wrapper-one-nb-exclusive-fd9',
++    'definitions-only': 'outer-load-definitions-only',
++    'bounded-globals': 'outer-parameterization-335-streams',
++    'nonzero-terminal': 'outer-nonzero-cannot-report-success',
++}
++
++
++def check(value, reason):
++    if not value:
++        raise AssertionError(reason)
++
++
++def sha(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def write(path, value):
++    path.write_text(json.dumps(value, sort_keys=True, separators=(',', ':'))+'\n')
++    path.chmod(0o600)
++
++
++def wrapper_intent(path):
++    text = path.read_text()
++    check(text.count('/usr/bin/flock -n -x 9') == 1 and
++          text.count('exec 9<>/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock') == 1 and
++          'exec 9>&-' not in text and
++          text.index('/usr/bin/flock -n -x 9') < text.index('/usr/bin/systemd-run') <
++          text.index('/usr/bin/systemctl') < text.index('exit "$observe_manager_code"'),
++          REASONS['wrapper-exclusive'])
++    check('--unit=openplan-budget-settings-v2-observe' in text and
++          'RuntimeMaxSec=300' in text and 'MemoryMax=512M' in text and
++          'MemorySwapMax=0' in text and 'CPUQuota=50%' in text and 'TasksMax=64' in text and
++          '--run observe' in text and 'INVOCATION_ID=' not in text,
++          'wrapper-fixed-manager-intent')
++
++
++def supplied_collect(folder):
++    check(ARGV == EXPECT_ARGV, 'outer-fixed-wrapper-argv')
++    check(DEADLINE == 335 and BOUNDS == {'stdout':1048576, 'stderr':65536},
++          REASONS['bounded-globals'])
++    intent = READ(folder/'intent.json')
++    check(intent['argv'] == EXPECT_ARGV and intent['deadlineSeconds'] == 335 and
++          intent['rootIntentSHA256'] == ROOT_INTENT_SHA and
++          type(intent['parentPID']) is int and intent['parentPID'] > 0,
++          'outer-durable-intent-before-supplied-process')
++    CALLS.append('supplied-wrapper-process-result')
++    terminal = {'parentPID': os.getpid(), 'wrapperPID':31337,
++        'returncode':REPLY[0], 'failure':REPLY[1],
++        'backendDeath':'UNASSESSED', 'classification':'SUPPLIED_INERT_FIXTURE'}
++    RECORD(folder/'terminal.json', terminal)
++    return terminal
++
++
++def case(parent, wrapper, root, label, reply=(0, None), bad_intent=False):
++    folder = root/label
++    folder.mkdir(mode=0o700)
++    opaque = folder/'opaque-admission.json'
++    write(opaque, {'fixture':True, 'exclusive':False, 'nativeOperationGranted':False})
++    subject = REAL_RUN_PATH(str(parent), run_name='inert_new_observe_parent')
++    globs = subject['main'].__globals__
++    fixed_wrapper = folder/'run-observe-window.sh'
++    fixed_wrapper.write_bytes(wrapper.read_bytes())
++    fixed_wrapper.chmod(0o600)
++    argv = ['/bin/bash', str(fixed_wrapper)]
++    globs.update(ROOT=folder, WRAPPER=fixed_wrapper, ARGV=argv,
++                 FILES={'fixtureSHA256':opaque}, KNOWN={'fixtureSHA256':sha(opaque)})
++    calls = []
++    intent_path = folder/'root-observe-outer-intent.json'
++    uid = os.getuid()
++    intent = {'schema':1, 'purpose':'RECORD_ONE_ROOT_ADMITTED_OBSERVE_NO_AUTHORITY',
++        'stage':'observe', 'argv':argv, 'environment':{'PATH':'/usr/bin:/bin',
++        'HOME':'/home/nathaniel','LANG':'C.UTF-8','XDG_RUNTIME_DIR':f'/run/user/{uid}',
++        'DBUS_SESSION_BUS_ADDRESS':f'unix:path=/run/user/{uid}/bus'},
++        'deadlineSeconds':335, 'stdoutLimit':1048576, 'stderrLimit':65536,
++        'retry':'FORBIDDEN', 'recorderGrantsNativeAuthority':False,
++        'recorderSHA256':globs['RECORDER_SHA'], 'wrapperSHA256':sha(fixed_wrapper),
++        'parentSourceSHA256':sha(parent), 'fixtureSHA256':sha(opaque)}
++    if bad_intent:
++        intent['wrapperSHA256'] = '0'*64
++    write(intent_path, intent)
++
++    def forbidden(*args, **kwargs):
++        raise AssertionError('old-entry-or-native-contact-forbidden')
++
++    def load(path, *, run_name):
++        check(path == str(globs['RECORDER']) and
++              run_name == 'openplan_observe_collect_definitions',
++              REASONS['definitions-only'])
++        namespace = REAL_RUN_PATH(path, run_name=run_name)
++        for name in ('main','ready','correlate','source_pins'):
++            namespace[name] = forbidden
++        supplied = types.FunctionType(supplied_collect.__code__, {
++            'check':check, 'REASONS':REASONS, 'EXPECT_ARGV':argv,
++            'READ':namespace['read'], 'RECORD':namespace['record'],
++            'ROOT_INTENT_SHA':sha(intent_path), 'CALLS':calls, 'REPLY':reply, 'os':os})
++        namespace['collect'] = supplied
++        return namespace
++
++    globs['runpy'] = types.SimpleNamespace(run_path=load)
++    saved_argv = sys.argv[:]
++    sys.argv = [str(parent), '--record-once']
++    error = None
++    try:
++        globs['main']()
++    except ValueError as exc:
++        error = str(exc)
++    finally:
++        sys.argv = saved_argv
++    if bad_intent:
++        check(error == 'root-observe-intent:wrapperSHA256' and not calls,
++              'outer-intent-pin-refuses-before-process')
++    elif reply != (0, None):
++        check(error == 'outer-transport-refused', REASONS['nonzero-terminal'])
++        check(not (folder/'native-observe-parent/recorder-result.json').exists(),
++              'outer-refusal-does-not-publish-result')
++    else:
++        check(error is None and calls == ['supplied-wrapper-process-result'],
++              'outer-zero-supplied-terminal')
++        result = json.loads((folder/'native-observe-parent/recorder-result.json').read_bytes())
++        check(result['status'] == 'RECORDED_TRANSPORT_ONLY' and
++              result['nativeAcceptance'].startswith('UNASSESSED') and
++              result['successorGranted'] is False, 'outer-transport-not-native-acceptance')
++
++
++def baseline(parent, wrapper, root):
++    root.mkdir(mode=0o700)
++    wrapper_intent(wrapper)
++    case(parent, wrapper, root, 'zero')
++    case(parent, wrapper, root, 'nonzero', (7, None))
++    case(parent, wrapper, root, 'unknown', (None, {'type':'TimeoutError','reason':'supplied'}))
++    case(parent, wrapper, root, 'intent-pin', bad_intent=True)
++
++
++def run(root, source):
++    work = root/'work'
++    work.mkdir(mode=0o700)
++    originals = {name:(source/name).read_bytes() for name in
++                 ('parent-recorder.py','run-observe-window.sh')}
++    modes = {name:(source/name).stat().st_mode & 0o777 for name in originals}
++    for name, data in originals.items():
++        (work/name).write_bytes(data)
++        (work/name).chmod(modes[name])
++    parent, wrapper = work/'parent-recorder.py', work/'run-observe-window.sh'
++    mutations = [
++      ('wrapper-exclusive', 'run-observe-window.sh',
++       '/usr/bin/flock -n -x 9', '/usr/bin/flock -n -s 9'),
++      ('definitions-only', 'parent-recorder.py',
++       "run_name='openplan_observe_collect_definitions'", "run_name='__main__'"),
++      ('bounded-globals', 'parent-recorder.py',
++       "globs['DEADLINE'] = 335", "globs['DEADLINE'] = 115"),
++      ('nonzero-terminal', 'parent-recorder.py',
++       "require(terminal.get('returncode') == 0 and terminal.get('failure') is None,",
++       "require(True,")]
++    result = {'baseline':None, 'harmless':None, 'mutations':[],
++              'restoredBaseline':None, 'suppliedIdentitiesNotNative':True}
++    try:
++        wrapper.write_bytes(originals['run-observe-window.sh']+b'# harmless source annotation\n')
++        baseline(parent, wrapper, root/'harmless')
++        result['harmless'] = 'SURVIVED'
++        wrapper.write_bytes(originals['run-observe-window.sh'])
++        baseline(parent, wrapper, root/'baseline')
++        result['baseline'] = 'PASS'
++        for name, filename, old, new in mutations:
++            path = work/filename
++            data = originals[filename].decode()
++            check(data.count(old) == 1, 'unique-new-source-fault:'+name)
++            path.write_text(data.replace(old, new, 1))
++            path.chmod(modes[filename])
++            try:
++                baseline(parent, wrapper, root/('fault-'+name))
++            except AssertionError as exc:
++                check(str(exc) == REASONS[name], 'unexpected-new-control-reason:'+name+':'+str(exc))
++                result['mutations'].append({'name':name,'reason':str(exc),'outcome':'KILLED'})
++            else:
++                raise AssertionError('new-source-fault-survived:'+name)
++            finally:
++                path.write_bytes(originals[filename])
++                path.chmod(modes[filename])
++        baseline(parent, wrapper, root/'restored-baseline')
++        result['restoredBaseline'] = 'PASS'
++    finally:
++        for name, data in originals.items():
++            (work/name).write_bytes(data)
++            (work/name).chmod(modes[name])
++        result['exactRestoration'] = all((work/name).read_bytes() == data and
++            (work/name).stat().st_mode & 0o777 == modes[name] for name, data in originals.items())
++        result['sourceExact'] = all((source/name).read_bytes() == data and
++            (source/name).stat().st_mode & 0o777 == modes[name] for name, data in originals.items())
++        write(root/'controls.json', result)
++    check(result['exactRestoration'] and result['sourceExact'], 'new-source-restoration')
++    return result
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/prepare_once.py b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/prepare_once.py
+new file mode 100644
+index 000000000..a47c94dbb
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/prepare_once.py
+@@ -0,0 +1,194 @@
++#!/usr/bin/python3
++"""One separately granted inert-control and non-authoritative builder preparation."""
++import hashlib
++import json
++import os
++from pathlib import Path
++import runpy
++import socket
++import subprocess
++import sys
++import time
++
++ROOT = Path("/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016")
++CAPTURE = Path("/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2")
++UNIT = 'openplan-budget-observe-outer-preparation-20261016-01'
++
++
++def require(value, reason):
++    if not value:
++        raise ValueError(reason)
++
++
++def sha(path):
++    return hashlib.sha256(path.read_bytes()).hexdigest()
++
++
++def private(path, directory=False):
++    info = path.lstat()
++    require(not path.is_symlink() and info.st_uid == os.getuid() and
++            info.st_mode & 0o777 == (0o700 if directory else 0o600) and
++            (path.is_dir() if directory else path.is_file()), 'private-preparation-path')
++
++
++def record(path, row):
++    fd = os.open(path, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
++    with os.fdopen(fd, 'w') as stream:
++        stream.write(json.dumps(row, sort_keys=True, separators=(',', ':'))+'\n')
++        stream.flush()
++        os.fsync(stream.fileno())
++
++
++def verify(pins):
++    for name, expected in pins.items():
++        path = Path(name)
++        info = path.lstat()
++        require(not path.is_symlink() and path.is_file() and
++                sha(path) == expected['sha256'] and info.st_size == expected['bytes'] and
++                info.st_mode & 0o777 == expected['mode'] and
++                info.st_uid == expected['uid'] and info.st_gid == expected['gid'],
++                'exact-preparation-input:'+name)
++
++
++def resources():
++    group = [line[3:] for line in Path('/proc/self/cgroup').read_text().splitlines()
++             if line.startswith('0::')]
++    require(len(group) == 1, 'pure-unified-cgroup')
++    base = Path('/sys/fs/cgroup')/group[0].lstrip('/')
++    row = {'memoryMax':int((base/'memory.max').read_text()),
++           'swapMax':int((base/'memory.swap.max').read_text()),
++           'cpuMax':(base/'cpu.max').read_text().strip(),
++           'tasksMax':int((base/'pids.max').read_text())}
++    require(row == {'memoryMax':536870912,'swapMax':0,'cpuMax':'50000 100000','tasksMax':64},
++            'pure-preparation-resources')
++    return row
++
++
++def absent(paths):
++    for name in paths:
++        path = Path(name)
++        require(not path.exists() and not path.is_symlink(),
++                'occupied-preparation-operating-path:'+name)
++
++
++def mounts(paths):
++    rows = []
++    for line in Path('/proc/self/mountinfo').read_text().splitlines():
++        left, _, right = line.partition(' - ')
++        fields = left.split()
++        rows.append((fields[4], set(fields[5].split(','))))
++    result = {}
++    for path in paths:
++        candidates = [row for row in rows if path == row[0] or
++                      path.startswith(row[0].rstrip('/')+'/')]
++        mount, options = max(candidates, key=lambda row:len(row[0]))
++        require('ro' in options, 'named-preparation-input-not-ro:'+path)
++        result[path] = {'mount':mount,'readOnly':True}
++    return result
++
++
++def forbidden(*args, **kwargs):
++    raise AssertionError('PREPARATION_NATIVE_CONTACT_FORBIDDEN')
++
++
++def main():
++    os.umask(0o077)
++    require(sys.argv[1:] == ['--prepare-once'], 'fixed-preparation-entry')
++    private(ROOT, True)
++    request_path, grant_path = ROOT/'preparation-request.json', ROOT/'pure-grant.json'
++    private(request_path)
++    private(grant_path)
++    request, grant = json.loads(request_path.read_bytes()), json.loads(grant_path.read_bytes())
++    request_sha, grant_sha = sha(request_path), sha(grant_path)
++    require(grant.get('requestSHA256') == sha(request_path) and
++            grant.get('purpose') == 'INERT_OUTER_CONTROLS_AND_FALSE_BUILDER' and
++            grant.get('nativeOperationGranted') is False and grant.get('exclusive') is True and
++            type(grant.get('uid')) is int and grant['uid'] == os.getuid() == 1000 and
++            grant.get('unitName') == UNIT, 'exact-new-pure-grant')
++    now = int(time.time())
++    require(type(grant.get('notBefore')) is int and type(grant.get('notAfter')) is int and
++            grant['notBefore'] <= now < grant['notAfter'] and
++            0 < grant['notAfter']-grant['notBefore'] <= 600, 'fresh-pure-preparation-grant')
++    require(type(grant.get('hostNetworkNamespace')) is str and
++            grant['hostNetworkNamespace'].startswith('net:[') and
++            os.readlink('/proc/self/ns/net') != grant['hostNetworkNamespace'],
++            'pure-unshared-network')
++    invocation = os.environ.get('INVOCATION_ID', '')
++    require(len(invocation) == 32 and all(ch in '0123456789abcdef' for ch in invocation),
++            'actual-pure-invocation')
++    verify(request['inputs'])
++    verify(request['materializedBuilderInputs'])
++    absent(request['mustRemainAbsent'])
++    before_names = sorted(os.listdir(CAPTURE))
++    require('observe-proposal.json' not in before_names, 'builder-output-must-be-new')
++    named_mounts = mounts(request['readOnlyPaths'])
++    limits = resources()
++    attempt = ROOT/'preparation-attempt'
++    attempt.mkdir(mode=0o700)
++    record(attempt/'intent.json', {'requestSHA256':sha(request_path),
++        'grantSHA256':sha(grant_path),'unitName':UNIT,'invocation':invocation,
++        'parentPID':os.getpid(),'uid':os.getuid(),'resources':limits,
++        'namedReadOnlyMounts':named_mounts,'retry':'FORBIDDEN',
++        'nativeOperationGranted':False,'builderOutput':str(CAPTURE/'observe-proposal.json')})
++    controls_root = attempt/'controls'
++    controls_root.mkdir(mode=0o700)
++    saved = [(subprocess, 'Popen', subprocess.Popen), (socket, 'socket', socket.socket)]
++    for name in ('system','fork','forkpty','posix_spawn','posix_spawnp',
++                 'execv','execve','execvp','execvpe','spawnv','spawnve','spawnvp','spawnvpe'):
++        if hasattr(os, name):
++            saved.append((os, name, getattr(os, name)))
++    saved_argv, saved_path = sys.argv[:], sys.path[:]
++    try:
++        for module, name, _ in saved:
++            setattr(module, name, forbidden)
++        controls = runpy.run_path(str(ROOT/'controls.py'), run_name='inert_controls_definitions')
++        result = controls['run'](controls_root, ROOT)
++        require(result['baseline'] == 'PASS' and result['harmless'] == 'SURVIVED' and
++                len(result['mutations']) == 4 and result['restoredBaseline'] == 'PASS' and
++                result['exactRestoration'] is True and result['sourceExact'] is True,
++                'focused-controls-complete')
++        verify(request['inputs'])
++        verify(request['materializedBuilderInputs'])
++        sys.path.insert(0, str(CAPTURE))
++        sys.argv = [str(CAPTURE/'build_observe_proposal.py'), '--prepare-only']
++        runpy.run_path(sys.argv[0], run_name='__main__')
++        output = CAPTURE/'observe-proposal.json'
++        private(output)
++        proposal = json.loads(output.read_bytes())
++        require(proposal.get('status') == 'PREPARED_NOT_ADMITTED' and
++                proposal['admissionProposal']['exclusive'] is False and
++                proposal['admissionProposal']['nativeOperationGranted'] is False and
++                proposal['admissionProposal']['notBefore'] == 1792201147 and
++                proposal['admissionProposal']['notAfter'] == 1792201747,
++                'builder-only-false-proposal')
++        require(sorted(os.listdir(CAPTURE)) == sorted(before_names+['observe-proposal.json']),
++                'builder-only-one-new-output')
++        verify(request['inputs'])
++        verify(request['materializedBuilderInputs'])
++        require(resources() == limits, 'pure-resource-restoration')
++        absent(request['mustRemainAbsent'])
++        require(sha(request_path) == request_sha and sha(grant_path) == grant_sha,
++                'pure-request-grant-unchanged')
++        record(attempt/'complete.json', {'status':'PREPARED_NOT_ADMITTED',
++            'invocation':invocation,'requestSHA256':sha(request_path),
++            'controlsSHA256':sha(controls_root/'controls.json'),
++            'builderOutputSHA256':sha(output),'builderOutputBytes':output.stat().st_size,
++            'sourceExact':True,'nativeOperationGranted':False,'successorGranted':False})
++    except BaseException as error:
++        record(attempt/'failure.json', {'status':'FENCED_NO_REPLAY',
++            'errorType':type(error).__name__,'nativeOperationGranted':False,
++            'builderOutputRetained':(CAPTURE/'observe-proposal.json').exists()})
++        raise
++    finally:
++        for module, name, value in reversed(saved):
++            setattr(module, name, value)
++        sys.argv = saved_argv
++        sys.path[:] = saved_path
++
++
++if __name__ == '__main__':
++    try:
++        main()
++    except BaseException:
++        print('PREPARATION STOP: preserve partials; no retry, native grant or successor', file=sys.stderr)
++        raise SystemExit(1)
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/in-unit.sh b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/in-unit.sh
+new file mode 100644
+index 000000000..8a80e2828
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/in-unit.sh
+@@ -0,0 +1,54 @@
++#!/bin/bash
++set -euo pipefail
++p=/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016
++old=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016
++cap=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2
++exec /usr/bin/bwrap --ro-bind / / --bind "$p" "$p" --ro-bind "$old" "$old" --bind "$cap" "$cap" \
++ --ro-bind "$p/drafts" "$p/drafts" \
++ --ro-bind "$p/source" "$p/source" \
++ --ro-bind /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent /home/nathaniel/.t3/worktrees/openplan/t3-c93f6f08/docs/reviews/2026-10-16-budget-catalog-settings-independent \
++ --ro-bind /home/nathaniel/.t3/worktrees/openplan/t3-8ee24700/docs/reviews/2026-10-16-budget-settings-native-capture-operation-independent /home/nathaniel/.t3/worktrees/openplan/t3-8ee24700/docs/reviews/2026-10-16-budget-settings-native-capture-operation-independent \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016 /home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016 /home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016 /home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016 /home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-catalog-capture-controls-20261016 /home/nathaniel/.local/state/openplan/budget-catalog-capture-controls-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2 /home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2 /home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016 /home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016 \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016 /home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016 \
++ --ro-bind /home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74 /home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74 \
++ --ro-bind /home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb /home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb \
++ --ro-bind /home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016 /home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016 \
++ --ro-bind "$cap/capture-attempt" "$cap/capture-attempt" \
++ --ro-bind "$cap/capture_catalog.py" "$cap/capture_catalog.py" \
++ --ro-bind "$cap/catalog-capture.sql" "$cap/catalog-capture.sql" \
++ --ro-bind "$cap/catalog-capture-request.json" "$cap/catalog-capture-request.json" \
++ --ro-bind "$cap/run-capture-window.sh" "$cap/run-capture-window.sh" \
++ --ro-bind "$cap/build_observe_proposal.py" "$cap/build_observe_proposal.py" \
++ --ro-bind "$cap/observe-bindings.required.json" "$cap/observe-bindings.required.json" \
++ --ro-bind "$cap/observe-input.json" "$cap/observe-input.json" \
++ --ro-bind "$cap/capture-grant.json" "$cap/capture-grant.json" \
++ --ro-bind "$cap/capture-review.md" "$cap/capture-review.md" \
++ --ro-bind "$cap/capture-window.json" "$cap/capture-window.json" \
++ --ro-bind "$cap/capture-manager-terminal.json" "$cap/capture-manager-terminal.json" \
++ --ro-bind "$cap/capture-outer-terminal.json" "$cap/capture-outer-terminal.json" \
++ --ro-bind "$cap/observe-bindings.actual.json" "$cap/observe-bindings.actual.json" \
++ --ro-bind "$cap/observe-review.md" "$cap/observe-review.md" \
++ --ro-bind "$cap/observe-window.json" "$cap/observe-window.json" \
++ --ro-bind "$cap/observe-publication.json" "$cap/observe-publication.json" \
++ --ro-bind "$p/run-observe-window.sh" "$p/run-observe-window.sh" \
++ --ro-bind "$p/parent-recorder.py" "$p/parent-recorder.py" \
++ --ro-bind "$p/controls.py" "$p/controls.py" \
++ --ro-bind "$p/prepare_once.py" "$p/prepare_once.py" \
++ --ro-bind "$p/in-unit.sh" "$p/in-unit.sh" \
++ --ro-bind "$p/run-preparation-window.sh" "$p/run-preparation-window.sh" \
++ --ro-bind "$p/source-pins.json" "$p/source-pins.json" \
++ --ro-bind "$p/preparation-request.json" "$p/preparation-request.json" \
++ --ro-bind "$p/pure-grant.json" "$p/pure-grant.json" \
++ --ro-bind "$p/root-outer-intent.json" "$p/root-outer-intent.json" \
++ --ro-bind "$p/parent-intent-contract.json" "$p/parent-intent-contract.json" \
++ --unshare-net --die-with-parent --chdir "$p" --dev-bind /dev/null /dev/null \
++ /usr/bin/env -i PATH=/usr/bin:/bin HOME="$p/home" TMPDIR="$p/tmp" XDG_CACHE_HOME="$p/cache" \
++ INVOCATION_ID="${INVOCATION_ID:?actual-pure-unit-invocation-required}" PYTHONDONTWRITEBYTECODE=1 \
++ /usr/bin/python3 -B "$p/prepare_once.py" --prepare-once
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-preparation-window.sh b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-preparation-window.sh
+new file mode 100644
+index 000000000..c8902f2cc
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-preparation-window.sh
+@@ -0,0 +1,16 @@
++#!/bin/bash
++# Proposed ONE pure/source preparation only. A NEW root grant is required.
++set -euo pipefail
++umask 077
++exec 9<>/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock
++/usr/bin/flock -n -x 9
++set +e
++/usr/bin/systemd-run --user --wait --pipe --unit=openplan-budget-observe-outer-preparation-20261016-01 \
++ -p RuntimeMaxSec=120 -p MemoryMax=512M -p MemorySwapMax=0 \
++ -p CPUQuota=50% -p TasksMax=64 -p UMask=0077 \
++ /bin/bash /home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/in-unit.sh
++pure_manager_code=$?
++set -e
++/usr/bin/systemctl --user show openplan-budget-observe-outer-preparation-20261016-01.service \
++ --no-pager --property=Id,InvocationID,Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax
++exit "$pure_manager_code"
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-intent-contract.json b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-intent-contract.json
+new file mode 100644
+index 000000000..9de7d53ae
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-intent-contract.json
+@@ -0,0 +1,114 @@
++{
++  "schema": 1,
++  "status": "SOURCE_ONLY_PRIVATE_INTENT_CONTRACT_NOT_AN_INTENT_OR_GRANT",
++  "root": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016",
++  "actualIntentPath": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/root-observe-outer-intent.json",
++  "actualIntentCreated": false,
++  "entryArgv": [
++    "/usr/bin/python3",
++    "-B",
++    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/parent-recorder.py",
++    "--record-once"
++  ],
++  "wrapperArgv": [
++    "/bin/bash",
++    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-observe-window.sh"
++  ],
++  "nonMainRecorder": {
++    "path": "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py",
++    "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
++    "bytes": 11991,
++    "runName": "openplan_observe_collect_definitions",
++    "onlyCall": "collect(folder) plus existing private/read/sha/sync/record/manager_env helpers",
++    "forbidden": [
++      "main",
++      "ready",
++      "correlate",
++      "source_pins"
++    ],
++    "globals": "Assign ARGV/DEADLINE/BOUNDS in collect.__globals__, not runpy's returned mapping.",
++    "DEADLINE": 335,
++    "BOUNDS": {
++      "stdout": 1048576,
++      "stderr": 65536
++    }
++  },
++  "actualRootIntentFields": {
++    "schema": 1,
++    "purpose": "RECORD_ONE_ROOT_ADMITTED_OBSERVE_NO_AUTHORITY",
++    "stage": "observe",
++    "argv": [
++      "/bin/bash",
++      "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-observe-window.sh"
++    ],
++    "environment": {
++      "PATH": "/usr/bin:/bin",
++      "HOME": "/home/nathaniel",
++      "LANG": "C.UTF-8",
++      "XDG_RUNTIME_DIR": "/run/user/1000",
++      "DBUS_SESSION_BUS_ADDRESS": "unix:path=/run/user/1000/bus"
++    },
++    "deadlineSeconds": 335,
++    "stdoutLimit": 1048576,
++    "stderrLimit": 65536,
++    "retry": "FORBIDDEN",
++    "recorderGrantsNativeAuthority": false,
++    "recorderSHA256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
++    "wrapperSHA256": "25512b411bf99c19c1751148794741d22c5ae73eea5084f0da006b5a78b21737",
++    "parentSourceSHA256": "402e50fe6a871f32547431fca6c47b03ea6922c001b9f3fd1644dcee47f6887e",
++    "controllerSHA256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
++    "journalSHA256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
++    "policySHA256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
++    "sqlSHA256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
++    "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
++    "planSHA256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
++    "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
++    "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
++    "scopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
++    "captureAckSHA256": "757422de49bbcfffc27f229fc70ee5df0b2ca1537f326eaea71b2acb4f3c73a1",
++    "captureCompleteSHA256": "62152a732385a9499e27f0c913d55d801ae7482d3e50e22c6dc175efacf85a08",
++    "captureCollectedSHA256": "0b999332cea61652b95055ff733fcca6fdf1fb1e1d7f7daeb34189a3f35b56f1",
++    "captureManagerTerminalSHA256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e",
++    "captureOuterTerminalSHA256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5",
++    "captureAcceptanceSHA256": "1358666689e0346bb888d5b55631d194c737e79245258a8ab3b64b34e29bc2a7",
++    "admissionSHA256": "MISSING_ROOT_FINAL_TRUE_ADMISSION",
++    "reviewSHA256": "MISSING_ROOT_NEW_FINAL_OPERATION_REVIEW",
++    "windowSHA256": "MISSING_ROOT_FRESH_FINAL_WINDOW",
++    "publicationSHA256": "MISSING_ROOT_FINAL_TRUE_PUBLICATION"
++  },
++  "fileJoins": {
++    "controllerSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/controller.py",
++    "journalSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/journal.py",
++    "policySHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/policy.py",
++    "sqlSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/sql.py",
++    "packageSHA256": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/source-pins.json",
++    "planSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/plan.json",
++    "inputSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/observe-input.json",
++    "catalogSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/catalog.json",
++    "scopeSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/original-scope.json",
++    "captureAckSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/manager-ack.json",
++    "captureCompleteSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt/complete.json",
++    "captureCollectedSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent/complete.json",
++    "captureManagerTerminalSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-manager-terminal.json",
++    "captureOuterTerminalSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-outer-terminal.json",
++    "captureAcceptanceSHA256": "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-root-decision-20261016/acceptance.json",
++    "admissionSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/admissions/observe.json",
++    "reviewSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/reviews/observe.md",
++    "windowSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/windows/observe.json",
++    "publicationSHA256": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/publications/observe.json"
++  },
++  "authority": "This parent validates custody fingerprints only. Its result remains RECORDED_TRANSPORT_ONLY and nativeAcceptance UNASSESSED. controller.ready validates actual native authority; independent root ACK/stage/manager/parent audit is still required.",
++  "newNativeNamespace": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/native-observe-parent",
++  "namespaceCreated": false,
++  "returnedIds": "Actual parentPID before Popen; retained collector returns actual wrapperPID only. Root separately preserves tool/session/chunk and actual manager/controller/INV correlation.",
++  "toolBounds": {
++    "deadlineSeconds": 365,
++    "bytesPerStream": 1048576
++  },
++  "rootPrePopenDuty": "Durably publish exact final review/window/publication/admission/source/argv/env/input/capture joins and this intent before ONE parent invocation. UID1000, fresh capacity/exclusive scope and no unexpected stage/unit/path remain root decisions.",
++  "lock": "ONE NB EX FD9 held across --wait and fixed postshow. No second lock acquisition/read or manager query; release only on actual wrapper terminal.",
++  "noReplay": "Any nonzero/unknown/setup/source/custody/stream/deadline error preserves partials, no retry/cleanup/alternate/successor. Missing terminal is unknown; never claim backend death.",
++  "nativeOperationGranted": false,
++  "exclusive": false,
++  "publicationEnabled": false
++}
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-review.md b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-review.md
+new file mode 100644
+index 000000000..a9e389a4b
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-review.md
+@@ -0,0 +1,31 @@
++# DRAFT root preparation disposition, pending final source reading
++
++This is a non-authoritative builder input draft. It is not an independent
++OBSERVE operation review, source approval, publication or native grant.
++Root selects proposal epoch notBefore=1792201147 and notAfter=1792201747.
++These false-authority proposal times may expire without any rerun or successor.
++
++Source remains3f3639f54243f40dfe7ff093dbb7f4e982a18cbc, app44e638d6d79378042343bf5b18408f09ee991d57,
++422 migrations and schema2 packageb9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c.
++Target name isopenplan_budget_native_9c47bd610f2a49e8a35c706d, UNALLOCATED/UNADMITTED.
++Stage payload SHA256 is1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca.
++
++Fixed original independent review7d9875a25ea513fadc231fd402bb82caaf0d87da and
++metadata response91fbccd5e52abad57713843d7477c8e4772bd749 remain provenance.
++Source review366f315e1fbec1f4a3150bd9656f522c2c2e88b4 and capture proposal review
++f5184ccd6d9bf250c651a37538033b6922a784a0 do not approve OBSERVE.
++Original-author OBSERVE proposal is a97f479bc9294870ca0fcb38f2329c9f801b626d.
++
++Root personally reads and decides whether to materialize these exact draft
++bytes at the builder's fixed paths. A separate finite PURE/source grant is
++required before importing or running the builder. Its one possible output
++remains PREPARED_NOT_ADMITTED with exclusive=false/nativeOperationGranted=false.
++No times or hashes in this draft stand in for a final independent operation
++review, fresh actual operating window, true publication or controller admission.
++
++After any builder output and applicable outer-source controls, root obtains a
++NEW independent combined operation review of exact final bytes and records.
++Actual native admission, if later granted, needs fresh FINAL records and hashes
++in runtime-v2. No old capture grant, generic recorder result, failed trial or
++A0 target supplies that authority. This draft changes no application, runtime,
++query, guard, capture, role, grant, setting, server or protected proof.
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-window.json b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-window.json
+new file mode 100644
+index 000000000..86f41a17c
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-window.json
+@@ -0,0 +1,12 @@
++{
++  "stage": "observe",
++  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
++  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
++  "target": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
++  "exclusive": false,
++  "nativeOperationGranted": false,
++  "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
++  "notBefore": 1792201147,
++  "notAfter": 1792201747,
++  "status": "DRAFT_NONAUTHORITATIVE_BUILDER_WINDOW_NOT_OPERATING"
++}
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-publication.json b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-publication.json
+new file mode 100644
+index 000000000..d280691d4
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-publication.json
+@@ -0,0 +1,12 @@
++{
++  "stage": "observe",
++  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
++  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
++  "target": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
++  "exclusive": false,
++  "nativeOperationGranted": false,
++  "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
++  "notBefore": 1792201147,
++  "notAfter": 1792201747,
++  "status": "DRAFT_NONAUTHORITATIVE_BUILDER_PUBLICATION_NOT_TRUE_PUBLICATION"
++}
+diff --git a/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-bindings.actual.json b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-bindings.actual.json
+new file mode 100644
+index 000000000..ef3498f85
+--- /dev/null
++++ b/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-bindings.actual.json
+@@ -0,0 +1,23 @@
++{
++  "status": "DRAFT_FALSE_AUTHORITY_BINDINGS_NOT_NATIVE_APPROVAL",
++  "independentReviewCommit": "7d9875a25ea513fadc231fd402bb82caaf0d87da",
++  "metadataResponseCommit": "91fbccd5e52abad57713843d7477c8e4772bd749",
++  "sourceReviewCommit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
++  "captureOperationReviewCommit": "f5184ccd6d9bf250c651a37538033b6922a784a0",
++  "observeProposalCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
++  "reviewKind": "DRAFT_ROOT_PREPARATION_PENDING_FINAL_SOURCE_READING_NOT_OPERATION_REVIEW",
++  "nativeOperationGranted": false,
++  "catalogSHA256": "2e4ef8a7287ac532d6f546e3939d2ffbe4d1ad27ca846126585c82b4109fc2aa",
++  "scopeSHA256": "6b662207002833fc5b9dee820cc628d0313689810d42f1f977e731a4f2435c65",
++  "captureManagerAckSHA256": "757422de49bbcfffc27f229fc70ee5df0b2ca1537f326eaea71b2acb4f3c73a1",
++  "captureCollectedSHA256": "0b999332cea61652b95055ff733fcca6fdf1fb1e1d7f7daeb34189a3f35b56f1",
++  "captureCompleteSHA256": "62152a732385a9499e27f0c913d55d801ae7482d3e50e22c6dc175efacf85a08",
++  "captureManagerTerminalSHA256": "0dc22041b96cf4896aadc1d5041da8419caf3975bc0edce4d1875acfa760f94e",
++  "captureOuterTerminalSHA256": "1324255e4505af526a7de912cd366bfd9c1922b60029d7c381f66d48776992d5",
++  "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
++  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
++  "planSHA256": "d0ad2a5fc8e738d0b0f2c696199a7509009aa273c724dfc1217853459383e33d",
++  "reviewSHA256": "30e3bdff7dab51a33321ce8885ba180bbcc518743a054128527511a33739db19",
++  "windowSHA256": "683d4b383908370bbb4654a8ba4f4e15df5be6cb66fc51434020502a3d50ac68",
++  "publicationSHA256": "de74fa5f27159671b48986dd89ef723e325817a5f853f590641ba9f09634dba2"
++}

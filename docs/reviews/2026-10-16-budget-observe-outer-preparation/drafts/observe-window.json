@@ -1,0 +1,12 @@
+{
+  "stage": "observe",
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "target": "openplan_budget_native_9c47bd610f2a49e8a35c706d",
+  "exclusive": false,
+  "nativeOperationGranted": false,
+  "inputSHA256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
+  "notBefore": 1792201147,
+  "notAfter": 1792201747,
+  "status": "DRAFT_NONAUTHORITATIVE_BUILDER_WINDOW_NOT_OPERATING"
+}
