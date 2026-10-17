@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Land-use saved geography, unchecked source candidate:** the candidate PATCH
+guard directs study-area changes through the existing context editor. Additive
+migration `20261017014010_land_use_plan_context_geography.sql` guards retained
+context/geography agreement across table writers. The CLI-generated filename is
+allocated; the migration is unapplied and focused checks remain pending. Deploy
+the app only with the migration installed and the relevant checks accepted.
+Historical context and frozen snapshots are not backfilled. See the
+[preparation record](docs/reviews/2026-10-16-land-use-context-geography-correction/STATUS.md).
+
 **Engagement invoice-summary completeness, source candidate:** candidate migration
 `20261017000020_engagement_billed_summaries.sql` adds a caller-scoped stable
 snapshot of gross sent/paid subtotals and separate draft subtotals. Dashboard

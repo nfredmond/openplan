@@ -1,0 +1,19 @@
+Source/text/filesystem inspection only. No CLI or Node execution.
+Root source metadata: /home/nathaniel/.local/state/openplan/land-use-geography-root-selection-20261016/local-cli-metadata.json
+Donor: /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules
+Wrapper: supabase/dist/supabase.js
+Wrapper bytes 1500, mode 0700
+Wrapper SHA256 253caa8c31ee5976322d04a8bd7752622c0915e7943de3f74e2b73395c54a240
+supabase/package.json declares version 2.111.0
+Manifest SHA256 ee0ed48842f4313b47f65658600f28a2b0b5b564a4f10e793af405cf3d81accd
+Wrapper resolves @supabase/cli-linux-x64 first on Linux x64, unless SUPABASE_CLI_BINARY_OVERRIDE is present.
+No current environment override or credentials were read.
+Candidate platform manifest @supabase/cli-linux-x64/package.json declares 2.111.0
+Platform manifest SHA256 90e4a1592979b94578af22638169bb27bd8b02d9227096945e32728a0123ebe5
+Candidate platform binary path:
+/home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules/@supabase/cli-linux-x64/bin/supabase
+Candidate binary bytes 110385472, mode 0700
+Candidate binary SHA256 f038518c4a116c343249f29669df5a13adc27626c89b14f4187779b5bbd1629c
+These facts do not establish executing architecture, native version, help behavior or required sidecar behavior.
+Those require a separate explicitly granted finite window; failures stop without retry.
+No donor or production migration directory writes occur in this stage.

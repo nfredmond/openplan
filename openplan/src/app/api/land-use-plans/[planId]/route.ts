@@ -1,3 +1,4 @@
+import { isDeepStrictEqual } from "node:util";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
@@ -9,6 +10,7 @@ import { readFrozenPlanIdentity, type FrozenPlanIdentity } from "@/lib/land-use-
 import { readFrozenPlanDescriptor } from "@/lib/land-use-plans/descriptor-snapshot";
 import { readFrozenPlanContext } from "@/lib/land-use-plans/context-snapshot";
 import type { SavedPlanContext } from "@/lib/land-use-plans/plan-context";
+import { PlanContextError, readPlanContext } from "@/lib/land-use-plans/plan-context-store";
 import type { JurisdictionPlanDescriptor } from "@/lib/land-use-plans/contracts";
 import { createApiAuditLogger } from "@/lib/observability/audit";
 import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
@@ -23,6 +25,10 @@ const patchSchema = z.object({
 }).strict().refine((value) => Object.keys(value).length > 0, "At least one field must be updated");
 
 type Context = { params: Promise<{ planId: string }> };
+const geographyConflictMessage = "Land-use plan geography must match saved context";
+function geographyConflictResponse() {
+  return NextResponse.json({ error: "Use the plan context editor to change the saved study area. Keep your draft and review the current plan context." }, { status: 409 });
+}
 
 export async function GET(request: NextRequest, context: Context) {
   const audit = createApiAuditLogger("land-use-plans.detail", request);
@@ -138,6 +144,28 @@ export async function PATCH(request: NextRequest, context: Context) {
   const working = await loadWorkingVersion(loaded.access);
   if (!working) return NextResponse.json({ error: "Fork a working version before changing plan identity or applicability" }, { status: 409 });
 
+  // Context owns assessed geography. Unrelated edits need no large context read.
+  if (parsed.data.geographyLabel !== undefined || parsed.data.geographyGeojson !== undefined) {
+    const { access } = loaded;
+    try {
+      const current = await readPlanContext(access.supabase, { planId: access.plan.id,
+        workspaceId: access.plan.workspace_id, actorId: access.userId });
+      if (current.versionId !== working.id || current.descriptorId !== access.plan.descriptor_id
+        || current.planKindKey !== access.plan.plan_kind_key) return geographyConflictResponse();
+      if (current.contextState.status === "retained") {
+        const place = current.contextState.context.place;
+        if (access.plan.geography_label !== place.label || !isDeepStrictEqual(access.plan.geography_geojson, place.geometry)
+          || (parsed.data.geographyLabel !== undefined && parsed.data.geographyLabel !== place.label)
+          || (parsed.data.geographyGeojson !== undefined && !isDeepStrictEqual(parsed.data.geographyGeojson, place.geometry))) {
+          return geographyConflictResponse();
+        }
+      }
+    } catch (error) {
+      return NextResponse.json({ error: "OpenPlan could not confirm the saved plan context. Keep your draft and check again before changing the study area." },
+        { status: error instanceof PlanContextError ? error.status : 503 });
+    }
+  }
+
   if (parsed.data.applicableRequirementKeys !== undefined) {
     const descriptor = getPlanKindDescriptor(loaded.access.plan.descriptor_id, loaded.access.plan.plan_kind_key);
     if (!descriptor) return NextResponse.json({ error: "Plan kind rules are not installed" }, { status: 409 });
@@ -157,7 +185,10 @@ export async function PATCH(request: NextRequest, context: Context) {
   if (parsed.data.geographyLabel !== undefined) planUpdates.geography_label = parsed.data.geographyLabel;
   if (parsed.data.geographyGeojson !== undefined) planUpdates.geography_geojson = parsed.data.geographyGeojson;
   if (Object.keys(planUpdates).length) {
-    const result = await loaded.access.supabase.from("land_use_plans").update(planUpdates).eq("id", loaded.access.plan.id).select("id").maybeSingle();
+    const result = await loaded.access.supabase.from("land_use_plans").update(planUpdates)
+      .eq("id", loaded.access.plan.id).eq("workspace_id", loaded.access.plan.workspace_id).select("id").maybeSingle();
+    // The table guard also covers a first context save after our legacy read.
+    if (result.error?.code === "PT409" && result.error.message === geographyConflictMessage) return geographyConflictResponse();
     if (isWriteFailure(result.error)) return NextResponse.json({ error: "Failed to update plan" }, { status: 500 });
     if (writeMatchedNoRows(result)) return noRowsMatchedResponse({ subject: "land use plan", targetWasVerified: true });
   }

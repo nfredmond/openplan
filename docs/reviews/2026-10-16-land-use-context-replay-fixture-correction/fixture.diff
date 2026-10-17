@@ -1,0 +1,13 @@
+diff --git a/openplan/src/test/fixtures/land-use-plans/context-persistence.sql b/openplan/src/test/fixtures/land-use-plans/context-persistence.sql
+index 51fe80ec6..6498de602 100644
+--- a/openplan/src/test/fixtures/land-use-plans/context-persistence.sql
++++ b/openplan/src/test/fixtures/land-use-plans/context-persistence.sql
+@@ -137,7 +137,7 @@ BEGIN
+   EXECUTE replace(freeze_sql,quote_literal('{}'),quote_literal(jsonb_build_object('planContext',second_result->'context')::text));
+   SET LOCAL ROLE service_role;
+   PERFORM pg_temp.context_refuses(format('SELECT pg_temp.save_context(%L,%L,%L,%L,%L,%L,%L)',plan,version,actor,gen_random_uuid(),second_result->>'contextHash',raw_command,prepared),'PT409','frozen version save refused');
+-  replay := pg_temp.save_context(plan,version,actor,command,NULL,raw_command,NULL);
++  EXECUTE call_sql INTO replay;
+   PERFORM pg_temp.context_assert(replay-'replayed'=result-'replayed','lost acknowledgment recoverable after freeze');
+   SET LOCAL ROLE postgres;
+   IF current_setting('openplan.test_cascade_workspace',true)='1' THEN

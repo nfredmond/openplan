@@ -1,0 +1,43 @@
+Recorded 2026-10-16 America/Los_Angeles. Source custody only, not installed truth.
+T3 delegated research thread:
+thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-land-use-saved-context-geography-custody-source-20261016-round1
+T3 parent: 1401bb6a-70e4-42eb-a1f1-98045485f8cc
+T3 and Git path: /home/nathaniel/.t3/worktrees/openplan/t3-fb6d8272
+T3 and Git branch: t3/land-use-saved-context-geography
+Research model: gpt-6.1-sol high
+Starting HEAD: 05dd3e8da4a4572437f06e771b0a2477873e681f
+Starting application tree: 1e0b6522002b2485d37086790808c0217ff77cfe
+Starting working status: clean
+Parent supplied/read through Git: 0875f3f341eac90adc1463a59b6422f0212e5a90
+Parent application tree: 2b1916349d7379c96bf97b1708b3e4016d37384d
+No delta in land-use API/library directories from starting HEAD to parent.
+No delta in the 13 migration files mentioning land_use_plans.
+Tracked migration inventory: 405 files at starting HEAD, 423 at parent.
+No direction/dependency/compiler/test/runtime/import/probe/DB/HTTP/browser execution.
+
+SHA-256 of inspected current source/design files follows:
+cc6ea1ee716dc19a477c318b57cf8c033fecebe96df03edbedcabd91f43fb523  openplan/src/app/api/land-use-plans/[planId]/route.ts
+2934bb818b3192e2e8345b928cdf0e36d95a9bd4b1cdc48e26fb2bb56882c99b  openplan/src/app/api/land-use-plans/[planId]/context/route.ts
+f6e66da1ad8d3809ebbba98d25c4d8bccecd4db61f0e78410952a0b4cf770b7a  openplan/src/app/api/land-use-plans/[planId]/versions/route.ts
+dc15427a47bf280da34f6729841ce033625c250f0bd876b73f0b504bd011f063  openplan/src/lib/land-use-plans/api.ts
+c220b7e64a152ea5844bf50b7e45ad8a6ed6ace85a3be34802b8ffa5ee6b9ab1  openplan/src/lib/land-use-plans/plan-context.ts
+58b46b6348de25a0b5f7e4264eb6d61babe65550a747c094aae88227f81ac1ce  openplan/src/lib/land-use-plans/plan-context-store.ts
+4fc6479841d6c952635162623938afc88c9aaa67f49f1fc44bdebdabd51964de  openplan/src/lib/land-use-plans/plan-context-server.ts
+dc7512c4dadc3c8af515d12226ce51ddf5db5157397e302c7aefbb34381d6f92  openplan/src/lib/land-use-plans/plan-context-recovery.ts
+1c29bf8db895390f3c999db5f1e4d92c20f644b4cc2281bd9f98f3cf88f9f3fd  openplan/src/lib/land-use-plans/context-snapshot.ts
+83d0aa7090b841fb69e38e6d4f6bd4f69b35d97404ebf4079785836e9ab2baa6  openplan/src/lib/land-use-plans/frozen-identity.ts
+c748711a3c7eaacdfe5db1f9ca6eb82843444ea707ab807efb2274399243c039  openplan/src/lib/land-use-plans/versioning.ts
+6af73a9454932e1dd1d1d4dfd3ee2bf15d800a4a35f6b8c737400f6d806fa087  openplan/supabase/migrations/20260823000002_land_use_plans.sql
+e6eda1bdd47dc95b7821901026a5dfdd3f2b4074a75dbd20a84a6fd924498ada  openplan/supabase/migrations/20260823000003_land_use_plan_policy_compaction.sql
+055cd03f835f0992e46ba4672070938c1e131bcc621ea3444d90471892c770ab  openplan/supabase/migrations/20261016000002_land_use_plan_context.sql
+969804874bbe99a86b997619e937c9e5a776241ab970eed2669c03533f8aa965  openplan/supabase/migrations/20261016000003_land_use_plan_draft_revision.sql
+237106bc8f323c52095e2c682423f83fe4647e964eb4fc610b412ba6e809ea27  openplan/supabase/migrations/20261016000004_land_use_plan_freeze_commands.sql
+e6f53b47077007031dd6670925f4325cbffc71f42289ff2b4b49adced0175012  openplan/supabase/migrations/20261016000006_land_use_plan_retained_study_area.sql
+0d97279fedc429c86d9373bbc41f67b3941b3c0b8ce6925af30a3fa224c63fa8  openplan/supabase/migrations/20261016000007_land_use_plan_creation_commands.sql
+45f4b598eef277f4998ec6a3235767bfc07facb7e158665b4be401acb508331f  openplan/src/test/fixtures/land-use-plans/context-persistence.sql
+f532be8ad0494448f9a58c7476f28344f55a720497c13b0940cfed75cc66a0ae  openplan/src/test/fixtures/land-use-plans/draft-revision.sql
+176b547cf1e98307cf7886c4cecfb15157bd0b6f07154b65d425c22661acad7c  openplan/src/test/fixtures/land-use-plans/freeze-persistence.sql
+32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e  openplan/src/test/land-use-plan-frozen-rules-integration.test.ts
+865df16af6204942bed0bedfa41e43a812f7d152a6b40ad441c57e8cd9c70610  openplan/src/test/land-use-plan-public-identity.test.ts
+585fb0316527920d0d21ac7b68a3701260dfd5e5db93ee8908f3ad6d4002f252  docs/reviews/2026-10-07-land-use-authority/PLAN_CONTEXT_DESIGN.md
+974ea825a39f638bdf7cdc592e0200e295660d7364d13b16ff058da9b7a3b419  docs/reviews/2026-10-07-land-use-authority/CONTEXT_AUTHORING.md
