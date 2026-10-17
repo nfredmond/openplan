@@ -50,7 +50,8 @@
     "Synthetic table/roles and compilation only; no predecessor423restore, row guard/RLS/Auth/browser/hosted acceptance.",
     "No hard parent stream byte cap; native attach streams capped1MiB each.",
     "Single-user implicit superuser semantics do not establish production authorization.",
-    "No arbitrary storage durability or universal timeout signal proof."
+    "No arbitrary storage durability or universal timeout signal proof.",
+    "Container kernel cgroup enforcement was not independently read; saved Docker HostConfig supplies configured container limits."
   ],
   "previousFailures": [
     "TEST01 unsupported docker start option, zeroPostgres;permanentfailed1",
@@ -75,5 +76,6 @@
       "sha256": "a95e856d7db9db5b6a0102fe781bd2addec9d72cae70baf91cb8f3c0707bc167",
       "bytes": 5405
     }
-  }
+  },
+  "containerCapsEvidence": "Saved Docker inspect HostConfig from the exact owned container. Container kernel cgroup files were not independently read. serviceActualCaps comes from direct controller cgroup reads."
 }

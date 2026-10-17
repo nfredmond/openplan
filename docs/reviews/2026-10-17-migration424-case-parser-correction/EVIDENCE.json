@@ -46,8 +46,8 @@
       "sha256": "987aa3371520ccc34dbf3a3b1ee6aedc75c46210abbd7fdbfb6330932bdfe151"
     },
     "NATIVE_RESULT.json": {
-      "bytes": 3286,
-      "sha256": "567c428fceb066c387aab0246558f7eab1dc4444f0b49c765d38cb3a4285528b"
+      "bytes": 3633,
+      "sha256": "2f1a960a466c1750b90cd11395af226a737543a6b653dd474806c7e8c6dcc8c8"
     },
     "container-compile.sh": {
       "bytes": 794,
