@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 import { readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 
 // This reviewed snapshot preserves existing acceptance. Labels or cloned proof
 // references cannot admit another version. Updating the pin requires review of
@@ -71,7 +72,9 @@ export function parseTestedCliRegistry(source) {
   return freeze(registry);
 }
 
-const registry = parseTestedCliRegistry(readFileSync(new URL("./tested-cli-versions.json", import.meta.url), "utf8"));
+// Resolve the adjacent file through Node, not Vite's browser-asset URL transform.
+// Read the original bytes so the same strict manifest pin applies in both hosts.
+const registry = parseTestedCliRegistry(readFileSync(createRequire(import.meta.url).resolve("./tested-cli-versions.json"), "utf8"));
 
 export function testedCliRecord(provider) {
   const entry = registry.entries.find(record => record.provider === provider);
