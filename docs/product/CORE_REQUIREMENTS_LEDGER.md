@@ -610,3 +610,26 @@ practitioner usefulness and reminder delivery remain required. No complete M11,
 OWP/UPWP administration, financial acceptance or V1 claim follows. Nationwide,
 territory, tribal, independent installation and separate scientific acceptance
 requirements remain unchanged.
+
+## October 17, 2026: M1 retained-context source and custody evidence
+
+CORE-GEO-01 and CORE-US-PROCEDURES-01 remain mapped to M1/G1 and their full
+authority-by-place requirements. The [independent held-caller review](../reviews/2026-10-17-m1-operation-caller-independent/REPORT.md)
+accepts the bounded source response and saved evidence: 17 operation
+observations, six same-report reader calls and 15 separate wrapper entries.
+Its 1,570 saved-data comparisons are metadata and custody work, not additional
+tests. The supplied callbacks and owned fixture do not establish actual archive,
+tool, database, Auth or legal-applicability behavior.
+
+The next M1 boundary is selected-history custody and a complete authenticated
+migration423 predecessor before exact424 native proof. Historical and frozen A,
+current B, original-A command replay after B/freeze, fork/save-B, absent and
+malformed context, direct writers and ordered races remain unproved. The
+[validation record](../reviews/2026-10-17-m1-operation-caller-independent/VALIDATION.md)
+retains the source, supplied-control and operating boundaries separately.
+
+The M1 roadmap row now names these prerequisites without changing its status.
+KI-025, identified-build desktop/390px navigation and artifacts, practitioner
+usefulness, independent installation and cross-state, MPO and tribal cases
+remain open. No requirement grade, nationwide/territory scope, human authority
+decision, scientific acceptance or V1 destination changes.
