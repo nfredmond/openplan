@@ -1,0 +1,111 @@
+{
+  "kind": "SOURCE_SAVED_DATA_DOCUMENTATION_INDEX_NO_OPERATING_AUTHORITY",
+  "combinedParent": "1b8dab6e79bb2306c8a7f4d1982015e199422e38",
+  "combinedAppTree": "42fc0315070f31269325acb264f0260723dbd56b",
+  "records": [
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/ACCEPTANCE.json",
+      "sha256": "7a0c6403cf47c53ced02d290b14268761556e658b47bdc42488d2fad312c5aac",
+      "bytes": 4437,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/INDEPENDENT_SOURCE_DISPOSITION.json",
+      "sha256": "89e61be75ce4c060d769124c4a843ff3b6f19a94541b6875475c58678c25ccf2",
+      "bytes": 1613,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_PURE_RESULT.md",
+      "sha256": "80b96a89c185d578db16d57107d4e6940ac7c7ae40b41bc3dfa719e9d8611b6c",
+      "bytes": 12625,
+      "mode": "0o644",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-821621c7/docs/reviews/2026-10-16-m1-history-consumer-independent/REPORT.md",
+      "sha256": "55699dc880e8a8618ecd7121a4d8d537dbe71b31c23c4fe724fd5d507d642223",
+      "bytes": 20477,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-821621c7/docs/reviews/2026-10-16-m1-history-consumer-independent/EVIDENCE_PINS.json",
+      "sha256": "a930752e69098f053f1eb1b84b78beb56a136f7240d0fe3ce40f3d8d0cf864fe",
+      "bytes": 33974,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-dependency-multiset-root-decision-20261016/ACCEPTANCE.json",
+      "sha256": "a0250b5a70458261d801a213dbb0e7e314559115dd3b712858be24d48c82df12",
+      "bytes": 5876,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-dependency-multiset-root-decision-20261016/ROOT_CHECKPOINT_SOURCE_AUDIT.json",
+      "sha256": "8c63d4a3b572d504070b10d04744f760853f28a732745bbc149a733ecec4731f",
+      "bytes": 10240,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/REPORT.md",
+      "sha256": "02e372042cc34af2f9ff4033bda8caa9664c8438cca42a024ce2f36390ec0182",
+      "bytes": 16812,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/VALIDATION.md",
+      "sha256": "1ea7fa1aaf246781b717c54f3c4903d79450a03eb302d5dd3ef45f47f0847324",
+      "bytes": 9349,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/local-commit.json",
+      "sha256": "9c17be7bb5ba4d3bbb7f5522c50d6c8b4929026ed228f7ee569d9189cbf9321a",
+      "bytes": 12511,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    {
+      "path": "/home/nathaniel/.local/state/openplan/public-designation-wrap-root-preparation-20261016/CLI_ELF_METADATA_02.json",
+      "sha256": "39c88c146de0c2d82b8bf0dac0b1ecae1621ee69d35fd7fa663e10d701c7c3ff",
+      "bytes": 624,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  ],
+  "statusDocument": {
+    "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-history-and-dependency-pure-checkpoints/STATUS.md",
+    "sha256": "5927872d5739a32b17e493d492fde8e7902472362235d76f41bceb74eed96648",
+    "bytes": 7990,
+    "mode": "0o664",
+    "uid": 1000,
+    "gid": 1000
+  },
+  "M1ReviewCommit": "de39ae861fe6acd9b9d4b4a6bbdb30a02f517839",
+  "M1HeldCaptureFinding": "P2 cleanup can suppress terminal and replace primary exception; source-only response assigned, not activated",
+  "A0IndependentReviewTask": "node:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-a0-dependency-multiset-independent-20261016-round1",
+  "A0FinalSourceApproval": "PENDING",
+  "nativeOperationGranted": false,
+  "successorGranted": false,
+  "milestoneComplete": false,
+  "reviewerValidationNote": "M1 reviewer directory has REPORT.md and EVIDENCE_PINS.json only. ROOT absent-VALIDATION read is recorded privately as a metadata lookup error, not a subject trial."
+}
