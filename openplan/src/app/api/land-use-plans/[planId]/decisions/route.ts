@@ -11,7 +11,7 @@ import { readFrozenPlanContext } from "@/lib/land-use-plans/context-snapshot";
 import { hashFrozenRecord } from "@/lib/land-use-plans/versioning";
 import { buildAdoptionBlockers } from "@/lib/land-use-plans/workflow";
 import { createServiceRoleClient } from "@/lib/supabase/server";
-import { isWriteFailure, noRowsMatchedResponse, writeMatchedNoRows } from "@/lib/http/write-outcome";
+import { publishAdoptedPlan, PlanPublicationError } from "@/lib/land-use-plans/publication";
 
 const paramsSchema = z.object({ planId: z.string().uuid() });
 const frozenScopeSchema = z.object({
@@ -179,49 +179,25 @@ export async function POST(request: NextRequest, context: Context) {
   if (version.state !== "adopted" || !version.frozen_snapshot) {
     return NextResponse.json({ error: "Only an adopted frozen version can be published" }, { status: 409 });
   }
-  if (version.published_report_id) return NextResponse.json({ reportId: version.published_report_id, alreadyPublished: true });
-
-  const { data: decision, error: decisionError } = await access.supabase.from("land_use_plan_decisions")
-    .select("id, review_release_id, adoption_manifest, adoption_manifest_hash")
-    .eq("version_id", version.id).order("decided_on", { ascending: false }).limit(1).maybeSingle();
-  if (decisionError || !decision?.adoption_manifest_hash) return NextResponse.json({ error: "The adoption manifest could not be verified for publication" }, { status: 409 });
-
-  const { data: report, error: reportError } = await access.supabase.from("reports").insert({
-    workspace_id: access.plan.workspace_id,
-    project_id: null,
-    land_use_plan_id: access.plan.id,
-    title: payload.title,
-    report_type: "land_use_plan_packet",
-    status: "generated",
-    summary: `Frozen adopted plan packet. Content hash ${payload.versionContentHash}.`,
-    created_by: access.userId,
-    generated_at: new Date().toISOString(),
-    latest_artifact_url: `/published-plans/${access.plan.id}`,
-    latest_artifact_kind: "html",
-  }).select("id").single();
-  if (reportError) return NextResponse.json({ error: "Failed to create the frozen public packet" }, { status: 500 });
-  const { error: artifactError } = await access.supabase.from("report_artifacts").insert({
-    report_id: report.id,
-    artifact_kind: "html",
-    generated_by: access.userId,
-    metadata_json: {
-      landUsePlanId: access.plan.id,
-      versionId: version.id,
-      contentHash: payload.versionContentHash,
-      frozenSnapshot: version.frozen_snapshot,
-      adoptionManifest: decision.adoption_manifest,
-      adoptionManifestHash: decision.adoption_manifest_hash,
-      reviewReleaseId: decision.review_release_id,
-      confidentialityExclusions: ["land_use_plan_consultation_records"],
-    },
-  });
-  if (artifactError) {
-    const cleanup = await access.supabase.from("reports").delete().eq("id", report.id).select("id");
-    if (cleanup.error) audit.error("land_use_plan_publication_cleanup_failed", { error: cleanup.error });
-    return NextResponse.json({ error: "Failed to freeze the public packet artifact" }, { status: 500 });
+  try {
+    const result = await publishAdoptedPlan(createServiceRoleClient(), {
+      workspaceId: access.plan.workspace_id, planId: access.plan.id, actorId: access.userId,
+      versionId: version.id, versionNumber: version.version_number,
+      contentHash: payload.versionContentHash, title: payload.title,
+    }, version.frozen_snapshot);
+    audit.info("land_use_plan_publication_confirmed", { reportId: result.reportId, alreadyPublished: result.alreadyPublished });
+    return NextResponse.json({ reportId: result.reportId, alreadyPublished: result.alreadyPublished,
+      publicUrl: `/published-plans/${access.plan.id}` });
+  } catch (error) {
+    const failed = error instanceof PlanPublicationError ? error : new PlanPublicationError("unavailable");
+    audit.warn("land_use_plan_publication_unconfirmed", { kind: failed.kind });
+    const messages = {
+      invalid: "The publication request is invalid.",
+      forbidden: "Current plan write permission is required to publish.",
+      missing: "This plan is no longer available in the selected workspace.",
+      conflict: "The adopted plan changed or its retained packet could not be verified. Review the plan before publishing.",
+      unavailable: "OpenPlan could not confirm publication. Retry this version to check for its saved packet.",
+    };
+    return NextResponse.json({ error: messages[failed.kind] }, { status: failed.status });
   }
-  const publishResult = await access.supabase.from("land_use_plan_versions").update({ published_report_id: report.id }).eq("id", version.id).eq("state", "adopted").select("id").maybeSingle();
-  if (isWriteFailure(publishResult.error)) return NextResponse.json({ error: "The public plan was generated but publication could not be saved" }, { status: 500 });
-  if (writeMatchedNoRows(publishResult)) return noRowsMatchedResponse({ subject: "adopted plan version", targetWasVerified: true });
-  return NextResponse.json({ reportId: report.id, publicUrl: `/published-plans/${access.plan.id}` });
 }

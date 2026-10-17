@@ -1,0 +1,229 @@
+{
+  "status": "SOURCE_CHECKED_PENDING_NEW_INDEPENDENT_REVIEW",
+  "parent": "b1f4aaa5fa6874af45afb75d9172b5ac6f7486e9",
+  "sourcePins": {
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/publication.ts": {
+      "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+      "bytes": 2757
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts": {
+      "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+      "bytes": 13030
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql": {
+      "sha256": "15d1904db83f83d7ac93bc7aa7910de042f2e94ac256c4579906d48a036d2272",
+      "bytes": 8353
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-transaction.test.ts": {
+      "sha256": "9a3b413fe982fd587913c3c6f3e392cbccba4f6624aa0419ef337f9429883a6b",
+      "bytes": 11034
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts": {
+      "sha256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+      "bytes": 35072
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts": {
+      "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "bytes": 283
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "bytes": 3140
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json": {
+      "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "bytes": 735
+    }
+  },
+  "migration": "20261017030608_land_use_plan_publication_transaction.sql",
+  "migrationOrdinal": 425,
+  "generation": {
+    "CLI": "Official Supabase 2.75.0",
+    "invocation": "776ea1a046c34ed299ef506d4ff9cc0f",
+    "commands": 4,
+    "direction": 0,
+    "version": 0,
+    "help": 0,
+    "new": 0,
+    "emptyFileCreated": true,
+    "databaseApplied": false
+  },
+  "checks": {
+    "unit": "openplan-land-use-publication-checks-20261016-02",
+    "invocationFromEntry": "7f50ce8fd29f483f9b0966b409eacb88",
+    "invocationIDPrintedByManager": false,
+    "managerWaitTerminal": 0,
+    "serviceReportedRuntimeSeconds": 82.042,
+    "serviceReportedCPUSeconds": 40.78,
+    "parentElapsedSeconds": 82.06651887099724,
+    "baseline": 25,
+    "harmless": 25,
+    "restored": 25,
+    "newCases": 23,
+    "existingSelectedAdoptionCases": 2,
+    "namedFaults": 16,
+    "types": 0,
+    "lint": 0,
+    "direction": 0,
+    "datedDirectionRemindersRetained": true,
+    "caps": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64"
+    },
+    "finalResources": {
+      "memory.peak": "393850880",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.current": "0",
+      "pids.peak": "43",
+      "pids.events": "max 0"
+    },
+    "allEightSourcePinsMatch": true,
+    "nativeSQLExecuted": false,
+    "browserExecuted": false,
+    "hostwideConfinementClaim": false,
+    "mutations": [
+      {
+        "id": "snapshot-guard",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary refuses changed frozen bytes before any RPC",
+        "failedAssertions": 1,
+        "resultSHA256": "125e252109466cdd6b2a02914fdc26eb859320e8bfe5490a9b7ecd4697161da4"
+      },
+      {
+        "id": "returned-workspaceId",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary rejects a returned workspaceId from another scope",
+        "failedAssertions": 1,
+        "resultSHA256": "ee4991efc3444fcdeb5bc50cc5f0e44770f871bfe8c9a05f9fb4616b7d31519d"
+      },
+      {
+        "id": "returned-planId",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary rejects a returned planId from another scope",
+        "failedAssertions": 1,
+        "resultSHA256": "8b1e29225d24a4323255b3496b7ad9e6284021b83d230067e43c4b591f21d5b5"
+      },
+      {
+        "id": "returned-versionId",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary rejects a returned versionId from another scope",
+        "failedAssertions": 1,
+        "resultSHA256": "dd6b9c55c7e40e01bd3bc84bffabfea196b7c6e426e4a8e9a26b6cd2184b8746"
+      },
+      {
+        "id": "returned-hash",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary rejects a returned content hash from another version",
+        "failedAssertions": 1,
+        "resultSHA256": "1285f96d232e6151808b54ce705615d0e16aa980aa87b8dce56f3df0c37be456"
+      },
+      {
+        "id": "new-title",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary rejects an unexpected title for a newly created packet",
+        "failedAssertions": 1,
+        "resultSHA256": "87774e1dc5336e248e0f95ed7c0ebf6e318e6177fb5738f526d6f6c7146aeb52"
+      },
+      {
+        "id": "conflict-mapping",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary retains refusal semantics for PT409",
+        "failedAssertions": 2,
+        "resultSHA256": "87ee27b456295b758e9662dc7109e63fcd10bbb3175b1ebff8283691ba0c4e56"
+      },
+      {
+        "id": "unverified-pointer",
+        "tier": "ACTUAL_MODULE_SUPPLIED_RESPONSES",
+        "exactFullName": "atomic adopted plan publication boundary checks an existing pointer through the locked RPC instead of trusting the first read",
+        "failedAssertions": 1,
+        "resultSHA256": "f36836f63ba9c8142f2e5be42a5284c7e6e47805e19c36f2e0e9230ab6051eda"
+      },
+      {
+        "id": "plan-lock",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution locks the scoped plan and adopted version before inserting either record",
+        "failedAssertions": 1,
+        "resultSHA256": "6daaa4a3e3ceef65b21500ffe2e34757f7bf25c9e9fa587249e388833e017cd6"
+      },
+      {
+        "id": "current-adopted",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution locks the scoped plan and adopted version before inserting either record",
+        "failedAssertions": 1,
+        "resultSHA256": "5d87c049e941afcaf01f9e988eda132513363be7570d09cecc36aea68916d0c3"
+      },
+      {
+        "id": "current-writer",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution checks current write permission and exact retained source bytes",
+        "failedAssertions": 1,
+        "resultSHA256": "d5fccccc3036c9d0a52d5f209ddb0e8f76bc9c7978a13d7ed830f4e8b5ba73a8"
+      },
+      {
+        "id": "snapshot-encoding",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution checks current write permission and exact retained source bytes",
+        "failedAssertions": 1,
+        "resultSHA256": "f1b56a4dacb1250d9454374fe5bd825e513d1cd6dc897be3c76c8a0a74733efd"
+      },
+      {
+        "id": "existing-artifact",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution verifies the canonical packet before returning an existing pointer",
+        "failedAssertions": 1,
+        "resultSHA256": "d4b0227462bac9d5690879b43c371f6ced0c1bcacd826227bfc01abb8cb186aa"
+      },
+      {
+        "id": "null-pointer",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution inserts both records before the null-guarded pointer and rolls back unmatched publication",
+        "failedAssertions": 1,
+        "resultSHA256": "54f93f8339ba9893028e939b4218edc5527879cb9971b4b3f68dc32599ec9857"
+      },
+      {
+        "id": "rollback",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution inserts both records before the null-guarded pointer and rolls back unmatched publication",
+        "failedAssertions": 1,
+        "resultSHA256": "9ca793a968aa5ed8629433ea289afed3b482557dc96d739c4c9a79ae2b1bf4fa"
+      },
+      {
+        "id": "execute-grant",
+        "tier": "SQL_TEXT_INTENT",
+        "exactFullName": "publication SQL intent, without database execution exposes only the service-role invoker function and preserves source history",
+        "failedAssertions": 1,
+        "resultSHA256": "3c57c128a9a20e9b836e7d7e110263f3ee5203aca9d7b1fdc17b01d3763cc5eb"
+      }
+    ]
+  },
+  "priorFailure": {
+    "trial": "checks01",
+    "classification": "PERMANENT_HARNESS_READER_FAILURE_EXIT1",
+    "invocation": "3fc2f2bc2ea14b2bbee926f9ea97d186",
+    "harmless": 25,
+    "baseline": 25,
+    "namedKillsAccepted": 0,
+    "sourceCorrection": "Test-only explicit typed publication-error capture, with unrelated exceptions rethrown. No production change.",
+    "prior47PrivateFilesMatched": 47,
+    "priorTestsReused": false
+  },
+  "privateManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+    "sha256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+    "files": 3119
+  },
+  "limits": [
+    "No PostgreSQL parse, application, transaction, RLS, ACL or concurrent execution",
+    "SQL faults inspect text intent, not native behavior",
+    "No build or identified desktop/390px/browser/artifact acceptance",
+    "Direct privileged table writers and later adoption recovery remain outside this command proof",
+    "Prior whole configured TSC at appd60 does not establish this new whole application",
+    "Independent source review, native migration history and human publication acceptance remain open"
+  ],
+  "KI025Closed": false,
+  "M1Complete": false,
+  "V1Complete": false,
+  "releaseAccepted": false
+}
