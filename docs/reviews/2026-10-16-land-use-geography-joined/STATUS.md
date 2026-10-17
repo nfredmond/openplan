@@ -61,3 +61,9 @@ or the full all-state/DC, territory, tribal and overlapping-authority V1 contrac
 [EVIDENCE.json](EVIDENCE.json) binds the saved sources, receipts and checks.
 Private raw streams remain at their referenced local paths. No raw environment,
 client record, secret or database row is committed here.
+
+A post-terminal metadata reader initially requested a nonexistent parent intent
+file. Commit `1df1e4f9f` published this status note before its linked evidence
+index existed. The additive follow-up supplies EVIDENCE.json from actual
+dispatch-intent, returned-process and terminal files, and preserves the error.
+No source, test, guard or runtime changes or reruns follow this correction.

@@ -1,0 +1,160 @@
+{
+  "M1Complete": false,
+  "V1Complete": false,
+  "applicationTree": "d60a91076c9eaa3ad5c23f8b758599b20b36909c",
+  "browserAcceptance": false,
+  "candidate": "cd9f210ce50a38125fac9b42a2a9d28ca0eeed45",
+  "checks": [
+    {
+      "returncode": 0,
+      "seconds": 212.56265206099488,
+      "source": {
+        "app": "d60a91076c9eaa3ad5c23f8b758599b20b36909c",
+        "clean": true,
+        "head": "591377b16e6234d8b81bd2d93f857393f04e15e2",
+        "selectedSourcePinsMatch": 9
+      },
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "step": "types"
+    },
+    {
+      "returncode": 0,
+      "seconds": 5.0801842210348696,
+      "source": {
+        "app": "d60a91076c9eaa3ad5c23f8b758599b20b36909c",
+        "clean": true,
+        "head": "591377b16e6234d8b81bd2d93f857393f04e15e2",
+        "selectedSourcePinsMatch": 9
+      },
+      "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "step": "lint"
+    },
+    {
+      "returncode": 0,
+      "seconds": 1.722911132965237,
+      "source": {
+        "app": "d60a91076c9eaa3ad5c23f8b758599b20b36909c",
+        "clean": true,
+        "head": "591377b16e6234d8b81bd2d93f857393f04e15e2",
+        "selectedSourcePinsMatch": 9
+      },
+      "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+      "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+      "step": "direction"
+    }
+  ],
+  "finally": {
+    "app": "d60a91076c9eaa3ad5c23f8b758599b20b36909c",
+    "clean": true,
+    "head": "591377b16e6234d8b81bd2d93f857393f04e15e2",
+    "selectedSourcePinsMatch": 9
+  },
+  "inUnitPostCheckResourceSample": {
+    "cpu.max": "50000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "7516192768",
+    "memory.peak": "5564944384",
+    "memory.swap.max": "0",
+    "pids.events": "max 0",
+    "pids.max": "64",
+    "pids.peak": "42"
+  },
+  "independentReview": "edc0482306b4589e32c23f8a3cc7c15946b59824",
+  "invocation": "1053d31b1fef4079bdc837e191dee636",
+  "migrationApplied": false,
+  "nativeAcceptance": false,
+  "nextGeneratedRouteTypesAssessed": false,
+  "parentReturncode": 0,
+  "parentSession": 20946,
+  "postTerminalMetadataCorrection": {
+    "actualIntent": "dispatch-intent.json at proof root",
+    "fix": "Exact explicit actual filename set, no skipped/made-up receipt and no check rerun.",
+    "phase": "Post-terminal evidence index metadata",
+    "priorPublishedCommit": "1df1e4f9fd3bb9e01405222e24ccf562779c0e06",
+    "priorStatusSHA256": "66966b339e13fbe190dd34dfde5f777441bb3bf310431743f97ec05e05e6cd4f",
+    "rawError": "[Errno 2] No such file or directory: '/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/parent-01/intent.json'",
+    "runtimeRepeated": false,
+    "sourceChanged": false,
+    "type": "FileNotFoundError",
+    "whatHappened": "Parent collector has returned-process.json and terminal.json, not intent.json. A dependent multi-call script continued to stage, commit and push STATUS.md after the reader failed. EVIDENCE.json was absent. This additive follow-up supplies the actual evidence index and preserves this error."
+  },
+  "privateReceiptPins": {
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/before.json": {
+      "bytes": 649,
+      "sha256": "55ce6742c7c77831a6070b33c79472f83fd57c48c19bd95feb7761d2d7fe2f9f"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/binding.json": {
+      "bytes": 2091,
+      "sha256": "1019e839c5ef945d6fd8340479ae963868dd96de3d7a37c3d1c7958a4524392d"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/check.py": {
+      "bytes": 4537,
+      "sha256": "a9af21c83935f059b6fe5a7674304659b1391a79498360a2004f0e50f8293265"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/direction-result.json": {
+      "bytes": 431,
+      "sha256": "2bc6fa5bf0631bad24886346c062232883b02bb1d8a5c577d399cc3c410204c4"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/direction.stderr": {
+      "bytes": 648,
+      "sha256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/direction.stdout": {
+      "bytes": 286,
+      "sha256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/dispatch-intent.json": {
+      "bytes": 965,
+      "sha256": "593a34dcacda1c3c76fc2cac9ae72c75000a0438324547515a252dd1b6e8eca3"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/dispatch.py": {
+      "bytes": 970,
+      "sha256": "241c3eb84fc051116a26f349c2fdf3c6cffa08288d307f120d5d08baa715150e"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/identity-controls.json": {
+      "bytes": 269,
+      "sha256": "62f929da625af147fb3efa485e08790cd6d8106f0f157cef317e5d19dd5cad35"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/lint-result.json": {
+      "bytes": 427,
+      "sha256": "2f58ac812fa90547f61419d25e3fa607b3b560071e513163789c683fc4680b2c"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/metadata-reader-error-01.json": {
+      "bytes": 922,
+      "sha256": "cf1242a35e1de797e41d03e569f8dfc51005350b92762a8e59e809aed370e6a6"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/parent-01/returned-process.json": {
+      "bytes": 73,
+      "sha256": "bbe37457609371993959610bdccea33854d3efdf13732c6eb0715221dcb58c26"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/parent-01/stderr.bin": {
+      "bytes": 361,
+      "sha256": "4b80d1f756a7d4133f61f5360efe00a4ef61903cd402adf4c69a2625d1bbc6b1"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/parent-01/stdout.bin": {
+      "bytes": 200,
+      "sha256": "ca162e3fbb895aa02ad83540e940a7475db6277dc5dd52d0d0970271eb270f88"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/parent-01/terminal.json": {
+      "bytes": 486,
+      "sha256": "a381421fabb3a0305f3662e23e67793ca00f3d68090dadef9d181df8dc81a872"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/result.json": {
+      "bytes": 2102,
+      "sha256": "2b285023c4aa139cffacaf338e264bfa19827056454ff342f38198cca968ce2a"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/run.sh": {
+      "bytes": 1100,
+      "sha256": "40e912844e39bb8d8230669bb40e9cab55fc570d269ebeae90f18d9f002fca59"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-geography-joined-checks-20261016/types-result.json": {
+      "bytes": 428,
+      "sha256": "8aabb230d343f837ceb7885ca918328df4e61d713ce5f541679308613259577f"
+    }
+  },
+  "schema": 1,
+  "testedHead": "591377b16e6234d8b81bd2d93f857393f04e15e2",
+  "unit": "openplan-land-use-geography-joined-20261016-01"
+}
