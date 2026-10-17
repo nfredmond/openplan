@@ -1,0 +1,15 @@
+Id=openplan-budget-settings-v2-pure-20261016-02.service
+ActiveState=inactive
+SubState=dead
+InvocationID=
+RuntimeMaxUSec=infinity
+Result=success
+ExecMainCode=0
+ExecMainStatus=0
+MemoryPeak=[not set]
+MemorySwapPeak=[not set]
+CPUUsageNSec=[not set]
+CPUQuotaPerSecUSec=infinity
+MemoryMax=infinity
+MemorySwapMax=infinity
+TasksMax=35088

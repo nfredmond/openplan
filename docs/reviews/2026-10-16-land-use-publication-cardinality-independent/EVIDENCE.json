@@ -1,0 +1,1218 @@
+{
+  "verdict": "ACCEPT_BOUNDED_SOURCE_CORRECTION_NO_NEW_P1_P2_P3",
+  "candidate": "182add8b6929d8127d50f16123650bf27e8cb88f",
+  "parent": "eb4e2a4328880d2650251347a8629a6ad3c0ab27",
+  "appTree": "42fc0315070f31269325acb264f0260723dbd56b",
+  "findings": [],
+  "round2FindingDisposition": "EXACT_READER_SCOPE_SINGLETON_PRECONDITION_BEFORE_BOTH_PATHS_ADDRESSES_RETAINED_DUPLICATE_SOURCE_COUNTEREXAMPLE",
+  "originalTwoFindingDispositions": "PRIOR_SOURCE_RESPONSES_PRESERVED",
+  "requiredFurtherSourceCorrection": null,
+  "binding": {
+    "configuration": {
+      "threadId": "thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-land-use-publication-cardinality-independent-20261016-round3",
+      "modelSelection": {
+        "instanceId": "codex",
+        "model": "gpt-6.1-sol",
+        "options": [
+          {
+            "id": "reasoningEffort",
+            "value": "high"
+          }
+        ]
+      },
+      "runtimeMode": "full-access",
+      "interactionMode": "default"
+    },
+    "thread": {
+      "threadId": "thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-land-use-publication-cardinality-independent-20261016-round3",
+      "projectId": "ab054e5a-cce7-4e14-890b-d4e472a764ff",
+      "title": "Publication decision cardinality independent review",
+      "createdBy": "agent",
+      "creationSource": "mcp",
+      "status": "running",
+      "latestRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%253Adelegate-task%253Asol-land-use-publication-cardinality-independent-20261016-round3:ordinal:1",
+      "activeRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%253Adelegate-task%253Asol-land-use-publication-cardinality-independent-20261016-round3:ordinal:1",
+      "providerInstanceId": "codex",
+      "model": "gpt-6.1-sol",
+      "runtimeMode": "full-access",
+      "interactionMode": "default",
+      "linkedPullRequest": null,
+      "titleRegeneration": null,
+      "branch": "t3/land-use-publication-cardinality-review",
+      "worktreePath": "/home/nathaniel/.t3/worktrees/openplan/t3-220a9e84",
+      "parentThreadId": "1401bb6a-70e4-42eb-a1f1-98045485f8cc",
+      "relationshipToParent": "subagent",
+      "runCount": 1,
+      "itemCount": 14,
+      "pendingRequestCount": 0,
+      "archived": false,
+      "settled": false,
+      "settledAt": null,
+      "snoozed": false,
+      "snoozedUntil": null,
+      "createdAt": "2026-10-17T03:45:37.757Z",
+      "updatedAt": "2026-10-17T03:46:09.453Z"
+    },
+    "catalogModel": "gpt-6.1-sol",
+    "catalogReasoningDefault": "low"
+  },
+  "reviewerInitialHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "candidateChangedFiles": [
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-decision-cardinality/EVIDENCE.json",
+      "blob": "2d94b890ed98d5f3630d31b362e8628db5de781a",
+      "sha256": "244864c61aa2dcc064c40ea29d781982d1ddd50f2d5ed8322aa338df9f61acf6",
+      "bytes": 16423,
+      "liveMatch": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-decision-cardinality/REPORT.md",
+      "blob": "1593ed3ae2eb2ef7f6d6e46276376c856010f2df",
+      "sha256": "55357b77ec687b3ed7de910fa8a40394f853f20678b5246c828037511e3ffbdd",
+      "bytes": 7275,
+      "liveMatch": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/EVIDENCE.json",
+      "blob": "6b387ad1197703a2b884d6452aa80f034b8c8a9b",
+      "sha256": "db09fa0b5577958abfe9a90444787ec143f49fa0530e7e55c2a9519b39e9566c",
+      "bytes": 29850,
+      "liveMatch": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+      "blob": "63385a560e2c37e272efe6b1a7093ba26839216a",
+      "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+      "bytes": 22315,
+      "liveMatch": true
+    },
+    {
+      "path": "openplan/src/test/land-use-publication-retained-validation.test.ts",
+      "blob": "443ecfe065238a6209432ee82ebf71d62f02a397",
+      "sha256": "4907896c47ea88d19ef8ff9201150076f2426525ae14d89e08317da003b2a2ea",
+      "bytes": 8176,
+      "liveMatch": true
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "blob": "b153c67ae7727c110502542e0d46fbe29895fcf8",
+      "sha256": "8f63aeece4cf8a33c4af41fbbe5df371c21633e5f025d6a56e0cc0ae0e204436",
+      "bytes": 11005,
+      "liveMatch": true
+    }
+  ],
+  "importedReviews": [
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/REPORT.md",
+      "commit": "6b94c19b472ac16c82ee2551e59933fce2c58036",
+      "bytes": 25379,
+      "sha256": "34bf1a4a237c30c511876b4a46c37ddc1c78c268febbbb10e1df95183cffdcec",
+      "importExact": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/EVIDENCE.json",
+      "commit": "6b94c19b472ac16c82ee2551e59933fce2c58036",
+      "bytes": 7892,
+      "sha256": "753a09f3ae0227b4a0c13f711ba76c6c242e8fbc5dbf15b5a3804c4c57d3c8f4",
+      "importExact": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+      "commit": "2da034a2189c99e5538b56f62cd96ed135d5823b",
+      "bytes": 22315,
+      "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+      "importExact": true
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/EVIDENCE.json",
+      "commit": "2da034a2189c99e5538b56f62cd96ed135d5823b",
+      "bytes": 29850,
+      "sha256": "db09fa0b5577958abfe9a90444787ec143f49fa0530e7e55c2a9519b39e9566c",
+      "importExact": true
+    }
+  ],
+  "retainedEvidence": {
+    "candidate": "182add8b6929d8127d50f16123650bf27e8cb88f",
+    "app": "42fc0315070f31269325acb264f0260723dbd56b",
+    "manifests": [
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/PRIVATE_MANIFEST.json",
+        "sha256": "2314e644d5b286d4954e938a1f71b406c4b90b3834d9c83f5418484dcc1cc75a",
+        "count": 2530,
+        "mismatches": []
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/PRIVATE_MANIFEST.json",
+        "sha256": "79e819b24f873de2ce9750bde9591c1d30ec25d1c308653997548572ab9bc830",
+        "count": 2601,
+        "mismatches": []
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+        "sha256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+        "count": 3119,
+        "mismatches": []
+      }
+    ],
+    "sourcePins": [
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/publication.ts",
+        "actual": {
+          "sha256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+          "bytes": 2757,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/lib/land-use-plans/publication.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts",
+        "actual": {
+          "sha256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+          "bytes": 13030,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+        "actual": {
+          "sha256": "8f63aeece4cf8a33c4af41fbbe5df371c21633e5f025d6a56e0cc0ae0e204436",
+          "bytes": 11005,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-transaction.test.ts",
+        "actual": {
+          "sha256": "55f577fbfb8f346ecfece77f84edefc0caec4954638017aaff386d1e3e922014",
+          "bytes": 11038,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/test/land-use-publication-transaction.test.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-plan-frozen-rules-integration.test.ts",
+        "actual": {
+          "sha256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+          "bytes": 35072,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/test/land-use-plan-frozen-rules-integration.test.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts",
+        "actual": {
+          "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+          "bytes": 283,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/test/setup.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts",
+        "actual": {
+          "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+          "bytes": 3140,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/test/guided-flow-jsdom-dialog-shim.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json",
+        "actual": {
+          "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+          "bytes": 735,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/tsconfig.json",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/land-use-plans/report-adoption.ts",
+        "actual": {
+          "sha256": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+          "bytes": 2636,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/lib/land-use-plans/report-adoption.ts",
+        "gitMatches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-publication-retained-validation.test.ts",
+        "actual": {
+          "sha256": "4907896c47ea88d19ef8ff9201150076f2426525ae14d89e08317da003b2a2ea",
+          "bytes": 8176,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true,
+        "relativePath": "openplan/src/test/land-use-publication-retained-validation.test.ts",
+        "gitMatches": true
+      }
+    ],
+    "preservationPins": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-2d04f550/docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+        "actual": {
+          "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+          "bytes": 22315,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-2d04f550/docs/reviews/2026-10-16-land-use-publication-retained-independent/EVIDENCE.json",
+        "actual": {
+          "sha256": "db09fa0b5577958abfe9a90444787ec143f49fa0530e7e55c2a9519b39e9566c",
+          "bytes": 29850,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/PRIVATE_MANIFEST.json",
+        "actual": {
+          "sha256": "79e819b24f873de2ce9750bde9591c1d30ec25d1c308653997548572ab9bc830",
+          "bytes": 872729,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/source-pins.json",
+        "actual": {
+          "sha256": "f49ba9e1581ce9c1d6c7fab52d3e3f7646ba0d3ce2bb244efcbed39bfb03ddf3",
+          "bytes": 2975,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/controller.py",
+        "actual": {
+          "sha256": "cff51246a2f0a70c416e6c04d60e45c009fcf10a776406a895f51865a11adb87",
+          "bytes": 7004,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/result.json",
+        "actual": {
+          "sha256": "8837c8a5f2d92091a2033bb7cdf1dab5ca5bb85b9e6e340dbc7f2acdf4350cd3",
+          "bytes": 4627,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/finally.json",
+        "actual": {
+          "sha256": "c0a8974ced0fb094581ff3cfa7140f234d132f3773bee675448e8f7cb55d655e",
+          "bytes": 2902,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+        "actual": {
+          "sha256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+          "bytes": 1051165,
+          "mode": 436,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      }
+    ],
+    "preparedPins": [
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/controller.py",
+        "actual": {
+          "sha256": "9c94ac2b469f52b13ea534a6c1bb0540a39a3d7301ca7f7cb79f9a1127b373d6",
+          "bytes": 7139,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/dispatch.py",
+        "actual": {
+          "sha256": "c6083446fe8e9fcb9ecf55fe8566db6fb012cd360aa42729d7281d21c4b2c7b3",
+          "bytes": 1720,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/entry.sh",
+        "actual": {
+          "sha256": "56284484215f228bbc99c51ba5af96836efb3e16ce253b52ac09c0e738ce9a55",
+          "bytes": 971,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/host-netns",
+        "actual": {
+          "sha256": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+          "bytes": 16,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/initial-prepared.json",
+        "actual": {
+          "sha256": "c157b11cfc69959472635080639fabc1157524a58a93f3d9de80f1506a4b24f1",
+          "bytes": 4218,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/initial-source-pins.json",
+        "actual": {
+          "sha256": "9dfa2927b79cb805ba9ca0f4338549a34b95205eadd80b9e1bdc5a0e232309bd",
+          "bytes": 2975,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/mutations.json",
+        "actual": {
+          "sha256": "f0a32420861fb78ca92418b483825755c88ca7e17a95e237e7c9b6184c04e92a",
+          "bytes": 2550,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/preservation-pins.json",
+        "actual": {
+          "sha256": "ff6b518d8c4091087c2d2614685406d7c952a954007f5fe44b382349a061787a",
+          "bytes": 2253,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/prior-focused.test.ts",
+        "actual": {
+          "sha256": "ed9c43470afe67a8a41d7c1de435b8a832b41aade6816909314040339fcd44d6",
+          "bytes": 6585,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/prior-migration.sql",
+        "actual": {
+          "sha256": "fd3b9979cad3acdff2dc74bee4765f85bdea601bdd9fa9d4696edd774735abba",
+          "bytes": 10616,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/review-stage-inspection.json",
+        "actual": {
+          "sha256": "3024f8c90831cf12f4b7430d7c9f3e960fbb9279318c286129affd963a76b7a6",
+          "bytes": 15226,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/source-pins.json",
+        "actual": {
+          "sha256": "a260bcb42100a44d4f7bca986294bebce68c58a6cdb70cfa88023d80dc3ecf98",
+          "bytes": 2975,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/source.delta.patch",
+        "actual": {
+          "sha256": "aaed8f0923bdcfd9f7940eace0f5700fa4c8efa30594edb09989a1e57a66a2f9",
+          "bytes": 5420,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/tsconfig.focused.json",
+        "actual": {
+          "sha256": "a3e2ca3a0ff5e99646844b6e7ac8b8081f0b04b028fbc2526e51adddd655ba33",
+          "bytes": 968,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+        "actual": {
+          "sha256": "923e4519efad7b944595d61fa950b01a77e1819a0fce6db65c0627c71ffa9f36",
+          "bytes": 1403,
+          "mode": 384,
+          "uid": 1000,
+          "gid": 1000
+        },
+        "matches": true
+      }
+    ],
+    "changedFiles": [
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-decision-cardinality/EVIDENCE.json",
+        "blob": "2d94b890ed98d5f3630d31b362e8628db5de781a",
+        "sha256": "244864c61aa2dcc064c40ea29d781982d1ddd50f2d5ed8322aa338df9f61acf6",
+        "bytes": 16423,
+        "liveMatch": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-decision-cardinality/REPORT.md",
+        "blob": "1593ed3ae2eb2ef7f6d6e46276376c856010f2df",
+        "sha256": "55357b77ec687b3ed7de910fa8a40394f853f20678b5246c828037511e3ffbdd",
+        "bytes": 7275,
+        "liveMatch": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/EVIDENCE.json",
+        "blob": "6b387ad1197703a2b884d6452aa80f034b8c8a9b",
+        "sha256": "db09fa0b5577958abfe9a90444787ec143f49fa0530e7e55c2a9519b39e9566c",
+        "bytes": 29850,
+        "liveMatch": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+        "blob": "63385a560e2c37e272efe6b1a7093ba26839216a",
+        "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+        "bytes": 22315,
+        "liveMatch": true
+      },
+      {
+        "path": "openplan/src/test/land-use-publication-retained-validation.test.ts",
+        "blob": "443ecfe065238a6209432ee82ebf71d62f02a397",
+        "sha256": "4907896c47ea88d19ef8ff9201150076f2426525ae14d89e08317da003b2a2ea",
+        "bytes": 8176,
+        "liveMatch": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+        "blob": "b153c67ae7727c110502542e0d46fbe29895fcf8",
+        "sha256": "8f63aeece4cf8a33c4af41fbbe5df371c21633e5f025d6a56e0cc0ae0e204436",
+        "bytes": 11005,
+        "liveMatch": true
+      }
+    ],
+    "stages": [
+      {
+        "id": "harmless",
+        "jsonSHA256": "192b467ae8f26bfde23cdb9ca79193d67c55001dbf785aa104587833526b3cc0",
+        "passed": 4,
+        "failed": 0,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "harmless",
+          "exit": 0,
+          "stdoutSHA256": "540310a8bc63cda4b09f1ab2516520bfa681133302fc655ae4253a2f146033bd",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 3,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/harmless.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        }
+      },
+      {
+        "id": "baseline",
+        "jsonSHA256": "5ddaca439ea0ed3cd46be5649e76e7fedd5c3ee0ffe2560eb45d95a76f06367c",
+        "passed": 4,
+        "failed": 0,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "baseline",
+          "exit": 0,
+          "stdoutSHA256": "59f6fa3133e584522c78856e50cd27145e9b8d4f49e0a1ccda53552d9d9dc90a",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 39,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/baseline.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        }
+      },
+      {
+        "id": "missing-native-count",
+        "jsonSHA256": "39ed365554ed3584453a4b100eff1dff5af06ff66aaa8d0e648afefb6571cacb",
+        "passed": 2,
+        "failed": 2,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "missing-native-count",
+          "exit": 1,
+          "stdoutSHA256": "6a1af35e5542023ca6ae9965b8fae2dca6aaaef2cd674b326777c7218482d008",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 75,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/missing-native-count.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        },
+        "exactOracle": "retained publication SQL composition, not database execution requires one native decision in the exact reader plan version and hash scope",
+        "baselineOracleUnique": true,
+        "namedFailureMatches": true,
+        "failedCountMatches": true,
+        "allFailuresAssertionError": true
+      },
+      {
+        "id": "narrow-native-count",
+        "jsonSHA256": "260210641ff24634874b9e9c736ba833eedb1a15b238df5b3cc71a83cd34f00d",
+        "passed": 3,
+        "failed": 1,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "narrow-native-count",
+          "exit": 1,
+          "stdoutSHA256": "ef8ba71c7e305f3e1e08ecc5048e2b9f2e296823c6e2e849e1fcecbcf3171f8e",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 110,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/narrow-native-count.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        },
+        "exactOracle": "retained publication SQL composition, not database execution requires one native decision in the exact reader plan version and hash scope",
+        "baselineOracleUnique": true,
+        "namedFailureMatches": true,
+        "failedCountMatches": true,
+        "allFailuresAssertionError": true
+      },
+      {
+        "id": "late-native-count",
+        "jsonSHA256": "bd3b1299865d63993211859fe5cb8fbcc50916161f87e4f93e9f508177c380c0",
+        "passed": 2,
+        "failed": 2,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "late-native-count",
+          "exit": 1,
+          "stdoutSHA256": "67c7dc7866cd3484a6b29773b3185ffb6bb8aa6340ddf8e2921482fa5db77d79",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 145,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/late-native-count.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        },
+        "exactOracle": "retained publication SQL composition, not database execution places the native cardinality refusal before either publication branch",
+        "baselineOracleUnique": true,
+        "namedFailureMatches": true,
+        "failedCountMatches": true,
+        "allFailuresAssertionError": true
+      },
+      {
+        "id": "reader-duplicate-status",
+        "jsonSHA256": "1a69daf47525a685275e8160686ca77f52f5536e30009636ad90f75ee126260d",
+        "passed": 3,
+        "failed": 1,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "reader-duplicate-status",
+          "exit": 1,
+          "stdoutSHA256": "dbaafb530c61b4806d2a167f5bf4cc754f4aa9e6175402330f464476ec2ec419",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 181,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/reader-duplicate-status.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        },
+        "exactOracle": "retained publication decision reader boundary refuses the supplied multiple-native-rows query error for a valid decision",
+        "baselineOracleUnique": true,
+        "namedFailureMatches": true,
+        "failedCountMatches": true,
+        "allFailuresAssertionError": true,
+        "appliedMatches": true
+      },
+      {
+        "id": "restored",
+        "jsonSHA256": "3d9fcca20bcfd8f4864b0dd5532fda512ba97bfe59641784a7c0d6813a3bc989",
+        "passed": 4,
+        "failed": 0,
+        "pending": 19,
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputMatches": true,
+        "exitRecord": {
+          "name": "restored",
+          "exit": 0,
+          "stdoutSHA256": "d5cd394c88f7d58ffcac30a39f906644ec82c46192d8b4f5d2be238980bc28d6",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        },
+        "process": {
+          "pid": 216,
+          "parentPID": 2
+        },
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/vitest/vitest.mjs",
+            "run",
+            "--config",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/vitest.config.mjs",
+            "--reporter=json",
+            "--outputFile=/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/restored.json",
+            "-t",
+            "accepts typed nullable fields and preserves the exact native query|refuses the supplied multiple-native-rows query error for a valid decision|requires one native decision in the exact reader plan version and hash scope|places the native cardinality refusal before either publication branch",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        }
+      },
+      {
+        "id": "types",
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=768",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/typescript/bin/tsc",
+            "--project",
+            "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/tsconfig.focused.json",
+            "--pretty",
+            "false"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 90
+        },
+        "process": {
+          "pid": 251,
+          "parentPID": 2
+        },
+        "exitRecord": {
+          "name": "types",
+          "exit": 0,
+          "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "lint",
+        "intent": {
+          "argv": [
+            "/usr/bin/node",
+            "--max-old-space-size=384",
+            "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/eslint/bin/eslint.js",
+            "src/test/land-use-publication-retained-validation.test.ts"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 35
+        },
+        "process": {
+          "pid": 258,
+          "parentPID": 2
+        },
+        "exitRecord": {
+          "name": "lint",
+          "exit": 0,
+          "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "direction",
+        "intent": {
+          "argv": [
+            "/usr/bin/npm",
+            "run",
+            "product:direction:check"
+          ],
+          "cwd": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "timeoutSeconds": 20
+        },
+        "process": {
+          "pid": 269,
+          "parentPID": 2
+        },
+        "exitRecord": {
+          "name": "direction",
+          "exit": 0,
+          "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+          "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+        }
+      }
+    ],
+    "streams": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "baseline",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "missing-native-count",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "narrow-native-count",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "late-native-count",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "reader-duplicate-status",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "restored",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "types",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "direction",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      }
+    ],
+    "parentStreams": [
+      {
+        "channel": "stderr",
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/parent/stderr.bin",
+        "exists": true,
+        "hashMatches": true
+      },
+      {
+        "channel": "stdout",
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-decision-cardinality-correction-20261016/parent/stdout.bin",
+        "exists": true,
+        "hashMatches": true
+      }
+    ],
+    "restoration": {
+      "activeEmpty": true,
+      "sqlMatches": true
+    },
+    "checkpoint": {
+      "commitMatches": true,
+      "appMatches": true,
+      "changedFilesMatch": true,
+      "pinsMatch": true
+    },
+    "oldFailedSealKeys": [
+      "classification",
+      "acceptedHistoricalBaseline",
+      "acceptedHistoricalHarmless",
+      "namedKillsAccepted",
+      "files"
+    ],
+    "allSubjectOperationsExecutedByReviewer": false,
+    "parentTerminal": {
+      "backendDeath": "UNASSESSED",
+      "classification": "terminal-zero",
+      "deadlineSeconds": 140,
+      "elapsedSeconds": 28.511573330964893,
+      "failure": null,
+      "parentPID": 345641,
+      "returncode": 0,
+      "streams": {
+        "stderr": {
+          "limit": 65536,
+          "observedBytes": 367,
+          "retainedBytes": 367,
+          "sha256": "4ca601fc5189f45874583393092e4f88c12c6c30a1eb752bd9f42d7c3873a884"
+        },
+        "stdout": {
+          "limit": 1048576,
+          "observedBytes": 0,
+          "retainedBytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wrapperPID": 345647
+    },
+    "sourceParent": "eb4e2a4328880d2650251347a8629a6ad3c0ab27"
+  },
+  "sourceCustody": {
+    "source": [
+      {
+        "path": "openplan/src/lib/land-use-plans/report-snapshot.ts",
+        "sha256": "bda12210a80d4d761eb63feaff6c352a1b6fd2c33d65c45e10c5606421f0b8aa",
+        "bytes": 1962,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/src/lib/land-use-plans/api.ts",
+        "sha256": "dc15427a47bf280da34f6729841ce033625c250f0bd876b73f0b504bd011f063",
+        "bytes": 7732,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/src/lib/land-use-plans/frozen-identity.ts",
+        "sha256": "83d0aa7090b841fb69e38e6d4f6bd4f69b35d97404ebf4079785836e9ab2baa6",
+        "bytes": 1354,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/src/lib/land-use-plans/versioning.ts",
+        "sha256": "c748711a3c7eaacdfe5db1f9ca6eb82843444ea707ab807efb2274399243c039",
+        "bytes": 2150,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/src/components/reports/land-use-plan-report-page.tsx",
+        "sha256": "2e2f49cdc302b505ad00d62620d6089c112b1d6d0b4640d29cae1408fb40d323",
+        "bytes": 3699,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/src/app/api/reports/[reportId]/provenance/route.ts",
+        "sha256": "f270d8202c3d0fbedaf981bca6fa8623e946ef0fbdd21f8ae07d466e1b8d9fca",
+        "bytes": 3843,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20260823000002_land_use_plans.sql",
+        "sha256": "6af73a9454932e1dd1d1d4dfd3ee2bf15d800a4a35f6b8c737400f6d806fa087",
+        "bytes": 24591,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20260823000007_land_use_plan_review_reporting.sql",
+        "sha256": "31ffdf58eab6c629bc3002ad44bc27ff695c82e60709695ca5dccd165786ebf6",
+        "bytes": 17462,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20260823000003_land_use_plan_policy_compaction.sql",
+        "sha256": "e6eda1bdd47dc95b7821901026a5dfdd3f2b4074a75dbd20a84a6fd924498ada",
+        "bytes": 1478,
+        "unchangedFromParent": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20261016000009_land_use_plan_cascade_guards.sql",
+        "sha256": "6a0fe1d0434889a0391cf18dc32224a5b089a13969583051bd51b25f9cb8a5ac",
+        "bytes": 5180,
+        "unchangedFromParent": true
+      }
+    ],
+    "importedReviews": [
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/REPORT.md",
+        "commit": "6b94c19b472ac16c82ee2551e59933fce2c58036",
+        "bytes": 25379,
+        "sha256": "34bf1a4a237c30c511876b4a46c37ddc1c78c268febbbb10e1df95183cffdcec",
+        "importExact": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/EVIDENCE.json",
+        "commit": "6b94c19b472ac16c82ee2551e59933fce2c58036",
+        "bytes": 7892,
+        "sha256": "753a09f3ae0227b4a0c13f711ba76c6c242e8fbc5dbf15b5a3804c4c57d3c8f4",
+        "importExact": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+        "commit": "2da034a2189c99e5538b56f62cd96ed135d5823b",
+        "bytes": 22315,
+        "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+        "importExact": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/EVIDENCE.json",
+        "commit": "2da034a2189c99e5538b56f62cd96ed135d5823b",
+        "bytes": 29850,
+        "sha256": "db09fa0b5577958abfe9a90444787ec143f49fa0530e7e55c2a9519b39e9566c",
+        "importExact": true
+      }
+    ],
+    "initialFixture": {
+      "reconstructedInitialSHA256": "878def0720558f2647cdbc808182b12e19a57f9dcfd577bcdf61f6f286db19af",
+      "pinnedInitialSHA256": "878def0720558f2647cdbc808182b12e19a57f9dcfd577bcdf61f6f286db19af",
+      "exactInitialMatch": true,
+      "finalSHA256": "4907896c47ea88d19ef8ff9201150076f2426525ae14d89e08317da003b2a2ea",
+      "onlyChange": "multiple rows returned -> multiple (or no) rows returned"
+    },
+    "failedSeal": {
+      "files": 47,
+      "mismatches": [],
+      "classification": "PERMANENT_HARNESS_READER_FAILURE_EXIT1",
+      "acceptedKills": 0
+    },
+    "authorHEAD": "182add8b6929d8127d50f16123650bf27e8cb88f",
+    "authorStatus": "",
+    "authorApp": "42fc0315070f31269325acb264f0260723dbd56b"
+  },
+  "report": {
+    "path": "docs/reviews/2026-10-16-land-use-publication-cardinality-independent/REPORT.md",
+    "sha256": "42b65dffeb28301c10c85cd49883e54ff1ab2f47d9d2ccce2d64e05f73e3b39e",
+    "bytes": 20551
+  },
+  "privateReviewEvidence": {
+    "root": "/home/nathaniel/.local/state/openplan/land-use-publication-cardinality-independent-20261016",
+    "mode": "0700",
+    "filesAtSeal": 38,
+    "manifestSHA256": "33cb9b5041dccf42ddbf58ada7354906ea5c11c48bced72d332c196fdb9ebd18"
+  },
+  "receiptClarification": {
+    "managerStderrContainsInvocation": true,
+    "entryInvocation": "054acb06e2744bcea9afced5eb2c06ec",
+    "sameInvocation": true,
+    "sourceDispositionChanged": false
+  },
+  "reviewerExecution": {
+    "sourceMetadataGitReading": true,
+    "subjectImportsDependenciesCompileTestsDirection": false,
+    "flockManagerDockerSQLNativeHTTPAuthProviderSDKBrowser": false,
+    "nestedAgents": false,
+    "pushJoinPRMainRelease": false
+  },
+  "acceptance": {
+    "boundedSourceCorrection": true,
+    "operatingAction": false,
+    "native425ParserRollbackLocksRLSACLHistory": false,
+    "allLaterDirectInsertsExcluded": false,
+    "actualSDKInvocation": false,
+    "wholeAppTSCBuild": false,
+    "browserDesktop390ConsoleArtifacts": false,
+    "practitioner": false,
+    "KI025Closed": false,
+    "M1Complete": false,
+    "V1Complete": false,
+    "release": false
+  }
+}

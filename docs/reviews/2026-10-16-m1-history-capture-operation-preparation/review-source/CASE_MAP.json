@@ -1,0 +1,1771 @@
+{
+  "tier": "LITERAL_SOURCE_EXPECTATIONS_NOT_OBSERVED",
+  "callerSHA256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+  "rows": [
+    {
+      "name": "harmless-first",
+      "scenario": "baseline",
+      "judgeScenario": "baseline",
+      "entry": "supplied",
+      "annotation": true,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_harmless_first",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:harmless-first",
+        "sourceSHA256": "d66c2042d2a8c18c1e9add8e93657204d09598969aa66cc798cdcad70db7716a"
+      },
+      "outcome": "SURVIVED",
+      "error": null,
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "baseline",
+      "scenario": "baseline",
+      "judgeScenario": "baseline",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_baseline",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:baseline",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": null,
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "admission-source-held",
+      "scenario": "held",
+      "judgeScenario": "held",
+      "entry": "production",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_admission_source_held",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:admission-source-held",
+        "sourceSHA256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_admission_source_held.OperationHeld",
+        "message": "history-operation:admission-source-absent",
+        "suffix": "_m1_operation_admission_source_held.OperationHeld: history-operation:admission-source-absent",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:admission-source-held\", line 50,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [],
+      "counts": {
+        "opens": 0,
+        "closes": 0,
+        "readCalls": 0,
+        "readBytes": 0,
+        "hashCalls": 0,
+        "captureCalls": 0
+      },
+      "status": null,
+      "managerExit": null,
+      "rawReturn": null,
+      "assessmentExit": null,
+      "finalizationAttempts": [],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": null,
+      "recordNames": [],
+      "rawCaptureTerminal": null,
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "primary-plus-finalization",
+      "scenario": "primary",
+      "judgeScenario": "primary",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_primary_plus_finalization",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:primary-plus-finalization",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:operation-primary",
+        "suffix": "RuntimeError: supplied:operation-primary",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 236,",
+        "tracePrefix": "_m1_operation_primary_plus_finalization.OperationFinalizationError: history-operation:finalization-failed\n\nThe above exception was the direct cause of the following exception:\n\nTraceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 7,
+      "assessmentExit": null,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [
+        [
+          "archive.postparse-readback",
+          "builtins.OSError",
+          "supplied:postparse-readback"
+        ],
+        [
+          "archive.close",
+          "builtins.OSError",
+          "supplied:archive-close"
+        ],
+        [
+          "final.input-source-readback",
+          "builtins.OSError",
+          "supplied:final-source"
+        ],
+        [
+          "final.mount-security-readback",
+          "builtins.OSError",
+          "supplied:final-mount"
+        ]
+      ],
+      "issueErrors": [
+        {
+          "operation": "archive.postparse-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:postparse-readback",
+            "suffix": "OSError: supplied:postparse-readback",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 142,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "archive.close",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:archive-close",
+            "suffix": "OSError: supplied:archive-close",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 94,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "final.input-source-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:final-source",
+            "suffix": "OSError: supplied:final-source",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 199,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "final.mount-security-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:final-mount",
+            "suffix": "OSError: supplied:final-mount",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 204,",
+            "tracePrefix": "Traceback "
+          }
+        }
+      ],
+      "primaryError": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:operation-primary",
+        "suffix": "RuntimeError: supplied:operation-primary",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 236,",
+        "tracePrefix": "ValueError: supplied:original-cause\n\nThe above exception was the direct cause of the following exception:\n\nTraceback "
+      },
+      "terminalRecordError": {
+        "fullClass": "builtins.OSError",
+        "message": "supplied:operation-terminal-record",
+        "suffix": "OSError: supplied:operation-terminal-record",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 219,",
+        "tracePrefix": "Traceback "
+      },
+      "recordFailure": true,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 7,
+        "status": "FAILED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": true,
+      "originalFramesPresent": true,
+      "originalCauseRetained": true,
+      "originalContextRetained": true,
+      "originalPrimaryFrames": [
+        "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 236,"
+      ]
+    },
+    {
+      "name": "close-only",
+      "scenario": "close",
+      "judgeScenario": "close",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_close_only",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:close-only",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_close_only.OperationFinalizationError",
+        "message": "history-operation:finalization-failed",
+        "suffix": "_m1_operation_close_only.OperationFinalizationError: history-operation:finalization-failed",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:close-only\", line 156,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [
+        [
+          "archive.close",
+          "builtins.OSError",
+          "supplied:archive-close"
+        ]
+      ],
+      "issueErrors": [
+        {
+          "operation": "archive.close",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:archive-close",
+            "suffix": "OSError: supplied:archive-close",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 94,",
+            "tracePrefix": "Traceback "
+          }
+        }
+      ],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "admission-expired",
+      "scenario": "initial-expiry",
+      "judgeScenario": "initial-expiry",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_admission_expired",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:admission-expired",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:admission-expired",
+        "suffix": "RuntimeError: supplied:admission-expired",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 191,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 0,
+        "closes": 0,
+        "readCalls": 0,
+        "readBytes": 0,
+        "hashCalls": 0,
+        "captureCalls": 0
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": null,
+      "assessmentExit": null,
+      "finalizationAttempts": [
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:admission-expired",
+        "suffix": "RuntimeError: supplied:admission-expired",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 191,",
+        "tracePrefix": "Traceback "
+      },
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": null,
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "expiry-after-capture",
+      "scenario": "post-expiry",
+      "judgeScenario": "post-expiry",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_expiry_after_capture",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:expiry-after-capture",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_expiry_after_capture.OperationFinalizationError",
+        "message": "history-operation:finalization-failed",
+        "suffix": "_m1_operation_expiry_after_capture.OperationFinalizationError: history-operation:finalization-failed",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:expiry-after-capture\", line 156,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 2,
+        "readBytes": 8,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [
+        [
+          "archive.postparse-readback",
+          "builtins.RuntimeError",
+          "supplied:postparse-expired"
+        ]
+      ],
+      "issueErrors": [
+        {
+          "operation": "archive.postparse-readback",
+          "error": {
+            "fullClass": "builtins.RuntimeError",
+            "message": "supplied:postparse-expired",
+            "suffix": "RuntimeError: supplied:postparse-expired",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 186,",
+            "tracePrefix": "Traceback "
+          }
+        }
+      ],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "invalid-raw-status",
+      "scenario": "invalid-status",
+      "judgeScenario": "invalid-status",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_invalid_raw_status",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:invalid-raw-status",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_invalid_raw_status.OperationRefusal",
+        "message": "history-operation:raw-capture-completion",
+        "suffix": "_m1_operation_invalid_raw_status.OperationRefusal: history-operation:raw-capture-completion",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:invalid-raw-status\", line 40,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 0,
+      "assessmentExit": null,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": {
+        "fullClass": "_m1_operation_invalid_raw_status.OperationRefusal",
+        "message": "history-operation:raw-capture-completion",
+        "suffix": "_m1_operation_invalid_raw_status.OperationRefusal: history-operation:raw-capture-completion",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:invalid-raw-status\", line 40,",
+        "tracePrefix": "Traceback "
+      },
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "FAILED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "stream-bound",
+      "scenario": "chunk",
+      "judgeScenario": "chunk",
+      "entry": "chunk",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_stream_bound",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:stream-bound",
+        "sourceSHA256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_stream_bound.OperationRefusal",
+        "message": "history-operation:stream-cap",
+        "suffix": "_m1_operation_stream_bound.OperationRefusal: history-operation:stream-cap",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:stream-bound\", line 40,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [],
+      "counts": {
+        "opens": 0,
+        "closes": 0,
+        "readCalls": 0,
+        "readBytes": 0,
+        "hashCalls": 0,
+        "captureCalls": 0
+      },
+      "status": null,
+      "managerExit": null,
+      "rawReturn": null,
+      "assessmentExit": null,
+      "finalizationAttempts": [],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": null,
+      "recordNames": [],
+      "rawCaptureTerminal": null,
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "terminal-record-only",
+      "scenario": "terminal",
+      "judgeScenario": "terminal",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_terminal_record_only",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:terminal-record-only",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "_m1_operation_terminal_record_only.OperationFinalizationError",
+        "message": "history-operation:finalization-failed",
+        "suffix": "_m1_operation_terminal_record_only.OperationFinalizationError: history-operation:finalization-failed",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:terminal-record-only\", line 156,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": {
+        "fullClass": "builtins.OSError",
+        "message": "supplied:operation-terminal-record",
+        "suffix": "OSError: supplied:operation-terminal-record",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 219,",
+        "tracePrefix": "Traceback "
+      },
+      "recordFailure": true,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "preparse-hash-failure",
+      "scenario": "prehash",
+      "judgeScenario": "prehash",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_preparse_hash_failure",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:preparse-hash-failure",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": {
+        "fullClass": "builtins.ValueError",
+        "message": "supplied:preparse-hash",
+        "suffix": "ValueError: supplied:preparse-hash",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 139,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "archive.compare",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 0,
+        "readBytes": 0,
+        "hashCalls": 1,
+        "captureCalls": 0
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": null,
+      "assessmentExit": null,
+      "finalizationAttempts": [
+        "archive.final-fd-metadata",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": {
+        "fullClass": "builtins.ValueError",
+        "message": "supplied:preparse-hash",
+        "suffix": "ValueError: supplied:preparse-hash",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 139,",
+        "tracePrefix": "Traceback "
+      },
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": null,
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "replace-primary",
+      "scenario": "primary",
+      "judgeScenario": "primary",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": {
+        "anchor": "            raise BaseException.with_traceback(primary, saved) from secondary\n",
+        "replacement": "            raise secondary\n"
+      },
+      "definition": {
+        "moduleName": "_m1_operation_replace_primary",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:replace-primary",
+        "sourceSHA256": "bfada61f28711b5a9d0bae240aab63264b7e057dfa3176fd7ec298a58026a86b"
+      },
+      "outcome": "FAULT_DETECTED",
+      "error": {
+        "fullClass": "_m1_operation_replace_primary.OperationFinalizationError",
+        "message": "history-operation:finalization-failed",
+        "suffix": "_m1_operation_replace_primary.OperationFinalizationError: history-operation:finalization-failed",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:replace-primary\", line 153,",
+        "tracePrefix": "Traceback "
+      },
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "operation-control:primary-preservation",
+        "suffix": "AssertionError: operation-control:primary-preservation",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py\", line 17,",
+        "tracePrefix": "Traceback "
+      },
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "FAILED",
+      "managerExit": 1,
+      "rawReturn": 7,
+      "assessmentExit": null,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [
+        [
+          "archive.postparse-readback",
+          "builtins.OSError",
+          "supplied:postparse-readback"
+        ],
+        [
+          "archive.close",
+          "builtins.OSError",
+          "supplied:archive-close"
+        ],
+        [
+          "final.input-source-readback",
+          "builtins.OSError",
+          "supplied:final-source"
+        ],
+        [
+          "final.mount-security-readback",
+          "builtins.OSError",
+          "supplied:final-mount"
+        ]
+      ],
+      "issueErrors": [
+        {
+          "operation": "archive.postparse-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:postparse-readback",
+            "suffix": "OSError: supplied:postparse-readback",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 142,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "archive.close",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:archive-close",
+            "suffix": "OSError: supplied:archive-close",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 94,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "final.input-source-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:final-source",
+            "suffix": "OSError: supplied:final-source",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 199,",
+            "tracePrefix": "Traceback "
+          }
+        },
+        {
+          "operation": "final.mount-security-readback",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:final-mount",
+            "suffix": "OSError: supplied:final-mount",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 204,",
+            "tracePrefix": "Traceback "
+          }
+        }
+      ],
+      "primaryError": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:operation-primary",
+        "suffix": "RuntimeError: supplied:operation-primary",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 236,",
+        "tracePrefix": "ValueError: supplied:original-cause\n\nThe above exception was the direct cause of the following exception:\n\nTraceback "
+      },
+      "terminalRecordError": {
+        "fullClass": "builtins.OSError",
+        "message": "supplied:operation-terminal-record",
+        "suffix": "OSError: supplied:operation-terminal-record",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 219,",
+        "tracePrefix": "Traceback "
+      },
+      "recordFailure": true,
+      "prewriteStatus": "FAILED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 7,
+        "status": "FAILED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": false,
+      "originalFramesPresent": false,
+      "originalCauseRetained": true,
+      "originalContextRetained": true,
+      "originalPrimaryFrames": [
+        "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 236,"
+      ]
+    },
+    {
+      "name": "skip-final-source",
+      "scenario": "skip-source",
+      "judgeScenario": "skip-source",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": {
+        "anchor": "        attempt('final.input-source-readback', lambda: boundary.final_source_readback())\n",
+        "replacement": "        # Supplied final-source attempt omitted.\n"
+      },
+      "definition": {
+        "moduleName": "_m1_operation_skip_final_source",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:skip-final-source",
+        "sourceSHA256": "4f2d19b3227f5ac8f1b7d4cb111ab0b60a934eb0914a22137e760c7b688413ed"
+      },
+      "outcome": "FAULT_DETECTED",
+      "error": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "operation-control:missing-final-source-readback",
+        "suffix": "AssertionError: operation-control:missing-final-source-readback",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py\", line 19,",
+        "tracePrefix": "Traceback "
+      },
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "ignore-close-issue",
+      "scenario": "close",
+      "judgeScenario": "close",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": {
+        "anchor": "        status = 'CAPTURED_UNASSESSED' if primary is None and not issues and assessment is not None else 'FAILED'\n",
+        "replacement": "        status = 'CAPTURED_UNASSESSED' if primary is None and assessment is not None else 'FAILED'\n"
+      },
+      "definition": {
+        "moduleName": "_m1_operation_ignore_close_issue",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:ignore-close-issue",
+        "sourceSHA256": "cce82ab60f56cea2d4ff33a45120169a3105003b9ce1caacc85a0f3f117145c4"
+      },
+      "outcome": "FAULT_DETECTED",
+      "error": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "operation-control:cleanup-only-refusal",
+        "suffix": "AssertionError: operation-control:cleanup-only-refusal",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py\", line 22,",
+        "tracePrefix": "Traceback "
+      },
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [
+        [
+          "archive.close",
+          "builtins.OSError",
+          "supplied:archive-close"
+        ]
+      ],
+      "issueErrors": [
+        {
+          "operation": "archive.close",
+          "error": {
+            "fullClass": "builtins.OSError",
+            "message": "supplied:archive-close",
+            "suffix": "OSError: supplied:archive-close",
+            "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py\", line 94,",
+            "tracePrefix": "Traceback "
+          }
+        }
+      ],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "promote-assessment",
+      "scenario": "promote",
+      "judgeScenario": "promote",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": {
+        "anchor": "                          'assessmentExit': 2, 'toolFailure': False, **detail(error)}\n",
+        "replacement": "                          'assessmentExit': 0, 'toolFailure': False, **detail(error)}\n"
+      },
+      "definition": {
+        "moduleName": "_m1_operation_promote_assessment",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:promote-assessment",
+        "sourceSHA256": "d77c1138bff8c40628d57e483575f5309597cb0f1ea07b3ec7c8458c06d198d7"
+      },
+      "outcome": "FAULT_DETECTED",
+      "error": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "operation-control:absent-oracle-assessment",
+        "suffix": "AssertionError: operation-control:absent-oracle-assessment",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py\", line 24,",
+        "tracePrefix": "Traceback "
+      },
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 0,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "disable-stream-cap",
+      "scenario": "chunk",
+      "judgeScenario": "chunk",
+      "entry": "chunk",
+      "annotation": false,
+      "transform": {
+        "anchor": "    require(used + len(raw) <= maximum, 'history-operation:stream-cap')\n",
+        "replacement": "    pass  # Supplied exact stream-cap comparison omitted.\n"
+      },
+      "definition": {
+        "moduleName": "_m1_operation_disable_stream_cap",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:disable-stream-cap",
+        "sourceSHA256": "ffed24556506ee5ae3e7498e3eeefe654bb54f35bd94889576efb6c90bf1d4a8"
+      },
+      "outcome": "FAULT_DETECTED",
+      "error": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "operation-control:missing-refusal:stream-cap",
+        "suffix": "AssertionError: operation-control:missing-refusal:stream-cap",
+        "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py\", line 26,",
+        "tracePrefix": "Traceback "
+      },
+      "operations": [],
+      "counts": {
+        "opens": 0,
+        "closes": 0,
+        "readCalls": 0,
+        "readBytes": 0,
+        "hashCalls": 0,
+        "captureCalls": 0
+      },
+      "status": null,
+      "managerExit": null,
+      "rawReturn": null,
+      "assessmentExit": null,
+      "finalizationAttempts": [],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": null,
+      "recordNames": [],
+      "rawCaptureTerminal": null,
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    },
+    {
+      "name": "restored-baseline",
+      "scenario": "baseline",
+      "judgeScenario": "baseline",
+      "entry": "supplied",
+      "annotation": false,
+      "transform": null,
+      "definition": {
+        "moduleName": "_m1_operation_restored_baseline",
+        "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py::supplied:restored-baseline",
+        "sourceSHA256": "f3ed76f06a38d0fc6926d7ae66661adabc2191e683332b205988b19e8b806196"
+      },
+      "outcome": "PASS",
+      "error": null,
+      "fault": null,
+      "operations": [
+        "mock.selection",
+        "mock.argv",
+        "mock.admission.initial",
+        "archive.path",
+        "archive.open",
+        "archive.compare",
+        "archive.hash.pre",
+        "mock.before-tool",
+        "mock.capture",
+        "archive.hash.post",
+        "archive.close",
+        "mock.final.source",
+        "mock.final.mount",
+        "record.operation-terminal"
+      ],
+      "counts": {
+        "opens": 1,
+        "closes": 1,
+        "readCalls": 4,
+        "readBytes": 16,
+        "hashCalls": 2,
+        "captureCalls": 1
+      },
+      "status": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "rawReturn": 0,
+      "assessmentExit": 2,
+      "finalizationAttempts": [
+        "archive.postparse-readback",
+        "archive.close",
+        "final.input-source-readback",
+        "final.mount-security-readback"
+      ],
+      "issues": [],
+      "issueErrors": [],
+      "primaryError": null,
+      "terminalRecordError": null,
+      "recordFailure": false,
+      "prewriteStatus": "CAPTURED_UNASSESSED",
+      "recordNames": [
+        "archive.preparse.json",
+        "history.terminal.json",
+        "history.assessment.json",
+        "archive.postparse.json",
+        "operation.terminal.json"
+      ],
+      "rawCaptureTerminal": {
+        "returncode": 0,
+        "status": "CAPTURED",
+        "partialFailure": null,
+        "cleanupIssues": [],
+        "terminalRecordFailure": null,
+        "retainedBytes": {
+          "stderr": 0
+        },
+        "observedBytes": {
+          "stderr": 0
+        },
+        "streams": {
+          "stdout": {
+            "path": "SUPPLIED_NO_CAPTURED_BODY",
+            "sha256": "SUPPLIED_ONLY"
+          }
+        }
+      },
+      "suppliedStreams": {
+        "stdout": {
+          "path": "SUPPLIED_NO_CAPTURED_BODY",
+          "sha256": "SUPPLIED_ONLY"
+        }
+      },
+      "primaryIdentity": null,
+      "originalFramesPresent": null,
+      "originalCauseRetained": null,
+      "originalContextRetained": null,
+      "originalPrimaryFrames": []
+    }
+  ],
+  "coreDefinition": {
+    "moduleName": "_m1_operation_core",
+    "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_core.py::supplied-core",
+    "sourceSHA256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d"
+  },
+  "archiveDefinition": {
+    "moduleName": "_m1_operation_archive",
+    "virtualFile": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/archive_checks.py::owned-fixture",
+    "sourceSHA256": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b"
+  },
+  "absentOracleError": {
+    "fullClass": "_m1_operation_core.HistoryUnassessed",
+    "message": "history-oracle-absent",
+    "suffix": "_m1_operation_core.HistoryUnassessed: history-oracle-absent",
+    "location": "File \"/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_core.py::supplied-core\", line 141,",
+    "tracePrefix": "Traceback "
+  },
+  "preservedSourcePaths": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_core.py": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/archive_checks.py": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py": "655fd0cbae675c168fa181dce98b9987621c7a919bcbee966bf6399f8d9b3966",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py": "effd951e7b2ee447cc1f0cc5bb579e394b78a1b64b235bbc36d98196091c6458",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/reader_controls.py": "6f3ed9fcc283a7c419d70ddae0ef2cf7a861009313f519b98b8f0be8dea0739d",
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/PRESERVATION.json": "b16dc84e70e6b679ed793ecd18133cb8970cba5de3638b25ac8e2ed148690ab3"
+  },
+  "counts": {
+    "observations": 17,
+    "callerInvocations": 15,
+    "chunkChecks": 2,
+    "callerDefinitions": 17,
+    "coreDefinitions": 1,
+    "archiveDefinitions": 1
+  },
+  "entryTransform": {
+    "anchor": "def capture_after_separate_root_admission(boundary):\n    \"\"\"Future SOURCE-bound ROOT supplies verified modules and narrow callbacks.\"\"\"\n    if OPERATION_SOURCE_APPROVAL is None:\n        raise OperationHeld('history-operation:admission-source-absent')\n",
+    "replacement": "def supplied_fixture_entry(boundary):\n    \"\"\"SUPPLIED_BOUNDARY_AND_OWNED_REAL_FDS_ONLY, never ROOT admission.\"\"\"\n    if boundary.authority != 'SUPPLIED_BOUNDARY_AND_OWNED_REAL_FDS_ONLY':\n        raise OperationHeld('operation-control:supplied-boundary-only')\n",
+    "productionApprovalNeverChanged": true
+  },
+  "fixture": {
+    "bytes": 8,
+    "sha256": "6020cbcaa8dfcec1d94cbfcdaeecd640aeb551e68c4820c87580eeea71739d64",
+    "mode": 384,
+    "authority": "SUPPLIED_BOUNDARY_AND_OWNED_REAL_FDS_ONLY"
+  },
+  "archiveAndRealToolContact": false,
+  "rootIndependentFirstInputComparisons": 30
+}

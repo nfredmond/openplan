@@ -1,0 +1,14 @@
+5d8f40f47cc3e530b905ba368a37730979b293a7cc8993d673e913c67f58b647  docs/reviews/2026-10-16-engagement-summary-completeness/NATIVE-PREREQUISITES.md
+41770aca1e9f4a7158ab9a10613c8fa0b57e41cafc02ea8a2f757f290b5be99c  docs/reviews/2026-10-16-engagement-summary-completeness/STATUS.md
+630cb14ff79ed8fd98fc38506ea07a971f897ab85b36613412c75e9d38303f3c  docs/reviews/2026-10-16-engagement-summary-completeness/VALIDATION.md
+c8794e3d122d48e5ede82e904f738ea3ed9ace61e2c703e36c4029b63f6741cd  docs/reviews/2026-10-16-engagement-summary-completeness/evidence.json
+154a43b07ea9272033ed3575c6d7e09eec02f27af758249bf3447043d2c5d5cf  docs/reviews/2026-10-16-engagement-summary-completeness/fault-observations.json
+8dceba1e5c31981aa77dad3e5b8cc690e8343fa98e0b4df9ce47483261dfc501  docs/reviews/2026-10-16-engagement-summary-completeness/metadata-diff-whitespace.json
+18c2fe74da5d8fbfeed0e9651b7314dd74daaf84226911b2faba729da46bba9a  docs/reviews/2026-10-16-engagement-summary-completeness/metadata-patch-context-miss.json
+c738a5868fdf365a501c2d03c4f74358ea72c4ec96bb55501a32b9dee1eafc17  docs/reviews/2026-10-16-engagement-summary-completeness/mutations.json
+6eea50d7d72cce5e8cab75dac9a2158fbeec2dd2d7a22369444aa2f47c0abaab  docs/reviews/2026-10-16-engagement-summary-completeness/preparation-pins.json
+de1a15f30ef246a8a85eebd33f7680b85dbb3bef26b8040f994e9e088606e7e2  docs/reviews/2026-10-16-engagement-summary-completeness/private-evidence.sha256
+9dd8dc505b1fcaa879b00e44bc0594f8cb0afdefb86bfb3d54d9d68902f56123  docs/reviews/2026-10-16-engagement-summary-completeness/selection.json
+a3e55aece50151f268bedf6245ad64944674c0a2994eeff1a440dceacae79254  docs/reviews/2026-10-16-engagement-summary-completeness/source-pins.json
+22d3df0801a4f5d28cd22fbe6366e0cfd5f9a8074b46dfd82e9569d52097750e  docs/reviews/2026-10-16-engagement-summary-completeness/source.diff
+6273639cbc404a06390c573fdc0d63e96161467c0a9fbbb4c3772d23a61a7792  docs/reviews/2026-10-16-engagement-summary-completeness/validation-metadata-correction.diff

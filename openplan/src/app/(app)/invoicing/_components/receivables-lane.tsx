@@ -13,10 +13,10 @@ import { TimeEntryComposer } from "@/components/invoicing/time-entry-composer";
 import { TimeEntryRowControls } from "@/components/invoicing/time-entry-row-controls";
 import { StatusBadge } from "@/components/ui/status-badge";
 import {
-  buildEngagementBilledSummary,
   summarizeReceivables,
   type ClientInvoiceRecordLike,
 } from "@/lib/invoicing/receivables";
+import { engagementSummaryFor, loadEngagementBilledSummaries } from "@/lib/invoicing/engagement-summary-queries";
 import { summarizeUnbilledTime, type TimeEntryLike } from "@/lib/invoicing/time-billing";
 import { createClient } from "@/lib/supabase/server";
 import { loadWorkspaceCalendar } from "@/lib/time/workspace-calendar";
@@ -128,6 +128,7 @@ export async function ReceivablesLane({
   const supabase = await createClient();
   // Days past due count on the workspace's calendar; UTC when it cannot be read.
   const calendarRead = loadWorkspaceCalendar(supabase, workspaceId);
+  const engagementSummariesRead = loadEngagementBilledSummaries(supabase, { workspaceId });
 
   const [clientsRead, engagementsRead, invoicesRead, staffRead, rateTablesRead, timeEntriesRead, projectsRead] =
     (await Promise.all([
@@ -211,6 +212,7 @@ export async function ReceivablesLane({
     : ((deliverablesRead.data ?? []) as Array<{ id: string; project_id: string; title: string }>);
 
   const calendar = await calendarRead;
+  const engagementSummaries = await engagementSummariesRead;
   const receivableSummary = summarizeReceivables(invoices, new Date(), calendar.timeZone);
   const unbilledSummary = summarizeUnbilledTime(timeEntries);
 
@@ -224,8 +226,7 @@ export async function ReceivablesLane({
     clientId: engagement.client_id,
     projectId: engagement.project_id,
     title: engagement.title,
-    notToExceedAmount:
-      engagement.not_to_exceed_amount == null ? null : Number(engagement.not_to_exceed_amount),
+    notToExceedAmount: engagement.not_to_exceed_amount,
   }));
   const deliverableOptions = deliverables.map((deliverable) => ({
     id: deliverable.id,
@@ -363,7 +364,7 @@ export async function ReceivablesLane({
                   {clientEngagements.length > 0 ? (
                     <ul className="mt-3 space-y-3">
                       {clientEngagements.map((engagement) => {
-                        const billed = buildEngagementBilledSummary(engagement, invoices);
+                        const billed = engagementSummaryFor(engagementSummaries, engagement);
                         const engagementRecord: EngagementComposerRecord = {
                           id: engagement.id,
                           clientId: engagement.client_id,
@@ -407,7 +408,7 @@ export async function ReceivablesLane({
                               />
                             </div>
                             <div className="mt-2">
-                              <EngagementNteBar summary={billed} />
+                              <EngagementNteBar summary={billed} currencyCode={null} />
                             </div>
                           </li>
                         );

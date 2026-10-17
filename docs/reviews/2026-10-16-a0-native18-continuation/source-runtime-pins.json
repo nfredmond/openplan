@@ -1,0 +1,27 @@
+{
+  "actualMap17BindingSHA256": "e5425e21b35c8c57faebebb771929a99c1600f0c21fa9f362c86ab0fef0018d5",
+  "appTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+  "branch": "t3/a0-migration-history-literal-correction",
+  "cleanParent": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "connectorTree": "228ce912b1cf63dba408445422dc6e2b690d91f4",
+  "originalPlanSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "originalR6BindingSHA256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03",
+  "runtime": {
+    "cases.py": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+    "continuation.py": "5d95283a72159dd60037dbce0483aecb79826dc7d0e66dd6108187d0d36f6ac8",
+    "controller.py": "385165f93c1ed28c732139d0ed82958df1bb20c463624d80b2b16dc08614ca9c",
+    "fixture.py": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+    "journal.py": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+    "literal_history.py": "c4ed381699f468403a04c248529985992b75b7dc504f6163b8d9fac7f03f204b",
+    "policy.py": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+    "run_stage.sh": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+    "sql/assertions.sql": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+    "sql/post_rollback.sql": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+    "sql/shadows.sql": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+  },
+  "runtimeOrigin": "Eight byte-identical original R6 sources by source copy. literal_history changes18 constants only; controller has explicit new18 continuation; continuation.py new. No old subject imports.",
+  "sourceCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52",
+  "sourceCommit": "f8a571bb0a18b8b6501870acb5ef1e760d487e1c",
+  "sourceMigrationCount": 421
+}

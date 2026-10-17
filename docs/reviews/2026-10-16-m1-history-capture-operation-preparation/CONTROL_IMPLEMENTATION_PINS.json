@@ -1,0 +1,104 @@
+{
+  "tier": "ADDITIVE_SOURCE_CONTROL_HANDOFF_NOT_GRANTABLE",
+  "publicFiles": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/CONTROL_IMPLEMENTATION.md": {
+      "bytes": 10726,
+      "sha256": "d3b6fcc33d227b12b35b62e2e3b0267d7bbfb8cb54aa463351ad08eb2d5a40a7",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/CONTROL_COUNTER_MAP.json": {
+      "bytes": 23896,
+      "sha256": "b8b112b9067bdcd84981566f9730d7cd37f8751344cabc1df3775fa92b3974ba",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateChild": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1",
+  "activeSources": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py": {
+      "bytes": 11348,
+      "sha256": "655fd0cbae675c168fa181dce98b9987621c7a919bcbee966bf6399f8d9b3966",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py": {
+      "bytes": 14220,
+      "sha256": "effd951e7b2ee447cc1f0cc5bb579e394b78a1b64b235bbc36d98196091c6458",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py": {
+      "bytes": 8071,
+      "sha256": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/reader_controls.py": {
+      "bytes": 5560,
+      "sha256": "6f3ed9fcc283a7c419d70ddae0ef2cf7a861009313f519b98b8f0be8dea0739d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/CASE_MAP.json": {
+      "bytes": 61617,
+      "sha256": "93796a898e414c98d442fc2ad4b7a3349bb40c48ce53e2616a42d8d5213ba17c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/READ_MAP.json": {
+      "bytes": 3274,
+      "sha256": "efbfbd37787cfabd56767309b84314da4e6a7fd04adf5c0128c7a95a4a9591ec",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/PRESERVATION.json": {
+      "bytes": 10145,
+      "sha256": "b16dc84e70e6b679ed793ecd18133cb8970cba5de3638b25ac8e2ed148690ab3",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/FUTURE_PURE_METADATA.json": {
+      "bytes": 3560,
+      "sha256": "ca815f43bb6c6179e6514e55835d38d5931a8f3758f3b4d5c4c9bfe167f6180c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/HARNESS_STATIC_AUDIT.json": {
+      "bytes": 2701,
+      "sha256": "6fdf980caeb1142ab0c23579aad93dcb2226b9f1032e12e9beb8fb03de824671",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "unchangedCaller": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py": {
+      "bytes": 8102,
+      "sha256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateSealPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/HARNESS_SOURCE_PINS.json",
+  "privateSealHashInHandoff": true,
+  "rootOriginalComparisons": 30,
+  "operationObservations": 17,
+  "readerCalls": 6,
+  "totalObservations": 23,
+  "runtime": false,
+  "grantable": false,
+  "productionApproval": null,
+  "history": "UNASSESSED"
+}

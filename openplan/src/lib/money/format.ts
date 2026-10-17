@@ -1,3 +1,5 @@
+import { compareExactDecimals, decimalUnitsAtScale, parseExactDecimal, type ExactDecimal } from "./optional-amount";
+
 /**
  * One way to write a dollar figure, everywhere in OpenPlan.
  *
@@ -103,42 +105,21 @@ function formatter(
     // An unknown ISO code. See `formatMoney`.
     created = null;
   }
-  formatterCache.set(key, created as Intl.NumberFormat);
+  if (created) formatterCache.set(key, created);
   return created;
 }
 
-/**
- * The honest fallback when `Intl` refuses the currency code.
- *
- * A `currency_code` column carries a three-letter CHECK but no membership test
- * against ISO 4217, so a typo reaches the formatter as a RangeError. A page
- * that 500s because somebody typed "USF" is worse than one that prints the
- * code beside the number — and quietly substituting USD would MISLABEL the
- * unit on every figure, which is the one thing a money surface may never do.
- */
-function fallbackAmountText(amount: number, currency: string, mode: "whole" | "exact"): string {
-  const digits = mode === "whole" ? 0 : 2;
-  const number = new Intl.NumberFormat(MONEY_DISPLAY_LOCALE, {
-    minimumFractionDigits: digits,
-    maximumFractionDigits: digits,
-  }).format(amount);
-  return `${currency} ${number}`;
-}
-
-/**
- * Coerce the shapes a money column actually arrives in. Supabase clients are
- * untyped here, so a numeric column reaches the UI as a string as often as a
- * number. Returns null for anything that is not a finite amount — including
- * the empty string, which `Number("")` would otherwise turn into a confident
- * zero.
- */
-function toFiniteAmount(value: number | string | null | undefined): number | null {
-  if (value === null || value === undefined) return null;
-  if (typeof value === "number") return Number.isFinite(value) ? value : null;
-  const trimmed = value.trim();
-  if (!trimmed) return null;
-  const parsed = Number(trimmed);
-  return Number.isFinite(parsed) ? parsed : null;
+/** Round decimal digits half away from zero, then format the exact whole units.
+ * Intl receives BigInt, never an unvalidated decimal-string overload. */
+function exactAmountText(amount: ExactDecimal, intl: Intl.NumberFormat): string {
+  const digits = intl.resolvedOptions().maximumFractionDigits ?? 0;
+  const scaled = decimalUnitsAtScale(amount, digits, true)!;
+  const rounded = scaled < BigInt(0) ? -scaled : scaled;
+  const minorBase = BigInt(10) ** BigInt(digits);
+  const whole = rounded / minorBase;
+  const signedWhole = amount.negative ? (whole === BigInt(0) ? -0 : -whole) : whole;
+  const fraction = String(rounded % minorBase).padStart(digits, "0");
+  return intl.formatToParts(signedWhole).map((part) => part.type === "fraction" ? fraction : part.value).join("");
 }
 
 /**
@@ -157,17 +138,24 @@ export function formatMoney(
   value: number | string | null | undefined,
   options: FormatMoneyOptions
 ): string {
-  const amount = toFiniteAmount(value);
+  const amount = parseExactDecimal(value);
   if (amount === null) return options.absent ?? "Not recorded";
 
   const currency = options.currency?.trim() ? options.currency.trim().toUpperCase() : DEFAULT_MONEY_CURRENCY;
 
   const mode: "whole" | "exact" =
-    options.precision === "whole" || (options.precision === "auto" && Number.isInteger(amount))
+    options.precision === "whole" || (options.precision === "auto" && decimalUnitsAtScale(amount, 0, false) !== null)
       ? "whole"
       : "exact";
   const intl = formatter(currency, mode, options.currencyDisplay ?? "symbol");
-  return intl ? intl.format(amount) : fallbackAmountText(amount, currency, mode);
+  if (intl) return exactAmountText(amount, intl);
+  // Malformed codes keep their own label rather than silently becoming USD.
+  // Intl itself renders well-formed but unassigned three-letter codes.
+  const digits = mode === "whole" ? 0 : 2;
+  const fallback = new Intl.NumberFormat(MONEY_DISPLAY_LOCALE, {
+    minimumFractionDigits: digits, maximumFractionDigits: digits,
+  });
+  return `${currency} ${exactAmountText(amount, fallback)}`;
 }
 
 /**
@@ -182,11 +170,12 @@ export function formatMoneyRange(
   high: number | string | null | undefined,
   options: FormatMoneyOptions
 ): string {
-  const lowAmount = toFiniteAmount(low);
-  const highAmount = toFiniteAmount(high);
+  const lowAmount = parseExactDecimal(low);
+  const highAmount = parseExactDecimal(high);
   if (lowAmount === null || highAmount === null) return options.absent ?? "Not recorded";
 
-  const [first, second] = lowAmount <= highAmount ? [lowAmount, highAmount] : [highAmount, lowAmount];
+  const lowFirst = compareExactDecimals(lowAmount, highAmount) <= 0;
+  const [first, second] = lowFirst ? [low, high] : [high, low];
   const firstText = formatMoney(first, options);
   const secondText = formatMoney(second, options);
   if (firstText === secondText) return firstText;

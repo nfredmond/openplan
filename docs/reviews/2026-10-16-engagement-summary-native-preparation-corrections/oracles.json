@@ -1,0 +1,10 @@
+{
+  "state": "PREPARED_ONLY_UNRUN",
+  "identityRecipe": "20261016-0020-400{caseDigit}-8000-{kindDecimal4}{indexDecimal8}",
+  "kinds": {"project": 1, "client": 2, "engagement": 3, "invoice": 10, "line": 11},
+  "firstOrdinaryInvoice": "20261016-0020-4001-8000-001000000000",
+  "ordinary501": {"caseDigit": 1, "eligible": 501, "sent": 251, "paid": 250, "rowCents": "101", "billedCents": "50601", "billedDecimal": "506.01", "excludedFirstCents": "50500", "excludedFirstDecimal": "505.00", "netEligibleCents": "50100", "retainedEligibleCents": "501", "remainingCents": "-49601", "projectedPlus203Cents": "50804", "rawInvoices": 505},
+  "maximum90": {"caseDigit": 2, "eligible": 90, "sent": 45, "paid": 45, "rowCents": "99999999999999", "billedCents": "8999999999999910", "billedDecimal": "89999999999999.10", "excludedFirstCents": "8899999999999911", "excludedFirstDecimal": "88999999999999.11", "rawInvoices": 94},
+  "maximum1001": {"caseDigit": 3, "eligible": 1001, "sent": 501, "paid": 500, "rowCents": "99999999999999", "billedCents": "100099999999998999", "billedDecimal": "1000999999999989.99", "excludedFirstCents": "99999999999999000", "excludedFirstDecimal": "999999999999990.00", "rawInvoices": 1005},
+  "shared": {"draftCents": "203", "draftDecimal": "2.03", "voidExcludedCents": "90000", "sameWorkspaceOtherProjectCents": "777", "otherWorkspaceCents": "888", "primaryCeilingCents": "1000", "sameWorkspaceOtherCeiling": null, "foreignCeilingCents": "0", "sourceMissing": "0", "sourceInvalid": "0", "maxResponseBytes": 1048576, "dateTie": "2026-10-16", "createdAtTie": "2026-10-16T00:00:00Z"}
+}

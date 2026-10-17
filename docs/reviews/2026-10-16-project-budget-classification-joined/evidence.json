@@ -1,0 +1,134 @@
+{
+  "sourceCheckpoint": "d0d12c406df8b8fd29bd2611a9cb29d8c3168ab8",
+  "applicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "reviewedCandidate": "8e1cc91a78040c91328d91f8200015570052defb",
+  "independentReview": "5685550274a5a3682eafc45cfe549e58da394ed6",
+  "selectedChecks": {
+    "tests": {
+      "success": true,
+      "numPassedTests": 309,
+      "numFailedTests": 0,
+      "numPendingTests": 0
+    },
+    "selectedFiles": 14,
+    "sourceUnchanged": true,
+    "fullSuite": false,
+    "fullApplicationCompile": false
+  },
+  "commands": [
+    {
+      "label": "direction",
+      "exitCode": 0,
+      "seconds": 1.9437190239550546,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "tests",
+      "exitCode": 0,
+      "seconds": 45.79910721606575,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "types",
+      "exitCode": 0,
+      "seconds": 11.500601147068664,
+      "sourceUnchanged": true
+    },
+    {
+      "label": "lint",
+      "exitCode": 0,
+      "seconds": 9.399221897008829,
+      "sourceUnchanged": true
+    }
+  ],
+  "terminal": {
+    "session": 38012,
+    "parentExitCode": 0,
+    "unit": "op-budget-classification-joined-checks01.service",
+    "invocationId": "6c58845cfa7d45b8b860895014a1b61d",
+    "serviceSeconds": 68.83,
+    "finalProperties": {
+      "ActiveState": "inactive",
+      "SubState": "dead",
+      "InvocationID": "",
+      "Result": "success",
+      "ExecMainStatus": "0"
+    },
+    "compilerLockHolders": []
+  },
+  "resources": {
+    "command": [
+      "/usr/bin/python3",
+      "-B",
+      "/home/nathaniel/.local/state/openplan/project-budget-classification-joined-checks-20261016/checks.py"
+    ],
+    "environmentKeys": [
+      "HOME",
+      "LC_CTYPE",
+      "NODE_OPTIONS",
+      "PATH",
+      "PYTHONDONTWRITEBYTECODE",
+      "TMPDIR",
+      "VITE_CACHE_DIR",
+      "XDG_CACHE_HOME",
+      "npm_config_cache",
+      "npm_config_globalconfig",
+      "npm_config_userconfig"
+    ],
+    "before": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "7954432",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "after": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "memory.peak": "564486144",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0"
+    },
+    "networkUnshared": true,
+    "donorMount": [
+      "21011 21009 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-0f743997/openplan/node_modules /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "exitCode": 0,
+    "seconds": 68.72175056894775
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/project-budget-classification-joined-checks-20261016",
+  "privateFilePins": {
+    "direction-intent.json": "7568ec88aa321e5556c8e2e66b9707405cf61b627c06d06e8de41521b7b95378",
+    "tests-intent.json": "c724b62ba20f1ca693568e6ced0162b2680aca1c5e51dcba81841778dd9ec539",
+    "host-network.txt": "faa2d2822eaf7944616d9d45da25314cd09b54d6cffed4ffa4d2ad80a6315d29",
+    "user-npmrc": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "tests-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "direction-stdout.log": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+    "lint-stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "parent-terminal.json": "a6f6a55f66b24a1125c02f650aa570e55d8fc8b5747aaa16a4b0104a3e5de23b",
+    "lint-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "types-stderr.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "types-stdout.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "global-npmrc": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "direction-stderr.log": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640",
+    "checks01-resources.json": "918b6a47238560984486f1674da77d9f2bca574db356697c0f3272a73ec51cf7",
+    "tests-stdout.log": "29ea3681df64da919ad37acc34c9cc905ff406547ac6740fcfab117da2a583b2",
+    "resource-exec.py": "76c50504deb10630ecff6c13f1a6b421a25c70368a317d45c57e740bf2c67ff5",
+    "test-files.json": "4e7fc7bca6ebf97276be333a303dd848bf3d8552583a570d37141b0ad850d4d2",
+    "checks.py": "26c3fd78b8fc59aa35e49b9d7dd378753de2432f7c135a762023b4eb9e7df3a7",
+    "setup.json": "e2ae37a51b5c39bc1a252b5cd7e997ba76ddae464983731dfce6aefdbf73cb40",
+    "tests-result.json": "22fb234d3889ed48532db04866bda3f8b69121f64e344beaf2a641d0cb3ba792",
+    "tsconfig.json": "bf5e66983a0de56617fe6f88470e2dd9238fc1c1271b886f018b43154b94f894",
+    "results.json": "00a920bb0346f5b8e40d678b9ab9be5e2da9c75a925e809eb21facd4abda2ecb",
+    "admission.json": "1b7f5086f0c743786cde7e5831be817a31ecf8dfbd9eb9ced1a3ed598a9f5a41",
+    "lint-intent.json": "8c2290a43ba62849215fbae9b32805f40f94f3329a8be05414f61031094cfca9",
+    "summary.json": "ebe16e80ed75dfa83d90aede27a062a2ffdfac0e56ea315a9e653ddbc907b7db",
+    "run.sh": "a4a6e46dd943215356b3696af150fb34d609a9e12b8e83388f300c47ebbb395d",
+    "types-intent.json": "57612ca8fff7f7eb8400d24046834121d651ce75a97807e56f66859fefe8ea2f",
+    "vitest.config.mjs": "0503f680557187d831423bb1b4a24df36ae79e23fe0ae039949f32dd3a55b5b1"
+  },
+  "inheritedStagedPatchSHA256": "404acef304a567807dc2ef2dda3292bc2e83eb0baaba9cce56d7567fe13af35c",
+  "nativePreparationReview": "02c7c6d6756dcafcb22f5aee91ff1a36cadb924d",
+  "nativePreparationFinding": "PREP-1 lifecycle incompatibility; foreign delivery/spend coverage absent; new r2 preparation underway",
+  "blindCategory": "Selected integration only; no native SQL/RLS/JSON/MVCC/upgrade, full compile/full suite/build/browser/financial/M11/v1 acceptance."
+}

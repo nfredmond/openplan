@@ -1,0 +1,27 @@
+--- inspect_elf_data.py
++++ inspect_elf_data_v02.py
+@@ -7,8 +7,8 @@
+ import struct
+ 
+ PUBLIC = Path(__file__).resolve().parent
+-PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment')
+-MANIFEST = PRIVATE.parent / 'runner-preparation/runtime-manifest.json'
++PRIVATE = Path('/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/parse02')
++MANIFEST = PRIVATE.parent.parent / 'runner-preparation/runtime-manifest.json'
+ DEFAULTS = ('/usr/lib/x86_64-linux-gnu', '/usr/lib')
+ MAX_BYTES = 134217728
+ 
+@@ -209,8 +209,11 @@
+         data, _ = blob(Path(name))
+         is_elf = data.startswith(b'\x7fELF')
+         demand(not ('.so' in Path(name).name and not is_elf), 'selected-so-is-not-elf')
+-        classifications.append(dict(path=name, elf=is_elf))
+-        if is_elf:
++        elf_type = struct.unpack_from('<H', data, 16)[0] if is_elf else None
++        demand(not is_elf or elf_type in (1, 2, 3), 'unknown-selected-elf-type')
++        classifications.append(dict(path=name, elf=is_elf, elfType=elf_type,
++                                    loadableRoot=is_elf and elf_type in (2, 3)))
++        if is_elf and elf_type in (2, 3):
+             roots.append(name)
+     nodes, edges, resolutions, issues = {}, [], {}, []
+     pending = list(roots)

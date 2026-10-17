@@ -1,0 +1,124 @@
+{
+  "state": "HELD_SOURCE_PROTOCOL_NO_GRANT_NO_WRAPPER_NO_CONTROL_EXECUTION",
+  "authorCommit": "de443130ea838fb2055cc0b51f3935dcaebe1ca8",
+  "applicationTree": "88ba8fdeec9326b2f2253ddbe9e49c67a8269ee8",
+  "nativeRecipe": "UNADMITTED_COMPLETE423_THEN424",
+  "fixedArgv": [
+    "/lib64/ld-linux-x86-64.so.2",
+    "--inhibit-cache",
+    "--library-path",
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/artifact-request-r1/libraries",
+    "/home/nathaniel/.local/state/openplan/m1-artifact-tool-acquisition-20261016/trial02/pg_restore",
+    "--use-list=/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reviewed-history.list",
+    "--file=-",
+    "--restrict-key=OpenPlanM1HistoryInspection20261016",
+    "/home/nathaniel/.local/state/openplan/gtfs-managed-ingestion-proof-20261009/project-geography-preview-final-20261015/source-private.dump"
+  ],
+  "toolCalls": 1,
+  "toolSeconds": 10,
+  "unitSeconds": 30,
+  "innerSeconds": 25,
+  "parentSeconds": 40,
+  "cleanupSeconds": 2,
+  "memoryBytes": 536870912,
+  "swapBytes": 0,
+  "cpuPercent": 50,
+  "tasksMax": 64,
+  "stdoutBytes": 67108864,
+  "stderrBytes": 131072,
+  "acceptedStderrBytes": 0,
+  "artifactAuditCeilingBytes": 100663296,
+  "artifactCeilingIsKernelQuota": false,
+  "stdin": "DEVNULL",
+  "capturedSQL": "PRIVATE_INERT_BINARY_NEVER_EXECUTED_OR_DECODED",
+  "retry": false,
+  "productionOracleApproval": null,
+  "operationSourceApproval": null,
+  "selectionBytes": 146,
+  "selectionSHA256": "1d734465ad89f4d6cbdac4392bef29d748ae2e2e71c004440496869a131c52ab",
+  "savedTOCBytes": 706854,
+  "savedTOCSHA256": "802b17ac728118d4245b5aa61ca6ccf92045157a12a508f0eb46e8be08e0d9a1",
+  "tocHeader": 7490,
+  "tocListed": 7486,
+  "unknownTOCIdentities": 4,
+  "archivePinTier": "RETAINED_EXACT_METADATA_AND_PRIOR_ACCEPTED_PREPOST_CONTENT_PIN_NOT_FRESH_READ",
+  "archiveBytes": 16232305,
+  "archiveSHA256": "181caa01d5ebe66b50da9dcba1242b225e75cfdc8bd0fe03e3c4a9ae86e4d398",
+  "toolSHA256": "34e80db8f1f644692e430bd8785fa17ae2b7072177da02d25b31d35d60b49339",
+  "loaderSHA256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14",
+  "beforeArchiveOpen": [
+    "future exact ROOT SOURCE admission binding, active epoch/expiry, config/request/source hashes and explicit archive operation grant",
+    "actual resources and entry manager INV/client PID custody",
+    "named immutable mounts and actual RO/EROFS30 checks",
+    "fresh mount/net/PID, seccomp/caps/NNP, null1:3, exact private environment and no service/socket mounts",
+    "exact selection/TOC bytes, unchanged argv, archive path/metadata agreement"
+  ],
+  "archiveOwnership": "caller opens O_RDONLY|O_CLOEXEC|O_NOFOLLOW|O_NONBLOCK then validates while retaining ownership, never old open_binary",
+  "archiveReadback": "preparse exact held-FD/path metadata and binary hash; postparse same before close even after capture error if capture entered; preparse refusal never retried",
+  "finalizationOrder": [
+    "archive.postparse-readback OR archive.final-fd-metadata",
+    "archive.close",
+    "final.input-source-readback",
+    "final.mount-security-readback",
+    "operation.terminal callback"
+  ],
+  "rawAndAssessmentStatus": {
+    "completedRawCapture": {
+      "rawToolReturncode": 0,
+      "rawCaptureRecorded": true,
+      "assessmentExit": 2,
+      "accepted": false,
+      "envelope": "UNASSESSED",
+      "history": "UNASSESSED",
+      "assessmentException": "HistoryUnassessed: history-oracle-absent",
+      "operationStatus": "CAPTURED_UNASSESSED",
+      "managerExit": 0,
+      "meaning": "raw transport and required custody completed; defined non-green semantic assessment, not classification/native acceptance"
+    },
+    "anyUnexpectedOrCleanupOrRecordFailure": {
+      "operationStatus": "FAILED",
+      "managerExit": 1,
+      "primaryPreserved": true,
+      "cleanupDiagnosticsSeparate": true,
+      "rawReturnSeparate": true,
+      "retry": false
+    },
+    "assessmentIsNotProcessExit": "caller does not sys.exit(2); future exact ROOT operating contract must accept documented assessment2 separately from manager0, otherwise HOLD before grant"
+  },
+  "noHistoryBodyRead": "core.assess_production(None,None) raises exact absent-oracle before stream access; no captured stream opened by caller",
+  "boundaryInterface": {
+    "verifiedModules": [
+      "core",
+      "archive",
+      "capture"
+    ],
+    "sourceMetadataBytes": [
+      "selection",
+      "saved_toc"
+    ],
+    "futureCallbacks": [
+      "deadline",
+      "verify_initial_admission",
+      "verify_before_tool",
+      "final_source_readback",
+      "final_mount_security_readback",
+      "record"
+    ],
+    "privateEnvironment": "environment",
+    "authority": "none supplied here; ROOT must later bind SOURCE and exact receipts, not accept arbitrary JSON authority"
+  },
+  "recordNames": [
+    "archive.preparse.json",
+    "history.intent.json",
+    "history.returned.json",
+    "history.terminal.json",
+    "history.assessment.json",
+    "archive.postparse.json",
+    "operation.terminal.json"
+  ],
+  "outputLiteral": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/extraction-output-01",
+  "outputExistsNow": false,
+  "activeOuterExistsNow": false,
+  "futureSourceAndOPReviewRequired": true,
+  "history": "UNASSESSED"
+}

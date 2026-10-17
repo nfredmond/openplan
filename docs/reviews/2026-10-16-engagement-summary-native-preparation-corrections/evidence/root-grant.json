@@ -1,0 +1,12 @@
+{
+  "allowPureTextOnce": true,
+  "exclusive": true,
+  "nativeOperationGranted": false,
+  "notAfter": 1792197876,
+  "notBefore": 1792197575,
+  "requestSha256": "acfc6da17425fbcd576a516f9a551c6c1152f5eb1e7c4ce3378b0acafbbef378",
+  "scope": "ONE exactTEXT+suppliedreadback/control unit only; no SQL/DB/SDK/application/Auth/helper/native/provider/browser/target/admission/successor",
+  "successorGranted": false,
+  "uid": 1000,
+  "unitName": "openplan-engagement-prep-corrections-text01"
+}

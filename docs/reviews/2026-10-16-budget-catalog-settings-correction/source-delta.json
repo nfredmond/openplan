@@ -1,0 +1,48 @@
+{
+  "schema": 2,
+  "status": "PREPARED_NEW_SOURCE_PENDING_PURE_REVIEW",
+  "approvedDesignSHA256": "d1ef00fbae6f2fdbd972c0ac3dc1bb1549a29b68fd03a0bf0466502a80e6d2cd",
+  "baseCommit": "d37b64b117d87b5edabe766dd42db4422407b40f",
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "migrations": 422,
+  "packet": "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction",
+  "controllerRoot": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2",
+  "captureRoot": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2",
+  "outerRoot": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2",
+  "runtimePins": {
+    "runtime/controller.py": {
+      "sha256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
+      "bytes": 24313,
+      "mode": "0o600",
+      "uid": 1000
+    },
+    "runtime/journal.py": {
+      "sha256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
+      "bytes": 11349,
+      "mode": "0o600",
+      "uid": 1000
+    },
+    "runtime/policy.py": {
+      "sha256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
+      "bytes": 11394,
+      "mode": "0o600",
+      "uid": 1000
+    },
+    "runtime/sql.py": {
+      "sha256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
+      "bytes": 18278,
+      "mode": "0o600",
+      "uid": 1000
+    }
+  },
+  "sourceSealSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "catalogQuerySHA256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582",
+  "captureRequestSHA256": "9d98505c0569d764e11e6137d9d213b7d5ebb0d39e4215bcd9e6b8e094fb0979",
+  "oldSourceSeal": "c56b2cf133c792260c449a6dc228ea0c0cf4c4b44a80299923db81f8c41cbe20",
+  "oldFailureSeal": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47",
+  "launchableControllerSourcePath": "observe only, still requires fresh root admission; no admission exists",
+  "otherStages": "HELD",
+  "nativeOperationGranted": false,
+  "controlsExecuted": false
+}

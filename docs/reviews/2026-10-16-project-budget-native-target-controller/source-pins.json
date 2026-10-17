@@ -1,0 +1,2916 @@
+{
+  "baselineReference": {
+    "bytes": 61975,
+    "mode": "0o600",
+    "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+    "uid": 1000
+  },
+  "bindings": {
+    "plan.json": {
+      "bytes": 54746,
+      "mode": "0o600",
+      "sha256": "ee0cc8e1413414a961d9a757fd4d6fed2403ed96696d3e410ed6fd43328d812a",
+      "uid": 1000
+    }
+  },
+  "claim": "Metadata source identity only, not native acceptance.",
+  "externalReadOnly": {
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/controller.py": {
+      "bytes": 31146,
+      "mode": "0o600",
+      "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/journal.py": {
+      "bytes": 4331,
+      "mode": "0o600",
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/templates/policy.py": {
+      "bytes": 6126,
+      "mode": "0o600",
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/REVIEW.md": {
+      "bytes": 24369,
+      "mode": "0o664",
+      "sha256": "6c467c1bf0c7861953ab1f380fa3301265f6bfa47a5c9338b3e4b3faa32b19f2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/checks.json": {
+      "bytes": 3180,
+      "mode": "0o644",
+      "sha256": "0bf128071408b3b3db9ff8931eea776c03714b0efe72c5a432957172e45cacb5",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/evidence-pins.json": {
+      "bytes": 559,
+      "mode": "0o644",
+      "sha256": "5c90244ec0090702e05d7df72cf43fdd7b8d81fb29240d91b46046640afeae55",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/source-pins.json": {
+      "bytes": 20734,
+      "mode": "0o644",
+      "sha256": "28f8acbe8318f95e9bc32a3d33921b6a6eb699f8a478cc20c47d8cc6101a9a35",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md": {
+      "bytes": 16265,
+      "mode": "0o664",
+      "sha256": "614012982046d9b0b8f077719c11b8995fc578655d9b86869a0a400c232f369d",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md": {
+      "bytes": 6727,
+      "mode": "0o664",
+      "sha256": "f9b6b0a2093a560f2e0dcd9472214847e71991067ca17d4054fc9b1ffe460ae9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md": {
+      "bytes": 7995,
+      "mode": "0o664",
+      "sha256": "906a96646557e583f09f90680df4624e391efe52290e216d36ab3b1a89f34c1c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py": {
+      "bytes": 6437,
+      "mode": "0o600",
+      "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json": {
+      "bytes": 21333,
+      "mode": "0o664",
+      "sha256": "eaf1998ade9017e67edef7122894b83f4c4df28b8fcd5934363425f5a790dea9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in": {
+      "bytes": 3425,
+      "mode": "0o664",
+      "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json": {
+      "bytes": 1331,
+      "mode": "0o600",
+      "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256": {
+      "bytes": 60284,
+      "mode": "0o664",
+      "sha256": "c00627c03d6f17188367ce01ca5cd2285b7526d8b33bbd59db4534aaaa37d28b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in": {
+      "bytes": 3625,
+      "mode": "0o664",
+      "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/packet.sha256": {
+      "bytes": 1851,
+      "mode": "0o664",
+      "sha256": "38c49bdf16d43845e38f5586f1d583463c1c281527eaa5b9095d7caacebb6667",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in": {
+      "bytes": 6628,
+      "mode": "0o664",
+      "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py": {
+      "bytes": 5225,
+      "mode": "0o664",
+      "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256": {
+      "bytes": 2525,
+      "mode": "0o664",
+      "sha256": "f65caded9c32dbdc54866639b6da7b9b433facf9085aa0610374226511225463",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py": {
+      "bytes": 15833,
+      "mode": "0o664",
+      "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/REPORT.md": {
+      "bytes": 13970,
+      "mode": "0o664",
+      "sha256": "b8a309eaea1f80b4b86a88eb06704688fb19d35b8e223ddda3e465ef26554de8",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/VALIDATION.md": {
+      "bytes": 7590,
+      "mode": "0o664",
+      "sha256": "b85f10cf46f65f46b54fa7f8df6b25ccb15bc2aba7b32eab159076ce676533ce",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/evidence.json": {
+      "bytes": 28222,
+      "mode": "0o664",
+      "sha256": "44f7b78ee3911afbb579f5298926d3de18e3a25bb3e3d72ed3d2c824295c6af4",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/packet.sha256": {
+      "bytes": 434,
+      "mode": "0o664",
+      "sha256": "973129c3a7bc317156899839608d33e4ad806483c987c56266594eb7f57dbbd9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/DESIGN.md": {
+      "bytes": 16275,
+      "mode": "0o664",
+      "sha256": "88e7a21491ed0e39d4e1d56b34bd568da1f4be329cdf4a8480614ff4852fa1aa",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/EOF_METADATA.json": {
+      "bytes": 1888,
+      "mode": "0o664",
+      "sha256": "3aee8b3991496d254e6d91d6c21e69df459e1b9b166a9b66e9ebe1d572e4b853",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/MVCC_LIFECYCLE.md": {
+      "bytes": 4159,
+      "mode": "0o664",
+      "sha256": "a2449267ab52fc251eed92f594b91e6c5ca9e997c413b2020ca3b8c2840d92c6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/NUMERIC_BOUNDARY.md": {
+      "bytes": 3969,
+      "mode": "0o664",
+      "sha256": "a62e5a519232f855392bc599438bcdaa6d9588fae7db8d2c643cb366663e2bc9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/README.md": {
+      "bytes": 3828,
+      "mode": "0o664",
+      "sha256": "a88558f44fa0418e3eb2ae5f08256f1aa5f23033b04063b85fb9ef1518e7f373",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/REPORT.md": {
+      "bytes": 7184,
+      "mode": "0o664",
+      "sha256": "e4225120c3ab8572d89b7146a91ff37c3627145b5b6e2b932b77996e5d7c4618",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/SOURCE_COMPATIBILITY.md": {
+      "bytes": 6978,
+      "mode": "0o664",
+      "sha256": "d8ffbd3c904787ef17d4fdcef12c59b000f78cf8ab667f768cb4b19242dabc6a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/VALIDATION.md": {
+      "bytes": 5882,
+      "mode": "0o664",
+      "sha256": "ed9f86794910a7bf285267669600409bebfb3fe52803899ba40309620b339c97",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/catalog.sql": {
+      "bytes": 6099,
+      "mode": "0o664",
+      "sha256": "8f0a5467b7ac6cfe2269ce765f43072933a1e410cea8167304be5436dafa4926",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/controls.py": {
+      "bytes": 2376,
+      "mode": "0o664",
+      "sha256": "02aa709e533920bf826d54f85187ff0cf2984bf1cf0a84d58e73ebf374214869",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/evidence.json": {
+      "bytes": 8669,
+      "mode": "0o664",
+      "sha256": "d1262afba86aff29ee047bf423fa0fc6e46a4b71284b198a531b5fe11595fba1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/generate.py": {
+      "bytes": 12082,
+      "mode": "0o664",
+      "sha256": "3b20d0b176e00486aa2aca01605704a1f6e8cdd9e053ec87f6f744c20b871f56",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/receipts.template.json": {
+      "bytes": 2152,
+      "mode": "0o664",
+      "sha256": "306934639d3279251e7e3de4479db1d618eadda14c2d21960d4a146a1adc41ea",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/source-pins.json": {
+      "bytes": 2960,
+      "mode": "0o664",
+      "sha256": "cb10bd78a97c1bdbc5eba95c7999c0d140bc2a8634f05ba6ac048a8d99482843",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-7c2ee45c/docs/reviews/2026-10-16-project-budget-native-proof-corrections/verify_text.py": {
+      "bytes": 18992,
+      "mode": "0o664",
+      "sha256": "91c7463be3d1cbfb8aa66bd3e3ec5e84510726cc75b7075c9f56749bc280a6bc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/REPORT.md": {
+      "bytes": 17407,
+      "mode": "0o664",
+      "sha256": "532f92643a4bc72fd9a40398d219ad431f32c17e3afe4864dad32aea04ea79e9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/VALIDATION.md": {
+      "bytes": 6247,
+      "mode": "0o664",
+      "sha256": "ca9522ad7a234c087096254dcdf4dcea2c06b7536983787920a4b10f397c3a39",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-9839caf0/docs/reviews/2026-10-16-project-budget-native-r2-independent/evidence.json": {
+      "bytes": 10967,
+      "mode": "0o664",
+      "sha256": "2a1a7268841104522989986a7efadfc4102d10877e9bfff4628d5115f5507f12",
+      "uid": 1000
+    }
+  },
+  "runtime": {
+    "runtime/controller.py": {
+      "bytes": 23660,
+      "mode": "0o664",
+      "sha256": "d19ac7a2840aecde45f6623b744c48c183f8ed7d2c4beb25153ca162285caf60",
+      "uid": 1000
+    },
+    "runtime/journal.py": {
+      "bytes": 6172,
+      "mode": "0o664",
+      "sha256": "4309e4d05c5d86f44ab0832fe4932681a54e00cd5070b7da2827fb8118d0201c",
+      "uid": 1000
+    },
+    "runtime/policy.py": {
+      "bytes": 5369,
+      "mode": "0o664",
+      "sha256": "142f4bf84a88631aac1e96e4d9c0801e92fa8133fb9212b41cd4e6059377e597",
+      "uid": 1000
+    },
+    "runtime/sql.py": {
+      "bytes": 17422,
+      "mode": "0o664",
+      "sha256": "d2bd48d5f3583e064a0160b6a6c1988f8261d33ef28f7da5377d5151349a13e3",
+      "uid": 1000
+    }
+  },
+  "source": {
+    "AGENTS.md": {
+      "bytes": 15766,
+      "mode": "0o664",
+      "sha256": "dbdf9a39ee662e2b32833970067d306c9fb74c3fde1b6f31402960501e3159a6",
+      "uid": 1000
+    },
+    "docs/ARCHITECTURE.md": {
+      "bytes": 31233,
+      "mode": "0o664",
+      "sha256": "f050b327f919cc86311e82995dd5666c6affee482ad4fe705e124997a60d41bf",
+      "uid": 1000
+    },
+    "docs/ROADMAP.md": {
+      "bytes": 17049,
+      "mode": "0o664",
+      "sha256": "fb84929939dc76376445bcbe68d7d2b06c6fe419e4e2b53004a262b707e6fa63",
+      "uid": 1000
+    },
+    "docs/ops/KNOWN_ISSUES.md": {
+      "bytes": 120384,
+      "mode": "0o664",
+      "sha256": "995823d3f38236b164ebce55f77be047fe81b1c1484ce15a75be4ec09cdde05f",
+      "uid": 1000
+    },
+    "docs/product/CORE_REQUIREMENTS_LEDGER.md": {
+      "bytes": 99862,
+      "mode": "0o664",
+      "sha256": "8126f9489cffd5798e67d7bd59f772f4ace5fc1cdc501f8fcce72bd66cd7e024",
+      "uid": 1000
+    },
+    "docs/product/MILESTONES.md": {
+      "bytes": 170271,
+      "mode": "0o664",
+      "sha256": "0f88f25810777d226d2f953689cf92070d41b8054f5553ee212d4c9db1e38fc4",
+      "uid": 1000
+    },
+    "docs/product/US_PLANNING_CAPABILITY_MATRIX.md": {
+      "bytes": 41302,
+      "mode": "0o664",
+      "sha256": "adff647cacbd6ce12b4ca51bf2f5e25ba3da95a22f3dd831ae2b3e6552843105",
+      "uid": 1000
+    },
+    "docs/product/V1_PRODUCT_CONTRACT.md": {
+      "bytes": 22959,
+      "mode": "0o664",
+      "sha256": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be",
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-15-project-jurisdiction-native/native_proof.py": {
+      "bytes": 48488,
+      "mode": "0o664",
+      "sha256": "4f48445c0c69d0bb3ef52a3ea2101ad22de2d8a0210ff8800f043c789bc6d8ea",
+      "uid": 1000
+    },
+    "docs/reviews/product-direction/2026-10-06-integration-review.md": {
+      "bytes": 7260,
+      "mode": "0o664",
+      "sha256": "9934058a60139e3e917becdb4c468fa750b15fce154676a9d3fce37d850e428c",
+      "uid": 1000
+    },
+    "openplan/scripts/ops/capability-evidence.mjs": {
+      "bytes": 3045,
+      "mode": "0o664",
+      "sha256": "e140e3702ef5395412b428c15877596db7228257364e8533d00d315283ba04fb",
+      "uid": 1000
+    },
+    "openplan/scripts/ops/full_restore.py": {
+      "bytes": 18513,
+      "mode": "0o664",
+      "sha256": "01272f9f8b92e1064f7a8851058ff2ec86a02b4f11fd5778486aa83888158754",
+      "uid": 1000
+    },
+    "openplan/scripts/ops/product-direction-review.mjs": {
+      "bytes": 28853,
+      "mode": "0o664",
+      "sha256": "83d9e9789a923286d7b050d939ab7e1105ad4e022aa41bea255cee1c574b2931",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000001_gtfs_schema.sql": {
+      "bytes": 4009,
+      "mode": "0o664",
+      "sha256": "81a4e93d26a5cbf61e3fde411f109d848367686bbbfb99e2535607f434da2cc6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000002_workspace_schema.sql": {
+      "bytes": 2822,
+      "mode": "0o664",
+      "sha256": "9bd09e12685b0fdf9ebf2a5fc0691d447037acbb4e5915e387500eccadbdba5f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000003_census_lodes_schema.sql": {
+      "bytes": 1810,
+      "mode": "0o664",
+      "sha256": "eb12f14acbc2a4f9f7a7b415112a0820864cde2b29662c987d931f63330d194a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000004_safe_query_fn.sql": {
+      "bytes": 704,
+      "mode": "0o664",
+      "sha256": "45dbfc0d6ac58812d164f2fb91bd64d810a50a4a02d0c999df9a72cd9e1f3fc0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000005_workspace_trigger.sql": {
+      "bytes": 767,
+      "mode": "0o664",
+      "sha256": "b596301e7dccb77e6781f12a4e4d58607fb102b0f9e2ae595b51af5c8dfbe2b7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260219000006_storage.sql": {
+      "bytes": 547,
+      "mode": "0o664",
+      "sha256": "859ee29ec21a4f30bca4360fc33fc7e8fbbfd9d8dcd5a3f484e85bdf321f7ad7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260224000001_runs_schema.sql": {
+      "bytes": 893,
+      "mode": "0o664",
+      "sha256": "f9240189666f7a870c785ec60c617ae414102447c9c8c224a6efd02926d2c693",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260224000002_runs_ai_interpretation.sql": {
+      "bytes": 52,
+      "mode": "0o664",
+      "sha256": "b102f15606d0e08ef442deaab65511741018cb6920f771e6c5cf7922873a13cd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260225000003_fix_handle_new_user_trigger.sql": {
+      "bytes": 1126,
+      "mode": "0o664",
+      "sha256": "7f4719d8d0e0bcabff8d4872ca3c4114a8131e842bb9d79d073ca354b198bfb4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260225000004_workspace_slug_normalization.sql": {
+      "bytes": 943,
+      "mode": "0o664",
+      "sha256": "1fb5d28340acb3a243fd48a67aab96fe41e384ea055ede38d852371e94a1fc41",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260226000005_runs_report_telemetry.sql": {
+      "bytes": 351,
+      "mode": "0o664",
+      "sha256": "86bbfb8cf456431e9453d97a72fec5a76517b5ac9e70c765c43bda5489788f9a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260226000006_workspace_billing_skeleton.sql": {
+      "bytes": 825,
+      "mode": "0o664",
+      "sha256": "b517fe9b03687daf377f9e20b7e7635b0db51546ac9df0ff0a4a1425118e00de",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260226000007_billing_events.sql": {
+      "bytes": 673,
+      "mode": "0o664",
+      "sha256": "91e746ce8761d34d9042de38fd53b9d6121e4337c87523f7164f5b7915931e99",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260226000008_billing_webhook_receipts.sql": {
+      "bytes": 1300,
+      "mode": "0o664",
+      "sha256": "b1431fa7ee4db5a44c9f466929fcb35485b4eb4e0b1dde95b52d3ac1c94bc597",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260305000009_op003_workspace_stage_gate_binding.sql": {
+      "bytes": 1396,
+      "mode": "0o664",
+      "sha256": "408765d8ede5e6756fb2fd83c377f92c0a1a9a319a064126b0490e722276d2dc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260306000010_op003_stage_gate_decision_log.sql": {
+      "bytes": 2023,
+      "mode": "0o664",
+      "sha256": "a86af5e96d8e2832ded2a87c92edf70320d67495c2d1319da92af107b47af3f3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000011_projects_module.sql": {
+      "bytes": 2556,
+      "mode": "0o664",
+      "sha256": "92655e20c29a14b072536074154473abcd5dc6393953e8d9eeada16b4d7b1389",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000012_project_subrecords.sql": {
+      "bytes": 8496,
+      "mode": "0o664",
+      "sha256": "35ad792c0daf5d0cce5cad25b9929554dc6b51f186c35ccf93d672ad002ef01e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000013_project_issues_meetings.sql": {
+      "bytes": 5402,
+      "mode": "0o664",
+      "sha256": "0f26c9bb9059c9ad32dea01393aed77fe3c7b5b3b9651d48eb451b9779d0b4cd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000014_data_hub_module.sql": {
+      "bytes": 12229,
+      "mode": "0o664",
+      "sha256": "d50e71f6a973f63125373f0eef865cab782251cb0bdcb5bcf1986686d4569815",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000015_data_hub_geometry_attachment.sql": {
+      "bytes": 527,
+      "mode": "0o664",
+      "sha256": "a6a86a04b31c5a87df76011302c31b76c73fe7c1a4f8ee84205d10e0325c059f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000016_data_hub_corridor_attachment.sql": {
+      "bytes": 734,
+      "mode": "0o664",
+      "sha256": "7276d02f50449fec45e98af034d6a277567797d5faa7bd0f5fd57e9d34532d3c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260313000017_data_hub_crash_point_attachment.sql": {
+      "bytes": 889,
+      "mode": "0o664",
+      "sha256": "7f3786ec6be3637b739c55c8295b6e1402c9565eea5cfe90c7121a2ba690d8d6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260314000018_reports_module.sql": {
+      "bytes": 12530,
+      "mode": "0o664",
+      "sha256": "037e45f3ef509f94dfa5666c9173c2f571110ce5e2dbb9ad303b2bfe84cf3182",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260314000019_scenarios_module.sql": {
+      "bytes": 9245,
+      "mode": "0o664",
+      "sha256": "0393910842d1065578a04f0a21f82a76d3e7001aa2d65b53bdb845a666d05af9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260314000020_engagement_module.sql": {
+      "bytes": 11653,
+      "mode": "0o664",
+      "sha256": "74c37df2a61532b2fa35baa4f16b9d64e83dcd89d5c20b0c7c551a2315fc6be5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260315000021_plans_module.sql": {
+      "bytes": 7114,
+      "mode": "0o664",
+      "sha256": "ac9a8ce144573904f0c4e3c782b5ae97a6fa3bf7569ec7559f4bacd06c7dfa76",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260315000022_programs_module.sql": {
+      "bytes": 7808,
+      "mode": "0o664",
+      "sha256": "6e44f4bf291159636ddebb0854060c289a02739cecef21b007205fe0daa102fb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260315000023_models_module.sql": {
+      "bytes": 7584,
+      "mode": "0o664",
+      "sha256": "3ad70ecf547bed638519587d903a98c7c17c254bce460830703064a526c22dcb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260316000024_fix_workspace_members_rls_recursion.sql": {
+      "bytes": 179,
+      "mode": "0o664",
+      "sha256": "805ccef79b1d8aec3095c1763b254ec3187e468e01c640065a7ed7b2ab725a1b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260317000025_model_runs_module.sql": {
+      "bytes": 4896,
+      "mode": "0o664",
+      "sha256": "335a1ef4596f457bbbf36af9e0d423a91de5fd8528a0f85526f745ca7e020e32",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000026_model_run_stages_and_artifacts.sql": {
+      "bytes": 6447,
+      "mode": "0o664",
+      "sha256": "2174a810096e377686f49f640bcb3b80364a5cb5bbe6630e423ee7ecebe6b37e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000027_network_packages_schema.sql": {
+      "bytes": 6279,
+      "mode": "0o664",
+      "sha256": "36ba6a03960c20d1f2498c37cc343bafe3f0602e01265edf6020ad3e1ecbaf92",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000028_network_zones_corridors_connectors.sql": {
+      "bytes": 8148,
+      "mode": "0o664",
+      "sha256": "f946469cdf5613161d2b5d7e8bfd1b7d8dbe2cb855be5842523089fc02dee557",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000029_network_package_qa_columns.sql": {
+      "bytes": 500,
+      "mode": "0o664",
+      "sha256": "2f0befdc77fe5e5c04207e91eff749f322d497321281091df13a7ebf21020b1a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000030_model_run_skim_config.sql": {
+      "bytes": 291,
+      "mode": "0o664",
+      "sha256": "a8c486c4db04c5c2fb5d7108aeb8deda0b46637cb5a5e181513b111aacbf21dd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260318000031_model_run_kpis.sql": {
+      "bytes": 2075,
+      "mode": "0o664",
+      "sha256": "8e99ee3b83aeb7410cea208b6d28d369f74e5481ae135543b713d90dcba18af2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260321000032_engagement_public_share.sql": {
+      "bytes": 2955,
+      "mode": "0o664",
+      "sha256": "da8ed755d3cf35e107316df274cca6fd322f538b59e03a94177f10658c16bc1c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260321000033_lane_c_lapm_pm_invoicing.sql": {
+      "bytes": 10200,
+      "mode": "0o664",
+      "sha256": "b4c83b8597b8131de587f50fdbec5ebf288cf2491b2ae05e05ee8bc74f949fe2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260324000134_county_onramp_runs.sql": {
+      "bytes": 6450,
+      "mode": "0o664",
+      "sha256": "b9b1ebb406ffd71859430ff0512aba4316378bc256e27f131febaae7e8b572f8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000035_rtp_cycles_module.sql": {
+      "bytes": 3578,
+      "mode": "0o664",
+      "sha256": "58c1a9aaeae6a410cf7166c0a3939f2cbb7fccc66a3056ea4bc37a0899652810",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000036_project_rtp_cycle_links.sql": {
+      "bytes": 2414,
+      "mode": "0o664",
+      "sha256": "4521512bfd780c6e954101da6ee696eef2695a82e023338344f5500f4b4ab013",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000037_rtp_cycle_chapters.sql": {
+      "bytes": 8003,
+      "mode": "0o664",
+      "sha256": "66fdb945d45e76f8d4dfd120c7c30aa8a3f5bf91ffcf696994f2bedd31f748b0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000038_rtp_engagement_targets.sql": {
+      "bytes": 787,
+      "mode": "0o664",
+      "sha256": "7ba5eb4a08af6d22a478687d8a567de3306f6979e28ee20a50a7ff740743fac2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000039_rtp_cycle_chapter_content.sql": {
+      "bytes": 81,
+      "mode": "0o664",
+      "sha256": "79f78e35083d133ace0f7bbc444f383d839fc3777203210f63069d1924ead9aa",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260409000040_reports_rtp_cycle_target.sql": {
+      "bytes": 545,
+      "mode": "0o664",
+      "sha256": "4170ee5daeb720f48a3bdfbb22b49594a8df614d5231df3aa10fbeea76f31ba5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000041_funding_opportunities.sql": {
+      "bytes": 5044,
+      "mode": "0o664",
+      "sha256": "46c059ec224f82b629be430aae5bd7e9d3dc995614c47a01d0e4be03d2015414",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000042_funding_opportunity_decisions.sql": {
+      "bytes": 652,
+      "mode": "0o664",
+      "sha256": "780eab7ee4a01d7e3c219fa327fc0de0b1796b97142d06e9630e6978526751fe",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000043_funding_awards_and_profiles.sql": {
+      "bytes": 6760,
+      "mode": "0o664",
+      "sha256": "31d7e7a2310e16a9dd57018cdc30ab1b806bbc4122dfc2de5aef111b4c1bd0f4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000044_funding_opportunity_expected_amounts.sql": {
+      "bytes": 332,
+      "mode": "0o664",
+      "sha256": "c5699fd71f5626dc5103462c3f3f70752de7870ed6667b7e94de9e41477a9571",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000045_scenario_shared_spine.sql": {
+      "bytes": 8468,
+      "mode": "0o664",
+      "sha256": "974c65a81cbdc65c6b815270f7417be80a3da41d4f33e816c7a0639cbb8dcf9c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000046_scenario_comparison_snapshots.sql": {
+      "bytes": 11795,
+      "mode": "0o664",
+      "sha256": "2cc1bfb9de2ba47a723f389e87b08ce8f5803ef50e6dd7f6377650b68c7d716d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260410000047_reports_metadata_json.sql": {
+      "bytes": 97,
+      "mode": "0o664",
+      "sha256": "1c65b16b558991ba70ae785d5ded9c9dc8799307e27ec448688be42a25f0c77e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260415000048_aerial_operations_os.sql": {
+      "bytes": 3628,
+      "mode": "0o664",
+      "sha256": "ac2b778adde4888886269d39385a129ddaa2e57e1333cef2f8072278dafe5a2e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000049_reports_rtp_basis_staleness.sql": {
+      "bytes": 606,
+      "mode": "0o664",
+      "sha256": "20223bb139b428874681029f67a1508fb8331f93cdadfd3ef42cc56c38001d04",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000050_assistant_action_executions.sql": {
+      "bytes": 1968,
+      "mode": "0o664",
+      "sha256": "00eb4d350800026c71305f2b7669f7db2e6efdb11857226689b195eb2882a901",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000051_projects_aerial_posture.sql": {
+      "bytes": 585,
+      "mode": "0o664",
+      "sha256": "b4bb1b81b114ca1e46dd69c11600ffc7ba0620245ce90db2135af5dd33b92608",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000052_projects_rtp_posture.sql": {
+      "bytes": 612,
+      "mode": "0o664",
+      "sha256": "3d1b14772b259f3dfe3c4fab195c68fcbded7317bb238727c91b29a3354c6c58",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000053_project_milestones_obligation_type.sql": {
+      "bytes": 1106,
+      "mode": "0o664",
+      "sha256": "792e50edd48f01c96ad55e9cfdeae3c945a506f43f7578badd50261e151ffd8e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000054_model_run_kpis_behavioral_onramp.sql": {
+      "bytes": 3510,
+      "mode": "0o664",
+      "sha256": "2b2279a93a988ea2e44dc622f13ab81df1faa535e2a4541efdbdc6e06923dea5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260416000055_scenario_comparison_summary_view.sql": {
+      "bytes": 2160,
+      "mode": "0o664",
+      "sha256": "012ad8ef0bbe5770fd51537d2448f5b4061f0287f4e6afa869bbc24e5466fdd2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260418000056_funding_opportunity_decision_states_expansion.sql": {
+      "bytes": 675,
+      "mode": "0o664",
+      "sha256": "8a0092b4fa1264048c4176c64b4fa629496715f9b868502555f56c82688e3fde",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260418000057_aerial_mission_aoi.sql": {
+      "bytes": 1071,
+      "mode": "0o664",
+      "sha256": "121da59b0a80b5b5e1f967437ffba789eb0d73552c03d116f8b524d62d30c99d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260418000058_drop_execute_safe_query.sql": {
+      "bytes": 591,
+      "mode": "0o664",
+      "sha256": "df396bb15e70f788f285d89716f56c02fc1ad55ef685f9d1ba7b2870f6c146a5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260419000059_workspaces_is_demo.sql": {
+      "bytes": 592,
+      "mode": "0o664",
+      "sha256": "17e6a9a80700ed8b89ad71b9233f0f2ec78188a07b4b475f9a24ceaf22923758",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260420000060_report_artifacts_bucket.sql": {
+      "bytes": 1496,
+      "mode": "0o664",
+      "sha256": "6df469cc36ca093d47ce00cf68139b93b0711d67bf5fa9a0c24436ee2f2666e6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260420000061_pin_function_search_paths.sql": {
+      "bytes": 4008,
+      "mode": "0o664",
+      "sha256": "e3cc1a0f34d8e729ca9f429f807b4f4749fd4d1abbaa824c8605aa1bc2b4997b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260420000062_public_data_select_policies.sql": {
+      "bytes": 7646,
+      "mode": "0o664",
+      "sha256": "4338ace9498fe4fb601b4a608fa11f3e0d4285a639978b8ef793ae7524ebf0dd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260420000063_public_views_security_invoker.sql": {
+      "bytes": 702,
+      "mode": "0o664",
+      "sha256": "342c52baf3b71756b863330e915b6cf4c35b3b31e5ae0446ae8a48fd476b07d5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260420000064_scope_gtfs_child_feed_visibility.sql": {
+      "bytes": 5318,
+      "mode": "0o664",
+      "sha256": "143a3a940df7f215d4ab47116b00a1e931a9d308215e2f8546bfb47ab965bc1f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260421000065_projects_location.sql": {
+      "bytes": 1768,
+      "mode": "0o664",
+      "sha256": "e73ed7e8e18841d9eb5a032f2229c1e3e3f172d172a470d03670f358ffad68c0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260421000066_project_corridors.sql": {
+      "bytes": 3596,
+      "mode": "0o664",
+      "sha256": "45eddde69dd12fe533dc855dcc36a0e9fb4fd06e29887f3e21bc7daee14774e8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260422000067_rtp_cycles_anchor.sql": {
+      "bytes": 1949,
+      "mode": "0o664",
+      "sha256": "bf41ec04cb36253255d4f77ea43385ea9fd9bec8708162d9f7605c3624ee0303",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260422000068_census_tracts_map_view.sql": {
+      "bytes": 3074,
+      "mode": "0o664",
+      "sha256": "874b3c0ad27f3c586b4de899f05e65b6845202f16ba7ce44a24e95480ba5bdaa",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000069_modeling_evidence_backbone.sql": {
+      "bytes": 12711,
+      "mode": "0o664",
+      "sha256": "6af58264805346391a39c79f8e2e658cdf54e1408f0442180ad66320db47d5d2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000070_reports_modeling_county_run_link.sql": {
+      "bytes": 1270,
+      "mode": "0o664",
+      "sha256": "d3548ee6d6641677a6f60546b76362504dce22309245402c28d16cbce0a3ca2f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000071_reports_modeling_county_run_link_grants.sql": {
+      "bytes": 228,
+      "mode": "0o664",
+      "sha256": "5feea5763664a493cdfc47eaa8c50ba66bd303ad1db44ad4825c61c23564dc1b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000072_billing_ledger_foundation.sql": {
+      "bytes": 5428,
+      "mode": "0o664",
+      "sha256": "4734514544155fd7c8875330a10c0485132127eba3b05168ac86f6919e91aa5a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000073_workspace_invitations.sql": {
+      "bytes": 5357,
+      "mode": "0o664",
+      "sha256": "6f66e91253e83fad00bc1def6fd5522e5dd046919d6253025dd732cf0d5be182",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000074_access_requests.sql": {
+      "bytes": 2899,
+      "mode": "0o664",
+      "sha256": "686e0dc23f61be913a57cdbefd96751d8a0c9978b144726287aa9faaf15cfd8f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000075_access_request_intake_hardening.sql": {
+      "bytes": 635,
+      "mode": "0o664",
+      "sha256": "4a01d794d0b5082a97cca59d2a708ba2bc1ff391790e287bc64133cbc02299cc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000076_access_request_review_events.sql": {
+      "bytes": 3547,
+      "mode": "0o664",
+      "sha256": "bebee7ef76eac698f5a1756f2faa3842b08de6351fa668c592f60cec9a4268f6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260424000077_access_request_provisioning_link.sql": {
+      "bytes": 2739,
+      "mode": "0o664",
+      "sha256": "3f412d781553bb87c72fb3e3bdb2d68c1085becf2ed8f5b31a5e2d84a35cdf10",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260427000078_access_request_service_pipeline.sql": {
+      "bytes": 1945,
+      "mode": "0o664",
+      "sha256": "eca566acfd83419fe819c0cb0bd6428f4e0651d4e4069edd1b741c53b8cb630f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260508000079_modeling_caveat_kpi_sql_gate.sql": {
+      "bytes": 3079,
+      "mode": "0o664",
+      "sha256": "fff9fdbcdb912a65f0a1e65695dc64f29043800725ae21286bdac51c75dfb0e3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260519000080_county_run_worker_dispatch.sql": {
+      "bytes": 746,
+      "mode": "0o664",
+      "sha256": "d2c8584f542a0b0eb3fa3c71cc9b3f968a2bcbcf43794939df117436d66d2833",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260519000081_assistant_action_approval_integrity.sql": {
+      "bytes": 1173,
+      "mode": "0o664",
+      "sha256": "dce297d431c79f6f9aab2b97e1aaeb653fb4b4222f0b5f066189628cc9a6d20f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260717000082_v1_security_hardening.sql": {
+      "bytes": 3438,
+      "mode": "0o664",
+      "sha256": "48444d7b0385fbf46f07fadaf5e9fac8cf1522796d2c6828cfab49800a2be8ca",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260717000083_funding_opportunity_narrative_drafts.sql": {
+      "bytes": 2831,
+      "mode": "0o664",
+      "sha256": "c08b7d45e284e6b3600cc05fa1127fe3fa17575ae2cfb0f8d81c10279288c82e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260717000084_engagement_geometry_photos_votes.sql": {
+      "bytes": 4496,
+      "mode": "0o664",
+      "sha256": "937396b21fcec2989968cdd7ef935c1b9b996563144624c9cb2349dcb4f0622a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260717000085_narrative_draft_grounding.sql": {
+      "bytes": 1272,
+      "mode": "0o664",
+      "sha256": "97e6b653162b3a14724d4ca3ea620d8305bb52078b8b90b7a882701f56514c6a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260718000086_run_artifacts_bucket.sql": {
+      "bytes": 1194,
+      "mode": "0o664",
+      "sha256": "7c9a5e33cc8abf60c26db72982c0225665cc4c5cec1d155013c84e7f61d10929",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260718000087_model_runs_engine_key_behavioral.sql": {
+      "bytes": 855,
+      "mode": "0o664",
+      "sha256": "84820276f41bbef7b7b62cc3c12c8b4f86f16aaf9327229569699828dd17316b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260718000088_sketch_abm_engine.sql": {
+      "bytes": 1562,
+      "mode": "0o664",
+      "sha256": "5c58bdecce98ed4c8559cd2816c01385e4050ea13179ee947908e1dbc31e54e1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260718000089_project_bca_screenings.sql": {
+      "bytes": 4085,
+      "mode": "0o664",
+      "sha256": "f81afd9a55dfe09a29be1a98fe8e6dacb0ac97f40367ef3cab4701e2a5810b43",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000090_engagement_ai_synthesis.sql": {
+      "bytes": 1008,
+      "mode": "0o664",
+      "sha256": "629ae7ae5fb13462acebd8dbed887d347e4846c955409707c6bb1b7309d2ae46",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000091_engagement_category_style.sql": {
+      "bytes": 846,
+      "mode": "0o664",
+      "sha256": "9fd499b7d232473d325dde730350d98d16533da957eb63526f2d8b9e2ab7694b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000092_engagement_corridor_join.sql": {
+      "bytes": 2704,
+      "mode": "0o664",
+      "sha256": "09f33e7321b3698bb463fbcc0a002cb52469d4bcb2246c6a54b9b41ae8371c6f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000093_engagement_sentiment_hotspots.sql": {
+      "bytes": 5923,
+      "mode": "0o664",
+      "sha256": "58a6dbd5ba0e54fa27b81580ee3935e9a7100034e6b3014a8504deedca78a60f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000094_engagement_item_demographics.sql": {
+      "bytes": 5739,
+      "mode": "0o664",
+      "sha256": "f8a146b1ded47a5e02c1b3e464c51e890a6872f2a71716589cd4f6cc452157db",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000095_engagement_representativeness_cache.sql": {
+      "bytes": 564,
+      "mode": "0o664",
+      "sha256": "4a110ef295c6c971d62b7e4b7564c9fe0ed1e1d1d814d4f77ffb4d21820a7061",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260719000096_engagement_near_duplicates.sql": {
+      "bytes": 2783,
+      "mode": "0o664",
+      "sha256": "ac063a259fc7e85a074bdcd76af16e6646d2c074571d6f6c18d3328e6c7fc0c1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260720000097_engagement_threaded_replies.sql": {
+      "bytes": 1436,
+      "mode": "0o664",
+      "sha256": "8be78b60e7cba8ad0548a2072d7a769c2e3c693649a465411550c4ceb4775345",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260720000098_engagement_translation_cache.sql": {
+      "bytes": 1874,
+      "mode": "0o664",
+      "sha256": "e674dac18f75dbc75c9c05d8d30cf72eda6b701e6a5bd0c850b696e29f9023e5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260720000099_ite_trip_generation_engine.sql": {
+      "bytes": 1555,
+      "mode": "0o664",
+      "sha256": "b3bd5581f414213564f040f51dc8abc9778e3254018d2cd2f14bab82e6cea51f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260721000001_aerial_processing_jobs.sql": {
+      "bytes": 5570,
+      "mode": "0o664",
+      "sha256": "d9e07274977ff761080af2dca63d8eda621ce98cf413a5ee67b4e584957e474f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260721000002_modeling_calibrated_claim_tier.sql": {
+      "bytes": 1393,
+      "mode": "0o664",
+      "sha256": "80fecb5f02119be47a596ca1f53b505cbc66d04f01af7e13113eb7dc2242ed6c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000001_rtp_priority_scoring.sql": {
+      "bytes": 597,
+      "mode": "0o664",
+      "sha256": "8294e641cac4c38c4dc3ae1da3d71e68b97e4227109931849a81ddd6bc3ffc0f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000002_project_rtp_evidence_run.sql": {
+      "bytes": 709,
+      "mode": "0o664",
+      "sha256": "88ae187cb053b8aee2cf9a838af464abe901dbcfd9c459eb94108edf9232b57a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000003_rtp_public_share.sql": {
+      "bytes": 797,
+      "mode": "0o664",
+      "sha256": "662edf03bb9bf7778d5c533860c5e30a69f35d96a619fa70daf29f347688c9f9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000004_reap_model_run_rpc.sql": {
+      "bytes": 2477,
+      "mode": "0o664",
+      "sha256": "b122b8935565ff7dd27cd581577372adf375cec28ffb72d1585540b49af30fdd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000005_reap_rpc_lock_down.sql": {
+      "bytes": 903,
+      "mode": "0o664",
+      "sha256": "a9a26b4ca32dc53dbaa1884be439081158998d7260dc5a1c994bca4b7e2d340b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000006_aerial_project_posture_table.sql": {
+      "bytes": 2370,
+      "mode": "0o664",
+      "sha256": "dc9f44693fc8583fb942620cf22d68245444d2ed12b21d05c64fd0fa1feca362",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000007_engagement_survey_builder.sql": {
+      "bytes": 17243,
+      "mode": "0o664",
+      "sha256": "bd2eab126e9eac55ae930abf449370787487de125b548bde55db5b81b0cf32de",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000008_engagement_close_loop.sql": {
+      "bytes": 6360,
+      "mode": "0o664",
+      "sha256": "68719703407cc0cd30183cd9513abce1f57c8e9ae2dba8d7f7161626717dcbc8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260722000009_engagement_notifications.sql": {
+      "bytes": 6023,
+      "mode": "0o664",
+      "sha256": "5769bda660d1c3337bf3c4e318aca2d63900f896a4d4a33fabccfa417f7f2724",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260723000001_knowledge_base.sql": {
+      "bytes": 8318,
+      "mode": "0o664",
+      "sha256": "399af0514a08194454cec8a8f6d171448efa5ea79d8acd828d617b9f682e47d7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260723000002_kb_search_chunks.sql": {
+      "bytes": 2234,
+      "mode": "0o664",
+      "sha256": "bfd6a377c479e32f6dc4bdb2cdaec84c752e6929f63f3e1df9e58ace70c96f61",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260723000003_kb_search_chunks_or_semantics.sql": {
+      "bytes": 2725,
+      "mode": "0o664",
+      "sha256": "c51852b4eae864d7d6d029e8d0f9c7629eae4b62655e2bb56b1fb6b3e6eccaa6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260723000004_safety_crashes.sql": {
+      "bytes": 9830,
+      "mode": "0o664",
+      "sha256": "5106b7f0d4f4e729114a5185de2e8005a6e177bf52923d4a0d987e6cd2eeeba3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260723000005_workspace_home_geography.sql": {
+      "bytes": 9674,
+      "mode": "0o664",
+      "sha256": "ee85981d31aadc8f65ccbf889ff6ba14b0963359cfd84bc7c4bd3c4244e4ee3f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260724000001_equity_tract_designations.sql": {
+      "bytes": 3258,
+      "mode": "0o664",
+      "sha256": "241f0a107b40966ecd162dfbc0ccef22c8b2083c3fbce83852d6274369e4358b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000003_run_project_provenance.sql": {
+      "bytes": 3122,
+      "mode": "0o664",
+      "sha256": "00973c42ae9c0451d1b982a7a30078eee9fe5c8a9442a6040d1a54cb032353f3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000004_report_runs_typed_evidence.sql": {
+      "bytes": 1958,
+      "mode": "0o664",
+      "sha256": "0646ba7e329a42cee2e6f6f64c5825300873ac36bd566c8361fd3d5636865ee6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000005_scenario_entries_model_run_attachment.sql": {
+      "bytes": 1220,
+      "mode": "0o664",
+      "sha256": "7d63abf79cf20bc6ffdc4a16e809d5d8f0309612dfd617a55fcd3c151ed874cc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000006_models_network_package_link.sql": {
+      "bytes": 1702,
+      "mode": "0o664",
+      "sha256": "2be78ef9bfd224e6908b957e68dc6dd774f38fd02a4daf76627f973ba10b94ee",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000007_module_link_cleanup_triggers.sql": {
+      "bytes": 4380,
+      "mode": "0o664",
+      "sha256": "2612a09d4bca8ab3961e58601ccd3bb0deca0e03d8a7b1bfc43b10f315ed4fe2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000008_reports_engagement_campaign_target.sql": {
+      "bytes": 1632,
+      "mode": "0o664",
+      "sha256": "049b29c2c6412a83cbb1e13afd22a7e65f5e30abd612c2258cb63248373cbf9f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000009_invoicing_reimbursement_profiles.sql": {
+      "bytes": 3695,
+      "mode": "0o664",
+      "sha256": "2c13e679d861df1087f79b58d606dee99808181611865a5195ac6d7e2d0c0714",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000010_receivable_invoicing.sql": {
+      "bytes": 14224,
+      "mode": "0o664",
+      "sha256": "d007c5dc5cdd54a81f605990bdfec72b57242527966c2a6f574d227340ba20f3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000011_invoicing_time_and_rates.sql": {
+      "bytes": 13220,
+      "mode": "0o664",
+      "sha256": "989f168d9dcc9ccc9a8d62e633bc240e72982b8860c132b2604e237770747ee5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000012_deliverable_budgets_and_spend.sql": {
+      "bytes": 5783,
+      "mode": "0o664",
+      "sha256": "c7cda26d6c16b5a426ea16eac96c558257678e34ee32e6cc2bca8744f64430fc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000013_document_narrative_drafts.sql": {
+      "bytes": 7139,
+      "mode": "0o664",
+      "sha256": "a46e8cb0a5e7f2608a06cc2e3b93afaa6d786df460c1a524bb20f51d498829f3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000014_grant_application_assembly.sql": {
+      "bytes": 21305,
+      "mode": "0o664",
+      "sha256": "62fc56081af920c457f2e3fe9fba4644164c20ed154c7d1860c4c0f391613db7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000015_pursuit_kind_and_solicitation.sql": {
+      "bytes": 2673,
+      "mode": "0o664",
+      "sha256": "ddb26cb20c9f2e26fe65ab36902d21092421f5700c0ec5354e6149603b9710fe",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260727000016_application_section_finalizer.sql": {
+      "bytes": 1913,
+      "mode": "0o664",
+      "sha256": "36c460b237afd0d23cd25145d7949a58e19695f91ef961fb188157a3efbb252d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000001_workspace_integration_keys.sql": {
+      "bytes": 2421,
+      "mode": "0o664",
+      "sha256": "bac76d0a26c67d3d6317aba247f8f5a9b2f124a8c6f9125b937c4743343563b5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000002_spend_entry_deliverable_same_project.sql": {
+      "bytes": 1345,
+      "mode": "0o664",
+      "sha256": "f4a7aa0f5a41016886c93cd3ebad3ea33c47b1e173de3b71dbc1507369539240",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000003_viewer_role.sql": {
+      "bytes": 4291,
+      "mode": "0o664",
+      "sha256": "c6ede1a9c2c0a07bd7dfd357efec7efd25165867f7e0288ee636245816e9982d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000004_workspace_owner_floor.sql": {
+      "bytes": 3895,
+      "mode": "0o664",
+      "sha256": "5c6f50a2bff31c7b86ef388f91df18d90518b191bf001a289a4ec828c1ecb07f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000005_project_corridors_writable.sql": {
+      "bytes": 2216,
+      "mode": "0o664",
+      "sha256": "81863a9a1c495c97a9ee864c21d313019feaf2a7894337f025fa31db927d22a8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000006_workspace_write_role_gate.sql": {
+      "bytes": 8777,
+      "mode": "0o664",
+      "sha256": "02dffba9d0365d29a6fe686eb8910ed8764278aa29c37b321e0a68d16f6c9e57",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000007_workspace_write_role_gate_children.sql": {
+      "bytes": 7582,
+      "mode": "0o664",
+      "sha256": "ddf0820b8f2f3f126eb892e8e2db0b8740215d1b448a9e6177aa2aedd72dc795",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000008_projects_deletable.sql": {
+      "bytes": 1878,
+      "mode": "0o664",
+      "sha256": "dd5f75b51ffca1321893ccd1dae5e6595099a9fb35e6f68fa9ca73afd57d62ed",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000009_project_place_of_record.sql": {
+      "bytes": 9186,
+      "mode": "0o664",
+      "sha256": "68e48bf5a2432e4a2fb9d2aa2274683f72d3df5f46160ead5fb74c2dbe596061",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000010_permissive_update_policies.sql": {
+      "bytes": 3769,
+      "mode": "0o664",
+      "sha256": "f807c67c44c5a2a0b7e59bec935802fc22801df6fea482270241de3ea3675c54",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000011_stage_gate_decisions_project_scope.sql": {
+      "bytes": 8541,
+      "mode": "0o664",
+      "sha256": "d94007d617bce20a7d3b3170576f17c7681961b85954c46b3e39c7c2eb8c1811",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260728000012_vmt_significance_screenings.sql": {
+      "bytes": 12152,
+      "mode": "0o664",
+      "sha256": "b08cc32e0e8015cb6a5d64e5094cfdfbc1b7e08ed2dbc65c9a684dd746b23ed8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260729000001_funding_award_closure_provenance.sql": {
+      "bytes": 9739,
+      "mode": "0o664",
+      "sha256": "ce925389f63dd6a610099fcdfcb159feef92e46bb59c1f3e9145aa595c574de8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260729000002_engagement_context_layers.sql": {
+      "bytes": 13694,
+      "mode": "0o664",
+      "sha256": "06929cd3198b887add643589e01f62ba98fc81f21ff1ea18ddd288db03094357",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260729000003_engagement_campaign_place_of_record.sql": {
+      "bytes": 10496,
+      "mode": "0o664",
+      "sha256": "90c64c79ae23977298714562e3ab95c5de268f1e35b5c2ae4022bd3212f36829",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260729000004_engagement_content_translations.sql": {
+      "bytes": 18341,
+      "mode": "0o664",
+      "sha256": "b5933d359403ff1e8c2a047c6a56daeb322b3d1ee760f62599b895039fb0a195",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000001_engagement_campaign_accessibility_contact.sql": {
+      "bytes": 5384,
+      "mode": "0o664",
+      "sha256": "4718f6bd7c9a691754435f0ab475074120f761adce9f0884de99f11734f9df43",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000002_engagement_campaign_submission_geofence.sql": {
+      "bytes": 5651,
+      "mode": "0o664",
+      "sha256": "b49d85898028f2e63920b09a6a552f76458c1046ae2b9a59231756fe40dfcb6c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000003_engagement_survey_response_drafts.sql": {
+      "bytes": 4541,
+      "mode": "0o664",
+      "sha256": "20d2f238eb9cf7f2c131cd57d8e7b3917c824ea8af0f1aee036db9f832657d96",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000004_aerial_artifact_custody.sql": {
+      "bytes": 12042,
+      "mode": "0o664",
+      "sha256": "bf5059f92c9ea9c56785cd8ae4922d26c548825b3cc2f99b001751f308dcd8c4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000005_aerial_artifact_custody_anon_revoke.sql": {
+      "bytes": 2183,
+      "mode": "0o664",
+      "sha256": "00d1a018b71a6a06986e0d3fa67eec74d62923a7d83e0c0cc27afda32404c6c5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000006_assistant_action_agent_principal.sql": {
+      "bytes": 5372,
+      "mode": "0o664",
+      "sha256": "e2345ee48f1e42d015761424b93927a72342d381a4216198b524c8b9beced57d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000007_name_the_dead_billing_schema.sql": {
+      "bytes": 5747,
+      "mode": "0o664",
+      "sha256": "0bbb6820e0721960f21a4177d2537450f385680106ab55f3672848d0ea26d702",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000008_zero_policy_table_anon_revoke.sql": {
+      "bytes": 4078,
+      "mode": "0o664",
+      "sha256": "47bc6af88730694918013f4ba8d57fb7dd1498ec433404b464d63fbb74b8ad44",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000009_public_reference_data_write_revoke.sql": {
+      "bytes": 5028,
+      "mode": "0o664",
+      "sha256": "47c0d1f073306c940e4bce3e875a6142f687afff1785d64f4f9ecbae076f7f58",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000010_enable_rls_on_gtfs_child_tables.sql": {
+      "bytes": 5392,
+      "mode": "0o664",
+      "sha256": "36d6a53c296dff4be7545dd4ecbbdbb003c202c75b7378fd86c56259636092fb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260730000011_enable_rls_on_public_reference_tables.sql": {
+      "bytes": 3217,
+      "mode": "0o664",
+      "sha256": "615b38c763bf22c45610505a98011b28736ea49730820a00d643baeb9eb1ba7e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260804000001_default_deny_new_table_grants.sql": {
+      "bytes": 2546,
+      "mode": "0o664",
+      "sha256": "dbf19e9e7b16264bb925099e90636db329a61f2236417a95a72cff255d51df15",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260804000002_restore_client_role_grants_after_cli_default_flip.sql": {
+      "bytes": 5387,
+      "mode": "0o664",
+      "sha256": "39c6fd10fc9e539e923866885189f175690b29eb186ef98bbad714e7366c9a8d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000001_us_federal_default_stage_gate_template.sql": {
+      "bytes": 1599,
+      "mode": "0o664",
+      "sha256": "0c28ba0aedc72fc98807bac871a1fe63f234e6beb53e6db4613927d721fadff1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000002_widen_demographics_language_vocabulary.sql": {
+      "bytes": 1713,
+      "mode": "0o664",
+      "sha256": "66c931a21666e2cece4da1a0fc10035abd6fb9b694b85d7f2f0dec8d898a8851",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000003_rtp_financial_element.sql": {
+      "bytes": 23982,
+      "mode": "0o664",
+      "sha256": "aa177646be8557f619d380d4b4e9ec391562da10fda4a524d467b2b878061a3e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000004_rtp_horizon_bands_may_not_overlap.sql": {
+      "bytes": 3782,
+      "mode": "0o664",
+      "sha256": "ff407a6a5c69d26d31e823ec8bd6b952d7ff510bce4e8d04128b48c8b94d0744",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000005_restore_revoked_client_grants.sql": {
+      "bytes": 13631,
+      "mode": "0o664",
+      "sha256": "2f2c4fb3de2cd8a0dbd2904238d6bbbc8ccdd58efcfc0efbf3e8dfdb4b0aa73b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000006_gtfs_service_levels.sql": {
+      "bytes": 34665,
+      "mode": "0o664",
+      "sha256": "df62bf4d47836113be5ba67443550972495ab824b4a1012d9bfef46529f56b30",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000007_gtfs_service_level_honesty_columns.sql": {
+      "bytes": 6610,
+      "mode": "0o664",
+      "sha256": "ac55c2a940224ee2df6bc3818388d950fa5f62b7c3a294bcebfb17b14e986170",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000008_promote_gtfs_feed_version.sql": {
+      "bytes": 8872,
+      "mode": "0o664",
+      "sha256": "2a96cef59561b2e77550025cc7168bdabfb8ee3c1f72a5d755cebc34e4269f17",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000009_title_vi_service_equity.sql": {
+      "bytes": 22751,
+      "mode": "0o664",
+      "sha256": "c2e50971624ee191da51b7febc366b472c353b90adaa71c4dd8c438f650058d7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000010_census_tract_universes.sql": {
+      "bytes": 8080,
+      "mode": "0o664",
+      "sha256": "33ef61df15adaf34b8ee804ee70c7f5b3559483b6df8b89e34045a09374b78bc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260805000011_survey_question_draft_status.sql": {
+      "bytes": 2760,
+      "mode": "0o664",
+      "sha256": "970fcc346118638b7f9d02a8dac76bf6907b8dd04eb3e279b4df37124e07624b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260810000001_model_run_failure_history.sql": {
+      "bytes": 1600,
+      "mode": "0o664",
+      "sha256": "0384283e4f95a17a1c51f7c23c13d4b38aac05d923b3e7de00d692cf153df2b4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260810000002_engagement_campaign_slugs.sql": {
+      "bytes": 3301,
+      "mode": "0o664",
+      "sha256": "d62d7266f5a95e78e1ed04b49f80307a6117a752afd8ae5434edb237291b3a8d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260810000003_engagement_campaign_projects.sql": {
+      "bytes": 8422,
+      "mode": "0o664",
+      "sha256": "a9c77816bf956746bd2e6172444a5802156796e3993035049c301bf972139c8d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000001_aerial_flight_plans.sql": {
+      "bytes": 9751,
+      "mode": "0o664",
+      "sha256": "0fcc533293477b114894077e73485a22b92237c7d6ad29c3ec519ce34d7edb00",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000002_aerial_imagery.sql": {
+      "bytes": 8947,
+      "mode": "0o664",
+      "sha256": "11e407a50d943130fb2255e7f25afa9610cb90997bc0980ac06751a822e0e4c7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000003_aerial_custody_georef.sql": {
+      "bytes": 5612,
+      "mode": "0o664",
+      "sha256": "0ffe8a6be4050c30320872008fbd4cf61b173c4ec87f7b619ced563d33cf0207",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000004_aerial_processing_manifest_jobs.sql": {
+      "bytes": 2625,
+      "mode": "0o664",
+      "sha256": "73b3e01b4a8a0f9094ec033223738347a26f204e41dedcfdfedcb72c8621d117",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000005_document_library_stored_kinds.sql": {
+      "bytes": 6150,
+      "mode": "0o664",
+      "sha256": "0e852146e7b01ca630743f0b90b426553e2c7f68760854a15e0308d896c1f33b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000006_project_record_assignees.sql": {
+      "bytes": 4979,
+      "mode": "0o664",
+      "sha256": "bc6a39c9e843cd51e7d1a7a6d08bf2259fba7d8885d246e9ade8344f22e27ebe",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000007_work_notifications.sql": {
+      "bytes": 8338,
+      "mode": "0o664",
+      "sha256": "a7063ed49e2a687921d2b1bba3fb64e5a857c5c85c79f2cec8629776b19ba69b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000008_rtp_extraction_staging.sql": {
+      "bytes": 26430,
+      "mode": "0o664",
+      "sha256": "02bcbe2e49bd635924188384f624a0b7257696ce2234129ed0bd7cd2c8743545",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000009_rtp_extraction_provenance.sql": {
+      "bytes": 7424,
+      "mode": "0o664",
+      "sha256": "51d15fc266c1fcb1d3bb15cb4bcf23cd19a9e52010a3491e26cf93a984eef706",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000010_kb_ocr_extraction_source.sql": {
+      "bytes": 13974,
+      "mode": "0o664",
+      "sha256": "5478ca2366c2235c64063acc1ee31b7b525b0fc6d9e801fd2856d92c2b367736",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260811000011_work_notifications_grants.sql": {
+      "bytes": 4048,
+      "mode": "0o664",
+      "sha256": "e6b70c5fe1e793800bbddb3f61c8877ce77c1313cf65b819c1e4a0223e639a33",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000001_safety_crash_neutral_dimensions.sql": {
+      "bytes": 12688,
+      "mode": "0o664",
+      "sha256": "527ad5fb5cb4919b0a301e339ae8a08bb19d77ed3823d1c3eb0ea106a30a6ec1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000002_safety_crash_parties.sql": {
+      "bytes": 9662,
+      "mode": "0o664",
+      "sha256": "7c70d9fcb9470a8f1266278245ff4ec619ae5f9bfd2654d79c4061a2cf8f2dc7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000003_safety_crash_severity_counts.sql": {
+      "bytes": 4900,
+      "mode": "0o664",
+      "sha256": "ebbc340acb346db6a40c35ff02cd6e0733f3b32a69c881ef038fb26173cdbf2e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000010_award_expenditure_deadline.sql": {
+      "bytes": 3505,
+      "mode": "0o664",
+      "sha256": "6a713fa72edecc59f50bea0a75b2dbd49cc39057fdddc1f1cd1eb4b7ac118ebc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000011_local_measure_fund.sql": {
+      "bytes": 37626,
+      "mode": "0o664",
+      "sha256": "a473d57fd07420aa594b06acfe4a24a21f4a1a9ada17edde6d5e43248b84f64c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000012_measure_claims.sql": {
+      "bytes": 24931,
+      "mode": "0o664",
+      "sha256": "13ba24630c97f21588e785967ca8f4a7924d15377035c3410820b4012e19abdf",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000013_measure_claim_review_reminder.sql": {
+      "bytes": 4352,
+      "mode": "0o664",
+      "sha256": "01a579801b66eaba29f09e4b2bf615cf85b36c2b7b31cf2177e2385656b1e3c4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000014_measure_off_the_top_and_atomic_allocation.sql": {
+      "bytes": 19248,
+      "mode": "0o664",
+      "sha256": "c622d45bdaf46660958eb721ffe7e0417ba6f32e78b5440206fc8943bfe0fd3d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000015_workspace_gis_layers.sql": {
+      "bytes": 25533,
+      "mode": "0o664",
+      "sha256": "4b9b1ebba542e37007dc2420364f90a55c547c3f9e5c957fbcc9ff40264617e4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000016_workspace_gis_features.sql": {
+      "bytes": 13144,
+      "mode": "0o664",
+      "sha256": "a7013dc0841072b3d50325184c79e6251eee55869e2af36338178fd09eec5867",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000018_workspace_gis_layer_references.sql": {
+      "bytes": 5822,
+      "mode": "0o664",
+      "sha256": "13e54f3c9aadeee124cef5f517f635aa1e6004bef63212ff33210c8158d2415d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260812000019_measure_period_reserve.sql": {
+      "bytes": 22870,
+      "mode": "0o664",
+      "sha256": "6dee12d6226b7001ae8ce9d4e47410f59b16c28e7b07929facd4e7095f33c7a3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260816000001_workspace_gis_workspace_binding.sql": {
+      "bytes": 1725,
+      "mode": "0o664",
+      "sha256": "45cc4581664ba70376d7adf3d6c4991af8ccc83d3dbbdefe3f78bba1104b423a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260817000001_kb_search_chunks_extraction_source.sql": {
+      "bytes": 3029,
+      "mode": "0o664",
+      "sha256": "8312e4a07fc31f6d4ad57200010c3576641d36aa13d850e655f7633bc6bcdcbe",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260817000002_cron_job_heartbeats.sql": {
+      "bytes": 2194,
+      "mode": "0o664",
+      "sha256": "551e96cb6367091dc1f61228cc82ef0b0736692faff5c436f692339af46a1898",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260820000001_run_artifacts_markdown.sql": {
+      "bytes": 586,
+      "mode": "0o664",
+      "sha256": "5e121c77175652ad0a41b204bc90f71a0589ff49d69e97e8d9efb5698e2b946e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260821000001_engagement_crash_corroboration.sql": {
+      "bytes": 8613,
+      "mode": "0o664",
+      "sha256": "f0c2d03ade154077c0816c3a5a8bf355868c47a1a3b12e08a7d05de386bf16b0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260822000001_work_notification_recipient_can_mark_read.sql": {
+      "bytes": 3252,
+      "mode": "0o664",
+      "sha256": "3a62e60ff86aacee86b53eb498445c3f8f0fe65ff442d1b52a0723c66fec9223",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000001_report_artifact_aerial_preview_mime.sql": {
+      "bytes": 510,
+      "mode": "0o664",
+      "sha256": "11dd8dcdb41d8cd42304b06a41f4de85066bdbcf9144fc109e0a912d7f7d6809",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000002_land_use_plans.sql": {
+      "bytes": 24591,
+      "mode": "0o664",
+      "sha256": "6af73a9454932e1dd1d1d4dfd3ee2bf15d800a4a35f6b8c737400f6d806fa087",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000003_land_use_plan_policy_compaction.sql": {
+      "bytes": 1478,
+      "mode": "0o664",
+      "sha256": "e6eda1bdd47dc95b7821901026a5dfdd3f2b4074a75dbd20a84a6fd924498ada",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000004_land_use_plan_workspace_cascade.sql": {
+      "bytes": 1672,
+      "mode": "0o664",
+      "sha256": "0c90cb966047336e6885845c00843313b8b4ada0f39a1ccf24616ff0bd99bae4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000005_land_use_plan_append_only_cascade.sql": {
+      "bytes": 589,
+      "mode": "0o664",
+      "sha256": "0ee38ab91a89a3f6332633146f4af892fd22eff97b4ed4e1acd6bf2499fde8b7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000006_land_use_plan_report_target.sql": {
+      "bytes": 403,
+      "mode": "0o664",
+      "sha256": "ec15a13a755fccdf477a4b0cf81ca0747b1bd23514f06769cf2e39e25f96cabd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260823000007_land_use_plan_review_reporting.sql": {
+      "bytes": 17462,
+      "mode": "0o664",
+      "sha256": "31ffdf58eab6c629bc3002ad44bc27ff695c82e60709695ca5dccd165786ebf6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000001_safety_ksi_concentrations.sql": {
+      "bytes": 4428,
+      "mode": "0o664",
+      "sha256": "3a7e44f31fc9f7b51d85d6bd2087a41d04290ae1838d4864a225eab73f85d133",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000002_safety_ksi_tract_burden.sql": {
+      "bytes": 4893,
+      "mode": "0o664",
+      "sha256": "e644725bd1c61c290e9c8a75ff25611c9762957ae512a7414fe9a07d5c51dc5f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000003_project_estimated_cost_and_csv_provenance.sql": {
+      "bytes": 3205,
+      "mode": "0o664",
+      "sha256": "d830a9d899f34004691e00cac23e5dd4ede58162f12f7e9beb578c4fe19287f3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000004_workspace_stage_gate_template_selection.sql": {
+      "bytes": 1304,
+      "mode": "0o664",
+      "sha256": "0e6b8ebece8db7eb873acb4b696eea250697525f6e610622c96985e2e0a6b455",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000005_county_run_worker_lifecycle.sql": {
+      "bytes": 1216,
+      "mode": "0o664",
+      "sha256": "1235d796c72ce9711bb3856ca833a210d4467a8794cefa21c567fad676cdcf8f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260824000006_worker_health_reminder_preferences_and_crash_cutoff.sql": {
+      "bytes": 3852,
+      "mode": "0o664",
+      "sha256": "a3c52c1c862b894323977cb591ba4def19d8c7b143005b2194adf1f6514895ab",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260825000001_reviewed_portfolio_import.sql": {
+      "bytes": 17362,
+      "mode": "0o664",
+      "sha256": "cc16a3660c937055caac25947cc911a46bcae5596dfd235bb2c57a368e8b326e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260825000002_direct_workbook_portfolio_import.sql": {
+      "bytes": 18214,
+      "mode": "0o664",
+      "sha256": "ce5b61363df29cfde4a6852061a11ce01fb65efc7a49e01869f09564fc9bc566",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260825000003_safety_road_context_cache.sql": {
+      "bytes": 2071,
+      "mode": "0o664",
+      "sha256": "2fc3c33a6a88157a21b7da682556695758fa45d053a719346b27c5ee4d2b6227",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260825000004_safety_road_context_scope_guard.sql": {
+      "bytes": 1118,
+      "mode": "0o664",
+      "sha256": "71f11400c7e396fda0989fa4f1790f134486b8f4243584e81e34baab101f0bb4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000001_safety_exact_acquisition_screens.sql": {
+      "bytes": 8516,
+      "mode": "0o664",
+      "sha256": "7d830be6795cd8ecb8afb03e9b563e3a83bf7a161952300c6ffce7cdda171dbf",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000002_project_evidence_bundles.sql": {
+      "bytes": 9110,
+      "mode": "0o664",
+      "sha256": "1147ae258bca6c5006411ef1b3247a55022bed884398df4d897cb5008b7b10cb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000003_model_truth_correction.sql": {
+      "bytes": 8680,
+      "mode": "0o664",
+      "sha256": "e3006b611ab46ffac9f048d09b0a983fde0e92c47662e2b1aa5547b7501edfa6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000004_governed_decision_packages.sql": {
+      "bytes": 12718,
+      "mode": "0o664",
+      "sha256": "09ebd5aaec5d21a2540ac31b6de82ef78e4224869d957384bf8af490b8fbca07",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000005_decision_package_creator_submission.sql": {
+      "bytes": 2636,
+      "mode": "0o664",
+      "sha256": "410c01187ef983521f4776abec6c01847f7043575e707b9120d271a7ce805bac",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000006_decision_package_approver_membership_visibility.sql": {
+      "bytes": 486,
+      "mode": "0o664",
+      "sha256": "701fe8a20ffe67dfd7ad85604b7ca35a6ab170025615c706cd542ebbeeb2f248",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260826000007_scenario_model_link_cascade_delete.sql": {
+      "bytes": 520,
+      "mode": "0o664",
+      "sha256": "b742766e72fb0d6776e3d41e73cf719d45b5d01aaf73d8d35ba5e3bb39cccddf",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260827000001_model_truth_completion.sql": {
+      "bytes": 17536,
+      "mode": "0o664",
+      "sha256": "d89fe1549b9e4b2438477f050f563e1dfea3cbba4e3ef78964ccea45506601ed",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260827000002_governed_decision_enforcement.sql": {
+      "bytes": 25171,
+      "mode": "0o664",
+      "sha256": "94ad5e489926c49248dc6499fc1a84604f285ca9ed2021aab7a83840eb84161b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260827000003_evidence_dependency_freshness.sql": {
+      "bytes": 9199,
+      "mode": "0o664",
+      "sha256": "b9cd7754b57c08fb495fe4c2ac44042415115dca15ba94f6bb3cf8649fd69bf7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260828000001_model_validation_assessment_custody.sql": {
+      "bytes": 14845,
+      "mode": "0o664",
+      "sha256": "dc6c40f331caf856a52042b966a59e803947bac8d03d90fe7b9992113c519817",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260828000002_validation_custody_fail_closed.sql": {
+      "bytes": 3863,
+      "mode": "0o664",
+      "sha256": "b19775e87cc49623f7c81218fe9a908697a2c4f76e0f5a2350626b49767ee787",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260828000003_model_validation_structural_diagnosis_custody.sql": {
+      "bytes": 9742,
+      "mode": "0o664",
+      "sha256": "e0c3b3957f9504a8fca2ae6d8556308cdf3841376d3d9f7560ea67726dbd2ea2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260828000004_comparable_observation_v2_custody.sql": {
+      "bytes": 9215,
+      "mode": "0o664",
+      "sha256": "b097bb58d338bd042175aa1ff4d6f5eabe522cfed47ed9bcc2433e54954030f6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260828000005_structural_demand_diagnosis_custody.sql": {
+      "bytes": 8811,
+      "mode": "0o664",
+      "sha256": "78ee55560c2cb469f6fb5f708c4687736a670aabd54dd2e4d152dc2780d4ff7d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260831000001_distributed_work_loading_custody.sql": {
+      "bytes": 11544,
+      "mode": "0o664",
+      "sha256": "4713f6f49c258e31cf199741103fd552259750e4cb2f20ab1b28de27563dc971",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260831000002_distributed_work_loading_custody_guards.sql": {
+      "bytes": 6881,
+      "mode": "0o664",
+      "sha256": "e63c6eb8bb419640f3f3d52dddc4b61fd1cc4da7c73d76034b4b5a41119f1e26",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260904000001_persist_fars_crashes.sql": {
+      "bytes": 951,
+      "mode": "0o664",
+      "sha256": "0b31e75466d792b1b400b58a4dad659d2e0b9f85186690ce0642037573bc3f8c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260905000001_portfolio_unknown_price_year.sql": {
+      "bytes": 24434,
+      "mode": "0o664",
+      "sha256": "b49ba27f9a5635e6cdab325aab9155057f697ce55ff1f066939cc9460bda1d63",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260905000002_safety_acquisition_custody.sql": {
+      "bytes": 1331,
+      "mode": "0o664",
+      "sha256": "c6ca719c7962871269f8b6cc0173835329abeae0b4c8fdd2c1b746e6a9d867ec",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260905000003_crash_resource_update_provenance.sql": {
+      "bytes": 1428,
+      "mode": "0o664",
+      "sha256": "a63f742427d367a095c1fdb56c8d7101724cb19eb31e41703b68683e37ccc62b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260906000001_program_work_program_preparation.sql": {
+      "bytes": 8826,
+      "mode": "0o664",
+      "sha256": "c5408bb20e6f5d18e70cb179f7fa27eab3a3f763d82b64ebf028fd60363e13f5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260906000002_program_work_program_source_snapshot.sql": {
+      "bytes": 3756,
+      "mode": "0o664",
+      "sha256": "c00c3ee23bd37922952602ac461e75484ba2ed3306dee184a752eb63b2933fda",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260906000003_program_work_program_conflict_response.sql": {
+      "bytes": 5905,
+      "mode": "0o664",
+      "sha256": "5d9bc78a098ddbf5b896193893c8425f8e8c146732f15bd7673cc534c3266fe6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000001_document_extraction_recovery.sql": {
+      "bytes": 12500,
+      "mode": "0o664",
+      "sha256": "6d1625ab07937aae9047c0535770b85ad7d3c041ec33eb32df045c719cd0e800",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000002_work_program_extraction_versions.sql": {
+      "bytes": 5985,
+      "mode": "0o664",
+      "sha256": "12c4f9885d573845a67c00ebf3000b4e88043fc1379374f51211691672180a13",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000003_work_program_preparation_references.sql": {
+      "bytes": 5956,
+      "mode": "0o664",
+      "sha256": "0d9c358c683ac2aaa893d5803eb7e07fe5db613c95d3fa2577282b9c706677b4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000004_work_program_export_custody.sql": {
+      "bytes": 7832,
+      "mode": "0o664",
+      "sha256": "b6a382cfe325774f0e52baee5670823e6eb28190b23c9e5320ebe497aac087ca",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000005_work_program_recovery_forward_repair.sql": {
+      "bytes": 23575,
+      "mode": "0o664",
+      "sha256": "a867d0a5447765f73e7ab36165e74fa365dfa85de16f342deb26df8815ef335b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260907000006_document_extraction_cancel.sql": {
+      "bytes": 1171,
+      "mode": "0o664",
+      "sha256": "c1be1e0e2b8921b580fa32c1f2ad12b76eac3d8ca4f8442d7ee5f3c3bd48367a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000001_engagement_record_custody.sql": {
+      "bytes": 3289,
+      "mode": "0o664",
+      "sha256": "3ef0517d152238716cc6b06836889d0f0c2eca56c87c53347a6cae97e3da7ec4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000002_engagement_configuration_versions.sql": {
+      "bytes": 9981,
+      "mode": "0o664",
+      "sha256": "ca0227f9d997d6f0567957a6081de542a2bb2c8c6da89a573d99b8b5ff850992",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000003_engagement_public_copy_guards.sql": {
+      "bytes": 4320,
+      "mode": "0o664",
+      "sha256": "dde5ceb9ab1369c28b1e6bda05126df884e11a435abe9a7de8c832bea4be8f11",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000004_engagement_report_jobs.sql": {
+      "bytes": 10778,
+      "mode": "0o664",
+      "sha256": "28de93e33f75102924c75dd1b5a829a264a6a04bf3809c5010c3699ddccb40a3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000005_engagement_report_delivery.sql": {
+      "bytes": 2496,
+      "mode": "0o664",
+      "sha256": "2773b681017de23e9c9644195b7ab3b0ccf6227793f0765cd914c263d8167589",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000006_engagement_survey_receipts.sql": {
+      "bytes": 6050,
+      "mode": "0o664",
+      "sha256": "77aa35834b2e18bcb4a1118847e8853714edb5be11681eb6ae64e1c169fa1c8e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000007_engagement_setup_reuse.sql": {
+      "bytes": 6746,
+      "mode": "0o664",
+      "sha256": "44f670f7debc77a5244d4dbd695f97ff8ce624edc0a323d719973a9613545479",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000008_engagement_export_access_paths.sql": {
+      "bytes": 2094,
+      "mode": "0o664",
+      "sha256": "46f9bd54a589d4912ac73bc59e6e62ded671dad7c0b1a7b4cb5a6efb6fea1f49",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000009_engagement_bundle_access.sql": {
+      "bytes": 1312,
+      "mode": "0o664",
+      "sha256": "4fb13ba082e965a1f90a84bb42545d054afbc297ef6e01853ea0c2322f95f55a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000010_engagement_review_intent.sql": {
+      "bytes": 7468,
+      "mode": "0o664",
+      "sha256": "8a73fb27de96951049d9329f6c60802f49ce6fc9f2cd0e067ab7e8722c6eccc3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260908000011_engagement_campaign_configuration_scope.sql": {
+      "bytes": 1143,
+      "mode": "0o664",
+      "sha256": "ecf78a356473b6fb700d9dff28b1f23013652219fda5c4d87721cbe746840246",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260909000001_work_program_review.sql": {
+      "bytes": 17300,
+      "mode": "0o664",
+      "sha256": "4abc63db4c5d8eeb79e78edecae549f5a2494377b6d674228805e0aa6c6993d6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260909000002_work_program_review_packets.sql": {
+      "bytes": 9783,
+      "mode": "0o664",
+      "sha256": "8ba82764736812e62f2343784b59cb2e6e52ae61e8b099a10c961a8c4a5df0fe",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260910000001_work_program_actuals.sql": {
+      "bytes": 22806,
+      "mode": "0o664",
+      "sha256": "42dcad3ca61514558e104e0a2340c30d464c6def96dfa89cbdd71366d7815ff2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260910000002_work_program_reporting.sql": {
+      "bytes": 13435,
+      "mode": "0o664",
+      "sha256": "ee422757c3ea39f42e31cce9310b606e8da79976572a563e810dd09b10a86f58",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260910000003_work_program_report_exports.sql": {
+      "bytes": 9582,
+      "mode": "0o664",
+      "sha256": "c150afe43ee82b3753889caf1a28071111783b22c0db79aa0318705c32239572",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000001_contract_reconciliation.sql": {
+      "bytes": 43715,
+      "mode": "0o664",
+      "sha256": "b40c13f8da3ee77c7f40d38364ff62eb3c373c54cb121e0da86d9bc541dda8bc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000002_contract_billing.sql": {
+      "bytes": 8727,
+      "mode": "0o664",
+      "sha256": "520f5e50c37ac1c71276751bb13aaf90c2de454dd20cb5a2ab184b606449c32a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000003_contract_documents.sql": {
+      "bytes": 8573,
+      "mode": "0o664",
+      "sha256": "d68aa98017ac72fdfe2ebed0b2e658a2946e9a24a720dfbcca833b4b75c6d26e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000004_contract_imports.sql": {
+      "bytes": 3633,
+      "mode": "0o664",
+      "sha256": "14f2f52559758dc47e1ab4073c98b75f6d0a2ea4b67607181e376b3f279e7060",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000005_contract_relationships.sql": {
+      "bytes": 3003,
+      "mode": "0o664",
+      "sha256": "2a9fd9a13db0d75ebc2da10521dc6cfe9175b6a3acce17fd5fc8b2598268777b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000006_contract_staff_assignments.sql": {
+      "bytes": 2036,
+      "mode": "0o664",
+      "sha256": "c3ddf5e75e0eace8d2d089145d097ebe5c95347c96af419561eb3641fa4ed19e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000007_contract_evidence.sql": {
+      "bytes": 5079,
+      "mode": "0o664",
+      "sha256": "9d06e49448ec4aac679cff6465a3f7c127aea44bde48fa7a4e2404be92662511",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260911000008_contract_source_deletions.sql": {
+      "bytes": 3589,
+      "mode": "0o664",
+      "sha256": "195c2f092ec07899b117a61435ef82d974769d127aaee80ce43e8d6b75610ede",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260912000001_contract_master_authorization.sql": {
+      "bytes": 14301,
+      "mode": "0o664",
+      "sha256": "e1d486e5f7a0078d967553edc3181458e4317eeb41c8d0ffec053d09af96d5b7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260912000002_contract_scoped_access.sql": {
+      "bytes": 45726,
+      "mode": "0o664",
+      "sha256": "154a327554d5625d187916a1604cbd856207a1db84a2d890574ee51e479c8e98",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260912000003_received_consultant_invoices.sql": {
+      "bytes": 20377,
+      "mode": "0o664",
+      "sha256": "b960015b43938eb611507f25d041b190f1d5bc3def9a6b713c8c64abe360053d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260912000004_contract_accounting_reconciliation.sql": {
+      "bytes": 31798,
+      "mode": "0o664",
+      "sha256": "18e5a745762401732e69371c73b789e16696e33772c5f7d833f780f66f25609d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260912000005_legacy_order_authorization.sql": {
+      "bytes": 16730,
+      "mode": "0o664",
+      "sha256": "7ac42f6132a9ed1141699fa0c7485bcdbb74f29162cc4f70676fedd92e423cf1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260913000001_contract_delivery.sql": {
+      "bytes": 23859,
+      "mode": "0o664",
+      "sha256": "c212821ce7c392e52dbb51f3e3b3cc7d5a6721c7f4b3ed5d8c5f90c435ca1356",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260914000001_contract_management_responses.sql": {
+      "bytes": 11047,
+      "mode": "0o664",
+      "sha256": "01135e7f8c5fd3c5ea17ed268573f3eb5c54cccab4f5f11165509c2e36e4a797",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260915000001_contract_settlement_closeout.sql": {
+      "bytes": 21349,
+      "mode": "0o664",
+      "sha256": "1fb4d2996f1627a1a8e404edf98dee2d465c477c3e64143252998b1e544f8eda",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260915000002_contract_management_reports.sql": {
+      "bytes": 10705,
+      "mode": "0o664",
+      "sha256": "0bcb793ff57d4159f94a4980c0d719c4680e295867ce8aaeab6085796a8ef4d4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260915000003_contract_closeout_relationships.sql": {
+      "bytes": 4306,
+      "mode": "0o664",
+      "sha256": "43feea9e0865ffe47d189de90d626457c5e86ab3d0e7773edfb1b3241b200b4a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260916000001_contract_calculation_jobs.sql": {
+      "bytes": 10295,
+      "mode": "0o664",
+      "sha256": "65ac6d4c23b304424ac0c94528b72cd711bfd412ef75af8575ba2b527c443e29",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260917000001_contract_staff_schedule_integrity.sql": {
+      "bytes": 26955,
+      "mode": "0o664",
+      "sha256": "9017b1857b8e79318d00af941edc5cf132d1d8105cc7a944d4d8f609891d08ea",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260918000001_contract_mutable_source_cutoffs.sql": {
+      "bytes": 4891,
+      "mode": "0o664",
+      "sha256": "141a24d1e90c8d668941307725064e6721eac75f4f5f66f54acf0b5582c6fe4f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260919000001_contract_pm_proposal_inputs.sql": {
+      "bytes": 14976,
+      "mode": "0o664",
+      "sha256": "ce23a1c549bc650e978c4db05170cda55f3a6ab95e50220f4879b71cb04a5cfc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260920000001_contract_pending_reviews.sql": {
+      "bytes": 2308,
+      "mode": "0o664",
+      "sha256": "5b2e3bdfa0048d77bc809ae3eb129ce75d6efb06a37a12eb900db4458c67d685",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260921000001_contract_indexed_source_files.sql": {
+      "bytes": 12542,
+      "mode": "0o664",
+      "sha256": "30067f7339a82c172a07bbe08ac6fb338ba6095a81d98983bc1b20af8aa810c1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260922000001_contract_billing_direction.sql": {
+      "bytes": 2394,
+      "mode": "0o664",
+      "sha256": "184c981c682b1ae1421e839cb46e40d6815af1e432c9fa21dd3bcc94e57cfb65",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260923000001_contract_forecast_billing_custody.sql": {
+      "bytes": 2259,
+      "mode": "0o664",
+      "sha256": "22fb6f7c64ae608214b8049e82c6919e84bb432ccaf58112586a13a6524cbffb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260924000001_contract_staff_import_visibility.sql": {
+      "bytes": 10492,
+      "mode": "0o664",
+      "sha256": "2478bb7554cd015be78f7d058937d7b6c4be4bf7a2ebf2ddf7a77075f5baf008",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260925000001_contract_export_source_receipts.sql": {
+      "bytes": 3832,
+      "mode": "0o664",
+      "sha256": "be915c8a03bfa7d4b42f973104283fd6f0fc10aa5792fa7f5bda43c47ebad2d1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260926000001_contract_participant_and_accounting_work.sql": {
+      "bytes": 6421,
+      "mode": "0o664",
+      "sha256": "594e3bda8958da90bba5c737373f14ff289f4b2c15a2efa045dccfea64672b32",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260927000001_contract_participant_caller_view.sql": {
+      "bytes": 1313,
+      "mode": "0o664",
+      "sha256": "a8842b7eab3337b29a731c524108e6aff8d307dd0037ff68fa0321bb1547a4cd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260928000001_contract_completed_review_dates.sql": {
+      "bytes": 3695,
+      "mode": "0o664",
+      "sha256": "53ad36bd8fbb36482cab7e95360ee953b095c4a3fad14e514c11ed1d7d1603ab",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260929000001_contract_source_visibility_receipts.sql": {
+      "bytes": 4607,
+      "mode": "0o664",
+      "sha256": "0742d591195ecc2971e861c64d6e21cb2c1f14df6258428e6329d2be229c5041",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20260930000001_contract_participant_closed_state.sql": {
+      "bytes": 2060,
+      "mode": "0o664",
+      "sha256": "af0bfc032b7466a6c3436007962c2698ba236892e5b6ada0783c26b812f30370",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261001000001_contract_forecast_evidence_envelope.sql": {
+      "bytes": 10496,
+      "mode": "0o664",
+      "sha256": "2b066d50e5056b90e6dd100a431aab44973245479f82aa028bac5539c59647ef",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261002000001_contract_delivery_read_cost.sql": {
+      "bytes": 4461,
+      "mode": "0o664",
+      "sha256": "3473a5a55d9891a71dc35593b2ddb97604109f78ddb2d16427441d7c11a3a864",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261003000001_work_program_reimbursement.sql": {
+      "bytes": 35440,
+      "mode": "0o664",
+      "sha256": "44db044a3ed68d4533c76ece96905da2e02f63154f9c5121385dba0d40cc072a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261004000001_work_program_closeout_reconciliation.sql": {
+      "bytes": 18883,
+      "mode": "0o664",
+      "sha256": "9284607b442815197448c5dbd01be39375a4754d9d70bb1fd7c368e0ad483119",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261005000001_work_program_period_closure.sql": {
+      "bytes": 27501,
+      "mode": "0o664",
+      "sha256": "f40c9d327a7a9fc39ef5eb7866bbd547abc9b2f9572091e97cceca5874f6aa35",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261006000001_work_program_refund_matches.sql": {
+      "bytes": 8925,
+      "mode": "0o664",
+      "sha256": "c23ca9346d9d99313e9466f2a0f8215c6557e748e3ed80634bb7b561d635e1cc",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261007000001_work_program_multi_carryover.sql": {
+      "bytes": 16605,
+      "mode": "0o664",
+      "sha256": "621cb6eb416293e1216985cbcdae7200d3bcf83b49959b194cd01883722d3c9a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261008000001_assistant_hold_receipts.sql": {
+      "bytes": 10329,
+      "mode": "0o664",
+      "sha256": "c29b99ee1ee63cef9156315c5379a722c5723bf9b87b615d8b538c634262ef12",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261009000001_assistant_submittal_receipts.sql": {
+      "bytes": 8530,
+      "mode": "0o664",
+      "sha256": "fdedd1555778406ec034393840289cd62f53dc428795a28034ace0d3cfa2e732",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261010000001_assistant_provider_connections.sql": {
+      "bytes": 25521,
+      "mode": "0o664",
+      "sha256": "4587a1362d8e412af1f15db6c79feb2dd9ca9dd3ba7d2bee7d49521fa2daff47",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261011000001_assistant_claude_connections.sql": {
+      "bytes": 6422,
+      "mode": "0o664",
+      "sha256": "96ab79fe8ebc525f9ea413b24b118ccf32d6355c1044f70ff248ba4d022938a8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261011000002_assistant_opencode_connections.sql": {
+      "bytes": 5198,
+      "mode": "0o664",
+      "sha256": "b2732b8938b7a9b3630745956f7706ba19e3f2286989815263d5e57e4278c9f1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261012000001_workspace_provider_api_revisions.sql": {
+      "bytes": 13608,
+      "mode": "0o664",
+      "sha256": "5ad31f2f04170d61bd00011f4d8901650afbb59121e0ca4f945448677a7b5bd5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261012000002_assistant_api_turns.sql": {
+      "bytes": 25389,
+      "mode": "0o664",
+      "sha256": "4830318b9ee8981cf018e2fd93866cdf015f6217d86576cadf1e4ff1290f6ee4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261013000001_engagement_response_snapshot.sql": {
+      "bytes": 1191,
+      "mode": "0o664",
+      "sha256": "26a751c204388c1af54764e9df4418a5bedf40d96360c81e80cafbe84576c483",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000001_engagement_response_history.sql": {
+      "bytes": 4909,
+      "mode": "0o664",
+      "sha256": "e712c73d9fd868ab8c3e68003a028cad3c3a3f8637d0de0ef97ea8e3a2bde523",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000002_engagement_response_history_reader.sql": {
+      "bytes": 1050,
+      "mode": "0o664",
+      "sha256": "13b346a260defe3cbb25891e216bf1e87f4e70eb8fd6458c9453a6165e80f594",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000003_engagement_response_recovery.sql": {
+      "bytes": 36047,
+      "mode": "0o664",
+      "sha256": "4601df9e40867a60606d8832f2ad5faa74ae1cda0c916c4ff3c6c939ee917d23",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000004_engagement_delivery_summary.sql": {
+      "bytes": 2752,
+      "mode": "0o664",
+      "sha256": "d5eeb277051b461f9136cf93ad4101497fd7bc3cb0c47dd05e3e682fdb79a72c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000005_engagement_delivery_authority_locks.sql": {
+      "bytes": 3057,
+      "mode": "0o664",
+      "sha256": "cc7ce5c2d56d4c106dc66ce3fa84b09f8bafa7d9f25197f36421c13041f593c3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000006_engagement_response_rpc_policy_cleanup.sql": {
+      "bytes": 536,
+      "mode": "0o664",
+      "sha256": "ac8016bd08d97387b13469067b0cda7a4c5e1d0f58023401c940ab5c4f0a892a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000007_engagement_conflicts_without_transaction_retry.sql": {
+      "bytes": 9757,
+      "mode": "0o664",
+      "sha256": "baf8589be49dc0507d547e743048d6112d85bdaba7d82a25f3e74e7e6818b089",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000008_engagement_translation_scope.sql": {
+      "bytes": 3001,
+      "mode": "0o664",
+      "sha256": "f03a86eaeffaefae342634677ff123c9ae10d41f55021c8bcd4ba90738426fec",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000009_engagement_translation_history.sql": {
+      "bytes": 5726,
+      "mode": "0o664",
+      "sha256": "9b9397f280bbe6a24182d333cd68a3bb19ec070d49e91357ea5781019d4b24ef",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000010_engagement_translation_commands.sql": {
+      "bytes": 16352,
+      "mode": "0o664",
+      "sha256": "a412defaa6b0436f965e504f428e3e22cb88defc1cd904a9878c29fa3b96ca74",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000011_engagement_translation_snapshot.sql": {
+      "bytes": 3331,
+      "mode": "0o664",
+      "sha256": "356abae21f596df1738e39d194b845bcd6c04607c710570901af803af5a6415a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000012_engagement_translation_history_receipts.sql": {
+      "bytes": 1810,
+      "mode": "0o664",
+      "sha256": "5ed0aada4a21e364197ac7874e2ba890d734a7504605c53d06833dbabddc9544",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000013_engagement_translation_generation.sql": {
+      "bytes": 33442,
+      "mode": "0o664",
+      "sha256": "3daf131f02d2476a293cccde3ab5e74e73182dd0d5291db696df791bf0873cad",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000014_engagement_translation_generation_reads.sql": {
+      "bytes": 2614,
+      "mode": "0o664",
+      "sha256": "af4ac71c095242f1620f403fa774ff82e2450d5a95bc2b36078dc4c6011e17f6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000015_engagement_translation_generation_catalog.sql": {
+      "bytes": 3100,
+      "mode": "0o664",
+      "sha256": "1139b5a904801475dfc4357a04f0c89823d4763077e734828472e82416cf6987",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000016_engagement_translation_retained_publication.sql": {
+      "bytes": 14888,
+      "mode": "0o664",
+      "sha256": "4f5d2d33b62798dd57d113e4751d3b107d792f7082ad0f2f7dc7c43b4928b757",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000017_engagement_translation_command_activation.sql": {
+      "bytes": 767,
+      "mode": "0o664",
+      "sha256": "43bb8638b703ebd1ee6d7c705da88ec00bcaaf3208a1eeda9e2651aa79e1e1fb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000018_engagement_translation_shared_reads.sql": {
+      "bytes": 6647,
+      "mode": "0o664",
+      "sha256": "0d9c268becfcdee8c9faf4017e786a49e5e1d6574ae4fba3064e97c55113d188",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000019_engagement_translation_generation_resolution.sql": {
+      "bytes": 11598,
+      "mode": "0o664",
+      "sha256": "fd119b912465ca05089c89fb4d1cdcbbf1b9b499030673ce29ba6a077c36d1c0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000020_engagement_public_translation_queue.sql": {
+      "bytes": 32819,
+      "mode": "0o664",
+      "sha256": "c247f4ead091a3bc2f19570731a683a721dc147a50e2a967df195869523b18ff",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000021_engagement_response_decision_links.sql": {
+      "bytes": 19856,
+      "mode": "0o664",
+      "sha256": "f4ce13ea3a4b7dab774c5cd444b0db20c4fc1dffa8872fd4c119187eebcf7c84",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000022_engagement_decision_request_resolution.sql": {
+      "bytes": 15215,
+      "mode": "0o664",
+      "sha256": "2fb5cf597d33da4eff4db0e38b33c48ae573428e0a4bdd4ae9388b36e184152c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000023_engagement_public_copy_privacy.sql": {
+      "bytes": 20827,
+      "mode": "0o664",
+      "sha256": "28c5ae6e7f3e161a08dea904605a8637beb54a21f798865e6e163e6bd086ca3c",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000024_engagement_report_decision_history.sql": {
+      "bytes": 7325,
+      "mode": "0o664",
+      "sha256": "8bffa4278b2c51d05c6de3f5551e36d8da0c52abd8c9975d24be1735abf80d1e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000025_engagement_synthesis_sources.sql": {
+      "bytes": 11627,
+      "mode": "0o664",
+      "sha256": "2774a958e79959d423d24d8e2cd971c1ed7f297b29bbfdbd2ca3bc338f4704e4",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000026_engagement_synthesis_source_list.sql": {
+      "bytes": 2751,
+      "mode": "0o664",
+      "sha256": "27c2548e9d4fdf842bd1ab6a47f7d96d704553da1cfa88c72e1247a2671affd5",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000027_engagement_synthesis_reviews.sql": {
+      "bytes": 18129,
+      "mode": "0o664",
+      "sha256": "b79d07d3e517903ab8a73cf42e1f7e6499b56849b859f3fb00b0f3953c60e763",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000028_engagement_synthesis_approvals.sql": {
+      "bytes": 13427,
+      "mode": "0o664",
+      "sha256": "846765f12641c83baed1ebfcdf38bede6a6f9715a91c03b1c08047641effefce",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000029_engagement_synthesis_response_links.sql": {
+      "bytes": 38472,
+      "mode": "0o664",
+      "sha256": "55646552c22f44c2dae78810e01982119cadef1182dd47672719d8d723703743",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000030_engagement_decision_synthesis_history.sql": {
+      "bytes": 16875,
+      "mode": "0o664",
+      "sha256": "67ceb8f4582055a4a69a384ea52ffa0bfef2d0493cafc333c23ed127508889c7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000031_engagement_decision_resolution_guard.sql": {
+      "bytes": 8959,
+      "mode": "0o664",
+      "sha256": "ad51651a737021771b5f40302974d9c4154ef3e11574e500845a22e764b419f1",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000032_application_temporary_schema_order.sql": {
+      "bytes": 21063,
+      "mode": "0o664",
+      "sha256": "14e75dd9b512e2550aed23e0a329699bc272d5ca0df49a4df8a763ace72fa00d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000033_engagement_synthesis_generation_requests.sql": {
+      "bytes": 13613,
+      "mode": "0o664",
+      "sha256": "37b3b347111d9858bac1d39c61cae64461ec240acd8498dd50f91d59d937720a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000034_engagement_synthesis_generation_plans.sql": {
+      "bytes": 15638,
+      "mode": "0o664",
+      "sha256": "b425247b6900dee70aac12d53be5156b9c6ef9c6765906d239c497044ece9100",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000035_engagement_synthesis_generation_execution.sql": {
+      "bytes": 34661,
+      "mode": "0o664",
+      "sha256": "64c4b300aace6ca2a358417ce74928cff315b5ff553e8b00820e64fabe6f4170",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000036_engagement_synthesis_generation_history.sql": {
+      "bytes": 2551,
+      "mode": "0o664",
+      "sha256": "d86ef9d1f28996c863237387a62b66db168b9bda0efd860a35c5a69f425cfb11",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000037_engagement_synthesis_context_requests.sql": {
+      "bytes": 9491,
+      "mode": "0o664",
+      "sha256": "c2031af677b78aa6dd2bf061dafa430776a2764784ca567f5df6d6b07d485589",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000038_engagement_synthesis_context_plans.sql": {
+      "bytes": 15148,
+      "mode": "0o664",
+      "sha256": "830d60f57a056db1372d9eaa3f1dd0e85f3fefbee41759fee0ecfc8697750c71",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261014000039_engagement_synthesis_context_execution.sql": {
+      "bytes": 34205,
+      "mode": "0o664",
+      "sha256": "f9c4ae01a55d972652f4d5cacfbf636be5fb957c9a1895bd00afb9d86ce44e08",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000001_measure_period_fund_integrity.sql": {
+      "bytes": 8202,
+      "mode": "0o664",
+      "sha256": "2f32f812eb3a901cd1d4f33de9b4870d69d131aa540dfb87c94e8cb531c05836",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000002_security_artifact_storage_writes.sql": {
+      "bytes": 646,
+      "mode": "0o664",
+      "sha256": "b2f8ad3e69e4625ff6ad59eeb1a4de139482233013dcb0b834311d5106920382",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000003_engagement_synthesis_thematic_requests.sql": {
+      "bytes": 10453,
+      "mode": "0o664",
+      "sha256": "3a4ace70a54a0cbb9b68f036adae631c44e22e8463f08c609311b9bc3f970a5d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000004_engagement_synthesis_thematic_choices.sql": {
+      "bytes": 8593,
+      "mode": "0o664",
+      "sha256": "7afc13e695a7152ed1aaf9b0af39a0b9474089e8e772d11f44ac209dd46cc295",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000005_engagement_synthesis_thematic_preparation.sql": {
+      "bytes": 11026,
+      "mode": "0o664",
+      "sha256": "6931c34a959d3d96b864741a2298027f191933547cae18c53d565f7eea4e9ea2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000006_engagement_synthesis_thematic_inputs.sql": {
+      "bytes": 8263,
+      "mode": "0o664",
+      "sha256": "23c26ec565b9b4fb0819ceeccf2d55a3f9fa978d1a588285ce72e9ffc0efbfa6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000007_engagement_synthesis_thematic_input_seals.sql": {
+      "bytes": 14965,
+      "mode": "0o664",
+      "sha256": "15500a716e2ddae4a52668e84bc6e3f1824a45ae4db5ad3ab1411e1e6e813169",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000008_engagement_synthesis_thematic_plans.sql": {
+      "bytes": 15540,
+      "mode": "0o664",
+      "sha256": "b2ffc15f8a24acb650a1cf0498b38a302f6abd97d5026cae4093619ebd1ea188",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000009_engagement_synthesis_thematic_execution.sql": {
+      "bytes": 32590,
+      "mode": "0o664",
+      "sha256": "5d4f4c199f7965a6920a864235cfd551347767a803a7ec6fb6540d460072e0c2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000010_engagement_synthesis_thematic_import.sql": {
+      "bytes": 13926,
+      "mode": "0o664",
+      "sha256": "09b17eb0f23097fec0771af688ed3ea6adcddcc27c4dfb05a1c1a6f64aef17bb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000011_engagement_synthesis_thematic_discovery.sql": {
+      "bytes": 3669,
+      "mode": "0o664",
+      "sha256": "f55fdca30ffa6a834f64f2166fe8b26254fdea32dadaaebb1a67ae813671f01d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000012_engagement_synthesis_preparation_queue.sql": {
+      "bytes": 15255,
+      "mode": "0o664",
+      "sha256": "e20a17ee504fc69acaa788762ddba9c36ec746039406cfb4f36235af729ada16",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000013_engagement_synthesis_request_discovery.sql": {
+      "bytes": 3878,
+      "mode": "0o664",
+      "sha256": "9b07ae16b68f390bfcd8718b179887345b1c3bdc9482f9423904b9cfc50bb518",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261015000014_engagement_synthesis_preparation_recovery.sql": {
+      "bytes": 2688,
+      "mode": "0o664",
+      "sha256": "6a7d070321580701c2bc4c9774f9d677954f988f2cdb03535c1ce356673426d2",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000001_bca_workbench_versions.sql": {
+      "bytes": 2132,
+      "mode": "0o664",
+      "sha256": "c1db7da8484bd4576b8d55430471bd69836b54ac1d7140bf92a5f2ac09d42cc3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000002_land_use_plan_context.sql": {
+      "bytes": 10411,
+      "mode": "0o664",
+      "sha256": "055cd03f835f0992e46ba4672070938c1e131bcc621ea3444d90471892c770ab",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000003_land_use_plan_draft_revision.sql": {
+      "bytes": 5678,
+      "mode": "0o664",
+      "sha256": "969804874bbe99a86b997619e937c9e5a776241ab970eed2669c03533f8aa965",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000004_land_use_plan_freeze_commands.sql": {
+      "bytes": 15117,
+      "mode": "0o664",
+      "sha256": "237106bc8f323c52095e2c682423f83fe4647e964eb4fc610b412ba6e809ea27",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000005_land_use_plan_freeze_server_path.sql": {
+      "bytes": 864,
+      "mode": "0o664",
+      "sha256": "1dc7a9de66c4b029720485ca910d11b7f12b9ec986a08adea4dd6e155833f57e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000006_land_use_plan_retained_study_area.sql": {
+      "bytes": 5419,
+      "mode": "0o664",
+      "sha256": "e6f53b47077007031dd6670925f4325cbffc71f42289ff2b4b49adced0175012",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000007_land_use_plan_creation_commands.sql": {
+      "bytes": 9579,
+      "mode": "0o664",
+      "sha256": "0d97279fedc429c86d9373bbc41f67b3941b3c0b8ce6925af30a3fa224c63fa8",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000008_land_use_plan_creation_cancellation.sql": {
+      "bytes": 6261,
+      "mode": "0o664",
+      "sha256": "491a59dfcebeff40f5a74710bce369680e14a67483b3400ef31e7105ab2b6214",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000009_land_use_plan_cascade_guards.sql": {
+      "bytes": 5180,
+      "mode": "0o664",
+      "sha256": "6a0fe1d0434889a0391cf18dc32224a5b089a13969583051bd51b25f9cb8a5ac",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000010_land_use_plan_rule_reconciliation.sql": {
+      "bytes": 9597,
+      "mode": "0o664",
+      "sha256": "4d32a516a6286e621fde355782959f364f6c241ef410acc2873f27fbd9320748",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000011_workspace_gis_cascade_guards.sql": {
+      "bytes": 1917,
+      "mode": "0o664",
+      "sha256": "7044e15822ec46081cd6cefbd8d6b3e82596f9c9ba96c4c8ac14198928bc2e55",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000012_land_use_plan_implementation_report_commands.sql": {
+      "bytes": 10815,
+      "mode": "0o664",
+      "sha256": "4deac02d24f1941af8d7805a5991551cd682feb0998103cf9cfa9b1e1e0acf69",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000013_synthesis_execution_queue.sql": {
+      "bytes": 8461,
+      "mode": "0o664",
+      "sha256": "156bb5862889f7efeff850c311353f7a5fa7234bdebab432baac5cd3acfe3e51",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000014_model_attempt_command_custody.sql": {
+      "bytes": 45381,
+      "mode": "0o664",
+      "sha256": "abbbdf4ef000ae901dde6a7c93c537f4b8c9fee483ec6d2d63705ba7312ad0e3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000015_legacy_assessment_command_receipts.sql": {
+      "bytes": 5973,
+      "mode": "0o664",
+      "sha256": "aad23c391bf9d0bddf2583468f44701bf4a3ad4bbc0d9c94312b0594be8b8390",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000016_legacy_artifact_command_receipts.sql": {
+      "bytes": 4562,
+      "mode": "0o664",
+      "sha256": "8cb6a78d9f66cf6573ad3f28d34865e40649c4d4b5a451364ed6f368e176bb9b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000017_legacy_kpi_command_receipts.sql": {
+      "bytes": 4488,
+      "mode": "0o664",
+      "sha256": "d8b5da758d40ec4b8d7b9f94cb12838e825155095517f7b2228a1bd135a06da0",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000018_model_execution_retention.sql": {
+      "bytes": 12899,
+      "mode": "0o664",
+      "sha256": "bfb526df6d0ec90b6432dec3c7cc6e3deaf3a658a9991d7e9156a235437f8944",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000019_model_recovery_status.sql": {
+      "bytes": 957,
+      "mode": "0o664",
+      "sha256": "c367e864feb54d9ce5fe2251714e42c8b5772f78c175f8e9a1b72fc8055f59af",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000020_model_blocked_stage_receipts.sql": {
+      "bytes": 6001,
+      "mode": "0o664",
+      "sha256": "995d4ef236c751b206ed5a9620c9e7e99ea1b44daf4eb95348f7cb782197cce3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000021_model_attempt_prepared_artifact_identity.sql": {
+      "bytes": 3621,
+      "mode": "0o664",
+      "sha256": "8093fd595bddd7369d800d5c7ecd2f9508d24e0100108762f7fe1b3ddd06f1ac",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000022_model_reaper_recovery_boundary.sql": {
+      "bytes": 2945,
+      "mode": "0o664",
+      "sha256": "e94693fec4f95abda27fc627e2c3bf6888a60c19129fa313b72b5741c286b192",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000023_model_recovery_decisions.sql": {
+      "bytes": 8310,
+      "mode": "0o664",
+      "sha256": "3a8da545fb864e35e6798a070301da929093bbcca51aaadf1335f6ee2dc4ace9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000024_model_attempt_instrument_member_read.sql": {
+      "bytes": 715,
+      "mode": "0o664",
+      "sha256": "8a7058b66fb3cb5562c773393a1a0acd2a1e05f471a57289cf5af5adffc1a47a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000025_gtfs_abandonment_fence.sql": {
+      "bytes": 4319,
+      "mode": "0o664",
+      "sha256": "3a71dc51831ca384d1f4dab35ae19ed24adb68b0f1b9312fa9d6609255e4ea8a",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000026_gtfs_failure_closure.sql": {
+      "bytes": 4816,
+      "mode": "0o664",
+      "sha256": "071fb54e121b81c6c7069c2821c610741c800b9159c390f860b3b38b23b99201",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000027_run_project_workspace_foreign_keys.sql": {
+      "bytes": 1901,
+      "mode": "0o664",
+      "sha256": "d1142e76d242f9e11def5d16e4d5be6dc673678c7b78a1042faf11cd8c456ca6",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000028_gtfs_managed_execution.sql": {
+      "bytes": 83286,
+      "mode": "0o664",
+      "sha256": "6a99a67134ea500d500944b916bc3a07cda0adb3e668a7ac4ebc963bf1422beb",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000029_gtfs_submission_status.sql": {
+      "bytes": 1113,
+      "mode": "0o664",
+      "sha256": "ff91614a88d2d06841d63c0c66a11d29c39a98d0bb991bc7f0e794afca343645",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000030_gtfs_human_review.sql": {
+      "bytes": 6489,
+      "mode": "0o664",
+      "sha256": "f7d4b24cc3dbea14460c6bea4937321188c1c8105f890fa5eaa45c3b108890fd",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000031_gtfs_request_cancellation.sql": {
+      "bytes": 6025,
+      "mode": "0o664",
+      "sha256": "a6818b4a537484668f1630079b6d7df8cfda58ded5e8996ed4fd6f318852f091",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261016000032_model_kpi_receipt_float_precision.sql": {
+      "bytes": 488,
+      "mode": "0o664",
+      "sha256": "dc26f3316ed88dcd480990fd76f60977d1e76d29bd475e8ee14d711a42af27b7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000001_project_map_packages.sql": {
+      "bytes": 29505,
+      "mode": "0o664",
+      "sha256": "76e0273485e15802d24637e6f9acdac48a3d77ee04c74395b60e487f6cacb9d7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000002_engagement_survey_question_counts.sql": {
+      "bytes": 4139,
+      "mode": "0o664",
+      "sha256": "1804abd78c176fc7e07459f6119f17a139524e84b984ed21e55f4c68ee1283c7",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000003_aerial_private_dispatch_custody.sql": {
+      "bytes": 11760,
+      "mode": "0o664",
+      "sha256": "4b0814b6f4e426261c8e3651b89812b50cc1c8226fd7ed2ec493c3b7f23d73f9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000005_money_integrity_corrections.sql": {
+      "bytes": 64341,
+      "mode": "0o664",
+      "sha256": "82374309f11d7c270f1defa18d70d1f719882296f2f662f80ad74d3214410066",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000006_permission_integrity.sql": {
+      "bytes": 10864,
+      "mode": "0o664",
+      "sha256": "78ca978e5f5937045c8c0f9a049928178c8dc65d7ab511a0e4597114c7ddfd7d",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000007_workspace_time_zone.sql": {
+      "bytes": 5011,
+      "mode": "0o664",
+      "sha256": "e8f413b72752df79a09396fe8d73ba7e867818bbb0fb9e0a807bfac5accb26e9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000008_historical_run_decisions.sql": {
+      "bytes": 5870,
+      "mode": "0o664",
+      "sha256": "adff0b6a9fce3cc1c7f219d7b87a2a3250352644f4a13bd137bde7241ce710e3",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000009_owp_program_type.sql": {
+      "bytes": 2106,
+      "mode": "0o664",
+      "sha256": "232d87bd71134615948c3506f8daf8041bd6e94150577f8df3aa4d8824446469",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000010_workspace_storage_quota.sql": {
+      "bytes": 5990,
+      "mode": "0o664",
+      "sha256": "dc25be850d483bd68d5339c1c0d252cba9c6b6da97ac70d93a4204d287bf84d9",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000011_aerial_preserve_held_custody.sql": {
+      "bytes": 1344,
+      "mode": "0o664",
+      "sha256": "5d388c7dfbed8bab6e58195e1ec5f6dbad8aa36cfde31294c0d286a1e1d0cd2e",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000012_aerial_delivery_authority.sql": {
+      "bytes": 4950,
+      "mode": "0o664",
+      "sha256": "7005dcfb97fa97f8599887fff37f3f7be931e42fd22873da74a9196a094ab375",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000013_artifact_storage_server_writes.sql": {
+      "bytes": 3444,
+      "mode": "0o664",
+      "sha256": "cd27bd094c10871a5a940cc0c957425a868a08c4def16754035b39e56f313265",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000014_work_program_evidence_date_workspace_calendar.sql": {
+      "bytes": 13296,
+      "mode": "0o664",
+      "sha256": "76140a2a93f261e2a7dcd0d81aa0f75a85dc9ef7f2149141c3b7513ca308368b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000015_node_queue_process_observations.sql": {
+      "bytes": 5740,
+      "mode": "0o664",
+      "sha256": "40a554ab2d1c97791f3e2875ca5ff24350d400bd3e1ec618896bcdeeed097113",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000016_project_jurisdiction_context.sql": {
+      "bytes": 5380,
+      "mode": "0o664",
+      "sha256": "1384e6a2767827c2b756d978bd6e76f6fea364e4e1263e953c0358364341267f",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000017_portfolio_skip_invalid_classifications.sql": {
+      "bytes": 15938,
+      "mode": "0o664",
+      "sha256": "b129f80e37aa9be71069683acd42df3fb6fdb94078ed0458f20b6e9c5155a41b",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000018_assistant_usage_limit_receipts.sql": {
+      "bytes": 9284,
+      "mode": "0o664",
+      "sha256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+      "uid": 1000
+    },
+    "openplan/supabase/migrations/20261017000019_project_budget_complete_inputs.sql": {
+      "bytes": 6046,
+      "mode": "0o664",
+      "sha256": "ed2784b2b1623eb34340480d84dc72e5ce8d226c70532a5062495a1565df181d",
+      "uid": 1000
+    }
+  },
+  "sourceCount": 422
+}

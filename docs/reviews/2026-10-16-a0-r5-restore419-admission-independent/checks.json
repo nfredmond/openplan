@@ -1,0 +1,144 @@
+{
+  "P1": [],
+  "P2": [],
+  "actualChain": {
+    "allocate": {
+      "childRequests": 19,
+      "completeSHA256": "43a1cc485381aed6bf783f43929f257ac62fa5e9e4be21f972e5a3c6f0ae855f",
+      "kindsIncludingManager": {
+        "createdb": 1,
+        "git": 5,
+        "inspect": 7,
+        "manager": 1,
+        "psql": 6
+      },
+      "managerTerminalSHA256": "be9344e424b90499442bcf9a851ca20d97b01ba9eb82cff4f61ab7f82207d7f9",
+      "outerExit": 0,
+      "outerInvocation": "afc5a58892c4496280eeede1b2cd13ca"
+    },
+    "observe": {
+      "childRequests": 12,
+      "completeSHA256": "716ffd49c825e30154781fd8dc9692a804482b5f18f3fc600259d4ab7334698f",
+      "kindsIncludingManager": {
+        "git": 5,
+        "inspect": 4,
+        "manager": 1,
+        "psql": 3
+      },
+      "managerTerminalSHA256": "5b31fdfea607e975715b1cf63969ead77cb8fa0baff53b4ae9672d63492cf7a5",
+      "outerExit": 0,
+      "outerInvocation": "22ab6f83ab1d4c23971d22bd17d9ae78"
+    }
+  },
+  "admissionPublished": false,
+  "blindCategories": [
+    "static source is not PostgreSQL/archive parsing or future restoration",
+    "pre-restore separate connections do not lock targetOID through pg_restore",
+    "empty pg_class count is not every standalone function/type",
+    "table and sequence digests are not whole-installation or Storage recovery",
+    "catalog scope does not hash protected database contents",
+    "wrapper cgroup does not cap database container or prove cancellation",
+    "hashes do not prove every transient effect, physical power-loss durability or hostile same-user resistance",
+    "no native provider/route/browser/installed-client/human/scientific/T1/T15/v1 acceptance"
+  ],
+  "compilerOrManagerOrLockOperation": false,
+  "disposition": "narrowly conditional no finding",
+  "freshRootConditions": [
+    "consume exact report and recheck proposal/source/runtime/binding/helper/plan/archive pins and private metadata",
+    "recheck actual complete and manager-terminal predecessors, observation, system and targetOID/targetSHA",
+    "lstat absent admission and stage including partial paths and dangling links",
+    "exclusive unit/compiler/target and all-native catalog operating window including budget lanes",
+    "fresh in-stage native/originalScope/archive/schema and pg_class emptiness checks before pg_restore",
+    "exclusive durable publication and new unique bounded outer-parent custody",
+    "one restore419 only; failure or lost acknowledgement fences without retry or cleanup",
+    "require all actual restoration readbacks and parent/manager acknowledgement",
+    "independent actual finish definition/owner/config/ACL review before separate later migration admissions"
+  ],
+  "historicalMetadata": {
+    "diagnosticPins": 18,
+    "issues": [],
+    "r4ManifestOnly": true,
+    "r4Public": 3,
+    "r4Selected": 18
+  },
+  "metadataGroups": {
+    "2026-10-16-a0-case-temp-oid-correction": {
+      "exactGitFiles": 34,
+      "privateManifestEntriesRehashed": 0,
+      "privateManifestOnly": true,
+      "public": 33,
+      "selected": 20
+    },
+    "2026-10-16-a0-case-temp-oid-r5-independent": {
+      "exactGitFiles": 4,
+      "privateManifestEntriesRehashed": 0,
+      "privateManifestOnly": true,
+      "public": 3,
+      "selected": 16
+    },
+    "2026-10-16-a0-r5-allocate-admission-independent": {
+      "exactGitFiles": 4,
+      "privateManifestEntriesRehashed": 18,
+      "privateManifestOnly": false,
+      "public": 3,
+      "selected": 0
+    },
+    "2026-10-16-a0-r5-observe-admission-independent": {
+      "exactGitFiles": 4,
+      "privateManifestEntriesRehashed": 7,
+      "privateManifestOnly": false,
+      "public": 3,
+      "selected": 7
+    },
+    "allocateActualProof": 135,
+    "bindings": 5,
+    "observeActualProof": 95,
+    "originalR3Failure": 62,
+    "planFrozenCustody": {
+      "historyVersions": 419,
+      "ordinaryTables": 376,
+      "sequenceCensus": 1
+    },
+    "precedingHelpers": 7,
+    "runtime": 9,
+    "source": 652
+  },
+  "metadataInitialInputPaths": 1050,
+  "metadataIssues": [],
+  "nativeDispatch": false,
+  "newTestsOrGuards": false,
+  "originalScopeReadbacks": {
+    "allocate": {
+      "absenceBeforeCreatedb": true,
+      "createdbRequest": "request-015",
+      "nativeReads": 3,
+      "nativeTargetEqualsRetainedTarget": true,
+      "originalScopeComparisons": 2,
+      "originalScopeMatches": true,
+      "sameSystemIdentifier": true
+    },
+    "issues": [],
+    "observe": {
+      "absenceBeforeCreatedb": null,
+      "createdbRequest": null,
+      "nativeReads": 2,
+      "originalScopeComparisons": 1,
+      "originalScopeMatches": true,
+      "sameSystemIdentifier": true
+    },
+    "originalCatalogCount": 614
+  },
+  "preservedSelectedPaths": 1050,
+  "proposalSHA256": "ada674a713647a170e948ba5f4b89436cdd0e367e85f599a377974aafc694bba",
+  "stage": "restore419",
+  "staticSuccessFootprint": {
+    "childRequests": 25,
+    "git": 5,
+    "inspect": 10,
+    "outerParentSeparate": true,
+    "pg_restore": 1,
+    "psql": 9,
+    "separateManager": 1
+  },
+  "subjectImported": false
+}

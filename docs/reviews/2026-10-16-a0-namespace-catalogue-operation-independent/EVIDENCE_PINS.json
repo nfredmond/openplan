@@ -1,0 +1,409 @@
+{
+  "absentAuthorityPaths": {
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/catalogue-parent-attempt": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/root-operation-intent.json": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/root-preflight.json": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-admission.json": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/operation-review.md": {
+      "lexists": false
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/source-review.md": {
+      "lexists": false
+    }
+  },
+  "author": {
+    "branch": "t3/a0-migration-history-literal-correction",
+    "head": "219d7b04e11d06c4a66481da059529a1c7144171",
+    "status": ""
+  },
+  "criticalSavedPins": {
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/operation-source-pins.json": {
+      "bytes": 94867,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8d7be9ebcc61394891dc387899f8e06780dc8e971a33bfa249e7e6d818de5108",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/trial02/custody-manifest.json": {
+      "bytes": 216702,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e2d01a332c29cc197d5598864af5fecf30ba92637f4731d13c75671243c9a7c7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/trial02/parent-controls/results.json": {
+      "bytes": 2564,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8aa2410cdf0fd2929bc539f8c39205c14d9693e0ee64a6d2e3b092244e3ef1b7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/trial02/prepared-window-pins.json": {
+      "bytes": 107915,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "b1f090f65e413afb61a819f6147ac4a450f54353f22170c0dbf32eb2fb090d4c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/trial02/pure-window-request.json": {
+      "bytes": 2151,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5ec7956127eacb15b885685921ebc368bc089ad4a10613b6a031457ddd87caeb",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-proposal-20261016/trial02/root-pure-window-grant.json": {
+      "bytes": 1820,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "eece535b562147f1ce9e90d707b4c628170a943f1db5ffccfb5667f7f07246fb",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-root-source-acceptance-20261016/decision.json": {
+      "bytes": 1298,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "650cd7fe31e66cd8fd3b5958799422bed508e52690cdd460c11b42e856efe92c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-bindings.json": {
+      "bytes": 83199,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "6791d73b405563f1917761decd509b6995f11f1991a50e2db4180c159aaa5b0c",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py": {
+      "bytes": 11991,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-native-observe-root-decision-20261016/acceptance.json": {
+      "bytes": 2562,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e0d4ddca724b345873a61294386d80d3f2bb01010c4577e7ec70c9a433439f48",
+      "uid": 1000
+    }
+  },
+  "disposition": "OPERATION_PROPOSAL_ACCEPTED_CONDITIONAL_ROOT_PREFLIGHT_AND_ADMISSION",
+  "findings": {
+    "P1": 0,
+    "P2": 0
+  },
+  "finiteComparisons": {
+    "all1126SourceFilesRehashed": false,
+    "allPrepared356InputsRehashed": false,
+    "beforeAfter": {
+      "authorEqual": true,
+      "authorityPathsEqual": true,
+      "comparisonsEqual": true,
+      "oracleObservationsEqual": true,
+      "recordsEqual": true,
+      "savedEvidenceEqual": true
+    },
+    "comparisons": 373,
+    "mismatches": 0,
+    "records": 436,
+    "wholeSealTreeRehash": false
+  },
+  "limits": {
+    "databaseInsideUnitCap": false,
+    "fixtureLaunchable": false,
+    "hostwideConfinementProved": false,
+    "installedSourceClosureProved": false,
+    "launchesByReviewer": 0,
+    "nativeOperationGranted": false,
+    "nativeRenderingParity": "UNPROVED",
+    "priorPhysicalKindOIDEquivalence": "UNPROVED",
+    "sourceClosureComplete": false,
+    "subjectImportsByReviewer": 0,
+    "testsByReviewer": 0
+  },
+  "parent": "d6b006aac19d02d0fc699e1debb40e1be940a5f6",
+  "priorReviewGitPins": {
+    "git:74409f877bd53736a79a380d08dcdb03a9bd2e9b:2026-10-16-a0-catalogue-namespace-independent/EVIDENCE_PINS.json": {
+      "bytes": 7957,
+      "sha256": "4a3fd3e202f367950bf313b8e46fcd82713097a9b19d4c509643dff8dfb450b1"
+    },
+    "git:74409f877bd53736a79a380d08dcdb03a9bd2e9b:2026-10-16-a0-catalogue-namespace-independent/REPORT.md": {
+      "bytes": 18683,
+      "sha256": "a301506c15b60a8301f3a83e0a2b15c2d79b4a663e0e8593e2898bac96299f98"
+    },
+    "git:d2f98194:2026-10-16-a0-post18-catalogue-source-independent/EVIDENCE_PINS.json": {
+      "bytes": 11718,
+      "sha256": "f1b1c039bdc735a48bdfbb7d92094331c6bd8201b70dd37134bf75e71a442cb5"
+    },
+    "git:d2f98194:2026-10-16-a0-post18-catalogue-source-independent/REPORT.md": {
+      "bytes": 13345,
+      "sha256": "466530e2f7e8244f9864256986635bdac4c41cf880e9f3e53ee7e50d011b57ac"
+    }
+  },
+  "privateReadbackPins": {
+    "after.json": {
+      "bytes": 327935,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e7226e5a29fd393107a8dc970d415ddebb7b13e4cf89a495ebb17dd76dc5fa42",
+      "uid": 1000
+    },
+    "assignment.json": {
+      "bytes": 2299,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "08a402aaabb16207421508b0477d1015f7e6a1b3c4234ff5de569122fc236a56",
+      "uid": 1000
+    },
+    "before.json": {
+      "bytes": 327935,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e7226e5a29fd393107a8dc970d415ddebb7b13e4cf89a495ebb17dd76dc5fa42",
+      "uid": 1000
+    },
+    "read_metadata.py": {
+      "bytes": 9918,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "be2c05198a6450e2a34c7db78d9220f8544d2a95b15f53d7243377f2bbda314e",
+      "uid": 1000
+    },
+    "readback-comparison.json": {
+      "bytes": 174,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "b7d0ea778d85213c4e8914c42fab8ad09e3303d832ae1ddd68cad356cc30db17",
+      "uid": 1000
+    },
+    "reader-errors.txt": {
+      "bytes": 369,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5fca22cb14d4b4363458914a61879d86e4c411d1e50ef68e8b96c10277fe36d8",
+      "uid": 1000
+    },
+    "supplement.json": {
+      "bytes": 842,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d66b1a90537851ecf1ec9353b9e3e3465bed4ba028ef020d5ac923656b155f47",
+      "uid": 1000
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-operation-independent-20261016",
+  "report": {
+    "bytes": 25881,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "38d379dd4c56d29f17b14365c0cc12849915e06bf0d46d75fed939426d46a008",
+    "uid": 1000
+  },
+  "requiredNext": "Root full report read, actual fresh source/external/fence/capacity/container/userbus/unit/exclusion and privileged-read assessment, then separate exact admission/publication if accepted. No automatic launch or successor.",
+  "reviewerBranch": "t3/a0-namespace-catalogue-operation-review",
+  "reviewerInitialHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "runtime": {
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/runtime/catalogue.py": {
+      "bytes": 12518,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "25f9f298af04459374ecd5d58060387b54569d360c9462a23fc736c7c902414e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/runtime/catalogue_policy.py": {
+      "bytes": 42935,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7f7dc11e84cdc29d32a45ecf7086439dff45c2a0efdafa924fee193b08218fde",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/runtime/catalogue_transport.py": {
+      "bytes": 13302,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a",
+      "uid": 1000
+    }
+  },
+  "savedEvidenceSummary": {
+    "failed01": "PERMANENT_HARNESS_FAILURE_EXIT1",
+    "harmless": "SURVIVED",
+    "inertCollectorTerminals": 32,
+    "intactRefusals": 17,
+    "intentionalTerminalNonzero": 2,
+    "namedMutants": 22,
+    "readerControls": 6,
+    "restoredSources": 45,
+    "terminalZero": 30,
+    "trial02Trials": 45
+  },
+  "schema": 1,
+  "subject": "219d7b04e11d06c4a66481da059529a1c7144171",
+  "subjectFiles": {
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/CONTROL_PLAN.md": {
+      "bytes": 3893,
+      "gid": 1000,
+      "gitBlob": "3ffa98175681b605b702e8f3376d5f7216e1f3c8",
+      "mode": 420,
+      "sha256": "924a875fdb0073fda399ce07a18c42e847d049b042eba80899b3d793396a0e01",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/NATIVE_PLAN.json": {
+      "bytes": 7754,
+      "gid": 1000,
+      "gitBlob": "0544b14cfbd6675ab43a820af1b0b2a6ec888a32",
+      "mode": 420,
+      "sha256": "0c075594695f25093c93488de3299456b48e00ebbfcf639c145f982583cabc70",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/PARENT_RECIPE.md": {
+      "bytes": 5196,
+      "gid": 1000,
+      "gitBlob": "1577961596046ba480025ac9c27a41ed9ab74645",
+      "mode": 420,
+      "sha256": "f8a3a6718b6da87302ac8a6d67fa4cb53e549cd1b4e24acbebda93c1e2435419",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/PROPOSAL.md": {
+      "bytes": 12104,
+      "gid": 1000,
+      "gitBlob": "99b18ddd2fc058149ad017740e9963f9f94d83ee",
+      "mode": 420,
+      "sha256": "9e94fc5ecf5bff0a5b352823fc398bebb08880cbca7610e5196fda7bb64e09ef",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/STATUS.md": {
+      "bytes": 1235,
+      "gid": 1000,
+      "gitBlob": "a019f9de1b17a959ec0e0246a16c1f5631974e8c",
+      "mode": 420,
+      "sha256": "f36c25a89471590a37f69ebfa1d4ec31be77ce286f3cee81636baf1279297cf6",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/controls.py": {
+      "bytes": 13877,
+      "gid": 1000,
+      "gitBlob": "2dfa980e803137324f4756a09742f373ec7991f1",
+      "mode": 436,
+      "sha256": "de743b5fd23b71913399444baeff772814393b13182ea0c278775157eb68b1c4",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/outer.py": {
+      "bytes": 10071,
+      "gid": 1000,
+      "gitBlob": "36886a0d717b29e6046c8155130ef31c4cfd9dbb",
+      "mode": 436,
+      "sha256": "ecbca7feade1dbb3170bd7233edd3888211333ba25703550a9a682ffdc024715",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/pure_window.py": {
+      "bytes": 8622,
+      "gid": 1000,
+      "gitBlob": "1f72f99706dba7402dc92e8962cce3913a8b2767",
+      "mode": 436,
+      "sha256": "e539d93625bd1f71b68bb22d4ae09652ab5bf636c3907a34d4336912db2d5f58",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/EVIDENCE_PINS.json": {
+      "bytes": 10007,
+      "gid": 1000,
+      "gitBlob": "963f26f734dc7cb98435a117545ad10a5479c515",
+      "mode": 420,
+      "sha256": "7bdcd6bd4e0bbb68f102ba5e5319c576fc9b724215ccdd47611b8c81babfbd4e",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/NATIVE_PLAN.json": {
+      "bytes": 7754,
+      "gid": 1000,
+      "gitBlob": "0544b14cfbd6675ab43a820af1b0b2a6ec888a32",
+      "mode": 420,
+      "sha256": "0c075594695f25093c93488de3299456b48e00ebbfcf639c145f982583cabc70",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/PREPARATION.md": {
+      "bytes": 3176,
+      "gid": 1000,
+      "gitBlob": "79695c74ebecce7e93d231cd91ec5cf32a7d4042",
+      "mode": 420,
+      "sha256": "256f17261bc64a5f271bc4f2686d11cde924476cba916e5c46cb2acfab754058",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/REPORT.md": {
+      "bytes": 12176,
+      "gid": 1000,
+      "gitBlob": "24cb1180544fa5fa967a709e19660912575c2080",
+      "mode": 420,
+      "sha256": "9536234e2b19a9e4e9a4fcc7774fd87ffb76fa7a395df77a9a88e1baf6bbeab2",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/VALIDATION.md": {
+      "bytes": 4283,
+      "gid": 1000,
+      "gitBlob": "17486e990929c917d5e9a3222f7a18642d0496ef",
+      "mode": 420,
+      "sha256": "31bc29e7a55757ebb8ca9ec0185544bb4cf836253dc378a0da017c8a66483a87",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/controls.py": {
+      "bytes": 13926,
+      "gid": 1000,
+      "gitBlob": "70ad6c3a6ed28244135a0fb15916645a047e0277",
+      "mode": 420,
+      "sha256": "b548bcba794e716fbc4d3284bcdfe7071f82ad6c9905c44c0ade0755d1e43682",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/outer.py": {
+      "bytes": 10071,
+      "gid": 1000,
+      "gitBlob": "36886a0d717b29e6046c8155130ef31c4cfd9dbb",
+      "mode": 420,
+      "sha256": "ecbca7feade1dbb3170bd7233edd3888211333ba25703550a9a682ffdc024715",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/pure_window.py": {
+      "bytes": 8634,
+      "gid": 1000,
+      "gitBlob": "937bcf3c082ebf9c6ef0b0159192e387b765fc1e",
+      "mode": 420,
+      "sha256": "c5d7164ee26006f88887647912415be450049ec072d8a29b2aca74a17a59d2b6",
+      "symlink": false,
+      "uid": 1000
+    },
+    "docs/reviews/2026-10-16-a0-namespace-catalogue-operation-proposal/trial02/source.delta.patch": {
+      "bytes": 4274,
+      "gid": 1000,
+      "gitBlob": "ad363dd654cbbce47883304c6949d09266cf2139",
+      "mode": 420,
+      "sha256": "7675f68825cce255069ba237e94a6ce934e0b8213bfea3251bcfaa8551f591b0",
+      "symlink": false,
+      "uid": 1000
+    }
+  }
+}

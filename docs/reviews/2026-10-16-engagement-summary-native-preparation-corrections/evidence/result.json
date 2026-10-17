@@ -1,0 +1,163 @@
+{
+  "state": "TEXT_ONLY",
+  "controls": [
+    {
+      "name": "resource-annotation",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "supplied-resource-memory.max",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-memory.max",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 54, in resource_gate\n    require(value['limits'].get(name) == expected, 'resource-' + name)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-memory.max\n"
+    },
+    {
+      "name": "supplied-resource-memory.swap.max",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-memory.swap.max",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 54, in resource_gate\n    require(value['limits'].get(name) == expected, 'resource-' + name)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-memory.swap.max\n"
+    },
+    {
+      "name": "supplied-resource-cpu.max",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-cpu.max",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 54, in resource_gate\n    require(value['limits'].get(name) == expected, 'resource-' + name)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-cpu.max\n"
+    },
+    {
+      "name": "supplied-resource-pids.max",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-pids.max",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 54, in resource_gate\n    require(value['limits'].get(name) == expected, 'resource-' + name)\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-pids.max\n"
+    },
+    {
+      "name": "supplied-resource-root-ro",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-root-ro",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 55, in resource_gate\n    require('ro' in value['mounts'].get('/', []), 'resource-root-ro')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-root-ro\n"
+    },
+    {
+      "name": "supplied-resource-private-rw",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-private-rw",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 56, in resource_gate\n    require('rw' in value['mounts'].get(str(ROOT), []), 'resource-private-rw')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-private-rw\n"
+    },
+    {
+      "name": "supplied-resource-unshared-net",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-unshared-net",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 57, in resource_gate\n    require(host.startswith('net:[') and host != value['network'], 'resource-unshared-net')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-unshared-net\n"
+    },
+    {
+      "name": "supplied-resource-old-ro",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-old-ro",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 58, in resource_gate\n    require(all('ro' in value['mounts'].get(path, []) for path in OLD), 'resource-old-ro')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-old-ro\n"
+    },
+    {
+      "name": "supplied-resource-devnull",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "resource-devnull",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 153, in <lambda>\n    exact_failure('supplied-resource-' + name, lambda bad=bad: resource_gate(bad, host), AssertionError, 'resource-' + name)\n                                                               ~~~~~~~~~~~~~^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 59, in resource_gate\n    require(value['devnull'] == {'character': True, 'major': 1, 'minor': 3}, 'resource-devnull')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 23, in require\n    raise AssertionError(name)\nAssertionError: resource-devnull\n"
+    },
+    {
+      "name": "ordinary501-baseline-and-row-order",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "maximum90-baseline-and-row-order",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "maximum1001-baseline-and-row-order",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "emitter-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "boolean-oid",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "ValueError",
+      "message": "target-not-allocated:databaseOid",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 203, in <lambda>\n    exact_failure(name, lambda bad=bad: emitter['allocation'](bad), ValueError, message)\n                                        ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py\", line 42, in allocation\n    raise ValueError('target-not-allocated:databaseOid')\nValueError: target-not-allocated:databaseOid\n"
+    },
+    {
+      "name": "protected-oid",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "ValueError",
+      "message": "target-protected-or-not-exclusive",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 203, in <lambda>\n    exact_failure(name, lambda bad=bad: emitter['allocation'](bad), ValueError, message)\n                                        ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py\", line 44, in allocation\n    raise ValueError('target-protected-or-not-exclusive')\nValueError: target-protected-or-not-exclusive\n"
+    },
+    {
+      "name": "pending-system",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "ValueError",
+      "message": "target-not-allocated:clusterSystemId",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 203, in <lambda>\n    exact_failure(name, lambda bad=bad: emitter['allocation'](bad), ValueError, message)\n                                        ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py\", line 40, in allocation\n    raise ValueError('target-not-allocated:' + key)\nValueError: target-not-allocated:clusterSystemId\n"
+    },
+    {
+      "name": "equal-workspaces",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "ValueError",
+      "message": "workspace-distinct",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 207, in <lambda>\n    exact_failure('equal-workspaces', lambda: emitter['allocation'](bad), ValueError, 'workspace-distinct')\n                                              ~~~~~~~~~~~~~~~~~~~~~^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py\", line 49, in allocation\n    raise ValueError('workspace-distinct')\nValueError: workspace-distinct\n"
+    },
+    {
+      "name": "initial-sent-parent",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "draft-parent-insert",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 226, in <lambda>\n    exact_failure(name, lambda: reader['seed_text'](path, oracle, context), AssertionError, message)\n                                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 148, in seed_text\n    require(row['status'] == 'draft' and cents(row['subtotal_amount']) == 0 and cents(row['total_amount']) == 0, 'draft-parent-insert')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: draft-parent-insert\n"
+    },
+    {
+      "name": "premature-transition",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "one-line-per-parent",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 226, in <lambda>\n    exact_failure(name, lambda: reader['seed_text'](path, oracle, context), AssertionError, message)\n                                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 174, in seed_text\n    require(len(children) == 1, 'one-line-per-parent')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: one-line-per-parent\n"
+    },
+    {
+      "name": "issued-extra-line",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "line-parent-must-be-draft",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 226, in <lambda>\n    exact_failure(name, lambda: reader['seed_text'](path, oracle, context), AssertionError, message)\n                                ~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 152, in seed_text\n    require(parent is not None and parent['status'] == 'draft', 'line-parent-must-be-draft')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: line-parent-must-be-draft\n"
+    },
+    {
+      "name": "aggregate-loses-cent",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "literal-billed-cents",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 233, in <lambda>\n    exact_failure('aggregate-loses-cent', lambda: reader['scalar'](data, oracle, scope), AssertionError, 'literal-billed-cents')\n                                                  ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 73, in scalar\n    require(cents(bucket['amount']) == wanted, 'literal-' + name + '-cents')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: literal-billed-cents\n"
+    },
+    {
+      "name": "workspace-expected-set",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "scope-identities",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 237, in <lambda>\n    exact_failure('workspace-expected-set', lambda: reader['scalar'](data, oracle, scope), AssertionError, 'scope-identities')\n                                                    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 63, in scalar\n    require(sorted(found) == sorted(expected_id(digit, 3, i) for i in indexes), 'scope-identities')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: scope-identities\n"
+    },
+    {
+      "name": "absent-ceiling-becomes-zero",
+      "outcome": "EXPECTED_FAILURE",
+      "type": "AssertionError",
+      "message": "ceiling-zero-absence",
+      "traceback": "Traceback (most recent call last):\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 64, in exact_failure\n    function()\n    ~~~~~~~~^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py\", line 241, in <lambda>\n    exact_failure('absent-ceiling-becomes-zero', lambda: reader['scalar'](data, oracle, scope), AssertionError, 'ceiling-zero-absence')\n                                                         ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 67, in scalar\n    require((ceiling is None) if i == 1 else cents(ceiling) == (1000 if i == 0 else 0), 'ceiling-zero-absence')\n    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py\", line 14, in require\n    raise AssertionError(name)\nAssertionError: ceiling-zero-absence\n"
+    },
+    {
+      "name": "restored-baseline",
+      "outcome": "SURVIVED"
+    }
+  ],
+  "noNative": true
+}

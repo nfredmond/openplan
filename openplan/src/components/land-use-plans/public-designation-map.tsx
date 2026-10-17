@@ -1,11 +1,13 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import mapboxgl from "mapbox-gl";
 import "mapbox-gl/dist/mapbox-gl.css";
 
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { deploymentMapEngine, labelFontsFor, startMap, styleForEngine } from "@/lib/maps/map-engine";
+import { readWgs84Bbox } from "@/lib/geo/wgs84-bounds";
+import { readCameraWgs84QueryViewport, type Wgs84QueryViewport } from "@/lib/geo/wgs84-query-viewport";
 
 /**
  * Mapbox with a public key, else MapLibre with the operator's open style. This
@@ -25,15 +27,15 @@ type MapPayload = {
   coverageNotes: string[];
 };
 
-function publicViewport(map: mapboxgl.Map): [number, number, number, number] {
-  const bounds = map.getBounds();
-  if (!bounds) return [-180, -90, 180, 90];
-  return [
-    Math.max(-180, bounds.getWest()),
-    Math.max(-90, bounds.getSouth()),
-    Math.min(180, bounds.getEast()),
-    Math.min(90, bounds.getNorth()),
-  ];
+function publicViewport(map: mapboxgl.Map): Wgs84QueryViewport | null {
+  try {
+    const bounds = map.getBounds();
+    return bounds ? readCameraWgs84QueryViewport([
+      bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth(),
+    ]) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: string; bbox: unknown; label: string }) {
@@ -42,13 +44,11 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
   const [notice, setNotice] = useState<string | null>(null);
   // The browser could not start the map library (no WebGL), or MapLibre never arrived.
   const [cannotStart, setCannotStart] = useState(false);
+  const extent = useMemo(() => readWgs84Bbox(bbox), [bbox]);
 
   useEffect(() => {
     const container = containerRef.current;
     if (!container || mapRef.current || MAP_ENGINE.kind === "none") return;
-    const extent = Array.isArray(bbox) && bbox.length === 4 && bbox.every((value) => typeof value === "number")
-      ? bbox as [number, number, number, number]
-      : null;
     return startMap(MAP_ENGINE, mapboxgl, (gl) => {
       const map = new gl.Map({
         container,
@@ -64,9 +64,13 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
 
       async function refresh() {
         const current = ++requestNumber;
-        const viewport = publicViewport(map);
-        if (viewport[0] >= viewport[2] || viewport[1] >= viewport[3]) return;
         const source = map.getSource("designations") as mapboxgl.GeoJSONSource | undefined;
+        const viewport = publicViewport(map);
+        if (!viewport) {
+          source?.setData({ type: "FeatureCollection", features: [] });
+          setNotice("The map view could not be read. Move or zoom the map to retry.");
+          return;
+        }
         try {
           const response = await fetch(`${endpoint}?bbox=${viewport.join(",")}`, { cache: "no-store" });
           const payload = await response.json() as MapPayload & { error?: string };
@@ -112,7 +116,7 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
         mapRef.current = null;
       };
     }, () => setCannotStart(true));
-  }, [bbox, endpoint]);
+  }, [extent, endpoint]);
 
   if (MAP_ENGINE.kind === "none" || cannotStart) {
     return (
@@ -124,5 +128,5 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
       </p>
     );
   }
-  return <div className="mt-4"><div ref={containerRef} className="h-80 w-full overflow-hidden rounded-lg border" role="img" aria-label={label}/>{notice ? <p className="mt-2 text-sm text-muted-foreground">{notice}</p> : null}</div>;
+  return <div className="mt-4"><div ref={containerRef} className="h-80 w-full overflow-hidden rounded-lg border" role="img" aria-label={label}/>{!extent ? <p className="mt-2 text-sm text-muted-foreground">The retained designation extent is unavailable. Pan or zoom to choose a map view.</p> : null}{notice ? <p className="mt-2 text-sm text-muted-foreground">{notice}</p> : null}</div>;
 }

@@ -1,0 +1,8 @@
+600 16172 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/controller.py
+600 1581 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/run.sh
+600 582 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/allocation.TEXT_ONLY.json
+664 2013 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/inputs.sha256
+600 6642 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/emit_fixture.py
+600 1600 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/oracles.json
+600 11361 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/readback.py
+600 5717 /home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/subject/selections.sql

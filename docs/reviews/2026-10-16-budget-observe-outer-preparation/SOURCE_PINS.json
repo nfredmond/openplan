@@ -1,0 +1,265 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_UNEXECUTED_OUTER_AND_FALSE_BUILDER_PREPARATION",
+  "baseCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "sourcePackageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "privateInputs": {
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-observe-window.sh": {
+      "sha256": "25512b411bf99c19c1751148794741d22c5ae73eea5084f0da006b5a78b21737",
+      "bytes": 973,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/parent-recorder.py": {
+      "sha256": "402e50fe6a871f32547431fca6c47b03ea6922c001b9f3fd1644dcee47f6887e",
+      "bytes": 8109,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/controls.py": {
+      "sha256": "80c8880f9914e50423202bc92fefe671f3836f545f92512faf4082e8b9b853dc",
+      "bytes": 9309,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/prepare_once.py": {
+      "sha256": "52508ab4e1bcf9cd08b425a701820721c2a062576339f36788cbdc0c1779169a",
+      "bytes": 8914,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/in-unit.sh": {
+      "sha256": "de9cd6b2d0f081e39451ffc5165990ee5f36e0a25e762183ca6e394682a2ce5a",
+      "bytes": 5256,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-preparation-window.sh": {
+      "sha256": "78fd4f3faaf52fe561a6d927ed99bdfa7dbea7053d3013f5af6ab232945e7ebf",
+      "bytes": 894,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/parent-intent-contract.json": {
+      "sha256": "8664acfc3cf9d083810b7622c2bf96f4ba1b7b8414679e7d8d5e36c1e898bbc8",
+      "bytes": 8051,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/drafts/observe-review.md": {
+      "sha256": "30e3bdff7dab51a33321ce8885ba180bbcc518743a054128527511a33739db19",
+      "bytes": 2054,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/drafts/observe-window.json": {
+      "sha256": "683d4b383908370bbb4654a8ba4f4e15df5be6cb66fc51434020502a3d50ac68",
+      "bytes": 459,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/drafts/observe-publication.json": {
+      "sha256": "de74fa5f27159671b48986dd89ef723e325817a5f853f590641ba9f09634dba2",
+      "bytes": 471,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/drafts/observe-bindings.actual.json": {
+      "sha256": "560fe36ba47b3f4f05292e6d444ea2edd1c5d14a8a96dbdb37e5c83211942eba",
+      "bytes": 1739,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/source/STATIC_REVIEW.json": {
+      "sha256": "7e1c49c1e224df7f5a7c9f7c449c9b51ed2537a3585f913467693c85513ae3a4",
+      "bytes": 3765,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/source/SOURCE.diff": {
+      "sha256": "a358eb1a0c4d9e89e440632bab0686591478673a5238275a21deae1455580b8d",
+      "bytes": 52431,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/source/WRAPPER_DELTA.diff": {
+      "sha256": "026a257c667c385ea47e4aade2cff4261761768f95e7a642833b118b0622e0c2",
+      "bytes": 2259,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    }
+  },
+  "publicCopies": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-observe-window.sh": {
+      "sha256": "25512b411bf99c19c1751148794741d22c5ae73eea5084f0da006b5a78b21737",
+      "bytes": 973,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-recorder.py": {
+      "sha256": "402e50fe6a871f32547431fca6c47b03ea6922c001b9f3fd1644dcee47f6887e",
+      "bytes": 8109,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/controls.py": {
+      "sha256": "80c8880f9914e50423202bc92fefe671f3836f545f92512faf4082e8b9b853dc",
+      "bytes": 9309,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/prepare_once.py": {
+      "sha256": "52508ab4e1bcf9cd08b425a701820721c2a062576339f36788cbdc0c1779169a",
+      "bytes": 8914,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/in-unit.sh": {
+      "sha256": "de9cd6b2d0f081e39451ffc5165990ee5f36e0a25e762183ca6e394682a2ce5a",
+      "bytes": 5256,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/run-preparation-window.sh": {
+      "sha256": "78fd4f3faaf52fe561a6d927ed99bdfa7dbea7053d3013f5af6ab232945e7ebf",
+      "bytes": 894,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/parent-intent-contract.json": {
+      "sha256": "8664acfc3cf9d083810b7622c2bf96f4ba1b7b8414679e7d8d5e36c1e898bbc8",
+      "bytes": 8051,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-review.md": {
+      "sha256": "30e3bdff7dab51a33321ce8885ba180bbcc518743a054128527511a33739db19",
+      "bytes": 2054,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-window.json": {
+      "sha256": "683d4b383908370bbb4654a8ba4f4e15df5be6cb66fc51434020502a3d50ac68",
+      "bytes": 459,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-publication.json": {
+      "sha256": "de74fa5f27159671b48986dd89ef723e325817a5f853f590641ba9f09634dba2",
+      "bytes": 471,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/drafts/observe-bindings.actual.json": {
+      "sha256": "560fe36ba47b3f4f05292e6d444ea2edd1c5d14a8a96dbdb37e5c83211942eba",
+      "bytes": 1739,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/STATIC_REVIEW.json": {
+      "sha256": "7e1c49c1e224df7f5a7c9f7c449c9b51ed2537a3585f913467693c85513ae3a4",
+      "bytes": 3765,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/SOURCE.diff": {
+      "sha256": "a358eb1a0c4d9e89e440632bab0686591478673a5238275a21deae1455580b8d",
+      "bytes": 52431,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-observe-outer-preparation/WRAPPER_DELTA.diff": {
+      "sha256": "026a257c667c385ea47e4aade2cff4261761768f95e7a642833b118b0622e0c2",
+      "bytes": 2259,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000,
+      "type": "regular file"
+    }
+  },
+  "retainedRecorder": {
+    "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000,
+    "bytes": 11991,
+    "type": "regular file"
+  },
+  "protectedInputReferences": "preparation-request.json carries exact existing source/capture/receipt/435 donor pin metadata. No old corpus is copied.",
+  "epoch": {
+    "notBefore": 1792201147,
+    "notAfter": 1792201747,
+    "exclusive": false,
+    "nativeOperationGranted": false
+  },
+  "controls": {
+    "status": "PREPARED_NOT_RUN",
+    "faults": 4,
+    "harmless": "PLANNED",
+    "restoredBaseline": "PLANNED",
+    "order": [
+      "harmless annotation and harmless baseline",
+      "restore wrapper",
+      "baseline",
+      "same four named faults",
+      "final restored baseline"
+    ]
+  },
+  "nativeOperationGranted": false,
+  "publicationEnabled": false,
+  "localCommit": "HELD_UNTIL_APPLICABLE_SOURCE_CONTROLS"
+}

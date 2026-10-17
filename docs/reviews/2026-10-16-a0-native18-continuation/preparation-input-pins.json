@@ -1,0 +1,184 @@
+{
+  "assignedCheckout": "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee",
+  "compiler": "ONE nonblocking EX acquisition, shared compiler lock; no donor",
+  "inputs": {
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-raw-trace-metadata.json": {
+      "bytes": 85481,
+      "sha256": "2934cefc3a699ea8529d596e9d2ad8f5ab53f534c1a9b9727985e4dae06ac7b1"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/actual17-source-inspection.json": {
+      "bytes": 6712,
+      "sha256": "d926935b74d751077f3ca0d7201a3dde4254f00d51c25db57de44b589e442490"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-operation-REPORT.md": {
+      "bytes": 19291,
+      "sha256": "7a16820d41b2af65ee678fcc9743d1b6ad493a51d4dc40335f3cad644f5a084f"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-operation-VALIDATION.md": {
+      "bytes": 6345,
+      "sha256": "30f005e3f0c9c3bc40b4e6dfffd4e4a407cd1da269ddd962b37aee699d3f85c2"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-source-REPORT.md": {
+      "bytes": 16561,
+      "sha256": "79a9d4e8f45358006c0474da3369dcff5ff6e15f7d8d4f47147fe36328759af9"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/reports/map-source-VALIDATION.md": {
+      "bytes": 5332,
+      "sha256": "eabffbd551b78fa32bbbfcc4774c78c40f47a55f57a59332f2e67b8bad66320e"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/static-source-inspection.json": {
+      "bytes": 3162,
+      "sha256": "7388c2c8fd6e1d9a1ce82a236cb4f7a2305ff909c8ead42f636c5ae5f3927046"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/external-predecessor.json": {
+      "bytes": 126449,
+      "sha256": "ef4bd64e74f670c4eb8fa805b7d7bf1fc2f5720df2c1aaab9110612d98654b03"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/package-pins.json": {
+      "bytes": 1526,
+      "sha256": "cc201cf6379e67480ccba6677157293ad498ca5bed773b2a744a500b176117ff"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/preceding-helper-pins.json": {
+      "bytes": 1648,
+      "sha256": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/prior-function-pins.json": {
+      "bytes": 593,
+      "sha256": "08b5773311198f492c4fb21a9974c2178887ec00ff80bd8962f3ccf5bf578ac9"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/review-pins.json": {
+      "bytes": 13566,
+      "sha256": "27d8961c5a8aaeb7968cf74c07c53c733c3fae97ca56847e843dcf348d379077"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/bindings/source-pins.json": {
+      "bytes": 201496,
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec"
+    },
+    "/home/nathaniel/.local/state/openplan/a0-predecessor-map-correction-20261016/plan.json": {
+      "bytes": 61975,
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5"
+    }
+  },
+  "limits": {
+    "cpuPercent": 50,
+    "memoryBytes": 536870912,
+    "runtimeMaxSec": 180,
+    "swapBytes": 0,
+    "tasksMax": 64
+  },
+  "nativeOperationGranted": false,
+  "notice": "No tests/imports/dependencies/flock/manager/native dispatch executed. Separate exact root grant required.",
+  "outerArgv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/window.py",
+    "--outer"
+  ],
+  "parent": "5ad5b36e57eb3a9f288a50015d7d22d220a07f7e",
+  "sources": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/CONTROL_PLAN.md": {
+      "bytes": 2520,
+      "sha256": "c986a6e04d225b83755c7dc3365c8cce0a507b0516c71bf30e8dbeae63631f8c"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/DESIGN.md": {
+      "bytes": 13851,
+      "sha256": "f01c5b95b9d4f3b740d50a7670db737342391efd09683bfa2f467c4cd85ff6ba"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/PARENT_RECIPE.md": {
+      "bytes": 2748,
+      "sha256": "e1fbd4980df84c01d38f8f9d6bbc007f6c3e50900e888f55a7b5a7aafbfa344a"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/STATUS.md": {
+      "bytes": 2027,
+      "sha256": "7fc8f2f6a28e7153bccfd78cb757b4ce7646e1383c66b91d1963a880388335b9"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/continued-predecessor.json": {
+      "bytes": 62995,
+      "sha256": "e5425e21b35c8c57faebebb771929a99c1600f0c21fa9f362c86ab0fef0018d5"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/controls.py": {
+      "bytes": 18625,
+      "sha256": "281e182829fd1b20a5f1b34192024527eb0a2d020c2617883cc3cfc0694861b0"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/expected-post-functions.json": {
+      "bytes": 9919,
+      "sha256": "188ebcfcdd14dfd0aa68deaafc5a4af834fc32c5e675f7c44a9d08a981fa8608"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/final_checks.py": {
+      "bytes": 5905,
+      "sha256": "0eca585415c1d9d1b55b5ce380dd8d96eda7b856257920fca9821ac03de27eec"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/prepare.py": {
+      "bytes": 3847,
+      "sha256": "446832c8d9feac6869691a9a94f483feb325a25101deca56c2a28f8004016d95"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/review-provenance.json": {
+      "bytes": 1505,
+      "sha256": "c3b7859f341926f4698827dd0c02e88d03681fb932453407b4cf2514eea7e67d"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime-delta.patch": {
+      "bytes": 10086,
+      "sha256": "6cdf08413531ded49cec5defe1b7e22fbdf80cd6f68baf68a519fb7ae568f98d"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/cases.py": {
+      "bytes": 12821,
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/continuation.py": {
+      "bytes": 5203,
+      "sha256": "5d95283a72159dd60037dbce0483aecb79826dc7d0e66dd6108187d0d36f6ac8"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/controller.py": {
+      "bytes": 34304,
+      "sha256": "385165f93c1ed28c732139d0ed82958df1bb20c463624d80b2b16dc08614ca9c"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/fixture.py": {
+      "bytes": 7731,
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/journal.py": {
+      "bytes": 4331,
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/literal_history.py": {
+      "bytes": 7667,
+      "sha256": "c4ed381699f468403a04c248529985992b75b7dc504f6163b8d9fac7f03f204b"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/policy.py": {
+      "bytes": 6126,
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/run_stage.sh": {
+      "bytes": 199,
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/assertions.sql": {
+      "bytes": 794,
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/post_rollback.sql": {
+      "bytes": 654,
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/runtime/sql/shadows.sql": {
+      "bytes": 489,
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/source-runtime-pins.json": {
+      "bytes": 1986,
+      "sha256": "fca23480c58dd9d0c984bde99f5e2e9de9c9c3f3168912546a9de62641f99178"
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-native18-continuation/window.py": {
+      "bytes": 7277,
+      "sha256": "fd9aea7e2c9a1004e4b27c0ac90b706d34509b4d4098401dd1ee8cd46eb5c08a"
+    }
+  },
+  "status": "PREPARED_NOT_GRANTED_NOT_EXECUTED",
+  "steps": [
+    "prepare",
+    "nested-app-direction",
+    "actualController-fakePopen-realFD-focused-controls",
+    "finite-final-checks"
+  ],
+  "unit": "openplan-a0-native18-TEST-01-20261016"
+}

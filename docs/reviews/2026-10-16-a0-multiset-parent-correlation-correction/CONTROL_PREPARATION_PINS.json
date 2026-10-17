@@ -1,0 +1,39 @@
+{
+  "actualOutcomes": null,
+  "compactPureMetadata": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/control-preparation/PURE_REQUEST.json",
+  "compactPurePin": {
+    "bytes": 1803,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "3c1d63056c919d4e7b3aebbcab30e37ce242935efd694dc0fbb613229614d594",
+    "uid": 1000
+  },
+  "firstHandoffPreservedManifest": {
+    "bytes": 9949,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "23530b502dc608d1cfee482aa575df4be354c90d6eb4886ccc6fda2c84072b68",
+    "uid": 1000
+  },
+  "fixtureLaunchable": false,
+  "nativeOperationGranted": false,
+  "preparedSourcePin": {
+    "bytes": 30478,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "dd3f1edcdda663103bf7716a08c1568e490043aa45aca5ebcd8b7285b4a1a2fd",
+    "uid": 1000
+  },
+  "preparedSourcePins": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/control-preparation/prepared-source-pins.json",
+  "productionSourceUnchanged": true,
+  "sourceClosureComplete": false,
+  "stage": "SOURCE_ONLY_UNEXECUTED_CONTROL_HANDOFF",
+  "staticInspection": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/control-preparation/static-control-inspection.json",
+  "staticInspectionPin": {
+    "bytes": 2339,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "11c1f0fa750d9601818710a4bba0f61f36067551f308fa65d18b7cbe6209d122",
+    "uid": 1000
+  }
+}

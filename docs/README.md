@@ -2,6 +2,16 @@
 
 Start here:
 
+- [October 17 wrapped viewport source checkpoint](reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md): independently reviewed camera/parser/RPC correction, with focused checks accepted; migration 426, native SQL/RLS and desktop/390px acceptance remain open.
+- [October 17 migration424 parser correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md): the two-parentheses fix passes isolated PostgreSQL17.6 compilation with the original failure and a harmless survivor; full restore and native retained-context evidence remain open.
+- [October 17 A0 native capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md): four requests complete before the protected-scope refusal; a saved-data reconstruction explains the digest through the accepted budget allocation. The attempt stays failed, with no oracle amendment or retry.
+- [October 17 M1 held-caller review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md): accepted source and saved supplied controls; selected-history capture, the complete migration423 predecessor and native retained-context proof remain held.
+- [October 17 A0 parent and collector review](reviews/2026-10-17-a0-multiset-parent-independent/REPORT.md): accepted exact parent source and saved supplied94 evidence, with earlier failures preserved. Native operation, post-failure risk disposition and admission remain separate and held.
+- [October 16 reviewed preparation packets](reviews/2026-10-16-reviewed-proof-packets-root-integration/STATUS.md): joined engagement and budget source evidence, contrary reviews, failed trials and native-operation holds.
+- [October 16 public entry observation](reviews/2026-10-16-public-ingress-partial/STATUS.md): read-only navigation and DOM measurements; registration, Auth and responsive visual acceptance remain untested.
+- [October 16 read-only catalogue capture](reviews/2026-10-16-budget-settings-native-root-acceptance/REPORT.md): accepted manager and native request custody; budget target and later stages remain unadmitted.
+- [October 16 missing reminder calendars](reviews/2026-10-16-reminder-calendar-coverage/REPORT.md): missing calendar rows are disclosed while UTC fallback continues; 49 simulated sweep tests pass, with actual delivery still unverified.
+
 - [Roadmap](ROADMAP.md): status of every milestone and the next three tasks.
 - [V1 product contract](product/V1_PRODUCT_CONTRACT.md): what v1 must deliver.
 - [Known issues](ops/KNOWN_ISSUES.md): open defects and limits, including the October 12 review findings.
@@ -60,6 +70,8 @@ readiness from an old setup guide.
 ## Practice requirements and current limitations
 
 The [core requirements ledger](product/CORE_REQUIREMENTS_LEDGER.md) prevents restored requirements from disappearing. It maps full OWP, contract budgets, prior-RTP updates, capital/tax/grant administration, procurement, engagement, aerial work, agent providers, hosted trials and appearance to the single roadmap. The [workflow handoffs](product/WORKFLOW_HANDOFFS.md) identify the owning record and receiving role. These are requirements and gap assessments, not claims that every workflow exists.
+
+The [October 16 budget catalog control record](reviews/2026-10-16-budget-settings-root-pure/STATUS.md) preserves the failed first trial and the passing inert remainder. Native capture remains held. The [separate A0 SQL18 installation record](reviews/2026-10-16-a0-native18-root-acceptance/REPORT.md) accepts only its exact isolated installation, not caller behavior or billing readiness.
 
 Use the [current modeling status](modeling/STATUS_AND_VALIDATION.md) before interpreting old model metrics. The [September 6 shared-campaign handoff](reviews/2026-09-06-handoffs/SHARED_CAMPAIGNS.md) separates coverage/privacy repairs from incomplete browser file delivery. The [September 6 consolidation verification](reviews/2026-09-06-consolidation/VERIFICATION.md) separates implemented maintenance from deferred redesign. The [September 6 ODX and WaypointMap assessment](reviews/2026-09-06-handoffs/ODX_TRANSITION_RESEARCH.md) supplies the current processing-trial and controller-workflow references for M5b. The [preserved research packet](reviews/2026-09-04-pre-handoff/README.md) contains the full LAPM chapter review, selected other-state/federal manuals, competitor/reuse research and explicit reading limits.
 

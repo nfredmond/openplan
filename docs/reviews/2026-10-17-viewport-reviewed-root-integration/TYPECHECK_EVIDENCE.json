@@ -1,0 +1,101 @@
+{
+  "schema": 1,
+  "proofRoot": "/home/nathaniel/.local/state/openplan/viewport-joined-full-types-20261017/trial01",
+  "testedCommit": "6961a8dd6e92ec7787445b54f2357230a3f930d3",
+  "app": "fa58f935d012d01da7738cc3a3351c51d2804bab",
+  "unit": "openplan-viewport-joined-full-types-20261017-01",
+  "invocation": "01cc7740a86341c6b1a85ef70bd77d20",
+  "compilerExit": 0,
+  "configuredTrackedTypeRoots": 3830,
+  "programFiles": 4922,
+  "privateEvidence": {
+    "ROOT_AUTHORIZATION.json": {
+      "bytes": 1993,
+      "sha256": "9fb256d4df0be8c164d33790b3cff3c7c88e94cd5f11d57d3dd8c1a7aacb95d6"
+    },
+    "preparation-pins.json": {
+      "bytes": 1515,
+      "sha256": "875660a72c0fa03bd9d21ffc19e2efb6b3bf84cd5c5a8da31b3952713ae7f4f3"
+    },
+    "binding.json": {
+      "bytes": 1089219,
+      "sha256": "65b1018fd74291e89b630c95e88692551646d00c00311bb62ecbd55e68ac7864"
+    },
+    "dependency-pins.json": {
+      "bytes": 962,
+      "sha256": "4a5e7effa274be95f6932d14e7a8d75e6937851877a10a38cdcfa6ccec2eb927"
+    },
+    "EXEC_SESSION.json": {
+      "bytes": 594,
+      "sha256": "85c87862c51e2c55cf3a74a31d8cdedbd9f601d54cdd8b7bdb76ba4b0dce39f5"
+    },
+    "before.json": {
+      "bytes": 938,
+      "sha256": "61d967985d38029c7e854fac2433ecd5726c3b9852b2173862f72bc78082351b"
+    },
+    "compiler-intent.json": {
+      "bytes": 854,
+      "sha256": "18c72a8acc214e59a3b7724f7f4560eaf310b63e6b503600eed4f78b8c9f4af4"
+    },
+    "compiler-returned.json": {
+      "bytes": 81,
+      "sha256": "83e841f63e80922d90f380acfefff904a2df549e69aceb85c894bc4d6874f9db"
+    },
+    "compiler-result.json": {
+      "bytes": 537,
+      "sha256": "a3331152db4fc5e8c31abbb4b8e0c70d4db0542f511acd598df447d564fa0dcc"
+    },
+    "compiler.stdout": {
+      "bytes": 676044,
+      "sha256": "fc219a1db3fd7b30c3ccc7802fa94659cbda47424a975a191bea017b678ed46f"
+    },
+    "compiler.stderr": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "resource-controls.json": {
+      "bytes": 475,
+      "sha256": "53fad7417104694d9b3befbb9440d8e86060c3e4a31500e0cf2aaea70d17118e"
+    },
+    "result.json": {
+      "bytes": 772,
+      "sha256": "bb25e9530242d6b8c5fc9381e05585a8ec0622fb4bc0b813c5348d8e65a70c42"
+    },
+    "parent/intent.json": {
+      "bytes": 833,
+      "sha256": "63dc1826219a60d52bfd68e01d6513556f708f95b8ac7e2f96cb0320d2903a92"
+    },
+    "parent/returned-process.json": {
+      "bytes": 73,
+      "sha256": "63e083c13325225529bac7e9a94e206d89d98c5b02f162f54e9ec6708f7d67ef"
+    },
+    "parent/stdout.bin": {
+      "bytes": 154,
+      "sha256": "0909a7312eaf0dd76a0061811d6cf282be6ac9bfcc94a6fb54f56b47819b16db"
+    },
+    "parent/stderr.bin": {
+      "bytes": 362,
+      "sha256": "7554e8190b6b956b4911579cfa8173dcb4ac01e07df5398e1c8f9096590fb3f0"
+    },
+    "parent/terminal.json": {
+      "bytes": 527,
+      "sha256": "bf575ed3a1aa6808b97adad51da5a4507bf9ba145cd44846942df9c1c79858db"
+    },
+    "ROOT_TERMINAL_AUDIT.json": {
+      "bytes": 4494,
+      "sha256": "ff5d9e72dae1514e7123a02e3010e1944cee59477384b8b780ecd11a29c03b09"
+    },
+    "ROOT_TERMINAL_ACCEPTANCE.json": {
+      "bytes": 7585,
+      "sha256": "494b35c28369970d21fa57eb1d97fb4f988f305a53f14dcb28798ecca4d483fb"
+    },
+    "PROGRAM_EXTRA_INPUT_PINS.json": {
+      "bytes": 443960,
+      "sha256": "f605d43a6d85a560a40f4e787962a84562744e91d7a479795f4c932d759d9a49"
+    }
+  },
+  "compilerRerun": false,
+  "nativeAccepted": false,
+  "browserAccepted": false,
+  "releaseAccepted": false
+}

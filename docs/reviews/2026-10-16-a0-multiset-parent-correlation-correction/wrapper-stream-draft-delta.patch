@@ -1,0 +1,38 @@
+--- preserved-source-draft-01/window.py
++++ /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/window.py
+@@ -325,7 +325,12 @@
+                 for key,_ in selected.select(.05):
+                     room=STREAMS[key.data]-retained[key.data];data=os.read(key.fd,min(65536,room+1))
+                     if not data:selected.unregister(key.fileobj);continue
+-                    sizes[key.data]+=len(data);streams[key.data].write(data[:room]);retained[key.data]+=min(room,len(data))
++                    sizes[key.data]+=len(data);pending=memoryview(data[:room])
++                    while pending:
++                        need(time.monotonic()-start<PARENT_SECONDS,'wrapper-parent-write-deadline')
++                        written=streams[key.data].write(pending)
++                        need(type(written) is int and 0<written<=len(pending),'wrapper-short-stream-write')
++                        retained[key.data]+=written;pending=pending[written:]
+                     if len(data)>room:
+                         record(ATTEMPT/(key.data+'-overflow-sentinel.json'),{'byteHex':data[room:].hex(),'unobservedRemainder':'UNASSESSED'})
+                         raise RuntimeError('wrapper-parent-stream-cap')
+@@ -347,6 +352,12 @@
+             if process is not None:
+                 for name,pipe in [('stdout',process.stdout),('stderr',process.stderr)]:
+                     if pipe is not None:attempt_finalization(issues,name+'-pipe-close',pipe.close)
++            stream_files={}
++            for name in STREAMS:
++                stream_files[name]=attempt_finalization(issues,name+'-actual-stream-pin',lambda name=name:filepin(ATTEMPT/(name+'.bin')))
++                if stream_files[name] is not None:
++                    attempt_finalization(issues,name+'-retained-length-check',lambda name=name:need(stream_files[name]['bytes']==retained[name],
++                        'wrapper-retained-length-disagreement'))
+             attempt_finalization(issues,'host-final-inputs',lambda:record(ATTEMPT/'host-final-inputs.json',pins(config)))
+             def host_artifacts():
+                 value=artifact_inventory([MODEL,ATTEMPT]);record(ATTEMPT/'host-artifact-inventory.json',value,FILE_MAX)
+@@ -354,7 +365,7 @@
+             attempt_finalization(issues,'host-artifact-audit',host_artifacts)
+             terminal={'returncode':process.returncode if process is not None else None,'failure':error_detail(primary) if primary is not None else None,
+                 'cleanupIssues':issues,'seconds':time.monotonic()-start,'observedBytes':sizes,'retainedBytes':retained,
+-                'serviceCancellationOrBackendDeathClaimed':False,'retry':False,'lockHeldThroughWaitAndCustody':True}
++                'streamFiles':stream_files,'serviceCancellationOrBackendDeathClaimed':False,'retry':False,'lockHeldThroughWaitAndCustody':True}
+             attempt_finalization(issues,'host-terminal-record',lambda:record(ATTEMPT/'terminal.json',terminal,FILE_MAX))
+         propagate(primary,trace,terminal)
+         need(process is not None and process.returncode==0,'wrapper-pure-failed-stop-no-retry')

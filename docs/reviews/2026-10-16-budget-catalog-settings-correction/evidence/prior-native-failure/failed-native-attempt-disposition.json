@@ -1,0 +1,36 @@
+{
+  "status": "FAILED_CAPTURE_FENCED_NO_REPLAY",
+  "rootToolChunk": "c2584b",
+  "rootToolExitCode": 1,
+  "parentPID": 2060923,
+  "wrapperPID": 2060924,
+  "parentDeadline": 115,
+  "parentSeconds": 0.2645621650153771,
+  "unitName": "openplan-budget-catalog-capture-20261016",
+  "actualInvocationFromIntentAndFixedPostShow": "76aab0689ad14f1ca97bd1bf8d98eb08",
+  "actualInnerResources": {
+    "cpuMax": "50000 100000",
+    "memoryMax": 536870912,
+    "swapMax": 0,
+    "tasksMax": 64
+  },
+  "managerReportedFailure": true,
+  "managerRuntimeSeconds": 0.232,
+  "managerReportedPeakBytes": 24702976,
+  "nativeRequestsReached": 2,
+  "inspectReturnCode": 0,
+  "queryReturnCode": 0,
+  "actualNativeStderr": "WARNING: password file \"/dev/null\" is not a plain file\n",
+  "actualQueryEnvelope": {
+    "refused": "per-database-settings-require-separate-source-assessment"
+  },
+  "captureCompleteAbsent": true,
+  "nativeCatalogOrScopeAccepted": false,
+  "immediateTransportRefusal": "Source inference: journal requires stderrBytes0 and observed55 before returning query envelope",
+  "additionalGuard": "Actual query independently reports perDBsettings existence; no raw settings/roles projected",
+  "additionalReportingGap": "Actual manager start line lacks invocation suffix expected by collector; correlate not reached due nonzero",
+  "backendDeath": "UNKNOWN_UNASSESSED",
+  "operationConsumed": true,
+  "nextOperationGranted": false,
+  "oldProofPreserved": true
+}

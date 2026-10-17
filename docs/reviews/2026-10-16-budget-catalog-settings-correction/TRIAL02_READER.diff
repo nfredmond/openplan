@@ -1,0 +1,256 @@
+--- sealed-trial01/controls.py
++++ proposed-trial02/controls.py
+@@ -7,7 +7,8 @@
+ import time
+ from types import SimpleNamespace
+ 
+-ROOT = Path('/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016')
++ROOT = Path('/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02')
++ORIGINAL = Path('/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016')
+ SERIAL = 0
+ INV = '11111111111111111111111111111111'
+ PID = 31337
+@@ -179,7 +180,7 @@
+         runtime[name] = cap.sha(base/'runtime'/name)
+     cap.RUNTIME = runtime
+     # Fixture source bindings are supplied. No actual422 donor corpus is copied.
+-    plan = (ROOT/'runtime-v2/plan.json').read_bytes()
++    plan = (ORIGINAL/'runtime-v2/plan.json').read_bytes()
+     for destination in (base/'runtime/plan.json',base/'packet/plan.json'):
+         destination.write_bytes(plan)
+         destination.chmod(0o600)
+@@ -189,7 +190,7 @@
+     names = ('capture_catalog.py','build_observe_proposal.py','observe-input.json',
+              'observe-bindings.required.json','run-capture-window.sh')
+     for name in names:
+-        source = ROOT/'work'/name if (ROOT/'work'/name).is_file() else ROOT/'capture-v2'/name
++        source = ROOT/'work'/name if (ROOT/'work'/name).is_file() else ORIGINAL/'capture-v2'/name
+         destination = cap.ROOT/name
+         destination.write_bytes(source.read_bytes())
+         destination.chmod(0o600)
+@@ -427,25 +428,23 @@
+         case(mode)
+ 
+ 
+-def run(record):
++def run(record, verify_reuse):
+     sys.addaudithook(deny)
++    reuse = verify_reuse()
+     names = ('runtime/controller.py','runtime/journal.py','runtime/policy.py','runtime/sql.py',
+              'capture_catalog.py','build_observe_proposal.py','collector.py')
+-    originals = {name:((ROOT/'source'/name).read_bytes(),(ROOT/'source'/name).stat().st_mode & 0o777)
++    originals = {name:((ORIGINAL/'source'/name).read_bytes(),(ORIGINAL/'source'/name).stat().st_mode & 0o777)
+                  for name in names}
+     result = {'status':'RUNNING','surface':'SUPPLIED_IDENTITIES_BINDINGS_PROCESS_FD_ONLY','faults':[]}
+     saved_argv, saved_path = sys.argv[:], sys.path[:]
+     saved_modules = {name:sys.modules.get(name) for name in
+                      ('policy','journal','sql','controller','capture_catalog','builder_under_test','collector_under_test')}
+     try:
+-        baseline()
+-        result['baseline'] = 'PASS'
+-        work = ROOT/'work/capture_catalog.py'
+-        work.write_bytes(originals['capture_catalog.py'][0]+b'\n# Harmless schema2 capture annotation.\n')
+-        baseline()
+-        result['harmless'] = 'SURVIVED'
+-        work.write_bytes(originals['capture_catalog.py'][0])
+-        for fault in json.loads((ROOT/'mutations.json').read_bytes()):
++        result['priorBaseline'] = 'REUSED_PURE01_PASS'
++        result['priorHarmless'] = 'REUSED_PURE01_SURVIVED'
++        result['priorAcceptedFaults'] = reuse['acceptedFaults']
++        result['reuseProof'] = reuse
++        for fault in json.loads((ROOT/'mutations.json').read_bytes())[2:9]:
+             observations = []
+             try:
+                 for edit in fault['edits']:
+@@ -466,7 +465,7 @@
+                     (ROOT/'work'/name).chmod(mode)
+             result['faults'].append({'name':fault['name'],'observations':observations})
+         baseline()
+-        result.update(status='PASS_SELECTED_SCHEMA2_INERT_CONTROLS',restoredBaseline='PASS')
++        result.update(status='PASS_REMAINDER_SCHEMA2_INERT_CONTROLS',restoredBaseline='PASS')
+     finally:
+         sys.argv, sys.path[:] = saved_argv, saved_path
+         for name,value in saved_modules.items():
+@@ -479,8 +478,8 @@
+             (ROOT/'work'/name).chmod(mode)
+         result['exactRestoration'] = all((ROOT/'work'/name).read_bytes() == raw and
+             (ROOT/'work'/name).stat().st_mode & 0o777 == mode for name,(raw,mode) in originals.items())
+-        result['sourceExact'] = all((ROOT/'source'/name).read_bytes() == raw and
+-            (ROOT/'source'/name).stat().st_mode & 0o777 == mode for name,(raw,mode) in originals.items())
++        result['sourceExact'] = all((ORIGINAL/'source'/name).read_bytes() == raw and
++            (ORIGINAL/'source'/name).stat().st_mode & 0o777 == mode for name,(raw,mode) in originals.items())
+         # Use the immutable, already loaded runner writer; no subject import in finally.
+         record(ROOT/'pure-attempt/controls.json',result)
+     check(result['exactRestoration'] and result['sourceExact'],'exact-schema2-restoration')
+
+--- sealed-trial01/pure_runner.py
++++ proposed-trial02/pure_runner.py
+@@ -7,8 +7,8 @@
+ import re
+ import time
+ 
+-ROOT = Path('/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016')
+-UNIT = 'openplan-budget-settings-v2-pure-20261016'
++ROOT = Path('/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02')
++UNIT = 'openplan-budget-settings-v2-pure-20261016-02'
+ 
+ 
+ def check(value, reason):
+@@ -48,6 +48,92 @@
+     return row
+ 
+ 
++
++def verify_reuse():
++    """One fixed trial01 proof, exact source pins and one permitted mutant delta."""
++    reuse = json.loads((ROOT/'reuse-pins.json').read_bytes())
++    original = Path(reuse['originalRoot'])
++    seal_path = ROOT/'original-seal.json'
++    check(pin(seal_path)['sha256'] == reuse['originalSealSHA256'],'reuse-original-seal')
++    seal = json.loads(seal_path.read_bytes())
++    for name,expected in seal['files'].items():
++        current = pin(Path(name))
++        check(current == {key:expected[key] for key in ('sha256','bytes','mode','uid')},
++              'reuse-sealed-file:'+name)
++        check(Path(name).lstat().st_gid == expected['gid'],'reuse-sealed-gid:'+name)
++    for name,expected in reuse['proofPins'].items():
++        check(pin(Path(name)) == expected,'reuse-proof-pin:'+name)
++    original_request = json.loads((original/'pure-window-request.json').read_bytes())
++    check(len(original_request['inputs']) == 35 and len(original_request['preserved']) == 71,
++          'reuse-exact-original-request-shape')
++    old_mutations = json.loads((original/'mutations.json').read_bytes())
++    mutations = json.loads((ROOT/'mutations.json').read_bytes())
++    check(len(old_mutations) == 9 and len(mutations) == 9,'reuse-nine-mutation-tuples')
++    expected = json.loads(json.dumps(old_mutations))
++    old_fragment = expected[2]['edits'][0]['new']
++    check(old_fragment.count('ORDER BY setrole') == 1,'reuse-exact-mutant-edit')
++    expected[2]['edits'][0]['new'] = old_fragment.replace('ORDER BY setrole','ORDER BY s.setrole',1)
++    check(expected == mutations,'reuse-only-qualified-mutant-delta')
++    check(mutations[2]['name'] == 'settings-raw-output' and mutations[2]['tests'] == [
++        {'mode':'baseline','reason':'scope-no-setting-values-on-wire'}],'reuse-unchanged-hypothesis')
++    check(pin(Path(__file__))['sha256'] == reuse['trial02RunnerSHA256'],'reuse-runner-source')
++    check(pin(ROOT/'controls.py')['sha256'] == reuse['trial02ReaderSHA256'],'reuse-reader-source')
++    result_path = original/'pure-attempt/controls.json'
++    result = json.loads(result_path.read_bytes())
++    expected_faults = [
++        {'name':'credential-absence-bypass','observations':[
++            {'reason':'credential-present-stops-before-query','result':'KILLED'}]},
++        {'name':'settings-row-omission','observations':[
++            {'reason':'scope-all-setting-rows-covered','result':'KILLED'}]}]
++    check(result.get('baseline') == 'PASS' and result.get('harmless') == 'SURVIVED'
++          and result.get('exactRestoration') is True and result.get('sourceExact') is True
++          and result.get('status') == 'RUNNING' and result.get('faults') == expected_faults,
++          'reuse-only-two-accepted-faults')
++    post = json.loads((original/'pure-attempt/post-custody.json').read_bytes())
++    check(post.get('allExact') is True and len(post.get('exact',{})) == 106 and
++          all(value is True for value in post['exact'].values()),'reuse-finally-all106')
++    decision_root = Path(reuse['rootDecisionRoot'])
++    failure = json.loads((decision_root/'failed-pure-disposition.json').read_bytes())
++    check(failure.get('classification') == 'HARNESS_MUTATION_ORACLE_MISMATCH'
++          and failure.get('actualFirstAssertion') == 'scope-all-setting-rows-covered'
++          and failure.get('preparedExpected') == 'scope-no-setting-values-on-wire'
++          and failure.get('notAcceptedFault') == 'settings-raw-output'
++          and failure.get('runtimeOrNativeFinding') is False
++          and failure.get('completeExists') is False
++          and failure.get('all106InputsMatch') is True
++          and failure.get('acceptedFaults') == [fault['name'] for fault in expected_faults],
++          'reuse-failed-disposition')
++    check(not (original/'pure-attempt/complete.json').exists(),'failed-pure01-stays-incomplete')
++    parent = json.loads((decision_root/'parent/terminal.json').read_bytes())
++    check(parent.get('returncode') == 1 and parent.get('failure') is None
++          and parent.get('classification') == 'terminal-nonzero'
++          and parent.get('parentPID') == 2472883 and parent.get('wrapperPID') == 2472885
++          and parent.get('deadlineSeconds') == 145
++          and parent.get('backendDeath') == 'UNASSESSED','reuse-actual-parent-terminal1')
++    for label in ('stdout','stderr'):
++        path = decision_root/'parent'/(label+'.bin')
++        stream = parent['streams'][label]
++        current = pin(path)
++        check(stream.get('sha256') == current['sha256']
++              and stream.get('retainedBytes') == current['bytes']
++              and stream.get('observedBytes') == current['bytes']
++              and stream.get('limit') == 1048576,'reuse-actual-parent-stream:'+label)
++    stderr = (decision_root/'parent/stderr.bin').read_text()
++    check('AssertionError: scope-all-setting-rows-covered\n' in stderr
++          and 'AssertionError: unexpected-mutant-assertion:scope-all-setting-rows-covered\n' in stderr
++          and 'invocation ID: cf41198ca3e943f699417db9a20804fb' in stderr,
++          'reuse-actual-failure-reason')
++    check(failure.get('actualInvocationID') == 'cf41198ca3e943f699417db9a20804fb',
++          'reuse-failed-unit-identity')
++    return {'status':'REUSED_PURE01_PARTIAL_ONLY','acceptedFaults':expected_faults,
++        'originalControlsSHA256':pin(result_path)['sha256'],
++        'originalRequestSHA256':pin(original/'pure-window-request.json')['sha256'],
++        'failedDispositionSHA256':pin(decision_root/'failed-pure-disposition.json')['sha256'],
++        'failedParentTerminalSHA256':pin(decision_root/'parent/terminal.json')['sha256'],
++        'originalSealSHA256':pin(seal_path)['sha256'],'runIndices':[2,3,4,5,6,7,8],
++        'oldFailureReclassified':False,'nativeOperationGranted':False}
++
++
+ def main():
+     os.umask(0o077)
+     request = json.loads((ROOT/'pure-window-request.json').read_bytes())
+@@ -94,7 +180,7 @@
+     # Only here, inside the separately granted finite pure unit, import controls.
+     try:
+         import controls
+-        controls.run(record)
++        controls.run(record, verify_reuse)
+     finally:
+         exact = {name:pin(ROOT/name) == expected for name,expected in request['inputs'].items()}
+         exact.update({name:pin(Path(name)) == expected for name,expected in request['preserved'].items()})
+
+--- sealed-trial01/mutations.json
++++ proposed-trial02/mutations.json
+@@ -37,7 +37,7 @@
+       {
+         "file": "runtime/sql.py",
+         "old": "SETTINGS_SUMMARY = \"\"\"SELECT pg_catalog.jsonb_build_object(\n 'rows',pg_catalog.count(*)::int8,\n 'digest',pg_catalog.md5(coalesce(pg_catalog.string_agg(\n pg_catalog.md5(pg_catalog.jsonb_build_object('row',pg_catalog.to_jsonb(s),\n 'setconfigType',pg_catalog.pg_typeof(s.setconfig)::text,\n 'setconfigDimensions',pg_catalog.array_dims(s.setconfig))::text),\n '' ORDER BY s.setrole),'')))\n FROM pg_catalog.pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\"",
+-        "new": "SETTINGS_SUMMARY = \"\"\"SELECT jsonb_agg(to_jsonb(s) ORDER BY setrole) FROM pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\""
++        "new": "SETTINGS_SUMMARY = \"\"\"SELECT jsonb_agg(to_jsonb(s) ORDER BY s.setrole) FROM pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\""
+       }
+     ],
+     "tests": [
+
+--- sealed-trial01/run-pure-window.sh
++++ proposed-trial02/run-pure-window.sh
+@@ -3,16 +3,16 @@
+ set -euo pipefail
+ set -o noclobber
+ umask 077
+-p=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016
++p=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02
+ exec 9<>/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock
+ /usr/bin/flock -n -x 9
+ /usr/bin/readlink /proc/self/ns/net > "$p/host-netns.txt"
+ set +e
+-/usr/bin/systemd-run --user --wait --pipe --unit=openplan-budget-settings-v2-pure-20261016 \
++/usr/bin/systemd-run --user --wait --pipe --unit=openplan-budget-settings-v2-pure-20261016-02 \
+  -p RuntimeMaxSec=120 -p MemoryMax=512M -p MemorySwapMax=0 \
+  -p CPUQuota=50% -p TasksMax=64 -p UMask=0077 /bin/bash "$p/in-unit.sh"
+ pure_manager_code=$?
+ set -e
+-/usr/bin/systemctl --user show openplan-budget-settings-v2-pure-20261016.service \
++/usr/bin/systemctl --user show openplan-budget-settings-v2-pure-20261016-02.service \
+  --no-pager --property=Id,InvocationID,Result,ExecMainCode,ExecMainStatus,ActiveState,SubState,MemoryPeak,MemorySwapPeak,CPUUsageNSec,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax
+ exit "$pure_manager_code"
+
+--- sealed-trial01/in-unit.sh
++++ proposed-trial02/in-unit.sh
+@@ -1,12 +1,15 @@
+ #!/bin/bash
+ set -euo pipefail
+-p=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016
++p=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02
++original=/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016
++decision=/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016
+ old=/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016
+ outer=/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016
+ proof=/home/nathaniel/.local/state/openplan/budget-catalog-capture-controls-20261016
+ subject=/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller
+ repo=/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb
+-exec /usr/bin/bwrap --ro-bind / / --bind "$p" "$p" --ro-bind "$old" "$old" \
++exec /usr/bin/bwrap --ro-bind / / --ro-bind "$original" "$original" --bind "$p" "$p" \
++ --ro-bind "$decision" "$decision" --ro-bind "$old" "$old" \
+  --ro-bind "$outer" "$outer" --ro-bind "$proof" "$proof" --ro-bind "$subject" "$subject" \
+  --ro-bind "$repo" "$repo" --unshare-net --die-with-parent --chdir "$p" \
+  --dev-bind /dev/null /dev/null \

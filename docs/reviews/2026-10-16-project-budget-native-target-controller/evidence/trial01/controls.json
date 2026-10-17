@@ -1,0 +1,66 @@
+{
+  "scope": "INERT process and FD responder; no shell/native/SQL/manager/helper dispatch",
+  "baseline": {
+    "wrong-oid": "pass",
+    "boolean-oid": "pass",
+    "missing-history": "pass",
+    "no-replay": "pass",
+    "clobber": "pass",
+    "custody": "pass",
+    "late-ack": "pass",
+    "output-bound": "pass",
+    "missing-definition": "pass",
+    "wanted-missing": "pass",
+    "restore-composition": "pass",
+    "migration-atomicity": "pass",
+    "history-hex": "pass",
+    "journey": {
+      "requests": 20,
+      "nativePIDs": [
+        8006,
+        8010
+      ],
+      "commitACK": true
+    },
+    "statement-sha": "pass",
+    "statement-cardinality": "pass"
+  },
+  "trials": [
+    {
+      "mutation": "harmless-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "mutation": 0,
+      "file": "policy.py",
+      "outcome": "KILLED",
+      "assertion": "wrong-oid-rejected"
+    },
+    {
+      "mutation": 1,
+      "file": "policy.py",
+      "outcome": "KILLED",
+      "assertion": "boolean-oid-rejected"
+    },
+    {
+      "mutation": 2,
+      "file": "policy.py",
+      "outcome": "KILLED",
+      "assertion": "missing-history-fields-rejected"
+    },
+    {
+      "mutation": 3,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "stage-replay-rejected"
+    },
+    {
+      "mutation": 4,
+      "file": "journal.py",
+      "outcome": "KILLED",
+      "assertion": "exclusive-clobber-rejected"
+    }
+  ],
+  "restored": true,
+  "sourceUnchanged": true
+}

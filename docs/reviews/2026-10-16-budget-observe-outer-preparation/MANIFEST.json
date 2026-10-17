@@ -1,0 +1,194 @@
+{
+  "schema": 1,
+  "status": "FINAL_PREPARED_SOURCE_FROZEN_NOT_GRANTED",
+  "baseCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "publicFiles": {
+    "PREPARATION_REQUEST.json": {
+      "sha256": "be3a0441d4b2079396e295834efe2d5308e6bf34a9165b084a60b9423035c61f",
+      "bytes": 196169,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "REPORT.md": {
+      "sha256": "0e39a714b1d5a0a4e00026ae2a68e1e8c6f2c6fddee3f06e6cd4e44c4b0b2174",
+      "bytes": 12149,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "SOURCE.diff": {
+      "sha256": "a358eb1a0c4d9e89e440632bab0686591478673a5238275a21deae1455580b8d",
+      "bytes": 52431,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "SOURCE_PINS.json": {
+      "sha256": "65c27c3142d539db7a3115c724eb4ebd9d0ce7c59e0f1025231593d6daf565fb",
+      "bytes": 10279,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "STATIC_REVIEW.json": {
+      "sha256": "7e1c49c1e224df7f5a7c9f7c449c9b51ed2537a3585f913467693c85513ae3a4",
+      "bytes": 3765,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "VALIDATION.md": {
+      "sha256": "04076d5b75b722d4d3c89355a5584d6014d25e96eda2f6fdacfd6a1a7ee7f4ab",
+      "bytes": 5289,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "WRAPPER_DELTA.diff": {
+      "sha256": "026a257c667c385ea47e4aade2cff4261761768f95e7a642833b118b0622e0c2",
+      "bytes": 2259,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "controls.py": {
+      "sha256": "80c8880f9914e50423202bc92fefe671f3836f545f92512faf4082e8b9b853dc",
+      "bytes": 9309,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "drafts/observe-bindings.actual.json": {
+      "sha256": "560fe36ba47b3f4f05292e6d444ea2edd1c5d14a8a96dbdb37e5c83211942eba",
+      "bytes": 1739,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "drafts/observe-publication.json": {
+      "sha256": "de74fa5f27159671b48986dd89ef723e325817a5f853f590641ba9f09634dba2",
+      "bytes": 471,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "drafts/observe-review.md": {
+      "sha256": "30e3bdff7dab51a33321ce8885ba180bbcc518743a054128527511a33739db19",
+      "bytes": 2054,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "drafts/observe-window.json": {
+      "sha256": "683d4b383908370bbb4654a8ba4f4e15df5be6cb66fc51434020502a3d50ac68",
+      "bytes": 459,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "in-unit.sh": {
+      "sha256": "de9cd6b2d0f081e39451ffc5165990ee5f36e0a25e762183ca6e394682a2ce5a",
+      "bytes": 5256,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "parent-intent-contract.json": {
+      "sha256": "8664acfc3cf9d083810b7622c2bf96f4ba1b7b8414679e7d8d5e36c1e898bbc8",
+      "bytes": 8051,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "parent-recorder.py": {
+      "sha256": "402e50fe6a871f32547431fca6c47b03ea6922c001b9f3fd1644dcee47f6887e",
+      "bytes": 8109,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "prepare_once.py": {
+      "sha256": "52508ab4e1bcf9cd08b425a701820721c2a062576339f36788cbdc0c1779169a",
+      "bytes": 8914,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "run-observe-window.sh": {
+      "sha256": "25512b411bf99c19c1751148794741d22c5ae73eea5084f0da006b5a78b21737",
+      "bytes": 973,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "run-preparation-window.sh": {
+      "sha256": "78fd4f3faaf52fe561a6d927ed99bdfa7dbea7053d3013f5af6ab232945e7ebf",
+      "bytes": 894,
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateSourcePins": {
+    "sha256": "65c27c3142d539db7a3115c724eb4ebd9d0ce7c59e0f1025231593d6daf565fb",
+    "bytes": 10279,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "privateRequest": {
+    "sha256": "be3a0441d4b2079396e295834efe2d5308e6bf34a9165b084a60b9423035c61f",
+    "bytes": 196169,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "finalMetadataReadback": {
+    "sha256": "2508a0a1c13fb4423a01f1d029b9a92bc8904403da3c1094cddf0287800d2d7e",
+    "bytes": 1595,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "supersededSnapshot": {
+    "sha256": "23a73fe0f1ba84ed59cc2839b9c152e13bcceacac5c310aa47bdee7d7a47fa0b",
+    "bytes": 1024,
+    "mode": 384,
+    "uid": 1000,
+    "gid": 1000
+  },
+  "controlsOrder": [
+    "harmless annotation and harmless baseline",
+    "restore wrapper",
+    "baseline",
+    "same four named faults",
+    "final restored baseline"
+  ],
+  "nativeWrapperSHA256": "25512b411bf99c19c1751148794741d22c5ae73eea5084f0da006b5a78b21737",
+  "parentRecorderSHA256": "402e50fe6a871f32547431fca6c47b03ea6922c001b9f3fd1644dcee47f6887e",
+  "futureRootMaterialization": "Four exact false draft files only after root final source reading; no materialization here",
+  "grant": "ABSENT_REQUIRES_SEPARATE_EXACT_ROOT_GRANT",
+  "proposedUnitLimits": {
+    "RuntimeMaxSec": 120,
+    "MemoryMax": 536870912,
+    "MemorySwapMax": 0,
+    "CPUQuota": "50%",
+    "TasksMax": 64,
+    "UMask": "0077"
+  },
+  "actualToolParent": {
+    "deadlineSeconds": 145,
+    "stdoutLimit": 1048576,
+    "stderrLimit": 1048576,
+    "rootDuty": "Actual tool/session/chunk/parent/wrapper IDs; durable request/grant/intent BEFORE Popen; actual manager wait and terminal/raw streams; no post-show defaults as identity, no backend-death claim. ONE invocation, no replay/cleanup/successor.",
+    "rootIntentPath": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/root-outer-intent.json",
+    "rootIntentCreated": false,
+    "rootIntentContract": "NEW actual root-owned0600 intent before Popen, binding this exact request/new pure grant/source pins/outer argv+manager env/unit/145s+1MiB bounds and actual parentPID. It is RO inside the preparation unit; generic recorder supplies no authority."
+  },
+  "nativeObserveAuthority": "controller.ready only; none supplied",
+  "combinedIndependentOperationReview": "REQUIRED_AFTER_ACTUAL_BUILDER_OUTPUT_AND_OUTER_CONTROLS",
+  "subjectImports": 0,
+  "executions": 0,
+  "localCommit": "HELD_UNTIL_APPLICABLE_CONTROLS_AND_ROOT_OUTCOME"
+}

@@ -40,7 +40,7 @@ own check. Paths are under `openplan/` unless they start with `workers/` or
 | KI-2026-10-12-013 | High, cost and abuse | The public "send me updates" form sends mail to any address at 12 per 10 minutes per connection per campaign. If it shares the free Resend quota with Auth mail, a flood blocks confirmations and resets. Signup has no bot check. | Mostly fixed in PR 253: per-address and per-campaign daily caps; identical replies. Open: signup bot check (CAPTCHA) needs an operator key. | `src/app/api/engage/[shareToken]/subscribe/route.ts:56-92`; `src/lib/engagement/public-submit.ts:9` |
 | KI-2026-10-12-014 | High, cost | One account can create unlimited workspaces; each gets its own AI allowance; the AI limiter allows the call on any lookup error and counts after the call; there is no per-workspace storage quota; run caps default to unlimited. | Partly fixed. PR 253 adds a per-campaign photo budget. PR 298 (migration 20261017000010) limits each person to 5 owned workspaces and each workspace to 5 GiB of stored files by default, checked before every planner upload. PR 319 (migration 20261017000013, applied to hosted 2026-10-14) applies the storage limit to report files, grant application exports and engagement review files. PR 324 applies it to project evidence bundles and work program exports, and charges a retried export only for files not already stored. Still open: AI limiter that fails open, production run caps. Storage limit gaps: managed GTFS submissions (off by default) store archives without the check; feeds fetched from an address and aerial images frozen into reports are refused only when the workspace is already at its limit. | `src/lib/runtime/ai-rate-limit.ts:24-25,83-105`; `src/lib/config/run-cap.ts:80-86`; `src/lib/models/run-dispatch.ts:67`; `src/lib/http/body-limit.ts:33,62,71`; `src/lib/workspaces/storage-quota.ts`; `src/lib/gtfs/managed-admission.ts:205`; `src/lib/gtfs/managed-worker-intake.ts:193` |
 | KI-2026-10-12-015 | High, planner deadlines | The dashboard reads RTP and campaign dates only from yesterday onward, so a date missed two days ago disappears. My Work treats dated contract tasks and work-program reviews as undated. A closed award still counts as overdue in the digest. | Fixed in PR 243. | `src/lib/dashboard/workspace-dates.ts:45`; `src/app/(app)/dashboard/page.tsx:126`; `src/lib/my-work/query.ts:292`; `src/lib/notifications/work.ts:582-597` |
-| KI-2026-10-12-016 | Medium, dates | Claims, allocations, invoice "today", grant drafts and the Planner Agent derive the calendar day in UTC, which turns over at 5 p.m. Pacific. There is no workspace time zone. | Fixed in PR 274 (migration 20261017000007, applied to hosted 2026-10-14): workspace time zone and one shared calendar helper. Open: contract and work-program form defaults and reminder digests still use the UTC day. | `src/app/api/measures/[measureId]/claims/route.ts:94`; `.../periods/[periodId]/allocate/route.ts:255,398`; `src/app/api/invoicing/client-invoices/[invoiceId]/route.ts:564`; `src/app/api/assistant/chat/route.ts` |
+| KI-2026-10-12-016 | Medium, dates | Claims, allocations, invoice "today", grant drafts and the Planner Agent derive the calendar day in UTC, which turns over at 5 p.m. Pacific. There is no workspace time zone. | Fixed in PR 274 (migration 20261017000007, applied to hosted 2026-10-14): workspace time zone and one shared calendar helper. October 16 source check: reminder windows and claim waiting days now use each workspace's calendar; calendar-read failure uses UTC and reports `workspaceCalendarsUnavailable`. Actual reminder delivery and contract/work-program form defaults remain unverified by this check. | `src/app/api/measures/[measureId]/claims/route.ts:94`; `.../periods/[periodId]/allocate/route.ts:255,398`; `src/app/api/invoicing/client-invoices/[invoiceId]/route.ts:564`; `src/app/api/assistant/chat/route.ts`; `src/lib/notifications/work.ts:1379,1393,1653`; `src/test/work-notification-sweep.test.ts:982-1045` |
 | KI-2026-10-12-017 | High, imports | Hosted transit and aerial uploads pass through a Vercel function, which refuses bodies above about 4.5 MB, while the app advertises 200 MB. Most agency GTFS feeds fail with a bare 413 on the hosted site. | Fixed for transit feeds in PR 255 (direct signed upload). Open: aerial uploads still pass through the function body. | `src/lib/http/body-limit.ts:62,71,76` |
 | KI-2026-10-12-018 | High, model runs | On the hosted site an interrupted model stage (deploy, out-of-memory kill, lost acknowledgement) stays "running" with no lease renewal or resume; the only recovery is abandoning the run. Hosted ActivitySim has no stall detection. | Partly fixed in PR 258: interrupted stages are marked and shown as Interrupted; shutdown is recorded. Open: a durable lease needs new stage columns. | `workers/aequilibrae_worker/main.py:642-651,7850-7866`; `workers/activitysim_worker/supabase_poll.py:1041-1096`; `workers/activitysim_worker/runtime.py:875-881` |
 | KI-2026-10-12-019 | Medium, model runs | Model runs created before PR 169 are fenced as historical and unassessed, losing relaunch and progress, with no reconciliation tool. | Fixed in PR 272 (migration 20261017000008, applied to hosted 2026-10-14): owners and admins keep a run as a record or close it for a fresh run. | PR 169; `docs/reviews/2026-10-12-two-month-review/reports/prs-136-170.md` |
@@ -59,6 +59,39 @@ own check. Paths are under `openplan/` unless they start with `workers/` or
 | KI-2026-10-12-032 | Medium | Reading a prior RTP needs an Anthropic key, but Help says everything except listed features works without one; RTP reading and Maps are missing from that list. | Fixed in PR 273: Help and the checklist share one list of features that need an AI key. | `src/app/api/rtp-cycles/[rtpCycleId]/extraction-runs/route.ts:370-376`; `src/app/(app)/help/page.tsx:173-178` |
 | KI-2026-10-12-033 | High, operations | The hosted site has no uptime check, error tracking or alerting; the health route does not check the database; cron failures are silent. | Partly fixed in PR 254: the health check runs every 30 minutes and a failure emails the owner. Open: error tracking, a database-reading health check, cron failure alerts. | `docs/reviews/2026-10-12-two-month-review/reports/infra.md` sections 1 and 8 |
 
+
+### October 16 source correction to KI-016
+
+At candidate `e9aafd9d0e6b4ece75679ea2c0635a89b6217cdb`, the sweep reads
+`id, time_zone, home_country_code`, computes each workspace's calendar day and
+uses it to filter the reminder window. Missing calendar data falls back to UTC;
+query errors and thrown reads set `workspaceCalendarsUnavailable`. Existing
+tests contain Tokyo, Los Angeles, Honolulu and failed-read cases. This correction
+records source inspection only. No test, sweep, email or hosted configuration
+check runs, and no delivery or form-default acceptance follows. The October 12
+finding remains preserved as the historical boundary in the table.
+
+### October 16 source disposition of KI-025
+
+Draft candidate `d264d69149ae2f9d589840e5a543b798ae4718ec`, application
+`42fc0315070f31269325acb264f0260723dbd56b`, contains the reviewed
+[saved-context geography correction](../reviews/2026-10-16-land-use-geography-joined/STATUS.md),
+[retained extent validation](../reviews/2026-10-16-designation-map-extent-independent/ROOT_ACCEPTANCE.json)
+and [publication cardinality correction](../reviews/2026-10-16-land-use-publication-cardinality-independent/REPORT.md).
+These are source and selected-check outcomes. Migrations 424 and 425 remain unapplied
+within this evidence boundary; native SQL/RLS, publication races, identified
+desktop/390px journeys and planner acceptance remain open.
+
+The extent correction leaves wrapped viewport queries unchanged. Current
+browser clamping can omit one side of a dateline-crossing view or return without
+clearing earlier shapes for a shifted world copy. This is a conditional source
+inference, supported by the permitted longitude range in the
+[Mapbox bounds contract](https://docs.mapbox.com/mapbox-gl-js/api/geography/#lnglatbounds),
+not a current map-engine or browser reproduction. A separate
+[source assessment](../reviews/2026-10-16-public-designation-viewport-source/STATUS.md)
+records the exact path and pending correction design. The creation-provider
+assumption also remains open. The October 12 findings above remain the historical
+baseline; KI-025 and M1 are not closed.
 
 ## ActivitySim container owner loss, October 8, 2026
 

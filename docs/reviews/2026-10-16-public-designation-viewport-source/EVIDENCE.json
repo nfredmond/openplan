@@ -1,0 +1,77 @@
+{
+  "tier": "SOURCE_AND_PRIMARY_DOCUMENTATION_INFERENCE_ONLY",
+  "baselineHead": "d264d69149ae2f9d589840e5a543b798ae4718ec",
+  "applicationTree": "42fc0315070f31269325acb264f0260723dbd56b",
+  "queuedLane": "M1/KI-2026-10-12-025",
+  "lockedPackageVersions": {
+    "mapbox-gl": "3.20.0",
+    "maplibre-gl": "6.13.0"
+  },
+  "sourcePinsAtBaseline": {
+    "openplan/src/components/land-use-plans/public-designation-map.tsx": {
+      "bytes": 6752,
+      "sha256": "e7b0f5d06443470d706437251e4e930ac7cebbd62e1d0ece37e34afd45db336d"
+    },
+    "openplan/src/lib/geo/wgs84-bounds.ts": {
+      "bytes": 4041,
+      "sha256": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719"
+    },
+    "openplan/src/lib/land-use-plans/public-map.ts": {
+      "bytes": 5011,
+      "sha256": "5f469e275301fe000e6ff6de7e20c444dea4edf2f8b1c689b705a1a79bd650fb"
+    },
+    "openplan/supabase/migrations/20260812000016_workspace_gis_features.sql": {
+      "bytes": 13144,
+      "sha256": "a7013dc0841072b3d50325184c79e6251eee55869e2af36338178fd09eec5867"
+    },
+    "openplan/package.json": {
+      "bytes": 13767,
+      "sha256": "a857e933382f3a990db3bcb036f579af8b9c044cb6b77509ae4daf71ed498e71"
+    },
+    "openplan/package-lock.json": {
+      "bytes": 603270,
+      "sha256": "e93237b82fea6899fe67c18e2e4e0ed2d6f66a295cea420cab7c05ec61535420"
+    },
+    "docs/ROADMAP.md": {
+      "bytes": 17806,
+      "sha256": "7107854c36d3577b0742fbdfc01a07f6c3b14f363b24739feb26885b7566bea4"
+    },
+    "docs/ops/KNOWN_ISSUES.md": {
+      "bytes": 121328,
+      "sha256": "ddadee0fd692b8f4f5fa3905abc9ff92baab723acdaeb0ed641c6c9267bbb061"
+    },
+    "docs/product/V1_PRODUCT_CONTRACT.md": {
+      "bytes": 22959,
+      "sha256": "304094a6bf6d8813a0f31b905d4959bfa11defb9a22275d4963ea4fede7356be"
+    }
+  },
+  "rootSourceAssessment": {
+    "path": "/home/nathaniel/.local/state/openplan/public-designation-wrap-root-preparation-20261016/ROOT_SOURCE_ASSESSMENT.json",
+    "bytes": 4113,
+    "sha256": "cdd8fa9ec79bec5feb48b0b702822969b95faeec0d045e835f753bbd911df3f6"
+  },
+  "directionAcceptance": {
+    "path": "/home/nathaniel/.local/state/openplan/public-designation-wrap-root-preparation-20261016/direction-01/ACCEPTANCE.json",
+    "bytes": 4080,
+    "sha256": "46a6d174227d8223c1292a037aed2eb23a49ee9e6af4a78312f9f1290b656207"
+  },
+  "primaryDocumentation": {
+    "url": "https://docs.mapbox.com/mapbox-gl-js/api/geography/#lnglatbounds",
+    "title": "Mapbox GL JS geography: LngLatBounds",
+    "accessedLocalDate": "2026-10-16",
+    "claim": "Official documentation permits longitudes outside the canonical interval with rendered world copies. This is API documentation, not current installed/browser behavior."
+  },
+  "newImplementationDelegated": true,
+  "applicationEdits": false,
+  "newMigration": false,
+  "subjectRuntime": false,
+  "browserObserved": false,
+  "KI025Closed": false,
+  "M1Complete": false,
+  "V1Complete": false,
+  "status": {
+    "bytes": 3572,
+    "sha256": "808e373b7c5419ad1df4541c772fc6fdbfb8722e87da42a740b61cabad203239"
+  },
+  "sourceNotes": "Current primary docs and manual source-path deductions, not exact installed SDK or renderer execution. Historical source/review bytes remain unchanged."
+}

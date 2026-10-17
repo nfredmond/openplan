@@ -1,0 +1,107 @@
+{
+  "schema": 1,
+  "acceptance": {
+    "schema": 1,
+    "tier": "ACTUAL_FULL_CONFIGURED_TYPESCRIPT_PROJECT_EXIT0",
+    "head": "70322aa5d15bcce9c0d98e51aed91ef98468e7b3",
+    "app": "42fc0315070f31269325acb264f0260723dbd56b",
+    "sourcePinsGitAndCurrentMatch": 4615,
+    "configuredTrackedTSRoots": 3826,
+    "actualProgramFiles": 4918,
+    "postProgramReadbackSHA256": "92363cb40cd107da285140998adb28b65e2e88cf23a67efb773c51802f3e70a3",
+    "oldFailed01FilesUnchanged": 19,
+    "oldFailed01Classification": "HARNESS_SETUP_FAILURE_BEFORE_TYPESCRIPT",
+    "compilerExit": 0,
+    "entryInvocation": "7ac24a4444b44dc09a47dbc67bda2cdd",
+    "parentElapsedSeconds": 203.9117381599499,
+    "compilerSeconds": 201.2147724989336,
+    "resources": {
+      "memory.max": "7516192768",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64",
+      "memory.peak": "5766897664",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "pids.peak": "23",
+      "pids.events": "max 0",
+      "memory.swap.current": "0"
+    },
+    "exactLockHolders": [],
+    "claims": [
+      "Actual unmodified tsconfig include/exclude/compilerOptions, CLI noEmit/noIncremental/listFiles",
+      "No Next env or generated route types existed or were created",
+      "Named source/original donor/final donor RO and private child RW; inherited mount writability unassessed",
+      "1092 dependency/program extras hashed only after terminal; compiler files pinned before"
+    ],
+    "nativeOperationGranted": false,
+    "buildAccepted": false,
+    "browserAccepted": false,
+    "retry": false
+  },
+  "proofRoot": "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016",
+  "custodyManifest": {
+    "bytes": 9830,
+    "sha256": "27f4cfd41cc5d28c3e7a1ba862a072115b9379db88c938b59a13054bf149dcec"
+  },
+  "retainedReceipts": {
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/FAILED01_SEAL.json": {
+      "bytes": 3956,
+      "sha256": "4276a2abdb80aa41829826483e29cbfc20ddfadfc3a0b7f7f266b3acc8254566"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/grant.json": {
+      "bytes": 2014,
+      "sha256": "55c01d361a2af7489811d0fa8de1adac9b6c80c9b50f343a37753759395c1298"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/preparation-pins.json": {
+      "bytes": 1700,
+      "sha256": "c66ce95ea5bb0188fd3598f48e26256742c931ee15de10a79d8ea891450b5aae"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/source.diff": {
+      "bytes": 3430,
+      "sha256": "888119f0b4b78380f067e80509dff6b65d955c0ccabaa524e7b393d3654bfb20"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/parent/intent.json": {
+      "bytes": 599,
+      "sha256": "90bbb67139791d4d004d8eaa310dd46c53605fc5921cb6c1eff9e3b720f04cb3"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/parent/returned-process.json": {
+      "bytes": 71,
+      "sha256": "800e8bf49e86d494a52f5cea98721a92764db5a68e5af3f56c3773bc677534be"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/parent/terminal.json": {
+      "bytes": 487,
+      "sha256": "430896ad8697a6557020f6aa80cadda6283a239aa224f95aee3688918ba71797"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/before.json": {
+      "bytes": 937,
+      "sha256": "b7818a743116b273980ac3ce4b15842eaf7ca60d2f6a0c8e8768c33b9361cd3e"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/compiler-intent.json": {
+      "bytes": 854,
+      "sha256": "336fb65330ab15c558f53a9a9b5cfb2040dae591af993717f8ae3d1466686e4f"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/compiler-returned.json": {
+      "bytes": 79,
+      "sha256": "d0a4e913744f96e4b3c51c2d29feaf39bc87cdc13c15c6766219260f1f5cda3b"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/compiler-result.json": {
+      "bytes": 536,
+      "sha256": "281b71cebba74726adb12412c086b7ac5c40aa8e29459017deab639aa2ec9d36"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/result.json": {
+      "bytes": 772,
+      "sha256": "b4d750bba46ce54d606f4010c7d27a13f6c9a178b6863675cc89c51defe20f29"
+    },
+    "/home/nathaniel/.local/state/openplan/publication-reviewed-full-types-20261016/trial02/ACCEPTANCE.json": {
+      "bytes": 1540,
+      "sha256": "754ee0980a01a2fc78ded421d5aae3a47cad8b62310a33fd7420712dbcd69ce2"
+    }
+  },
+  "sourceChanges": false,
+  "testsOrLintRepeated": false,
+  "noNativeBuildBrowserAcceptance": true,
+  "timingClarification": {
+    "compilerSecondsField": "Elapsed entry time at compiler result, including prechecks, not an isolated compiler runtime measurement",
+    "parentElapsedSeconds": "Actual complete bounded parent duration"
+  }
+}

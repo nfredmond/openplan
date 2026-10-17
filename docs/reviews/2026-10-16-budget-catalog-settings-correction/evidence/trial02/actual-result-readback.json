@@ -1,0 +1,209 @@
+{
+  "acceptedFaults": [
+    {
+      "name": "settings-raw-output",
+      "observations": [
+        {
+          "reason": "scope-no-setting-values-on-wire",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "scope-subset-comparison",
+      "observations": [
+        {
+          "reason": "scope-full-v2-equality",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "manager-self-binding-bypass",
+      "observations": [
+        {
+          "reason": "manager-ack-independent-identity",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "manager-ack-hash-bypass",
+      "observations": [
+        {
+          "reason": "manager-ack-hash-bound-to-complete",
+          "result": "KILLED"
+        },
+        {
+          "reason": "proposal-manager-ack-hash-bound",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "catalog-read-only-omission",
+      "observations": [
+        {
+          "reason": "catalog-read-only-intent",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "foreign-database-argv",
+      "observations": [
+        {
+          "reason": "scope-fixed-maintenance",
+          "result": "KILLED"
+        }
+      ]
+    },
+    {
+      "name": "proposal-terminal-correlation",
+      "observations": [
+        {
+          "reason": "proposal-manager-terminal-correlated",
+          "result": "KILLED"
+        },
+        {
+          "reason": "proposal-outer-terminal-correlated",
+          "result": "KILLED"
+        }
+      ]
+    }
+  ],
+  "actualInnerEnvironmentInvocationID": "7c3ddccf798b482b8df6baf89afefddb",
+  "all2067PostPinsExact": true,
+  "blindCategories": [
+    "native PostgreSQL parser/digest semantics",
+    "find executable availability",
+    "native capture/roles/SDK/Auth/RLS",
+    "backend death",
+    "inherited writable submounts",
+    "manager start header lacks invocation suffix; postshow defaults unbound"
+  ],
+  "completeSHA256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb",
+  "controlsSHA256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929",
+  "elapsedSeconds": 5.977016371907666,
+  "exactRestoration": true,
+  "grantSHA256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+  "limits": {
+    "CPUQuota": "50%",
+    "MemoryMax": 536870912,
+    "MemorySwapMax": 0,
+    "RuntimeMaxSec": 120,
+    "TasksMax": 64
+  },
+  "lockRelease": "terminal wrapper closes owned FD9; no extra acquisition/probe",
+  "managerInnerIdentityCorrelation": "UNPROVED_BY_START_HEADER_OR_POSTSHOW",
+  "managerStartInvocationID": "ABSENT",
+  "managerWait": "reported unit success/status0/runtime5.941s/CPU982ms/roundedpeak36.9M/swap0",
+  "nativeOperationGranted": false,
+  "oldTrial01Status": "FAILED_UNCHANGED_INCOMPLETE",
+  "parentPID": 2609611,
+  "parentTransport": {
+    "backendDeath": "UNASSESSED",
+    "classification": "terminal-zero",
+    "deadlineSeconds": 145,
+    "elapsedSeconds": 5.977016371907666,
+    "failure": null,
+    "parentPID": 2609611,
+    "returncode": 0,
+    "streams": {
+      "stderr": {
+        "limit": 1048576,
+        "observedBytes": 298,
+        "retainedBytes": 298,
+        "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e"
+      },
+      "stdout": {
+        "limit": 1048576,
+        "observedBytes": 330,
+        "retainedBytes": 330,
+        "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797"
+      }
+    },
+    "wrapperPID": 2609707
+  },
+  "postShow": "RAW_RETAINED_UNBOUND_DEFAULTS",
+  "readerCorrection": "root-reader-error-01 retained; no runtime repetition",
+  "requestSHA256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648",
+  "resourcesAfter": {
+    "cpu": "50000 100000",
+    "memory": "536870912",
+    "swap": "0",
+    "tasks": "64"
+  },
+  "resourcesBefore": {
+    "inheritedWritableSubmounts": "UNASSESSED",
+    "invocation": "7c3ddccf798b482b8df6baf89afefddb",
+    "namedMounts": {
+      "/": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/dev/null": [
+        "rw,nosuid"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-catalog-capture-controls-20261016": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02": [
+        "rw,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb": [
+        "ro,nosuid,nodev,relatime"
+      ],
+      "/home/nathaniel/.t3/worktrees/openplan/t3-fab3cf74/docs/reviews/2026-10-16-project-budget-native-target-controller": [
+        "ro,nosuid,nodev,relatime"
+      ]
+    },
+    "network": "net:[4026533038]",
+    "resources": {
+      "cpu": "50000 100000",
+      "memory": "536870912",
+      "swap": "0",
+      "tasks": "64"
+    }
+  },
+  "restoredBaseline": "PASS",
+  "reusedPriorEvidence": {
+    "baseline": "REUSED_PURE01_PASS",
+    "faults": [
+      {
+        "name": "credential-absence-bypass",
+        "observations": [
+          {
+            "reason": "credential-present-stops-before-query",
+            "result": "KILLED"
+          }
+        ]
+      },
+      {
+        "name": "settings-row-omission",
+        "observations": [
+          {
+            "reason": "scope-all-setting-rows-covered",
+            "result": "KILLED"
+          }
+        ]
+      }
+    ],
+    "harmless": "REUSED_PURE01_SURVIVED"
+  },
+  "sourceExact": true,
+  "status": "ACCEPTED_SELECTED_INERT_REMAINDER_ONLY",
+  "successorGranted": false,
+  "wrapperPID": 2609707
+}

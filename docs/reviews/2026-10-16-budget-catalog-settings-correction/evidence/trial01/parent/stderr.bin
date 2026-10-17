@@ -1,0 +1,39 @@
+Running as unit: openplan-budget-settings-v2-pure-20261016.service; invocation ID: cf41198ca3e943f699417db9a20804fb
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 457, in run
+    case(test['mode'])
+    ~~~~^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 313, in case
+    projection(p,s,cap)
+    ~~~~~~~~~~^^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 238, in projection
+    check('WHERE s.setdatabase=d.oid' in s.SETTINGS_SUMMARY
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          and 'setrole<>' not in s.SETTINGS_SUMMARY and 'ORDER BY s.setrole' in s.SETTINGS_SUMMARY,
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+          'scope-all-setting-rows-covered')
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 18, in check
+    raise AssertionError(reason)
+AssertionError: scope-all-setting-rows-covered
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure_runner.py", line 110, in <module>
+    main()
+    ~~~~^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure_runner.py", line 97, in main
+    controls.run(record)
+    ~~~~~~~~~~~~^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 459, in run
+    check(str(error) == test['reason'],'unexpected-mutant-assertion:'+str(error))
+    ~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py", line 18, in check
+    raise AssertionError(reason)
+AssertionError: unexpected-mutant-assertion:scope-all-setting-rows-covered
+          Finished with result: exit-code
+Main processes terminated with: code=exited, status=1/FAILURE
+               Service runtime: 8.261s
+             CPU time consumed: 1.108s
+                   Memory peak: 46.9M (swap: 0B)

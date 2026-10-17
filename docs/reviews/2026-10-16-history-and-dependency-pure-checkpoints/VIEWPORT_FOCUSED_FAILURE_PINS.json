@@ -1,0 +1,123 @@
+{
+  "tier": "FAILED_FINITE_COMPILER_WINDOW_SOURCE_AND_DONOR_RESTORED",
+  "privateEvidenceRoot": "/home/nathaniel/.local/state/openplan/viewport-focused-root-preflight-20261016-04",
+  "files": {
+    "PREFLIGHT.json": {
+      "bytes": 1502,
+      "sha256": "e7c103b512f11d4a8492e2e28ab15a6841e132b75e7db140a10d13f40781b586"
+    },
+    "GRANT.json": {
+      "bytes": 3185,
+      "sha256": "17812a6e12044115c6e625319e5f9a204cf9502bf09a4720ba83dd35f19ec559"
+    },
+    "FAILED_TRIAL_AUDIT.json": {
+      "bytes": 5722,
+      "sha256": "86f57b41282191d6ba2f25aa141b235e1fbeaf289951c0df6486cad8c15604a4"
+    }
+  },
+  "actualEvidence": {
+    "manager-entry.json": {
+      "bytes": 3824,
+      "sha256": "545065459c1b98f190e74425a466fa59f24f0b5e2e701d2d9dc0d45d9c7f9a64"
+    },
+    "manager-client.stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "manager-client.stderr.bin": {
+      "bytes": 1307,
+      "sha256": "378fef4a20fb16931703f3e3c213d3f8c7c90aeda6b6df7958be991c0750d79b"
+    },
+    "parent-terminal.json": {
+      "bytes": 3874,
+      "sha256": "857121f6011380a3f35793a8ec6461016dad10c0effb2960c46e982397a7c58a"
+    },
+    "manager-client.exit.json": {
+      "bytes": 2490,
+      "sha256": "eac5a90408ca21496c7963674c80a644b8ea79d706c03d865996db90e060bef6"
+    },
+    "parent-intent.json": {
+      "bytes": 10072,
+      "sha256": "c4d6950d60559e1c39e59a9263acaee30c50c27ac04da153ab4efc46fd67b04e"
+    },
+    "manager-client.process.json": {
+      "bytes": 1601,
+      "sha256": "8df251e3d004abac4015170c4745eb76d7fcb0e0c30787712eccc0f77c2925ef"
+    },
+    "parent-final-failure.json": {
+      "bytes": 838,
+      "sha256": "5c8f3dbc6a8a0af959300937c09aa3ee8e73ed3314960c95972cba9160dbae99"
+    },
+    "manager-client.intent.json": {
+      "bytes": 1495,
+      "sha256": "4e69e5dfd9e674517ce06c5d940efae3bed55cc3d2e3174c1a50b28639bfbcf9"
+    },
+    "final-source.json": {
+      "bytes": 1709,
+      "sha256": "78d05561b8ee860a81fbda3923ba979aba32ae686d368612886238c38f353fcf"
+    },
+    "final-donor.json": {
+      "bytes": 197,
+      "sha256": "7bfc17fbf5719fc6596276096492fd77c9173343cf2236b3a1a54b22830de2c8"
+    },
+    "work/command-01.process.json": {
+      "bytes": 1099,
+      "sha256": "6e4489abc5210f430b12395f872e10e873a01b2e0ad115fb6e030c3dcfe1dcbb"
+    },
+    "work/command-01.stderr.bin": {
+      "bytes": 1222,
+      "sha256": "1f109773226a08950ee55692c362e4e2401bd27614b3d14419520987e802aa40"
+    },
+    "work/command-01.stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    "work/worker-finalization.json": {
+      "bytes": 1926,
+      "sha256": "b047b4624b50aa576da807ba00f193d20620a5acefb4629130a850845837baf7"
+    },
+    "work/command-01.exit.json": {
+      "bytes": 1995,
+      "sha256": "63eaf029f0eef566a090b383af67089e85a8ac66431d91a981fe5325775073b4"
+    },
+    "work/command-01.intent.json": {
+      "bytes": 1005,
+      "sha256": "5bb96ca8b52a5ccfd9c9d91effaa8810736ae494ad544b1f0976a111689ea465"
+    },
+    "work/worker-admission.json": {
+      "bytes": 11909,
+      "sha256": "8d783c6afe6afe760197aee1ffb0d78534556290644402360c36d445156fd0b5"
+    },
+    "work/subjects/3": {
+      "bytes": 1618,
+      "sha256": "075c624a77ed15bf0e8399f1b055ee9316bbf690d64f1be7542b284fdbbbfaa9"
+    },
+    "work/subjects/4": {
+      "bytes": 1675,
+      "sha256": "e5798f39d662681effb30e05a05d7c45e4822950f858fdb60bf5fc3af7b5169b"
+    },
+    "work/subjects/6": {
+      "bytes": 4034,
+      "sha256": "ceaba34c98472c086e8f8e56d758d73a9200c60f0e3a926c398f73ea387c960c"
+    },
+    "work/subjects/5": {
+      "bytes": 3126,
+      "sha256": "657d49db2ce55ed93036a2e013303f834b1a9b60babd78577b244f8054c76e92"
+    },
+    "work/subjects/2": {
+      "bytes": 5320,
+      "sha256": "a0ded9ab67a7c1f023191842bc278e04449d48693fb51302155996f4b2982264"
+    },
+    "work/subjects/0": {
+      "bytes": 3126,
+      "sha256": "bc0b411c7b9afa9d8dfff93c16ed571ce1d486ed7f0e25473e43ad33b964e942"
+    },
+    "work/subjects/1": {
+      "bytes": 6962,
+      "sha256": "7e47ef07af182cfdb8db0502ae568039c5f3694449c3059152a29441d9443bdc"
+    }
+  },
+  "applicationChanged": false,
+  "nativeOrBrowserAcceptance": false,
+  "successorGranted": false
+}

@@ -1,0 +1,39 @@
+{
+  "actualOutcomes": null,
+  "config": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/CONFIG.json",
+  "configPin": {
+    "bytes": 387409,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "6c011c32f995e6e26317e439e167e6045018b2fd70dafb0bbbbbe6587bea1ce8",
+    "uid": 1000
+  },
+  "fixtureLaunchable": false,
+  "handoffPin": {
+    "bytes": 5394,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "f368596aa79e6b5bad0f2a3e19ff9edc992644171f3f63486db209667657b19c",
+    "uid": 1000
+  },
+  "preparedPin": {
+    "bytes": 296149,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "721e6fe9c93c2399988dffa7952a79e456439020f9b2b47808181868065f13e2",
+    "uid": 1000
+  },
+  "preparedPins": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/prepared-window-pins.json",
+  "privateHandoff": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/HANDOFF.json",
+  "request": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/REQUEST.json",
+  "requestPin": {
+    "bytes": 2136,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "83a9ea7cbc9dd4bf7df60859acff080e97656c8f5c1061b5ecfb62253cadb0e0",
+    "uid": 1000
+  },
+  "runtimeHeld": true,
+  "sourceClosureComplete": false,
+  "stage": "FROZEN_SOURCE_ONLY_PREPARED_PURE_HANDOFF_NO_GRANT"
+}

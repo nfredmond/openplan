@@ -1,0 +1,86 @@
+{
+  "findings": {
+    "P1": [],
+    "P2": [],
+    "P3": [],
+    "PREP": []
+  },
+  "nativeOperationGranted": false,
+  "newTestsRequested": false,
+  "operatingFilesPublished": false,
+  "parent": "9b6da72af62732eb4ac773caad15473fe3ad13b6",
+  "privateRecords": {
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/final-source-readback.json": {
+      "bytes": 2438,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "39b67905a1a9b3a44bdd463e5ac8a7afc7c6c741d81a219e589ea7d7a9fc2a73",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/identity.json": {
+      "bytes": 1331,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "db6eb630d7704a0a939618fd78a5fd214122db56b68c5e825c640fa06aa7e97b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/input-pins.json": {
+      "bytes": 153796,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "023d0a8e5a76952a84eba71cf29bfc835ac1c339b43fc53346a49c3dcf07f7f7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/metadata-readback.json": {
+      "bytes": 24170,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e49910cdf291daa4c71b0b096fb94fcdc57ee2241e5c27592489845a4e84ce86",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/metadata_reader.py": {
+      "bytes": 8362,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d5b6c6a6f0f73368ed098ef38d7edd48ec1f1215051b8c13bc4708ecdb3af4c5",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/saved-evidence-readback.json": {
+      "bytes": 7588,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c0c0c91f2b12aa63cae18f69057ca31ae0a98049634077e2462095a32e693cfa",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/source-comparison.json": {
+      "bytes": 1654,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2f294a0e19b4c6acf44a40451799ed16faaa588087049da64a23224e37abbc83",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-allocation-operation-independent-20261016/source-fragment-correction.json": {
+      "bytes": 477,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f1d480f03fbee3b81dde365b87dbd48d6cdef5da96077306445d0d4c74cd3ce9",
+      "uid": 1000
+    }
+  },
+  "publicSourcePinCount": 46,
+  "reviewBytesAreSemanticApproval": false,
+  "rootDecisionsUnresolved": [
+    "permanent postCREATE fence",
+    "whole catalog/container/credential exclusion interval",
+    "fresh capacity and uncapped database reserve",
+    "ready start-only times and unbounded IO/persistence",
+    "logical reservation after wrapper FD9 closes through parent/tool terminal and final audit"
+  ],
+  "runtimeWindowRequested": false,
+  "schema": 1,
+  "sourceReview": "44f2dbfc19fe35e382ee38711fe80b1ab22fe03d",
+  "status": "INDEPENDENT_SOURCE_METADATA_OPERATION_REVIEW_NO_EXECUTION_GRANT",
+  "subject": "1e7a88c1447b7492fa16536e9d69ecda8c138dd8",
+  "successorGranted": false,
+  "verdict": "CONDITIONAL_OPERATION_PROPOSAL_ACCEPTANCE_NO_OPERATING_AUTHORITY"
+}

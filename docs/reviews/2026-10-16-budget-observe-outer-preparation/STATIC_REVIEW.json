@@ -1,0 +1,77 @@
+{
+  "schema": 1,
+  "status": "STATIC_SOURCE_READING_ONLY_NO_EXECUTION",
+  "baseCommit": "a97f479bc9294870ca0fcb38f2329c9f801b626d",
+  "pathDelta": {
+    "a97UnmaterializedWrapper": "/home/nathaniel/.local/state/openplan/budget-settings-observe-proposal-20261016/run-observe-window.sh",
+    "newAuthorizedWrapper": "/home/nathaniel/.local/state/openplan/budget-observe-outer-preparation-20261016/run-observe-window.sh",
+    "runtimeROOTUnchanged": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2"
+  },
+  "sourceBehavior": [
+    "Wrapper ONE NB EX FD9 across manager wait and fixed postshow, unit/runtime/profile exact.",
+    "Parent imports retained05bc definitions under non-main name, parameterizes collect.__globals__ only, invokes collect once.",
+    "Parent's fingerprints/opaque admission hash provide custody, not authority; controller.ready remains native authority.",
+    "Parent transport0 result explicitly leaves native acceptance/backend death UNASSESSED.",
+    "Finite preparation source has NEW grant only, source/readonly/resource checks, no native process/socket path, and exact four input/one output builder exposure."
+  ],
+  "focusedControls": {
+    "baselineCases": [
+      "supplied zero process terminal records transport only",
+      "supplied nonzero refuses exact ValueError outer-transport-refused",
+      "supplied unknown refuses exact ValueError outer-transport-refused",
+      "wrong intent wrapper hash refuses before supplied process"
+    ],
+    "harmless": "One wrapper comment annotation must survive all baseline cases.",
+    "faults": [
+      {
+        "name": "wrapper-exclusive",
+        "source": "run-observe-window.sh",
+        "anchor": "/usr/bin/flock -n -x 9",
+        "anchorCount": 1,
+        "reason": "wrapper-one-nb-exclusive-fd9"
+      },
+      {
+        "name": "definitions-only",
+        "source": "parent-recorder.py",
+        "anchor": "run_name='openplan_observe_collect_definitions'",
+        "anchorCount": 1,
+        "reason": "outer-load-definitions-only"
+      },
+      {
+        "name": "bounded-globals",
+        "source": "parent-recorder.py",
+        "anchor": "globs['DEADLINE'] = 335",
+        "anchorCount": 1,
+        "reason": "outer-parameterization-335-streams"
+      },
+      {
+        "name": "nonzero-terminal",
+        "source": "parent-recorder.py",
+        "anchor": "require(terminal.get('returncode') == 0 and terminal.get('failure') is None,",
+        "anchorCount": 1,
+        "reason": "outer-nonzero-cannot-report-success"
+      }
+    ],
+    "reader": "Catches AssertionError only and requires exact named reason. ValueError fixture refusals require exact reason. No generic exit is a killed fault.",
+    "restoration": "Finally restores exact NEW work parent/wrapper bytes and modes; checks untouched source copies; final restored baseline must pass.",
+    "blind": "Wrapper controls are source-intent checks, not Bash/flock/kernel FD or manager execution. Supplied collector does not retest old selector/Popen/timeout implementation. No controller.ready, native admission, live manager/SQL/Docker/socket or native stage runs. Finite driver setup guards receive static reading and eventual baseline only; no broad inherited fault campaign."
+  },
+  "epochs": {
+    "notBefore": 1792201147,
+    "notAfter": 1792201747,
+    "exclusive": false,
+    "nativeOperationGranted": false,
+    "meaning": "Root-selected nonauthoritative proposal only, may expire without rerun."
+  },
+  "sourceChangesAfterApplicableControls": "HELD_NO_CONTROL_HAS_RUN",
+  "preservation": {
+    "count": 3924,
+    "allMatch": true,
+    "subjectImports": 0,
+    "nativeOperations": 0
+  },
+  "imports": 0,
+  "tests": 0,
+  "managerCalls": 0,
+  "nativeOperations": 0
+}

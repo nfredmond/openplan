@@ -1,0 +1,157 @@
+{
+  "acceptedCounts": {
+    "callerCalls": 15,
+    "directChunks": 2,
+    "operation": 17,
+    "operationAssertionFaults": 5,
+    "readerAssertionFaults": 1,
+    "readerCalls": 6,
+    "runtimeEvidenceBytes": 1737661,
+    "runtimeEvidenceFiles": 186,
+    "subject": 23,
+    "subjectDefinitions": 25,
+    "wrapperAssertionFaults": 6,
+    "wrapperDataEntries": 15
+  },
+  "appTree": "88ba8fdeec9326b2f2253ddbe9e49c67a8269ee8",
+  "evidenceIndex": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/saved-data-result-01/RUNTIME_EVIDENCE_MANIFEST.json": {
+      "bytes": 62861,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "0b0a343316da5fa7db34f573c0ca03f14bf66bb7498266826c8d74e5a3c75994",
+      "uid": 1000
+    }
+  },
+  "newRuntimeCorporaCopied": 0,
+  "noNativeHistoryOrSuccessorGrant": true,
+  "original9PublicPreparationFilesUnchanged": true,
+  "outcomeAudit": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/saved-data-result-01/OUTCOME_AUDIT.json": {
+      "bytes": 57024,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "80f29edf43621b12968c891a96759a8edf5a2efb5e6fe6f9cac54dd7d711761e",
+      "uid": 1000
+    }
+  },
+  "postcommitIdentityPrivateTail": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/saved-data-result-01/CHECKPOINT.json",
+  "preparedConfig": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PREPARED_CONFIG.json": {
+      "bytes": 5983,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "95a2dc11313d70e80e658c6af3ca968ea325e2f749ed75a9437ece2f2b9d22ba",
+      "uid": 1000
+    }
+  },
+  "privateModesAndUIDGIDInDescriptors": true,
+  "privateResultSeal": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/saved-data-result-01/RESULT_SEAL.json": {
+      "bytes": 15261,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "624880e39335055f920fb70d1f6f618e514b8b33942620fafe6ec8d0d49cfa39",
+      "uid": 1000
+    }
+  },
+  "report": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/REPORT.md": {
+      "bytes": 17649,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "0ebdd187a9ab102dab92da15f093d1424f6f14f2ebb4203e7dab8db26e72f0d8",
+      "uid": 1000
+    }
+  },
+  "request": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PURE_REQUEST.json": {
+      "bytes": 8038,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9093bda164146861ea12b6051af2c6ae639115aff418cf7a4bab46f58c791f5e",
+      "uid": 1000
+    }
+  },
+  "reviewCopiesExact21": true,
+  "reviewSourceBindings": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/REVIEW_SOURCE_BINDINGS.json": {
+      "bytes": 18977,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "346b4309882173646ea348e3b81a998e99de58495aae8aa37bbba90e514f247f",
+      "uid": 1000
+    }
+  },
+  "rootReceiptDescriptors": {
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 63111,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "f1df49d991d2a5eae2e969ca0bfe1e0b53f4504c96c82ba8bb97984b33d09536",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/GRANT.json": {
+      "bytes": 2939,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8b9798535b1bdde6083ec57ca7dfe57b19ba5ca0f0c736e6a171aa1999b3c5e1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/PREFLIGHT.json": {
+      "bytes": 1933,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9e84c9e0cd68fc4e1c5ca98827c51d1a2b52917c6ad0f851cebd3b4f59e76abd",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/READER_ERROR01.json": {
+      "bytes": 351,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "aa82b9c6e133b64c22c2eb2d82a2a338057fe4ce44c0791169065d9730f1dd3a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/READER_ERROR02.json": {
+      "bytes": 702,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d176c861605ca086b64735dbbd4a3c3eedb85230eef019c9f0bdee9d53a755e2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/SUPERVISOR_SOURCE_COMPARISON.json": {
+      "bytes": 1187,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "64bc8e99b754eca8b6ab3593538c7fac8437c16a1fec177a4133654cf2e8ae6d",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-operation-pure-root-decision-20261016/supervisor.py": {
+      "bytes": 14880,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "73b34392e330aaac07abe6c6396c63f8de14c574151f74d9ea3eb10dbf516094",
+      "uid": 1000
+    }
+  },
+  "sourceParent": "de443130ea838fb2055cc0b51f3935dcaebe1ca8",
+  "sourceSeal": {
+    "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/SOURCE_PINS.json": {
+      "bytes": 35591,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2432fe699bf5d4288d72a479235a380c7945cc9c9248dbe724beddd1682b5b3a",
+      "uid": 1000
+    }
+  },
+  "tier": "ROOT_ACCEPTED_SUPPLIED_PURE23_PLUS15_SAVED_DATA_ONLY",
+  "validation": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-m1-history-capture-operation-preparation/VALIDATION.md": {
+      "bytes": 9336,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "753a74c82504866da39d320b76d0b5d513dcc4259405b9bc33df56423b8eb0be",
+      "uid": 1000
+    }
+  }
+}

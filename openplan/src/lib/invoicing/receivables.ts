@@ -17,6 +17,13 @@ import {
   computeRetentionAmount,
   parseCurrencyAmount,
 } from "./invoice-records";
+import {
+  compareMoney,
+  parseOptionalMoney,
+  subtractMoney,
+  sumMoney,
+  type ExactMoneyAmount,
+} from "@/lib/money/optional-amount";
 import { calendarDayOf, todayIn, UTC_TIME_ZONE } from "@/lib/time/workspace-calendar";
 
 export const CLIENT_INVOICE_STATUSES = ["draft", "sent", "paid", "void"] as const;
@@ -99,14 +106,26 @@ export type ClientInvoiceReceivableSummary = {
 };
 
 export type EngagementBilledSummary = {
-  /** Sum of sent + paid invoice totals. Void is excluded; draft is not yet billed. */
-  billedToDate: number;
-  /** Sum of draft invoice totals — composed but not yet sent. */
-  draftedUnbilled: number;
-  notToExceed: number | null;
-  /** notToExceed minus billedToDate; null when there is no NTE ceiling. */
-  remaining: number | null;
-  isOverNte: boolean;
+  /** Gross sent/paid subtotals before retention; null means unavailable. */
+  billedToDate: ExactMoneyAmount | null;
+  /** Gross draft subtotals before retention; null means unavailable. */
+  draftedUnbilled: ExactMoneyAmount | null;
+  notToExceed: ExactMoneyAmount | null;
+  /** A negative result preserves an overrun. Null means absent or unavailable. */
+  remaining: ExactMoneyAmount | null;
+  isOverNte: boolean | null;
+  /** Missing ceilings remain unrecorded; invalid ceilings and unreadable buckets are explicit. */
+  unavailable?: Partial<Record<"billedToDate" | "draftedUnbilled" | "notToExceed", "missing" | "invalid">>;
+  /** Completeness refers to the caller-visible engagement snapshot, not agreement authority. */
+  source?: { state: "complete" | "pending" | "unavailable"; error?: { code?: string; message: string } };
+};
+
+export type EngagementNteWarning = {
+  basis: "legacy_terms_unassessed";
+  billedToDate: ExactMoneyAmount;
+  projectedBilledToDate: ExactMoneyAmount;
+  notToExceed: ExactMoneyAmount;
+  overBy: ExactMoneyAmount;
 };
 
 function roundCurrency(value: number): number {
@@ -361,31 +380,56 @@ export function buildEngagementBilledSummary(
     (invoice) => engagementId !== null && invoice.engagement_id === engagementId
   );
 
-  let billedToDate = 0;
-  let draftedUnbilled = 0;
-
+  const billedAmounts: Array<number | string | null | undefined> = [];
+  const draftAmounts: Array<number | string | null | undefined> = [];
   for (const invoice of scoped) {
     const status = typeof invoice.status === "string" ? invoice.status : "draft";
-    if (status === "void") {
-      continue;
-    }
-
-    const amount = parseCurrencyAmount(invoice.subtotal_amount);
     if (status === "sent" || status === "paid") {
-      billedToDate = roundCurrency(billedToDate + amount);
+      billedAmounts.push(invoice.subtotal_amount);
     } else if (status === "draft") {
-      draftedUnbilled = roundCurrency(draftedUnbilled + amount);
+      draftAmounts.push(invoice.subtotal_amount);
     }
   }
 
-  const notToExceed = parseOptionalAmount(engagement.not_to_exceed_amount);
-  const remaining = notToExceed === null ? null : roundCurrency(notToExceed - billedToDate);
+  const unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {};
+  // Each bucket stands on its own. An unreadable row cannot become zero or
+  // erase another bucket that can still be calculated from its supplied rows.
+  function bucketAmount(values: typeof billedAmounts, bucket: "billedToDate" | "draftedUnbilled"): ExactMoneyAmount | null {
+    if (values.some((value) => value == null)) {
+      unavailable[bucket] = "missing";
+      return null;
+    }
+    try {
+      return sumMoney(values);
+    } catch {
+      unavailable[bucket] = "invalid";
+      return null;
+    }
+  }
+  const billedToDate = bucketAmount(billedAmounts, "billedToDate");
+  const draftedUnbilled = bucketAmount(draftAmounts, "draftedUnbilled");
+  return buildEngagementBilledPosition(engagement, billedToDate, draftedUnbilled, unavailable);
+}
 
+/** Compose already-aggregated gross buckets without inventing invoice records. */
+export function buildEngagementBilledPosition(
+  engagement: InvoicingEngagementLike,
+  billedToDate: ExactMoneyAmount | null,
+  draftedUnbilled: ExactMoneyAmount | null,
+  unavailable: NonNullable<EngagementBilledSummary["unavailable"]> = {}
+): EngagementBilledSummary {
+  let notToExceed: ExactMoneyAmount | null = null;
+  try {
+    notToExceed = parseOptionalMoney(engagement.not_to_exceed_amount);
+  } catch {
+    unavailable.notToExceed = "invalid";
+  }
   return {
     billedToDate,
     draftedUnbilled,
     notToExceed,
-    remaining,
-    isOverNte: notToExceed !== null && billedToDate > notToExceed,
+    remaining: notToExceed !== null && billedToDate !== null ? subtractMoney(notToExceed, billedToDate) : null,
+    isOverNte: billedToDate === null || unavailable.notToExceed ? null : notToExceed !== null && compareMoney(billedToDate, notToExceed) > 0,
+    ...(Object.keys(unavailable).length ? { unavailable } : {}),
   };
 }

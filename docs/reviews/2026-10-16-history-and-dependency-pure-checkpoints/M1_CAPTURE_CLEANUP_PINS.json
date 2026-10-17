@@ -1,0 +1,61 @@
+{
+  "archive": false,
+  "combinedApp": "42fc0315070f31269325acb264f0260723dbd56b",
+  "combinedParent": "963237684a7618be829e7b289badc16fa216f7d2",
+  "files": {
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/CASE_MAP.json": {
+      "bytes": 33792,
+      "sha256": "79a686d181036e878de48c5b30edcdd763131e194fb4b01e1e0aff4e90c7572f"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/PURE_REQUEST.json": {
+      "bytes": 10216,
+      "sha256": "bb095c7ba79b515fbe0d51e6bd5662cb1e89b752e4d59c27703c5cb30cf6eb63"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/READ_MAP.json": {
+      "bytes": 5161,
+      "sha256": "98e5021dd3f63222a32613e390659e83cc272f755bc751432ffcf5c7f0cb133f"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/SOURCE_DELTA.patch": {
+      "bytes": 10668,
+      "sha256": "2c006a2a317bda6944b882fffea2912138dc5716c0069787fdb8da82c3fcd20f"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/SOURCE_PINS.json": {
+      "bytes": 67637,
+      "sha256": "4f0b5ab82698031a7bde9c3aa68f0153c3f3ac800ca2f2be3f7168b519b2475b"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 990,
+      "sha256": "8189760a680a101d11618d44d3c66a34bf031088a8c2f5a1182a257926aeeea8"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/ACTUAL_EVIDENCE_PINS.json": {
+      "bytes": 49956,
+      "sha256": "bef2c5323574dd2959e3375e6716789180ad2fba16c77eace168e463ffe5372e"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/CONFIG.json": {
+      "bytes": 347004,
+      "sha256": "e49cb9ce20d3d7cdac26d39239010ff44f1eda3e49a291b489f38c9e232f196b"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/GRANT.json": {
+      "bytes": 1383,
+      "sha256": "30a431bc9dffc2e92823615831803b965c5674e3e0b8425eed74614a7909f575"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/SAVED_DATA_AUDIT.json": {
+      "bytes": 4337,
+      "sha256": "28f2029b7afb70bdae4b198f47e69103ec798d98e4bf4c9586d5e3f4869cdd56"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/pure_window.py": {
+      "bytes": 18452,
+      "sha256": "f773f917ba2db322d6b018adb3d4b3adc8773792a57e794509cb29c77ae65873"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/root_lifecycle_controls.py": {
+      "bytes": 6436,
+      "sha256": "45c14c3a2dc8f77711bdb0e3292bbd403df424c0424aa18f22122c1ee9bcc73a"
+    }
+  },
+  "history": "UNASSESSED",
+  "independentFinalReview": "PENDING",
+  "native": false,
+  "productionApproval": null,
+  "successorGranted": false,
+  "tier": "BOUNDED_PURE_SAVED_DATA_ONLY"
+}

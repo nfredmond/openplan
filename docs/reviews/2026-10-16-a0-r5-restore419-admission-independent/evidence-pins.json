@@ -1,0 +1,40 @@
+{
+  "admissionPublished": false,
+  "conditionalOnly": true,
+  "nativeDispatch": false,
+  "privateManifest": {
+    "entries": 10,
+    "path": "review-private-pins.json",
+    "sha256": "8694b292faa80c53e779969eb2136e005252552cb1675805027266fc57242a3d"
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-r5-restore419-admission-independent-20261016",
+  "proposalSHA256": "ada674a713647a170e948ba5f4b89436cdd0e367e85f599a377974aafc694bba",
+  "public": {
+    "REVIEW.md": {
+      "bytes": 20042,
+      "gid": 1000,
+      "kind": "file",
+      "mode": "0o600",
+      "sha256": "bfedfa199bc98e72f3efc54102b8defda9500d67203e54ff14747845865ecf14",
+      "uid": 1000
+    },
+    "checks.json": {
+      "bytes": 5042,
+      "gid": 1000,
+      "kind": "file",
+      "mode": "0o600",
+      "sha256": "e0dc62aedf9af43ca614d8855fa8d6375dcbde5d15e30f0c774c2ea5a5f89cf1",
+      "uid": 1000
+    },
+    "source-pins.json": {
+      "bytes": 4896,
+      "gid": 1000,
+      "kind": "file",
+      "mode": "0o600",
+      "sha256": "fc09bf5f2f217810e6c62d2cb5caefdedb6ed75ec344e0931865f028acf89ddc",
+      "uid": 1000
+    }
+  },
+  "reportSHA256": "bfedfa199bc98e72f3efc54102b8defda9500d67203e54ff14747845865ecf14",
+  "runtimeCandidate": "1b21ef6dbc3c9a75872ad6d36e6b7d369c6fda9a"
+}

@@ -1,0 +1,215 @@
+{
+  "claim": "NATIVE_R6_RESTORE_STAGE_AND_CONDITIONAL_CALLER_PREPARATION_ONLY",
+  "at": "2026-10-16T22:09:45.064049+00:00",
+  "applicationTree": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "copies": [
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/DESIGN.md",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 16265,
+      "sha256": "614012982046d9b0b8f077719c11b8995fc578655d9b86869a0a400c232f369d"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/REPORT.md",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 6727,
+      "sha256": "f9b6b0a2093a560f2e0dcd9472214847e71991067ca17d4054fc9b1ffe460ae9"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/VALIDATION.md",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 7995,
+      "sha256": "906a96646557e583f09f90680df4624e391efe52290e216d36ab3b1a89f34c1c"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/build.py",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 6437,
+      "sha256": "c2c8aa8884a7dbdc09803b49cd1536ff58f713c54bc5f00aec0f9ce67255d044"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/evidence.json",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 21333,
+      "sha256": "eaf1998ade9017e67edef7122894b83f4c4df28b8fcd5934363425f5a790dea9"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/identity.sql.in",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 3425,
+      "sha256": "03fd793fd0e49f590091d6f5c6afbdc9551e5d0802386ace084ba79132974cb4"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/manifest.json",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 1331,
+      "sha256": "4bca140d86b2bf50e5e3d9cf5eb584aac0ef390b7b1906f92877b1a1220be693"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordered-source-history.sha256",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 60284,
+      "sha256": "c00627c03d6f17188367ce01ca5cd2285b7526d8b33bbd59db4534aaaa37d28b"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/ordinary.sql.in",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 3625,
+      "sha256": "c49fa1d51f83d5abd4a182afc7440417e0cc3679cede602cfe72a80b8a016af3"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/packet.sha256",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/packet.sha256",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 1851,
+      "sha256": "38c49bdf16d43845e38f5586f1d583463c1c281527eaa5b9095d7caacebb6667"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/provision.sql.in",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 6628,
+      "sha256": "fbddd6bebeda7e947199b7a4f81b78e0e8835cedcd776fd94463dca4d50ed2c6"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/readback.py",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 5225,
+      "sha256": "ee054fc8c0b59ec6adffe63086411c5b736d94424f1a2e6ccfa6f00204c3bbe3"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/relevant-source.sha256",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 2525,
+      "sha256": "f65caded9c32dbdc54866639b6da7b9b433facf9085aa0610374226511225463"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-46ffa082/docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-native-caller-builder/verify_text.py",
+      "sourceCommit": "700fc2b08dd70f0cfb99a022592481a0bb52176e",
+      "bytes": 15833,
+      "sha256": "ba2587a0171e5cb39f4bad724c4af73ca91a4b45f08cdefc5d1d89496f2db8d7"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/REPORT.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-caller-builder-independent/REPORT.md",
+      "sourceCommit": "66f526c6d353a928b34d365eec58693f44161b34",
+      "bytes": 13970,
+      "sha256": "b8a309eaea1f80b4b86a88eb06704688fb19d35b8e223ddda3e465ef26554de8"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/VALIDATION.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-caller-builder-independent/VALIDATION.md",
+      "sourceCommit": "66f526c6d353a928b34d365eec58693f44161b34",
+      "bytes": 7590,
+      "sha256": "b85f10cf46f65f46b54fa7f8df6b25ccb15bc2aba7b32eab159076ce676533ce"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/evidence.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-caller-builder-independent/evidence.json",
+      "sourceCommit": "66f526c6d353a928b34d365eec58693f44161b34",
+      "bytes": 28222,
+      "sha256": "44f7b78ee3911afbb579f5298926d3de18e3a25bb3e3d72ed3d2c824295c6af4"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-58b20bb4/docs/reviews/2026-10-16-project-budget-caller-builder-independent/packet.sha256",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-project-budget-caller-builder-independent/packet.sha256",
+      "sourceCommit": "66f526c6d353a928b34d365eec58693f44161b34",
+      "bytes": 434,
+      "sha256": "973129c3a7bc317156899839608d33e4ad806483c987c56266594eb7f57dbbd9"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-faf05304/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/REVIEW.md",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/REVIEW.md",
+      "sourceCommit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "bytes": 21648,
+      "sha256": "f3cdc9bece92ab5caf000d4aed3a72e3c1473ae4190de366204cea71c6bfe3c5"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-faf05304/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/checks.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/checks.json",
+      "sourceCommit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "bytes": 2896,
+      "sha256": "12cfdb282a0290629713a524cfd23c03f7d1b881ebce628d272253b7eeb2844e"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-faf05304/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/evidence-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/evidence-pins.json",
+      "sourceCommit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "bytes": 1047,
+      "sha256": "f914b5034028a2d72629a7c1baafb9c2456195d252173a9636e8bf48b97bcf18"
+    },
+    {
+      "source": "/home/nathaniel/.t3/worktrees/openplan/t3-faf05304/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/source-pins.json",
+      "destination": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r6-restore419-admission-independent/source-pins.json",
+      "sourceCommit": "7c7f8eb57c232987d3b93e059b031ccbe932783e",
+      "bytes": 6227,
+      "sha256": "cb6c4863e11fdeaf981c1194e804e075b819fe58640ccee778010da511b6f234"
+    }
+  ],
+  "actualRestore": {
+    "at": "2026-10-16T22:05:59.614942+00:00",
+    "parentSession": 43534,
+    "parentExit": 0,
+    "seconds": 15.408639802946709,
+    "controllerRequests": 25,
+    "managerRequests": 1,
+    "allRequestExitsZero": true,
+    "oneFixedArchiveRestore": true,
+    "ordinaryTableMapMatches": 376,
+    "historyCount": 419,
+    "latestHistory": "20261017000016",
+    "historyDigest": "0ee645e79fb8431bb116c30a673f8775",
+    "pgSequencesCensusMatches": true,
+    "explicitSequenceStateCapturedCount": 6,
+    "independentPerSequenceLogCntIsCalledSourceEquivalent": false,
+    "originalScopeBeforeAfterEqualsObserve": true,
+    "definitionsCapturedCount": 1,
+    "definitionsApproved": false,
+    "completeAndManagerTerminal": true,
+    "proofFiles": 169,
+    "proofManifestSHA256": "f20a33fde59c4af5042bb0f1cb4eaab548240fbdb5b9694afbedb06d318e8ae5",
+    "unitIdentity": {
+      "ActiveState": "active",
+      "SubState": "running",
+      "InvocationID": "fad2f959cc9f47c2a64dad08fd31ecfb",
+      "MainPID": "797640",
+      "Result": "success",
+      "ExecMainStatus": "0",
+      "ControlGroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-a0-native-parent-r6-restore419-20261016-01.service",
+      "MemoryPeak": "1835008",
+      "MemorySwapPeak": "0",
+      "CPUQuotaPerSecUSec": "500ms",
+      "MemoryMax": "1073741824",
+      "MemorySwapMax": "0"
+    },
+    "memoryPeakTier": "active-unit sample only; final exact peak unassessed",
+    "wholeInstallationRecoveryAccepted": false,
+    "migrationsAdmitted": false,
+    "successorDispatched": false
+  },
+  "currencyCorrection": {
+    "commit": "2b39558916f9748b5bfcfb65eab4cacd4518aaa8",
+    "appTree": "3e85cdc3916a81260bebc96c86ced4fd2c76b168",
+    "independentReview": "pending",
+    "sourceJoined": false
+  },
+  "apply17Proposal": {
+    "sha256": "3c88370b4874ec6a623dda06ab5433ec288c0a24e9825a723eb8574acd5c0385",
+    "published": false,
+    "priorFinishDefinitionApproved": false
+  },
+  "nativeBudgetController": "implementation preparation only; no budget target or native operation admitted",
+  "mainHostedReleaseChanged": false
+}

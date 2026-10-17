@@ -1,0 +1,13 @@
+# A0 parent trial03 stops at private-environment admission
+
+The exact separately granted trial03 reaches inner Python with the reviewed 29-file/25-link static footprint additions. Its first observation then raises `wrapper-private-environment` before prepare or any of the 94 controls. The whole trial remains permanently HARNESS_ADMISSION_FAILURE1. It is neither a named fault kill nor a parent/native product finding.
+
+The private environment difference is not captured. The completed source assessment finds that reviewed bubblewrap assigns PWD after chdir. ROOT accepts one fixed PWD entry in the shared constructor for source-only trial04 preparation. This closes the identified source-construction gap; it does not establish TEST03's actual difference or predict a passing run. The strict equality guard remains unchanged. No environment dump, runtime probe, retry, alternate or successor follows.
+
+Actual unit `openplan-a0-multiset-parent-correlation-TEST-03-20261016`, invocation `82e013f571b445da8a3d7394c25e69db`, reports service 14.439 seconds, CPU 7.223 seconds, rounded peak 32.1M and zero swap. The returned manager-client PID 2446445, pre-bwrap entry PID 2446493 and inner namespace PID 2 remain separate. The unit declares 180 seconds, 512 MiB, zero swap, CPU 50 and Tasks 64. Inner caps/mounts/probes are not retained because admission fails before the observation record. Source control flow does not replace those absent measurements.
+
+Independent after-observation records the same environment refusal. Host collection has no cleanup exception and retains both streams with exact lengths/hashes. All 1,389 host descriptors and 1,387 inner SHA/length/mode records match. All 1,247 system runtime owners appear as namespace UID/GID 65534 versus host 0; equal owner identity was explicitly not required or proved. ROOT's first full-owner audit comparison was a reader error, preserved separately before applying the declared content/mode boundary.
+
+The primary ROOT audit indexes the 14 attempt files. Its additive full inventory also includes 51 generated model mount-destination files, for 65 runtime artifacts. The unit cgroup is absent and exact compiler device 66308/inode 133604183 has no holder. Old 01/02 setup failures remain permanent with zero checks; this third trial does not turn them green. All prior native catalogue fences, unknown final backend state, original source/map/history/oracles and false source-closure/fixture flags stay unchanged.
+
+The M1 supplied-control success is a separate unit and evidence tier. It does not establish the cause of this A0 refusal or permit a successor A0 dispatch. No application bytes change in the combined tree, and no native, browser, practitioner, scientific or release acceptance follows.

@@ -1,0 +1,163 @@
+{
+  "packetRoot": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6",
+  "packetManifest": {
+    "path": "packet-private-pins.json",
+    "sha256": "6aebae963c661f87cd6b80f1e6052fec5e14936d743b595133e12786251812d5",
+    "entries": 73
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/a0-sequence-snapshot-correction-20261016",
+  "privateManifest": {
+    "path": "correction-private-pins.json",
+    "sha256": "d3ee8377aa0ec14975df32394b6e1852a4e4a9882f5ffaa7850654ca7f69c2de",
+    "entries": 1919
+  },
+  "public": {
+    "DIAGNOSTIC_PROPOSAL.md": {
+      "sha256": "b4eb96dbfecab212bf01e453a283f52bec83cb81082abe77ee3d9b8a07b16b71",
+      "bytes": 3260
+    },
+    "HANDOFF.md": {
+      "sha256": "854a1a527bd379b5ee7197549c7ea201bfb848623289963a17bcd55adf01993b",
+      "bytes": 3462
+    },
+    "PARENT_RECIPE.md": {
+      "sha256": "91ea810c5619769563ee9db27fcf03d2afaaec2d28cf2dafa05dca6c575bfe78",
+      "bytes": 3980
+    },
+    "SEQUENCE_AUDIT.md": {
+      "sha256": "2c1dcfc77b42331cc893924fbb1e3c2678f83ae65cf202aa53832dafdc20605e",
+      "bytes": 3253
+    },
+    "STATUS.md": {
+      "sha256": "73d3c794bd422ea44bfdc4a6f54803ded944e2451e2c35f9c7b2535838e3c8ee",
+      "bytes": 15034
+    },
+    "admission.example.json": {
+      "sha256": "de13dc7860cea652fd379b0fa48ced4e5f5bdcc7263aa7cfa01ea8c1d6a82a43",
+      "bytes": 1029
+    },
+    "case_continuity.py": {
+      "sha256": "6e7d0655ecd2774947ec85066c5eb34ca3f4ca81731edd114bf175a5334ffaab",
+      "bytes": 10734
+    },
+    "checks.json": {
+      "sha256": "448fc12f9f53219f2f9b5d468537829213710d51302bae74cb29e6bcbfd4cf02",
+      "bytes": 1747
+    },
+    "controls.json": {
+      "sha256": "754d7640874c9f43bd9760abfb1d99c521f8d384d1f993ad5e769bb62b21b950",
+      "bytes": 39366
+    },
+    "diagnostic-proposal.json": {
+      "sha256": "8863552ff0e2e9d2741df735799dbb7ff1a87efca9d6b71a01e54cee1ab61f99",
+      "bytes": 2989
+    },
+    "diagnostic_proposal.py": {
+      "sha256": "4305e52ac9f06abfe019a9ab3de65ac894d89d77a8252b5ef0c913b04dd6dc9c",
+      "bytes": 5809
+    },
+    "final_checks.py": {
+      "sha256": "83fcf88e4edb0c9e27f9c8fb04dc794b01c2650b938c927a41e4619ea93c9bd2",
+      "bytes": 9040
+    },
+    "inventory.json": {
+      "sha256": "0f60410e76ab075d6647258c3d5143762d198b6939dacb2c490a8b703a6692d8",
+      "bytes": 3482
+    },
+    "package-pins.json": {
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+      "bytes": 1446
+    },
+    "preceding-helper-pins.json": {
+      "sha256": "fee5abc4381212e0125f1400d91601f87f7bfdbcdfaac93489348bd91fd8b057",
+      "bytes": 1648
+    },
+    "prepare.py": {
+      "sha256": "e3e50145212162b88bbd2d2ef3f275b4d14ab7275622a4de24aa5e5bf8f326de",
+      "bytes": 10072
+    },
+    "prepared-sql-pins.json": {
+      "sha256": "2cf4df94eec6c3438ebaf9b705a1f236c3ae8d743186c115e0b7a1c9f858cef9",
+      "bytes": 8319
+    },
+    "proposed-target.json": {
+      "sha256": "337e7002e5bcf16b498227305f492b0ab4cde7ef3b286810526ae6862e0c7d3d",
+      "bytes": 243
+    },
+    "run_tests.py": {
+      "sha256": "38253269940d47478b5fe2bbf777c4e4f6464041b0d9c5572deed6a866c02482",
+      "bytes": 7892
+    },
+    "runtime/cases.py": {
+      "sha256": "d75049fd4a2cb6b92bf447e1292c1ffdb864c5aab3478a77f11ecd4c354bbbf9",
+      "bytes": 12821
+    },
+    "runtime/controller.py": {
+      "sha256": "70e31da5bccd626b354fd653e4b008300446724d6aeddccd999600b37c1974c4",
+      "bytes": 31146
+    },
+    "runtime/fixture.py": {
+      "sha256": "c6259f3a51679e75aab940262f0f42e25c8d3b4d456881d85e1141653c610289",
+      "bytes": 7731
+    },
+    "runtime/journal.py": {
+      "sha256": "8a133c526070cdd70543a2c7cb1f6fff23c295b1d7214fee928d53eb1607a61e",
+      "bytes": 4331
+    },
+    "runtime/policy.py": {
+      "sha256": "825aa4c501eb625eaa657bd987fc974b8980a9fbbd423ba6ce25012c927b7af6",
+      "bytes": 6126
+    },
+    "runtime/run_stage.sh": {
+      "sha256": "f8d028579cc85b9128923ba03101ee7b47f9197fc381efd3d603a34d1f9e0c67",
+      "bytes": 199
+    },
+    "runtime/sql/assertions.sql": {
+      "sha256": "5df8ae78027e030a97cd259c5dc3f4ffcb72cb7cd28f707c4e9b5d8a78e80eef",
+      "bytes": 794
+    },
+    "runtime/sql/post_rollback.sql": {
+      "sha256": "bf2611abdfb29ca54e45114f246c24d5952a893f8d5ee78db26f9572b165ff50",
+      "bytes": 654
+    },
+    "runtime/sql/shadows.sql": {
+      "sha256": "a6f239b4e172e40c613d4d624c6ff8cbfb701005b7f33330f401a9141337be14",
+      "bytes": 489
+    },
+    "seal.py": {
+      "sha256": "51c505e3f8f5e31bc63084d38806bba93b42478c185b5859b3655f4263eb2b31",
+      "bytes": 4337
+    },
+    "sequence_controls.py": {
+      "sha256": "8334e91a20215d4100951bc1520d45cb9c307c1ee95ae24370e11f5c7d144bc9",
+      "bytes": 9722
+    },
+    "source-pins.json": {
+      "sha256": "b374b14a2b2fa10eb694fbb8d9de887bdd6879fbe68d20f1af717ceadd20d7ec",
+      "bytes": 201496
+    },
+    "terminal.json": {
+      "sha256": "d00344ca2a9cad5d18c7c4b175c18b9ffb42f6ac7eb7c2cc93b6e7f55c566fce",
+      "bytes": 7806
+    }
+  },
+  "selectedPrivateEvidence": {
+    "old-selected-before.json": "eae895dc70eb6107fed0aefde3cbddcc4c8a449ea1d37881d03fcdc14fa43438",
+    "old-selected-after.json": "eae895dc70eb6107fed0aefde3cbddcc4c8a449ea1d37881d03fcdc14fa43438",
+    "old-verification.json": "5661ccbee377855c85f99aaa7a8c6b70a4e74933f024afd83cf4ce1e7c3092f5",
+    "sequence-controls-01/result.json": "a010ed767965afd2df67d5cf27a825070a83b17bb7b53d9a67929a3ac58f688b",
+    "case-continuity-01/result.json": "2f4b9da2108cc73673f4a9cbb5e176bac7d1810ea6be5d71b3849a59468d546d",
+    "final-01/result.json": "448fc12f9f53219f2f9b5d468537829213710d51302bae74cb29e6bcbfd4cf02",
+    "test-unit-01/exit.json": "524787e0dccaddc70d397d330441d825084017354ddb4b68216a6703bfdbc8e9",
+    "test-steps-terminal.json": "046d58caebf5ba82dd35bdd6c9ed85b2a72b41b8b9df10fd3293a906c37754b8",
+    "diagnostic-proposal/proposal.json": "8863552ff0e2e9d2741df735799dbb7ff1a87efca9d6b71a01e54cee1ab61f99"
+  },
+  "packageSHA256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+  "planSHA256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+  "sourceBase": "1b21ef6dbc3c9a75872ad6d36e6b7d369c6fda9a",
+  "freshRootOwnedReview": "REQUIRED before final commit/admission unless root explicitly changes checkpoint ordering",
+  "nativeDispatches": 0,
+  "admissionsAbsent": true,
+  "stagesAbsent": true,
+  "wrapperAcceptance": false
+}

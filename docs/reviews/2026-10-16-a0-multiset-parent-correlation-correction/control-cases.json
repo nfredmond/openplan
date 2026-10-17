@@ -1,0 +1,1138 @@
+{
+  "actualOutcomes": null,
+  "deadlineSeconds": 160,
+  "intactSelections": 52,
+  "mutations": {
+    "ack-custody": {
+      "actualOutcome": null,
+      "anchor": "same({name:sha(attempt/'request-001'/name) for name in names},ack['custody'],'parent-ack-custody')",
+      "file": "custody.py",
+      "label": "parent-ack-custody",
+      "name": "ack-custody",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "ack-raw-entry": {
+      "actualOutcome": null,
+      "anchor": "same(expected,parsed,'parent-raw-manager-binding')",
+      "file": "custody.py",
+      "label": "parent-ack-raw-entry",
+      "name": "ack-raw-entry",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "ack-recorded-properties": {
+      "actualOutcome": null,
+      "anchor": "same(parsed,ack['properties'],'parent-ack-properties')",
+      "file": "custody.py",
+      "label": "parent-ack-recorded-properties",
+      "name": "ack-recorded-properties",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "collector-owned-close": {
+      "actualOutcome": null,
+      "anchor": "try:stream.close()",
+      "file": "collector.py",
+      "label": "parent-collector-owned-close",
+      "name": "collector-owned-close",
+      "replacement": "try:pass",
+      "staticOccurrences": 1
+    },
+    "collector-primary": {
+      "actualOutcome": null,
+      "anchor": "except BaseException as error:primary=diagnostic(error,phase)",
+      "file": "collector.py",
+      "label": "parent-collector-primary-preserved",
+      "name": "collector-primary",
+      "replacement": "except BaseException as error:primary=None",
+      "staticOccurrences": 1
+    },
+    "collector-primary-overwrite": {
+      "actualOutcome": null,
+      "anchor": "except BaseException as error:cleanup.append(diagnostic(error,'output-fsync-'+label))",
+      "file": "collector.py",
+      "label": "parent-collector-primary-not-overwritten",
+      "name": "collector-primary-overwrite",
+      "replacement": "except BaseException as error:primary=diagnostic(error,'output-fsync-'+label)",
+      "staticOccurrences": 1
+    },
+    "collector-terminal-attempt": {
+      "actualOutcome": null,
+      "anchor": "try:record(folder/'terminal.json',row)",
+      "file": "collector.py",
+      "label": "parent-collector-terminal-attempt",
+      "name": "collector-terminal-attempt",
+      "replacement": "try:pass",
+      "staticOccurrences": 1
+    },
+    "complete-exact": {
+      "actualOutcome": null,
+      "anchor": "same(expected,value,'parent-complete-exact')",
+      "file": "custody.py",
+      "label": "parent-complete-exact",
+      "name": "complete-exact",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "current-inventory": {
+      "actualOutcome": null,
+      "anchor": "same(values[0]['inventory'],values[2]['inventory'],'parent-current-inventory-after')",
+      "file": "custody.py",
+      "label": "parent-current-inventory-after",
+      "name": "current-inventory",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "dependent-backend": {
+      "actualOutcome": null,
+      "anchor": "same({'sha256':digest(dep),'backendPID':ready['pid'],'retry':'FORBIDDEN','effect':'READ ONLY catalogue; no fixture'},read(folder/'dependent-intent.json'),'parent-phase-dependent-intent')",
+      "file": "custody.py",
+      "label": "parent-phase-backend",
+      "name": "dependent-backend",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "dependent-source": {
+      "actualOutcome": null,
+      "anchor": "same(raw(source,INPUT_MAX),dep,'parent-phase-dependent-input')",
+      "file": "custody.py",
+      "label": "parent-phase-dependent-source",
+      "name": "dependent-source",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "entry-resources": {
+      "actualOutcome": null,
+      "anchor": "same({'memoryMax':536870912,'swapMax':0,'cpuMax':'50000 100000','tasksMax':64},entry['resources'],'parent-entry-resources')",
+      "file": "custody.py",
+      "label": "parent-entry-resources",
+      "name": "entry-resources",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "manager-clean-terminal": {
+      "actualOutcome": null,
+      "anchor": "same({'returncode':0,'failure':None,'cleanupErrors':[],'evidenceErrors':[],'classification':'terminal-zero'},\n        {k:terminal[k] for k in ['returncode','failure','cleanupErrors','evidenceErrors','classification']},'parent-manager-clean-terminal')",
+      "file": "custody.py",
+      "label": "parent-manager-clean-terminal",
+      "name": "manager-clean-terminal",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "output-custody": {
+      "actualOutcome": null,
+      "anchor": "need(equal(body,read(attempt/name,CAPTURE_MAX)) and canonical(body)==raw(attempt/name,CAPTURE_MAX),'parent-output-record-custody')",
+      "file": "custody.py",
+      "label": "parent-output-record-custody",
+      "name": "output-custody",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "ready-prefix": {
+      "actualOutcome": null,
+      "anchor": "same(ready_raw,raw(folder/'ready.stdout',32768),'parent-phase-ready-raw')",
+      "file": "custody.py",
+      "label": "parent-phase-ready-prefix",
+      "name": "ready-prefix",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "record-primary-close": {
+      "actualOutcome": null,
+      "anchor": "except BaseException as error:cleanup.append(diagnostic(error,'record-close'))",
+      "file": "collector.py",
+      "label": "parent-record-primary-preserved",
+      "name": "record-primary-close",
+      "replacement": "except BaseException as error:primary=diagnostic(error,'record-close')",
+      "staticOccurrences": 1
+    },
+    "request-helper-pid": {
+      "actualOutcome": null,
+      "anchor": "positive(returned['pid'],'parent-request-helper-pid')",
+      "file": "custody.py",
+      "label": "parent-request-helper-pid",
+      "name": "request-helper-pid",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "request-input": {
+      "actualOutcome": null,
+      "anchor": "same(raw(source,INPUT_MAX,empty=True),data,'parent-request-input')",
+      "file": "custody.py",
+      "label": "parent-request-input",
+      "name": "request-input",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "request-intent": {
+      "actualOutcome": null,
+      "anchor": "same(expected,intent,'parent-request-intent')",
+      "file": "custody.py",
+      "label": "parent-request-intent",
+      "name": "request-intent",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "retained-map": {
+      "actualOutcome": null,
+      "anchor": "for key,expected in oracles.items():same(expected,body[key],'parent-retained-output-'+key)",
+      "file": "custody.py",
+      "label": "parent-retained-r-not-fresh-d",
+      "name": "retained-map",
+      "replacement": "for key,expected in oracles.items():pass",
+      "staticOccurrences": 1
+    },
+    "terminal-record-durability": {
+      "actualOutcome": null,
+      "anchor": "need(collector_result['terminalRecorded'] is True and collector_result['terminalRecordError'] is None,'parent-terminal-recorded')",
+      "file": "custody.py",
+      "label": "parent-terminal-record-durability",
+      "name": "terminal-record-durability",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "unknown-definition": {
+      "actualOutcome": null,
+      "anchor": "same(None,row['definition_data'],'parent-unknown-definition-no-wire')",
+      "file": "custody.py",
+      "label": "parent-unknown-no-wire",
+      "name": "unknown-definition",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "wait-ack-join": {
+      "actualOutcome": null,
+      "anchor": "if wait['waitInvocationSuffixPresent']:same(entry['invocation'],wait['waitReportedInvocation'],'parent-wait-ack-invocation')",
+      "file": "custody.py",
+      "label": "parent-wait-ack-join",
+      "name": "wait-ack-join",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "wait-header-inventory": {
+      "actualOutcome": null,
+      "anchor": "need(len(markers['runningasunit'])==1,'parent-wait-header-count')",
+      "file": "custody.py",
+      "label": "parent-wait-all-headers",
+      "name": "wait-header-inventory",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "wait-main": {
+      "actualOutcome": null,
+      "anchor": "same(['Main processes terminated with: code=exited, status=0/SUCCESS'],markers['mainprocessesterminatedwith'],'parent-wait-main')",
+      "file": "custody.py",
+      "label": "parent-wait-main",
+      "name": "wait-main",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "wait-result": {
+      "actualOutcome": null,
+      "anchor": "same(['          Finished with result: success'],markers['finishedwithresult'],'parent-wait-result')",
+      "file": "custody.py",
+      "label": "parent-wait-result",
+      "name": "wait-result",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    },
+    "wait-whole-header": {
+      "actualOutcome": null,
+      "anchor": "match=re.fullmatch(r'Running as unit: '+re.escape(UNIT)+r'\\.service(?:; invocation ID: ([a-f0-9]{32}))?',markers['runningasunit'][0])",
+      "file": "custody.py",
+      "label": "parent-wait-whole-header",
+      "name": "wait-whole-header",
+      "replacement": "match=re.match(r'Running as unit: '+re.escape(UNIT)+r'\\.service(?:; invocation ID: ([a-f0-9]{32}))?',markers['runningasunit'][0])",
+      "staticOccurrences": 1
+    },
+    "wait-zero-suffix": {
+      "actualOutcome": null,
+      "anchor": "need(suffix is None or suffix!='0'*32,'parent-wait-zero-suffix')",
+      "file": "custody.py",
+      "label": "parent-wait-zero-suffix",
+      "name": "wait-zero-suffix",
+      "replacement": "pass",
+      "staticOccurrences": 1
+    }
+  },
+  "namedMutants": 28,
+  "nativeOperationGranted": false,
+  "noOldCampaignReplay": true,
+  "readerChecks": 6,
+  "schema": 1,
+  "sequence": [
+    {
+      "item": {
+        "case": "harmless",
+        "kind": "outer",
+        "label": "parent-harmless-survivor"
+      },
+      "mode": "harmless",
+      "name": "000-harmless-first"
+    },
+    {
+      "item": {
+        "case": "absent-suffix",
+        "kind": "outer",
+        "label": "parent-absent-suffix-survivor"
+      },
+      "mode": "survivor",
+      "name": "001-absent-suffix"
+    },
+    {
+      "item": {
+        "case": "matching-suffix",
+        "kind": "outer",
+        "label": "parent-matching-suffix-survivor"
+      },
+      "mode": "survivor",
+      "name": "002-matching-suffix"
+    },
+    {
+      "item": {
+        "case": "wait-header-inventory",
+        "kind": "grammar",
+        "label": "parent-wait-all-headers",
+        "reason": "parent-wait-header-count"
+      },
+      "mode": "intact",
+      "name": "003-intact-wait-header-inventory"
+    },
+    {
+      "item": {
+        "case": "wait-header-inventory",
+        "kind": "grammar",
+        "label": "parent-wait-all-headers",
+        "reason": "parent-wait-header-count"
+      },
+      "mode": "mutant",
+      "mutation": "wait-header-inventory",
+      "name": "003-mutant-wait-header-inventory"
+    },
+    {
+      "item": {
+        "case": "wait-whole-header",
+        "kind": "grammar",
+        "label": "parent-wait-whole-header",
+        "reason": "parent-wait-header"
+      },
+      "mode": "intact",
+      "name": "004-intact-wait-whole-header"
+    },
+    {
+      "item": {
+        "case": "wait-whole-header",
+        "kind": "grammar",
+        "label": "parent-wait-whole-header",
+        "reason": "parent-wait-header"
+      },
+      "mode": "mutant",
+      "mutation": "wait-whole-header",
+      "name": "004-mutant-wait-whole-header"
+    },
+    {
+      "item": {
+        "case": "wait-result",
+        "kind": "grammar",
+        "label": "parent-wait-result",
+        "reason": "parent-wait-result"
+      },
+      "mode": "intact",
+      "name": "005-intact-wait-result"
+    },
+    {
+      "item": {
+        "case": "wait-result",
+        "kind": "grammar",
+        "label": "parent-wait-result",
+        "reason": "parent-wait-result"
+      },
+      "mode": "mutant",
+      "mutation": "wait-result",
+      "name": "005-mutant-wait-result"
+    },
+    {
+      "item": {
+        "case": "wait-main",
+        "kind": "grammar",
+        "label": "parent-wait-main",
+        "reason": "parent-wait-main"
+      },
+      "mode": "intact",
+      "name": "006-intact-wait-main"
+    },
+    {
+      "item": {
+        "case": "wait-main",
+        "kind": "grammar",
+        "label": "parent-wait-main",
+        "reason": "parent-wait-main"
+      },
+      "mode": "mutant",
+      "mutation": "wait-main",
+      "name": "006-mutant-wait-main"
+    },
+    {
+      "item": {
+        "case": "wait-zero-suffix",
+        "kind": "grammar",
+        "label": "parent-wait-zero-suffix",
+        "reason": "parent-wait-zero-suffix"
+      },
+      "mode": "intact",
+      "name": "007-intact-wait-zero-suffix"
+    },
+    {
+      "item": {
+        "case": "wait-zero-suffix",
+        "kind": "grammar",
+        "label": "parent-wait-zero-suffix",
+        "reason": "parent-wait-zero-suffix"
+      },
+      "mode": "mutant",
+      "mutation": "wait-zero-suffix",
+      "name": "007-mutant-wait-zero-suffix"
+    },
+    {
+      "item": {
+        "case": "wait-ack-join",
+        "kind": "correlate",
+        "label": "parent-wait-ack-join",
+        "reason": "parent-wait-ack-invocation"
+      },
+      "mode": "intact",
+      "name": "008-intact-wait-ack-join"
+    },
+    {
+      "item": {
+        "case": "wait-ack-join",
+        "kind": "correlate",
+        "label": "parent-wait-ack-join",
+        "reason": "parent-wait-ack-invocation"
+      },
+      "mode": "mutant",
+      "mutation": "wait-ack-join",
+      "name": "008-mutant-wait-ack-join"
+    },
+    {
+      "item": {
+        "case": "ack-recorded-properties",
+        "kind": "correlate",
+        "label": "parent-ack-recorded-properties",
+        "reason": "parent-ack-properties"
+      },
+      "mode": "intact",
+      "name": "009-intact-ack-recorded-properties"
+    },
+    {
+      "item": {
+        "case": "ack-recorded-properties",
+        "kind": "correlate",
+        "label": "parent-ack-recorded-properties",
+        "reason": "parent-ack-properties"
+      },
+      "mode": "mutant",
+      "mutation": "ack-recorded-properties",
+      "name": "009-mutant-ack-recorded-properties"
+    },
+    {
+      "item": {
+        "case": "ack-raw-entry",
+        "kind": "correlate",
+        "label": "parent-ack-raw-entry",
+        "reason": "parent-raw-manager-binding"
+      },
+      "mode": "intact",
+      "name": "010-intact-ack-raw-entry"
+    },
+    {
+      "item": {
+        "case": "ack-raw-entry",
+        "kind": "correlate",
+        "label": "parent-ack-raw-entry",
+        "reason": "parent-raw-manager-binding"
+      },
+      "mode": "mutant",
+      "mutation": "ack-raw-entry",
+      "name": "010-mutant-ack-raw-entry"
+    },
+    {
+      "item": {
+        "case": "ack-custody",
+        "kind": "correlate",
+        "label": "parent-ack-custody",
+        "reason": "parent-ack-custody"
+      },
+      "mode": "intact",
+      "name": "011-intact-ack-custody"
+    },
+    {
+      "item": {
+        "case": "ack-custody",
+        "kind": "correlate",
+        "label": "parent-ack-custody",
+        "reason": "parent-ack-custody"
+      },
+      "mode": "mutant",
+      "mutation": "ack-custody",
+      "name": "011-mutant-ack-custody"
+    },
+    {
+      "item": {
+        "case": "entry-resources",
+        "kind": "correlate",
+        "label": "parent-entry-resources",
+        "reason": "parent-entry-resources"
+      },
+      "mode": "intact",
+      "name": "012-intact-entry-resources"
+    },
+    {
+      "item": {
+        "case": "entry-resources",
+        "kind": "correlate",
+        "label": "parent-entry-resources",
+        "reason": "parent-entry-resources"
+      },
+      "mode": "mutant",
+      "mutation": "entry-resources",
+      "name": "012-mutant-entry-resources"
+    },
+    {
+      "item": {
+        "case": "request-intent",
+        "kind": "correlate",
+        "label": "parent-request-intent",
+        "reason": "parent-request-intent"
+      },
+      "mode": "intact",
+      "name": "013-intact-request-intent"
+    },
+    {
+      "item": {
+        "case": "request-intent",
+        "kind": "correlate",
+        "label": "parent-request-intent",
+        "reason": "parent-request-intent"
+      },
+      "mode": "mutant",
+      "mutation": "request-intent",
+      "name": "013-mutant-request-intent"
+    },
+    {
+      "item": {
+        "case": "request-input",
+        "kind": "correlate",
+        "label": "parent-request-input",
+        "reason": "parent-request-input"
+      },
+      "mode": "intact",
+      "name": "014-intact-request-input"
+    },
+    {
+      "item": {
+        "case": "request-input",
+        "kind": "correlate",
+        "label": "parent-request-input",
+        "reason": "parent-request-input"
+      },
+      "mode": "mutant",
+      "mutation": "request-input",
+      "name": "014-mutant-request-input"
+    },
+    {
+      "item": {
+        "case": "request-helper-pid",
+        "kind": "correlate",
+        "label": "parent-request-helper-pid",
+        "reason": "parent-request-helper-pid"
+      },
+      "mode": "intact",
+      "name": "015-intact-request-helper-pid"
+    },
+    {
+      "item": {
+        "case": "request-helper-pid",
+        "kind": "correlate",
+        "label": "parent-request-helper-pid",
+        "reason": "parent-request-helper-pid"
+      },
+      "mode": "mutant",
+      "mutation": "request-helper-pid",
+      "name": "015-mutant-request-helper-pid"
+    },
+    {
+      "item": {
+        "case": "manager-clean-terminal",
+        "kind": "correlate",
+        "label": "parent-manager-clean-terminal",
+        "reason": "parent-manager-clean-terminal"
+      },
+      "mode": "intact",
+      "name": "016-intact-manager-clean-terminal"
+    },
+    {
+      "item": {
+        "case": "manager-clean-terminal",
+        "kind": "correlate",
+        "label": "parent-manager-clean-terminal",
+        "reason": "parent-manager-clean-terminal"
+      },
+      "mode": "mutant",
+      "mutation": "manager-clean-terminal",
+      "name": "016-mutant-manager-clean-terminal"
+    },
+    {
+      "item": {
+        "case": "terminal-record-durability",
+        "kind": "correlate",
+        "label": "parent-terminal-record-durability",
+        "reason": "parent-terminal-recorded"
+      },
+      "mode": "intact",
+      "name": "017-intact-terminal-record-durability"
+    },
+    {
+      "item": {
+        "case": "terminal-record-durability",
+        "kind": "correlate",
+        "label": "parent-terminal-record-durability",
+        "reason": "parent-terminal-recorded"
+      },
+      "mode": "mutant",
+      "mutation": "terminal-record-durability",
+      "name": "017-mutant-terminal-record-durability"
+    },
+    {
+      "item": {
+        "case": "ready-prefix",
+        "kind": "correlate",
+        "label": "parent-phase-ready-prefix",
+        "reason": "parent-phase-ready-raw"
+      },
+      "mode": "intact",
+      "name": "018-intact-ready-prefix"
+    },
+    {
+      "item": {
+        "case": "ready-prefix",
+        "kind": "correlate",
+        "label": "parent-phase-ready-prefix",
+        "reason": "parent-phase-ready-raw"
+      },
+      "mode": "mutant",
+      "mutation": "ready-prefix",
+      "name": "018-mutant-ready-prefix"
+    },
+    {
+      "item": {
+        "case": "dependent-source",
+        "kind": "correlate",
+        "label": "parent-phase-dependent-source",
+        "reason": "parent-phase-dependent-input"
+      },
+      "mode": "intact",
+      "name": "019-intact-dependent-source"
+    },
+    {
+      "item": {
+        "case": "dependent-source",
+        "kind": "correlate",
+        "label": "parent-phase-dependent-source",
+        "reason": "parent-phase-dependent-input"
+      },
+      "mode": "mutant",
+      "mutation": "dependent-source",
+      "name": "019-mutant-dependent-source"
+    },
+    {
+      "item": {
+        "case": "dependent-backend",
+        "kind": "correlate",
+        "label": "parent-phase-backend",
+        "reason": "parent-phase-dependent-intent"
+      },
+      "mode": "intact",
+      "name": "020-intact-dependent-backend"
+    },
+    {
+      "item": {
+        "case": "dependent-backend",
+        "kind": "correlate",
+        "label": "parent-phase-backend",
+        "reason": "parent-phase-dependent-intent"
+      },
+      "mode": "mutant",
+      "mutation": "dependent-backend",
+      "name": "020-mutant-dependent-backend"
+    },
+    {
+      "item": {
+        "case": "retained-map",
+        "kind": "correlate",
+        "label": "parent-retained-r-not-fresh-d",
+        "reason": "parent-retained-output-map"
+      },
+      "mode": "intact",
+      "name": "021-intact-retained-map"
+    },
+    {
+      "item": {
+        "case": "retained-map",
+        "kind": "correlate",
+        "label": "parent-retained-r-not-fresh-d",
+        "reason": "parent-retained-output-map"
+      },
+      "mode": "mutant",
+      "mutation": "retained-map",
+      "name": "021-mutant-retained-map"
+    },
+    {
+      "item": {
+        "case": "output-custody",
+        "kind": "correlate",
+        "label": "parent-output-record-custody",
+        "reason": "parent-output-record-custody"
+      },
+      "mode": "intact",
+      "name": "022-intact-output-custody"
+    },
+    {
+      "item": {
+        "case": "output-custody",
+        "kind": "correlate",
+        "label": "parent-output-record-custody",
+        "reason": "parent-output-record-custody"
+      },
+      "mode": "mutant",
+      "mutation": "output-custody",
+      "name": "022-mutant-output-custody"
+    },
+    {
+      "item": {
+        "case": "current-inventory",
+        "kind": "correlate",
+        "label": "parent-current-inventory-after",
+        "reason": "parent-current-inventory-after"
+      },
+      "mode": "intact",
+      "name": "023-intact-current-inventory"
+    },
+    {
+      "item": {
+        "case": "current-inventory",
+        "kind": "correlate",
+        "label": "parent-current-inventory-after",
+        "reason": "parent-current-inventory-after"
+      },
+      "mode": "mutant",
+      "mutation": "current-inventory",
+      "name": "023-mutant-current-inventory"
+    },
+    {
+      "item": {
+        "case": "complete-exact",
+        "kind": "correlate",
+        "label": "parent-complete-exact",
+        "reason": "parent-complete-exact"
+      },
+      "mode": "intact",
+      "name": "024-intact-complete-exact"
+    },
+    {
+      "item": {
+        "case": "complete-exact",
+        "kind": "correlate",
+        "label": "parent-complete-exact",
+        "reason": "parent-complete-exact"
+      },
+      "mode": "mutant",
+      "mutation": "complete-exact",
+      "name": "024-mutant-complete-exact"
+    },
+    {
+      "item": {
+        "case": "unknown-definition",
+        "kind": "correlate",
+        "label": "parent-unknown-no-wire",
+        "reason": "parent-unknown-definition-no-wire"
+      },
+      "mode": "intact",
+      "name": "025-intact-unknown-definition"
+    },
+    {
+      "item": {
+        "case": "unknown-definition",
+        "kind": "correlate",
+        "label": "parent-unknown-no-wire",
+        "reason": "parent-unknown-definition-no-wire"
+      },
+      "mode": "mutant",
+      "mutation": "unknown-definition",
+      "name": "025-mutant-unknown-definition"
+    },
+    {
+      "item": {
+        "case": "collector-primary",
+        "kind": "cleanup",
+        "label": "parent-collector-primary-preserved",
+        "reason": "direct return diagnostic equality"
+      },
+      "mode": "intact",
+      "name": "026-intact-collector-primary"
+    },
+    {
+      "item": {
+        "case": "collector-primary",
+        "kind": "cleanup",
+        "label": "parent-collector-primary-preserved",
+        "reason": "direct return diagnostic equality"
+      },
+      "mode": "mutant",
+      "mutation": "collector-primary",
+      "name": "026-mutant-collector-primary"
+    },
+    {
+      "item": {
+        "case": "collector-primary-overwrite",
+        "kind": "cleanup",
+        "label": "parent-collector-primary-not-overwritten",
+        "reason": "direct primary/cleanup separation"
+      },
+      "mode": "intact",
+      "name": "027-intact-collector-primary-overwrite"
+    },
+    {
+      "item": {
+        "case": "collector-primary-overwrite",
+        "kind": "cleanup",
+        "label": "parent-collector-primary-not-overwritten",
+        "reason": "direct primary/cleanup separation"
+      },
+      "mode": "mutant",
+      "mutation": "collector-primary-overwrite",
+      "name": "027-mutant-collector-primary-overwrite"
+    },
+    {
+      "item": {
+        "case": "collector-owned-close",
+        "kind": "cleanup",
+        "label": "parent-collector-owned-close",
+        "reason": "direct owned-FD close observation"
+      },
+      "mode": "intact",
+      "name": "028-intact-collector-owned-close"
+    },
+    {
+      "item": {
+        "case": "collector-owned-close",
+        "kind": "cleanup",
+        "label": "parent-collector-owned-close",
+        "reason": "direct owned-FD close observation"
+      },
+      "mode": "mutant",
+      "mutation": "collector-owned-close",
+      "name": "028-mutant-collector-owned-close"
+    },
+    {
+      "item": {
+        "case": "collector-terminal-attempt",
+        "kind": "cleanup",
+        "label": "parent-collector-terminal-attempt",
+        "reason": "direct terminal-attempt observation"
+      },
+      "mode": "intact",
+      "name": "029-intact-collector-terminal-attempt"
+    },
+    {
+      "item": {
+        "case": "collector-terminal-attempt",
+        "kind": "cleanup",
+        "label": "parent-collector-terminal-attempt",
+        "reason": "direct terminal-attempt observation"
+      },
+      "mode": "mutant",
+      "mutation": "collector-terminal-attempt",
+      "name": "029-mutant-collector-terminal-attempt"
+    },
+    {
+      "item": {
+        "case": "record-primary-close",
+        "kind": "cleanup",
+        "label": "parent-record-primary-preserved",
+        "reason": "direct RecordFailure primary equality"
+      },
+      "mode": "intact",
+      "name": "030-intact-record-primary-close"
+    },
+    {
+      "item": {
+        "case": "record-primary-close",
+        "kind": "cleanup",
+        "label": "parent-record-primary-preserved",
+        "reason": "direct RecordFailure primary equality"
+      },
+      "mode": "mutant",
+      "mutation": "record-primary-close",
+      "name": "030-mutant-record-primary-close"
+    },
+    {
+      "item": {
+        "case": "entry-uid-type",
+        "kind": "correlate",
+        "label": "intact-entry-uid-type",
+        "reason": "parent-entry-uids"
+      },
+      "mode": "intact",
+      "name": "extra-00-entry-uid-type"
+    },
+    {
+      "item": {
+        "case": "entry-zero-inv",
+        "kind": "correlate",
+        "label": "intact-entry-zero-inv",
+        "reason": "parent-ack-invocation"
+      },
+      "mode": "intact",
+      "name": "extra-01-entry-zero-inv"
+    },
+    {
+      "item": {
+        "case": "entry-cgroup",
+        "kind": "correlate",
+        "label": "intact-entry-cgroup",
+        "reason": "parent-entry-cgroup"
+      },
+      "mode": "intact",
+      "name": "extra-02-entry-cgroup"
+    },
+    {
+      "item": {
+        "case": "ready-type",
+        "kind": "correlate",
+        "label": "intact-ready-type",
+        "reason": "parent-phase-identity-namespaceReady"
+      },
+      "mode": "intact",
+      "name": "extra-03-ready-type"
+    },
+    {
+      "item": {
+        "case": "authority-source-ledger",
+        "kind": "ready",
+        "label": "intact-authority-source-ledger",
+        "reason": "operation-source-pin"
+      },
+      "mode": "intact",
+      "name": "extra-04-authority-source-ledger"
+    },
+    {
+      "item": {
+        "case": "authority-preflight",
+        "kind": "ready",
+        "label": "intact-authority-preflight",
+        "reason": "root-preflight-sourceExact"
+      },
+      "mode": "intact",
+      "name": "extra-05-authority-preflight"
+    },
+    {
+      "item": {
+        "case": "authority-admission-type",
+        "kind": "ready",
+        "label": "intact-authority-admission-type",
+        "reason": "operation-admission-uid"
+      },
+      "mode": "intact",
+      "name": "extra-06-authority-admission-type"
+    },
+    {
+      "item": {
+        "case": "authority-risk",
+        "kind": "ready",
+        "label": "intact-authority-risk",
+        "reason": "parent-root-risk-oldAttempts"
+      },
+      "mode": "intact",
+      "name": "extra-07-authority-risk"
+    },
+    {
+      "item": {
+        "case": "authority-replay",
+        "kind": "ready",
+        "label": "intact-authority-replay",
+        "reason": "operation-no-replay"
+      },
+      "mode": "intact",
+      "name": "extra-08-authority-replay"
+    },
+    {
+      "item": {
+        "case": "stage-intent",
+        "kind": "correlate",
+        "label": "intact-stage-intent",
+        "reason": "parent-stage-intent"
+      },
+      "mode": "intact",
+      "name": "extra-09-stage-intent"
+    },
+    {
+      "item": {
+        "case": "request-sequence",
+        "kind": "correlate",
+        "label": "intact-request-sequence",
+        "reason": "parent-seven-request-sequence"
+      },
+      "mode": "intact",
+      "name": "extra-10-request-sequence"
+    },
+    {
+      "item": {
+        "case": "cleanup-only",
+        "kind": "cleanup",
+        "label": "intact-cleanup-only",
+        "reason": null
+      },
+      "mode": "intact",
+      "name": "extra-11-cleanup-only"
+    },
+    {
+      "item": {
+        "case": "terminal-record-failure",
+        "kind": "cleanup",
+        "label": "intact-terminal-record-failure",
+        "reason": null
+      },
+      "mode": "intact",
+      "name": "extra-12-terminal-record-failure"
+    },
+    {
+      "item": {
+        "case": "record-primary-close-sync",
+        "kind": "cleanup",
+        "label": "intact-record-primary-close-sync",
+        "reason": null
+      },
+      "mode": "intact",
+      "name": "extra-13-record-primary-close-sync"
+    },
+    {
+      "item": {
+        "case": "grammar-final-lf",
+        "kind": "grammar",
+        "label": "intact-grammar-final-lf",
+        "reason": "parent-wait-final-lf"
+      },
+      "mode": "intact",
+      "name": "extra-14-grammar-final-lf"
+    },
+    {
+      "item": {
+        "case": "grammar-ascii",
+        "kind": "grammar",
+        "label": "intact-grammar-ascii",
+        "reason": "parent-wait-ascii"
+      },
+      "mode": "intact",
+      "name": "extra-15-grammar-ascii"
+    },
+    {
+      "item": {
+        "case": "grammar-mixed",
+        "kind": "grammar",
+        "label": "intact-grammar-mixed",
+        "reason": "parent-wait-mixed-marker"
+      },
+      "mode": "intact",
+      "name": "extra-16-grammar-mixed"
+    },
+    {
+      "item": {
+        "case": "grammar-resource",
+        "kind": "grammar",
+        "label": "intact-grammar-resource",
+        "reason": "parent-wait-unreviewed-line"
+      },
+      "mode": "intact",
+      "name": "extra-17-grammar-resource"
+    },
+    {
+      "item": {
+        "case": "authority-bindings",
+        "kind": "ready",
+        "label": "intact-authority-bindings",
+        "reason": "operation-admission-join-bindingsSHA256"
+      },
+      "mode": "intact",
+      "name": "extra-authority-bindings"
+    },
+    {
+      "item": {
+        "case": "complete-unresolved-bool",
+        "kind": "correlate",
+        "label": "intact-complete-unresolved-bool",
+        "reason": "parent-complete-exact"
+      },
+      "mode": "intact",
+      "name": "extra-complete-unresolved-bool"
+    },
+    {
+      "item": {
+        "case": "complete-unresolved-wrong",
+        "kind": "correlate",
+        "label": "intact-complete-unresolved-wrong",
+        "reason": "parent-complete-exact"
+      },
+      "mode": "intact",
+      "name": "extra-complete-unresolved-wrong"
+    },
+    {
+      "item": {
+        "case": "ready-off",
+        "kind": "correlate",
+        "label": "intact-ready-off",
+        "reason": "parent-phase-identity-scs"
+      },
+      "mode": "intact",
+      "name": "extra-ready-off"
+    },
+    {
+      "item": {
+        "case": "request-unknown-terminal",
+        "kind": "correlate",
+        "label": "intact-request-unknown-terminal",
+        "reason": "parent-request-exit"
+      },
+      "mode": "intact",
+      "name": "extra-request-unknown-terminal"
+    },
+    {
+      "item": {
+        "case": "parent-stream-hash",
+        "kind": "correlate",
+        "label": "intact-parent-stream-hash",
+        "reason": "parent-manager-stream-custody"
+      },
+      "mode": "intact",
+      "name": "extra-parent-stream-hash"
+    },
+    {
+      "mode": "readers",
+      "name": "exact-reader-six"
+    },
+    {
+      "item": {
+        "case": "absent-suffix",
+        "kind": "outer",
+        "label": "parent-final-restored-survivor"
+      },
+      "mode": "survivor",
+      "name": "final-restored-outer"
+    }
+  ],
+  "sourceConstructions": 84,
+  "stage": "SOURCE_ONLY_UNEXECUTED_FIXED_FINITE_SELECTION",
+  "survivors": 4,
+  "totalChecks": 90
+}

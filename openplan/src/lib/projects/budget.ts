@@ -1,11 +1,14 @@
-import { parseOptionalAmount } from "@/lib/money/optional-amount";
-import { parseCurrencyAmount } from "@/lib/invoicing/invoice-records";
+import {
+  parseOptionalAmount, parseOptionalMoney, sumMoney, subtractMoney,
+  compareMoney, moneyPercent, compareMoneyPercent, type ExactMoneyAmount,
+} from "@/lib/money/optional-amount";
+import { formatMoney } from "@/lib/money/format";
 
 /**
  * Deliverable budgets and project burn.
  *
  * Pure computation over record-like rows (project_deliverables budget columns,
- * project_spend_entries, and invoice lines attributed to deliverables) — no
+ * project_spend_entries, and invoice lines attributed to deliverables), no
  * I/O, mirroring src/lib/invoicing/invoice-records.ts. This is a different
  * concern from src/lib/projects/funding.ts, which computes funding-stack
  * coverage (money coming IN); this module tracks money going OUT against a
@@ -14,7 +17,7 @@ import { parseCurrencyAmount } from "@/lib/invoicing/invoice-records";
  * The honesty rules, in order of precedence:
  * - `no_budget` / `no_progress_basis` come before ANY pace verdict. A burn
  *   percentage without a budget, or a pace comparison without an entered
- *   percent_complete, would be a guess — the lib refuses instead.
+ *   percent_complete, would be a guess, the lib refuses instead.
  * - `over_budget` needs only a budget (actual > budget is a fact, not a pace
  *   judgment), so it outranks the missing-progress refusal.
  * - `on_pace` / ahead / behind are only ever emitted when BOTH a budget and a
@@ -34,7 +37,7 @@ export const PACE_TOLERANCE_POINTS = 10;
  */
 export const BILLED_LINE_SENT_STATUSES = ["sent", "submitted", "approved_for_payment", "paid"] as const;
 
-/** Invoice statuses that are still drafts — tracked separately, never counted as billed. */
+/** Invoice statuses that are still drafts, tracked separately, never counted as billed. */
 export const BILLED_LINE_DRAFT_STATUSES = ["draft", "internal_review"] as const;
 
 export type DeliverableBudgetLike = {
@@ -50,6 +53,9 @@ export type SpendEntryLike = {
 };
 
 export type BilledLineLike = {
+  /** Source identities when loaded from the complete project snapshot. */
+  id?: string;
+  invoice_id?: string;
   deliverable_id?: string | null;
   amount?: number | string | null;
   invoice_status?: string | null;
@@ -67,7 +73,7 @@ export type DeliverablePaceStatus =
   | "billed_behind_progress"
   | "over_budget";
 
-/** Honest short labels for each pace status — refusals stay refusals. */
+/** Honest short labels for each pace status, refusals stay refusals. */
 export const DELIVERABLE_PACE_LABELS: Record<DeliverablePaceStatus, string> = {
   no_budget: "No budget entered",
   no_progress_basis: "No progress basis",
@@ -79,7 +85,7 @@ export const DELIVERABLE_PACE_LABELS: Record<DeliverablePaceStatus, string> = {
 
 /**
  * Tone mapping for pace chips. The two refusal states are deliberately
- * neutral — a missing basis is not an alarm, and dressing it as one would
+ * neutral, a missing basis is not an alarm, and dressing it as one would
  * pressure planners to invent numbers.
  */
 export function deliverableBudgetPaceTone(
@@ -94,17 +100,17 @@ export function deliverableBudgetPaceTone(
 export type DeliverableBudgetSummary = {
   deliverableId: string | null;
   title: string | null;
-  budgetAmount: number | null;
+  budgetAmount: ExactMoneyAmount | null;
   percentComplete: number | null;
-  /** Sent/paid invoice lines only — drafts are never billed. */
-  billedToDate: number;
+  /** Sent/paid invoice lines only, drafts are never billed. */
+  billedToDate: ExactMoneyAmount;
   /** Direct spend recorded in the project ledger. */
-  spendToDate: number;
+  spendToDate: ExactMoneyAmount;
   /** Recorded direct cost only. Client fee billing is a separate measure. */
-  actualToDate: number;
+  actualToDate: ExactMoneyAmount;
   /** Draft/internal-review invoice lines, disclosed separately. */
-  draftedAmount: number;
-  remaining: number | null;
+  draftedAmount: ExactMoneyAmount;
+  remaining: ExactMoneyAmount | null;
   burnPercent: number | null;
   paceStatus: DeliverablePaceStatus;
   paceDetail: string;
@@ -113,27 +119,18 @@ export type DeliverableBudgetSummary = {
 export type ProjectBudgetCoverage = "none" | "partial" | "complete";
 
 export type ProjectBudgetSnapshot = {
-  statedBudget: number | null;
-  /** null until at least one deliverable carries a budget — never an implied zero total. */
-  deliverableBudgetTotal: number | null;
+  statedBudget: ExactMoneyAmount | null;
+  /** null until at least one deliverable carries a budget, never an implied zero total. */
+  deliverableBudgetTotal: ExactMoneyAmount | null;
   budgetCoverage: ProjectBudgetCoverage;
-  billedToDate: number;
-  spendToDate: number;
-  actualToDate: number;
-  remainingAgainstStatedBudget: number | null;
+  billedToDate: ExactMoneyAmount;
+  spendToDate: ExactMoneyAmount;
+  actualToDate: ExactMoneyAmount;
+  remainingAgainstStatedBudget: ExactMoneyAmount | null;
   deliverables: DeliverableBudgetSummary[];
   attention: string[];
 };
 
-function roundCurrency(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-function roundPercent(value: number): number {
-  return Math.round(value * 100) / 100;
-}
-
-/** Parse an optional numeric column: null/undefined/unparseable/negative → null, never 0. */
 /** percent_complete is a progress basis only when it is a real 0–100 value. */
 function parsePercentComplete(value: number | string | null | undefined): number | null {
   const parsed = parseOptionalAmount(value);
@@ -149,12 +146,9 @@ function isDraftStatus(status: string | null | undefined): boolean {
   return typeof status === "string" && (BILLED_LINE_DRAFT_STATUSES as readonly string[]).includes(status);
 }
 
-function sumAmounts(values: Array<number | string | null | undefined>): number {
-  return roundCurrency(values.reduce<number>((total, value) => total + parseCurrencyAmount(value), 0));
-}
-
-function formatAmount(value: number): string {
-  return `$${value.toFixed(2)}`;
+/** Keep the existing ungrouped attention sentences while retaining exact cents. */
+function formatAmount(value: ExactMoneyAmount): string {
+  return formatMoney(value, { precision: "cents" }).replace(/,/g, "");
 }
 
 export function buildDeliverableBudgetSummary(
@@ -166,7 +160,7 @@ export function buildDeliverableBudgetSummary(
   const title = typeof deliverable.title === "string" && deliverable.title ? deliverable.title : null;
 
   // Attribution is strictly by deliverable id. A line pointing at some other
-  // deliverable — or at nothing — is never counted here.
+  // deliverable, or at nothing, is never counted here.
   const ownSpend = deliverableId
     ? (spendEntries ?? []).filter((entry) => entry.deliverable_id === deliverableId)
     : [];
@@ -174,17 +168,17 @@ export function buildDeliverableBudgetSummary(
     ? (billedLines ?? []).filter((line) => line.deliverable_id === deliverableId)
     : [];
 
-  const budgetAmount = parseOptionalAmount(deliverable.budget_amount);
+  const budgetAmount = parseOptionalMoney(deliverable.budget_amount);
   const percentComplete = parsePercentComplete(deliverable.percent_complete);
 
-  const billedToDate = sumAmounts(ownLines.filter((line) => isSentStatus(line.invoice_status)).map((line) => line.amount));
-  const draftedAmount = sumAmounts(ownLines.filter((line) => isDraftStatus(line.invoice_status)).map((line) => line.amount));
-  const spendToDate = sumAmounts(ownSpend.map((entry) => entry.amount));
+  const billedToDate = sumMoney(ownLines.filter((line) => isSentStatus(line.invoice_status)).map((line) => line.amount));
+  const draftedAmount = sumMoney(ownLines.filter((line) => isDraftStatus(line.invoice_status)).map((line) => line.amount));
+  const spendToDate = sumMoney(ownSpend.map((entry) => entry.amount));
   const actualToDate = spendToDate;
 
-  const remaining = budgetAmount === null ? null : roundCurrency(budgetAmount - actualToDate);
+  const remaining = budgetAmount === null ? null : subtractMoney(budgetAmount, actualToDate);
   const burnPercent =
-    budgetAmount !== null && budgetAmount > 0 ? roundPercent((actualToDate / budgetAmount) * 100) : null;
+    budgetAmount !== null && compareMoney(budgetAmount, 0) > 0 ? moneyPercent(actualToDate, budgetAmount) : null;
 
   let paceStatus: DeliverablePaceStatus;
   let paceDetail: string;
@@ -192,11 +186,11 @@ export function buildDeliverableBudgetSummary(
   if (budgetAmount === null) {
     paceStatus = "no_budget";
     paceDetail = "No budget entered for this deliverable, so burn cannot be judged.";
-  } else if (actualToDate > budgetAmount) {
+  } else if (compareMoney(actualToDate, budgetAmount) > 0) {
     paceStatus = "over_budget";
     paceDetail = `Actual to date ${formatAmount(actualToDate)} exceeds the ${formatAmount(budgetAmount)} budget.`;
   } else if (percentComplete === null || burnPercent === null) {
-    // burnPercent is null here only for a zero budget — a degenerate basis
+    // burnPercent is null here only for a zero budget, a degenerate basis
     // that supports no burn percentage, so no pace verdict either.
     paceStatus = "no_progress_basis";
     paceDetail =
@@ -204,16 +198,15 @@ export function buildDeliverableBudgetSummary(
         ? "No percent complete recorded, so burn cannot be compared against progress."
         : "A zero budget yields no burn percentage, so pace cannot be judged.";
   } else {
-    const drift = roundPercent(burnPercent - percentComplete);
-    if (drift > PACE_TOLERANCE_POINTS) {
+    if (compareMoneyPercent(actualToDate, budgetAmount, percentComplete, PACE_TOLERANCE_POINTS) > 0) {
       paceStatus = "billed_ahead_of_progress";
-      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — burn is running ahead of recorded progress.`;
-    } else if (drift < -PACE_TOLERANCE_POINTS) {
+      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete, burn is running ahead of recorded progress.`;
+    } else if (compareMoneyPercent(actualToDate, budgetAmount, percentComplete, -PACE_TOLERANCE_POINTS) < 0) {
       paceStatus = "billed_behind_progress";
-      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — recorded spending is below recorded progress.`;
+      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete, recorded spending is below recorded progress.`;
     } else {
       paceStatus = "on_pace";
-      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete — within ${PACE_TOLERANCE_POINTS} points.`;
+      paceDetail = `Burned ${burnPercent}% of budget at ${percentComplete}% complete, within ${PACE_TOLERANCE_POINTS} points.`;
     }
   }
 
@@ -258,7 +251,7 @@ export function buildProjectBudgetSnapshot({
 
   // A billed line's only tie to this project (in this shape) is its
   // deliverable attribution. A line naming a deliverable this project does
-  // not have cannot be attributed and is ignored — counting it would invent
+  // not have cannot be attributed and is ignored, counting it would invent
   // burn. A line with NO deliverable is project-level billing and counts at
   // the project level only.
   const unknownBilledLines = billedRecords.filter(
@@ -268,21 +261,21 @@ export function buildProjectBudgetSnapshot({
     (line) => line.deliverable_id == null || knownDeliverableIds.has(line.deliverable_id)
   );
 
-  const billedToDate = sumAmounts(
+  const billedToDate = sumMoney(
     attributableBilledLines.filter((line) => isSentStatus(line.invoice_status)).map((line) => line.amount)
   );
 
   // Spend entries are rows of the project's own ledger (project_id-scoped in
   // the schema), so every entry counts at the project level even when its
   // deliverable attribution is missing or stale.
-  const spendToDate = sumAmounts(spendRecords.map((entry) => entry.amount));
+  const spendToDate = sumMoney(spendRecords.map((entry) => entry.amount));
   const actualToDate = spendToDate;
 
-  const statedBudget = parseOptionalAmount(project?.budget_amount);
+  const statedBudget = parseOptionalMoney(project?.budget_amount);
   const budgetedSummaries = summaries.filter((summary) => summary.budgetAmount !== null);
   const deliverableBudgetTotal =
     budgetedSummaries.length > 0
-      ? roundCurrency(budgetedSummaries.reduce((total, summary) => total + (summary.budgetAmount ?? 0), 0))
+      ? sumMoney(budgetedSummaries.map((summary) => summary.budgetAmount))
       : null;
 
   const budgetCoverage: ProjectBudgetCoverage =
@@ -292,7 +285,7 @@ export function buildProjectBudgetSnapshot({
         ? "complete"
         : "partial";
 
-  const remainingAgainstStatedBudget = statedBudget === null ? null : roundCurrency(statedBudget - actualToDate);
+  const remainingAgainstStatedBudget = statedBudget === null ? null : subtractMoney(statedBudget, actualToDate);
 
   const attention: string[] = [];
 
@@ -302,13 +295,13 @@ export function buildProjectBudgetSnapshot({
     }
   }
 
-  if (statedBudget !== null && actualToDate > statedBudget) {
+  if (statedBudget !== null && compareMoney(actualToDate, statedBudget) > 0) {
     attention.push(
       `Actual to date ${formatAmount(actualToDate)} exceeds the stated project budget ${formatAmount(statedBudget)}.`
     );
   }
 
-  if (statedBudget !== null && deliverableBudgetTotal !== null && deliverableBudgetTotal > statedBudget) {
+  if (statedBudget !== null && deliverableBudgetTotal !== null && compareMoney(deliverableBudgetTotal, statedBudget) > 0) {
     attention.push(
       `Deliverable budgets total ${formatAmount(deliverableBudgetTotal)}, more than the stated project budget ${formatAmount(statedBudget)}.`
     );
@@ -316,7 +309,7 @@ export function buildProjectBudgetSnapshot({
 
   if (budgetCoverage === "partial") {
     attention.push(
-      `${budgetedSummaries.length} of ${summaries.length} deliverables have budgets — the deliverable budget total is a partial figure, not a project total.`
+      `${budgetedSummaries.length} of ${summaries.length} deliverables have budgets, the deliverable budget total is a partial figure, not a project total.`
     );
   }
 

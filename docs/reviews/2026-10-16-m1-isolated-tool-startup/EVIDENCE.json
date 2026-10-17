@@ -1,0 +1,71 @@
+{
+  "schema": 1,
+  "tier": "TWO_EXACT_TOOL_STARTUP_OUTPUTS_AND_SEPARATE_METADATA_ONLY_OBSERVATION",
+  "toolCapture": {
+    "tier": "ACCEPTED_TWO_BOUNDED_TOOL_OUTPUTS_ONLY",
+    "unit": "openplan-m1-empty-root-tool-help-20261016-01",
+    "managerInvocationIDCaptured": false,
+    "parentElapsedSeconds": 0.9129823968978599,
+    "serviceRuntimeMS": 869,
+    "CPUTimeMS": 407,
+    "managerRoundedPeak": "17.8M",
+    "exactPeakBytesCaptured": false,
+    "actualResources": {
+      "memory.max": "536870912",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000",
+      "pids.max": "64"
+    },
+    "requestSHA256": "685138b8431f0c5614ba3fcc9c31c77a21c3f681a7a0e823cf492164dd04497e",
+    "grantSHA256": "0d7d49ce94ff7f9b5d07f195a3b5930bd7c3fc400683285390e1df194d25caa9",
+    "runtimeSealSHA256": "c4994c39bd33dd82f8ec3a4838f9e66233dd154e124a1ab170331bca01aea648",
+    "observedProgramVersion": "pg_restore (PostgreSQL) 17.6",
+    "versionStdoutBytes": 29,
+    "versionStdoutSHA256": "af6e584f43f738ff53f9791e630affbe2d72c30768e8233c94b540c290db6ec5",
+    "helpStdoutBytes": 3793,
+    "helpStdoutSHA256": "e02bc08eabf18e7afe20f1804ec855b8fe5ea9bca4456151659ebbbc70f3966c",
+    "bothCallExit0AndStderr0": true,
+    "protocolControls": 9,
+    "initialFinalMountinfoIdentical": true,
+    "mountRecords": 25,
+    "archiveBindStatReadHash": false,
+    "DBContact": false,
+    "generalSupportedVersionClaim": false,
+    "ABIClaim": "Only these two exact invocations with this pinned copied binary/host loader/library arrangement succeeded",
+    "nextPermission": "SOURCE_PREPARATION_ONLY_FOR_SEPARATELY_ADMITTED_READONLY_TOC",
+    "sourceOrHistoryCompatibilityAccepted": false,
+    "noSuccessorGranted": true
+  },
+  "retainedReceipts": {
+    "/home/nathaniel/.local/state/openplan/m1-empty-root-tool-help-root-decision-20261016/TOOL_CAPTURE_ACCEPTANCE.json": {
+      "bytes": 1523,
+      "sha256": "c892809a3282ac22e4d94238a02fcfbc6e220d30e2dd5ae8e30f547952bf90d0"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-empty-root-tool-help-root-decision-20261016/RUNTIME_SEAL.json": {
+      "bytes": 9038,
+      "sha256": "c4994c39bd33dd82f8ec3a4838f9e66233dd154e124a1ab170331bca01aea648"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-archive-metadata-root-observation-20261016/intent.json": {
+      "bytes": 624,
+      "sha256": "e48748e9f8f3028d91e2888aa9b2653d1d518065a76b02fe88f08dd220f03ab6"
+    },
+    "/home/nathaniel/.local/state/openplan/m1-archive-metadata-root-observation-20261016/observation.json": {
+      "bytes": 836,
+      "sha256": "c226d33ecaa89e3d31bdef96d336b12185352e6cafc674cdbcbb35de707e3dc1"
+    }
+  },
+  "archiveMetadata": {
+    "regularFile": true,
+    "symlink": false,
+    "mode": "0600",
+    "uid": 1000,
+    "gid": 1000,
+    "bytes": 16232305,
+    "resolvedSamePath": true,
+    "archiveContentsOpened": false,
+    "freshArchiveHash": false
+  },
+  "all29ToolRuntimeDescriptorsRechecked": true,
+  "nativeAcceptance": false,
+  "successorGranted": false
+}

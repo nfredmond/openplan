@@ -1,0 +1,135 @@
+{
+  "unit": {
+    "exitCode": 0,
+    "stdoutSHA256": "a2ff592c58d8fe7acdf1cd5a695945d2c0f8a6a78e01c1567348626efff8b666",
+    "stderrSHA256": "2d659c5074ed95b2701cb409a3d61095eccee3d60967ab8006df5ab804eadb3c"
+  },
+  "parent": {
+    "limits": {
+      "memory.max": "1073741824",
+      "memory.swap.max": "0",
+      "cpu.max": "50000 100000"
+    },
+    "cgroup": "/user.slice/user-1000.slice/user@1000.service/app.slice/openplan-a0-r6-sequence-TEST-01-20261016.service",
+    "invocationID": "2f18c73173014eafbc2029a515545211",
+    "networkNamespace": "net:[4026533038]",
+    "readOnlyProbes": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/AGENTS.md",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52/docs/reviews/2026-10-16-a0-case-temp-oid-correction/STATUS.md",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5/plan.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5/stages/restore419/intent.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r3/plan.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r4/plan.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates/helper.py",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-706f7154/docs/reviews/2026-10-16-a0-r5-restore419-admission-independent/REVIEW.md",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-r5-restore419-root-decision-20261016/failed-restore-summary.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/a0-native-wrapper-r5-restore419-parent-operation-20261016/restore419/exit.json",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-observe/STATUS.md",
+        "writeOpen": "EROFS"
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-allocate/STATUS.md",
+        "writeOpen": "EROFS"
+      }
+    ],
+    "namedMounts": [
+      "21009 20169 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52 /home/nathaniel/.t3/worktrees/openplan/t3-ac91cc52 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21010 20169 259:4 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r5 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21011 20169 259:4 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r3 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r3 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21012 20169 259:4 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r4 /home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r4 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21013 20169 259:4 /home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates /home/nathaniel/.local/state/openplan/pr330-final-source-preview-20261016/templates ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21014 20169 259:4 /home/nathaniel/.t3/worktrees/openplan/t3-706f7154/docs/reviews/2026-10-16-a0-r5-restore419-admission-independent /home/nathaniel/.t3/worktrees/openplan/t3-706f7154/docs/reviews/2026-10-16-a0-r5-restore419-admission-independent ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21015 20169 259:4 /home/nathaniel/.local/state/openplan/a0-r5-restore419-root-decision-20261016 /home/nathaniel/.local/state/openplan/a0-r5-restore419-root-decision-20261016 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21016 20169 259:4 /home/nathaniel/.local/state/openplan/a0-native-wrapper-r5-restore419-parent-operation-20261016/restore419 /home/nathaniel/.local/state/openplan/a0-native-wrapper-r5-restore419-parent-operation-20261016/restore419 ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21017 20169 259:4 /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-observe /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-observe ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw",
+      "21018 20169 259:4 /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-allocate /home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/docs/reviews/2026-10-16-a0-r5-native-allocate ro,nosuid,nodev,relatime master:1 - ext4 /dev/nvme0n1p2 rw"
+    ],
+    "mountClaim": "Named mounts/probes only; inherited nested writable mounts are not claimed absent. Explicit writable rebinds are new packet/evidence and shared lock.",
+    "lockMode": "nonblocking exclusive once; no waiter/retry"
+  },
+  "steps": {
+    "rows": [
+      {
+        "step": "prepare",
+        "exitCode": 0,
+        "seconds": 0.4215417429804802,
+        "stdoutSHA256": "b8aab1a4de4b819a9087105690538c074e44c944bec9f0faf86751ed51d41413",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "step": "diagnostic-proposal",
+        "exitCode": 0,
+        "seconds": 0.03779837000183761,
+        "stdoutSHA256": "a497e6c0af7ac60bdcadbe598b5c9e8d3a07550f505991718dba43867d30a346",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "step": "sequence",
+        "exitCode": 0,
+        "seconds": 3.323398999054916,
+        "stdoutSHA256": "8e2b5ceb8493f05d5cae1b8c7372eed4dc3a5493c21373bd9ee42f28fcceee70",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "step": "continuity",
+        "exitCode": 0,
+        "seconds": 6.6801338020013645,
+        "stdoutSHA256": "b1721e3d4a7a21281de77a43ac2efb3d6b2b027a437de356657666af4d4991c5",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "step": "direction",
+        "exitCode": 0,
+        "seconds": 1.568334077950567,
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+      },
+      {
+        "step": "final",
+        "exitCode": 0,
+        "seconds": 0.5715606269659474,
+        "stdoutSHA256": "374b7a886bc56b8c52c40cf868008651dd90d6c1143b40d47db8e6ad3235695c",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    ],
+    "resources": {
+      "memory.peak": "157769728",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.peak": "0"
+    },
+    "nativeDispatches": 0,
+    "flock": "released when this terminal parent exits; no waiting or repeated acquisition"
+  },
+  "flock": "All granted R6 TEST work terminal. No further acquisition by this packet."
+}

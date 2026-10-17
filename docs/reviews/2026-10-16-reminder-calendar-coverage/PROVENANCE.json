@@ -1,0 +1,46 @@
+{
+  "schema": 1,
+  "parentCommit": "bad4875bd4e6932da20dc667241e2dceccaf05a4",
+  "source": {
+    "openplan/src/lib/notifications/work.ts": {
+      "sha256": "c4802459be94012e3599f7afa63e9ddaaccda8bb5f624ba7806b32c22fe64344",
+      "bytes": 71092
+    },
+    "openplan/src/test/work-notification-sweep.test.ts": {
+      "sha256": "b49210ee245ada6d50d702a1efe77075ab41ef8cfb441bd1dd70743205ed4710",
+      "bytes": 55138
+    }
+  },
+  "privateRoot": "/home/nathaniel/.local/state/openplan/reminder-calendar-coverage-root-20261016",
+  "privateEvidencePinsSHA256": "ad9ffd24b10d56172418444dcbdb0f75a6e06daae1c331ef29e341f2ff767ab2",
+  "selectedPrivateFiles": 48,
+  "uniqueTests": 49,
+  "calendarCases": 8,
+  "controls": {
+    "harmless": "SURVIVED8",
+    "baseline": "PASS8",
+    "removeCoverageGuard": "EXACT2_ASSERTION_ERRORS_AND6PASS",
+    "restored": "PASS8",
+    "fullNotificationFile": "PASS49",
+    "focusedESLint": 0,
+    "sourceReadbacksUnchanged": true
+  },
+  "invocations": {
+    "direction": "755c0ff55acb4f1d9c5adcbfe4c3dc9f",
+    "controls": "ab1b195f21ab47d7a5f271ab45ec8e5c",
+    "fullFile": "b5e83ccd96fa4f368153998c0180d8f1"
+  },
+  "sampledControlResources": {
+    "memory.peak": "388980736",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "pids.peak": "39",
+    "pids.events": "max 0"
+  },
+  "runtimeIsMockedSweep": true,
+  "nativeDatabaseRequests": 0,
+  "realEmailOrNotificationsSent": false,
+  "fullTypesOrApplicationQA": false,
+  "hostedOrBrowserAcceptance": false,
+  "releaseAcceptance": false,
+  "noSourceWritesDuringUnit": "private module overlay only; original owned source and test pins unchanged"
+}

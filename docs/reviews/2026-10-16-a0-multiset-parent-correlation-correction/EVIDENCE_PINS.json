@@ -1,0 +1,133 @@
+{
+  "actualResults": null,
+  "all28AnchorTraces": "SOURCE_ONLY_NO_OBSERVED_KILLS",
+  "collectorExtraction": {
+    "bytes": 2142,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "7f7f31e6d548cd6ecc716444008188c8ac1686444a244eb61210f6e9b1af8dc8",
+    "uid": 1000
+  },
+  "controlOrRunnerAuthored": false,
+  "fixtureLaunchable": false,
+  "inputCount": 38,
+  "nativeOperationGranted": false,
+  "original2478ActualExact": true,
+  "original31PublicExact": true,
+  "parentOrCollectorExecuted": false,
+  "privatePins": {
+    "bytes": 27912,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "e56eade2a8c23bd956e65d627230cffc8aea47c6e9ec284e8c493ce3c07a425e",
+    "uid": 1000
+  },
+  "requiredFutureOperationFileCount": 33,
+  "source": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/CONTROL_PLAN.md": {
+      "bytes": 7703,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "af45412e53e812ca99594b7aca30f19279ebcf31c882c796796aa9a31da728ec",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/FAULT_MAP.md": {
+      "bytes": 4329,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "8fab123b6e08efa9f4df894b293ef93c4020cd1667bb688788774770bff55bd7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/FIXED_JOIN_MAP.md": {
+      "bytes": 6478,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "546a82e749909f0fb1992467aece6dbf902f3b74745e437acf988176d3bc1f05",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/PARENT_CONTRACT.md": {
+      "bytes": 9739,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "2cd7049e4359341063aebf92f3c961a889bace95ad74abb721d055a46e8c8740",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/SOURCE_DELTA.md": {
+      "bytes": 8237,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "1590e9f617ca26493efcd6fdc033b2ea5ce95bad39e855131ab8b35eea6ae2c6",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/STATUS.md": {
+      "bytes": 4234,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "58d34689995cf7b87b5316e52c4eec69f437886f73ea8d39156aed347c30449a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/collector.delta.patch": {
+      "bytes": 11000,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "375dec230a6d261505f8b81338a9d1f943f20b2088568be8583c1928a01c38a0",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/collector.py": {
+      "bytes": 6662,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "7e99a7bfa036c8b35c477eb034d4adc9d409b54d2304a21f591a655dfe866040",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/custody.py": {
+      "bytes": 24907,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d2d1f17f9e0abba8af5f47a551af9c9131fda1d09c736e6b58f5db38b66b7fd2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/fault-map.json": {
+      "bytes": 15220,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "193f25844b2ae953399a2826e499f4c43eda2ce612027b3ae729bc6c783af121",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/fixed-contract.json": {
+      "bytes": 13678,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "91292e69956500428851f467a2966ee6c65b88a7d2385c41648f73d17fa57bd1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.delta.patch": {
+      "bytes": 19222,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "ded6c54162f8d8057fd13f2604a6c1473a34320102a600a2106df0a2c314240d",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.py": {
+      "bytes": 9961,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "34a7102ddaec30825bdc160374f6a36f1c23f63e046bf886121bfe7998c64cf0",
+      "uid": 1000
+    }
+  },
+  "sourceClosureComplete": false,
+  "sourceCount": 13,
+  "sourceReviewCommit": "222d7c7894a15052190b4a8dc98991e0b1f3fe6e",
+  "sourceReviewREPORTSHA256": "07c48ac38c866357cc24d2448ada87eaea489a8411906bd6af66ff4630c86a57",
+  "sourceReviewVALIDATIONSHA256": "0a3d3a4e680da48ca594c860a72eaecab04ca99c7766add1070670583b14c728",
+  "stage": "FIRST_SOURCE_HANDOFF_NO_RUNTIME_OR_OPERATION",
+  "staticInspection": {
+    "bytes": 11847,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "b98004cc7b4c4883aff48e4b605fda075f97811d076b9a83c74168ea3d1583af",
+    "uid": 1000
+  },
+  "syntaxAndRuntime": "UNPROVED_NOT_IMPORTED_COMPILED_OR_EVALUATED"
+}

@@ -1,0 +1,48 @@
+{
+  "requestId": "public-designation-query-viewport-cli-generation-20261016-01",
+  "status": "PREPARED ONLY; no ROOT runtime grant exists",
+  "purpose": "Inspect one already-installed Supabase CLI and generate one empty additive migration with its actual returned filename",
+  "cwd": "/home/nathaniel/.t3/worktrees/openplan/t3-dd1f8bad/openplan",
+  "requiredHead": "d264d69149ae2f9d589840e5a543b798ae4718ec",
+  "requiredBranch": "t3/public-designation-wrapped-viewport-design",
+  "readOnlyDonor": {
+    "packageRoots": [
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/supabase",
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/@supabase/cli-linux-x64"
+    ],
+    "launcher": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase",
+    "availability": "Not inspected in this source-only turn. No existence, version or native-binary claim.",
+    "lockfilePackaging": "The current source lockfile resolves supabase 2.111.0, bin dist/supabase.js, with optional @supabase/cli-linux-x64 2.111.0. It does not establish the donor's installed bytes or native executable path.",
+    "requirements": "Before invocation, resolve and hash the launcher target and inspect its package metadata. If it is JavaScript as the lockfile declares, read that installed launcher as plaintext and identify/hash its already-installed native dependency. A later ROOT grant must explicitly cover CLI-wrapper-only Node execution and the inspected native child. Refuse downloads, dependency installation, app imports, missing native dependencies or targets outside the declared package roots. Do not copy or mutate donor files."
+  },
+  "inspectionArgv": [
+    ["readlink", "-e", "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase"],
+    ["stat", "-L", "--format=%F %a %s", "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase"],
+    ["od", "-An", "-tx1", "-N4", "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase"],
+    ["sha256sum", "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase"]
+  ],
+  "cliArgvInOrder": [
+    ["/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase", "--version"],
+    ["/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase", "--help"],
+    ["/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase", "migration", "--help"],
+    ["/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase", "migration", "new", "--help"],
+    ["/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules/.bin/supabase", "migration", "new", "public_designation_query_viewport"]
+  ],
+  "conditionalPlaintextInspection": "After inspecting the magic bytes, read the resolved launcher and each package.json as plaintext only if they are text. Capture the actual native path from that source, resolve/stat/hash it within the allowed native package and require ELF magic. Do not evaluate a JavaScript launcher merely to discover its path. If the installed source needs additional files to establish the child path, stop and return those exact read needs before invocation.",
+  "generationGate": "Run the final argv once only if inspected launcher/native preflight, ROOT's explicit wrapper/native grant, its external network-denial/resource boundary and actual installed help all permit this local command without other operations. A version different from lockfile 2.111.0, changed argv, missing prerequisites or an unresolved launcher dependency stops the window. No alternative command or retry is authorized by this request.",
+  "resourcesRequested": {
+    "cliConcurrency": 1,
+    "maxConcurrentProcesses": "One CLI launcher and at most its one inspected native CLI child; no independent background process",
+    "maxCliInvocations": 5,
+    "maxGenerationInvocations": 1,
+    "maxSecondsPerInvocation": 10,
+    "maxTotalWindowSeconds": 60,
+    "memoryMiB": 256,
+    "network": "Denied by ROOT's execution boundary; no new namespace/manager/bwrap setup is proposed or invoked here",
+    "databaseDockerAuthServices": "Denied",
+    "applicationImportsTestsBuilds": "Denied",
+    "fileWrites": "One CLI-generated migration under this assigned app's supabase/migrations, plus NEW finite-window logs/receipts in the lane's private directory. Record and stop on any other write. Never write SQL in this generation window."
+  },
+  "capture": "Record before/after migration inventory and source hashes, exact launcher target/hash/version/help, raw stdout/stderr/status/duration per command, actual generated path/bytes/hash and any incidental local files. Capture no environment or credential values. No filename is guessed or hand-created.",
+  "limits": "This request does not establish that the donor exists, offline execution is available or the command succeeds. ROOT must supply or separately authorize the execution boundary. Preserve any timeout/denial/failure without fallback or duplicate generation. Generation does not authorize SQL authoring, migration application, tests, DB, Docker, Auth, subject HTTP, browser, commit, push or join."
+}

@@ -1,0 +1,103 @@
+{
+  "A0SourceAppTree": "d577a9cd955018b3253f42b3d9af2a96a9a10b53",
+  "actualOperationOnce": true,
+  "actualRequestCount": 30,
+  "auditSHA256": "9cf510784a241c47c744686a5d0833d3d5ba4f8c2ad435ff5b64cb7147a74cfc",
+  "completionTier": "separate parent0, manager-request0, childcomplete and 29 actual request terminals0",
+  "currentIntegrationAppTree": "2b1916349d7379c96bf97b1708b3e4016d37384d",
+  "derivedPost18MapSHA256": "5cbab573022aacd137848e6149bd2804a4e44fa1ad3ee3eba1b7f2d1d27411e8",
+  "documentationDirectionCheck": {
+    "appTestsRepeated": false,
+    "exitCode": 0,
+    "invocationID": "9d683186562b4741ae2c7d198e8f0426",
+    "remindersRetained": true,
+    "seconds": 1.8670177260646597,
+    "stderrSHA256": "bed7336b49b57aa77856da60a3b38871e8d723e91ebb45d129f29c33d2701e1b",
+    "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+    "unit": "openplan-native18-root-report-direction-20261016-01"
+  },
+  "finallyAllInputsMatch": true,
+  "functionSummary": {
+    "finish_assistant_provider_turn(uuid,uuid,uuid,uuid,text,jsonb,jsonb,text)": {
+      "bodySHA256": "e0f1992e485ca02d5286540753afb198f3ba553e80cb54a1af83ad9f2a08665a",
+      "renderedSHA256": "b09b774ac812461860f1cdf6a4896095268dcb72f52f45226028364629db6fb7"
+    },
+    "valid_assistant_native_limit_receipt(jsonb,assistant_provider_turns)": {
+      "bodySHA256": "afe949d2133d35bd14c05b3e7e681ad0ded222c07ac96415374c4c1ac0ef6b28",
+      "renderedSHA256": "a78fe9040339c7435e8b238d05799d571b9b3faf8b46afa30374b1a8437fa5b0"
+    }
+  },
+  "historyCount": 421,
+  "historyDigest": "06aeada820d5094f986d8989f160a2bc",
+  "innerInvocationID": "42475016179841edbc4f676c3be6b9f0",
+  "journalIdentityTier": "one start-job identity event, not work completion",
+  "limits": [
+    "native function behavior/RLS/named/default role rights/provider/CLI/browser not established",
+    "MD5 census and sequential snapshots do not establish concurrent or hostile integrity",
+    "in-flight outer peak is a sample; collected unit defaults are unbound",
+    "outer parent wait and combined stream lack hard bounds",
+    "journal event establishes start identity only; same-user record forgery unassessed"
+  ],
+  "outerInvocationID": "d0ccd1a8713b4702a9c81e65eae81649",
+  "priorDigest": "58ef7ba010a9522c0026d22a20a4fe9b",
+  "protectedScopeUnchanged": true,
+  "readerControls": [
+    {
+      "name": "harmless-annotation",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "wrong-unit",
+      "outcome": "KILLED",
+      "reason": "journal-owned-unit"
+    },
+    {
+      "name": "wrong-uid",
+      "outcome": "KILLED",
+      "reason": "journal-owner"
+    },
+    {
+      "name": "wrong-boot",
+      "outcome": "KILLED",
+      "reason": "journal-boot"
+    },
+    {
+      "name": "bad-invocation",
+      "outcome": "KILLED",
+      "reason": "journal-invocation"
+    },
+    {
+      "name": "wrong-event",
+      "outcome": "KILLED",
+      "reason": "journal-start-job-event"
+    },
+    {
+      "name": "outside-window",
+      "outcome": "KILLED",
+      "reason": "journal-recorded-window"
+    },
+    {
+      "name": "ambiguous-start",
+      "outcome": "KILLED",
+      "reason": "journal-one-start-event"
+    },
+    {
+      "name": "boolean-array-cardinality",
+      "outcome": "KILLED",
+      "reason": "history-exact-source-and-array"
+    },
+    {
+      "name": "boolean-map-type-drift",
+      "outcome": "KILLED",
+      "reason": "predecessor-full-typed-map"
+    }
+  ],
+  "readerEvidenceTier": "supplied metadata reader only",
+  "readerNoNativeDispatch": true,
+  "readerSourceSHA256": "09ccc162e028a12046567dbecfdba430a001401b31ea1f82b48436b79cc391df",
+  "snapshotLabels": 383,
+  "sourceBytes": 9284,
+  "sourceSHA256": "655e625878b3e62f332a7f17d6e126879813cc2bf881ca745593978d8eed6559",
+  "status": "accepted-narrow-native18",
+  "successorAdmitted": false
+}

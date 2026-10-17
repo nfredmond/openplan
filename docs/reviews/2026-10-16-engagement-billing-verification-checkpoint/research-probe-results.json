@@ -1,0 +1,1868 @@
+{
+  "typescript": "5.9.3",
+  "compilerSha256": "3ae902c92cc44dace175c0e69e13a4b0899f6983c6121d76b9ab8dd5795e7675",
+  "controls": [
+    "baseline: number/string status, attribution, gross, no NTE, absent id"
+  ],
+  "mutations": [
+    {
+      "name": "harmless-source-annotation",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "literal-oracle-plus-one-cent",
+      "outcome": "KILLED",
+      "message": "status-attribution-literal-oracle\n+ actual - expected\n\n  {\n+   billedToDate: '7.00',\n-   billedToDate: '7.01',\n    draftedUnbilled: '2.50',\n    isOverNte: false,\n    notToExceed: '10.00',\n    remaining: '3.00'\n  }\n"
+    },
+    {
+      "name": "gross-to-net-behavior-regression",
+      "outcome": "KILLED",
+      "message": "gross-before-retention\n+ actual - expected\n\n  {\n+   billedToDate: '8.80',\n-   billedToDate: '11.00',\n    draftedUnbilled: '0.00',\n+   isOverNte: false,\n-   isOverNte: true,\n    notToExceed: '10.00',\n+   remaining: '1.20'\n-   remaining: '-1.00'\n  }\n"
+    }
+  ],
+  "cases": [
+    {
+      "name": "nte-equal-max",
+      "inputType": "supplied-string",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.98",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 999999999999.99,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": 0,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "0"
+      },
+      "differences": []
+    },
+    {
+      "name": "nte-equal-max",
+      "inputType": "supplied-number",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.98",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 999999999999.99,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": 0,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "0"
+      },
+      "differences": []
+    },
+    {
+      "name": "nte-over-by-one-cent",
+      "inputType": "supplied-string",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.98",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "1000000000000.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-0.01",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 1000000000000,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -0.01,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "1000000000000.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-0.01",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-0"
+      },
+      "differences": []
+    },
+    {
+      "name": "nte-over-by-one-cent",
+      "inputType": "supplied-number",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.98",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "1000000000000.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-0.01",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 1000000000000,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -0.01,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "1000000000000.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-0.01",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-0"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-1",
+      "inputType": "supplied-string",
+      "rowCount": 1,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 999999999999.99,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": 0,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "0"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-1",
+      "inputType": "supplied-number",
+      "rowCount": 1,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 999999999999.99,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": 0,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "999999999999.99",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "0.00",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "1,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "0"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-1",
+      "inputType": "supplied-string",
+      "rowCount": 1,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "999999999999.99",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 999999999999.99,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "999999999999.99",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "1,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-1",
+      "inputType": "supplied-number",
+      "rowCount": 1,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "999999999999.99",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 999999999999.99,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "999999999999.99",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "1,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-2",
+      "inputType": "supplied-string",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "1999999999999.98",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-999999999999.99",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 1999999999999.98,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -999999999999.99,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "1999999999999.98",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-999999999999.99",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "2,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-2",
+      "inputType": "supplied-number",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "1999999999999.98",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-999999999999.99",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 1999999999999.98,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -999999999999.99,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "1999999999999.98",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-999999999999.99",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "2,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-2",
+      "inputType": "supplied-string",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "1999999999999.98",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 1999999999999.98,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "1999999999999.98",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "2,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-2",
+      "inputType": "supplied-number",
+      "rowCount": 2,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "1999999999999.98",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 1999999999999.98,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "1999999999999.98",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "2,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-16",
+      "inputType": "supplied-string",
+      "rowCount": 16,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "15999999999999.84",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-14999999999999.85",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 15999999999999.84,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -14999999999999.85,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "15999999999999.84",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-14999999999999.85",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "16,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-15,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-16",
+      "inputType": "supplied-number",
+      "rowCount": 16,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "15999999999999.84",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-14999999999999.85",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 15999999999999.84,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -14999999999999.85,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "15999999999999.84",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-14999999999999.85",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "16,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-15,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-16",
+      "inputType": "supplied-string",
+      "rowCount": 16,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "15999999999999.84",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 15999999999999.84,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "15999999999999.84",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "16,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-16",
+      "inputType": "supplied-number",
+      "rowCount": 16,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "15999999999999.84",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 15999999999999.84,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "15999999999999.84",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "16,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-32",
+      "inputType": "supplied-string",
+      "rowCount": 32,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "31999999999999.68",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-30999999999999.69",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 31999999999999.68,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -30999999999999.69,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "31999999999999.68",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-30999999999999.69",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "32,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-31,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-32",
+      "inputType": "supplied-number",
+      "rowCount": 32,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "31999999999999.68",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-30999999999999.69",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 31999999999999.68,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -30999999999999.69,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "31999999999999.68",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-30999999999999.69",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "32,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-31,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-32",
+      "inputType": "supplied-string",
+      "rowCount": 32,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "31999999999999.68",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 31999999999999.68,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "31999999999999.68",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "32,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-32",
+      "inputType": "supplied-number",
+      "rowCount": 32,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "31999999999999.68",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 31999999999999.68,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "31999999999999.68",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "32,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-35",
+      "inputType": "supplied-string",
+      "rowCount": 35,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "34999999999999.65",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-33999999999999.66",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 34999999999999.65,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -33999999999999.66,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "34999999999999.65",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-33999999999999.66",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "35,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-34,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-35",
+      "inputType": "supplied-number",
+      "rowCount": 35,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "34999999999999.65",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-33999999999999.66",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 34999999999999.65,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -33999999999999.66,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "34999999999999.65",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-33999999999999.66",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "35,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-34,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-35",
+      "inputType": "supplied-string",
+      "rowCount": 35,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "34999999999999.65",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 34999999999999.65,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "34999999999999.65",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "35,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-35",
+      "inputType": "supplied-number",
+      "rowCount": 35,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "34999999999999.65",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 34999999999999.65,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "34999999999999.65",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "35,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-36",
+      "inputType": "supplied-string",
+      "rowCount": 36,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "35999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-34999999999999.65",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 35999999999999.64,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -34999999999999.65,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "35999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-34999999999999.65",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "36,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-35,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-36",
+      "inputType": "supplied-number",
+      "rowCount": 36,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "35999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-34999999999999.65",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 35999999999999.64,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -34999999999999.65,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "35999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-34999999999999.65",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "36,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-35,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-36",
+      "inputType": "supplied-string",
+      "rowCount": 36,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "35999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 35999999999999.64,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "35999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "36,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-draft-36",
+      "inputType": "supplied-number",
+      "rowCount": 36,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "35999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 35999999999999.64,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "35999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "36,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": []
+    },
+    {
+      "name": "max-billed-45",
+      "inputType": "supplied-string",
+      "rowCount": 45,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "44999999999999.55",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-43999999999999.56",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 44999999999999.64,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -43999999999999.65,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "44999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-43999999999999.65",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "45,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-44,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-45",
+      "inputType": "supplied-number",
+      "rowCount": 45,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "44999999999999.55",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-43999999999999.56",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 44999999999999.64,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -43999999999999.65,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "44999999999999.64",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-43999999999999.65",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "45,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-44,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-45",
+      "inputType": "supplied-string",
+      "rowCount": 45,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "44999999999999.55",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 44999999999999.64,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "44999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "45,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-45",
+      "inputType": "supplied-number",
+      "rowCount": 45,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "44999999999999.55",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 44999999999999.64,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "44999999999999.64",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "45,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-billed-46",
+      "inputType": "supplied-string",
+      "rowCount": 46,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "45999999999999.54",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-44999999999999.55",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 45999999999999.63,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -44999999999999.64,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "45999999999999.63",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-44999999999999.64",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "46,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-45,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-46",
+      "inputType": "supplied-number",
+      "rowCount": 46,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "45999999999999.54",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-44999999999999.55",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 45999999999999.63,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -44999999999999.64,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "45999999999999.63",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-44999999999999.64",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "46,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-45,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-46",
+      "inputType": "supplied-string",
+      "rowCount": 46,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "45999999999999.54",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 45999999999999.63,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "45999999999999.63",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "46,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-46",
+      "inputType": "supplied-number",
+      "rowCount": 46,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "45999999999999.54",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 45999999999999.63,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "45999999999999.63",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "46,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-billed-64",
+      "inputType": "supplied-string",
+      "rowCount": 64,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "63999999999999.36",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-62999999999999.37",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 63999999999999.59,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -62999999999999.6,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "63999999999999.59",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-62999999999999.60",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "64,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-63,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-64",
+      "inputType": "supplied-number",
+      "rowCount": 64,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "63999999999999.36",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-62999999999999.37",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 63999999999999.59,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -62999999999999.6,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "63999999999999.59",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-62999999999999.60",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "64,000,000,000,000",
+        "draftedUnbilled": "0",
+        "remaining": "-63,000,000,000,000"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-64",
+      "inputType": "supplied-string",
+      "rowCount": 64,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "63999999999999.36",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 63999999999999.59,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "63999999999999.59",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "64,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-64",
+      "inputType": "supplied-number",
+      "rowCount": 64,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "63999999999999.36",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 63999999999999.59,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "63999999999999.59",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "64,000,000,000,000",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-billed-90",
+      "inputType": "supplied-string",
+      "rowCount": 90,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "89999999999999.10",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-88999999999999.11",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 89999999999999.28,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -88999999999999.3,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "89999999999999.28",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-88999999999999.30",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "89,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-88,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-90",
+      "inputType": "supplied-number",
+      "rowCount": 90,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "89999999999999.10",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-88999999999999.11",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 89999999999999.28,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -88999999999999.3,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "89999999999999.28",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-88999999999999.30",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "89,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-88,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-90",
+      "inputType": "supplied-string",
+      "rowCount": 90,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "89999999999999.10",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 89999999999999.28,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "89999999999999.28",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "89,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-90",
+      "inputType": "supplied-number",
+      "rowCount": 90,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "89999999999999.10",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 89999999999999.28,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "89999999999999.28",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "89,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-billed-91",
+      "inputType": "supplied-string",
+      "rowCount": 91,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "90999999999999.09",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-89999999999999.10",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 90999999999999.27,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -89999999999999.28,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "90999999999999.27",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-89999999999999.28",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "90,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-89,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-91",
+      "inputType": "supplied-number",
+      "rowCount": 91,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "90999999999999.09",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-89999999999999.10",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 90999999999999.27,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -89999999999999.28,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "90999999999999.27",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-89999999999999.28",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "90,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-89,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-91",
+      "inputType": "supplied-string",
+      "rowCount": 91,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "90999999999999.09",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 90999999999999.27,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "90999999999999.27",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "90,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-91",
+      "inputType": "supplied-number",
+      "rowCount": 91,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "90999999999999.09",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 90999999999999.27,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "90999999999999.27",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "90,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-billed-100",
+      "inputType": "supplied-string",
+      "rowCount": 100,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "99999999999999.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-98999999999999.01",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 99999999999999.19,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -98999999999999.2,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "99999999999999.19",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-98999999999999.20",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "99,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-98,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-billed-100",
+      "inputType": "supplied-number",
+      "rowCount": 100,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "99999999999999.00",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-98999999999999.01",
+        "isOverNte": true
+      },
+      "actual": {
+        "billedToDate": 99999999999999.19,
+        "draftedUnbilled": 0,
+        "notToExceed": 999999999999.99,
+        "remaining": -98999999999999.2,
+        "isOverNte": true
+      },
+      "roundedToCents": {
+        "billedToDate": "99999999999999.19",
+        "draftedUnbilled": "0.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "-98999999999999.20",
+        "isOverNte": true
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "99,999,999,999,999",
+        "draftedUnbilled": "0",
+        "remaining": "-98,999,999,999,999"
+      },
+      "differences": [
+        "billedToDate",
+        "remaining"
+      ]
+    },
+    {
+      "name": "max-draft-100",
+      "inputType": "supplied-string",
+      "rowCount": 100,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "99999999999999.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 99999999999999.19,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "99999999999999.19",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "99,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    },
+    {
+      "name": "max-draft-100",
+      "inputType": "supplied-number",
+      "rowCount": 100,
+      "subtotalLiteral": "999999999999.99",
+      "nteLiteral": "999999999999.99",
+      "expected": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "99999999999999.00",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "actual": {
+        "billedToDate": 0,
+        "draftedUnbilled": 99999999999999.19,
+        "notToExceed": 999999999999.99,
+        "remaining": 999999999999.99,
+        "isOverNte": false
+      },
+      "roundedToCents": {
+        "billedToDate": "0.00",
+        "draftedUnbilled": "99999999999999.19",
+        "notToExceed": "999999999999.99",
+        "remaining": "999999999999.99",
+        "isOverNte": false
+      },
+      "roundedWholeDollars": {
+        "billedToDate": "0",
+        "draftedUnbilled": "99,999,999,999,999",
+        "remaining": "1,000,000,000,000"
+      },
+      "differences": [
+        "draftedUnbilled"
+      ]
+    }
+  ],
+  "restoration": {
+    "inMemory": true,
+    "diskExactReadback": true,
+    "sourceHashes": {
+      "lib/invoicing/receivables.ts": "996c31054043f5f0f04e4949dbc2846912fde3c09bc8e5572c3791f237c2361b",
+      "lib/invoicing/invoice-records.ts": "83b672fa2602872f8c864abba6f8b1f44c839c7f413d455bc162c38fc22c08d8",
+      "lib/work/deadlines.ts": "01ac1a36552f199c1ed3e9dbea0e129cf12c0168e64cc31a4f80c6e7d5463ce0",
+      "lib/time/workspace-calendar.ts": "da6793ab7fe2fb0bae1ef36707542fa533d1146478b8ebc36a941c3b2a2d1fdf"
+    }
+  },
+  "finalResources": {
+    "memory.peak": "104738816",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "pids.current": "10"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "tests": [
+    "src/test/engagement-summary-completeness.test.tsx",
+    "src/test/engagement-summary-dashboard.test.tsx",
+    "src/test/receivable-invoicing-routes.test.ts",
+    "src/test/client-invoice-pdf.test.ts",
+    "src/test/client-invoice-composer.test.tsx",
+    "src/test/engagement-billed-exact-money.test.tsx"
+  ],
+  "source": [
+    "src/lib/invoicing/engagement-summary-queries.ts",
+    "src/lib/invoicing/receivables.ts",
+    "src/app/api/invoicing/client-invoices/route.ts",
+    "src/app/(app)/invoicing/_components/receivables-lane.tsx",
+    "src/lib/project-evidence-bundles/bytes.ts",
+    "src/components/invoicing/engagement-nte-bar.tsx",
+    "src/lib/invoicing/invoice-pdf.ts",
+    "src/components/invoicing/client-invoice-composer.tsx"
+  ],
+  "pattern": "ESComplete|warns without blocking when the invoice pushes|serializes exact projected warning cents|keeps .* on the invoice without asserting a warning currency|audits unavailable billed position|audits an invalid ceiling|retains exact aggregate cents through artifact assembly|keeps an invoice artifact usable|keeps gross retention, status and strict attribution independent|preserves empty supplied sets, absent identity and recorded zero",
+  "expectedPassed": 46
+}

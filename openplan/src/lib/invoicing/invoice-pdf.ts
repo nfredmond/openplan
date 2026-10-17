@@ -22,7 +22,7 @@
 import { esc } from "./html-escape";
 import { parseCurrencyAmount } from "./invoice-records";
 import type { EngagementBilledSummary } from "./receivables";
-import { formatInvoiceMoney } from "./invoice-currency";
+import { ENGAGEMENT_CURRENCY_DISCLOSURE, formatEngagementMoney, formatInvoiceMoney } from "./invoice-currency";
 
 export type ClientInvoicePdfWorkspace = {
   name?: string | null;
@@ -76,7 +76,7 @@ export type ClientInvoicePdfData = {
 };
 
 function formatAmount(value: number | string | null | undefined, currencyCode: string | null | undefined): string {
-  return esc(formatInvoiceMoney(parseCurrencyAmount(value),currencyCode));
+  return esc(formatInvoiceMoney(value, currencyCode));
 }
 
 function formatQuantity(value: number | string | null | undefined): string {
@@ -174,22 +174,33 @@ export function buildClientInvoiceHtml(data: ClientInvoicePdfData): string {
     const reference = data.engagement.reference_code?.trim();
     const referencePart = reference ? ` (Ref ${esc(reference)})` : "";
 
-    const nte = data.engagement.not_to_exceed_amount;
-    const nteParsed = nte === null || nte === undefined ? null : parseCurrencyAmount(nte);
+    const billed = data.engagementBilled;
+    const nte = billed?.source?.state === "complete" ? billed.notToExceed : data.engagement.not_to_exceed_amount;
     let ntePart = "";
-    if (nteParsed !== null) {
-      const billed = data.engagementBilled;
-      const billedPart = billed
-        ? `; billed to date ${formatAmount(billed.billedToDate, currency)}${
-            billed.remaining !== null ? `, remaining ${formatAmount(billed.remaining, currency)}` : ""
-          }`
-        : "";
-      ntePart = `<p>Not-to-exceed ${formatAmount(nteParsed, currency)}${billedPart}.</p>`;
+    if (billed?.unavailable?.notToExceed) {
+      ntePart = "<p>Legacy ceiling calculation unavailable (invalid amount); agreement terms unassessed.</p>";
+    } else if (nte !== null && nte !== undefined) {
+      ntePart = `<p>Not-to-exceed ${esc(formatEngagementMoney(billed?.notToExceed ?? nte))}; agreement terms unassessed.</p>`;
+    }
+    if (billed?.source && billed.source.state !== "complete") {
+      ntePart += `<p>Engagement invoice summary ${billed.source.state === "pending" ? "pending schema upgrade" : "source unavailable"}. Gross billed, remaining and draft positions are unknown.</p>`;
+    } else if (billed) {
+      const billedPart = billed.billedToDate === null
+        ? `Gross billed calculation unavailable (${esc(billed.unavailable?.billedToDate ?? "unavailable")} amount)`
+        : `billed to date ${esc(formatEngagementMoney(billed.billedToDate))} gross before retention`;
+      const remainingPart = billed.remaining === null
+        ? ", remaining unavailable"
+        : `, remaining ${esc(formatEngagementMoney(billed.remaining))}`;
+      const draftPart = billed.draftedUnbilled === null
+        ? `; draft calculation unavailable (${esc(billed.unavailable?.draftedUnbilled ?? "unavailable")} amount)`
+        : `; gross draft ${esc(formatEngagementMoney(billed.draftedUnbilled))}`;
+      ntePart += `<p>${billedPart}${remainingPart}${draftPart}.</p>`;
     }
 
     engagementContext = `<div class="engagement-context">
       <p>Engagement: ${esc(title)}${referencePart}</p>
       ${ntePart}
+      <p>${esc(ENGAGEMENT_CURRENCY_DISCLOSURE)}</p>
     </div>`;
   }
 

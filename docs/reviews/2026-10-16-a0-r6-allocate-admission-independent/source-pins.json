@@ -1,0 +1,106 @@
+{
+  "subjectCommit": "b35dd7126939d7e1ad24e9ddbf887653275317c1",
+  "sourceReviewCommit": "688c783586fbdccad8d685656786e9fb85536d7d",
+  "observeReviewCommit": "71456da158df2f2dc660fa239eb67dab37e218cc",
+  "priorAllocationReviewCommit": "646e66321f1bbd04595fe8d53761a3ee88343741",
+  "files": {
+    "/home/nathaniel/.local/state/openplan/a0-r6-allocate-admission-proposal-20261016/allocate-proposal.json": {
+      "sha256": "c20c3391df6012a4283f7d04e3b014017c1c926eec631379ba59140113773ad8",
+      "bytes": 1407,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-allocate-admission-proposal-20261016/proposal-custody.json": {
+      "sha256": "0fd98346225199396a140f12ebd17a202d187c94e53a7329e01c5b510bf941d1",
+      "bytes": 1019,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-allocate-admission-proposal-20261016/outer-runner-diff.patch": {
+      "sha256": "8ccc4a55083a44e202a1fbaa0b8dcd796ae03842da3bc0cb09b063398416f0e7",
+      "bytes": 2314,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-allocate-parent-runner-20261016.py": {
+      "sha256": "99085cc6b6d065cb6a6ed978c64173b138e078d8737eb048b1a700879259fb44",
+      "bytes": 3637,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r5-allocate-parent-runner-20261016.py": {
+      "sha256": "d866e3d4d1b6f214d1c8e37859daaaf86636eb92d13f76b37395b2554e7abcb9",
+      "bytes": 3637,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/bindings/package-pins.json": {
+      "sha256": "a8c583e5a73dec9602b7329e3c646e77e99677033c4229e20d38c173dabf3141",
+      "bytes": 1446,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/plan.json": {
+      "sha256": "f8b8a36f4439703964cd5d66d9e6408d37bc984215c6c07a5909a728af7db4e5",
+      "bytes": 61975,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-root-decision-20261016/native-proof-pins.json": {
+      "sha256": "befbbdba4d74fb50f8e67facc0d6e885f82942d72c7e2643dbefa547d13307a0",
+      "bytes": 27176,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-r6-observe-root-decision-20261016/actual-observe-summary.json": {
+      "sha256": "baefc32711c830e53879657f219ef8bb1cbef288f245ca2f4d581bbaa78ca3b3",
+      "bytes": 2358,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/observe/observed.json": {
+      "sha256": "7a34265a6df548c051d8b7ea58eeb86eac4d8469067d55449f257d39ea3b86d8",
+      "bytes": 116802,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/observe/complete.json": {
+      "sha256": "716ffd49c825e30154781fd8dc9692a804482b5f18f3fc600259d4ab7334698f",
+      "bytes": 251,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-usage-limit-native-wrapper-20261016-r6/stages/observe/manager-terminal.json": {
+      "sha256": "5b31fdfea607e975715b1cf63969ead77cb8fa0baff53b4ae9672d63492cf7a5",
+      "bytes": 49,
+      "mode": "0o600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-58057fa7/docs/reviews/2026-10-16-a0-sequence-r6-independent/REVIEW.md": {
+      "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125",
+      "bytes": 17274,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-0de241e8/docs/reviews/2026-10-16-a0-r6-observe-admission-independent/REVIEW.md": {
+      "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8",
+      "bytes": 17553,
+      "mode": "0o664",
+      "uid": 1000,
+      "gid": 1000
+    }
+  }
+}

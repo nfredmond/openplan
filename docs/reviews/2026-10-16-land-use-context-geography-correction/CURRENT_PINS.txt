@@ -1,0 +1,59 @@
+CURRENT HANDOFF SEAL. Additive to unchanged historical pregrant manifests.
+Source base 0875f3f341eac90adc1463a59b6422f0212e5a90
+Base app tree 2b1916349d7379c96bf97b1708b3e4016d37384d
+Branch t3/land-use-context-geography-correction
+424 migration sources; newest allocated file unapplied.
+ROOT trial01 FAILED1, accepted classifier/focused partial. ROOT trial02 types/lint/direction exit0.
+No source/test/harness changes after checks; only public report prose and new handoff evidence.
+
+SHA256  mode  bytes  path
+37354a6b9402974f2e7f0c81a3bcd4fae18e304999aaa4d16d597d6f21650a5b  0664  1316  /home/nathaniel/.local/state/openplan/land-use-cli-official-go-release-20261016/download-receipt.json
+24b4aa5ee4a89c6b5fa19299940f92f02723c14a0607f91af80c4ab55002eb83  0664  2646  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/PACKET_SHA256.txt
+60e2c3b51e83702f3a81a95c8a101e64d45fde93c8f4cc26e5b7ee3ef203687e  0664  71279  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SETUP_CLOSURE.sha256
+e1bbdaea8bcd0e474613e5741009add1b8a0a6d80325c2ddf47533d632e12a34  0664  956  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SUBJECT_MODES.txt
+066861e8394c3bf231dd56802cf39f46dde89a504bf11ddb5ba4060c5b4e02e4  0664  1452  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/SUBJECT_PINS.sha256
+06f2729e64561a0e1454a9308fcb9305bfbf9993cd8e98193be55d89af6f4468  0664  4097  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/WINDOW_PINS.sha256
+66de04e42af0b758d4fe30579238e09ecc6f140c3a5635d0c4b25baad69cc98b  0600  6956  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/classifier-controls.py
+2d9db71c7537d509581e4b2356c7f0e3bdee43760b75bf34384b294e35a82249  0600  2109  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/CLI_RECEIPT_PINS.json
+3d76cde23d9679da77ffb2f2bc1a7c79ef0513e702a59bd5d20701ecf4c1d379  0600  42009  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/EVIDENCE_INDEX.json
+5a22246b12bc01711e52a9513b9961413867e78c6ad748ac26bc4558fe681ec6  0600  16435  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/STATUS.before.md
+290c2ce1c95eb477458c2a2d831adc826a0cf3de9db38de856134767e017c372  0664  54927  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/base-migrations.git-tree.txt
+4e2ca732f29b3b8d9b00aae2ac31ed571fb6c46f7a00b0941bfdde83c84597ab  0600  334  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/failed01-preservation-readback.json
+0bf389e6f520b20d310131a48f8d4efe098c0e925a4ab13564011372b24a2464  0600  309  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/final-handoff-20261016/final-source-readback.json
+a84d01d5d6ca2bc76667e85908ab865ad3302b6c8b5933c3aa7835764a2af220  0600  14829  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/focused-controls.py
+62c1c4cd0e57218faffeb18abf69d7d3b2cc0ed2d3071ac8eb678c70b15f3689  0600  666  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/tsconfig.focused.json
+34856aa1825ef9ce4f1140476705e040c4e950a4ac65629cc1be6965d2df5291  0600  1006  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/vitest.focused.mjs
+773f385f72a97871e5c58470d146b5d9300ecc6240959a27760b23a6a4920b78  0600  5893  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/window-controls.py
+62188f03c6f7ef7a26d45c65bb5ee3b06955dba20ebbd1a42dc1ef568fdfc96b  0600  30446  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/failed01-inventory.json
+9fdebd5d01f77776ca5cae84aca5115d51de0a23d60d1c629dce49787ae45d97  0600  5464  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/grant.json
+63fe6818def7a7c68c478ca6113b65039811dc078e31e57a1adc2aca2a99596a  0600  5647  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/grant.json
+20cfec416daaaa43a8458ea3eb056457423c57cf08aa288a0adec7cbbdd356cc  0600  542  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/inner-terminal.json
+f34509fd99cbf47b983e894c089416f9b532f57639a877149204a81381c2cb8a  0600  247  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/success.json
+c92b20579650a313cd30fe3b5e9aa8a0ff82ac203ad171273923887ca60c0016  0600  707  /home/nathaniel/.local/state/openplan/land-use-geography-focused-root-20261016/trial02/tsconfig.focused.json
+9db61311ee20e2782f215258cb02441f9990f99384cd90770ce14934348200be  0600  249  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016/parent-terminal.json
+fc4b4d057839c8f991ed1e1d59b3aa5ad196d4a9f6dddbced71341a9d042cb35  0600  2145  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016/terminal.json
+f5e68388cf94d99c94ba07dfba0e92332719bdc479ab49ef03f0462ae1cf59d2  0600  3059  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/dispatch-intent.json
+076aaca2d02ed91ea7eb3478808e049aa52767c4ef31c1a4178f96adf6a91f06  0600  420  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/generated.json
+20bbf97fc9b8eb44ebf81ba98eb69cc548c3c1f5702ec085c6eec5441a2e9825  0600  55470  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/intent.json
+5471e3393515e5f8b9b46dc46a9443ea7298d4a08f8bd0467431f8d806ecf845  0600  249  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/parent-terminal.json
+8981951b276199bfc22910351351e1ce461cdba7f824e3e366578234271b7711  0600  1480  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/root-slot-allocation.json
+25cbc257125e19486378e7ee8ad46312b2a014741db2805daa4b24c12c55284b  0600  3720  /home/nathaniel/.local/state/openplan/land-use-migration-generation-root-20261016-r2/terminal.json
+07a78359bfe47c9846162cf35ba71f2bff2e3deed5c93ab675280a06c3b2dc21  0664  6577  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/geography-guard.draft.sql
+6b65912243a91795841d06d1e30ee5d4f697699f7855e30245d423968cbd6016  0664  16347  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/app/api/land-use-plans/[planId]/route.ts
+1093f5a175882095b3892520654e1121f98fee05fa70f48924526145a0aff354  0664  18341  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/fixtures/land-use-plans/context-persistence.sql
+24a76523f1da9333131b1a95d11da2c5bb33af7e903369d82c6638ddca25da9c  0664  13920  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/fixtures/land-use-plans/draft-revision.sql
+a263b162cb346c116d1d45b5112584708c0482cd4851cc110a4792239f26e6d6  0664  9985  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/land-use-plan-geography-patch.test.ts
+9871ff83aea93e5ada8639931776f81f6bda329bda2dc83ba0b1e0f78bb9877c  0664  2801  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/src/test/land-use-plan-geography-source.test.ts
+b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002  0664  6500  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/openplan/supabase/migrations/20261017014010_land_use_plan_context_geography.sql
+1a331a4db0fb11f2b02795e159e0f2bceefd7ead80eccd979694ea9713035c88  0664  252711  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/CHANGELOG.md
+89dbd43fb6ea52e9c2bb05577f5d45a686b5d153aab5d63a9b802f4032f6fe89  0664  40760  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/ASSERTION_EVIDENCE.md
+b492ea19830475d4953004568efe63a4c06c67ef112ba72122d92f03991b0ba1  0664  1432  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/CLI_SOURCE.txt
+3d76cde23d9679da77ffb2f2bc1a7c79ef0513e702a59bd5d20701ecf4c1d379  0664  42009  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/EVIDENCE_INDEX.json
+e8a6d88ae366bc461c63af243d484ecba8cfee0ddf84f64f9217796205ff78ba  0664  9934  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/FINITE_WINDOW.md
+1ab99ae2bbc5dd885441627c4c994b9972288169daf4b1c0ddc5769014f2532e  0664  2891  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/GENERATION02.md
+fc561907f9ccd3c48ac74b889e3f80f7c00f52860f0bdcb64c3f4642a120d697  0664  17602  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/REPORT.md
+b802e9c64e52f86c5451adaab75f5d4d54b5033061c7257d967a82060e60d30f  0664  2561  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/SOURCE_AUDIT.md
+a15c30ab2ab327c962ab07eb928eef7fa446b199fca03ed834c9c102fd6aa113  0664  4134  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/SOURCE_PINS.txt
+5e2a97f64480960df44747aaa027a5049c80c9d341d17009e25b3bc360a0a046  0664  17054  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/STATUS.md
+07a78359bfe47c9846162cf35ba71f2bff2e3deed5c93ab675280a06c3b2dc21  0664  6577  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/geography-guard.draft.sql
+5f8e383eae0e5917de278f16b888455007c2192a9a93edcfbc38c38e76ff6dfd  0664  539  /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/production-from-draft.diff

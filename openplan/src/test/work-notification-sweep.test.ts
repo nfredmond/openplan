@@ -1044,6 +1044,38 @@ describe("the reminder window on each workspace's calendar", () => {
     expect(reminded(db)).toEqual(["tokyo-oct-21"]);
   });
 
+  it("reports a missing calendar row while retaining UTC fallback and readable peer calendars", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: "America/Los_Angeles" }, [
+      { id: "missing-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "missing-oct-22", workspace: "one", due: "2026-10-22" },
+      { id: "peer-oct-21", workspace: "two", due: "2026-10-21" },
+      { id: "peer-oct-22", workspace: "two", due: "2026-10-22" },
+    ]);
+    all.workspaces.splice(0, 1);
+
+    const result = await run(db, { now: new Date("2026-10-15T01:00:00Z") });
+
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["missing-oct-21", "missing-oct-22", "peer-oct-21"]);
+    const calendarRead = db.reads.find(
+      (read) => read.table === "workspaces" && read.select === "id, time_zone, home_country_code"
+    );
+    expect(calendarRead?.filters).toContainEqual({ kind: "in", column: "id", values: [WORKSPACE_ONE, WORKSPACE_TWO] });
+  });
+
+  it("reports empty calendar results while retaining reminders on UTC days", async () => {
+    const { db, all } = calendarDb({ one: "Asia/Tokyo", two: null }, [
+      { id: "missing-oct-21", workspace: "one", due: "2026-10-21" },
+      { id: "missing-oct-22", workspace: "one", due: "2026-10-22" },
+    ]);
+    all.workspaces.splice(0);
+
+    const result = await run(db, { now: new Date("2026-10-14T20:00:00Z") });
+
+    expect(result.workspaceCalendarsUnavailable).toBe(true);
+    expect(reminded(db)).toEqual(["missing-oct-21"]);
+  });
+
   it("counts the days a measure claim has waited on its workspace's calendar", async () => {
     const { db, all } = calendarDb({ one: "Asia/Tokyo", two: "America/Los_Angeles" }, []);
     all.measure_claims = [

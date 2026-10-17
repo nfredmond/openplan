@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 
 import { canAccessWorkspaceAction } from "@/lib/auth/role-matrix";
-import { readWgs84Viewport } from "@/lib/geo/wgs84-bounds";
+import { parseWgs84QueryViewport } from "@/lib/geo/wgs84-query-viewport";
 import { loadPublicDesignationMap } from "@/lib/land-use-plans/public-map";
 import { loadAdoptedReportSnapshot } from "@/lib/land-use-plans/report-snapshot";
 import { createApiAuditLogger } from "@/lib/observability/audit";
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest, context: Context) {
   audit.info("report_land_use_map_requested");
   const params = paramsSchema.safeParse(await context.params);
   if (!params.success) return NextResponse.json({ error: "Map not found" }, { status: 404 });
-  const bbox = readWgs84Viewport(request.nextUrl.searchParams.get("bbox")?.split(",").map(value => value.trim() ? Number(value) : Number.NaN));
+  const bbox = parseWgs84QueryViewport(request.nextUrl.searchParams.get("bbox"));
   if (!bbox) return NextResponse.json({ error: "Pass a valid bbox=west,south,east,north" }, { status: 400 });
   const supabase = await createClient();
   const auth = await supabase.auth.getUser();

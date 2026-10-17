@@ -1,0 +1,112 @@
+{
+  "tier": "FIXED_FIXTURE_SOURCE_INTENT_ONLY",
+  "sourceSHA256": "5af2e37ba342e8b8bdf3cb84c6e9044cd2fcfb62d9d70bf4ce9671587934292e",
+  "sourceUnchanged": true,
+  "cases": [
+    {
+      "name": "harmless-comment",
+      "outcome": "SURVIVED"
+    },
+    {
+      "name": "baseline",
+      "outcome": "PASS"
+    },
+    {
+      "failure": "AssertionError:postfreeze-replay-original-A",
+      "name": "old-mutable-B-final-replay",
+      "outcome": "KILLED"
+    },
+    {
+      "name": "restored",
+      "outcome": "PASS"
+    }
+  ],
+  "blind": [
+    "PostgreSQL parsing/execution and stored A/B receipts",
+    "actual RLS/trigger/freeze/concurrency behavior"
+  ],
+  "nativeDispatches": 0,
+  "resources": {
+    "cpu.max": "50000 100000",
+    "memory.max": "536870912",
+    "memory.swap.max": "0",
+    "pids.max": "64"
+  },
+  "terminal": {
+    "backendDeath": "UNASSESSED",
+    "classification": "terminal-zero",
+    "deadlineSeconds": 45,
+    "elapsedSeconds": 0.15489835594780743,
+    "failure": null,
+    "parentPID": 3563198,
+    "returncode": 0,
+    "streams": {
+      "stderr": {
+        "limit": 65536,
+        "observedBytes": 343,
+        "retainedBytes": 343,
+        "sha256": "5de8dbdddfc960b33aeecb01072d30e74e0aa19752b0f525a2f346d6c25295ae"
+      },
+      "stdout": {
+        "limit": 1048576,
+        "observedBytes": 0,
+        "retainedBytes": 0,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      }
+    },
+    "wrapperPID": 3563302
+  },
+  "files": {
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/check.py": {
+      "sha256": "f9cdc93fdc442fd7e976f493147997c9010fe60fe7cb5347af9f98c7bc9093ad",
+      "bytes": 4013,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/dispatch.py": {
+      "sha256": "4abaf269e68b535b3e7afa03cff6a89cf583846c8a9209d6c4dee466a10fc969",
+      "bytes": 1858,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/expected-change.json": {
+      "sha256": "2b01f89ff91500cefebe87ea90c4fdbf44775f0f3cede1a3b23afc4d8f447560",
+      "bytes": 685,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/grant.json": {
+      "sha256": "4613038328b728f1a537bc5791d35e4fd4f4a33d0a972cf4876522811b76aed0",
+      "bytes": 2498,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/result.json": {
+      "sha256": "46caef6b575bbbe73b07f0e575113e638ff5a3f1472669841b458c881da12e92",
+      "bytes": 139494,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/unit-01/intent.json": {
+      "sha256": "ca6d467d81e8471bc35b10b6c89d0b19ea4f6ca0eac629e0c9cd28d359cfac84",
+      "bytes": 1425,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/unit-01/returned-process.json": {
+      "sha256": "f98a2d8a6267ec3af25d37bfab11cff15c7c7c15a92b76de74d020e36ecfa86d",
+      "bytes": 73,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/unit-01/stderr.bin": {
+      "sha256": "5de8dbdddfc960b33aeecb01072d30e74e0aa19752b0f525a2f346d6c25295ae",
+      "bytes": 343,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/unit-01/stdout.bin": {
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0,
+      "mode": "0600"
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-replay-fixture-root-20261016/unit-01/terminal.json": {
+      "sha256": "451c2189419c7cef8e01953d3926013f4cf5c50cacc3f8f4eb08be13571bc797",
+      "bytes": 484,
+      "mode": "0600"
+    }
+  },
+  "additionalDispatchByAuthor": false
+}

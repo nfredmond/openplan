@@ -1,0 +1,729 @@
+{
+  "schema": 1,
+  "status": "FINAL_METADATA_SEAL_SELECTED_INERT_ACCEPTANCE_ONLY",
+  "sourcePackageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "trial01": {
+    "status": "FAILED_UNCHANGED_INCOMPLETE",
+    "requestSHA256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+    "baseline": "REUSED_PASS",
+    "harmless": "REUSED_SURVIVED",
+    "acceptedNamedFaultsReused": 2
+  },
+  "trial02": {
+    "status": "ACCEPTED_SELECTED_INERT_REMAINDER_ONLY",
+    "requestSHA256": "972e3e88479b88b6f4e8b0d2503e87caf7dd3a7b1b2dbb511e13c3831a7e0648",
+    "grantSHA256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+    "executedRemainingFaults": 7,
+    "exactAssertionReasons": 9,
+    "restoredBaseline": "PASS",
+    "all2067CurrentPinsMatch": true,
+    "all2050OriginalSealEntriesMatch": true,
+    "executableChangesAfterControls": false
+  },
+  "managerStartIdentityCorrelation": "UNPROVED",
+  "postShow": "RAW_UNBOUND_DEFAULTS",
+  "exactPeakBytes": "UNPROVED_ROUNDED_MANAGER_36.9M_ONLY",
+  "backendDeath": "UNASSESSED",
+  "privateInventories": {
+    "original-private": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/original-private-inventory.json",
+      "sha256": "4c672cdc38dcf5e89c01959e1fb48b0e9ddfb0d20ea7a4fa5738adcba5a7dc2e",
+      "files": 1966
+    },
+    "trial02-private": {
+      "path": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/final-metadata/trial02-private-inventory.json",
+      "sha256": "acfb4a9de8c06c96fde99db335c8e8d1890b275063cfcc55e2984774bc4cc750",
+      "files": 1334
+    }
+  },
+  "selectedEvidenceFiles": {
+    "evidence/trial02/actual-result-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/actual-result-readback.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 6080,
+        "type": "regular file",
+        "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717"
+      },
+      "copyMetadata": {
+        "sha256": "3954ceff7b70b0275f7977794eef7b21ff7ab2d029558d3f0a02ba42750f5717",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 6080
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/root-reader-error-01.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/root-reader-error-01.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 611,
+        "type": "regular file",
+        "sha256": "83439fe82b7be6dbd03d350f9f4bdbbbed87b62e44d9430c2b7fa103c76cd26a"
+      },
+      "copyMetadata": {
+        "sha256": "83439fe82b7be6dbd03d350f9f4bdbbbed87b62e44d9430c2b7fa103c76cd26a",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 611
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/grant-record.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/grant-record.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 402,
+        "type": "regular file",
+        "sha256": "da1fc5c874200c8bc0a9568d9b1fbe34d218a3d69fef2e25f12f5a12fccf7391"
+      },
+      "copyMetadata": {
+        "sha256": "da1fc5c874200c8bc0a9568d9b1fbe34d218a3d69fef2e25f12f5a12fccf7391",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 402
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pre-dispatch-review.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/pre-dispatch-review.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 853,
+        "type": "regular file",
+        "sha256": "f8c8fd7db1f970c31deb1349b5162ef657363cb222e06557b007147ccb77d318"
+      },
+      "copyMetadata": {
+        "sha256": "f8c8fd7db1f970c31deb1349b5162ef657363cb222e06557b007147ccb77d318",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 853
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-grant.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-grant.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 335,
+        "type": "regular file",
+        "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016"
+      },
+      "copyMetadata": {
+        "sha256": "28b43036ec39a9d92116c60a0c77d11b8b6d48703dd8cd4a0be06d1aaa40d016",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 335
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/root-outer-intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/root-outer-intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 429,
+        "type": "regular file",
+        "sha256": "a4b091b2faf9fe3a8e9a17b9e924da4a68aa3ccde72286668b0e07ea6d27dd3d"
+      },
+      "copyMetadata": {
+        "sha256": "a4b091b2faf9fe3a8e9a17b9e924da4a68aa3ccde72286668b0e07ea6d27dd3d",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 429
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 575,
+        "type": "regular file",
+        "sha256": "a7c6bd9f82676b21af37e2c8252e3832b9289ddc4816e829686b5da206cb856b"
+      },
+      "copyMetadata": {
+        "sha256": "a7c6bd9f82676b21af37e2c8252e3832b9289ddc4816e829686b5da206cb856b",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 575
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/returned-process.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/returned-process.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 73,
+        "type": "regular file",
+        "sha256": "650a67cc21ae44c167bb68093525f7b864828c9ad3364463f26225208f863304"
+      },
+      "copyMetadata": {
+        "sha256": "650a67cc21ae44c167bb68093525f7b864828c9ad3364463f26225208f863304",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 73
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/terminal.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 489,
+        "type": "regular file",
+        "sha256": "e19078e02ef0fd8622b71fd4ae247fed337277da7b3f925d5a4eec8cd99313d2"
+      },
+      "copyMetadata": {
+        "sha256": "e19078e02ef0fd8622b71fd4ae247fed337277da7b3f925d5a4eec8cd99313d2",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 489
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/source-final-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/source-final-readback.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 25,
+        "type": "regular file",
+        "sha256": "9a256c78e0a76b7f1a3b6560354062d81c3e78cc9b7e382b4773fc5fd017ea83"
+      },
+      "copyMetadata": {
+        "sha256": "9a256c78e0a76b7f1a3b6560354062d81c3e78cc9b7e382b4773fc5fd017ea83",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 25
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stdout.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 330,
+        "type": "regular file",
+        "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797"
+      },
+      "copyMetadata": {
+        "sha256": "6b3645b4b1f0b4fc1ba8a8d4c323b509f631d1d8918c3e74da8555143fb94797",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 330
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/parent/stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-trial02-root-decision-20261016/parent/stderr.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 298,
+        "type": "regular file",
+        "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e"
+      },
+      "copyMetadata": {
+        "sha256": "8c65eff4a02774b54e6e73444225539429a4a58069cd0a42ddb6782264744c7e",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 298
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-attempt/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 370,
+        "type": "regular file",
+        "sha256": "8ac2c7a36508c280cb087adf584e2be41b600397e3e16a67e8b68d8538ec5d7e"
+      },
+      "copyMetadata": {
+        "sha256": "8ac2c7a36508c280cb087adf584e2be41b600397e3e16a67e8b68d8538ec5d7e",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 370
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-attempt/resources-before.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/resources-before.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 1182,
+        "type": "regular file",
+        "sha256": "c94f8a9b298d6f36c011666b76230ba4a8cdc8bc4d52555f220428b57b59efd5"
+      },
+      "copyMetadata": {
+        "sha256": "c94f8a9b298d6f36c011666b76230ba4a8cdc8bc4d52555f220428b57b59efd5",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 1182
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-attempt/controls.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/controls.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2309,
+        "type": "regular file",
+        "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929"
+      },
+      "copyMetadata": {
+        "sha256": "a61d6e98d16e6cf88bc9ae45f016461ae9a178e8a247e53982ffe9fda86e9929",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2309
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-attempt/post-custody.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/post-custody.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 304017,
+        "type": "regular file",
+        "sha256": "9b77d93f685bc61f7cf2c665b97da786829adfe02574ac8d12cfb2c613a882c4"
+      },
+      "copyMetadata": {
+        "sha256": "9b77d93f685bc61f7cf2c665b97da786829adfe02574ac8d12cfb2c613a882c4",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 304017
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial02/pure-attempt/complete.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/pure-attempt/complete.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 232,
+        "type": "regular file",
+        "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb"
+      },
+      "copyMetadata": {
+        "sha256": "ee57e4bf61d53eb5de75bf6e0785653092e3eb244c6610003b28fe7276baa9fb",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 232
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/failed-pure-disposition.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-pure-disposition.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 983,
+        "type": "regular file",
+        "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1"
+      },
+      "copyMetadata": {
+        "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 983
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/failed-terminal-seal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-terminal-seal.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2600,
+        "type": "regular file",
+        "sha256": "f70283a0c8fb1aa87d44c7436d9fb1216bebd35849d33689428a670aae583ebf"
+      },
+      "copyMetadata": {
+        "sha256": "f70283a0c8fb1aa87d44c7436d9fb1216bebd35849d33689428a670aae583ebf",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2600
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 567,
+        "type": "regular file",
+        "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85"
+      },
+      "copyMetadata": {
+        "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 567
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/returned-process.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/returned-process.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 73,
+        "type": "regular file",
+        "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a"
+      },
+      "copyMetadata": {
+        "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 73
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/terminal.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 494,
+        "type": "regular file",
+        "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d"
+      },
+      "copyMetadata": {
+        "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 494
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/source-final-readback.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/source-final-readback.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 19,
+        "type": "regular file",
+        "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f"
+      },
+      "copyMetadata": {
+        "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 19
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stdout.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 337,
+        "type": "regular file",
+        "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490"
+      },
+      "copyMetadata": {
+        "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 337
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/parent/stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stderr.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2402,
+        "type": "regular file",
+        "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d"
+      },
+      "copyMetadata": {
+        "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 2402
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/pure-attempt/intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 370,
+        "type": "regular file",
+        "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf"
+      },
+      "copyMetadata": {
+        "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 370
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/pure-attempt/resources-before.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/resources-before.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 948,
+        "type": "regular file",
+        "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b"
+      },
+      "copyMetadata": {
+        "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 948
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/pure-attempt/controls.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/controls.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 407,
+        "type": "regular file",
+        "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd"
+      },
+      "copyMetadata": {
+        "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 407
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/pure-attempt/post-custody.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/post-custody.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 10337,
+        "type": "regular file",
+        "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68"
+      },
+      "copyMetadata": {
+        "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 10337
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/pure-grant.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-grant.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 634,
+        "type": "regular file",
+        "sha256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f"
+      },
+      "copyMetadata": {
+        "sha256": "d8d8f503e950f37faa6010fe38509365377858f0fc8147d830c8300f9af2996f",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 634
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/trial01/root-outer-intent.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/root-outer-intent.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 600,
+        "type": "regular file",
+        "sha256": "9038a409b24787356465f3250ff4a4289abdb9075084cf82c990324151c369d0"
+      },
+      "copyMetadata": {
+        "sha256": "9038a409b24787356465f3250ff4a4289abdb9075084cf82c990324151c369d0",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 600
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/prior-native-failure/failed-native-attempt-disposition.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-disposition.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 1455,
+        "type": "regular file",
+        "sha256": "4f7058be943512af95fbb5cf0b270c2766bb09a25b5c5cd4a959f57b4a15f75d"
+      },
+      "copyMetadata": {
+        "sha256": "4f7058be943512af95fbb5cf0b270c2766bb09a25b5c5cd4a959f57b4a15f75d",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 1455
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/prior-native-failure/failed-native-attempt-seal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-catalog-root-decision-20261016/failed-native-attempt-seal.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 5330,
+        "type": "regular file",
+        "sha256": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47"
+      },
+      "copyMetadata": {
+        "sha256": "03af0418d965e06b23d72f095bb043b064f841beb93adf35ec4c9a26a1ad1f47",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 5330
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/prior-native-failure/query-stderr.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stderr.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 55,
+        "type": "regular file",
+        "sha256": "88cb46494b3249cb7cc354338357ec6718eae891e2a2bbf86715ce129869ecff"
+      },
+      "copyMetadata": {
+        "sha256": "88cb46494b3249cb7cc354338357ec6718eae891e2a2bbf86715ce129869ecff",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 55
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/prior-native-failure/query-stdout.bin": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/stdout.bin",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 72,
+        "type": "regular file",
+        "sha256": "501c829fca9556b1fc82b4517243d8422b0526784a66083a26ab62aab352dd31"
+      },
+      "copyMetadata": {
+        "sha256": "501c829fca9556b1fc82b4517243d8422b0526784a66083a26ab62aab352dd31",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 72
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    },
+    "evidence/prior-native-failure/query-terminal.json": {
+      "originalPath": "/home/nathaniel/.local/state/openplan/budget-native-observe-preparation-20261016/capture-attempt/request-002/terminal.json",
+      "originalMetadata": {
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 325,
+        "type": "regular file",
+        "sha256": "6eaaecca347c82c4d79bb98608a10d98f07093363a2f5d241f7078c6effd8907"
+      },
+      "copyMetadata": {
+        "sha256": "6eaaecca347c82c4d79bb98608a10d98f07093363a2f5d241f7078c6effd8907",
+        "mode": 384,
+        "uid": 1000,
+        "gid": 1000,
+        "bytes": 325
+      },
+      "claim": "Selected actual receipt only; original remains immutable."
+    }
+  },
+  "nativeOperationGranted": false,
+  "successorGranted": false,
+  "finalIndependentByteReview": "PENDING_ROOT_NEW_DELEGATION",
+  "sealingOperations": "Metadata only; no subject import, check, native command or manager query."
+}

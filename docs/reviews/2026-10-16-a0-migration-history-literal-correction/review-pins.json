@@ -1,0 +1,93 @@
+{
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/allocatefb77.md": {
+    "bytes": 22152,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "74d11bdf7ad0c77b7c6d10514fef761cd0a0ee766b30fe0e2214432941fcb745",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/observe714.md": {
+    "bytes": 17553,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "7668b4eb93b871ea98d44db4819123427ea4db2ac71e323de2291c7dfbc576f8",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/restore7c7f.md": {
+    "bytes": 21648,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "f3cdc9bece92ab5caf000d4aed3a72e3c1473ae4190de366204cea71c6bfe3c5",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/a0-migration-history-literal-correction-20261016/reports/source688.md": {
+    "bytes": 17274,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "07af1a42a1771c4e2d70c7f5a365d1c722f35938dcefc25ee68d170156366125",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/custody-manifest.json": {
+    "bytes": 7955,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "3f9bbd065fcde9e8776ccbd3d0933e7a33a8d1ccfff583378d7d969ad54683e5",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__bin__psql__common.c": {
+    "bytes": 55789,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "29fe648c0057e3d41eca6810d410171f6d3795c13482a9ff238872e85aa960b6",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__bin__psql__mainloop.c": {
+    "bytes": 18388,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "8d08a81c505571c39c0bc238816bdbd1edf9990d9364d6d7a40d70cb2bd6dcab",
+    "uid": 1000
+  },
+  "/home/nathaniel/.local/state/openplan/postgres-history-literal-semantics-20261016/official/src__fe_utils__psqlscan.l": {
+    "bytes": 41761,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "32db95d95e9e66f3e4ab2675424fba2c822409a570052d8c1158ef0998f0f068",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-012fdf58/docs/reviews/2026-10-16-a0-r6-apply17-admission-independent/REVIEW.md": {
+    "bytes": 24369,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "6c467c1bf0c7861953ab1f380fa3301265f6bfa47a5c9338b3e4b3faa32b19f2",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/RESEARCH.md": {
+    "bytes": 16653,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "9dcc4096d76eb121d15455b4e5fb303f7529c8a05a67942d84b017cb31b20570",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/SOURCES.md": {
+    "bytes": 6344,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "ab91c8f94a15cb335d0e5a4bb68a998855f5ae95ef5b74f4a11d6524bfae48e1",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/STATUS.md": {
+    "bytes": 2362,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "dd015804ed00ea90c5af54da114a72f17b83554b01501d09c952edbdfba3f68d",
+    "uid": 1000
+  },
+  "/home/nathaniel/.t3/worktrees/openplan/t3-989ae2bb/docs/reviews/2026-10-16-postgres-history-literal-semantics/source-pins.json": {
+    "bytes": 13830,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "9685e33d6351802ed1d8a0d6204fb8d9ef383ac91845a40b49e5306314da549e",
+    "uid": 1000
+  }
+}

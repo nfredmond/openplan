@@ -1,0 +1,49 @@
+-- PREPARATION ONLY. No target is allocated. External record verification comes first.
+BEGIN READ ONLY;
+SET LOCAL statement_timeout='10s';
+SET LOCAL lock_timeout='3s';
+DO $guard$
+BEGIN
+ IF current_database() IS DISTINCT FROM @@DATABASE@@
+ OR (SELECT oid FROM pg_database WHERE datname=current_database()) IS DISTINCT FROM @@DATABASE_OID@@::oid
+ OR (SELECT system_identifier::text FROM pg_control_system()) IS DISTINCT FROM @@SYSTEM_ID@@
+ OR (SELECT oid FROM pg_roles WHERE rolname=session_user) IS DISTINCT FROM @@ADMIN_SESSION_OID@@::oid
+ OR (SELECT oid FROM pg_roles WHERE rolname=current_user) IS DISTINCT FROM @@ADMIN_EFFECTIVE_OID@@::oid
+ THEN RAISE EXCEPTION 'budget-target-system-oid-actor' USING ERRCODE='22023'; END IF;
+ IF current_setting('openplan.budget_lease',true) IS DISTINCT FROM @@LEASE@@
+ OR current_setting('openplan.budget_root_sha',true) IS DISTINCT FROM @@ROOT_SHA@@
+ OR current_setting('openplan.budget_history_sha',true) IS DISTINCT FROM @@HISTORY_SHA@@
+ OR current_setting('openplan.budget_catalog_sha',true) IS DISTINCT FROM @@CATALOG_SHA@@
+ THEN RAISE EXCEPTION 'budget-external-prerequisite-bindings' USING ERRCODE='22023'; END IF;
+END $guard$;
+SELECT current_database(), d.oid AS database_oid, session_user, current_user,
+ pg_backend_pid(), pg_postmaster_start_time(), c.system_identifier::text
+ FROM pg_database d CROSS JOIN pg_control_system() c WHERE d.datname=current_database();
+SELECT version,name,statements FROM supabase_migrations.schema_migrations ORDER BY version;
+-- Catalog definitions/ACL/roles must be independently compared with the root record.
+SELECT t.tgrelid::regclass::text,t.tgname,t.tgenabled,pg_get_triggerdef(t.oid)
+ FROM pg_trigger t WHERE NOT t.tgisinternal AND t.tgrelid IN
+ ('auth.users'::regclass,'public.workspaces'::regclass,'public.workspace_members'::regclass)
+ ORDER BY 1,2;
+SELECT p.oid::regprocedure::text,pg_get_userbyid(p.proowner),p.prosecdef,p.proconfig,p.proacl,
+ pg_get_functiondef(p.oid) FROM pg_proc p WHERE p.oid IN
+ ('public.handle_new_user()'::regprocedure,'public.enforce_workspace_owner_floor()'::regprocedure,
+ 'public.workspace_member_can_write(uuid)'::regprocedure,'public.workspace_role_rank(text)'::regprocedure,
+ 'public.retain_contract_mutable_change()'::regprocedure,'public.retain_contract_source_deletion()'::regprocedure)
+ ORDER BY 1;
+SELECT r.oid,r.rolname,r.rolsuper,r.rolinherit,r.rolbypassrls,r.rolcanlogin,r.rolcreaterole,r.rolcreatedb
+ FROM pg_roles r ORDER BY r.oid;
+SELECT roleid,member,grantor,admin_option FROM pg_auth_members ORDER BY roleid,member;
+SELECT defaclrole,defaclnamespace,defaclobjtype,defaclacl FROM pg_default_acl
+ ORDER BY defaclrole,defaclnamespace,defaclobjtype;
+SELECT c.oid::regclass::text,c.relowner,c.relacl,c.relrowsecurity,c.relforcerowsecurity,
+ a.attnum,a.attname,a.attisdropped,format_type(a.atttypid,a.atttypmod),a.attacl
+ FROM pg_class c LEFT JOIN pg_attribute a ON a.attrelid=c.oid AND a.attnum>0
+ WHERE c.oid IN ('auth.users'::regclass,'public.workspaces'::regclass,'public.workspace_members'::regclass)
+ ORDER BY 1,a.attnum;
+SELECT * FROM pg_policies WHERE schemaname='public' AND tablename IN ('workspaces','workspace_members')
+ ORDER BY tablename,policyname;
+SELECT conrelid::regclass::text,conname,convalidated,pg_get_constraintdef(oid)
+ FROM pg_constraint WHERE conrelid IN ('auth.users'::regclass,'public.workspaces'::regclass,'public.workspace_members'::regclass)
+ ORDER BY 1,2;
+COMMIT;
