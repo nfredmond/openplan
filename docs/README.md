@@ -3,7 +3,7 @@
 Start here:
 
 - [October 17 M1 held-caller review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md): accepted source and saved supplied controls; selected-history capture, the complete migration423 predecessor and native retained-context proof remain held.
-- [A0 supplied parent94 checkpoint](reviews/2026-10-16-history-and-dependency-pure-checkpoints/A0_PARENT_PURE94.md): accepted supplied-process and file-descriptor controls, with earlier failures preserved. Exact-parent source review and separate operation/risk/admission remain required.
+- [October 17 A0 parent and collector review](reviews/2026-10-17-a0-multiset-parent-independent/REPORT.md): accepted exact parent source and saved supplied94 evidence, with earlier failures preserved. Native operation, post-failure risk disposition and admission remain separate and held.
 - [October 16 reviewed preparation packets](reviews/2026-10-16-reviewed-proof-packets-root-integration/STATUS.md): joined engagement and budget source evidence, contrary reviews, failed trials and native-operation holds.
 - [October 16 public entry observation](reviews/2026-10-16-public-ingress-partial/STATUS.md): read-only navigation and DOM measurements; registration, Auth and responsive visual acceptance remain untested.
 - [October 16 read-only catalogue capture](reviews/2026-10-16-budget-settings-native-root-acceptance/REPORT.md): accepted manager and native request custody; budget target and later stages remain unadmitted.
