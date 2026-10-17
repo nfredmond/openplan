@@ -1,0 +1,452 @@
+{
+  "dataFiles": 10,
+  "files": {
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/CASE_MAP.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "d4ab96f09b342e5068e3fe06ac63d532ac311009",
+      "originalDescriptor": {
+        "bytes": 61617,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "93796a898e414c98d442fc2ad4b7a3349bb40c48ce53e2616a42d8d5213ba17c",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/CASE_MAP.json",
+      "reviewCopyDescriptor": {
+        "bytes": 61617,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "93796a898e414c98d442fc2ad4b7a3349bb40c48ce53e2616a42d8d5213ba17c",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/CONTROL_PRESERVATION.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "72a401fdd05fa26b234e97d4825b447647c87993",
+      "originalDescriptor": {
+        "bytes": 10145,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "b16dc84e70e6b679ed793ecd18133cb8970cba5de3638b25ac8e2ed148690ab3",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/PRESERVATION.json",
+      "reviewCopyDescriptor": {
+        "bytes": 10145,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "b16dc84e70e6b679ed793ecd18133cb8970cba5de3638b25ac8e2ed148690ab3",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/DISABLED_GRANT_SCHEMA.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "5dd3a91be931986f2745fdc09b78447f9c9b83a1",
+      "originalDescriptor": {
+        "bytes": 2014,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "b21b2cdb169d8cc6cd72a6b68347796da3585c6c31c0963bb5289180712fe645",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/DISABLED_GRANT_SCHEMA.json",
+      "reviewCopyDescriptor": {
+        "bytes": 2014,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "b21b2cdb169d8cc6cd72a6b68347796da3585c6c31c0963bb5289180712fe645",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/GUARD_MAP.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "9f3a0d26449411e4196304942a5734db70eb3b2e",
+      "originalDescriptor": {
+        "bytes": 11061,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "8e663b9a59fc87c88cf6f09989db20bef62150591bdb5e6b55cd94d9802ae1c7",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/GUARD_MAP.json",
+      "reviewCopyDescriptor": {
+        "bytes": 11061,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "8e663b9a59fc87c88cf6f09989db20bef62150591bdb5e6b55cd94d9802ae1c7",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/PREPARED_CONFIG.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "9ae8ba68da1a419b4bc36f6b6a939e5ca1730791",
+      "originalDescriptor": {
+        "bytes": 5983,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "95a2dc11313d70e80e658c6af3ca968ea325e2f749ed75a9437ece2f2b9d22ba",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PREPARED_CONFIG.json",
+      "reviewCopyDescriptor": {
+        "bytes": 5983,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "95a2dc11313d70e80e658c6af3ca968ea325e2f749ed75a9437ece2f2b9d22ba",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/PURE_REQUEST.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "17154483b591dec6a52dcba3a09accb627661349",
+      "originalDescriptor": {
+        "bytes": 8038,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "9093bda164146861ea12b6051af2c6ae639115aff418cf7a4bab46f58c791f5e",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PURE_REQUEST.json",
+      "reviewCopyDescriptor": {
+        "bytes": 8038,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "9093bda164146861ea12b6051af2c6ae639115aff418cf7a4bab46f58c791f5e",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/READ_MAP.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "73b17543ace6dedf2e74a53ce8fdf8d9e355682f",
+      "originalDescriptor": {
+        "bytes": 3274,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "efbfbd37787cfabd56767309b84314da4e6a7fd04adf5c0128c7a95a4a9591ec",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/READ_MAP.json",
+      "reviewCopyDescriptor": {
+        "bytes": 3274,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "efbfbd37787cfabd56767309b84314da4e6a7fd04adf5c0128c7a95a4a9591ec",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/RUNTIME_MANIFEST.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "b865240c08ec2258c1dc73639424308f3f11f35c",
+      "originalDescriptor": {
+        "bytes": 288499,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "f7a53f48563b1ddeba0e2abd88d8cd1fb9a66c3f98da09279dfece6c9e1a8e4d",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/RUNTIME_MANIFEST.json",
+      "reviewCopyDescriptor": {
+        "bytes": 288499,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "f7a53f48563b1ddeba0e2abd88d8cd1fb9a66c3f98da09279dfece6c9e1a8e4d",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/SOURCE_INPUTS.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "650c909267a4c1c8b2e42cbc5cfb04967b02e48e",
+      "originalDescriptor": {
+        "bytes": 7861,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "8737a87445f85492a21db7f6d8e8b4dd9ce43d4924f71e043abeeca48fa3f7dc",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/SOURCE_INPUTS.json",
+      "reviewCopyDescriptor": {
+        "bytes": 7861,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "8737a87445f85492a21db7f6d8e8b4dd9ce43d4924f71e043abeeca48fa3f7dc",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/WINDOW_PRESERVATION.json": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "8d3316b5a230911ab3977f61c107b5f9f9e98051",
+      "originalDescriptor": {
+        "bytes": 16616,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "7b52b3bff5d318f0d90547af2e0c5cab6daeef2415c366fa19554e548e81b002",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/PRESERVATION.json",
+      "reviewCopyDescriptor": {
+        "bytes": 16616,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "7b52b3bff5d318f0d90547af2e0c5cab6daeef2415c366fa19554e548e81b002",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/archive_checks.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "e4f9aa467cb97d51935d4a49072c62b890fae99f",
+      "originalDescriptor": {
+        "bytes": 2724,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/archive_checks.py",
+      "reviewCopyDescriptor": {
+        "bytes": 2724,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "43e1d48440a8b59dd7735577c2be88a10d41e9956d70a8ce6a6f5f6fc5ff748b",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/controls.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "16ac0027629db50992ee5b06c939e85b05a38c09",
+      "originalDescriptor": {
+        "bytes": 14220,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "effd951e7b2ee447cc1f0cc5bb579e394b78a1b64b235bbc36d98196091c6458",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/controls.py",
+      "reviewCopyDescriptor": {
+        "bytes": 14220,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "effd951e7b2ee447cc1f0cc5bb579e394b78a1b64b235bbc36d98196091c6458",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/guard_controls.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "bfc2750ba8330de006d0b6c4adc1aeaa008f5a0a",
+      "originalDescriptor": {
+        "bytes": 7315,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "10cf97996820104dbb038d47de86003a5238bb87fb7aa51054a26859aee100dc",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/guard_controls.py",
+      "reviewCopyDescriptor": {
+        "bytes": 7315,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "10cf97996820104dbb038d47de86003a5238bb87fb7aa51054a26859aee100dc",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/history_core.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "2e19ac583d7ffdc6708061f65b01f86cdb3a1f52",
+      "originalDescriptor": {
+        "bytes": 7777,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/history_core.py",
+      "reviewCopyDescriptor": {
+        "bytes": 7777,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/operation_caller.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "045f5976a7a7197801b377f8b4aead975062ff5b",
+      "originalDescriptor": {
+        "bytes": 8102,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/operation_caller.py",
+      "reviewCopyDescriptor": {
+        "bytes": 8102,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e32a8baa5c675d20547d52a8e5198d2bfdf91dd9acaadd357c13fc567e1fd6d1",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/pure_main.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "86cfdcbbf1eec433f242ab546f22b4e03bc90c3c",
+      "originalDescriptor": {
+        "bytes": 7953,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "2ba697f2056b39f8e9b940b7be2c4878918c772eefa8098a50d160381df3c063",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/pure_main.py",
+      "reviewCopyDescriptor": {
+        "bytes": 7953,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "2ba697f2056b39f8e9b940b7be2c4878918c772eefa8098a50d160381df3c063",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/pure_window.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "3a8a00ab402309b9714d9a6828dc9252d5aa6592",
+      "originalDescriptor": {
+        "bytes": 25096,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "c56314b63c6798e2d91b9aefbff5a3ef8b704aa0c739151bed52b8c2c21a402a",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/pure_window.py",
+      "reviewCopyDescriptor": {
+        "bytes": 25096,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "c56314b63c6798e2d91b9aefbff5a3ef8b704aa0c739151bed52b8c2c21a402a",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/reader_controls.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "d113b66efac0f55278750155b2a1e7fc25f1cdc1",
+      "originalDescriptor": {
+        "bytes": 5560,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "6f3ed9fcc283a7c419d70ddae0ef2cf7a861009313f519b98b8f0be8dea0739d",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/reader_controls.py",
+      "reviewCopyDescriptor": {
+        "bytes": 5560,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "6f3ed9fcc283a7c419d70ddae0ef2cf7a861009313f519b98b8f0be8dea0739d",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/strict_reader.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "4cee3d33c0ce5f3c97abfa94135b08d4840f6ff9",
+      "originalDescriptor": {
+        "bytes": 8071,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/strict_reader.py",
+      "reviewCopyDescriptor": {
+        "bytes": 8071,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "65a0b3dd9f2e1aa9cf4ef8607f59be8a74132c60e5c9ea5b451084d92e73613b",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/supplied_adapter.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "a287d973395b817173985b8bd8f030db5e64cedb",
+      "originalDescriptor": {
+        "bytes": 11348,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "655fd0cbae675c168fa181dce98b9987621c7a919bcbee966bf6399f8d9b3966",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-control-preparation-r1/supplied_adapter.py",
+      "reviewCopyDescriptor": {
+        "bytes": 11348,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "655fd0cbae675c168fa181dce98b9987621c7a919bcbee966bf6399f8d9b3966",
+        "uid": 1000
+      }
+    },
+    "docs/reviews/2026-10-16-m1-history-capture-operation-preparation/review-source/window_primitives.py": {
+      "byteIdentical": true,
+      "contentPathOrLogicTransforms": false,
+      "executedFromPublicReviewPath": false,
+      "gitBlobSHA1": "7f9709643a449b00d2dab0868ff7a33d22e1161c",
+      "originalDescriptor": {
+        "bytes": 7836,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "bdf564f514b6c28e9c5baaf2b7a63f6185836adcd3bfe035e4c4ea8c68867edc",
+        "uid": 1000
+      },
+      "originalExecutionOrDataPath": "/home/nathaniel/.local/state/openplan/m1-history-capture-operation-preparation-20261016/pure-window-preparation-r1/window_primitives.py",
+      "reviewCopyDescriptor": {
+        "bytes": 7836,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "bdf564f514b6c28e9c5baaf2b7a63f6185836adcd3bfe035e4c4ea8c68867edc",
+        "uid": 1000
+      }
+    }
+  },
+  "gitMode": "100644 non-executable; Git does not preserve private0600 permission bits",
+  "lineEndingsOrEOFChanges": false,
+  "originalPrivateMode": 384,
+  "runtimeCohortReplayed": false,
+  "sourceFiles": 11,
+  "tier": "BYTE_IDENTICAL_REVIEW_ARTIFACTS_NOT_ACTIVE_ENTRIES"
+}
