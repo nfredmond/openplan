@@ -1,0 +1,18 @@
+--- /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py
++++ /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py
+@@ -17,11 +17,11 @@
+ HERE=Path(__file__).resolve().parent
+ PACKET=HERE.parent
+ PRIVATE=Path('/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016')
+-ROOT=PRIVATE/'trial02'
+-ATTEMPT=ROOT/'attempt-02'
+-MODEL=ROOT/'model-parent-02'
++ROOT=PRIVATE/'trial03'
++ATTEMPT=ROOT/'attempt-03'
++MODEL=ROOT/'model-parent-03'
+ LOCK=PRIVATE.parent/'compiler-repair-checks-20261015.lock'
+-UNIT='openplan-a0-multiset-parent-correlation-TEST-02-20261016'
++UNIT='openplan-a0-multiset-parent-correlation-TEST-03-20261016'
+ CAPS={'memory.max':'536870912','memory.swap.max':'0','cpu.max':'50000 100000','pids.max':'64'}
+ HOST_ENV={'PATH':'/usr/bin:/bin','LANG':'C','HOME':'/nonexistent','XDG_RUNTIME_DIR':'/run/user/1000',
+     'DBUS_SESSION_BUS_ADDRESS':'unix:path=/run/user/1000/bus'}

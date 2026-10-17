@@ -1,0 +1,109 @@
+{
+  "actualOutcomes": null,
+  "config": {
+    "bytes": 428762,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "22f0b1ef11ad1eb83a2c09151d33bab4631bc313f4ffda4a44a04dceb2a67d3d",
+    "uid": 1000
+  },
+  "fixtureLaunchable": false,
+  "nativeGranted": false,
+  "prepared": {
+    "bytes": 326114,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "6738465888c2811156e317f34ff256bd5743dae2c98091c642ec9e967c450c9b",
+    "uid": 1000
+  },
+  "privateHandoff": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/HANDOFF.json",
+  "privateHandoffPin": {
+    "bytes": 8971,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "5d6471fff075cbadb1d0957aaa83b19fdd3af7015eeee2816c2c7d280c089240",
+    "uid": 1000
+  },
+  "request": {
+    "bytes": 2509,
+    "gid": 1000,
+    "mode": 384,
+    "sha256": "49b96a261adc9de8798870cc34e16706e9b44fb7efa463314446a3df16cdf10f",
+    "uid": 1000
+  },
+  "runtimeHeld": true,
+  "source": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONFIG.delta.patch": {
+      "bytes": 38038,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "223f797d750e8e4eb82c68f0e394af37814ff9a872b61243a9dfdbc74463cd85",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONFINEMENT_PLAN.md": {
+      "bytes": 3862,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "09f3b1ae4450b774c40d99845b150e6a4ebcf4a865e088083b35a5fc8c083e64",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/CONTROL_PLAN.md": {
+      "bytes": 1766,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "829a7dace08b2bb2cceba44962c92b380617cd1b8abb5101c7e3ee79ab090933",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/PARENT_RECIPE.md": {
+      "bytes": 3899,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "bed33168cea6bb0bb21a51a7f8063913bfa8c4491ea2cdcbea1d742d67b32752",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/PREPARATION_STATUS.md": {
+      "bytes": 1827,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d1755fe43a64989ab45f1795cd34c072dd39194beaf803563b82242744d08859",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/SOURCE_DELTA.md": {
+      "bytes": 3019,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "fb38a8590f78f7b24ae05f885343ce409afe16dfedfed5c6ece75a9341e265f2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/final_checks.py": {
+      "bytes": 2719,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/prepare.py": {
+      "bytes": 2992,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/source.delta.patch": {
+      "bytes": 1077,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "66bd6363b48fbd5c1d00e799fea88f70964156110aa7dff746270241b438fcad",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py": {
+      "bytes": 24943,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "af04305425a59053484427d739693dadbc2433b81b7b60d05b3f56dff6b77775",
+      "uid": 1000
+    }
+  },
+  "sourceClosureComplete": false,
+  "stage": "FINAL_FROZEN_TRIAL03_SOURCE_ONLY_HANDOFF_RUNTIME_HELD"
+}

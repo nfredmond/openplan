@@ -1,0 +1,13 @@
+# Trial02 source delta, runtime held
+
+TEST01 remains PERMANENT_HARNESS_SETUP_FAILURE1. Root observed outer session18635 exit1 and bwrap reporting `Can't create file at /dev/null: Read-only file system`. The entry receipt exists, but inner entry, before observation and control entry are absent. Zero of94 checks ran. No harmless survivor, named kill, baseline or native acceptance follows. Root reports service10.796 seconds, CPU5.384 seconds and rounded25.5M with zero swap. These are retained root observations, not new author diagnostics.
+
+The new wrapper adds exactly one initial `--ro-bind /dev/null /dev/null` before `--remount-ro /`. The existing final `--dev-bind /dev/null /dev/null` remains immediately before `--clearenv`. The initial bind supplies the otherwise absent mountpoint while the root remains writable during setup. The final bind replaces that existing target. This is a source inference pending a separately granted TEST02. It makes no claim about actual kernel behavior or successful startup.
+
+Mechanical changes give the wrapper a new `PRIVATE/trial02` root, attempt-02, model-parent-02 and TEST-02 unit. Its physical public source sits in the new public trial02 child. `HERE` names this wrapper child. `PACKET=HERE.parent` preserves the original frozen source location for control_entry, control-cases and production descriptor checks. The final checker changes two path references only. Prepare is byte-identical. The complete diff is source.delta.patch and the literal edit inventory is SOURCE_CHANGE_MANIFEST.json in the new private child.
+
+The original parent, custody, collector, fixed contract, adapter, fixture, controls, held entry, all assertions/readers,90 subject selection and four wrapper cases remain byte-frozen. No source-approved runtime, native ROOT/unit, source/app/connector/migration binding, target, namespace/oracle, privacy or resource limit changes. No learned baseline, current-map substitution, assertion relaxation or native proposal follows.
+
+FAILED01_PRESERVATION.json inventories148 existing owned and root-audit files in place before trial02 writes. It retains full SHA256/length/mode/UID/GID. No old1286 corpus copy occurs. Both original native catalogue failures remain FENCED_NO_REPLAY/UNKNOWN;006/007/complete remain absent and AFTER/backend death unassessed. Source closure and fixture launchability remain false.
+
+The premature root draft read remains a separate metadata fact in DRAFT_PIN_MISMATCH.json, not a source/trial failure or completed author pin claim. Root also previously guessed a nonexistent private source.delta.patch path; the actual diff was public. That is a reader-path fact, not evidence of a source mismatch. No additional receipt or guessed path is invented here.

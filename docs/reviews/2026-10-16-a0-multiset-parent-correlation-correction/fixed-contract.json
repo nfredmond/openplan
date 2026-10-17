@@ -1,0 +1,389 @@
+{
+  "acceptedPureManifest": {
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/actual-run-pins.json": {
+      "bytes": 830147,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1e4915d5b3810f2f4087589b019e30fc47157faf92d50532ffb6fbb043b95266",
+      "uid": 1000
+    }
+  },
+  "authorityRecordBytes": 1048576,
+  "bindings": {
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/catalogue-bindings.json": {
+      "bytes": 109016,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c5864c04c3a062b71f85655f357040c4d20acd4843a7044793a37e4ba86fd430",
+      "uid": 1000
+    }
+  },
+  "captureRecordBytes": 8388608,
+  "expectedCatalogueSections": [
+    "roots",
+    "relations",
+    "columns",
+    "defaults",
+    "constraints",
+    "indexes",
+    "triggers",
+    "policies",
+    "rewrites",
+    "inheritance",
+    "role_names",
+    "roles",
+    "memberships",
+    "rights",
+    "function_rights",
+    "default_acl",
+    "functions",
+    "dependencies",
+    "types",
+    "extensions"
+  ],
+  "fixtureLaunchable": false,
+  "functionsLimit": 64,
+  "inputBytes": 2097152,
+  "inputOracleTier": "SOURCE_CONSTRUCTION_FROM_ACCEPTED_PURE_FINAL_RESTORED_NOT_NATIVE_RESPONSE_BASELINE",
+  "nativeOperationGranted": false,
+  "parentRoot": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016",
+  "parentStderrBytes": 65536,
+  "parentStdoutBytes": 1048576,
+  "requests": [
+    {
+      "argv": [
+        "/usr/bin/systemctl",
+        "--user",
+        "show",
+        "openplan-a0-catalogue-dependency-multiset-20261016.service",
+        "--no-pager",
+        "--property=Id,InvocationID,MainPID,ControlGroup,ActiveState,SubState,RuntimeMaxUSec,MemoryMax,MemorySwapMax,CPUQuotaPerSecUSec,TasksMax"
+      ],
+      "inputPin": {
+        "bytes": 0,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-001/input.bin",
+      "purpose": "manager-self",
+      "request": 1,
+      "streamByteLimit": 16384,
+      "timeout": 5
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "inspect",
+        "--format",
+        "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\").NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+      ],
+      "inputPin": {
+        "bytes": 0,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-002/input.bin",
+      "purpose": "native",
+      "request": 2,
+      "streamByteLimit": 65536,
+      "timeout": 10
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "exec",
+        "-i",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "LANG=C.UTF-8",
+        "/usr/bin/find",
+        "-P",
+        "/",
+        "-mindepth",
+        "1",
+        "-maxdepth",
+        "1",
+        "-name",
+        "nonexistent",
+        "-print"
+      ],
+      "inputPin": {
+        "bytes": 0,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-003/input.bin",
+      "purpose": "native",
+      "request": 3,
+      "streamByteLimit": 4096,
+      "timeout": 5
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "exec",
+        "-i",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "LANG=C.UTF-8",
+        "HOME=/nonexistent",
+        "PGPASSFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pgpass",
+        "PGSERVICEFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pg_service.conf",
+        "PGCONNECT_TIMEOUT=5",
+        "psql",
+        "-XqAt",
+        "-h",
+        "/var/run/postgresql",
+        "-p",
+        "5432",
+        "-w",
+        "-U",
+        "supabase_admin",
+        "-d",
+        "openplan_a0_limit_c730358675ac8bb47ac15fdd",
+        "-v",
+        "ON_ERROR_STOP=1"
+      ],
+      "dependentPin": {
+        "bytes": 177996,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "d0880d2d570785d92415b94fc155464b5b064d2c7b7d9783fb9b68c7121540af",
+        "uid": 1000
+      },
+      "dependentSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-004/dependent.sql",
+      "inputPin": {
+        "bytes": 1654,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-004/input.bin",
+      "purpose": "native",
+      "request": 4,
+      "streamByteLimit": 8388608,
+      "timeout": 45
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "exec",
+        "-i",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "LANG=C.UTF-8",
+        "HOME=/nonexistent",
+        "PGPASSFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pgpass",
+        "PGSERVICEFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pg_service.conf",
+        "PGCONNECT_TIMEOUT=5",
+        "psql",
+        "-XqAt",
+        "-h",
+        "/var/run/postgresql",
+        "-p",
+        "5432",
+        "-w",
+        "-U",
+        "supabase_admin",
+        "-d",
+        "openplan_a0_limit_c730358675ac8bb47ac15fdd",
+        "-v",
+        "ON_ERROR_STOP=1"
+      ],
+      "dependentPin": {
+        "bytes": 214685,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "8696d62a6847098d33a9fa60f20578716e432d4775677d7845a80a4f7ea407cf",
+        "uid": 1000
+      },
+      "dependentSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-005/dependent.sql",
+      "inputPin": {
+        "bytes": 1654,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-005/input.bin",
+      "purpose": "native",
+      "request": 5,
+      "streamByteLimit": 8388608,
+      "timeout": 45
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "exec",
+        "-i",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce",
+        "/usr/bin/env",
+        "-i",
+        "PATH=/usr/bin:/bin",
+        "LANG=C.UTF-8",
+        "HOME=/nonexistent",
+        "PGPASSFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pgpass",
+        "PGSERVICEFILE=/nonexistent/openplan-a0-catalogue-dependency-multiset-20261016.pg_service.conf",
+        "PGCONNECT_TIMEOUT=5",
+        "psql",
+        "-XqAt",
+        "-h",
+        "/var/run/postgresql",
+        "-p",
+        "5432",
+        "-w",
+        "-U",
+        "supabase_admin",
+        "-d",
+        "openplan_a0_limit_c730358675ac8bb47ac15fdd",
+        "-v",
+        "ON_ERROR_STOP=1"
+      ],
+      "dependentPin": {
+        "bytes": 177996,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "d0880d2d570785d92415b94fc155464b5b064d2c7b7d9783fb9b68c7121540af",
+        "uid": 1000
+      },
+      "dependentSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-006/dependent.sql",
+      "inputPin": {
+        "bytes": 1654,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-006/input.bin",
+      "purpose": "native",
+      "request": 6,
+      "streamByteLimit": 8388608,
+      "timeout": 45
+    },
+    {
+      "argv": [
+        "/usr/bin/docker",
+        "inspect",
+        "--format",
+        "{\"Id\":{{json .Id}},\"Image\":{{json .Image}},\"Name\":{{json .Name}},\"Project\":{{json (index .Config.Labels \"com.supabase.cli.project\")}},\"NetworkID\":{{json (index .NetworkSettings.Networks \"supabase_network_openplan-restore-target-2026091050\").NetworkID}},\"Running\":{{json .State.Running}},\"Paused\":{{json .State.Paused}},\"Restarting\":{{json .State.Restarting}}}",
+        "a4181e334bb0da63e213aaea5966d163e24faab58ddb3e6122665b3c41042cce"
+      ],
+      "inputPin": {
+        "bytes": 0,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "uid": 1000
+      },
+      "inputSource": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-007/input.bin",
+      "purpose": "native",
+      "request": 7,
+      "streamByteLimit": 65536,
+      "timeout": 10
+    }
+  ],
+  "retainedAuthority": {
+    "definitions": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/definitions.json",
+      "pin": {
+        "bytes": 18320,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "58ad19c09a454e9bf8628d05a10805390dc0ae290250afab1a6af0f29b2932ba",
+        "uid": 1000
+      }
+    },
+    "exact": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/exact-history.json",
+      "pin": {
+        "bytes": 28404,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "d77cc5a2384ee0fc1d63abab79451a27098e6c4feca5eea806c6e0a0211b440b",
+        "uid": 1000
+      }
+    },
+    "history": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/history.json",
+      "pin": {
+        "bytes": 9379,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "500decb275d3e9b1c6bcb2d9cd843d45910eca1367588fc13838dc3cc9f7f9c7",
+        "uid": 1000
+      }
+    },
+    "map": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-root-decision-20261016/actual-post18-map.json",
+      "pin": {
+        "bytes": 44876,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "5cbab573022aacd137848e6149bd2804a4e44fa1ad3ee3eba1b7f2d1d27411e8",
+        "uid": 1000
+      }
+    },
+    "rawDefinitions": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-027/stdout.bin",
+      "pin": {
+        "bytes": 18046,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "ce436b0c64e2328e2c3d36c536a2480a58870a37762f6cb87f9d3dea15595748",
+        "uid": 1000
+      }
+    },
+    "rawMap": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-025/stdout.bin",
+      "pin": {
+        "bytes": 36485,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "2298b93c21f645780879875df6fd2d9a089e0465afba61b1500163794ffa0ffc",
+        "uid": 1000
+      }
+    },
+    "rootAudit": {
+      "path": "/home/nathaniel/.local/state/openplan/a0-native18-root-decision-20261016/retained-audit-result.json",
+      "pin": {
+        "bytes": 54993,
+        "gid": 1000,
+        "mode": 384,
+        "sha256": "9cf510784a241c47c744686a5d0833d3d5ba4f8c2ad435ff5b64cb7147a74cfc",
+        "uid": 1000
+      }
+    }
+  },
+  "runtime": {
+    "catalogue.py": "2ef99693ce6c464a9c3b8d85302b0559b12bbc16221050c32562e45643c56cb9",
+    "catalogue_policy.py": "bd5f8ec3d0ba929a47ce4fc990c16be03a55f766d89ecb64c7ecd3a341fcb2f3",
+    "catalogue_transport.py": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a"
+  },
+  "schema": 1,
+  "sourceClosureComplete": false,
+  "sourceReview": {
+    "commit": "222d7c7894a15052190b4a8dc98991e0b1f3fe6e",
+    "reportSHA256": "07c48ac38c866357cc24d2448ada87eaea489a8411906bd6af66ff4630c86a57",
+    "subject": "310bfb2cc617fdc210f52cc9b1e6d1c3e3f2e205",
+    "validationSHA256": "0a3d3a4e680da48ca594c860a72eaecab04ca99c7766add1070670583b14c728"
+  },
+  "status": "SOURCE_CONTRACT_ONLY_NOT_OPERATION_AUTHORITY",
+  "subjectAggregateStderrBytes": 65536,
+  "subjectAggregateStdoutBytes": 8388608,
+  "subjectRoot": "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016",
+  "unit": "openplan-a0-catalogue-dependency-multiset-20261016"
+}

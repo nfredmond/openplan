@@ -1,0 +1,751 @@
+--- /home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/CONFIG.json
++++ /home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/CONFIG.json
+@@ -27,7 +27,7 @@
+     "/home/nathaniel/.local/state/openplan/compiler-repair-checks-20261015.lock"
+   ],
+   "fixtureLaunchable": false,
+-  "hostScratch": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/model-parent-02/pure-controls",
++  "hostScratch": "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/model-parent-03/pure-controls",
+   "hostTools": {
+     "/usr/bin/bwrap": {
+       "bytes": 80424,
+@@ -199,6 +199,27 @@
+       "sha256": "a0250b5a70458261d801a213dbb0e7e314559115dd3b712858be24d48c82df12",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/INDEPENDENT_FOOTPRINT.json": {
++      "bytes": 45691,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "bda3ab1ca70035b55437add8a90db6c87fb6baaa13fd7f96ddeef59171c16917",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/INDEPENDENT_SEAL.json": {
++      "bytes": 5733,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "43e8ce48b2e1d132761da2ca4390f723e0496a41efaf700ec0a4cca14d6986a4",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/ROOT_CROSSCHECK.json": {
++      "bytes": 20028,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "a36a5ee0b0998a8b6e22fb5a303ff308656253a29db269aecb283f80cfa2cc9d",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/CONFIG.json": {
+       "bytes": 387409,
+       "gid": 1000,
+@@ -332,6 +353,13 @@
+       "sha256": "f9094c429600b8c5b17638611daac983318f50ce54f3491684494d8a3d947185",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/CONFIG.json": {
++      "bytes": 402962,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "6478efe791a329b6a1c34ba9f97b93d8eb23f45e76b4b0c731b6ec83916e9193",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/FAILED01_PRESERVATION.json": {
+       "bytes": 47313,
+       "gid": 1000,
+@@ -339,6 +367,13 @@
+       "sha256": "2c68191cf45ee6b915bcd8e477e925eb96c3a3bd4252d5fdbe274a456932137b",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/HANDOFF.json": {
++      "bytes": 8022,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "f6a361cc46d7a9690c5713642aaf97311b0fbad0ec7ef480ed34935192e0b7dc",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/METADATA_READER_ERROR01.json": {
+       "bytes": 653,
+       "gid": 1000,
+@@ -346,6 +381,13 @@
+       "sha256": "83f45b9bc75beb1698445b5de5cdabb1361dd3f37c0cbb33c270de283e49fb04",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/REQUEST.json": {
++      "bytes": 2266,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "325f0aeb4951015ddfde9fb960db1e2ce11a589d1af23a6d3800622d66d9d52f",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/SOURCE_CHANGE_MANIFEST.json": {
+       "bytes": 3749,
+       "gid": 1000,
+@@ -353,6 +395,139 @@
+       "sha256": "859c37ec6cd3b86a3e52b906f6ce188caa61773dc4c125952fb3490634b9ecb9",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/STATIC_INSPECTION.json": {
++      "bytes": 3229,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "a630b0c006f393bf1285732705144886b4f31b011e77a9940cb0fc0dd59f6983",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/STATIC_TRACES.json": {
++      "bytes": 20316,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "651020d1da60b31f8de1e3fb4973d88b0577126e4c9658d507d820450a292f7a",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/barrier/sentinel": {
++      "bytes": 48,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "ad02d6e885eade605cd2f75b61bd2da5d4c1bcc071f5253aa39a3a1c914b291d",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/bwrap-intent.json": {
++      "bytes": 212618,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "8342caa184ba69e3c4fee31a189b3cdd8a0b6414784accbb7087055772c7574b",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/host-artifact-inventory.json": {
++      "bytes": 11484,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "fbddf2af84150df1514d1215dba5613e8eef256fd93a556b00836852f64de036",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/host-final-inputs.json": {
++      "bytes": 286338,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "769251a5f801f1c2dffa986c92bc48d44cb0b2c07fce2abc756489b75895b2c7",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/intent.json": {
++      "bytes": 1294,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "3b1ca12cbc0f393c72b4165fd631a3fbef1c10bb513d95b8e1b02f07cbf02688",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/returned.json": {
++      "bytes": 73,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "05f058dc89957dda30071372a39f20df3fb11c3745cc2df81c73e39d2cc86ac5",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/sandbox-entry.json": {
++      "bytes": 204,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "ba13dd358b2fae8f211daecd0ab649d858b72c42c4f3f49c2834909073ec26fb",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/stderr.bin": {
++      "bytes": 488,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "b6556b211a463c9dd7663ac9cbe5655329a11928d2613cbb9a4f105c483b215c",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/stdout.bin": {
++      "bytes": 0,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/terminal.json": {
++      "bytes": 720,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "21bf4a838acc4c3fc535bf025470544ad22b04043ba68605865638b50b089591",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/disabled-grant-schema.json": {
++      "bytes": 1727,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "02fd6b2b828d64f4c3d81c34b8b966e2865d5b7dad507569e8f4e82c13ed82cf",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/prepared-window-pins.json": {
++      "bytes": 307770,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "149edbdf34a9284a82489880300ee78c349f3316c1ce52e463c4339258ab95ca",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/root-pure-window-grant.json": {
++      "bytes": 1296,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "226432c541c9edb854e0ca0f29b6307a40bc493a767e8758ca550ac29d768893",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/NAMESPACE_RESOLUTION.json": {
++      "bytes": 33564,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "f4e5b53116f9e2893907ddcf98babbc85b12bfe83943f40bca64772c8470b71a",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/PRESERVATION.json": {
++      "bytes": 75263,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "df635ea6054ff855841a2d242e1d7e80be4dd03e4b58e479fa9c6015e3bd4147",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/SOURCE_CHANGE_MANIFEST.json": {
++      "bytes": 13140,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "0369e96d035386dcc103ab1e429fdeb74d03e1d86d1b3b2b4c45c43cb894ecdf",
++      "uid": 1000
++    },
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/runtime-manifest.json": {
++      "bytes": 296844,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "938980c1c4d80f357fc0075ebb1fa0288f2286398542525d52f5b1135498bf57",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-025/stdout.bin": {
+       "bytes": 36485,
+       "gid": 1000,
+@@ -437,6 +612,13 @@
+       "sha256": "1c6cae666fb2ce77247fbe826390d241631cbb4d6db7aa6022274e343694e269",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-02/FAILED_TRIAL02_AUDIT.json": {
++      "bytes": 2868,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "15228066a33ee46fbab62062a4fe086ee55940a582087647b7b67d51ba71574c",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt/failure.json": {
+       "bytes": 70,
+       "gid": 1000,
+@@ -444,6 +626,13 @@
+       "sha256": "5e7acaccf986ad4a2b740db001bc29fb40b2b50e4f392ac4d086e4fd19169d23",
+       "uid": 1000
+     },
++    "/home/nathaniel/.local/state/openplan/a0-python-elf-root-static-audit-20261016/ROOT_SOURCE_DISPOSITION_02.json": {
++      "bytes": 12888,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "db6c8a9a72e8a4be88b9eac89a0983fa8c12a914d8976f19dacc3285f7ef6f0b",
++      "uid": 1000
++    },
+     "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py": {
+       "bytes": 11991,
+       "gid": 1000,
+@@ -710,6 +899,48 @@
+       "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+       "uid": 1000
+     },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONFINEMENT_PLAN.md": {
++      "bytes": 2861,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "7cf9d985f96d32fa4f2d12657ee1dba4e8b78ee14369629c6116cc10b50a67cf",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONTROL_PLAN.md": {
++      "bytes": 1814,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "94bfc416dcfbf524f2433c8edeb81a3c6775b5c6e7bf0f8c6ec91117daccf5ac",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/HANDOFF.json": {
++      "bytes": 3900,
++      "gid": 1000,
++      "mode": 384,
++      "sha256": "158e4a047d6c0760b8cd797fa253afb5b774179a5361b1ce799a14f25a3403a3",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PARENT_RECIPE.md": {
++      "bytes": 3669,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "dd54dde9f1ad43c5b1a4ebc0ce77995c2c1588514dbc72efe8973f93f5adec97",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PREPARATION_STATUS.md": {
++      "bytes": 1540,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "6950ffed53529b11f62c4c617d3ae801ca9316f7f0cafba5dd3b21d993fab143",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/SOURCE_DELTA.md": {
++      "bytes": 2751,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "6875654e126b1bf703fd0939848693a930bfdf3034c8bcad013faf3579cf0cc3",
++      "uid": 1000
++    },
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/final_checks.py": {
+       "bytes": 2719,
+       "gid": 1000,
+@@ -724,6 +955,13 @@
+       "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
+       "uid": 1000
+     },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/source.delta.patch": {
++      "bytes": 4621,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "a21c92fad4af717bec732832f7dfbba1192d93e391b769b0ad9b1d64a1141821",
++      "uid": 1000
++    },
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py": {
+       "bytes": 24943,
+       "gid": 1000,
+@@ -731,6 +969,27 @@
+       "sha256": "a4975a7ab5b788a1499eff97e649c43bec2d59cc836dcb0fd3b3c22efbfdee9f",
+       "uid": 1000
+     },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/final_checks.py": {
++      "bytes": 2719,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "d5644c618c0d801495c2850861eab2c8c0ffe9f51dcb89d8cb229421d0221ff2",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/prepare.py": {
++      "bytes": 2992,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "52afcd6f99b53c139d337adc1129d3873be0634fe7eda0ae0c9ee65888fd147e",
++      "uid": 1000
++    },
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py": {
++      "bytes": 24943,
++      "gid": 1000,
++      "mode": 436,
++      "sha256": "af04305425a59053484427d739693dadbc2433b81b7b60d05b3f56dff6b77775",
++      "uid": 1000
++    },
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/window.py": {
+       "bytes": 24893,
+       "gid": 1000,
+@@ -9257,6 +9516,76 @@
+       "sha256": "bda779ea9e9ad234f60315477d7cfd0bdde861cd8ddd9df8cdaf62f18c4cec14",
+       "uid": 0
+     },
++    "/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0": {
++      "bytes": 1318648,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "badd43566333da97d916ab365c61227751d49cd5c0df5d49dabdbd67b8c6fd19",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0": {
++      "bytes": 18776,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "2b742de65acd00f154ed156720af66c0c0af9a58360ba041f25a41e2f775fab5",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0": {
++      "bytes": 26856,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "24beecbb0faf600d1a646b5edfc8c144da6f2965cb427598f4e17edc1285a733",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXext.so.6.4.0": {
++      "bytes": 77592,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "9e358938dc783704b75a8a27f07b9a2cc7dfb7ff73fd05cbcfe634b8c2afc74a",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXft.so.2.3.6": {
++      "bytes": 106024,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "6bea200ccc0cdc29aa7f76d6cba942454503b5e8f45c6d722633df39412fc27b",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0": {
++      "bytes": 43712,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "708d1c6a5d8aa5169d61e5b79973bf012047de0fb881d2836d44b3167a1a51a5",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libXss.so.1.0.0": {
++      "bytes": 14728,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "04e9f6b5706ffc0397fecce4aed3c23875346b9f770a029ecac575254219b312",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.2.0": {
++      "bytes": 141712,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "fb353cab2ea4ecd90814b46f872c21e1034c92bd86c3c677415748b4d16b5ad1",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.2.0": {
++      "bytes": 55688,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "eb8768f85e9c367cd74772919b5668bbe0045cb71b65d75aafc32828e7acb1b7",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libbz2.so.1.0.4": {
++      "bytes": 83120,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "7138aeb748f73c150b1d34d67de69139a441910cd7b269076ba3c8b986dea9a7",
++      "uid": 0
++    },
+     "/usr/lib/x86_64-linux-gnu/libc.so.6": {
+       "bytes": 2190608,
+       "gid": 0,
+@@ -9271,6 +9600,55 @@
+       "sha256": "5385f0436ac2e284ba8c5fb1488874057c29c04be72dea32add832694f381e28",
+       "uid": 0
+     },
++    "/usr/lib/x86_64-linux-gnu/libdb-5.3.so": {
++      "bytes": 1826464,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "66319e2bbca33c46b6bfb6b1315c49ce90ee19e2e8d2d3f9c5dc30f8ebbd9e29",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libexpat.so.1.11.2": {
++      "bytes": 186704,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "2e5f66e2784c2746775567ff9916f6e7503182a8f1f2deb8ca729dfc1463849f",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0": {
++      "bytes": 64184,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "1a0dc86f787f73e025a6e521056360afcbe70f2a82cd808132fefc2b4ee95daa",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.16.1": {
++      "bytes": 338080,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "cabcdfea3d61540e8aa7f93a29642da1d1e35c8f5fd13549f4b8ee2ee0ab28f0",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libfreetype.so.6.20.5": {
++      "bytes": 870552,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "36be278a8138d3e5773eb3f8491ff3fe73122a3051a9b36d1f86457ce0fad22d",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libgdbm.so.6.0.0": {
++      "bytes": 76112,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "f761c391c1c84e3d9e534533cbf8a78d315613e614c349043a3b40b1c8f9bf7e",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/liblzma.so.5.8.3": {
++      "bytes": 215448,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "64550dc7a4dc9159d32c00d9e78ce86e0951d02b7b24827df97f090dae101a19",
++      "uid": 0
++    },
+     "/usr/lib/x86_64-linux-gnu/libm.so.6": {
+       "bytes": 1198376,
+       "gid": 0,
+@@ -9278,6 +9656,27 @@
+       "sha256": "1c488db6f4fe8cecb72456bc018de000b7a9b539c2994864b0416b5e8371b3d8",
+       "uid": 0
+     },
++    "/usr/lib/x86_64-linux-gnu/libncursesw.so.6.6": {
++      "bytes": 243944,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "d392aa39297399808eccfeee96303b83c802c94379e24c8f98841fba11ff9758",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libpanelw.so.6.6": {
++      "bytes": 22768,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "9c25289b7d62e43d2e38bff4ac2bc2ffd99e118326fca5e8b8e75ebb49041236",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libpng16.so.16.57.0": {
++      "bytes": 231648,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "2a570998f08a406b4083b06888e528fa0c5d6cc3bef77b40026d661c91cbfb90",
++      "uid": 0
++    },
+     "/usr/lib/x86_64-linux-gnu/libpython3.14.so.1.0": {
+       "bytes": 8247200,
+       "gid": 0,
+@@ -9285,11 +9684,74 @@
+       "sha256": "982cb3768d1d8b00126255ee2785bccf8360c68b197fb3dec95858ab56195f87",
+       "uid": 0
+     },
++    "/usr/lib/x86_64-linux-gnu/libreadline.so.8.3": {
++      "bytes": 364656,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "d2e865b97bc4631f9eec46a202d69f5407695734a3bbaeb8c838a93d1bfe5902",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libsqlite3.so.0.8.6": {
++      "bytes": 1522152,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "4633a4be13fdf05cb0f859e04fb06077a1fe30a90e405721a23873bd1f3d88a8",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libssl.so.3": {
++      "bytes": 1114280,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "63b47f444efa588e291e9b650a5ba2ab02f856356f2d50f13a2e477db9119e09",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libtcl8.6.so": {
++      "bytes": 1786736,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "6dfbe2faf2a776485be94cb87bed369337bcf9236ee4c955e45004f8253ade8a",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libtinfo.so.6.6": {
++      "bytes": 212504,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "085dbbe5dc38619276bdd0af37ae588969b1308baded09a2990ce8824a602912",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libtk8.6.so": {
++      "bytes": 1544568,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "bbb446cf2f299fe4e5f6debf89b6a1a2a08959a60941260d1bb64578c82cc8d3",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0": {
++      "bytes": 35112,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "aef01d22b409ace7db97357b8b47332cd3e10c262ffa3c4014f3eeb44b968620",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0": {
++      "bytes": 170680,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "6af94be329e17e57f1cc0f5e4afb5bdfe669a5168accdc31b03274110b937b41",
++      "uid": 0
++    },
+     "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1": {
+       "bytes": 121272,
+       "gid": 0,
+       "mode": 420,
+       "sha256": "47b61967895b30e8c0c6818dd633ffeb87711cf637c688f981896f0dd84ce23b",
++      "uid": 0
++    },
++    "/usr/lib/x86_64-linux-gnu/libzstd.so.1.5.7": {
++      "bytes": 796824,
++      "gid": 0,
++      "mode": 420,
++      "sha256": "060eeb79531d435306665fd78329d8a9dd579f95876c5960bb67937825362a80",
+       "uid": 0
+     }
+   },
+@@ -9316,6 +9778,9 @@
+     "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/saved-data-audit.json",
+     "/home/nathaniel/.local/state/openplan/a0-catalogue-trigger-completeness-correction-20261016/catalogue-attempt/failure.json",
+     "/home/nathaniel/.local/state/openplan/a0-dependency-multiset-root-decision-20261016/ACCEPTANCE.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/INDEPENDENT_FOOTPRINT.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/INDEPENDENT_SEAL.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/elf-closure-assessment/ROOT_CROSSCHECK.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/CONFIG.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/HANDOFF.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/REQUEST.json",
+@@ -9335,9 +9800,31 @@
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/root-pure-window-grant.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/runtime-manifest.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/runner-preparation/static-runner-inspection.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/CONFIG.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/FAILED01_PRESERVATION.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/HANDOFF.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/METADATA_READER_ERROR01.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/REQUEST.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/SOURCE_CHANGE_MANIFEST.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/STATIC_INSPECTION.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/STATIC_TRACES.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/barrier/sentinel",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/bwrap-intent.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/host-artifact-inventory.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/host-final-inputs.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/intent.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/returned.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/sandbox-entry.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/stderr.bin",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/stdout.bin",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/attempt-02/terminal.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/disabled-grant-schema.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/prepared-window-pins.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/root-pure-window-grant.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/NAMESPACE_RESOLUTION.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/PRESERVATION.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/SOURCE_CHANGE_MANIFEST.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/runtime-manifest.json",
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-025/stdout.bin",
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-027/stdout.bin",
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/definitions.json",
+@@ -9350,7 +9837,9 @@
+     "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-01/GRANT.json",
+     "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-01/PR332_AFTER.json",
+     "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-01/PREFLIGHT_FINAL.json",
++    "/home/nathaniel/.local/state/openplan/a0-parent-root-preflight-20261016-02/FAILED_TRIAL02_AUDIT.json",
+     "/home/nathaniel/.local/state/openplan/a0-post18-catalogue-namespace-correction-20261016/catalogue-attempt/failure.json",
++    "/home/nathaniel/.local/state/openplan/a0-python-elf-root-static-audit-20261016/ROOT_SOURCE_DISPOSITION_02.json",
+     "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-40bfca48/docs/reviews/2026-10-16-a0-dependency-multiset-independent/EVIDENCE_PINS.json",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-40bfca48/docs/reviews/2026-10-16-a0-dependency-multiset-independent/REPORT.md",
+@@ -9389,9 +9878,19 @@
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.delta.patch",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.py",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/prepare.py",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONFINEMENT_PLAN.md",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/CONTROL_PLAN.md",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/HANDOFF.json",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PARENT_RECIPE.md",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/PREPARATION_STATUS.md",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/SOURCE_DELTA.md",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/final_checks.py",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/prepare.py",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/source.delta.patch",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02/window.py",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/final_checks.py",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/prepare.py",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/window.py",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/wrapper-stream-draft-delta.patch",
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/wrapper.delta.patch",
+@@ -10610,17 +11109,46 @@
+     "/usr/lib/python3.14/zoneinfo/_tzpath.py",
+     "/usr/lib/python3.14/zoneinfo/_zoneinfo.py",
+     "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
++    "/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0",
++    "/usr/lib/x86_64-linux-gnu/libXau.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/libXdmcp.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/libXext.so.6.4.0",
++    "/usr/lib/x86_64-linux-gnu/libXft.so.2.3.6",
++    "/usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0",
++    "/usr/lib/x86_64-linux-gnu/libXss.so.1.0.0",
++    "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1.2.0",
++    "/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1.2.0",
++    "/usr/lib/x86_64-linux-gnu/libbz2.so.1.0.4",
+     "/usr/lib/x86_64-linux-gnu/libc.so.6",
+     "/usr/lib/x86_64-linux-gnu/libcrypto.so.3",
++    "/usr/lib/x86_64-linux-gnu/libdb-5.3.so",
++    "/usr/lib/x86_64-linux-gnu/libexpat.so.1.11.2",
++    "/usr/lib/x86_64-linux-gnu/libffi.so.8.2.0",
++    "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.16.1",
++    "/usr/lib/x86_64-linux-gnu/libfreetype.so.6.20.5",
++    "/usr/lib/x86_64-linux-gnu/libgdbm.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/liblzma.so.5.8.3",
+     "/usr/lib/x86_64-linux-gnu/libm.so.6",
++    "/usr/lib/x86_64-linux-gnu/libncursesw.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libpanelw.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libpng16.so.16.57.0",
+     "/usr/lib/x86_64-linux-gnu/libpython3.14.so.1.0",
+-    "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1"
++    "/usr/lib/x86_64-linux-gnu/libreadline.so.8.3",
++    "/usr/lib/x86_64-linux-gnu/libsqlite3.so.0.8.6",
++    "/usr/lib/x86_64-linux-gnu/libssl.so.3",
++    "/usr/lib/x86_64-linux-gnu/libtcl8.6.so",
++    "/usr/lib/x86_64-linux-gnu/libtinfo.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libtk8.6.so",
++    "/usr/lib/x86_64-linux-gnu/libuuid.so.1.3.0",
++    "/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
++    "/usr/lib/x86_64-linux-gnu/libz.so.1.3.1",
++    "/usr/lib/x86_64-linux-gnu/libzstd.so.1.5.7"
+   ],
+   "namespaceOwnerEqualityClaimed": false,
+   "nativeOperationGranted": false,
+   "parentSeconds": 195,
+   "privateDirs": [
+-    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02"
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03"
+   ],
+   "runtimeSeconds": 180,
+   "schema": 1,
+@@ -10780,7 +11308,8 @@
+     "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-007",
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-025",
+     "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-027",
+-    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02"
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial02",
++    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03"
+   ],
+   "sourceClosureComplete": false,
+   "sourceNamespace": {
+@@ -10802,16 +11331,41 @@
+     "/lib64": "usr/lib64",
+     "/sbin": "usr/sbin",
+     "/usr/bin/python3": "python3.14",
++    "/usr/lib/x86_64-linux-gnu/libX11.so.6": "libX11.so.6.4.0",
++    "/usr/lib/x86_64-linux-gnu/libXau.so.6": "libXau.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/libXdmcp.so.6": "libXdmcp.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/libXext.so.6": "libXext.so.6.4.0",
++    "/usr/lib/x86_64-linux-gnu/libXft.so.2": "libXft.so.2.3.6",
++    "/usr/lib/x86_64-linux-gnu/libXrender.so.1": "libXrender.so.1.3.0",
++    "/usr/lib/x86_64-linux-gnu/libXss.so.1": "libXss.so.1.0.0",
++    "/usr/lib/x86_64-linux-gnu/libbrotlicommon.so.1": "libbrotlicommon.so.1.2.0",
++    "/usr/lib/x86_64-linux-gnu/libbrotlidec.so.1": "libbrotlidec.so.1.2.0",
++    "/usr/lib/x86_64-linux-gnu/libbz2.so.1.0": "libbz2.so.1.0.4",
++    "/usr/lib/x86_64-linux-gnu/libexpat.so.1": "libexpat.so.1.11.2",
++    "/usr/lib/x86_64-linux-gnu/libffi.so.8": "libffi.so.8.2.0",
++    "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1": "libfontconfig.so.1.16.1",
++    "/usr/lib/x86_64-linux-gnu/libfreetype.so.6": "libfreetype.so.6.20.5",
++    "/usr/lib/x86_64-linux-gnu/libgdbm.so.6": "libgdbm.so.6.0.0",
++    "/usr/lib/x86_64-linux-gnu/liblzma.so.5": "liblzma.so.5.8.3",
++    "/usr/lib/x86_64-linux-gnu/libncursesw.so.6": "libncursesw.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libpanelw.so.6": "libpanelw.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libpng16.so.16": "libpng16.so.16.57.0",
++    "/usr/lib/x86_64-linux-gnu/libreadline.so.8": "libreadline.so.8.3",
++    "/usr/lib/x86_64-linux-gnu/libsqlite3.so.0": "libsqlite3.so.0.8.6",
++    "/usr/lib/x86_64-linux-gnu/libtinfo.so.6": "libtinfo.so.6.6",
++    "/usr/lib/x86_64-linux-gnu/libuuid.so.1": "libuuid.so.1.3.0",
++    "/usr/lib/x86_64-linux-gnu/libxcb.so.1": "libxcb.so.1.1.0",
+     "/usr/lib/x86_64-linux-gnu/libz.so.1": "libz.so.1.3.1",
++    "/usr/lib/x86_64-linux-gnu/libzstd.so.1": "libzstd.so.1.5.7",
+     "/usr/lib64/ld-linux-x86-64.so.2": "../lib/x86_64-linux-gnu/ld-linux-x86-64.so.2"
+   },
+   "toolSeconds": 205,
+-  "unit": "openplan-a0-multiset-parent-correlation-TEST-02-20261016",
++  "unit": "openplan-a0-multiset-parent-correlation-TEST-03-20261016",
+   "wrapperControls": 4,
+   "writeProbes": [
+     "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.py",
+     "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-004/input.bin",
+-    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial02/CONFIG.json",
++    "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/trial03/CONFIG.json",
+     "/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016/root-operation-intent.json/sentinel"
+   ]
+ }

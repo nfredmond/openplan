@@ -1,0 +1,237 @@
+{
+  "files": {
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/actual-run-pins.json": {
+      "bytes": 830147,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "1e4915d5b3810f2f4087589b019e30fc47157faf92d50532ffb6fbb043b95266",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/catalogue-bindings.json": {
+      "bytes": 109016,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "c5864c04c3a062b71f85655f357040c4d20acd4843a7044793a37e4ba86fd430",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-001/input.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-002/input.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-003/input.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-004/dependent.sql": {
+      "bytes": 177996,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d0880d2d570785d92415b94fc155464b5b064d2c7b7d9783fb9b68c7121540af",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-004/input.bin": {
+      "bytes": 1654,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-005/dependent.sql": {
+      "bytes": 214685,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "8696d62a6847098d33a9fa60f20578716e432d4775677d7845a80a4f7ea407cf",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-005/input.bin": {
+      "bytes": 1654,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-006/dependent.sql": {
+      "bytes": 177996,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d0880d2d570785d92415b94fc155464b5b064d2c7b7d9783fb9b68c7121540af",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-006/input.bin": {
+      "bytes": 1654,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "7cdedd57bd5d1abb5b7c1dc2770c24e5a0e79bd96025df3188c6fcd2d4e0ba54",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/dependency-controls/restored/capture/request-007/input.bin": {
+      "bytes": 0,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/runtime/catalogue.py": {
+      "bytes": 12581,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2ef99693ce6c464a9c3b8d85302b0559b12bbc16221050c32562e45643c56cb9",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/runtime/catalogue_policy.py": {
+      "bytes": 54123,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "bd5f8ec3d0ba929a47ce4fc990c16be03a55f766d89ecb64c7ecd3a341fcb2f3",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-catalogue-dependency-multiset-correction-20261016/runtime/catalogue_transport.py": {
+      "bytes": 13302,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5eda399672d026f31bcb5ca7d6178676b1b6e8940b5f538409e043a7e4c8fe0a",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-dependency-multiset-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 5876,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "a0250b5a70458261d801a213dbb0e7e314559115dd3b712858be24d48c82df12",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-025/stdout.bin": {
+      "bytes": 36485,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "2298b93c21f645780879875df6fd2d9a089e0465afba61b1500163794ffa0ffc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/controller/request-027/stdout.bin": {
+      "bytes": 18046,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "ce436b0c64e2328e2c3d36c536a2480a58870a37762f6cb87f9d3dea15595748",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/definitions.json": {
+      "bytes": 18320,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "58ad19c09a454e9bf8628d05a10805390dc0ae290250afab1a6af0f29b2932ba",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/exact-history.json": {
+      "bytes": 28404,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "d77cc5a2384ee0fc1d63abab79451a27098e6c4feca5eea806c6e0a0211b440b",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-continuation-20261016/stages/apply18/history.json": {
+      "bytes": 9379,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "500decb275d3e9b1c6bcb2d9cd843d45910eca1367588fc13838dc3cc9f7f9c7",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-root-decision-20261016/actual-post18-map.json": {
+      "bytes": 44876,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "5cbab573022aacd137848e6149bd2804a4e44fa1ad3ee3eba1b7f2d1d27411e8",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/a0-native18-root-decision-20261016/retained-audit-result.json": {
+      "bytes": 54993,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "9cf510784a241c47c744686a5d0833d3d5ba4f8c2ad435ff5b64cb7147a74cfc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-outer-transport-20261016/collector.py": {
+      "bytes": 11991,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "05bc862604ebc65bf52ae5f58565cf30f765080d8df5bc14b142ba481d8066cc",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-40bfca48/docs/reviews/2026-10-16-a0-dependency-multiset-independent/REPORT.md": {
+      "bytes": 22716,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "07c48ac38c866357cc24d2448ada87eaea489a8411906bd6af66ff4630c86a57",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-40bfca48/docs/reviews/2026-10-16-a0-dependency-multiset-independent/VALIDATION.md": {
+      "bytes": 15457,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "0a3d3a4e680da48ca594c860a72eaecab04ca99c7766add1070670583b14c728",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PARENT_CORRELATION_DESIGN.md": {
+      "bytes": 6057,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "6df49d214bf13632cc57fffc1d400d11ab923fae4dc8a4cb974439f4032c5e37",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-catalogue-dependency-multiset-correction/PARENT_CORRELATION_DISPOSITION.md": {
+      "bytes": 3266,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "f5814f49020df2525b190297d808da0ae8a67d5d0d8bb1c1c7412dad25c471c1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/collector.py": {
+      "bytes": 6662,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "7e99a7bfa036c8b35c477eb034d4adc9d409b54d2304a21f591a655dfe866040",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/custody.py": {
+      "bytes": 24907,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "d2d1f17f9e0abba8af5f47a551af9c9131fda1d09c736e6b58f5db38b66b7fd2",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/fixed-contract.json": {
+      "bytes": 13678,
+      "gid": 1000,
+      "mode": 384,
+      "sha256": "91292e69956500428851f467a2966ee6c65b88a7d2385c41648f73d17fa57bd1",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/outer.py": {
+      "bytes": 9961,
+      "gid": 1000,
+      "mode": 436,
+      "sha256": "34a7102ddaec30825bdc160374f6a36f1c23f63e046bf886121bfe7998c64cf0",
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-trigger-catalogue-operation-proposal/outer.py": {
+      "bytes": 10077,
+      "gid": 1000,
+      "mode": 420,
+      "sha256": "0f09b658b7f25b59afe6a8d82fc2631b17efde3d0e3b1092899c2b56f9f3aed3",
+      "uid": 1000
+    }
+  },
+  "purpose": "EXPLICIT_READONLY_SOURCE_AND_ORACLE_DATA_ONLY_NOT_NATIVE_BASELINE",
+  "schema": 1
+}

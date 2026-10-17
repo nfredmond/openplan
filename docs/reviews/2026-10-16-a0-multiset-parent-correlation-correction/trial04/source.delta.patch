@@ -1,0 +1,27 @@
+--- /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial03/window.py
++++ /home/nathaniel/.t3/worktrees/openplan/t3-b88cf8ee/docs/reviews/2026-10-16-a0-multiset-parent-correlation-correction/trial04/window.py
+@@ -17,11 +17,11 @@
+ HERE=Path(__file__).resolve().parent
+ PACKET=HERE.parent
+ PRIVATE=Path('/home/nathaniel/.local/state/openplan/a0-multiset-parent-correlation-correction-20261016')
+-ROOT=PRIVATE/'trial03'
+-ATTEMPT=ROOT/'attempt-03'
+-MODEL=ROOT/'model-parent-03'
++ROOT=PRIVATE/'trial04'
++ATTEMPT=ROOT/'attempt-04'
++MODEL=ROOT/'model-parent-04'
+ LOCK=PRIVATE.parent/'compiler-repair-checks-20261015.lock'
+-UNIT='openplan-a0-multiset-parent-correlation-TEST-03-20261016'
++UNIT='openplan-a0-multiset-parent-correlation-TEST-04-20261016'
+ CAPS={'memory.max':'536870912','memory.swap.max':'0','cpu.max':'50000 100000','pids.max':'64'}
+ HOST_ENV={'PATH':'/usr/bin:/bin','LANG':'C','HOME':'/nonexistent','XDG_RUNTIME_DIR':'/run/user/1000',
+     'DBUS_SESSION_BUS_ADDRESS':'unix:path=/run/user/1000/bus'}
+@@ -115,7 +115,7 @@
+ def environment():
+     entry=loads(raw(ATTEMPT/'sandbox-entry.json'))
+     return {'PATH':'/usr/bin:/bin','LANG':'C','LC_ALL':'C','TZ':'UTC','HOME':str(ATTEMPT/'home'),
+-        'TMPDIR':'/tmp','PYTHONDONTWRITEBYTECODE':'1','PYTHONHASHSEED':'0','INVOCATION_ID':entry['invocation']}
++        'TMPDIR':'/tmp','PWD':str(PRIVATE),'PYTHONDONTWRITEBYTECODE':'1','PYTHONHASHSEED':'0','INVOCATION_ID':entry['invocation']}
+ 
+ 
+ def sandbox(config,expected):
