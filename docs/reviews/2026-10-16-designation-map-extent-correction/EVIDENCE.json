@@ -1,0 +1,126 @@
+{
+  "sourceBase": "ec0fd7f49c9db24a4516c3c60f4d1b5201357b6a",
+  "status": "SOURCE_CANDIDATE_INDEPENDENT_REVIEW_PENDING",
+  "changedSourcePins": {
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/components/land-use-plans/public-designation-map.tsx": {
+      "sha256": "e7b0f5d06443470d706437251e4e930ac7cebbd62e1d0ece37e34afd45db336d",
+      "bytes": 6752
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/public-designation-map-extent.test.tsx": {
+      "sha256": "db1d65c6a2f464470b97e4e88006b5fc5ecf00f6fb443c5a8b562b6e471f4528",
+      "bytes": 4913
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-designation-map-recovery.test.tsx": {
+      "sha256": "8c18751bf60270a9daa9558513faabe79209750a62a4ca6c66f6f2ecd96292b4",
+      "bytes": 4797
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/wgs84-bounds.test.ts": {
+      "sha256": "f8b3cc82a9e7cf28a4361d1f52c51b21bb4e91e30a3457b3902a41c0e7c0f871",
+      "bytes": 5071
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/geo/wgs84-bounds.ts": {
+      "sha256": "ee95eec456ac0ff92a6e1becb0002b64cdc7aaebbdeb869af42a2d775a7a3719",
+      "bytes": 4041
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts": {
+      "sha256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+      "bytes": 283
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": {
+      "sha256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+      "bytes": 3140
+    },
+    "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json": {
+      "sha256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+      "bytes": 735
+    }
+  },
+  "evidenceManifest": {
+    "path": "/home/nathaniel/.local/state/openplan/designation-map-extent-correction-20261016/evidence-manifest.json",
+    "sha256": "12c29ff7030c8f69900d478a63d0e44be8efa113d4a2b690e8f99f3aafb00415",
+    "files": 2529
+  },
+  "result": {
+    "status": "CHECKS_COMPLETE",
+    "harmless": "SURVIVED",
+    "namedFaults": 3,
+    "restoredTests": 40,
+    "files": 3,
+    "stages": [
+      {
+        "name": "type-only-reader",
+        "exit": 1,
+        "stdoutSHA256": "d96caabca956349ec3240446a083e1d0fcb6f90bbef44e1a3abbaa7bc3d47986",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "missing-disclosure",
+        "exit": 1,
+        "stdoutSHA256": "58058b285adccb78d4472911398faa0e17756669e5f0f2e1b69aa41077d2d08d",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "drop-valid-extents",
+        "exit": 1,
+        "stdoutSHA256": "bac608df959931ca183941c1374325f715214d024042c5aab2a4999de216479b",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "restored",
+        "exit": 0,
+        "stdoutSHA256": "6a427c0640a624795af7a4ea8eaa46572265cca27b9c4892f6e043e7073d766c",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "types",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "stdoutSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+        "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "name": "direction",
+        "exit": 0,
+        "stdoutSHA256": "2d21f390f2609c705836afd80f7e9059cb7633f9b87fe51c3e19eed02579d912",
+        "stderrSHA256": "f68445367cddf2dc482988cce2c102768990039ee4d491468a145718612a4640"
+      }
+    ],
+    "elapsedSeconds": 29.97581774997525,
+    "UIBrowserAcceptance": false,
+    "antimeridianQueriesFixed": false
+  },
+  "finally": {
+    "allSourcePinsMatch": true,
+    "files": {
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/components/land-use-plans/public-designation-map.tsx": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/public-designation-map-extent.test.tsx": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/land-use-designation-map-recovery.test.tsx": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/wgs84-bounds.test.ts": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/lib/geo/wgs84-bounds.ts": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/setup.ts": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/src/test/guided-flow-jsdom-dialog-shim.ts": true,
+      "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/tsconfig.json": true
+    },
+    "sourceWrites": false,
+    "resources": {
+      "memory.peak": "338092032",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.current": "0",
+      "pids.peak": "43",
+      "pids.events": "max 0"
+    },
+    "elapsedSeconds": 29.982144158915617
+  },
+  "failures": [
+    "trial01 startup config incompatibility, no tests",
+    "trial02 ambiguous reader after accepted40+40, no fault dispatch"
+  ],
+  "nativeOrBrowserAcceptance": false,
+  "completeKI025": false,
+  "fullV1": false
+}
