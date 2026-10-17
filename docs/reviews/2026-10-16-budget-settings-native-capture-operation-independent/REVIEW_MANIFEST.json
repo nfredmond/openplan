@@ -1,0 +1,39 @@
+{
+  "files": {
+    "EVIDENCE_SEAL.json": {
+      "bytes": 5546,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "ab4d3e14e782df621079e5b284d4a6328f750c8fe31b551b7e61f3838ca9983d",
+      "uid": 1000
+    },
+    "REPORT.md": {
+      "bytes": 17264,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "b9ffda58e0d0716b52cc95be7906938c2a8f872034b2d96a2a4103311a7b9612",
+      "uid": 1000
+    },
+    "SOURCE_PINS.sha256": {
+      "bytes": 21028,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "4ed5c17b3d245750f2532224ff3eb142c90d132f0d4cd1889ddd3000a8bafc1d",
+      "uid": 1000
+    },
+    "VALIDATION.md": {
+      "bytes": 9315,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "4e0797c1227579941bbd2efcacabcfcd9ad79f11e4f1429c06f3ca3774992ea2",
+      "uid": 1000
+    }
+  },
+  "nativeOperationGranted": false,
+  "publicationEnabled": false,
+  "schema": 1,
+  "scope": "NEW directory only; no source edits, actual authority, native dispatch, push, PR, main or release.",
+  "selfReference": "Excluded from its own manifest; exact local commit binds this file.",
+  "status": "INDEPENDENT_OPERATION_PREPARATION_REVIEW_ONLY",
+  "successorGranted": false
+}

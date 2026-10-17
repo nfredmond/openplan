@@ -1,0 +1,74 @@
+{
+  "schema": 1,
+  "status": "SEALED_SOURCE_ONLY_NATIVE_PROPOSAL_NOT_REVIEWED_OR_ADMITTED",
+  "baseCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "subjectReviewCommit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
+  "files": {
+    "REPORT.md": {
+      "sha256": "a2a046603d17a45c3cc7928083e472dbb46e72c0213127b58618e825e7e7c06a",
+      "bytes": 12170,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "VALIDATION.md": {
+      "sha256": "913a26a470ae797414fa98b4c108274fabf3aca6fc2616ee41667f2a944ea5aa",
+      "bytes": 4448,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "PROPOSAL.json": {
+      "sha256": "bd7dde879a9e91b76d00fdf8d13dacf3618b4e259f51ba957745718bafc9471c",
+      "bytes": 15787,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    },
+    "BINDINGS.json": {
+      "sha256": "d1bff14ef3290daec7f5a3b75c9847425762332eff87441914ffe8c6a54b65ed",
+      "bytes": 31071,
+      "mode": "0600",
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "privateMetadataReceipt": {
+    "path": "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/metadata-readback.json",
+    "sha256": "22646402e2580a27145ee64b8b35310cdd7cebd45fa73282da09bd895a81ca06",
+    "bytes": 8568,
+    "mode": "0600",
+    "uid": 1000,
+    "gid": 1000
+  },
+  "preservation": {
+    "records": 3846,
+    "allCurrentPinsMatch": true,
+    "public72Unchanged": true,
+    "private3300Unchanged": true,
+    "donor435Unchanged": true,
+    "all36SelectedOriginalReceiptsMatch": true,
+    "all19OriginalNativeFailureSealEntriesMatch": true,
+    "noExecution": true
+  },
+  "semanticMetadata": {
+    "all72SourceBlobsBound": true,
+    "all14OperatingSourcesBound": true,
+    "requestUnchanged": true,
+    "collectorMainRequired": true,
+    "configuredCaptureSeconds": 90,
+    "configuredCollectorSeconds": 115,
+    "actualOperationTimesDecision": "ABSENT",
+    "noAuthorityFilesPublished": true,
+    "allFutureOperatingPathsAbsent": true
+  },
+  "controls": "No new guard, consumer, wrapper, SQL or source change. Referenced selected inert controls only; no new campaign or import.",
+  "nativeOperationGranted": false,
+  "exclusive": false,
+  "publicationEnabled": false,
+  "successorGranted": false,
+  "executionCount": 0,
+  "independentOperationReview": "PENDING_ROOT_NEW_DELEGATION",
+  "selfReference": "Manifest excludes itself; local Git object supplies immutable binding.",
+  "localCheckpoint": "NEW directory only; no push/join/main/PR/release."
+}

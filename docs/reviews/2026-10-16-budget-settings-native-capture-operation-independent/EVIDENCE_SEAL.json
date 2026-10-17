@@ -1,0 +1,148 @@
+{
+  "absentPaths": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-attempt": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-grant.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-manager-terminal.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-outer-terminal.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-review.md": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture-window.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/collector-authorization.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/native-capture-parent": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/outer-v2/root-outer-intent.json": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/admissions": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/publications": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/reviews": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/stages": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/runtime-v2/windows": {
+      "errno": 2,
+      "result": "ENOENT"
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-proposal-20261016/parent": {
+      "errno": 2,
+      "result": "ENOENT"
+    }
+  },
+  "actionableP1P2P3": [],
+  "actualOperatingGrant": false,
+  "directComparisonCounts": {
+    "futureAbsentPaths": 15,
+    "privateOperatingSources": 14,
+    "proposal": 5,
+    "selectedOriginalReports": 3,
+    "sourceIndependentReview": 5,
+    "sourcePublic": 72
+  },
+  "disposition": "CONDITIONAL_OPERATION_PREPARATION_APPROVAL_NO_ACTUAL_GRANT",
+  "donor435Repeated": false,
+  "finalCheckpointReceipt": "Private local-checkpoint.json follows authorized local commit and is outside this precommit seal; Git binds the public manifest.",
+  "fullProofRootScan": false,
+  "initialReviewerHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "model": "gpt-6.1-sol",
+  "nativeCalls": 0,
+  "noExecutionWindowRequested": true,
+  "noSuccessor": true,
+  "pinCount": 105,
+  "pinsFile": {
+    "bytes": 21028,
+    "gid": 1000,
+    "mode": "0600",
+    "sha256": "4ed5c17b3d245750f2532224ff3eb142c90d132f0d4cd1889ddd3000a8bafc1d",
+    "uid": 1000
+  },
+  "privateReceiptRoot": "/home/nathaniel/.local/state/openplan/budget-settings-native-capture-operation-independent-20261016",
+  "privateReceipts": {
+    "history-readback-resolution.json": {
+      "bytes": 739,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "a602533ecd341394916a1528f83ce6011a5e9b2d1d598aeaf5be0bd8cc4b38d7",
+      "uid": 1000
+    },
+    "history-readback.json": {
+      "bytes": 17424,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "3bbf4a2437e3b9c64b2294b83d496a732a8c63b6cb4695cc5dcc37f6b33eb0bd",
+      "uid": 1000
+    },
+    "metadata-readback.json": {
+      "bytes": 38482,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "cc2dc7daf7d230df097b50fe890aa68313bb83d5792574830cfd6caae7cb730f",
+      "uid": 1000
+    },
+    "reader-error-01.json": {
+      "bytes": 832,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "1c67ab2cfd8af6905df2012eb1152a0aadc67e2bd65c8cc19bf82a476c6159a0",
+      "uid": 1000
+    },
+    "t3-binding.json": {
+      "bytes": 4944,
+      "gid": 1000,
+      "mode": "0600",
+      "sha256": "aaea1ee58756dd17a8e7a9fdfe6c1915f7ac28ed8e122c9a9883179e24274865",
+      "uid": 1000
+    }
+  },
+  "proposalBytes": 15787,
+  "proposalCommit": "b394a9314bef6d997cb29e378069adad37010290",
+  "proposalSHA256": "bd7dde879a9e91b76d00fdf8d13dacf3618b4e259f51ba957745718bafc9471c",
+  "publicationEnabled": false,
+  "readerFailuresPreserved": [
+    "reader-error-01.json",
+    "history-readback.json",
+    "history-readback-resolution.json"
+  ],
+  "reasoningEffort": "high",
+  "reviewerBranch": "t3/review-budget-settings-capture-operation",
+  "reviewerPath": "/home/nathaniel/.t3/worktrees/openplan/t3-8ee24700",
+  "rootFreshPrerequisites": "REPORT.md; capacity/exclusion/drift/absence/actual authority and hash joins remain root admission work.",
+  "schema": 1,
+  "sourceReviewCommit": "366f315e1fbec1f4a3150bd9656f522c2c2e88b4",
+  "sourceSubjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "subjectImported": false,
+  "testsRun": false,
+  "underlyingPrivate3300Repeated": false
+}
