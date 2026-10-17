@@ -1,0 +1,810 @@
+{
+  "verdict": "REQUEST_CHANGES_ONE_NEW_P2_SOURCE_FINDING",
+  "candidate": "ac9c74a80b1de7b402cc54e7c216107a79aaaaed",
+  "parent": "65ec771d3b45a7297fac7f007404ff7730a82a73",
+  "appTree": "afbcd052ceb051d5eb2f95e14862ebede43deee6",
+  "reviewerInitialHEAD": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewerBranch": "t3/land-use-publication-retained-review",
+  "reviewerInitialAppTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+  "binding": {
+    "configuration": {
+      "threadId": "thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-land-use-publication-retained-independent-20261016-round2",
+      "modelSelection": {
+        "instanceId": "codex",
+        "model": "gpt-6.1-sol",
+        "options": [
+          {
+            "id": "reasoningEffort",
+            "value": "high"
+          }
+        ]
+      },
+      "runtimeMode": "full-access",
+      "interactionMode": "default"
+    },
+    "thread": {
+      "threadId": "thread:delegated-task:command%3Amcp%3Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%3Adelegate-task%3Asol-land-use-publication-retained-independent-20261016-round2",
+      "projectId": "ab054e5a-cce7-4e14-890b-d4e472a764ff",
+      "title": "Independent retained publication validation review",
+      "createdBy": "agent",
+      "creationSource": "mcp",
+      "status": "running",
+      "latestRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%253Adelegate-task%253Asol-land-use-publication-retained-independent-20261016-round2:ordinal:1",
+      "activeRunId": "run:thread:thread%3Adelegated-task%3Acommand%253Amcp%253Aea5c89c6-e9ad-44bc-8d10-d8a2d2d92f60%253Adelegate-task%253Asol-land-use-publication-retained-independent-20261016-round2:ordinal:1",
+      "providerInstanceId": "codex",
+      "model": "gpt-6.1-sol",
+      "runtimeMode": "full-access",
+      "interactionMode": "default",
+      "linkedPullRequest": null,
+      "titleRegeneration": null,
+      "branch": "t3/land-use-publication-retained-review",
+      "worktreePath": "/home/nathaniel/.t3/worktrees/openplan/t3-2d04f550",
+      "parentThreadId": "1401bb6a-70e4-42eb-a1f1-98045485f8cc",
+      "relationshipToParent": "subagent",
+      "runCount": 1,
+      "itemCount": 54,
+      "pendingRequestCount": 0,
+      "archived": false,
+      "settled": false,
+      "settledAt": null,
+      "snoozed": false,
+      "snoozedUntil": null,
+      "createdAt": "2026-10-17T03:29:48.372Z",
+      "updatedAt": "2026-10-17T03:32:34.028Z"
+    }
+  },
+  "candidateChangedFiles": [
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-validation/EVIDENCE.json",
+      "blob": "b8d22fc4d0338e231ee6f5dd6da3e4c44aa275c0",
+      "sha256": "9bca623eb4a67deb00b3913d90fecead119940944eac87afd87a9b29f7b5249a",
+      "bytes": 34399
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-retained-validation/REPORT.md",
+      "blob": "1da2289bfc5161056f50346c2f077143a0026b41",
+      "sha256": "d701b5094afecbe746a601fb47bb7268b7951ca6bd8854c0b6a72750fbec7bd5",
+      "bytes": 8212
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/EVIDENCE.json",
+      "blob": "64897922c60039b7a5e41c96e1bb4bd9302aff82",
+      "sha256": "753a09f3ae0227b4a0c13f711ba76c6c242e8fbc5dbf15b5a3804c4c57d3c8f4",
+      "bytes": 7892
+    },
+    {
+      "path": "docs/reviews/2026-10-16-land-use-publication-transaction-independent/REPORT.md",
+      "blob": "c7f1ac8bef21b59682853200f243d99335e8515e",
+      "sha256": "34bf1a4a237c30c511876b4a46c37ddc1c78c268febbbb10e1df95183cffdcec",
+      "bytes": 25379
+    },
+    {
+      "path": "openplan/src/test/land-use-publication-retained-validation.test.ts",
+      "blob": "b4e53dbf7ca639e6028af24dab59a06cf90de503",
+      "sha256": "ed9c43470afe67a8a41d7c1de435b8a832b41aade6816909314040339fcd44d6",
+      "bytes": 6585
+    },
+    {
+      "path": "openplan/src/test/land-use-publication-transaction.test.ts",
+      "blob": "a269112c3333288be5ccc83b25daaa1088faae42",
+      "sha256": "55f577fbfb8f346ecfece77f84edefc0caec4954638017aaff386d1e3e922014",
+      "bytes": 11038
+    },
+    {
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "blob": "1e52bf1b149833bb3e4a3dcf07d48f0b34f6ca95",
+      "sha256": "fd3b9979cad3acdff2dc74bee4765f85bdea601bdd9fa9d4696edd774735abba",
+      "bytes": 10616
+    }
+  ],
+  "originalFindings": [
+    {
+      "id": 1,
+      "priority": "P2",
+      "disposition": "BOUNDED_SOURCE_COUNTEREXAMPLE_ADDRESSED_ALL_ARTIFACT_SINGLETON_AND_KIND_REFUSAL"
+    },
+    {
+      "id": 2,
+      "priority": "P2",
+      "disposition": "BOUNDED_SOURCE_COUNTEREXAMPLE_ADDRESSED_NESTED_SHAPE_TYPES_NATIVE_VALUES_DATES"
+    }
+  ],
+  "findings": [
+    {
+      "id": 1,
+      "priority": "P2",
+      "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+      "lines": [
+        56,
+        59
+      ],
+      "issue": "LIMIT1 selected native decision may have duplicate plan/version/hash matches; unchanged maybeSingle reader then refuses",
+      "tier": "SOURCE_INFERENCE_NO_NATIVE_REPRODUCTION",
+      "minimalCorrection": "Refuse non-singleton matching native decision set using unchanged reader plan/version/hash scope before insert or existing-packet confirmation; preserve stored rows and encoding"
+    }
+  ],
+  "retainedEvidence": {
+    "root": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+    "manifests": [
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016/PRIVATE_MANIFEST.json",
+        "sha256": "79e819b24f873de2ce9750bde9591c1d30ec25d1c308653997548572ab9bc830",
+        "count": 2601,
+        "mismatches": []
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+        "sha256": "3473de431240c2b3b9f94e9d06ad10de5dbe30a62d9288aa2cc9bb07c50c4ce8",
+        "count": 3119,
+        "mismatches": []
+      }
+    ],
+    "sourcePins": [
+      {
+        "path": "openplan/src/lib/land-use-plans/publication.ts",
+        "gitSHA256": "b6cbf6830b652d7cd17580384797010f5c03903c1b00ca1fcc6b41389a5887bb",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/app/api/land-use-plans/[planId]/decisions/route.ts",
+        "gitSHA256": "81a161a2f399130f05ba1e10cec537d352f46e7bb1d7b23a9fa626f0112e22ca",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql",
+        "gitSHA256": "fd3b9979cad3acdff2dc74bee4765f85bdea601bdd9fa9d4696edd774735abba",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/test/land-use-publication-transaction.test.ts",
+        "gitSHA256": "55f577fbfb8f346ecfece77f84edefc0caec4954638017aaff386d1e3e922014",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/test/land-use-plan-frozen-rules-integration.test.ts",
+        "gitSHA256": "32786d886395ea0547b56d409641e6d85805eb33059f2c170a94d1e3d46ce80e",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/test/setup.ts",
+        "gitSHA256": "70d7fbd3e6d08caa4ca508bb6bdca213deb4a58da22a840ff646a5862c05067a",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/test/guided-flow-jsdom-dialog-shim.ts",
+        "gitSHA256": "d6f84fa247152ded90a7b63e97e6385e2def6169618e4163da99b4ed2359566b",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/tsconfig.json",
+        "gitSHA256": "cb3404493257250c77d7145c9825ed31f79246b640eb30a59b8069d39091bf29",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/lib/land-use-plans/report-adoption.ts",
+        "gitSHA256": "057735f0c2d5667c8af38a8980977d97cdbec1d467a155fa439791b3a4ed790d",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      },
+      {
+        "path": "openplan/src/test/land-use-publication-retained-validation.test.ts",
+        "gitSHA256": "ed9c43470afe67a8a41d7c1de435b8a832b41aade6816909314040339fcd44d6",
+        "matchesGit": true,
+        "liveMatches": true,
+        "metadataMatches": true
+      }
+    ],
+    "preservationPins": [
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-2693899a/docs/reviews/2026-10-16-land-use-publication-transaction-independent/REPORT.md",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-2693899a/docs/reviews/2026-10-16-land-use-publication-transaction-independent/EVIDENCE.json",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/PRIVATE_MANIFEST.json",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/checks01/FAILED_SEAL.json",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/checks02/source-pins.json",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/checks02/controller.py",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/checks02/result.json",
+        "matches": true
+      },
+      {
+        "path": "/home/nathaniel/.local/state/openplan/land-use-publication-transaction-correction-20261016/checks02/finally.json",
+        "matches": true
+      }
+    ],
+    "stages": [
+      {
+        "id": "harmless",
+        "success": true,
+        "passed": 21,
+        "failed": 0,
+        "pending": 22,
+        "jsonSHA256": "ec320f7e3e641444412d50383c4305b7e95e16a9d7280b621e689553343651ca",
+        "namesEqualBaseline": null,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "exitRecord": {
+          "name": "harmless",
+          "exit": 0,
+          "stdoutSHA256": "e8343fcb073e0501075b9294a438ed3e1cf61266bf4d6bc87472923e0d8e6c4a",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "baseline",
+        "success": true,
+        "passed": 21,
+        "failed": 0,
+        "pending": 22,
+        "jsonSHA256": "d5b886b386a2aef2b6848058e6b1ee85fb18aa923574081ed16fcaf19b129eb1",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "exitRecord": {
+          "name": "baseline",
+          "exit": 0,
+          "stdoutSHA256": "b536e2ca46a27d56a798d73b8a18f0566bda82f4e319da2a88b7e7b70f6b2a09",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "html-only-count",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "b3f81f04a83079199732ded159203761294cab22dc7df4b746df9de291616747",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "dc6931d761e0c9c2af1ef8ae3a66e4f173846ca44ef40b8bca0e22c301dbb8f7",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "html-only-count",
+          "exit": 1,
+          "stdoutSHA256": "43c40b7d381172fc5aa9fddc6036e7a393ffd093c5780a0fa94bafe2fa091039",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "multi-artifact-guard",
+        "success": false,
+        "passed": 19,
+        "failed": 2,
+        "pending": 22,
+        "jsonSHA256": "e017b3c0573fd5244dfdcebba968b5dd5a7577f7614b66db0dfd8869257a7480",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "c93a0f5c9a250d4b853c3826d4b92f147a17ab4a8ef7dae17156885316d784c6",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "multi-artifact-guard",
+          "exit": 1,
+          "stdoutSHA256": "5480c6ae650ceafde231263b450909a6859840b94d022920baf5bf13fb61da62",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "wrong-artifact-kind",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "ac39b1d922cd7ded468d374015bea17eb8bbb452377d13555cd7961089ab7d07",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "7ddccdc9956693eb7da47c364001d63cae2913633eeeacec7e995f6f4e1472b4",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "wrong-artifact-kind",
+          "exit": 1,
+          "stdoutSHA256": "5fa8cb74473bb825b41c5bc0d662f2a7e593207c449259ba154af5df8d2e8d0a",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "implementation-kind",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "f3c82fcfe0e85ffa12a384b773e873f60695ae8c43832744a05d4f9d895e5aa3",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "ecbc5310dc2ae58b9c80dadcfc05b721c50c5ea04f067036fbf951576e3522fd",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "implementation-kind",
+          "exit": 1,
+          "stdoutSHA256": "df550e2328f00d4f26b560c2ab25559b800912e930fed4e29f2a37bb3bed2805",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "object-shape",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "7925c688c810b3b6e682762147ea088bf43bd7b8606ca5b7173cd35424ad44d9",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "47339d40d984b12ebc18b6cdf0a536eabac9078f31ee2c3aa9c36e9622f4999f",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "object-shape",
+          "exit": 1,
+          "stdoutSHA256": "5edddad06fa5014d2437548ccc3faea1779d8d8190ef1a0e35684e4d2a64f991",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "required-keys",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "f1960d5aa8af7cf3c82a6e0849e017ddcf2a8a8facb54c2b2d0da06123f3bdf2",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "d9b21755951efb93ce5ede6716218679fd6d2aaa99f191e05b1532e34b1ac578",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "required-keys",
+          "exit": 1,
+          "stdoutSHA256": "cfad6d0ff54c21c3a3d9c172826a1b318f91aef81fad58b8665d2b408265885a",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "string-type",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "96baf5bcb644047d9be49af0a0a0c6314c994213bafefbebc79ae5fdecfdb6ab",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "33a3914eb39daa3bbd0605808dd5efc62cb0bb68b64df849587e742432492174",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "string-type",
+          "exit": 1,
+          "stdoutSHA256": "0b08b65e34b4ed7476d7c5cd0a271ad7a991d1252d79d1770d4d1a0aae4c684a",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "nullable-type",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "5a4f1122c749354d391776a3a019844385edba2c707404a653dbca893bbf32c3",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "92cd00e775017dc9af65ff098968da92dd2c77d3b3e3975276fd84896cf47cbe",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "nullable-type",
+          "exit": 1,
+          "stdoutSHA256": "3110828a8582502558178672c3d8a0ddfbb384b9e2c9409752d8456bb56975cb",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "blank-native",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "bfcbb87aa10c53f86bfc751d2393b742f9cf58e72100ffceb897b6c8e29dffdc",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "312aa5a75864531d4d97b7f16859780039241c0d6ff02c90f1a4da8a128eed2a",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "blank-native",
+          "exit": 1,
+          "stdoutSHA256": "9be89c346c660e1394c975847667e0ecb953331f92f7b3f25255741fba90a077",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "calendar-range",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "83b53ca2b03e1fb04345d01a965c9e3ce93a9cb2762e4d37af84a77004fce0cc",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "6b33e5e37e06a318b118b90a3f6d3009ab862b162708a88abffabb7093b99494",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "calendar-range",
+          "exit": 1,
+          "stdoutSHA256": "43337d7685b205a9638e1417ce9baa406dbd714bffbbbed8a46773413220d994",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "native-values",
+        "success": false,
+        "passed": 20,
+        "failed": 1,
+        "pending": 22,
+        "jsonSHA256": "7122b3e4445b832ac60f178f39f30b7f94a8ff53d62e983918f7d2075c645cf6",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "342bd30edffe5f3e5208cec02ce8224a75ecc1c1eaa94ffabda114108e8f6aef",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "exitRecord": {
+          "name": "native-values",
+          "exit": 1,
+          "stdoutSHA256": "4f132e5f61b7507e86d897d9e2a43d1a6cba8c1a5d38466c0748b2e6a8d2e463",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "reader-invalid-status",
+        "success": false,
+        "passed": 8,
+        "failed": 13,
+        "pending": 22,
+        "jsonSHA256": "599b4548166d4d3088ca38f632ffad6af4be225256fa843eb47d58d0a5216bda",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "resultHash": "a8bb34677afb91c1fb4e2f81ed1eef8e7eb02e9c677a7d9029332c708bf0950c",
+        "exactNamedBaselineJoin": true,
+        "namedFailureMatchesResult": true,
+        "allFailureMessagesAssertionError": true,
+        "appliedMatches": true,
+        "exitRecord": {
+          "name": "reader-invalid-status",
+          "exit": 1,
+          "stdoutSHA256": "8d85b85477548bdd960aefc668f135383431afcd85c28e4ab658f3fa06722cea",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      {
+        "id": "restored",
+        "success": true,
+        "passed": 21,
+        "failed": 0,
+        "pending": 22,
+        "jsonSHA256": "c54c1ee8e4e996015a06aae03b3ccd0f9d3313eff07d96d518a17080740ac50d",
+        "namesEqualBaseline": true,
+        "suiteMessages": [],
+        "fixtureMatchesExpected": true,
+        "inputHashMatches": true,
+        "inputSourceHashMatches": true,
+        "exitRecord": {
+          "name": "restored",
+          "exit": 0,
+          "stdoutSHA256": "857bbfcce3f8eac224da7fdecfc49b0973882de618caacd7383222214ce6ec0c",
+          "stderrSHA256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      }
+    ],
+    "streamPairs": [
+      {
+        "name": "harmless",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "baseline",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "html-only-count",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "multi-artifact-guard",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "wrong-artifact-kind",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "implementation-kind",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "object-shape",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "required-keys",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "string-type",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "nullable-type",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "blank-native",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "calendar-range",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "native-values",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "reader-invalid-status",
+        "exit": 1,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "restored",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "types",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "lint",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      },
+      {
+        "name": "direction",
+        "exit": 0,
+        "stdoutMatches": true,
+        "stderrMatches": true
+      }
+    ],
+    "restoration": {
+      "activeEmpty": true,
+      "subjectMatchesCandidate": true
+    },
+    "checkpointFilesMatch": true,
+    "terminal": {
+      "backendDeath": "UNASSESSED",
+      "classification": "terminal-zero",
+      "deadlineSeconds": 200,
+      "elapsedSeconds": 84.71200391999446,
+      "failure": null,
+      "parentPID": 199973,
+      "returncode": 0,
+      "streams": {
+        "stderr": {
+          "limit": 65536,
+          "observedBytes": 320,
+          "retainedBytes": 320,
+          "sha256": "aa2edb42d3905657ece2b34a74c4cbc202635917c4abdb295b99e23a83d8bb96"
+        },
+        "stdout": {
+          "limit": 1048576,
+          "observedBytes": 0,
+          "retainedBytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wrapperPID": 199978
+    },
+    "entry": {
+      "pid": 2,
+      "invocation": "af42b94683474b90abbe78374be5713a",
+      "limits": {
+        "memory.max": "1073741824",
+        "memory.swap.max": "0",
+        "cpu.max": "50000 100000",
+        "pids.max": "64"
+      },
+      "net": "net:[4026533294]",
+      "mounts": [
+        {
+          "path": "/",
+          "mount": "/",
+          "options": "ro,nosuid,nodev,relatime"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan",
+          "mount": "/",
+          "options": "ro,nosuid,nodev,relatime"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+          "mount": "/home/nathaniel/.local/state/openplan/project-budget-reviewed-combined-20261016/openplan/node_modules",
+          "options": "ro,nosuid,nodev,relatime"
+        },
+        {
+          "path": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+          "mount": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-validator-correction-20261016",
+          "options": "rw,nosuid,nodev,relatime"
+        }
+      ],
+      "hostwideConfinementClaim": false
+    },
+    "lateResources": {
+      "memory.peak": "387313664",
+      "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+      "memory.swap.current": "0",
+      "pids.peak": "43",
+      "pids.events": "max 0"
+    },
+    "originalChecks01RemainsExit1": true,
+    "oldCampaignRerun": false
+  },
+  "report": {
+    "path": "docs/reviews/2026-10-16-land-use-publication-retained-independent/REPORT.md",
+    "sha256": "10ecfbc853efbd34e707fb9efcc4a79970e083b99bc977a0f1a8d5d41be501b6",
+    "bytes": 22315
+  },
+  "privateReviewEvidence": {
+    "root": "/home/nathaniel/.local/state/openplan/land-use-publication-retained-independent-20261016",
+    "mode": "0700",
+    "manifestSHA256": "72b817f500f650312f12a2727508f3deff5dbfc506a94fc86025e38a1d58df56",
+    "files": 109,
+    "fullNamesMessages": "retained-results-full.md",
+    "metadataInspection": "evidence-inspection.json",
+    "sourceCustody": "source-custody.json",
+    "readerNotes": "reader-notes.json"
+  },
+  "reviewerExecuted": {
+    "sourceMetadataGitReading": true,
+    "primaryWebDocumentation": true,
+    "subjectTestsImportsDependencies": false,
+    "compilerDirectionFlockManager": false,
+    "SQLDockerNative": false,
+    "HTTPAuthProviderSDKBrowser": false,
+    "nestedAgents": false
+  },
+  "acceptance": {
+    "native425": false,
+    "parserRollbackLocksRLSACLHistory": false,
+    "wholeAppTSCBuild": false,
+    "browserDesktop390": false,
+    "actualArtifactPractitioner": false,
+    "KI025Closed": false,
+    "M1Complete": false,
+    "V1Complete": false,
+    "releaseOperatingActionApproved": false
+  },
+  "primaryReferences": [
+    "https://supabase.com/docs/reference/javascript/maybesingle",
+    "https://www.postgresql.org/docs/17/functions-json.html",
+    "https://www.postgresql.org/docs/17/datatype-json.html#JSON-CONTAINMENT",
+    "https://www.postgresql.org/docs/17/functions-formatting.html",
+    "https://www.postgresql.org/docs/17/functions-comparison.html",
+    "https://supabase.com/changelog"
+  ]
+}

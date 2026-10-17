@@ -13,12 +13,12 @@ const decision = {
   instrumentIdentifier: "SYNTHETIC-1", vote: null, decidedOn: "2026-10-16", effectiveOn: null,
 };
 
-async function readDecision(value: unknown, present = true) {
+async function readDecision(value: unknown, present = true, nativeError: { code: string; message: string } | null = null) {
   const manifest = { planId, versionId, versionContentHash: contentHash, reviewReleaseId,
     ...(present ? { decision: value } : {}) };
   const native = { plan_id: planId, version_id: versionId, version_content_hash: contentHash,
     review_release_id: reviewReleaseId, adoption_manifest: manifest, adoption_manifest_hash: manifestHash };
-  const query = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn().mockResolvedValue({ data: native, error: null }) };
+  const query = { select: vi.fn(), eq: vi.fn(), maybeSingle: vi.fn().mockResolvedValue({ data: nativeError ? null : native, error: nativeError }) };
   query.select.mockReturnValue(query); query.eq.mockReturnValue(query);
   const from = vi.fn().mockReturnValue(query);
   const supabase = { from } as unknown as Parameters<typeof loadReportAdoption>[0]["supabase"];
@@ -38,6 +38,12 @@ describe("retained publication decision reader boundary", () => {
   it("refuses a missing nested decision before a native query", async () => {
     const { result, from } = await readDecision(undefined, false);
     expect(result.status).toBe("invalid"); expect(from).not.toHaveBeenCalled();
+  });
+  it("refuses the supplied multiple-native-rows query error for a valid decision", async () => {
+    const { result, query } = await readDecision(decision, true,
+      { code: "PGRST116", message: "JSON object requested, multiple (or no) rows returned" });
+    expect(result.status).toBe("invalid");
+    expect(query.maybeSingle).toHaveBeenCalledTimes(1);
   });
   it.each([null, "decision", [], 1])("refuses a non-object decision %#", async value => {
     const { result, from } = await readDecision(value);
@@ -60,6 +66,19 @@ describe("retained publication decision reader boundary", () => {
 describe("retained publication SQL composition, not database execution", () => {
   const path = process.env.OPENPLAN_PUBLICATION_SQL_FIXTURE ?? join(process.cwd(), "supabase/migrations/20261017030608_land_use_plan_publication_transaction.sql");
   const sql = readFileSync(path, "utf8");
+  const decisionCount = sql.slice(sql.indexOf("IF (SELECT count(*) FROM public.land_use_plan_decisions"),
+    sql.indexOf("  -- A retained hash does not establish"));
+  it("requires one native decision in the exact reader plan version and hash scope", () => {
+    expect(decisionCount).toContain("IF (SELECT count(*) FROM public.land_use_plan_decisions\n    WHERE plan_id=p_plan_id AND version_id=adopted.id\n      AND adoption_manifest_hash=decision.adoption_manifest_hash)<>1 THEN");
+    expect(decisionCount).toContain("RAISE EXCEPTION USING ERRCODE='PT409'");
+    for (const extra of ["decision_kind", "workspace_id", "version_content_hash"]) expect(decisionCount).not.toContain(extra);
+  });
+  it("places the native cardinality refusal before either publication branch", () => {
+    const count = sql.indexOf("IF (SELECT count(*) FROM public.land_use_plan_decisions");
+    expect(count).toBeGreaterThan(sql.indexOf("The retained adoption manifest could not be verified"));
+    expect(count).toBeLessThan(sql.indexOf("already_published:="));
+    expect(sql).not.toMatch(/(?:UPDATE|DELETE FROM) public\.land_use_plan_decisions/);
+  });
   it("counts every artifact so newer PDFs and timestamp ties cannot pass singleton verification", () => {
     expect(sql).toContain("SELECT count(*) INTO artifact_count FROM public.report_artifacts WHERE report_id=report_row.id;");
     expect(sql).toContain("IF artifact_count<>1 THEN RAISE EXCEPTION");

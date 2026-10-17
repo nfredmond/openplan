@@ -66,6 +66,12 @@ BEGIN
     OR decision.adoption_manifest->>'reviewReleaseId' IS DISTINCT FROM decision.review_release_id::text THEN
     RAISE EXCEPTION USING ERRCODE='PT409',MESSAGE='The retained adoption manifest could not be verified';
   END IF;
+  -- Match the unchanged adoption reader's maybeSingle scope, including other kinds.
+  IF (SELECT count(*) FROM public.land_use_plan_decisions
+    WHERE plan_id=p_plan_id AND version_id=adopted.id
+      AND adoption_manifest_hash=decision.adoption_manifest_hash)<>1 THEN
+    RAISE EXCEPTION USING ERRCODE='PT409',MESSAGE='The retained adoption decision is missing or ambiguous';
+  END IF;
   -- A retained hash does not establish the decision shape required by the readers.
   manifest_decision:=decision.adoption_manifest->'decision';
   IF jsonb_typeof(manifest_decision) IS DISTINCT FROM 'object'
