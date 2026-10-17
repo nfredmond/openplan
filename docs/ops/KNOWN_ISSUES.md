@@ -71,6 +71,28 @@ records source inspection only. No test, sweep, email or hosted configuration
 check runs, and no delivery or form-default acceptance follows. The October 12
 finding remains preserved as the historical boundary in the table.
 
+### October 16 source disposition of KI-025
+
+Draft candidate `d264d69149ae2f9d589840e5a543b798ae4718ec`, application
+`42fc0315070f31269325acb264f0260723dbd56b`, contains the reviewed
+[saved-context geography correction](../reviews/2026-10-16-land-use-geography-joined/STATUS.md),
+[retained extent validation](../reviews/2026-10-16-designation-map-extent-independent/ROOT_ACCEPTANCE.json)
+and [publication cardinality correction](../reviews/2026-10-16-land-use-publication-cardinality-independent/REPORT.md).
+These are source and selected-check outcomes. Migrations 424 and 425 remain unapplied
+within this evidence boundary; native SQL/RLS, publication races, identified
+desktop/390px journeys and planner acceptance remain open.
+
+The extent correction leaves wrapped viewport queries unchanged. Current
+browser clamping can omit one side of a dateline-crossing view or return without
+clearing earlier shapes for a shifted world copy. This is a conditional source
+inference, supported by the permitted longitude range in the
+[Mapbox bounds contract](https://docs.mapbox.com/mapbox-gl-js/api/geography/#lnglatbounds),
+not a current map-engine or browser reproduction. A separate
+[source assessment](../reviews/2026-10-16-public-designation-viewport-source/STATUS.md)
+records the exact path and pending correction design. The creation-provider
+assumption also remains open. The October 12 findings above remain the historical
+baseline; KI-025 and M1 are not closed.
+
 ## ActivitySim container owner loss, October 8, 2026
 
 The [container custody case](../reviews/2026-10-08-model-custody-metadata/ACTIVITYSIM_CONTAINER_CUSTODY.md)
