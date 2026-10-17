@@ -6,7 +6,7 @@
  * Failed or malformed reads carry unavailable flags; consumers must honor them.
  */
 import { z } from "zod";
-import { readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
+import { looksLikePendingSchema, readPendingSchemaMissingColumn } from "@/lib/supabase/pending-schema";
 import type { BilledLineLike } from "@/lib/projects/budget";
 
 export type ProjectBudgetQuerySupabaseLike = {
@@ -176,11 +176,11 @@ function missingSnapshotRpc(error: { code?: string; message?: string }): boolean
   ).test(message);
 }
 
-/** Match named source relations, never a dependency inferred from generic text.
+/** Refine the shared classifier to named sources, never inferred dependencies.
  * Legacy transport fixtures omit codes; an actual conflicting code still wins.
  */
 function missingSourceRelation(error: { code?: string; message?: string } | null, relations: readonly string[]): boolean {
-  if (!error || (error.code !== undefined && error.code !== "42P01")) return false;
+  if (!error || !looksLikePendingSchema(error.message) || (error.code !== undefined && error.code !== "42P01")) return false;
   return relations.some((relation) => new RegExp(`^relation "(?:public\\.)?${relation}" does not exist$`).test(error.message ?? ""));
 }
 
@@ -246,7 +246,7 @@ export async function loadProjectBudgetInputs(
     const pending = (source: { error: { message?: string; code?: string } | null }) => source === snapshot.deliverables
       // Catalog-selected optional columns cannot explain a query's undefined
       // column. A policy/helper failure is unreadable, not an optional gap.
-      ? source.error?.code === "42P01" && /^relation "(?:public\.)?project_deliverables" does not exist$/.test(source.error.message ?? "")
+      ? source.error?.code === "42P01" && missingSourceRelation(source.error, ["project_deliverables"])
       : source === snapshot.statedBudget
         ? missingSourceRelation(source.error, ["projects"]) || missingStatedBudgetColumn(source.error)
         : source === snapshot.spendEntries

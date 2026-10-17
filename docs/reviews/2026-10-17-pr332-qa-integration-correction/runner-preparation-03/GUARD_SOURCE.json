@@ -1,0 +1,432 @@
+{
+  "assertions": {
+    "N-READBACK.fixture-bytes": {
+      "line": 85,
+      "literal": "assert.ok(positive.bytes === 8 && readFileSync(file).equals(Buffer.from('1234567X')), 'N-READBACK.fixture-bytes');",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+    },
+    "N-READBACK.hash-refusal": {
+      "line": 86,
+      "literal": "assert.ok(JSON.stringify(refusal) === JSON.stringify({ name: 'Error', message: 'report_saved_length_or_hash_mismatch' }), 'N-READBACK.hash-refusal');",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+    },
+    "N-WRITE.actual-eight": {
+      "line": 59,
+      "literal": "assert.ok(actual.equals(Buffer.from('12345678')) && JSON.stringify(calls) === JSON.stringify(Array(8).fill(1)) && returned === 8, 'N-WRITE.actual-eight');",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+    },
+    "N-WRITE.string-refusal": {
+      "line": 74,
+      "literal": "assert.ok(JSON.stringify(refusals.string) === JSON.stringify({ name: 'Error', message: 'report_invalid_actual_write_count' }), 'N-WRITE.string-refusal');",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+    },
+    "N-WRITE.zero-refusal": {
+      "line": 73,
+      "literal": "assert.ok(JSON.stringify(refusals.zero) === JSON.stringify({ name: 'Error', message: 'report_invalid_actual_write_count' }), 'N-WRITE.zero-refusal');",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+    },
+    "P-INDEPENDENT.cleanup-separate": {
+      "line": 100,
+      "literal": "assert cleanup_ok, 'P-INDEPENDENT.cleanup-separate'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-INDEPENDENT.later-markers": {
+      "line": 98,
+      "literal": "assert markers == ['41', '42'] and later_ok, 'P-INDEPENDENT.later-markers'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-INDEPENDENT.marker-readback": {
+      "line": 101,
+      "literal": "assert marker_a.read_bytes() == b'A' and marker_b.read_bytes() == b'B', 'P-INDEPENDENT.marker-readback'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-INDEPENDENT.primary-custody": {
+      "line": 99,
+      "literal": "assert primary_ok, 'P-INDEPENDENT.primary-custody'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.explicit-system-owner-view": {
+      "line": 160,
+      "literal": "assert len(views) == 7 and all(view['systemOwnerParity'] == 'UNPROVED' and view['actualUID'] == 12345 and view['actualGID'] == 23456 for view in views), 'P-METADATA.explicit-system-owner-view'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.fixture-readback": {
+      "line": 163,
+      "literal": "assert path.read_bytes() == b'12345678', 'P-METADATA.fixture-readback'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.host-owner-refusal": {
+      "line": 159,
+      "literal": "assert all(item == {'name': 'RuntimeError', 'message': 'complete_input_descriptor_changed:' + str(path)} for item in host_refusals.values()), 'P-METADATA.host-owner-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.inode-refusal": {
+      "line": 156,
+      "literal": "assert inode is not None and inode['message'] == 'complete_input_descriptor_changed:' + str(path), 'P-METADATA.inode-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.mode-refusal": {
+      "line": 155,
+      "literal": "assert mode is not None and mode['message'] == 'complete_input_descriptor_changed:' + str(path), 'P-METADATA.mode-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.no-general-exemption": {
+      "line": 162,
+      "literal": "assert unknown_refusal == {'name': 'RuntimeError', 'message': 'inner_unknown_owner_path:/usr/bin/not-an-approved-input'}, 'P-METADATA.no-general-exemption'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.strict-owner-refusal": {
+      "line": 158,
+      "literal": "assert all(item == {'name': 'RuntimeError', 'message': 'complete_input_descriptor_changed:' + str(path)} for item in owner_refusals.values()), 'P-METADATA.strict-owner-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.symlink-refusal": {
+      "line": 157,
+      "literal": "assert symlink is not None and symlink['message'] == 'input_not_regular_nonsymlink:' + str(path), 'P-METADATA.symlink-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-METADATA.system-other-field-refusal": {
+      "line": 161,
+      "literal": "assert all(item == {'name': 'RuntimeError', 'message': 'inner_system_nonowner_descriptor_changed:' + system_path} for item, system_path in zip(other_fields, system_paths + ('/usr/bin/python3',))), 'P-METADATA.system-other-field-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-READBACK.fixture-bytes": {
+      "line": 68,
+      "literal": "assert positive['bytes'] == 8 and path.read_bytes() == b'1234567X', 'P-READBACK.fixture-bytes'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-READBACK.hash-refusal": {
+      "line": 69,
+      "literal": "assert refusal == {'name': 'RuntimeError', 'message': 'saved_file_readback_mismatch:' + str(path)}, 'P-READBACK.hash-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-WRITE.actual-eight": {
+      "line": 42,
+      "literal": "assert actual == b'12345678' and calls == [1] * 8 and returned == 8, 'P-WRITE.actual-eight'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-WRITE.string-refusal": {
+      "line": 58,
+      "literal": "assert refusals['string'] == {'name': 'RuntimeError', 'message': 'invalid_actual_write_count'}, 'P-WRITE.string-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    },
+    "P-WRITE.zero-refusal": {
+      "line": 57,
+      "literal": "assert refusals['zero'] == {'name': 'RuntimeError', 'message': 'invalid_actual_write_count'}, 'P-WRITE.zero-refusal'",
+      "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+    }
+  },
+  "bindings": {
+    "node": [
+      "Only import binding writeSync is renamed to nativeWriteSync.",
+      "A module-local let writeSync and setGuardWriter export are inserted outside tested bodies.",
+      "Private writeAll/saved receive export aliases; body bytes and metadata helper declarations remain exact.",
+      "Journal/completeSignal declarations stay uncalled; imports are node builtins only."
+    ],
+    "python": [
+      "Only selected exact definitions and exact SYSTEM constants are copied; imports are stdlib hashlib/os/Path/stat/traceback only.",
+      "The private module-local os binding is replaced with WriteBinding for writer callbacks, restored finally. Function text is unchanged.",
+      "No outer/entry/campaign/main, subprocess, lock, manager, namespace or subject enters the capsule."
+    ]
+  },
+  "caseExecutions": 26,
+  "cases": 6,
+  "globalOrder": "six harmless, six baseline, eight exact omissions, six restored; one Python controller and one persistent Node child; four one-byte acknowledgements and three one-byte go markers",
+  "node": {
+    "baseline": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs",
+    "bodies": {
+      "metadata_helpers": {
+        "sha256": "75b951760315a529df5d0efe8952e3cb9afb75f7d4bad942de6693e36e1092a3",
+        "text": "const meta = (value) => [value.dev, value.ino, value.mode, value.uid, value.gid, value.size, value.mtimeNs, value.ctimeNs].map(String);\nconst same = (left, right) => JSON.stringify(meta(left)) === JSON.stringify(meta(right));\nconst sha = (data) => createHash(\"sha256\").update(data).digest(\"hex\");\n"
+      },
+      "saved": {
+        "sha256": "437d29a4f5f31dcc64249d6045118cfa81c3e1b64a3c929b3d3993bf2b681a49",
+        "text": "function saved(path, length, hash) {\n  const before = lstatSync(path, { bigint: true });\n  if (!before.isFile() || before.isSymbolicLink()) throw new Error(\"report_not_regular_nonsymlink\");\n  const fd = openSync(path, constants.O_RDONLY | constants.O_NOFOLLOW);\n  let bytes;\n  try {\n    if (!same(before, fstatSync(fd, { bigint: true }))) throw new Error(\"report_changed_at_open\");\n    bytes = readFileSync(fd);\n    if (!same(before, fstatSync(fd, { bigint: true })) || !same(before, lstatSync(path, { bigint: true }))) {\n      throw new Error(\"report_unstable_metadata\");\n    }\n  } finally {\n    closeSync(fd);\n  }\n  if (bytes.length !== length || sha(bytes) !== hash) throw new Error(\"report_saved_length_or_hash_mismatch\");\n  return { path, bytes: length, sha256: hash, metadata: meta(before) };\n}\n"
+      },
+      "writeAll": {
+        "sha256": "9978fedf900c6b708a95d55f1e6ae79a2162e1a507bf09217ef71b951803a9d0",
+        "text": "function writeAll(fd, data) {\n  let offset = 0;\n  while (offset < data.length) {\n    const count = writeSync(fd, data, offset, data.length - offset);\n    if (!Number.isSafeInteger(count) || count <= 0 || count > data.length - offset) {\n      throw new Error(\"report_invalid_actual_write_count\");\n    }\n    offset += count;\n  }\n  return offset;\n}\n"
+      }
+    },
+    "harmless": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-harmless.mjs",
+    "original": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/report-io.mjs",
+    "steps": [
+      {
+        "cases": [
+          "N-WRITE",
+          "N-READBACK"
+        ],
+        "id": "harmless",
+        "sha256": "418bd044fb27a716546b2821956d8efc6c7a209262827354a740b358e96db04f",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-harmless.mjs"
+      },
+      {
+        "cases": [
+          "N-WRITE",
+          "N-READBACK"
+        ],
+        "id": "baseline",
+        "sha256": "1f9e5be618da731feeac8c39b5e190890924d4baa97c8cac2f38da79f4a46c32",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs"
+      },
+      {
+        "cases": [
+          "N-WRITE"
+        ],
+        "id": "N-W1",
+        "sha256": "857d9c5ae39c0b001237a32bd3b941de6387dba72e968da9ed6394332b1cf789",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W1.mjs"
+      },
+      {
+        "cases": [
+          "N-WRITE"
+        ],
+        "id": "N-W2",
+        "sha256": "b357442101d12f010dd7ca3032da795867fe7281dcc681f475d71bad5752ae4d",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W2.mjs"
+      },
+      {
+        "cases": [
+          "N-READBACK"
+        ],
+        "id": "N-R1",
+        "sha256": "537b1fd523b0a0f03b38e09a87e06d7d61471b5afaea4792f385c480cf8e9fc3",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-R1.mjs"
+      },
+      {
+        "cases": [
+          "N-WRITE",
+          "N-READBACK"
+        ],
+        "id": "restored",
+        "sha256": "1f9e5be618da731feeac8c39b5e190890924d4baa97c8cac2f38da79f4a46c32",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs"
+      }
+    ]
+  },
+  "omissionSources": {
+    "N-R1": {
+      "assertionAnchor": {
+        "line": 86,
+        "literal": "assert.ok(JSON.stringify(refusal) === JSON.stringify({ name: 'Error', message: 'report_saved_length_or_hash_mismatch' }), 'N-READBACK.hash-refusal');",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+      },
+      "case": "N-READBACK",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-R1.mjs\n@@ -35,7 +35,7 @@\n   } finally {\n     closeSync(fd);\n   }\n-  if (bytes.length !== length || sha(bytes) !== hash) throw new Error(\"report_saved_length_or_hash_mismatch\");\n+  if (bytes.length !== length) throw new Error(\"report_saved_length_or_hash_mismatch\");\n   return { path, bytes: length, sha256: hash, metadata: meta(before) };\n }\n \n",
+      "expectedAssertion": "N-READBACK.hash-refusal",
+      "sha256": "537b1fd523b0a0f03b38e09a87e06d7d61471b5afaea4792f385c480cf8e9fc3",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-R1.mjs"
+    },
+    "N-W1": {
+      "assertionAnchor": {
+        "line": 59,
+        "literal": "assert.ok(actual.equals(Buffer.from('12345678')) && JSON.stringify(calls) === JSON.stringify(Array(8).fill(1)) && returned === 8, 'N-WRITE.actual-eight');",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+      },
+      "case": "N-WRITE",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W1.mjs\n@@ -7,7 +7,7 @@\n \n function writeAll(fd, data) {\n   let offset = 0;\n-  while (offset < data.length) {\n+  if (offset < data.length) {\n     const count = writeSync(fd, data, offset, data.length - offset);\n     if (!Number.isSafeInteger(count) || count <= 0 || count > data.length - offset) {\n       throw new Error(\"report_invalid_actual_write_count\");\n",
+      "expectedAssertion": "N-WRITE.actual-eight",
+      "sha256": "857d9c5ae39c0b001237a32bd3b941de6387dba72e968da9ed6394332b1cf789",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W1.mjs"
+    },
+    "N-W2": {
+      "assertionAnchor": {
+        "line": 73,
+        "literal": "assert.ok(JSON.stringify(refusals.zero) === JSON.stringify({ name: 'Error', message: 'report_invalid_actual_write_count' }), 'N-WRITE.zero-refusal');",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs"
+      },
+      "case": "N-WRITE",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-baseline.mjs\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W2.mjs\n@@ -9,9 +9,6 @@\n   let offset = 0;\n   while (offset < data.length) {\n     const count = writeSync(fd, data, offset, data.length - offset);\n-    if (!Number.isSafeInteger(count) || count <= 0 || count > data.length - offset) {\n-      throw new Error(\"report_invalid_actual_write_count\");\n-    }\n     offset += count;\n   }\n   return offset;\n",
+      "expectedAssertion": "N-WRITE.zero-refusal",
+      "sha256": "b357442101d12f010dd7ca3032da795867fe7281dcc681f475d71bad5752ae4d",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/node-N-W2.mjs"
+    },
+    "P-C1": {
+      "assertionAnchor": {
+        "line": 98,
+        "literal": "assert markers == ['41', '42'] and later_ok, 'P-INDEPENDENT.later-markers'",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+      },
+      "case": "P-INDEPENDENT",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-C1.py\n@@ -32,7 +32,7 @@\n         try:\n             completed.append({'step': label, 'value': operation()})\n         except BaseException as error:\n-            errors.append({'step': label, **error_info(error)})\n+            raise\n     return {'primary': primary, 'completed': completed, 'errors': errors}\n \n def stable(info):\n",
+      "expectedAssertion": "P-INDEPENDENT.later-markers",
+      "sha256": "25fad5db7215a27ede4aa1db87133d0417f7ca02ae2e9fec5da427cd1143268d",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-C1.py"
+    },
+    "P-M1": {
+      "assertionAnchor": {
+        "line": 155,
+        "literal": "assert mode is not None and mode['message'] == 'complete_input_descriptor_changed:' + str(path), 'P-METADATA.mode-refusal'",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+      },
+      "case": "P-METADATA",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-M1.py\n@@ -85,7 +85,7 @@\n             return {'path': path, 'actualUID': observed['uid'], 'actualGID': observed['gid'],\n                     'systemOwnerParity': 'UNPROVED', 'actualDescriptor': observed}\n         require(expected['uid'] == 1000 and expected['gid'] == 1000, 'inner_unknown_owner_path:' + path)\n-    require(observed == expected, 'complete_input_descriptor_changed:' + path)\n+    require(observed['bytes'] == expected['bytes'] and observed['sha256'] == expected['sha256'], 'complete_input_descriptor_changed:' + path)\n     return None\n \n def pinned(entries, inner=False):\n",
+      "expectedAssertion": "P-METADATA.mode-refusal",
+      "sha256": "24f82297d2a30a39556f4b0887b210cfa7a70f7a590c34b08613c3927328fe96",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-M1.py"
+    },
+    "P-R1": {
+      "assertionAnchor": {
+        "line": 69,
+        "literal": "assert refusal == {'name': 'RuntimeError', 'message': 'saved_file_readback_mismatch:' + str(path)}, 'P-READBACK.hash-refusal'",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+      },
+      "case": "P-READBACK",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-R1.py\n@@ -67,7 +67,7 @@\n \n def readback(path, data):\n     observed = descriptor(path)\n-    require(observed['bytes'] == len(data) and observed['sha256'] == hashlib.sha256(data).hexdigest(), 'saved_file_readback_mismatch:' + str(path))\n+    require(observed['bytes'] == len(data), 'saved_file_readback_mismatch:' + str(path))\n     return observed\n \n def compare_descriptor(expected, observed, inner=False):\n",
+      "expectedAssertion": "P-READBACK.hash-refusal",
+      "sha256": "48572d5d99ac2a4b90b72ec9d3bfdf3bbbea7d945e824185c8e69932b1fd12bf",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-R1.py"
+    },
+    "P-W1": {
+      "assertionAnchor": {
+        "line": 42,
+        "literal": "assert actual == b'12345678' and calls == [1] * 8 and returned == 8, 'P-WRITE.actual-eight'",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+      },
+      "case": "P-WRITE",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W1.py\n@@ -20,7 +20,7 @@\n \n def write_all(fd, data):\n     offset = 0\n-    while offset < len(data):\n+    if offset < len(data):\n         count = os.write(fd, memoryview(data)[offset:])\n         require(type(count) is int and 0 < count <= len(data) - offset, 'invalid_actual_write_count')\n         offset += count\n",
+      "expectedAssertion": "P-WRITE.actual-eight",
+      "sha256": "a4bca2092e7011b8563036d4450bbfcef3a9c4d3972777387d3c47c2c72210a2",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W1.py"
+    },
+    "P-W2": {
+      "assertionAnchor": {
+        "line": 57,
+        "literal": "assert refusals['zero'] == {'name': 'RuntimeError', 'message': 'invalid_actual_write_count'}, 'P-WRITE.zero-refusal'",
+        "path": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py"
+      },
+      "case": "P-WRITE",
+      "exactSourceDelta": "--- /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py\n+++ /home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W2.py\n@@ -22,7 +22,6 @@\n     offset = 0\n     while offset < len(data):\n         count = os.write(fd, memoryview(data)[offset:])\n-        require(type(count) is int and 0 < count <= len(data) - offset, 'invalid_actual_write_count')\n         offset += count\n     return offset\n \n",
+      "expectedAssertion": "P-WRITE.zero-refusal",
+      "sha256": "0c848eca42f527609a74c3d5bf887eeea6ad3e1b46834bfa3be513498c8df8a5",
+      "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W2.py"
+    }
+  },
+  "omissions": 8,
+  "python": {
+    "baseline": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py",
+    "bodies": {
+      "compare_descriptor": {
+        "sha256": "93d286356ea2071697b57b113a17b81ed3555c6569c70d15219bf0518c6cd157",
+        "text": "def compare_descriptor(expected, observed, inner=False):\n    # Ownership can have a different view only for these individually named\n    # system inputs. descriptor()/aliases() still check full read stability.\n    path = expected['path']\n    if inner:\n        system = (path in SYSTEM_REGULAR_PATHS and expected['type'] == 'regular') or (\n            path == SYSTEM_ALIAS_PATH and expected['type'] == 'symlink')\n        if system:\n            require(expected['uid'] == 0 and expected['gid'] == 0, 'system_host_owner_changed:' + path)\n            require({key: value for key, value in observed.items() if key not in ('uid', 'gid')} ==\n                    {key: value for key, value in expected.items() if key not in ('uid', 'gid')},\n                    'inner_system_nonowner_descriptor_changed:' + path)\n            return {'path': path, 'actualUID': observed['uid'], 'actualGID': observed['gid'],\n                    'systemOwnerParity': 'UNPROVED', 'actualDescriptor': observed}\n        require(expected['uid'] == 1000 and expected['gid'] == 1000, 'inner_unknown_owner_path:' + path)\n    require(observed == expected, 'complete_input_descriptor_changed:' + path)\n    return None\n"
+      },
+      "descriptor": {
+        "sha256": "f23ba8c567a72620a79b31bccd757ae7bd639b97eee61361a96e1939202f9e1a",
+        "text": "def descriptor(path):\n    path = Path(path)\n    before = path.lstat()\n    require(stat.S_ISREG(before.st_mode) and not path.is_symlink(), 'input_not_regular_nonsymlink:' + str(path))\n    fd = os.open(path, os.O_RDONLY | os.O_NOFOLLOW)\n    try:\n        opened = os.fstat(fd)\n        require(stable(before) == stable(opened), 'input_changed_at_open:' + str(path))\n        sha = hashlib.sha256()\n        length = 0\n        while True:\n            data = os.read(fd, 1048576)\n            if not data:\n                break\n            sha.update(data)\n            length += len(data)\n        after = os.fstat(fd)\n        require(stable(opened) == stable(after) == stable(path.lstat()), 'input_metadata_unstable:' + str(path))\n        require(length == after.st_size, 'input_length_unstable:' + str(path))\n        return {'path': str(path), 'bytes': length, 'sha256': sha.hexdigest(),\n                'mode': stat.S_IMODE(after.st_mode), 'uid': after.st_uid, 'gid': after.st_gid,\n                'device': after.st_dev, 'inode': after.st_ino, 'mtime_ns': after.st_mtime_ns,\n                'ctime_ns': after.st_ctime_ns, 'type': 'regular', 'nonsymlink': True}\n    finally:\n        os.close(fd)\n"
+      },
+      "error_info": {
+        "sha256": "c3dd02c411e0ecc73322ba15822cc6f83f659d1352c4700f2f444db815b18da0",
+        "text": "def error_info(error):\n    return {'type': type(error).__name__, 'message': str(error), 'traceback': traceback.format_exc()}\n"
+      },
+      "independent_actions": {
+        "sha256": "c92f789597702da3230db43d156cc4b566ab350e1d2d085e9aeec70752685145",
+        "text": "def independent_actions(primary, actions):\n    completed, errors = [], []\n    for label, operation in actions:\n        try:\n            completed.append({'step': label, 'value': operation()})\n        except BaseException as error:\n            errors.append({'step': label, **error_info(error)})\n    return {'primary': primary, 'completed': completed, 'errors': errors}\n"
+      },
+      "pinned": {
+        "sha256": "868adde3ec77fe801d6789ddec043335504e43f47bb80c76bef61fa06eed4e41",
+        "text": "def pinned(entries, inner=False):\n    views = []\n    for item in entries:\n        view = compare_descriptor(item, descriptor(item['path']), inner)\n        if view is not None:\n            views.append(view)\n    return views\n"
+      },
+      "readback": {
+        "sha256": "47b88c3de8e4c0f44e321f57e09cff9d544e4504ccc3101796b25c39432dc1cf",
+        "text": "def readback(path, data):\n    observed = descriptor(path)\n    require(observed['bytes'] == len(data) and observed['sha256'] == hashlib.sha256(data).hexdigest(), 'saved_file_readback_mismatch:' + str(path))\n    return observed\n"
+      },
+      "require": {
+        "sha256": "0af9e3da369016766b08169dd8c173235e8af2a0e6033c13d680c21a0e817a64",
+        "text": "def require(value, reason):\n    if not value:\n        raise RuntimeError(reason)\n"
+      },
+      "stable": {
+        "sha256": "60a4932d3ac16aa0791891babc60dcfed0100389a9fd4d3bb7be46d33bec5806",
+        "text": "def stable(info):\n    return (info.st_dev, info.st_ino, info.st_mode, info.st_uid, info.st_gid,\n            info.st_size, info.st_mtime_ns, info.st_ctime_ns)\n"
+      },
+      "write_all": {
+        "sha256": "720e73582d4a04a3f855c27c021682db245eea035e7a00a542fee7dff3b736a2",
+        "text": "def write_all(fd, data):\n    offset = 0\n    while offset < len(data):\n        count = os.write(fd, memoryview(data)[offset:])\n        require(type(count) is int and 0 < count <= len(data) - offset, 'invalid_actual_write_count')\n        offset += count\n    return offset\n"
+      }
+    },
+    "harmless": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-harmless.py",
+    "original": "/home/nathaniel/.t3/worktrees/openplan/t3-324a866d/docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/runner.py",
+    "steps": [
+      {
+        "cases": [
+          "P-WRITE",
+          "P-READBACK",
+          "P-INDEPENDENT",
+          "P-METADATA"
+        ],
+        "id": "harmless",
+        "sha256": "255b7af37e446e2c4e1cb1b1104564164641f91936b2c2c29d5ae07e88bea626",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-harmless.py"
+      },
+      {
+        "cases": [
+          "P-WRITE",
+          "P-READBACK",
+          "P-INDEPENDENT",
+          "P-METADATA"
+        ],
+        "id": "baseline",
+        "sha256": "533fc945e756ae59e7265bea72326816fa33e67f3f8ba4ab22393bc496ee3708",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py"
+      },
+      {
+        "cases": [
+          "P-WRITE"
+        ],
+        "id": "P-W1",
+        "sha256": "a4bca2092e7011b8563036d4450bbfcef3a9c4d3972777387d3c47c2c72210a2",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W1.py"
+      },
+      {
+        "cases": [
+          "P-WRITE"
+        ],
+        "id": "P-W2",
+        "sha256": "0c848eca42f527609a74c3d5bf887eeea6ad3e1b46834bfa3be513498c8df8a5",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-W2.py"
+      },
+      {
+        "cases": [
+          "P-READBACK"
+        ],
+        "id": "P-R1",
+        "sha256": "48572d5d99ac2a4b90b72ec9d3bfdf3bbbea7d945e824185c8e69932b1fd12bf",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-R1.py"
+      },
+      {
+        "cases": [
+          "P-INDEPENDENT"
+        ],
+        "id": "P-C1",
+        "sha256": "25fad5db7215a27ede4aa1db87133d0417f7ca02ae2e9fec5da427cd1143268d",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-C1.py"
+      },
+      {
+        "cases": [
+          "P-METADATA"
+        ],
+        "id": "P-M1",
+        "sha256": "24f82297d2a30a39556f4b0887b210cfa7a70f7a590c34b08613c3927328fe96",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-P-M1.py"
+      },
+      {
+        "cases": [
+          "P-WRITE",
+          "P-READBACK",
+          "P-INDEPENDENT",
+          "P-METADATA"
+        ],
+        "id": "restored",
+        "sha256": "533fc945e756ae59e7265bea72326816fa33e67f3f8ba4ab22393bc496ee3708",
+        "source": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-03/guard-source/python-baseline.py"
+      }
+    ]
+  },
+  "tier": "SOURCE_ONLY_SIX_LOCAL_CASES_NOT_EXECUTED",
+  "window": {
+    "automaticSuccessor": false,
+    "maximumSeconds": 30,
+    "memoryBytes": 134217728,
+    "separateFromSubject480Seconds": true,
+    "swapBytes": 0
+  }
+}

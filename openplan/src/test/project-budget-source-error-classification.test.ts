@@ -45,6 +45,43 @@ function expectDelivery(inputs: ProjectBudgetInputs) {
 
 // Synthetic RPC envelopes exercise the production loader, not PostgreSQL origin,
 // RLS, cancellation reachability, PostgREST, rendered UI or native money claims.
+describe("deliverable source error classification", () => {
+  it.each([
+    { label: "D01-public-absent", code: "42P01", message: 'relation "public.project_deliverables" does not exist', pending: true },
+    { label: "D02-unqualified-absent", code: "42P01", message: 'relation "project_deliverables" does not exist', pending: true },
+    { label: "D03-terminal-LF", code: "42P01", message: 'relation "public.project_deliverables" does not exist\n', pending: false },
+    { label: "D04-code-absent", message: 'relation "public.project_deliverables" does not exist', pending: false },
+    { label: "D05-code-permission", code: "42501", message: 'relation "public.project_deliverables" does not exist', pending: false },
+    { label: "D06-code-internal", code: "XX000", message: 'relation "public.project_deliverables" does not exist', pending: false },
+    { label: "D07-private-relation", code: "42P01", message: 'relation "private.project_deliverables" does not exist', pending: false },
+    { label: "D08-deliverable-helper", code: "42P01", message: 'relation "public.project_deliverables_helper" does not exist', pending: false },
+    { label: "D09-other-relation", code: "42P01", message: 'relation "public.policy_helper" does not exist', pending: false },
+    { label: "D10-column-error", code: "42703", message: "column project_deliverables.budget_amount does not exist", pending: false },
+    { label: "D11-cache-unavailable", code: "PGRST204", message: "schema cache is unavailable", pending: false },
+    { label: "D12-permission-denied", code: "42501", message: "permission denied for table project_deliverables", pending: false },
+  ])("preserves deliverable code and source identity [$label]", async ({ label: _label, pending, ...error }) => {
+    const data = healthy();
+    data.deliverables = { complete: false, data: null, error };
+    const inputs = await load(data);
+    expect(inputs.pending.deliverables).toBe(pending);
+    expect(inputs.unreadable.deliverables).toBe(!pending);
+    expect(inputs.readFailures).toEqual(pending ? [] : [{ label: "this project's deliverables", ...error }]);
+    expect(inputs.deliverables).toEqual([]);
+    expect(inputs.pending.snapshot).toBe(false);
+    expect(inputs.pending.deliverableBudgetColumns).toBe(false);
+    expect(inputs.pending.deliverableAssigneeColumn).toBe(false);
+    expect(inputs.statedBudgetAmount).toBe("4321.09");
+    expect(inputs.spendEntries).toEqual([{ ...budgetSpend("s", "d"), amount: "1.23" }]);
+    expect(inputs.billedLines).toEqual([
+      { id: "l", invoice_id: "i", deliverable_id: "d", amount: "2.34", invoice_status: "sent" },
+    ]);
+    for (const lane of lanes) {
+      expect(inputs.pending[lane.source]).toBe(false);
+      expect(inputs.unreadable[lane.source]).toBe(false);
+    }
+  });
+});
+
 describe.each(lanes)("$source source error classification", ({ source, label, relations }) => {
   it("retains dependency, ambiguous and code-mismatched errors as original failures", async () => {
     const failures: SourceError[] = [

@@ -1,0 +1,701 @@
+{
+  "all8OriginalCandidateDescriptorsExact": true,
+  "baseAppTree": "fa58f935d012d01da7738cc3a3351c51d2804bab",
+  "baseCommit": "3d6255870f9f17131f38e661fd5c11a29ee846e2",
+  "candidateAppTree": "6c2a06933a1eebed4d2a18c88769c15bea1a7868",
+  "candidateFiles": [
+    {
+      "bytes": 254197,
+      "nonsymlink": true,
+      "path": "CHANGELOG.md",
+      "sha256": "cbea9a767a611179abdd0862c9f890fb56859a1e5ca98ed430c40d5d27af351d",
+      "type": "regular"
+    },
+    {
+      "bytes": 5686,
+      "nonsymlink": true,
+      "path": "workers/planner_agent_connector/tested-cli-versions.mjs",
+      "sha256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "type": "regular"
+    },
+    {
+      "bytes": 3271,
+      "nonsymlink": true,
+      "path": "workers/planner_agent_connector/test/registry-loading.test.mjs",
+      "sha256": "956c1493cbfb85499ab1b7246235ee98230eaed0d063e9bca834ced58034795a",
+      "type": "regular"
+    },
+    {
+      "bytes": 14168,
+      "nonsymlink": true,
+      "path": "openplan/src/lib/projects/budget-queries.ts",
+      "sha256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "type": "regular"
+    },
+    {
+      "bytes": 10769,
+      "nonsymlink": true,
+      "path": "openplan/src/test/project-budget-source-error-classification.test.ts",
+      "sha256": "1b0f89802256a4fc6959cc95d3a276ced4a3f90519d35990d7c7f88b5e3cf530",
+      "type": "regular"
+    },
+    {
+      "bytes": 3097,
+      "nonsymlink": true,
+      "path": "openplan/src/test/tested-cli-registry-vite-compatibility.test.ts",
+      "sha256": "da7259b820d2ce8fd6b6ccc6cd54b1b121d61ca1ec68e5efacf11afef4c1bcd9",
+      "type": "regular"
+    }
+  ],
+  "exactAssertions": 25,
+  "faultCalls": 13,
+  "finalOriginalFivePassed": 94,
+  "guard26Repeated": false,
+  "historicalPublic81FullDescriptorsExact": true,
+  "logicalFaults": 12,
+  "nativeOrNextBuildOrCIOrReleaseAcceptance": false,
+  "noPostRunSubjectSourceEdits": true,
+  "overallOuterAccepted": false,
+  "priorFailuresPermanent": true,
+  "privateLogsIndexesOrRawRecordsCopiedToPublic": false,
+  "publicPacketFiles": [
+    {
+      "bytes": 7213,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/PROPOSED_CHECKS.md",
+      "sha256": "231466a3bd45d9c1d14541ec4ee63bd26a39dd26b65b84fb5119217270423611",
+      "type": "regular"
+    },
+    {
+      "bytes": 3701,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/REPORT.md",
+      "sha256": "e2eb367353a6e8a58ee38418a2a7598232aa9fb367be94d087abf34e1727979d",
+      "type": "regular"
+    },
+    {
+      "bytes": 9878,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/SOURCE_HANDOFF.md",
+      "sha256": "8e9cfa8726426a216c2466090d68060d9bc27e42b789b8b6e44fb03d10c15c45",
+      "type": "regular"
+    },
+    {
+      "bytes": 6090,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/VALIDATION.md",
+      "sha256": "1cbecb9f5f899ba7849d2216311c667c9a342e9bfb9a7e2198f7d6f79bc72543",
+      "type": "regular"
+    },
+    {
+      "bytes": 5916,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-01/FAULTS.json",
+      "sha256": "ea8d3646f422d7406cfa27f091d4392cc241c3de77bbeab6d371c3020c8d91e1",
+      "type": "regular"
+    },
+    {
+      "bytes": 1567,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-01/node-reporter.mjs",
+      "sha256": "9f9859848fa62952844faf1666b7b36c8c8588f8b6cf16344d44962b9e8918ad",
+      "type": "regular"
+    },
+    {
+      "bytes": 18988,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-01/runner.py",
+      "sha256": "e92d1afbdcfcf74bb116d5ff3aff673f35d948f88bf23b746c355b44bd1f9ca8",
+      "type": "regular"
+    },
+    {
+      "bytes": 1912,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-01/vitest-reporter.mjs",
+      "sha256": "045eaed2b2962542d6a8d1755ae4c7d9fcf2b2dd9e031cd3e219129b1c6a2a40",
+      "type": "regular"
+    },
+    {
+      "bytes": 3941,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-01/vitest.config.mts",
+      "sha256": "63d3ce8375c761530e229903ff0862b5cefe69fb44441b20749a45dc83021462",
+      "type": "regular"
+    },
+    {
+      "bytes": 5916,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/FAULTS.json",
+      "sha256": "40f826f1f8fdb7939d929036b94aacce3f205cbf91c6bdebfb66516362666956",
+      "type": "regular"
+    },
+    {
+      "bytes": 5208,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "af995de6c7a5ffb5dc165652d8dfd2f78be288d6155c34707627ada67f7fc258",
+      "type": "regular"
+    },
+    {
+      "bytes": 7256,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/GUARD_SENSITIVITY_SOURCE_PLAN.md",
+      "sha256": "23c7f355013c98da00853127ba7458a27f1344410887c98f5c9569bff6102e9e",
+      "type": "regular"
+    },
+    {
+      "bytes": 4261,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/NAMESPACE_METADATA_BOUNDARY.md",
+      "sha256": "9eed78aa724dda59ef10c5ae78b2bcdb8f8addf1cdf50b0ac38ed7beea806e19",
+      "type": "regular"
+    },
+    {
+      "bytes": 85910,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/REQUEST.proposal.json",
+      "sha256": "23942a52853ad3659a964a2a49375969215adca4996d636965485823d392db16",
+      "type": "regular"
+    },
+    {
+      "bytes": 6887,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/SOURCE_BOUNDARY.md",
+      "sha256": "ea636d49f8e51e842332c7c704af2c12adcc0bb41294b42bd199a37c6d383435",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 28977,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/runner.py",
+      "sha256": "5a6cce9b46bd90c33662a5172ee7b5b341c350bddea443a3cd82ce7f191f3491",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3941,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-02/vitest.config.mts",
+      "sha256": "0167c3e27b7e0beb244cc3f0a12da2de1934045d7d5108c91bc57c2e2bc0a3fd",
+      "type": "regular"
+    },
+    {
+      "bytes": 5916,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/FAULTS.json",
+      "sha256": "bc1e30703dc4279f4cc456be874e9e8bd1544ea2c0c8cbb572376ca64f9eb972",
+      "type": "regular"
+    },
+    {
+      "bytes": 6318,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "7bd9c7082e8a17492fe068db1c9f13a46a1a2cc3ef11433f8e3f604c3260590b",
+      "type": "regular"
+    },
+    {
+      "bytes": 15940,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_REQUEST.proposal.json",
+      "sha256": "9d098b82bdfe46646ef92dd742b662d385f0ca7431034333e83963082104b8b3",
+      "type": "regular"
+    },
+    {
+      "bytes": 7572,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_SENSITIVITY_SOURCE_PLAN.md",
+      "sha256": "1b72c2fb6821700d9ab8d6cae67a1adaf44c429481d0bc3588123181caa5fbbb",
+      "type": "regular"
+    },
+    {
+      "bytes": 33837,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/GUARD_SOURCE.json",
+      "sha256": "44c3e50263764f3318548bfe1654a4a15c9e9226e71ef049459217a00e7ccc59",
+      "type": "regular"
+    },
+    {
+      "bytes": 3367,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/NAMESPACE_METADATA_BOUNDARY.md",
+      "sha256": "0845b6e52092593781d88b1cd7797cdef48f5e526bf87c3044d2d72fb315af43",
+      "type": "regular"
+    },
+    {
+      "bytes": 90206,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/REQUEST.json",
+      "sha256": "cf721f01343f45c94376d62b6fb498713bfe5d09921e7af73d0069679b573f6c",
+      "type": "regular"
+    },
+    {
+      "bytes": 90206,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/REQUEST.proposal.json",
+      "sha256": "cf721f01343f45c94376d62b6fb498713bfe5d09921e7af73d0069679b573f6c",
+      "type": "regular"
+    },
+    {
+      "bytes": 4722,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/SOURCE_BOUNDARY.md",
+      "sha256": "9be9278f0f01ebe1d87f3485e71ce13e75a83be4765c5d9d221137112618b06a",
+      "type": "regular"
+    },
+    {
+      "bytes": 8773,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-cases.py",
+      "sha256": "fdc439eb40c07f4171d8cd1055dfc6818283421483e7bafee589d2d9065309c8",
+      "type": "regular"
+    },
+    {
+      "bytes": 10600,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-controls.py",
+      "sha256": "edd57d9ee8dc1e5a184aa93a4049f0e375a3906d5b3e0bdf6e4be7057b19b613",
+      "type": "regular"
+    },
+    {
+      "bytes": 6942,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-node-controls.mjs",
+      "sha256": "587d635ca7e8f3a99a858f2349a83887fad2549a4f4db5f392c6c6b1a75327e7",
+      "type": "regular"
+    },
+    {
+      "bytes": 9465,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/guard-readers.py",
+      "sha256": "b8b6a17fdab27371683a5901816735238a5a22842e4ab6e1152969c5ea53bcea",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31757,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/runner.py",
+      "sha256": "ca7a9a67975b81a945b237e931d8dfd47f3609890dd726803545f978d9ab8dbe",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3941,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-03/vitest.config.mts",
+      "sha256": "12f06c4a5ed3d31497931cc4eed01e8e3f5eb0e67f38acda450f191cf26fd741",
+      "type": "regular"
+    },
+    {
+      "bytes": 5916,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/FAULTS.json",
+      "sha256": "accb6586e6ab5edbe5d44a1a086b614f7b7fbbe99389075ced8e7431df47766b",
+      "type": "regular"
+    },
+    {
+      "bytes": 7603,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "89909d0ff22a8794ded2e254f3953f7b8c1c433fab0f921777d01d34c2cdf7fd",
+      "type": "regular"
+    },
+    {
+      "bytes": 91602,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/REQUEST.json",
+      "sha256": "3901b54c0b0b2509a722df502d98c8e401c922463e85028d53776656d8a46237",
+      "type": "regular"
+    },
+    {
+      "bytes": 91602,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/REQUEST.proposal.json",
+      "sha256": "3901b54c0b0b2509a722df502d98c8e401c922463e85028d53776656d8a46237",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31751,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/runner.py",
+      "sha256": "81414852735265e22f0a49e9099a3f427b716615032f76388d2a67318e076cea",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3935,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-04/vitest.config.mts",
+      "sha256": "a1d9b9be8e825a71592bc5ffd37e974103dc41ab6881b3f1596ca54cd9b03a94",
+      "type": "regular"
+    },
+    {
+      "bytes": 5916,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/FAULTS.json",
+      "sha256": "782a74ca6c0ef69f4b4f40377e2e1c8607479d78c6b665c871f287a08fb4167a",
+      "type": "regular"
+    },
+    {
+      "bytes": 8694,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "85ee37541de32c6f2afde4986ab4617e4bb929c1291dc0aae60bba451a8e8e9d",
+      "type": "regular"
+    },
+    {
+      "bytes": 91594,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/REQUEST.json",
+      "sha256": "f2c83ed894591d923fa7e90766868832865654a19b1e24166e133dca14ad87fc",
+      "type": "regular"
+    },
+    {
+      "bytes": 91594,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/REQUEST.proposal.json",
+      "sha256": "f2c83ed894591d923fa7e90766868832865654a19b1e24166e133dca14ad87fc",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31751,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/runner.py",
+      "sha256": "ca70cca927878ed4afe7ec1cb538a0f5d51ef74849e11d68e14a15751f32a820",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3935,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-05/vitest.config.mts",
+      "sha256": "ab2f481cecee372db37b8962de2a8fc54696d3f2520271bb3d24bffbf53ea785",
+      "type": "regular"
+    },
+    {
+      "bytes": 6341,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/FAULTS.json",
+      "sha256": "8654157939436020b9f527325c5d029f0fea893da20249ea4889cd9c0f07a9ec",
+      "type": "regular"
+    },
+    {
+      "bytes": 10438,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "2c8c80164219339b92a6fdfb140a173472a4c70c1353921462b81b208d12b3a3",
+      "type": "regular"
+    },
+    {
+      "bytes": 94166,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/REQUEST.json",
+      "sha256": "69c3a8e38466e00464fbf8b48d2eb1293c06226dba488d22fef57604ccec330d",
+      "type": "regular"
+    },
+    {
+      "bytes": 94166,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/REQUEST.proposal.json",
+      "sha256": "69c3a8e38466e00464fbf8b48d2eb1293c06226dba488d22fef57604ccec330d",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31751,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/runner.py",
+      "sha256": "a851fa133de668c4a04ec8426758762d3b3ab77eedbf957990b9317c00b2c118",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3935,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-06/vitest.config.mts",
+      "sha256": "4d0a42c7b8f622f6a64f0f6e8d0369863544b8fca1bc737b049949191b7f901e",
+      "type": "regular"
+    },
+    {
+      "bytes": 6341,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/FAULTS.json",
+      "sha256": "5f36a66d99f37dd22df1f6e425933b58e10684444ca6a8eb6d6f636d0b49d683",
+      "type": "regular"
+    },
+    {
+      "bytes": 3566,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "340dd68a67309ff8c44963326158d90f30a4f1c32535ad87bad0e5d97b6b3af9",
+      "type": "regular"
+    },
+    {
+      "bytes": 94240,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/REQUEST.json",
+      "sha256": "ccb97daeee4abf78733f28951e4ca821a51e8b3eef66064cf4a408fd35280f08",
+      "type": "regular"
+    },
+    {
+      "bytes": 94240,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/REQUEST.proposal.json",
+      "sha256": "ccb97daeee4abf78733f28951e4ca821a51e8b3eef66064cf4a408fd35280f08",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31751,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/runner.py",
+      "sha256": "253112fc7dfa0647e6eb707143cd23afcc99d0e1d762b614bb48c984aea4d269",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3935,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-07/vitest.config.mts",
+      "sha256": "d2b1ce1c782bb5d48bfd43dfe5a76daf6af18809c0f12dc03b91c7343b37abde",
+      "type": "regular"
+    },
+    {
+      "bytes": 6341,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/FAULTS.json",
+      "sha256": "14e8c3c322c8bc6732c8cc058a13b2f84f4313fca318aa9800ae104ca63b65c6",
+      "type": "regular"
+    },
+    {
+      "bytes": 3483,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/FROZEN_SOURCE_HANDOFF.md",
+      "sha256": "c25ae57c30de849293a82676cd45170314c472a4e28539153f742ca37f2bac7c",
+      "type": "regular"
+    },
+    {
+      "bytes": 94239,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/REQUEST.json",
+      "sha256": "7ad4394b8079355b623e7f85a8cb46c51970cc3be2c33fd486515eebdf2886fb",
+      "type": "regular"
+    },
+    {
+      "bytes": 94239,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/REQUEST.proposal.json",
+      "sha256": "7ad4394b8079355b623e7f85a8cb46c51970cc3be2c33fd486515eebdf2886fb",
+      "type": "regular"
+    },
+    {
+      "bytes": 1644,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/node-reporter.mjs",
+      "sha256": "186da5f94be7a3f2ffac57f787ba7ba5d097be49629238ab2cf9a14a8600a399",
+      "type": "regular"
+    },
+    {
+      "bytes": 3579,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/report-io.mjs",
+      "sha256": "7071634cbe0440e2cb35f24d53c3b5522ef02c59cc1d74db2bdadefaee37d374",
+      "type": "regular"
+    },
+    {
+      "bytes": 31751,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/runner.py",
+      "sha256": "8d94dd630bc5e6fed53c625992496ecd1dea6744c08eeb587f7a5713171c4f69",
+      "type": "regular"
+    },
+    {
+      "bytes": 1993,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/vitest-reporter.mjs",
+      "sha256": "9b6422f99a93cb24b8b12036f798f868e638e963c807bfb259fcf0648bd20624",
+      "type": "regular"
+    },
+    {
+      "bytes": 3935,
+      "nonsymlink": true,
+      "path": "docs/reviews/2026-10-17-pr332-qa-integration-correction/runner-preparation-08/vitest.config.mts",
+      "sha256": "cbcba61cc9708fa5ba46b716e2ba62afb8c4fb7bd61e2fa1a72eb9f1b11ed153",
+      "type": "regular"
+    }
+  ],
+  "pushGranted": false,
+  "retainedExternalEvidence": [
+    {
+      "bytes": 65542,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/subject-window-10/ROOT_SUBJECT_EVIDENCE_ACCEPTANCE_AND_FINALIZER_FAILURE_10.json",
+      "sha256": "55b13726f77c60cb8e916900c7a8b06cb663b27f17d59ede9c3ec1843085080a",
+      "type": "regular"
+    },
+    {
+      "bytes": 2496,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/subject-window-10/ROOT_DISPATCH_AUTHORITY_10.json",
+      "sha256": "057db4868e0341027e0fd8693de6f1ca21937f282b33cc581197dee8f52f3d00",
+      "type": "regular"
+    },
+    {
+      "bytes": 16247,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/subject-window-09/ROOT_TEST05_SETUP_AND_RECORDING_FAILURE_AUDIT_09.json",
+      "sha256": "c147135855f1c474a200c257b38db758c3ef683bb07e29b716478025e7034dea",
+      "type": "regular"
+    },
+    {
+      "bytes": 12149,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-gate-3d62558-20261017-root-review/guard-window-04/ROOT_GUARD_OUTCOME_ACCEPTANCE_04.json",
+      "sha256": "12240a2f51081a06ae7717247f3452d35ac9987fa2bfe15eab45176417fde555",
+      "type": "regular"
+    },
+    {
+      "bytes": 26680,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-08/SOURCE_PREPARATION_INDEX.json",
+      "sha256": "917451e916b6bcf4fe554a0dc4c304856b95f9b10d8e8f0e8cde4a2720cf92b1",
+      "type": "regular"
+    },
+    {
+      "bytes": 34998524,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-08/COMPLETE_INPUT_INDEX.final.json",
+      "sha256": "15e4e452b49716102c6fab74ce128512ec255cb745df31288186f62123a9a9b4",
+      "type": "regular"
+    },
+    {
+      "bytes": 43538,
+      "nonsymlink": true,
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/final-report-01/SAVED_DATA_REJOIN.json",
+      "sha256": "fdc983e57b6695911943fdc55ff864dde8af84f44caebc297e61abc2219ebe0a",
+      "type": "regular"
+    }
+  ],
+  "selfSeal": "This file is excluded from its own list; private FINAL_REPORT_SEAL.json and commit receipt bind it.",
+  "subjectCalls": 20,
+  "subjectCampaignAccepted": true,
+  "testsRepeated": false,
+  "tier": "LOCAL_SOURCE_CHECKPOINT_SUBJECT_EVIDENCE_ACCEPTED_OUTER_FINALIZER_FAILED"
+}

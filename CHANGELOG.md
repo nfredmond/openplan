@@ -20,6 +20,17 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Project-budget snapshot and land-use publication, source candidates:**
+`20261017000019_project_budget_complete_inputs.sql` supplies the caller-scoped
+complete budget snapshot. `20261017030608_land_use_plan_publication_transaction.sql`
+saves a publication packet and its pointer within one transaction. Operators must
+apply each migration before deploying its dependent application code, after the
+installation's migration and recovery checks are accepted. This source correction
+does not apply either migration or establish native, hosted or release acceptance.
+See the [budget source record](docs/reviews/2026-10-16-project-budget-classification-joined/STATUS.md)
+and [publication source record](docs/reviews/2026-10-16-land-use-publication-transaction/REPORT.md)
+for their separate evidence limits.
+
 **Public designation viewport correction, source candidate:** wrapped map views
 retain both longitude intervals, unreadable views clear earlier shapes, and
 blank coordinates refuse instead of becoming zero. The loader uses one dedicated

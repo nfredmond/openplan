@@ -1,0 +1,119 @@
+{
+  "faults": [
+    {
+      "baseSHA256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "bytes": 5672,
+      "id": "F01-old-url",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F01-old-url.mjs",
+      "sha256": "40caab68cd4d3f912a51e869e30379c3e62e5d041eba8699b3265219027d8c7b",
+      "target": "registry"
+    },
+    {
+      "baseSHA256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "bytes": 5585,
+      "id": "F02-no-byte-pin",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F02-no-byte-pin.mjs",
+      "sha256": "8bb53ddf75107f517e160ed58a8058eaea973d72c5fcb3ef33c91bed3d208cd1",
+      "target": "registry"
+    },
+    {
+      "baseSHA256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "bytes": 5709,
+      "id": "F03-ambient-cwd",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F03-ambient-cwd.mjs",
+      "sha256": "c762db1c3c13e09b00523d8b2f13a9823874e052a908eabccaea1663edbff8a7",
+      "target": "registry"
+    },
+    {
+      "baseSHA256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "bytes": 5955,
+      "id": "F04-ambient-fallback",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F04-ambient-fallback.mjs",
+      "sha256": "fe06da3c0bee8b4d8d4fab242a3ecb6aebb0c57d86b65c3369e8dd52752feea5",
+      "target": "registry"
+    },
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14134,
+      "id": "F05-no-deliverable-code",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F05-no-deliverable-code.ts",
+      "sha256": "0675ef07cf7f1cf696589b1b2b865fd4484979348691475473404cf24fc1d38f",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14096,
+      "id": "F06-generic-relations",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F06-generic-relations.ts",
+      "sha256": "ad513b6778d82a099910470b4fe65c28fd45ec428836f32fa158eb5a4cc563c5",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14078,
+      "id": "F07-no-deliverable-pending",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F07-no-deliverable-pending.ts",
+      "sha256": "c6ea2d0efda7bf557a41b375d2c455c42747b88281b175b00d1587ef38636cc5",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14101,
+      "id": "F08-drop-source-code",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F08-drop-source-code.ts",
+      "sha256": "076d5a2ec5f7507e26700761997af0a688ac17c13e67a937ee2a401fd43c697b",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14203,
+      "id": "F09-inline-regex",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F09-inline-regex.ts",
+      "sha256": "efaebde19933030ed11a54a200b97b87677198f67690cbaa3a3a323e40a57c0f",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "cbea9a767a611179abdd0862c9f890fb56859a1e5ca98ed430c40d5d27af351d",
+      "bytes": 254182,
+      "id": "F10-no-budget-migration-name",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F10-no-budget-migration-name.md",
+      "sha256": "d20e8e8d46ed79b9ff9e670b9a76082c5bd9568873f62189c7350857c8389598",
+      "target": "changelog"
+    },
+    {
+      "baseSHA256": "cbea9a767a611179abdd0862c9f890fb56859a1e5ca98ed430c40d5d27af351d",
+      "bytes": 254175,
+      "id": "F11-no-publication-migration-name",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/F11-no-publication-migration-name.md",
+      "sha256": "eb83d1fe869ed335162bbb4d887d39f9655619ce009b3bc62252a0d200a2e81a",
+      "target": "changelog"
+    }
+  ],
+  "harmless": [
+    {
+      "baseSHA256": "8fc81b230ce6f14aa8cabb311683db076fcb710ea3f499bb5dddfe4d264c6c08",
+      "bytes": 14221,
+      "id": "H00-budget",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/H00-budget.ts",
+      "sha256": "aa224cfe5c2711183aca5477b7bfef788b53d1225a84b2073bc92c88ad4eb5d9",
+      "target": "budget"
+    },
+    {
+      "baseSHA256": "cbea9a767a611179abdd0862c9f890fb56859a1e5ca98ed430c40d5d27af351d",
+      "bytes": 254256,
+      "id": "H00-changelog",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/H00-changelog.md",
+      "sha256": "a97ab4f1c863f7c10f589c6487bb99e9a5975bbb08f8067e045d045464c8d14b",
+      "target": "changelog"
+    },
+    {
+      "baseSHA256": "ee78a9e01e4adeeec47c5626ee919d8ae88992a67c387e8c86af7b001b5f2868",
+      "bytes": 5739,
+      "id": "H00-registry",
+      "path": "/home/nathaniel/.local/state/openplan/pr332-qa-integration-correction-20261017/runner-preparation-05/faults/H00-registry.mjs",
+      "sha256": "31d60f79448128304b8cdda9be2e515b886dce02051601c0aea8b82cd7cdc89b",
+      "target": "registry"
+    }
+  ],
+  "tier": "STATIC_SOURCE_PAYLOADS_NOT_EXECUTED"
+}
