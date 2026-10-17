@@ -1,0 +1,31 @@
+{
+  "CIQueried": false,
+  "acceptedPartialOnly": {
+    "baselineCommands": 4,
+    "harmlessCommands": 4,
+    "namedAssertionFailures": 23,
+    "namedAssertionFaults": 10
+  },
+  "applicationTreeUnchanged": "42fc0315070f31269325acb264f0260723dbd56b",
+  "classification": "PERMANENT_HARNESS_SELECTION_FAILURE1",
+  "invocationId": "c5c5f7e30f0a4af39d020933684ac1ea",
+  "nativeOrReleaseAcceptance": false,
+  "newTestsRunAfterTerminal": false,
+  "runtimeFilesCount": 135,
+  "sourceAndDonorReadback": {
+    "bytes": 2059,
+    "gid": 1000,
+    "mode": 436,
+    "sha256": "3ebb0541799ba726c8a9fec38a02598a9ba7e8d3de106cf6145556a948b7cd9d",
+    "uid": 1000
+  },
+  "sourceAudit": {
+    "bytes": 72939,
+    "path": "/home/nathaniel/.local/state/openplan/viewport-focused-root-preflight-20261016-08/FAILED_WINDOW03_AUDIT.json",
+    "sha256": "c6a21cf76fa8dc3b89534a32635b2e5e787d29e877eac46f2ef24d4b4f211470"
+  },
+  "sourceNoteSHA256": "38946d6de1992482eafd5109398008c56b9ddec705095e593e563b35ef20ae58",
+  "tier": "FAILED_TRIAL_PARTIAL_EVIDENCE_ONLY",
+  "unit": "openplan-designation-viewport-focused-20261016-03",
+  "wholeExit": 1
+}
