@@ -2,6 +2,7 @@
 
 Start here:
 
+- [October 17 A0 native capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md): four requests complete before the protected-scope refusal; a saved-data reconstruction explains the digest through the accepted budget allocation. The attempt stays failed, with no oracle amendment or retry.
 - [October 17 M1 held-caller review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md): accepted source and saved supplied controls; selected-history capture, the complete migration423 predecessor and native retained-context proof remain held.
 - [October 17 A0 parent and collector review](reviews/2026-10-17-a0-multiset-parent-independent/REPORT.md): accepted exact parent source and saved supplied94 evidence, with earlier failures preserved. Native operation, post-failure risk disposition and admission remain separate and held.
 - [October 16 reviewed preparation packets](reviews/2026-10-16-reviewed-proof-packets-root-integration/STATUS.md): joined engagement and budget source evidence, contrary reviews, failed trials and native-operation holds.

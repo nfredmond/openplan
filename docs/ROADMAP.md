@@ -51,6 +51,10 @@ The October 17 M1 evidence update below links the held-caller source review and
 retained-context proof prerequisites. It changes no milestone status or
 direction-review binding.
 
+The October 17 A0 capture record preserves a protected-scope refusal and its
+saved-data explanation. A reviewed scope disposition precedes another native
+proposal; this changes no milestone status or direction-review binding.
+
 ## Destination
 
 OpenPlan v1 is a free, open-source operating system for core planning work in
@@ -115,7 +119,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | S3 | Untouched nationwide validation | Later | Audit | Successor preregistration |
 | G1 | Every state and organization type | Later | Audit | Confirm state order (decision 6) |
 | G1a | National local-assistance procedures | Later | [Sep 4](reviews/2026-09-04-pre-handoff/NATIONAL_LOCAL_ASSISTANCE_COMPARISON.md) | Read priority state manuals |
-| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md) | Tested CLI versions and honest usage limits for the proven project task (A0b); current generic Codex resets stay unknown until a reviewed causal binding exists. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
+| A0 | Planner Agent provider choice | In progress, mostly done | [Sep 12](reviews/2026-09-12-api-project-ui/VERIFICATION.md); [Oct 16 reviewed source candidates](reviews/2026-10-16-a0-corrections-and-install-check-independent/REVIEW.md); [Oct 17 capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md) | Review the preserved catalogue scope refusal before another native proposal. Tested CLI versions and honest usage limits remain required for the proven project task (A0b); current generic Codex resets stay unknown until a reviewed causal binding exists. Native SQL/RLS, provider recordings and browser proof remain open. Broad chat later (C8) |
 | A1a | Truthful, scoped agent actions | Later, partial | [Sep 10](reviews/2026-09-10-agent-submittal-receipts/VERIFICATION.md) | Recovery for remaining writes; declare caller authority for every agent-reachable read and proposal before any MCP surface |
 | A1b | One durable agent assignment | Later (C8) | Audit | Not started; design Stop, recovery and visible waits on PR 327 once verified |
 | A1c | Agent jobs across modules | Later | Audit | Waits on A1b |
