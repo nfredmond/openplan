@@ -55,7 +55,7 @@ BEGIN
     IF (jsonb_typeof(place->'bbox'->coordinate_key) = 'number') IS NOT TRUE THEN
       RAISE EXCEPTION USING ERRCODE = 'PT409', MESSAGE = 'Land-use plan geography must match saved context';
     END IF;
-    IF abs((place->'bbox'->>coordinate_key)::numeric) > CASE WHEN coordinate_key IN ('minLon','maxLon') THEN 180 ELSE 90 END THEN
+    IF abs((place->'bbox'->>coordinate_key)::numeric) > (CASE WHEN coordinate_key IN ('minLon','maxLon') THEN 180 ELSE 90 END) THEN
       RAISE EXCEPTION USING ERRCODE = 'PT409', MESSAGE = 'Land-use plan geography must match saved context';
     END IF;
   END LOOP;

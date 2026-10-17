@@ -79,7 +79,7 @@ record. "PR" means a pull request open on October 12. KI-001 means
 | ID | Plain name | Status | Last evidence | Next action |
 |---|---|---|---|---|
 | M0 | Trustworthy releases and documents | In progress | [Oct 12 audit](reviews/2026-10-12-two-month-review/reports/docs-audit.md) | Finish the A3 documents pass |
-| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md); [Oct 17 held-caller source review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md) | Establish selected-history custody and a complete authenticated migration423 predecessor before exact424 native retained-context/original-command proof for KI-025. Cross-state, MPO and tribal cases remain required (C6). |
+| M1 | Plan geography and legal authority | In progress, partial | [Oct 7](reviews/2026-10-07-land-use-authority/IMPLEMENTATION_REPORT_RECOVERY_2026-10-07.md); [Oct 17 held-caller source review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md); [424 compiler correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md) | Confirm full restore CI after the parser correction. Establish selected-history custody and a complete authenticated migration423 predecessor before exact424 native retained-context/original-command proof for KI-025. Cross-state, MPO and tribal cases remain required (C6). |
 | M2 | One planning case through handoff | Later | Audit | Choose a cross-module case |
 | M2a | Work-plan templates | Later | Audit | Grow 24 templates into a taxonomy |
 | M2b | File library and document writing | Later (C10) | Audit | Drafting and review |
