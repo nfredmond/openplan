@@ -7,6 +7,7 @@ import "mapbox-gl/dist/mapbox-gl.css";
 import { keepMapSizedToContainer } from "@/lib/mapbox/keep-map-sized";
 import { deploymentMapEngine, labelFontsFor, startMap, styleForEngine } from "@/lib/maps/map-engine";
 import { readWgs84Bbox } from "@/lib/geo/wgs84-bounds";
+import { readCameraWgs84QueryViewport, type Wgs84QueryViewport } from "@/lib/geo/wgs84-query-viewport";
 
 /**
  * Mapbox with a public key, else MapLibre with the operator's open style. This
@@ -26,15 +27,15 @@ type MapPayload = {
   coverageNotes: string[];
 };
 
-function publicViewport(map: mapboxgl.Map): [number, number, number, number] {
-  const bounds = map.getBounds();
-  if (!bounds) return [-180, -90, 180, 90];
-  return [
-    Math.max(-180, bounds.getWest()),
-    Math.max(-90, bounds.getSouth()),
-    Math.min(180, bounds.getEast()),
-    Math.min(90, bounds.getNorth()),
-  ];
+function publicViewport(map: mapboxgl.Map): Wgs84QueryViewport | null {
+  try {
+    const bounds = map.getBounds();
+    return bounds ? readCameraWgs84QueryViewport([
+      bounds.getWest(), bounds.getSouth(), bounds.getEast(), bounds.getNorth(),
+    ]) : null;
+  } catch {
+    return null;
+  }
 }
 
 export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: string; bbox: unknown; label: string }) {
@@ -63,9 +64,13 @@ export function PublicDesignationMap({ endpoint, bbox, label }: { endpoint: stri
 
       async function refresh() {
         const current = ++requestNumber;
-        const viewport = publicViewport(map);
-        if (viewport[0] >= viewport[2] || viewport[1] >= viewport[3]) return;
         const source = map.getSource("designations") as mapboxgl.GeoJSONSource | undefined;
+        const viewport = publicViewport(map);
+        if (!viewport) {
+          source?.setData({ type: "FeatureCollection", features: [] });
+          setNotice("The map view could not be read. Move or zoom the map to retry.");
+          return;
+        }
         try {
           const response = await fetch(`${endpoint}?bbox=${viewport.join(",")}`, { cache: "no-store" });
           const payload = await response.json() as MapPayload & { error?: string };

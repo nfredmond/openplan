@@ -1,0 +1,106 @@
+{
+  "tier": "REVIEWED_SOURCE_PLUS_RETAINED_FOCUSED_CHECKS_ONLY",
+  "candidateCommit": "98833fbffc78a693bd5ce6bd8b3ab6e227835a28",
+  "candidateParent": "d264d69149ae2f9d589840e5a543b798ae4718ec",
+  "combinedParent": "8838a309dc456a10442cab75a19efdd454925bd9",
+  "joinedAppTree": "fa58f935d012d01da7738cc3a3351c51d2804bab",
+  "source11": {
+    "openplan/src/lib/geo/wgs84-query-viewport.ts": {
+      "sha256": "bc0b411c7b9afa9d8dfff93c16ed571ce1d486ed7f0e25473e43ad33b964e942",
+      "bytes": 3126
+    },
+    "openplan/src/components/land-use-plans/public-designation-map.tsx": {
+      "sha256": "7e47ef07af182cfdb8db0502ae568039c5f3694449c3059152a29441d9443bdc",
+      "bytes": 6962
+    },
+    "openplan/src/lib/land-use-plans/public-map.ts": {
+      "sha256": "a0ded9ab67a7c1f023191842bc278e04449d48693fb51302155996f4b2982264",
+      "bytes": 5320
+    },
+    "openplan/src/app/api/public/land-use-plans/[planId]/map/[designationId]/route.ts": {
+      "sha256": "075c624a77ed15bf0e8399f1b055ee9316bbf690d64f1be7542b284fdbbbfaa9",
+      "bytes": 1618
+    },
+    "openplan/src/app/api/public/land-use-plan-reviews/[shareToken]/map/[designationId]/route.ts": {
+      "sha256": "e5798f39d662681effb30e05a05d7c45e4822950f858fdb60bf5fc3af7b5169b",
+      "bytes": 1675
+    },
+    "openplan/src/app/api/reports/[reportId]/land-use-map/[designationId]/route.ts": {
+      "sha256": "657d49db2ce55ed93036a2e013303f834b1a9b60babd78577b244f8054c76e92",
+      "bytes": 3126
+    },
+    "openplan/src/test/wgs84-query-viewport.test.ts": {
+      "sha256": "0c436557e975aa690e84b8ff933b6f83e4c5e751f2fb367f631ac9ada6076f6d",
+      "bytes": 6115
+    },
+    "openplan/src/test/public-designation-map-viewport.test.tsx": {
+      "sha256": "c1d14a87785b5124083b4d70fd9e3fff03cbbae18cc70f97fe9c52ae1e6e282b",
+      "bytes": 6233
+    },
+    "openplan/src/test/land-use-plan-map-viewport-routes.test.ts": {
+      "sha256": "0639521dc7119fcb95a7a36662c31843a04fdb66cc3f720887d210be61cb8c50",
+      "bytes": 7795
+    },
+    "openplan/src/test/land-use-plan-report-map.test.tsx": {
+      "sha256": "5fb08ee4e637505a33823549adfb0c133bd5a76f23ea05df1d7e656b0e6fa2f0",
+      "bytes": 19149
+    },
+    "openplan/supabase/migrations/20261017052401_public_designation_query_viewport.sql": {
+      "sha256": "ceaba34c98472c086e8f8e56d758d73a9200c60f0e3a926c398f73ea387c960c",
+      "bytes": 4034
+    }
+  },
+  "independentReview": {
+    "docs/reviews/2026-10-17-public-designation-wrapped-viewport-independent/REPORT.md": {
+      "sha256": "4bbf476db384d8703cdb981b7d101f3d83a2a1325d83125baef64bb4d1b27deb",
+      "bytes": 24289
+    },
+    "docs/reviews/2026-10-17-public-designation-wrapped-viewport-independent/VALIDATION.md": {
+      "sha256": "118a92344dd9b7ac234f5d9d3fbb0b01cdbc0967d85f37372472cb9077e6722f",
+      "bytes": 12343
+    },
+    "docs/reviews/2026-10-17-public-designation-wrapped-viewport-independent/EVIDENCE_PINS.json": {
+      "sha256": "1ca39e2faa6eb1b2c60661395be3ebb0b5d99c94a1ab042d51c97e43729096df",
+      "bytes": 41405
+    }
+  },
+  "rootSourceDispositionSHA256": "0a0e976a3a4aa4ba2160d0686f985eaa0abe3c80cf7b932adb65b90b4a491a9b",
+  "rootJoinReadbackSHA256": "3f2910a96b511606a15ab50eea31fd864e1a25942034d6de5aa816537c92e96f",
+  "original425Manifest": {
+    "entries": 425,
+    "format": "compact JSON ordered[path,sha256] array plus LF",
+    "sha256": "f80186e27fe29da985531536e55a0cedad118e9f5394410f7fb84d4bb64bfe81",
+    "allCombinedParentBytesMatch": true
+  },
+  "corrected424SHA256": "1c0e7cf422b0668d8ebcb9ef29df87a88f3ee6e69498b9c88012bdaf90c42947",
+  "candidate426SHA256": "ceaba34c98472c086e8f8e56d758d73a9200c60f0e3a926c398f73ea387c960c",
+  "acceptedFocusedWindow": {
+    "invocationId": "84739bb6237a491eb9facca0d4e4d85c",
+    "rootAcceptanceSHA256": "387eb31746b10b05f0d649e317ce4af612ae17e94909e453962f19b9738b4658",
+    "rootFinalAuditSHA256": "103bb98ba8d55b3c509f665469231b18338695b5dc2b4f610535c3ff4ebadae8",
+    "inProcess38": true,
+    "namedMutants": 13,
+    "assertionFailureObservations": 36,
+    "finalNodeChecks": 7,
+    "finalVitestPass": 187,
+    "finalVitestSkip": 41,
+    "sqlByteControls": 4,
+    "parentDoesNotInspectFinite23": true,
+    "independentRootFinite23Audit": true,
+    "notJoinedRuntimeRun": true
+  },
+  "pending": [
+    "nativeSQL/RLS/SDK/HTTP",
+    "representativeperformance",
+    "fullconfiguredjoinedtypes/fullbuild",
+    "identifieddesktop390mapjourney",
+    "practitioner/V1",
+    "installation/hosted/release"
+  ],
+  "nativeCoverageSourceDesignSHA256": "af7c645e0f524299eec481677b1632fa3de1fb49ac1b0af0a2524186f004fa30",
+  "nativeCoverageDesignIsNotGrant": true,
+  "runtimeInThisJoin": false,
+  "applied426": false,
+  "mainPushOrDeploy": false,
+  "release": false
+}

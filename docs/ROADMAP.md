@@ -51,6 +51,11 @@ The October 17 M1 evidence update below links the held-caller source review and
 retained-context proof prerequisites. It changes no milestone status or
 direction-review binding.
 
+The [October 17 wrapped viewport source checkpoint](reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md)
+adds an independently reviewed M1 correction. Migration 426, native seam/count/RLS
+checks and identified desktop/390px map journeys remain open. It changes no
+milestone status or direction-review binding.
+
 The October 17 A0 capture record preserves a protected-scope refusal and its
 saved-data explanation. A reviewed scope disposition precedes another native
 proposal; this changes no milestone status or direction-review binding.

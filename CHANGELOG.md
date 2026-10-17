@@ -20,6 +20,15 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Public designation viewport correction, source candidate:** wrapped map views
+retain both longitude intervals, unreadable views clear earlier shapes, and
+blank coordinates refuse instead of becoming zero. The loader uses one dedicated
+viewport RPC and rejects incomplete or duplicate replies. Additive migration
+`20261017052401_public_designation_query_viewport.sql` is unapplied. Source review
+and focused checks pass; native SQL/RLS, performance and identified-build browser
+acceptance remain open. Do not deploy this code before its migration and relevant
+checks are accepted. See the [source checkpoint](docs/reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md).
+
 **Land-use saved geography, unchecked source candidate:** the candidate PATCH
 guard directs study-area changes through the existing context editor. Additive
 migration `20261017014010_land_use_plan_context_geography.sql` guards retained

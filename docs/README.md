@@ -2,6 +2,7 @@
 
 Start here:
 
+- [October 17 wrapped viewport source checkpoint](reviews/2026-10-17-viewport-reviewed-root-integration/STATUS.md): independently reviewed camera/parser/RPC correction, with focused checks accepted; migration 426, native SQL/RLS and desktop/390px acceptance remain open.
 - [October 17 migration424 parser correction](reviews/2026-10-17-migration424-case-parser-correction/STATUS.md): the two-parentheses fix passes isolated PostgreSQL17.6 compilation with the original failure and a harmless survivor; full restore and native retained-context evidence remain open.
 - [October 17 A0 native capture refusal](reviews/2026-10-17-a0-multiset-native-capture-result/STATUS.md): four requests complete before the protected-scope refusal; a saved-data reconstruction explains the digest through the accepted budget allocation. The attempt stays failed, with no oracle amendment or retry.
 - [October 17 M1 held-caller review](reviews/2026-10-17-m1-operation-caller-independent/REPORT.md): accepted source and saved supplied controls; selected-history capture, the complete migration423 predecessor and native retained-context proof remain held.
