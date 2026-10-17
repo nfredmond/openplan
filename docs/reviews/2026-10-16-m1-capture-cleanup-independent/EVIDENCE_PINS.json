@@ -1,0 +1,4441 @@
+{
+  "tier": "INDEPENDENT_SOURCE_METADATA_SAVED_DATA_ONLY",
+  "candidate": "de443130ea838fb2055cc0b51f3935dcaebe1ca8",
+  "candidateParent": "004a2a3467b4607a30076e7c9b3f30e75db90c1d",
+  "reviewerInitialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+  "reviewerWorktree": "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1",
+  "identity": {
+    "candidate": "de443130ea838fb2055cc0b51f3935dcaebe1ca8",
+    "parent": "004a2a3467b4607a30076e7c9b3f30e75db90c1d",
+    "reviewerInitialHead": "05dd3e8da4a4572437f06e771b0a2477873e681f",
+    "reviewerBranch": "t3/m1-capture-cleanup-independent-review",
+    "reviewerApplicationTree": "1e0b6522002b2485d37086790808c0217ff77cfe",
+    "candidateApplicationTree": "88ba8fdeec9326b2f2253ddbe9e49c67a8269ee8",
+    "parentApplicationTree": "88ba8fdeec9326b2f2253ddbe9e49c67a8269ee8",
+    "candidateMigrationTree": "11a738e5358450f5b7a7d8bbc98bfaa4254904fe",
+    "migrationCount": 424,
+    "authorHead": "de443130ea838fb2055cc0b51f3935dcaebe1ca8",
+    "authorBranch": "t3/land-use-context-geography-correction",
+    "authorStatus": "",
+    "changes": [
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION.md",
+        "status": "A",
+        "bytes": 6772,
+        "sha256": "3abf1188ada2048a40a4b217a99a1955a16ff357420c2de7c4302260d2232209",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION_MAP.json",
+        "status": "A",
+        "bytes": 19053,
+        "sha256": "dee558b7845769ed39859b0a2027ff7a280115493a46133d99eb088d8620f66d",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION_PINS.json",
+        "status": "A",
+        "bytes": 5378,
+        "sha256": "2e03caca809619b2df7278b03faac46fc96421c622f63129cbe37247897901a1",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_PLAN.md",
+        "status": "A",
+        "bytes": 8274,
+        "sha256": "81b5f50a6b9f1c52857250d518ba03b7198ea9c6d37a7220c417dfacf7bbae34",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/SOURCE_CONTRACT.md",
+        "status": "A",
+        "bytes": 10026,
+        "sha256": "6633981a028c850a9bc5f755a687b9c15f9f935fc4163682149ba9025c845be1",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/SOURCE_PINS.json",
+        "status": "A",
+        "bytes": 4019,
+        "sha256": "ff3ce83002f7f7699780c8f9e30e4d7e0124235b2398f165e7fe27f51d2f460f",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/COUNTER_MAP.json",
+        "status": "A",
+        "bytes": 15888,
+        "sha256": "1d9f1cb51b79a7b7ba950b382b9ec7ab9304a584d249b41ebf076cb50e6c9efb",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/RESULT.md",
+        "status": "A",
+        "bytes": 23625,
+        "sha256": "5b4f386b90d546e94afc64cfb46243f7452036bb8d8f982f3b5729e1bc18e0f0",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/RESULT_EVIDENCE_PINS.json",
+        "status": "A",
+        "bytes": 4587,
+        "sha256": "272e7a5f4d868e4a87e1adde62c3bc7ac30be9fe72c0fa2cfe5c145f42039d42",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/SOURCE_PINS.json",
+        "status": "A",
+        "bytes": 7802,
+        "sha256": "d09181b29b49b2f9ed5da6c44866bf870589cc490da80567151435e33da74844",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/SOURCE_RESPONSE.md",
+        "status": "A",
+        "bytes": 6099,
+        "sha256": "e885ad0a4c210df62db5d3ca5aa7bc39d9af39cc55e722b6f7331e307f1364d6",
+        "gitCurrentEqual": true
+      },
+      {
+        "path": "docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/VALIDATION.json",
+        "status": "A",
+        "bytes": 14510,
+        "sha256": "bccdca3a8a0b6397b0ae32e7f401d4b0a3b7f0a84828b5b9425ca2c29dc7463e",
+        "gitCurrentEqual": true
+      }
+    ],
+    "provider": "codex",
+    "model": "gpt-6.1-sol",
+    "injectedReasoningEffort": "high",
+    "catalogReasoningCurrentValue": "low",
+    "catalogReasoningDefault": "low",
+    "nestedAgents": 0
+  },
+  "originalGitObjectReports": {
+    "bb2bf7f9839902976679a493bd09c60e5820b7e8:docs/reviews/2026-10-16-land-use-context-geography-independent/REPORT.md": {
+      "bytes": 17627,
+      "sha256": "caca9b2ff5a11f5a79c07a648c874a28961199cdd26019a803849e67010e41e9",
+      "gitBlob": "90de9f14a40192fd34d5c632e42a0a850da268d3"
+    },
+    "edc0482306b4589e32c23f8a3cc7c15946b59824:docs/reviews/2026-10-16-land-use-replay-fixture-r2-independent/REPORT.md": {
+      "bytes": 14541,
+      "sha256": "5a8b9e4528e3958411acc5cf6977ba0b1f4d71a2601cd3ee0316ee2db4e8097c",
+      "gitBlob": "89aea30bcc135907f93b67b6f2331e96c9b7eee6"
+    }
+  },
+  "files": {
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/SOURCE_PINS.json": {
+      "bytes": 121644,
+      "sha256": "7e57b79380bd62069c704af1b684c90505ac077895a8bc9484cd0297a93c3381",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/CAPTURE_CLEANUP_DELTA.patch": {
+      "bytes": 6420,
+      "sha256": "05b1b10ae572652efad1c329023408af4a536f61b88a5189b791abadfe02d264",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/CASE_MAP.json": {
+      "bytes": 32977,
+      "sha256": "153b972bc7fbd391906e3acb6d5046455f808978ad36334b535382f0b895808e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/CONTROL_PLAN.json": {
+      "bytes": 10885,
+      "sha256": "bb72699d00cad96039aa5829d621ec92b051f5e1027c9e6dd7d899fd98608b2b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/FINAL_READBACK.json": {
+      "bytes": 869,
+      "sha256": "e5c6a87b01de89fa13b33a45c25e77de03b749560fa2f3b4feef49f807a2ad1b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_DRAFT_01_PRESERVATION.json": {
+      "bytes": 6537,
+      "sha256": "e0876cf26ec18a162cb0a635068ca7581aee8da5844622b38bd16cf510f0baf8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_FINAL_READBACK.json": {
+      "bytes": 587,
+      "sha256": "ab63101399e133c5817d40d5d94a6e1894ec5691c9d57a47a20007e04683767f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_METADATA_READER_NOTE_01.json": {
+      "bytes": 615,
+      "sha256": "8af4794bbf27c2eb9b54ba9406d99e5898e57c02438e411f5fc0105bcd7fd853",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_PREPARATION_PRESERVATION.json": {
+      "bytes": 51108,
+      "sha256": "c557fd80f2bde1761ef0f8f1d30bda45e44bddd5427aa5ba850878b978b38df1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_READINESS_DISPOSITION.json": {
+      "bytes": 2480,
+      "sha256": "933c451ea9f452b310eae17e162189e0a91a1615879e7222a0deea959bd51c88",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_SOURCE_DISPOSITION.json": {
+      "bytes": 2730,
+      "sha256": "c8a19dcab67ada1e77d9a218e141ba0b312aa76500e24a31fdf482f1cc9c99ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_SOURCE_PINS.json": {
+      "bytes": 60445,
+      "sha256": "9b8034b7de6c9044eeaaa13a43fd3ac02b91a05ded6a973d537af21acee203e8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/HARNESS_STATIC_AUDIT.json": {
+      "bytes": 4095,
+      "sha256": "8b1ee5dd17b0654e243a9139c104ba8561656ae9904b50e7de4a25c46aec2c27",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/METADATA_READER_NOTE_01.json": {
+      "bytes": 846,
+      "sha256": "75605d94dd98f6ffa290322eec9f33b5efb05085253e9ac12e095f11cf889475",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/PRESERVATION.json": {
+      "bytes": 47189,
+      "sha256": "f48f1f9975d44426ad7be12656a3bdef3b9b026cfc639e5edd2cdbb281c07612",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/PURE_REQUEST.json": {
+      "bytes": 8329,
+      "sha256": "d1a5ef7412d3d2b15bb45d74cb74602e8f4ec13df67b697dc5eaab5b386230aa",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/READ_MAP.json": {
+      "bytes": 3533,
+      "sha256": "0dca339bd5aea1e26dd894405c91e21d956cc57949e92e539e7e9d0b31892d85",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/SOURCE_ANCHORS.json": {
+      "bytes": 2689,
+      "sha256": "538a5b78eeeb78b2356e6d10937d83a90ea31dc1891d7c592a2686a728e72733",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/SOURCE_CONTRACT.json": {
+      "bytes": 3551,
+      "sha256": "e2eabfd00d3536d4ce415cddb3105c12b59e44d586125bad1bc0e9a2aaac0f0b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/SOURCE_PINS.json": {
+      "bytes": 50540,
+      "sha256": "45b8d186bfda07025b726aa8ad1b6b31278e806e911518ded2b8647915453452",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/controls.py": {
+      "bytes": 23561,
+      "sha256": "b2b442cd9522f2682d085a0e894e6ca94d025ed2ce591fbcd2b77aee2d401a9e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/CASE_MAP.json": {
+      "bytes": 32977,
+      "sha256": "153b972bc7fbd391906e3acb6d5046455f808978ad36334b535382f0b895808e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/HARNESS_METADATA_READER_NOTE_01.json": {
+      "bytes": 615,
+      "sha256": "8af4794bbf27c2eb9b54ba9406d99e5898e57c02438e411f5fc0105bcd7fd853",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/HARNESS_PREPARATION_PRESERVATION.json": {
+      "bytes": 51108,
+      "sha256": "c557fd80f2bde1761ef0f8f1d30bda45e44bddd5427aa5ba850878b978b38df1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/HARNESS_SOURCE_DISPOSITION.json": {
+      "bytes": 2730,
+      "sha256": "c8a19dcab67ada1e77d9a218e141ba0b312aa76500e24a31fdf482f1cc9c99ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/HARNESS_STATIC_AUDIT.json": {
+      "bytes": 4095,
+      "sha256": "8b1ee5dd17b0654e243a9139c104ba8561656ae9904b50e7de4a25c46aec2c27",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/PURE_REQUEST.json": {
+      "bytes": 8329,
+      "sha256": "d1a5ef7412d3d2b15bb45d74cb74602e8f4ec13df67b697dc5eaab5b386230aa",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/READ_MAP.json": {
+      "bytes": 3533,
+      "sha256": "0dca339bd5aea1e26dd894405c91e21d956cc57949e92e539e7e9d0b31892d85",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/controls.py": {
+      "bytes": 23561,
+      "sha256": "b2b442cd9522f2682d085a0e894e6ca94d025ed2ce591fbcd2b77aee2d401a9e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/history_stream_capture.py": {
+      "bytes": 6674,
+      "sha256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/pure_main.py": {
+      "bytes": 8696,
+      "sha256": "81372f3cefc2eaea5062567f680d72ff4877406323503de5351a7949ec627f70",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/reader_controls.py": {
+      "bytes": 6467,
+      "sha256": "379e28b7504e20abc178d137a80713e00b6cc62e2acbcb73548415b4798fc9f5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/harness-draft-01/strict_reader.py": {
+      "bytes": 8098,
+      "sha256": "7f647b55888921cca2b82cb80ca652b78ff635b5c1dc48bca2320ccb5a6f2076",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/history_stream_capture.original.py": {
+      "bytes": 4139,
+      "sha256": "7181161a554c336e8bdaa65463ce2d4abe9447fef0a8b4ff8472859846386089",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/history_stream_capture.py": {
+      "bytes": 6674,
+      "sha256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/pure_main.py": {
+      "bytes": 8696,
+      "sha256": "81372f3cefc2eaea5062567f680d72ff4877406323503de5351a7949ec627f70",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/reader_controls.py": {
+      "bytes": 6467,
+      "sha256": "379e28b7504e20abc178d137a80713e00b6cc62e2acbcb73548415b4798fc9f5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-source-response-r1/strict_reader.py": {
+      "bytes": 8098,
+      "sha256": "7f647b55888921cca2b82cb80ca652b78ff635b5c1dc48bca2320ccb5a6f2076",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/CAPTURE_SOURCE_DELTA.patch": {
+      "bytes": 5550,
+      "sha256": "f6b681af89371b9573bd8c080d78545aa0c2d968697aed35745f1922caa1e285",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/CASE_MAP.json": {
+      "bytes": 7891,
+      "sha256": "a09da957f1ce224c2541d4f16d262869123821feb75410fff0dfaa435ac3a628",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/FINAL_READBACK.json": {
+      "bytes": 782,
+      "sha256": "2dbc6ced76012c948e0ac02287a4dd87e87088c7678aa8af6716adc9b57a3767",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/HELD_CAPTURE_SPEC.json": {
+      "bytes": 4561,
+      "sha256": "a2d5dff6b442537450b5439dbb262ed22c04737997f402bd515e026b04828a67",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/ORACLE_STATE.json": {
+      "bytes": 757,
+      "sha256": "6604dec245bafcd8b9830ad24262a2ab52d6819cc421941db31373c31c1b0efa",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/PRIOR_PINS.json": {
+      "bytes": 14185,
+      "sha256": "a0c1000819536def30bcffc3bb6749f31b8a53b0cae564a466aa0cc4c9ea4a16",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/PURE_REQUEST.json": {
+      "bytes": 5471,
+      "sha256": "985239fe8459fe1f6cebff6214ca8fe9eaf528b657ce72faca374d86a7fdc81e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/PURE_REQUEST_READER_R2.json": {
+      "bytes": 8172,
+      "sha256": "31273e6205189f1950278f15a7f9fe641c20bd97134a56396b9215859a20a9ee",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/SOURCE_DISPOSITION.json": {
+      "bytes": 2949,
+      "sha256": "ae529ddebd2bd1aadcd1e2a4bb351aaeddc7b52b81efe087fb7157cd009315f4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/SOURCE_PINS.json": {
+      "bytes": 7413,
+      "sha256": "741327dc528d9f88a3ba0f3a3da8b143b7240bf204dfcb35345db05b92fb4362",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/STATIC_ANCHOR_AUDIT.json": {
+      "bytes": 4130,
+      "sha256": "20a18ee0a8f91c43b38a2b5bcb5c3c4a6a4d8e6ec5d1f53828dd2f0bc8917a7e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_capture_integration.py": {
+      "bytes": 2652,
+      "sha256": "66259c0d5c920c0e6dc821fac157091661b53be230bd70e623219e9bfa783d65",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_controls.py": {
+      "bytes": 9569,
+      "sha256": "04217569108a3c73718b74237bd6c6559939ad33b6475f40ba0aca96a9c21a18",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_core.py": {
+      "bytes": 7777,
+      "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/history_stream_capture.py": {
+      "bytes": 4139,
+      "sha256": "7181161a554c336e8bdaa65463ce2d4abe9447fef0a8b4ff8472859846386089",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/preseal-reader-closure-01/CASE_MAP.json": {
+      "bytes": 7554,
+      "sha256": "b2570c8e70bf1fb902eb2e6af361bde254701135975eca2a2ec7ab3c38bc07ec",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/preseal-reader-closure-01/PRESERVATION.json": {
+      "bytes": 624,
+      "sha256": "81cf94d438cf4c9886c56e5ac256ed5c16eb803ceae64a5175398ea62c7a8cc8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/preseal-reader-closure-01/PURE_REQUEST.json": {
+      "bytes": 5471,
+      "sha256": "9421a53d5a32d57edc7d4d686f54f9f311c4b2265407cdccbd1b9df0b8d40110",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/preseal-reader-closure-01/strict_reader.py": {
+      "bytes": 2945,
+      "sha256": "f6b9610bd176068abbe9795ef3073fbd2d14473e09cf7f71ad971722d35cfa4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/controls.json": {
+      "bytes": 18534,
+      "sha256": "f8d1bd812798c705b9d03131d3a655c67169a3946f87135773494c5785285e18",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/events.jsonl": {
+      "bytes": 18480,
+      "sha256": "430b1e8e80b0845430d4fedfd76a5dfb66beb5f6f469d24fdb4e9f9931aeb9bd",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-controls.json": {
+      "bytes": 4488,
+      "sha256": "019a6e92fb33da7223d489e5c4977a7478f7630459c3e90dec046742966f6b11",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-0.json": {
+      "bytes": 274,
+      "sha256": "9f9a3d25520e751359528b81759e21720d389f06720e64abf57e6a0e6ffc813a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-1.json": {
+      "bytes": 411,
+      "sha256": "a5363e3403f160027a5cec695b02b630371c608d28215d5aab20a15885e4ead5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-2.json": {
+      "bytes": 398,
+      "sha256": "74941548bb76330b43cd8ebe458642fb0efe9eb1b2f933162713c46a8f443914",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-3.json": {
+      "bytes": 1014,
+      "sha256": "370159a48d2636b50cdae90ed85a892c87fea00a4a06eac35adec845d130245b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-4.json": {
+      "bytes": 1042,
+      "sha256": "ba7cd14c2e54cc9ca61751287dd7b0eb03810c5befa57ccbb554bb4e84724da6",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-5.json": {
+      "bytes": 915,
+      "sha256": "2334ce5309dd42f57ecae08e5780a4b364e3e80d38d79f61a628215fdba60fd7",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-6.json": {
+      "bytes": 401,
+      "sha256": "cc809fb79a500c0b312c371c47917d420256b9bb85b8b6c717efc85df3ea2935",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader-event-7.json": {
+      "bytes": 152,
+      "sha256": "e1e182d1c70b0b4cfdd259fce95494bb48e419b9eb934b27cc86730d748d1b8a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/reader.json": {
+      "bytes": 230,
+      "sha256": "1d0a8a5bed3520a3efb736a74c01679ebd862336abdfcd7ad3ff1616a57289c0",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure-output-01/terminal.json": {
+      "bytes": 556,
+      "sha256": "5cf1fff0752bc49eae1cbf5d76d3f8ae9cfe02d95af45728a11881b24aa23971",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/pure_main.py": {
+      "bytes": 4240,
+      "sha256": "9ebfbbdb7de286d033e0611ce9727723f0748fbfdbaf1e0ec9a15a4011e61d32",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/FINAL_SOURCE_READBACK.json": {
+      "bytes": 533,
+      "sha256": "f86f976b594a44415c036f7c73ed81269adff11f7bf38f8f8ae57ce627192837",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/PRESERVATION.json": {
+      "bytes": 14411,
+      "sha256": "3e74ebe734ff4972586a2d8e5633cafc023f8302ec8b07dba357fee9ca0c0476",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/PURE_MAIN_DELTA.patch": {
+      "bytes": 2059,
+      "sha256": "e3e3cd568255a1523d80d79fe43acff8641c2c30a601839658236c8b4a0b152d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/READER_CASE_MAP.json": {
+      "bytes": 2131,
+      "sha256": "fdb1d075c5b080f0551048eb16985e44cfebdb18084b52c2761ff49961de1f8d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/REQUEST_DELTA.json": {
+      "bytes": 1382,
+      "sha256": "1b1e19f1624ed50ac52c2ae3b6fa05dabeb72360e16c9a9a489c3ef21196e501",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/SOURCE_PINS.json": {
+      "bytes": 20386,
+      "sha256": "8e9a55fb61445820c87527aec7b34592d291e8c0501c3a568274c04163d477a5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/STATIC_READER_ANCHOR_AUDIT.json": {
+      "bytes": 634,
+      "sha256": "be23eafd381fd16e5ef91acd02d8d6e36cb276c2cc9a9252402397e610ead074",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/CAPTURE_SOURCE_DELTA.patch": {
+      "bytes": 5550,
+      "sha256": "f6b681af89371b9573bd8c080d78545aa0c2d968697aed35745f1922caa1e285",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/CASE_MAP.json": {
+      "bytes": 7891,
+      "sha256": "a09da957f1ce224c2541d4f16d262869123821feb75410fff0dfaa435ac3a628",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/FINAL_READBACK.json": {
+      "bytes": 782,
+      "sha256": "2dbc6ced76012c948e0ac02287a4dd87e87088c7678aa8af6716adc9b57a3767",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/HELD_CAPTURE_SPEC.json": {
+      "bytes": 4561,
+      "sha256": "a2d5dff6b442537450b5439dbb262ed22c04737997f402bd515e026b04828a67",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/ORACLE_STATE.json": {
+      "bytes": 757,
+      "sha256": "6604dec245bafcd8b9830ad24262a2ab52d6819cc421941db31373c31c1b0efa",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/PRIOR_PINS.json": {
+      "bytes": 14185,
+      "sha256": "a0c1000819536def30bcffc3bb6749f31b8a53b0cae564a466aa0cc4c9ea4a16",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/PURE_REQUEST.json": {
+      "bytes": 5471,
+      "sha256": "985239fe8459fe1f6cebff6214ca8fe9eaf528b657ce72faca374d86a7fdc81e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/SOURCE_DISPOSITION.json": {
+      "bytes": 2949,
+      "sha256": "ae529ddebd2bd1aadcd1e2a4bb351aaeddc7b52b81efe087fb7157cd009315f4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/SOURCE_PINS.json": {
+      "bytes": 7413,
+      "sha256": "741327dc528d9f88a3ba0f3a3da8b143b7240bf204dfcb35345db05b92fb4362",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/STATIC_ANCHOR_AUDIT.json": {
+      "bytes": 4130,
+      "sha256": "20a18ee0a8f91c43b38a2b5bcb5c3c4a6a4d8e6ec5d1f53828dd2f0bc8917a7e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/history_capture_integration.py": {
+      "bytes": 2652,
+      "sha256": "66259c0d5c920c0e6dc821fac157091661b53be230bd70e623219e9bfa783d65",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/history_controls.py": {
+      "bytes": 9569,
+      "sha256": "04217569108a3c73718b74237bd6c6559939ad33b6475f40ba0aca96a9c21a18",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/history_core.py": {
+      "bytes": 7777,
+      "sha256": "f030a173c7bddcb7ed2bb0ec1d57e2adb09cd7e9118137552f7b611c04fad26d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/history_stream_capture.py": {
+      "bytes": 4139,
+      "sha256": "7181161a554c336e8bdaa65463ce2d4abe9447fef0a8b4ff8472859846386089",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/preseal-reader-closure-01/CASE_MAP.json": {
+      "bytes": 7554,
+      "sha256": "b2570c8e70bf1fb902eb2e6af361bde254701135975eca2a2ec7ab3c38bc07ec",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/preseal-reader-closure-01/PRESERVATION.json": {
+      "bytes": 624,
+      "sha256": "81cf94d438cf4c9886c56e5ac256ed5c16eb803ceae64a5175398ea62c7a8cc8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/preseal-reader-closure-01/PURE_REQUEST.json": {
+      "bytes": 5471,
+      "sha256": "9421a53d5a32d57edc7d4d686f54f9f311c4b2265407cdccbd1b9df0b8d40110",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/preseal-reader-closure-01/strict_reader.py": {
+      "bytes": 2945,
+      "sha256": "f6b9610bd176068abbe9795ef3073fbd2d14473e09cf7f71ad971722d35cfa4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/pure_main.py": {
+      "bytes": 3698,
+      "sha256": "2d05ce1d86542ee3d9e56026c225fad60954bfd3633f2214acd83879a9ed82d8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/reviewed-history.list": {
+      "bytes": 146,
+      "sha256": "1d734465ad89f4d6cbdac4392bef29d748ae2e2e71c004440496869a131c52ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/private/strict_reader.py": {
+      "bytes": 3958,
+      "sha256": "81c7ec8848e02826eeef3af17230a4ddfeb965e816cad5dc35793a8a0de91d74",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/public/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION.md": {
+      "bytes": 9039,
+      "sha256": "c9b753314e3c953403cda88e3c0641c65b675f2ab08b315ad88019deadbb2666",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/public/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION_PINS.json": {
+      "bytes": 1806,
+      "sha256": "82cf58c5a51d48cb738ce7427ffc397276f46845dc1a2e19963b2307653cbfcf",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader-control-amendment-r1/snapshot-741327/public/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION_SUMMARY.json": {
+      "bytes": 2765,
+      "sha256": "b7ab87ef2ad31db1142f1be215f55d201bd054e176b073161d431b86c5632c35",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reader_controls.py": {
+      "bytes": 6716,
+      "sha256": "eb9aa2d56cf166e237067a5df785da39cfad4de4c8cf4c5bcecff58f18403f37",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/reviewed-history.list": {
+      "bytes": 146,
+      "sha256": "1d734465ad89f4d6cbdac4392bef29d748ae2e2e71c004440496869a131c52ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-consumer-source-preparation-r1/strict_reader.py": {
+      "bytes": 3958,
+      "sha256": "81c7ec8848e02826eeef3af17230a4ddfeb965e816cad5dc35793a8a0de91d74",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/CHECKPOINT.json": {
+      "bytes": 5804,
+      "sha256": "aa23ed9813ad06db1cf2e0a1595eac39e1f3b5c7221f618f8269dbf745d37a4a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/CHECKPOINT_CHANGED_FILES.txt": {
+      "bytes": 4267,
+      "sha256": "39905fe2d19d8a7f32fdcd66542372c033f3e91e9d37974a80dba56dee8e3930",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/CHECKPOINT_STATUS.txt": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/PRESERVATION.json": {
+      "bytes": 43135,
+      "sha256": "d704aa7a1bdb67a8e4a84d2e5c6159935038b64e561d0f4b1d3936c596ac0e14",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/SAVED_DATA_READBACK.json": {
+      "bytes": 9619,
+      "sha256": "87afb08f11b4c2c13fa49828a6c71f22d5bcb03349734e8f7494b8ebbca4d93d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/history-pure-result-r1/SOURCE_PINS.json": {
+      "bytes": 44771,
+      "sha256": "ae7f8ddf5520cea9af8d46e5b9f13431a1fa9acd82b0f7697dc449216a549526",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 4437,
+      "sha256": "7a0c6403cf47c53ced02d290b14268761556e658b47bdc42488d2fad312c5aac",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/CONFIG.json": {
+      "bytes": 305517,
+      "sha256": "1b3a323677994d2485de72c60aba766dbca5d4ba377c1010318d3e474dd50881",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/DISPATCH_AUTHORITY.json": {
+      "bytes": 775,
+      "sha256": "adc87c2972ab9cfbda9e818c7a9ab2e2cf3931bd14704be054ff10200b7ada78",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/GRANT.json": {
+      "bytes": 1246,
+      "sha256": "c5cd26322ccc18fafed5c386b66190179f76fa8c5bb22adc5761be5ab53d3645",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/PREFLIGHT.json": {
+      "bytes": 761,
+      "sha256": "3d47ad750d42730b03708673a392052b43ad76794f940b7bb98e860d2647e396",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/READER_NOTE_01.json": {
+      "bytes": 478,
+      "sha256": "4b2f47bdf6b63808cd932d538b5f7688c75a8d98f05cd01eb9b1d6ca7d34bb42",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/READER_NOTE_02.json": {
+      "bytes": 444,
+      "sha256": "7bd44d232cee833fb7782241cd32d1bbfd1b27df9581b25864b4a17a44a548ee",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/RUNNER_FINAL_SOURCE.json": {
+      "bytes": 585,
+      "sha256": "a4054a8cce8ce4fb9e0bec7923dfa9cf8ce143649e1d5e7503a62aafde879cc4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/SOURCE_DISPOSITIONS.json": {
+      "bytes": 1587,
+      "sha256": "536da502e0ed8964a72cd692d9e7e427ff32e4152018ad830828e93612b0c0cd",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/SOURCE_PREPARATION.json": {
+      "bytes": 1138,
+      "sha256": "37df3fbd370abbf033176793d43339b4b35887c006f6a46617968a2d554a7469",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/USR_RUNTIME_PINS.json": {
+      "bytes": 277197,
+      "sha256": "751b9847c2a98dbe6f4203f5e580864b0ddb3910fbdcd621a55c88791a594a96",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/after.json": {
+      "bytes": 13602,
+      "sha256": "df64eb1e9f9fe4cfdc703429d93844a35dc248f345bef725214ebdc19f707a02",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/before.json": {
+      "bytes": 13601,
+      "sha256": "1817aae676e1bc6f04fa7845cb4094a30bd7362793bfd17a21e31dddc56d2752",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/final-inputs.json": {
+      "bytes": 272268,
+      "sha256": "10bf2133a7cf94d744ff2a0f1178797d1371b22c3272a26dc09cbb8be90921b3",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/host-final-inputs.json": {
+      "bytes": 262372,
+      "sha256": "abf131005024f41ed46d8d7fe43177c8ed54f229f65e1b2dfa4ac7553f15cc81",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/host-final-preservation.json": {
+      "bytes": 19808,
+      "sha256": "6c85150c286a9b935ec4c1a6eeb31716e3bd8157f5fae57b200f2f4e3a841170",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/intent.json": {
+      "bytes": 1109,
+      "sha256": "a7ff553ba0ec4770bab7926e068e2143fe5dcd6b756dd387635ad009f90368c0",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/returned.json": {
+      "bytes": 66,
+      "sha256": "a9338052fdca1b0beb4be34c6b81bf4265fe3f55280033b359eb42e14ffbef2a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/sandbox-entry.json": {
+      "bytes": 174,
+      "sha256": "773d535b86bdedad59d9ae7beb5651c6933cc049135fd77db15faa67dc59731a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/stderr.bin": {
+      "bytes": 338,
+      "sha256": "712391a0bbb769d8fd5b2d01bb6a87206d726f1a8512ab687a4b34497a993702",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/subject-entry-intent.json": {
+      "bytes": 457,
+      "sha256": "5c12e8c7f8e34418cd8420bf22bfe69c36a9e795438700a7537157e68e4d22ca",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/attempt-01/terminal.json": {
+      "bytes": 206,
+      "sha256": "24bad0aaf1d647c0e5f8e89729048763e1786710ed09564d40266d7dab727bcb",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-history-pure-root-decision-20261016/pure_window.py": {
+      "bytes": 14706,
+      "sha256": "35dca552ce9824075c79dd8946dd7690b7a2e7740d4d2bee495e26c81442f712",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT01_DISPOSITION_PINS.json": {
+      "bytes": 1610,
+      "sha256": "9d8df2291129f75bb7cc6961edb86f64f4aa1562ae99b37554b3ea06cda5cf30",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT01_SOURCE_DISPOSITION.md": {
+      "bytes": 15533,
+      "sha256": "ee637627815be516cb035d48e38ca472a28185b1e6bd0cf5174599165fdc2773",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT_REQUEST.json": {
+      "bytes": 8269,
+      "sha256": "3380afbd5e2b15fcc20d726eca64c5fe03406458c41cecab089bea44099cc77d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT_REQUEST.md": {
+      "bytes": 11659,
+      "sha256": "b7941195a1e35900814ecf5dfccbde6669b181901af901d012bdd3d41d411969",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT_REQUEST_PINS.json": {
+      "bytes": 12899,
+      "sha256": "dc3f52fb5f31d82a55f63faf1b3ee23dbecc24c572976890ee76d2396fe2b46a",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT_TOOL_BLOCKER.md": {
+      "bytes": 4511,
+      "sha256": "4a5c445e18dd3b5f66982e69e718f82bc2f58a5bf305e2fec16a01f417f37659",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT_TOOL_PINS.json": {
+      "bytes": 2525,
+      "sha256": "890717af2c46c6514e2c28f61a43afd8664ac511beac45ea6682a53ca3375f97",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/DESIGN.md": {
+      "bytes": 17427,
+      "sha256": "909e45752a51ad0e9367a951e0b50339543ab8bf913e7da2acf269c6006b1199",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_GUARD_DESIGN.md": {
+      "bytes": 15242,
+      "sha256": "da815c9c0d4ec145ed2a0cbae6e8287c012aa010099545313bd4256c73497693",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_GUARD_PINS.json": {
+      "bytes": 1374,
+      "sha256": "c3bfd783979c3bc4909e233a13d36f81bc4c0c568cfc5c126ab11a6bdf2b394b",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_GUARD_REQUEST.json": {
+      "bytes": 2056,
+      "sha256": "85967d3a452cb89dc69cc31ee59e6e60bcf79d506bab196e157ea87f4e60bd48",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_GUARD_RESULT.md": {
+      "bytes": 3340,
+      "sha256": "5ab140272f9ca37c28b659bdf6b1029ba4033d9014e9beea4107c9763abc462c",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION.md": {
+      "bytes": 9039,
+      "sha256": "c9b753314e3c953403cda88e3c0641c65b675f2ab08b315ad88019deadbb2666",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION_PINS.json": {
+      "bytes": 1806,
+      "sha256": "82cf58c5a51d48cb738ce7427ffc397276f46845dc1a2e19963b2307653cbfcf",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_CONSUMER_SOURCE_PREPARATION_SUMMARY.json": {
+      "bytes": 2765,
+      "sha256": "b7ab87ef2ad31db1142f1be215f55d201bd054e176b073161d431b86c5632c35",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_FENCE_TO_FAULT_DESIGN.md": {
+      "bytes": 11532,
+      "sha256": "9a2fd8514c0c50b8c22fbb2daa31afa257ed3043dff6473a1c384e984af687d7",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_FENCE_TO_FAULT_DESIGN_PINS.json": {
+      "bytes": 1331,
+      "sha256": "70b2f69658ab9932f6279a0640fe9a416f1ecb0300fdae1fc9c926b6056f7beb",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_PURE_EVIDENCE.json": {
+      "bytes": 14087,
+      "sha256": "a202ddaac3117f99346fe06285c6eb880fce1a41af0742fed0cf0358280c3206",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_PURE_PINS.json": {
+      "bytes": 2292,
+      "sha256": "1d1d29b3af055b1c1251e6365b89ebcfcda0d648988722546495802f48c1edf0",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_PURE_RESULT.md": {
+      "bytes": 12625,
+      "sha256": "80b96a89c185d578db16d57107d4e6940ac7c7ae40b41bc3dfa719e9d8611b6c",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_PURE_VALIDATION.json": {
+      "bytes": 9619,
+      "sha256": "87afb08f11b4c2c13fa49828a6c71f22d5bcb03349734e8f7494b8ebbca4d93d",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_READER_CONTROL_AMENDMENT.md": {
+      "bytes": 7886,
+      "sha256": "a5f2e243568d2e9eb36dabc6884c9dfaa0c4b384aeb90a579214bd54566b2be6",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_READER_CONTROL_AMENDMENT_PINS.json": {
+      "bytes": 2726,
+      "sha256": "7d218f1d29a8ab339a215f37a5c5d956c0e0689ff669a4c5fb372380eed4e189",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_SELECTION_AND_FRAMING_CONTRACT.md": {
+      "bytes": 7021,
+      "sha256": "9392d4ea46d75ce6b1dd99bb9f2577693036ab6c8fd716db7e768706b14e7981",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_HISTORY_SELECTION_AND_FRAMING_CONTRACT_PINS.json": {
+      "bytes": 1241,
+      "sha256": "c8c34e4c220c508508cf01b27288af8d53fc935dc5878f56ae943d6634a35a8e",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CAPTURE_RESULT_ASSESSMENT.md": {
+      "bytes": 13645,
+      "sha256": "476672112d6ea6177fa54db32ec5f776be931887f85060bd790180374ed9bea1",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CAPTURE_RESULT_PINS.json": {
+      "bytes": 1173,
+      "sha256": "2f0c32e98edc77784d8bf885c4cae2f8407c355148df0662be0deae1ec1e45c4",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CAPTURE_RESULT_SUMMARY.json": {
+      "bytes": 2373,
+      "sha256": "aac7568460dc6070bc1999a5ab7604ef658a309589ffc92e647b370ffec95ff0",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_DESIGN.md": {
+      "bytes": 12062,
+      "sha256": "acad73ce5bdb74f651a54f898f926a782457fde8de82688a74d49315be0dff50",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_PINS.json": {
+      "bytes": 1396,
+      "sha256": "c7dd012f10df1fb0c2c3a23d5b970f49332fdbd69420b21fb79b920aa8b2f81b",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_R2_DESIGN.md": {
+      "bytes": 9155,
+      "sha256": "f9d658299d4f8b4c018b2e9424b2c9b002cb51d81c32df97b44af1b3880681d8",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_R2_PINS.json": {
+      "bytes": 1872,
+      "sha256": "8c12b8264afbcef4f5427674a4a76755cc45c4392d7f47780003db4806a6014f",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_R2_REQUEST.json": {
+      "bytes": 5729,
+      "sha256": "0f8b1b256a4be5eb62b955e7d6c4bfde1b4d4186e0c477fe2e5422541f476d49",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_CONSUMER_REQUEST.json": {
+      "bytes": 3427,
+      "sha256": "7b7edaf91f1d538e64a3734efa1fbd9c6a1cd50023ba790a9abf2dfa01846785",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_DESIGN.md": {
+      "bytes": 10098,
+      "sha256": "408737bcdbcedac66264262a806bb49a0f8f98361485af7ec3063f2b5c60ff1c",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOC_PINS.json": {
+      "bytes": 1464,
+      "sha256": "e75c6cfe895695d17df9c4ceaacca89b50038c3c567b3554171f240170cfbc13",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOOL_HELP_DESIGN.md": {
+      "bytes": 11588,
+      "sha256": "9b939aa7ae674b953926ee08c8fa6a9e8f789487bdee968cd098264dc23a489f",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOOL_HELP_PINS.json": {
+      "bytes": 1849,
+      "sha256": "992ebb5f791b51f1f18fca5dbe8cf86a57286f4424cb0ca1f9a979f3eb1cc68d",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOOL_HELP_REQUEST.json": {
+      "bytes": 3577,
+      "sha256": "3cf3dfe4c779d63f09a8f0287de81ebec09a558c83ac4299752e56c7c4b859c0",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/EMPTY_ROOT_TOOL_HELP_RESULT.md": {
+      "bytes": 3149,
+      "sha256": "a2e5d75d192f8e22f861e650d8eec6e839634b9d4c3af6bca217a93352e53e1f",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/IDENTITY_AND_LIMITS.json": {
+      "bytes": 2837,
+      "sha256": "5c9b084d6d1898088c1fee819c10cfc486d761f00d264a114b98f2b509bcdbaf",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/PREDECESSOR_CANDIDATE.md": {
+      "bytes": 16050,
+      "sha256": "f14899cf528cd47b0596ee1e9a50697af66a73eba3b0a4be6eabbcdf9c3d96e7",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/PREDECESSOR_PINS.json": {
+      "bytes": 13709,
+      "sha256": "5caf6e53d9010608406f319159fb225a532470492c4cbc36bca3448e25901ec3",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/SOURCE_PINS.json": {
+      "bytes": 7460,
+      "sha256": "54e00ddc74f3ff9566fe4f8a676511e463a6f68ad76c3662cabb8367bd07ea9e",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION.md": {
+      "bytes": 6772,
+      "sha256": "3abf1188ada2048a40a4b217a99a1955a16ff357420c2de7c4302260d2232209",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION_MAP.json": {
+      "bytes": 19053,
+      "sha256": "dee558b7845769ed39859b0a2027ff7a280115493a46133d99eb088d8620f66d",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_IMPLEMENTATION_PINS.json": {
+      "bytes": 5378,
+      "sha256": "2e03caca809619b2df7278b03faac46fc96421c622f63129cbe37247897901a1",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/CONTROL_PLAN.md": {
+      "bytes": 8274,
+      "sha256": "81b5f50a6b9f1c52857250d518ba03b7198ea9c6d37a7220c417dfacf7bbae34",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/SOURCE_CONTRACT.md": {
+      "bytes": 10026,
+      "sha256": "6633981a028c850a9bc5f755a687b9c15f9f935fc4163682149ba9025c845be1",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-source-response-r1/SOURCE_PINS.json": {
+      "bytes": 4019,
+      "sha256": "ff3ce83002f7f7699780c8f9e30e4d7e0124235b2398f165e7fe27f51d2f460f",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-821621c7/docs/reviews/2026-10-16-m1-history-consumer-independent/EVIDENCE_PINS.json": {
+      "bytes": 33974,
+      "sha256": "a930752e69098f053f1eb1b84b78beb56a136f7240d0fe3ce40f3d8d0cf864fe",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-821621c7/docs/reviews/2026-10-16-m1-history-consumer-independent/REPORT.md": {
+      "bytes": 20477,
+      "sha256": "55699dc880e8a8618ecd7121a4d8d537dbe71b31c23c4fe724fd5d507d642223",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/CASE_MAP.json": {
+      "bytes": 33792,
+      "sha256": "79a686d181036e878de48c5b30edcdd763131e194fb4b01e1e0aff4e90c7572f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/COPY_LINEAGE.json": {
+      "bytes": 2440,
+      "sha256": "39e482aa0592c76cc04bcf787034331ab3c5f540ab83a10c370ff238228f1a21",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/COUNTER_MAP.json": {
+      "bytes": 15888,
+      "sha256": "1d9f1cb51b79a7b7ba950b382b9ec7ab9304a584d249b41ebf076cb50e6c9efb",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/HARNESS_PREPARATION_PRESERVATION.json": {
+      "bytes": 60933,
+      "sha256": "4e4d450d6ce77c197dac73cb5a499c0c216be14353765a686b28c14541340438",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/PURE_REQUEST.json": {
+      "bytes": 10216,
+      "sha256": "bb095c7ba79b515fbe0d51e6bd5662cb1e89b752e4d59c27703c5cb30cf6eb63",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/READ_MAP.json": {
+      "bytes": 5161,
+      "sha256": "98e5021dd3f63222a32613e390659e83cc272f755bc751432ffcf5c7f0cb133f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/SOURCE_DELTA.patch": {
+      "bytes": 10668,
+      "sha256": "2c006a2a317bda6944b882fffea2912138dc5716c0069787fdb8da82c3fcd20f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/STATIC_AUDIT.json": {
+      "bytes": 1950,
+      "sha256": "0464536f88ff4d617475e66f5564370f5ed3fba490140c6d03e27dd49187d04b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/STATIC_PREFIX_EVIDENCE.json": {
+      "bytes": 4236,
+      "sha256": "3b3fbc038265f2a454b56eeab3bd65540e0561bb9717e220235266bca93bc612",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/controls.py": {
+      "bytes": 23561,
+      "sha256": "b2b442cd9522f2682d085a0e894e6ca94d025ed2ce591fbcd2b77aee2d401a9e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/history_stream_capture.py": {
+      "bytes": 6674,
+      "sha256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure_main.py": {
+      "bytes": 8742,
+      "sha256": "fb54af4ba29b6b3bae3b1dd5b7862f42f81cd21c438c1172d076b8d51f22a3f2",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/reader_controls.py": {
+      "bytes": 8758,
+      "sha256": "aec5ab11f95a71cbb54f5a1890cf66d094dc2a55221b3c8d7431f31b403e79e5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/strict_reader.py": {
+      "bytes": 8123,
+      "sha256": "5911054f5f5dbb4af7672766b028c1f801a1e810e52dc89c05ebf79a752056d4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/COUNTER_MAP.json": {
+      "bytes": 15888,
+      "sha256": "1d9f1cb51b79a7b7ba950b382b9ec7ab9304a584d249b41ebf076cb50e6c9efb",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/SOURCE_PINS.json": {
+      "bytes": 7802,
+      "sha256": "d09181b29b49b2f9ed5da6c44866bf870589cc490da80567151435e33da74844",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/SOURCE_RESPONSE.md": {
+      "bytes": 6099,
+      "sha256": "e885ad0a4c210df62db5d3ca5aa7bc39d9af39cc55e722b6f7331e307f1364d6",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/pure_window.py": {
+      "bytes": 18452,
+      "sha256": "f773f917ba2db322d6b018adb3d4b3adc8773792a57e794509cb29c77ae65873",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/root_lifecycle_controls.py": {
+      "bytes": 6436,
+      "sha256": "45c14c3a2dc8f77711bdb0e3292bbd403df424c0424aa18f22122c1ee9bcc73a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/TRACE_PREFIX_SOURCE_DISPOSITION.json": {
+      "bytes": 5618,
+      "sha256": "af6aca330d710cf732436c66391d8914ca3ae31efd855df066c37446d3a53d9b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/SOURCE_PINS.json": {
+      "bytes": 67637,
+      "sha256": "4f0b5ab82698031a7bde9c3aa68f0153c3f3ac800ca2f2be3f7168b519b2475b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/ACTUAL_EVIDENCE_PINS.json": {
+      "bytes": 49956,
+      "sha256": "bef2c5323574dd2959e3375e6716789180ad2fba16c77eace168e463ffe5372e",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/SAVED_DATA_AUDIT.json": {
+      "bytes": 4337,
+      "sha256": "28f2029b7afb70bdae4b198f47e69103ec798d98e4bf4c9586d5e3f4869cdd56",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/ACCEPTANCE.json": {
+      "bytes": 990,
+      "sha256": "8189760a680a101d11618d44d3c66a34bf031088a8c2f5a1182a257926aeeea8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/CONFIG.json": {
+      "bytes": 347004,
+      "sha256": "e49cb9ce20d3d7cdac26d39239010ff44f1eda3e49a291b489f38c9e232f196b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/GRANT.json": {
+      "bytes": 1383,
+      "sha256": "30a431bc9dffc2e92823615831803b965c5674e3e0b8425eed74614a7909f575",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/baseline/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/baseline/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/baseline/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/baseline/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/baseline/history.terminal.json": {
+      "bytes": 879,
+      "sha256": "96a774e5f12f2d65a83c31b695d02ead0a4e176005c35bae5a23e84211e0db3d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/callback-only/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/callback-only/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/callback-only/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/callback-only/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/callback-only/history.terminal.json.partial": {
+      "bytes": 37,
+      "sha256": "034c512f22c8b266dad8c9935400e85bda43a3d4e6444b8bd208ea297ed5c31f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/cleanup-only/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/cleanup-only/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/cleanup-only/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/cleanup-only/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/cleanup-only/history.terminal.json": {
+      "bytes": 2027,
+      "sha256": "5b1eb4beab4d55a93d9afb459dd90e9d76e5d44375c6a799695323863faf856f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/control-entry.json": {
+      "bytes": 568,
+      "sha256": "c06b8b3fa59990180a0c18bfe60df3228cede220a2e6114c239a28cebef300c8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/controls.json": {
+      "bytes": 114240,
+      "sha256": "599c920e50e05a67222a0a5836f7af276d7b9e659f1d3b65cba26bde14ca0614",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-0.json": {
+      "bytes": 357,
+      "sha256": "dbac404e5077a27e8d1b802048d23085fb1d6978fa66e98f9eddb469e8f9872d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-1.json": {
+      "bytes": 382,
+      "sha256": "65186626cc7ccc130f004896cedc10810a599c18373a35c6538e8fae7ee2ce97",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-10.json": {
+      "bytes": 4266,
+      "sha256": "334ea169f48c0dc6919bd785d9a7249d251e294023b761fc9684099174408d57",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-11.json": {
+      "bytes": 495,
+      "sha256": "835fbec2625bcbf2a75354093fdeb1f3040abfce3ea4c3dbb7913b6329306761",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-12.json": {
+      "bytes": 21347,
+      "sha256": "cdf238bff57377e3aa28e812d7344f004164173086c393eac036635cd12b2567",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-13.json": {
+      "bytes": 223,
+      "sha256": "593962e9b5e206224d79db503640c19611527046a328631e9d0c21129ac99334",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-14.json": {
+      "bytes": 22430,
+      "sha256": "6e5eb892239d8c90460b5ac501c87a6db22ed731301ff612df982e4466795b90",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-15.json": {
+      "bytes": 471,
+      "sha256": "7748bc2140ddbd209a1d08cab53e479440327bc6718c637bac60f3084fcf9c55",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-16.json": {
+      "bytes": 6767,
+      "sha256": "e2b76790d338fda4fa1b026ac7327f5a1c21fd13277cc0822e63cdc2e6dc796f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-17.json": {
+      "bytes": 215,
+      "sha256": "1989b16d6066964553bec9137a0b0eb070b149a21403bfc0120bf97b7464ca21",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-18.json": {
+      "bytes": 7634,
+      "sha256": "6032026624e2771d483e769756e8ea6a5e4f2de0d0961e8ee734618ce3b59b87",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-19.json": {
+      "bytes": 474,
+      "sha256": "a2de6e1da02d1f0a10d22a8c3d0d8e46b21b0186e5dc5b53ec1adb638089a601",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-2.json": {
+      "bytes": 378,
+      "sha256": "a63a89e1e2a8dee58142c9619f9ae007e85cc87ad3e90f09acb98e170b4592db",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-20.json": {
+      "bytes": 5068,
+      "sha256": "433d5390098bec11bdf2f7764266761c1c5dc5b81e1d2b8d74eba6a1b8049919",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-21.json": {
+      "bytes": 216,
+      "sha256": "a063417aba963f735118f77714f417b8837577f1023eb40409d9c426fb5e4b61",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-22.json": {
+      "bytes": 5915,
+      "sha256": "66b1cd59292723334ae5c99dc9a1a357e4ecc9ad83e8b93cf9facce46cd8f831",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-23.json": {
+      "bytes": 498,
+      "sha256": "d6c3c0e67689ef5072e1e5fa581dcc92daccc1afbbab7e8384f101662b89a9c7",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-24.json": {
+      "bytes": 6409,
+      "sha256": "df68aed51dc58f43af0f099633d5129b867f9ce345c9c90fd0fe2c30228d89a4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-25.json": {
+      "bytes": 224,
+      "sha256": "6328e9dbf360ac91cd09266e8466506452fcea47f415fad26c7b89a2b4a53798",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-26.json": {
+      "bytes": 7304,
+      "sha256": "01a4996046b49132af5992717c4847df682f39df465d2ba81bea4a99f73d6564",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-27.json": {
+      "bytes": 501,
+      "sha256": "4346055b86722fed5ec20a9939f8bb9e353359677a9154b46f0ab140a506a7d7",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-28.json": {
+      "bytes": 4464,
+      "sha256": "869c8783594da8dbd29334d783f02b9343e0091b90e9d15ea2f9031e25788329",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-29.json": {
+      "bytes": 225,
+      "sha256": "5bdb80e00c3b80d45c08746a1a05ee512c509b38e178b5564bf2081cc54e0a5a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-3.json": {
+      "bytes": 477,
+      "sha256": "ca6e7046dcac37f09effea8fed62de0feee95b1dd78ea6f50b5051fa0a491b9c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-30.json": {
+      "bytes": 5227,
+      "sha256": "83be412a466bbb2cd923fe62faa0300528dfe7f7a2cdaec9d16e4713b62718dd",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-31.json": {
+      "bytes": 492,
+      "sha256": "1f9dd3f0067ca35cfbe22c545b78f6845c9439fa0e5203d20f64202fde8a4b87",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-32.json": {
+      "bytes": 4509,
+      "sha256": "26ffa3460a982dd8ec0db7362457670e1e35b3165fcf9b4352fbbb57902fac95",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-33.json": {
+      "bytes": 222,
+      "sha256": "6d32b2d04d64390801b7e8cea2c0f554a676e1db23910944fe3aa2cc3edb3e7f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-34.json": {
+      "bytes": 5278,
+      "sha256": "d7110a4f6c3f17edc966d68c2719934bf4ae6973a649ccc8e6d40cea67d339bb",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-35.json": {
+      "bytes": 525,
+      "sha256": "a858d65d70ec9044842bed2c2fcc4245f5a69e38093e85faae5caf59ee2c2b40",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-36.json": {
+      "bytes": 21136,
+      "sha256": "9698e3afff2f227d43d1e93d945c1fbdce1e4109781048d0af87af66d64afa95",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-37.json": {
+      "bytes": 233,
+      "sha256": "f9bbac6e54d2b83f632770a27f94aa316135b7cdcb8c67b91f70b18fbdb4c1ba",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-38.json": {
+      "bytes": 23395,
+      "sha256": "8dda0fd2923b5eb0676b3a3703d4fba745f26dbb47a95a24d8e1313887025e06",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-39.json": {
+      "bytes": 517,
+      "sha256": "7012d09f12507db660b121a35e6c3b84a18f15b002d9fec4d4eecee7d8ac2a29",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-4.json": {
+      "bytes": 3455,
+      "sha256": "2a2f8d45b87a9c7bb9a739e5be546a560e6a7c9e009fe7f971c53174c619b5e9",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-40.json": {
+      "bytes": 4366,
+      "sha256": "64850d311d7616d6de5d41de49c8e084980a50ac8f41feb11c59cb317e7996e4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-41.json": {
+      "bytes": 230,
+      "sha256": "a0f548285626ec95595f34ef313386bfa511c21047f0fbbe0147a3b6508f95fb",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-42.json": {
+      "bytes": 6361,
+      "sha256": "3e77c214b3689a04e81878f11989fdfa1ee2beaa26f4c6cc21bd333de34e0e88",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-43.json": {
+      "bytes": 502,
+      "sha256": "97130ecd65ed1394c37c7586284db73613d8d7735c6690ecc53fc311ca14e145",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-44.json": {
+      "bytes": 5874,
+      "sha256": "bfbc8ad1e1e7499e14071d3923f9c1840c2534ca3fd1756b399eec36d326c693",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-45.json": {
+      "bytes": 225,
+      "sha256": "9e31b4aa92cc2d27db1b30c78c43a4b5040486e01360b4b396661877d3d9f7df",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-46.json": {
+      "bytes": 7910,
+      "sha256": "5ac45cd5bfeae160461ebc75fbd6e29df8eb5250c9cee80f6384b2662c583f61",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-47.json": {
+      "bytes": 526,
+      "sha256": "2e07874aa857bf84bc56fc355366d150b3ac6cb4eefdb8341c2c58a7061c5198",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-48.json": {
+      "bytes": 4144,
+      "sha256": "372f867faff5c1fb8983d6a27b362807a6bba9536c4d973e91edbf3dca0702b9",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-49.json": {
+      "bytes": 233,
+      "sha256": "e3abaf42733dbe526b8d9964d2a72f84184d7a62077bfe2047e111dca028e5b0",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-5.json": {
+      "bytes": 217,
+      "sha256": "30976faac02509fe88e2a11ffa3755d05e899007ba304a59f4f167cbaa9d2fbe",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-50.json": {
+      "bytes": 6183,
+      "sha256": "48ead68c5250a440de8db72536ace8b5298e8a82ada072762f6fccb071e11f98",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-51.json": {
+      "bytes": 487,
+      "sha256": "908dac1abaabc669a589722e1a5334c507f6260a7912d95c1e89bdf0c6509123",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-52.json": {
+      "bytes": 3458,
+      "sha256": "dfffe1759ef0f314cb2e5970102635f6c2fa4dccbf359b2353f13413db40644b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-53.json": {
+      "bytes": 220,
+      "sha256": "8241a600cdc987b0c31867e99799f008c42a8ae829094f6b412b5bf013c3bdff",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-54.json": {
+      "bytes": 4296,
+      "sha256": "ffc1a4837d3152cf584e618db3b82347726ef0e486eaa1ab97ec3f135591457a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-55.json": {
+      "bytes": 208,
+      "sha256": "cd08516ffab9d5cc7691b701ba7d6d4be145ebf26caa58f7152b9b02993c99bb",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-6.json": {
+      "bytes": 4290,
+      "sha256": "bd3b9d1b7813c612b013b0fd41d5e86ca0165d50f941418b3496cb8a8c386ab3",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-7.json": {
+      "bytes": 459,
+      "sha256": "a674c38b9f7ac5a1b06a346c7dc9cb0e29a7252cb0cb9e4eeb0d55ec767df6ff",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-8.json": {
+      "bytes": 3447,
+      "sha256": "405cb2b06646c199caf55f886be1edc57b15d2fc5137e6e02c5dae988a5d08ac",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/event-9.json": {
+      "bytes": 211,
+      "sha256": "7d0c0feee1f222a1283428e54ecdcdc29e9cc7bf2c5ffdd0f937e72de53a0f5a",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/fixture.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/harmless-first/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/harmless-first/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/harmless-first/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/harmless-first/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/harmless-first/history.terminal.json": {
+      "bytes": 880,
+      "sha256": "398276ec1b76c0b3afa2541dde582a63a8d504e1334bd2461500000bba7813ab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/ignore-terminal-record-failure/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/ignore-terminal-record-failure/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/ignore-terminal-record-failure/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/ignore-terminal-record-failure/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/ignore-terminal-record-failure/history.terminal.json.partial": {
+      "bytes": 37,
+      "sha256": "034c512f22c8b266dad8c9935400e85bda43a3d4e6444b8bd208ea297ed5c31f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/popen-setup-failure/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/popen-setup-failure/history.terminal.json": {
+      "bytes": 1042,
+      "sha256": "cbfba021e9d6b2db78c2903536e586e3b5c57bb71afa521fbc74f39e1bfbd392",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-callback/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-callback/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-callback/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-callback/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-callback/history.terminal.json.partial": {
+      "bytes": 37,
+      "sha256": "d9e33a03924130c175f95a564c4f3f50fe8c92f22633dbf23fb544e45d31acb8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-cleanup/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-cleanup/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-cleanup/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-cleanup/history.stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/primary-plus-cleanup/history.terminal.json": {
+      "bytes": 8797,
+      "sha256": "dffea30a953929f0095e4ebd5aa69e06c2779a6720ca9f5f24896bfd16f502ea",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-controls.json": {
+      "bytes": 8023,
+      "sha256": "e723b60a5aff4de0829f09ae59662dfc78a620151c579739e7eb6bb5a86dd140",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-0.json": {
+      "bytes": 395,
+      "sha256": "20dc0b6833e2f105fda3868f6f14119842d565599bcd467cdd63ff089fa2e449",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-1.json": {
+      "bytes": 378,
+      "sha256": "244f99d89ab1a4105f859ad81eae96b71245072e3aaf14594479a52d1a6fa6a5",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-10.json": {
+      "bytes": 373,
+      "sha256": "52f52129bfcff921b7adfd94adefeee74151e72b0703692a1d9dc40c466ec576",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-11.json": {
+      "bytes": 381,
+      "sha256": "8c6363e2eb9257c355bf9c00e4155013e402891627dad0df35ca8de2d9957a5b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-12.json": {
+      "bytes": 152,
+      "sha256": "089a13e81ad06c91c2860aa2f1554e1b33c9ff8c58f3c37007c9cc33edd7ce13",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-2.json": {
+      "bytes": 1250,
+      "sha256": "aa1c8a1e84c77b320aeaddb20ee8357518e1746510234aa7f0a0320af9280957",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-3.json": {
+      "bytes": 1249,
+      "sha256": "df867a40f84286b562e29a38c41bf24c8c02f1be650c585bb7f40498bfe47b86",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-4.json": {
+      "bytes": 1244,
+      "sha256": "c7c9a32193e1faeb76e57a8909f19fdf43ab3f4faf9dda47e1f6549f1157a0ad",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-5.json": {
+      "bytes": 385,
+      "sha256": "a180953183c222c488a350e046063780f8ee9d538b7644c026023d72d0bd88f2",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-6.json": {
+      "bytes": 920,
+      "sha256": "580006769dc865816a3c1e4810aec37061959932e6b4425a4f0f29187a8c4939",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-7.json": {
+      "bytes": 1279,
+      "sha256": "2f77087ab8718f17a77cb00a5bf3c9b867646e9647de8cc56ae261d8c5cbedab",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-8.json": {
+      "bytes": 383,
+      "sha256": "9d09afa39ddceb3edc6bb8a88d9507390a2720dda5c793d0a88d28dbfb4fa791",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/reader-event-9.json": {
+      "bytes": 944,
+      "sha256": "c7e691ce4b847561288513f91763a03b84543e844a4fd8e776a7a1248414616d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/replace-primary-with-secondary/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/replace-primary-with-secondary/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/replace-primary-with-secondary/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/replace-primary-with-secondary/history.stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/replace-primary-with-secondary/history.terminal.json": {
+      "bytes": 8907,
+      "sha256": "6ca825a1bb16f8e525b47b1ad37dbc4fcf08c8b8c588752d90e9aa04ca8cbbb2",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/restored-baseline/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/restored-baseline/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/restored-baseline/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/restored-baseline/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/restored-baseline/history.terminal.json": {
+      "bytes": 880,
+      "sha256": "f7cb53d63bd76792eadb0cd8ac722af3b1c40a2d5ce39929595467c9dcd888a9",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/return-on-cleanup-only/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/return-on-cleanup-only/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/return-on-cleanup-only/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/return-on-cleanup-only/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/return-on-cleanup-only/history.terminal.json": {
+      "bytes": 2045,
+      "sha256": "2ac4f707a800e933314aa56e72a9703d374fdd297081b6d9dd9a91c4c31bf9d7",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/selector-setup-failure/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/selector-setup-failure/history.terminal.json": {
+      "bytes": 1033,
+      "sha256": "32facfe75897e657b3516597b02840cb78a6344c67844e4eabca680a01183a6f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/skip-terminal-after-cleanup/history.intent.json": {
+      "bytes": 150,
+      "sha256": "d3a1503fff7dc7ae19c7b2b258d1956d4381999c84b1571aa04c427125f94c4d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/skip-terminal-after-cleanup/history.returned.json": {
+      "bytes": 52,
+      "sha256": "dbd7b376290ab22d9d429ad9433f4a3bd2cf1773d15b8409173321a6de1be04c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/skip-terminal-after-cleanup/history.stderr.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/skip-terminal-after-cleanup/history.stdout.bin": {
+      "bytes": 13,
+      "sha256": "aaa2eaecd62a1e81a0df393c0ee8ee789f5da455633d780202f6efe2549580dc",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/source-restoration.json": {
+      "bytes": 141,
+      "sha256": "d98e79177c0c70ce8252356d0efc6344f651981e1f98d09adc3715d029ba12f2",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/subject-import-intent.json": {
+      "bytes": 1096,
+      "sha256": "9a7e0c2a848fe89f7d31b8f0fec87805f6439577ba70834b74fb91bb123adb9f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/pure-output-01/terminal.json": {
+      "bytes": 447,
+      "sha256": "91534a02b2d169c7f72ed5c044c874df20fb0debd970be165765519e827d5024",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/after.json": {
+      "bytes": 14346,
+      "sha256": "f5c95feaaf64a30a09e6911fd5f6b25008649e4957cc302918dcc2fbb07fc51d",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/before.json": {
+      "bytes": 14343,
+      "sha256": "6d56ac63df4ec71ab90359e661ec7c3aaf8b3ef593c30ff60a8db8d587426218",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/final-inputs.json": {
+      "bytes": 272561,
+      "sha256": "169d7e315dbaf0d27d88c543a23978b3302b13e5925fd9c69b2af8afd667b5e6",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/host-final-inputs.json": {
+      "bytes": 262665,
+      "sha256": "ab529d4e2a417653a048f367f252fea3d77e3e3208ba789df0eeea9fab56471c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/host-final-preservation.json": {
+      "bytes": 58067,
+      "sha256": "9ec99d1e55ba6d793240c1a2174a9bc14edb093bb25e2df7a5bb17a3a6925b60",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/inner-finalization.json": {
+      "bytes": 45,
+      "sha256": "dc3e133905d3630aab56d85bfcbd22aa24074349c3097635ea2dd33e21b34efa",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/intent.json": {
+      "bytes": 1269,
+      "sha256": "345b33b284e5d6af6af1f7068aa5098dbd24a7d16ee2434b4b47c866fde8af97",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/lifecycle-controls.json": {
+      "bytes": 3788,
+      "sha256": "eef5480e760a22495bc882b72cf0892f65cfdc80798f70abd3d6a9f4fc60ddb1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/returned.json": {
+      "bytes": 66,
+      "sha256": "e17349a4d00962fe03a50db1ee14d20daec199f448e20d48b947ab5ca8cbaa4b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/sandbox-entry.json": {
+      "bytes": 174,
+      "sha256": "188a03a4c70b30943db50d064b5693d1bf1989d956a12811e9e8ea97f01ee92b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/stderr.bin": {
+      "bytes": 347,
+      "sha256": "28e7f225e3618e492a8298a9a91973271d3a8894f45add2da48f6b2c43d15e8c",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/stdout.bin": {
+      "bytes": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/subject-entry-intent.json": {
+      "bytes": 459,
+      "sha256": "ffcadd025e9639fb021210be92f025c76d2d249b47ed96ae5a5a9fb29d844061",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-pure-root-decision-20261016/attempt-01/terminal.json": {
+      "bytes": 290,
+      "sha256": "7a78c6f8bf3440bd90e5ece6b2d7a92679e4cf3863be3c854f1284c44e6e0cf9",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/RESULT.md": {
+      "bytes": 23625,
+      "sha256": "5b4f386b90d546e94afc64cfb46243f7452036bb8d8f982f3b5729e1bc18e0f0",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/VALIDATION.json": {
+      "bytes": 14510,
+      "sha256": "bccdca3a8a0b6397b0ae32e7f401d4b0a3b7f0a84828b5b9425ca2c29dc7463e",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/capture-cleanup-trace-prefix-response-r2/RESULT_EVIDENCE_PINS.json": {
+      "bytes": 4587,
+      "sha256": "272e7a5f4d868e4a87e1adde62c3bc7ac30be9fe72c0fa2cfe5c145f42039d42",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/READER_NOTES.json": {
+      "bytes": 859,
+      "sha256": "8811b3f128c9bcf685b3272ba520201485adc9368b375a976eab1c07ff84db26",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/DATA_READBACK.json": {
+      "bytes": 18234,
+      "sha256": "e23b84e0e133214453fd1c0d908c0d1b82a9467b5eba76858af79c6f41f4bf13",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/EVIDENCE_INDEX.json": {
+      "bytes": 53504,
+      "sha256": "5a79757f81c397ef558c499ada0211a44b60250a1bc03af75f539bba5dcfb94b",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/PRESERVATION.json": {
+      "bytes": 68990,
+      "sha256": "34e997ff96aa0b9272d4173acd9bb8e19791afc59f4257113f64cfbe0c96c7e9",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/FINAL_CUSTODY.json": {
+      "bytes": 885,
+      "sha256": "1f79b6c6c238c769628c531cfcc2ec9ce09f9f8aaad7707a334fd2a5b8dce1f8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/land-use-context-native-preparation-20261016/capture-cleanup-trace-prefix-response-r2/saved-data-result-01/CHECKPOINT.json": {
+      "bytes": 3374,
+      "sha256": "377d8ea2e163e9024c1d3c0043979dda8201f43f454ba8fbbddb3350678dcf4f",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-geography-correction/REPORT.md": {
+      "bytes": 17602,
+      "sha256": "fc561907f9ccd3c48ac74b889e3f80f7c00f52860f0bdcb64c3f4642a120d697",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-replay-fixture-correction/REPORT.md": {
+      "bytes": 7945,
+      "sha256": "d39ef21cca3a9ebb01cd88996255198b4119c4045460938930fe60c7b9ca469a",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/usr/lib/python3.14/traceback.py": {
+      "bytes": 70138,
+      "sha256": "bb8720e66d690101a30bb97015c86b5e159f44333a8a213eb4bf86c3c9634643",
+      "mode": 420,
+      "uid": 0,
+      "gid": 0
+    }
+  },
+  "privateReviewFiles": {
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/DATA_COMPARISONS.json": {
+      "bytes": 59943,
+      "sha256": "8b90e4255d5ea0db002777d29fab8ef3ea7928d0a96532a0fba778bb3bdad900",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/IDENTITY.json": {
+      "bytes": 2098,
+      "sha256": "8b0b195b474f6026ee3cdc28832f8090eff011df8adb911f1915bad560da85d1",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/READ_PINS.json": {
+      "bytes": 122912,
+      "sha256": "6a770bffd8ef17463fcbbf506d33a51e7d657f5d296df9e3cdff785ad660c5d4",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/SUPPLEMENTAL_COMPARISONS.json": {
+      "bytes": 7335,
+      "sha256": "10f584a28e9fce3d2804dac9be799805ce7d182e81d86f152fcb9b20462df6c8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/m1-capture-cleanup-independent-20261016/review_metadata.py": {
+      "bytes": 11990,
+      "sha256": "7b2719f6a96d32dcc91be641a42a989490115a639725444f6ea53a0049ab82f8",
+      "mode": 384,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "reviewDocuments": {
+    "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1/docs/reviews/2026-10-16-m1-capture-cleanup-independent/REPORT.md": {
+      "bytes": 30120,
+      "sha256": "25c99ca2969348bdddae96beb0f2bfb6906b9cef7bf0138ebc345b0abde96470",
+      "mode": 436,
+      "uid": 1000,
+      "gid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-ac2008c1/docs/reviews/2026-10-16-m1-capture-cleanup-independent/REVIEW_BRIEF.md": {
+      "bytes": 10588,
+      "sha256": "502362177fa9f0adbf2a2aa4fd4c935d7d2955da9d41672e067cbc239838f80c",
+      "mode": 420,
+      "uid": 1000,
+      "gid": 1000
+    }
+  },
+  "sealReadbacks": {
+    "result367": {
+      "count": 367,
+      "mismatches": []
+    },
+    "preruntime206": {
+      "count": 206,
+      "mismatches": []
+    },
+    "preservation186": {
+      "count": 186,
+      "mismatches": []
+    },
+    "actual148": {
+      "count": 148,
+      "mismatches": []
+    },
+    "finalCustody": {
+      "count": 2,
+      "mismatches": []
+    }
+  },
+  "savedCaseSummary": [
+    {
+      "name": "harmless-first",
+      "outcome": "SURVIVED",
+      "sourceSHA256": "fb92dfac4fd8706ee5ac973e5bcba969c31262f6cb261b829e59ebe29d13c974",
+      "checked": true,
+      "exception": null,
+      "fault": null
+    },
+    {
+      "name": "baseline",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": null,
+      "fault": null
+    },
+    {
+      "name": "primary-plus-cleanup",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "supplied:deadline",
+        "tracebackSHA256": "03b68fc807e66a902db9a89269654ce66df1a399c8c7099ede1da12ba8913157"
+      },
+      "fault": null
+    },
+    {
+      "name": "cleanup-only",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "_m1_capture_cleanup_cleanup_only.CaptureFinalizationError",
+        "message": "history:cleanup-failed",
+        "tracebackSHA256": "f654c241442341f19d12a0e2dcd90f7eeef9458e327e8f0c1e04781e1d9e90fd"
+      },
+      "fault": null
+    },
+    {
+      "name": "callback-only",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "_m1_capture_cleanup_callback_only.CaptureFinalizationError",
+        "message": "history:terminal-record-failed",
+        "tracebackSHA256": "79ffac4b3fd66d7407cbc1106c040fb7c8a8c19182e516d28dfcaea4da8afa9a"
+      },
+      "fault": null
+    },
+    {
+      "name": "primary-plus-callback",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "builtins.RuntimeError",
+        "message": "history:nonzero:7",
+        "tracebackSHA256": "0f4832942e00f61584f0289d9cecd2c1fb995fc354273bf5974cd09f95309ea0"
+      },
+      "fault": null
+    },
+    {
+      "name": "selector-setup-failure",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "builtins.OSError",
+        "message": "supplied:selector-setup",
+        "tracebackSHA256": "cd615f841bc24a6b8bea3f18e84051adb8d6c478cc47f0a6f844b93d4c88e0c2"
+      },
+      "fault": null
+    },
+    {
+      "name": "popen-setup-failure",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": {
+        "fullClass": "builtins.OSError",
+        "message": "supplied:popen-setup",
+        "tracebackSHA256": "676e5951824ff95d563c47ae12903f339b8a3d1a0bbbe3c37d524b5b16452f0b"
+      },
+      "fault": null
+    },
+    {
+      "name": "replace-primary-with-secondary",
+      "outcome": "FAULT_DETECTED",
+      "sourceSHA256": "2dd0c6db33643914a3702ac2c3677e86a9266756902284655224ee30cd06bf07",
+      "checked": false,
+      "exception": {
+        "fullClass": "_m1_capture_cleanup_replace_primary_with_secondary.CaptureFinalizationError",
+        "message": "history:cleanup-failed",
+        "tracebackSHA256": "0c1753998c0abfbe18546dfe2a91889efaf1047d19e214274783b082ff99b0dc"
+      },
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "capture-control:primary-preservation",
+        "tracebackSHA256": "d7baac69ddc5534822dfb656d07d42a112ea5514470829001e1f6521005c3d96"
+      }
+    },
+    {
+      "name": "skip-terminal-after-cleanup",
+      "outcome": "FAULT_DETECTED",
+      "sourceSHA256": "43da27b319fd39859901c50a608689f683648c4ee234bfe84a4b07574b0f88c0",
+      "checked": false,
+      "exception": {
+        "fullClass": "_m1_capture_cleanup_skip_terminal_after_cleanup.CaptureFinalizationError",
+        "message": "history:cleanup-failed",
+        "tracebackSHA256": "b2d56e89cf1dfe7ee034ed73aa40e9806234ee6270842409e3ec999c3f0d4877"
+      },
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "capture-control:terminal-attempt-after-stream-fsync",
+        "tracebackSHA256": "70a95535e3c49a18ed30f98a16a9805fde3d682f9816aa8f0e2e4577b2f77a44"
+      }
+    },
+    {
+      "name": "return-on-cleanup-only",
+      "outcome": "FAULT_DETECTED",
+      "sourceSHA256": "8c68568802914324f0b3c8da6c1baf9bb4c996961bee77baf52b513abc001842",
+      "checked": false,
+      "exception": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "capture-control:cleanup-only-refusal",
+        "tracebackSHA256": "15e9b6d5f14506f0bd75fea23cb390b04f5077e5d0cc1d8522922aea0d52eb6d"
+      }
+    },
+    {
+      "name": "ignore-terminal-record-failure",
+      "outcome": "FAULT_DETECTED",
+      "sourceSHA256": "ba34600856273bf28ad4e160208109baf0ed628db405db744875aa137143d9be",
+      "checked": false,
+      "exception": null,
+      "fault": {
+        "fullClass": "builtins.AssertionError",
+        "message": "capture-control:terminal-record-refusal",
+        "tracebackSHA256": "8fd3ac80cca97945c901185e5f86697383520f790b87e7d98f541e11f54a188e"
+      }
+    },
+    {
+      "name": "restored-baseline",
+      "outcome": "PASS",
+      "sourceSHA256": "9d15d5edd87eb3cd578ed80fb8e21660262bbbef0e134572f4dfbd889992f53f",
+      "checked": true,
+      "exception": null,
+      "fault": null
+    }
+  ],
+  "primaryDataComparisons": [
+    {
+      "name": "seal:result367",
+      "equal": true,
+      "details": {
+        "count": 367,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "seal:preruntime206",
+      "equal": true,
+      "details": {
+        "count": 206,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "seal:preservation186",
+      "equal": true,
+      "details": {
+        "count": 186,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "seal:actual148",
+      "equal": true,
+      "details": {
+        "count": 148,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "seal:finalCustody",
+      "equal": true,
+      "details": {
+        "count": 2,
+        "mismatches": []
+      }
+    },
+    {
+      "name": "helper R1/R2 identical",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "controls R1/R2 identical",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "Popen-through-stream/wait byte equality",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "strict reader sole exact predicate replacement",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "56 saved subject events",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "13 saved reader events",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "case event row equality",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "reader event row equality",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "13 per-case restoration joins",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "case names/order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "reader names/order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:no error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:no error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:original primary",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:original primary",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:original primary",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:original primary",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:exact fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:original primary",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:full error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:exact fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:no error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:exact fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:no error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:exact fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:source fields",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:no error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:no fault",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:cleanup order",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:cleanup issue values",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:status/return/pid",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:byte accounting",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:judgment state",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:restoration",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:record:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:prewrite:history.intent.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:record:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:prewrite:history.returned.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:record:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:prewrite:history.terminal.json",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:stream:stdout",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:stream:stderr",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-neutral-copy-first:reader outcome",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "valid-baseline:reader outcome",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "wrong-fulltype:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "wrong-message:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "wrong-suffix:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "exact-message-bypass:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "exact-message-bypass:reader mutant hash",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "wrong-cause-prefix:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "exact-prefix-bypass:reader exact error",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "exact-prefix-bypass:reader mutant hash",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-original:reader outcome",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "bypass:byte transform hash",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "prefixBypass:byte transform hash",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:independent prefix literal",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "harmless-first:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "baseline:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-cleanup:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "cleanup-only:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "callback-only:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "primary-plus-callback:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "selector-setup-failure:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "popen-setup-failure:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "replace-primary-with-secondary:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "skip-terminal-after-cleanup:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "return-on-cleanup-only:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "ignore-terminal-record-failure:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "restored-baseline:before judgment",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "request/grant/accept linkage",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "config/grant/accept linkage",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "grant/accept linkage",
+      "equal": true,
+      "details": null
+    },
+    {
+      "name": "19 definitions count",
+      "equal": true,
+      "details": null
+    }
+  ],
+  "supplementalComparisons": [
+    {
+      "name": "replace-primary-with-secondary:exact unique byte transform",
+      "equal": true
+    },
+    {
+      "name": "skip-terminal-after-cleanup:exact unique byte transform",
+      "equal": true
+    },
+    {
+      "name": "return-on-cleanup-only:exact unique byte transform",
+      "equal": true
+    },
+    {
+      "name": "ignore-terminal-record-failure:exact unique byte transform",
+      "equal": true
+    },
+    {
+      "name": "1247 complete saved host map/config",
+      "equal": true
+    },
+    {
+      "name": "186 complete saved preservation/config",
+      "equal": true
+    },
+    {
+      "name": "1247 saved inside hashes bytes modes",
+      "equal": true
+    },
+    {
+      "name": "raw saved mounts before/after",
+      "equal": true
+    },
+    {
+      "name": "21 mounts 17RO 4RW",
+      "equal": true
+    },
+    {
+      "name": "caps/resources before after",
+      "equal": true
+    },
+    {
+      "name": "exact six ROOT cases",
+      "equal": true
+    },
+    {
+      "name": "pinned installed traceback SOURCE hash",
+      "equal": true
+    },
+    {
+      "name": "traceback source excerpt 88",
+      "equal": true
+    },
+    {
+      "name": "traceback source excerpt 1124",
+      "equal": true
+    },
+    {
+      "name": "traceback source excerpt 1486",
+      "equal": true
+    },
+    {
+      "name": "prefix wrong data preserves final suffix/source location",
+      "equal": true
+    },
+    {
+      "name": "12 additions exact Git/current",
+      "equal": true
+    },
+    {
+      "name": "exact candidate parent",
+      "equal": true
+    },
+    {
+      "name": "same author/parent app",
+      "equal": true
+    },
+    {
+      "name": "author clean at candidate",
+      "equal": true
+    }
+  ],
+  "partialRecords": [
+    {
+      "name": "callback-only",
+      "partialBytes": 37,
+      "partialSHA256": "034c512f22c8b266dad8c9935400e85bda43a3d4e6444b8bd208ea297ed5c31f",
+      "prewriteStatus": "CAPTURED",
+      "inMemoryStatus": "FAILED"
+    },
+    {
+      "name": "primary-plus-callback",
+      "partialBytes": 37,
+      "partialSHA256": "d9e33a03924130c175f95a564c4f3f50fe8c92f22633dbf23fb544e45d31acb8",
+      "prewriteStatus": "FAILED",
+      "inMemoryStatus": "FAILED"
+    },
+    {
+      "name": "ignore-terminal-record-failure",
+      "partialBytes": 37,
+      "partialSHA256": "034c512f22c8b266dad8c9935400e85bda43a3d4e6444b8bd208ea297ed5c31f",
+      "prewriteStatus": "CAPTURED",
+      "inMemoryStatus": "FAILED"
+    }
+  ],
+  "comparisonDifferences": [],
+  "subjectExecution": false,
+  "dumpOrCopiedToolOpened": false,
+  "completeExternalRuntimeClosureRehashed": false,
+  "singleInstalledSourceInspected": "/usr/lib/python3.14/traceback.py",
+  "newPureRequest": false,
+  "sourceFix": false,
+  "captureOperationApproval": false,
+  "nativeApproval": false,
+  "productionOracleApproval": null,
+  "history": "UNASSESSED",
+  "sourceDisposition": "ORIGINAL_P2_ADDRESSED_IN_NEW_HELD_HELPER_ONLY",
+  "savedEvidenceDisposition": "ACCEPT_BOUNDED_SUPPLIED_PROCESS_AND_OWNED_FDS",
+  "remainingP1": 0,
+  "remainingP2": 0,
+  "successorGranted": false,
+  "selfExcluded": true
+}
