@@ -1,0 +1,56 @@
+{
+  "status": "FAILED_FENCED_NO_REPLAY",
+  "subject": "219d7b04e11d06c4a66481da059529a1c7144171",
+  "operationReview": "d0da78c6ec825c14bbfa8a95d758c7573e2f3817",
+  "admissionSHA256": "246776d5a174a3dde3faac281f3d096fa1b5b89f5d76ac0257ef60719e1f2e2f",
+  "privateRecords": {
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/audit.json": {
+      "sha256": "016cf51fac6406ed337ffe418ce1b1af9b2e00e3d86859066fc6b69ea47c2f1d",
+      "bytes": 2994
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/failed-data-audit.json": {
+      "sha256": "e437ae133d6ad1148d2c894a55466c2e5c7dcddf2cf2f5206839977cc019d67e",
+      "bytes": 2567
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/failed-proof-manifest.json": {
+      "sha256": "b9709dd9516a9b9cbe4bb2b25d2430d71413a0608e74ceff4e32b2ec8cdcdbdd",
+      "bytes": 23916
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/risk-acceptance.json": {
+      "sha256": "94fd8e2ea3df8d3d8978067ff2dd348a82c344cd9e3652db6fa93fe8856228ea",
+      "bytes": 1511
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/metadata.json": {
+      "sha256": "64fc8354e705607870647b8c49e36c7d9e8f5efd31c7f5f843d3656566799cd4",
+      "bytes": 434248
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/publication-receipt.json": {
+      "sha256": "a447c81203abfd3be98cc4ceb5e9f4509533c021c2dbae412f2c394860a57752",
+      "bytes": 1160
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/preflight-intent.json": {
+      "sha256": "d2b58ee6b75c379f1b72b39a63fe5a7ffcd18472f2b2e0a18d37381d7fdb2c7c",
+      "bytes": 1131
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/parent-01/root-intent-before-popen.json": {
+      "sha256": "295d8d1c15e602b2fc5d9f9845719ae5fe6bb37cae820a065843bdce291d5125",
+      "bytes": 691
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/parent-01/terminal.json": {
+      "sha256": "b2d1acc3a86f761cc546cb40c71ea0fbbeefb92461ca5051c6d84f15fe8fc0a2",
+      "bytes": 485
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/metadata-reader-error-01.json": {
+      "sha256": "6292732b6891604bf35b6e5c694d14d43550d94e989bcb493a20d7b29b4181f3",
+      "bytes": 339
+    },
+    "/home/nathaniel/.local/state/openplan/a0-namespace-catalogue-root-decision-20261016/metadata-reader-errors-02-03.json": {
+      "sha256": "7670807a5f32b4a6115177bbf127f88c5f3b3ea7ddd6615caec0f79e150e9753",
+      "bytes": 605
+    }
+  },
+  "nativeAcceptance": false,
+  "sourceClosureComplete": false,
+  "fixtureLaunchable": false,
+  "successorGranted": false
+}
