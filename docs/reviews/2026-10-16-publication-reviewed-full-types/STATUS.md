@@ -10,7 +10,8 @@ configured TypeScript roots appear in its 4,918-file program. Exit is zero and
 stderr is empty. This closes the newer application tree's full configured-type
 check gap; the earlier financial and geography runs retain their earlier trees.
 
-The compiler runs for 201.2147724989336 seconds. Its bounded parent finishes in
+The entry records 201.2147724989336 seconds at the compiler result, including
+prechecks. Its bounded parent finishes in
 203.9117381599499 seconds, with actual entry and manager invocation
 `7ac24a4444b44dc09a47dbc67bda2cdd`. Actual limits are 7GiB, zero swap, CPU50 and
 Tasks64. The late in-unit memory peak is 5,766,897,664 bytes, PID peak23, with

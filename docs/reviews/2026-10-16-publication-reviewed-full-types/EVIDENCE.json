@@ -99,5 +99,9 @@
   },
   "sourceChanges": false,
   "testsOrLintRepeated": false,
-  "noNativeBuildBrowserAcceptance": true
+  "noNativeBuildBrowserAcceptance": true,
+  "timingClarification": {
+    "compilerSecondsField": "Elapsed entry time at compiler result, including prechecks, not an isolated compiler runtime measurement",
+    "parentElapsedSeconds": "Actual complete bounded parent duration"
+  }
 }
