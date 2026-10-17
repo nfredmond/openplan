@@ -125,9 +125,12 @@ direction review.]
 
 ## Next three, October 15, 2026
 
-The October 12 list is kept in the evidence log. Current next actions use main
-`1b2fefe0f0e98f99700fc77e99146fe697b43ee7`; the dated issue register is evidence,
-not a fresh deployment audit.
+The October 12 list is kept in the evidence log. The original October 15 list
+uses main `1b2fefe0f0e98f99700fc77e99146fe697b43ee7`. An October 16 main-ref
+read still names `ced6aced9ddc6bf839891fb8e44d67c2d1dfe053`, which includes
+PRs 327, 328 and 329. The [October 15 delivery record](reviews/2026-10-15-main329-delivery-readback/DELIVERY_VERIFIED.md)
+releases that commit's sequential CI/delivery hold. This factual queue update
+does not reassess current hosted configuration or renew the direction reviews.
 
 1. **Close Stage A operations (A1).** Main includes PR 326's protected deep
    health, migration-drift check and optional error reports. Finish their
@@ -135,14 +138,15 @@ not a fresh deployment audit.
    they are enabled. Retain cron failure alerts, signup bot protection and
    operator run-cap follow-ups. Shared-key AI metering already refuses when
    metering fails; verify its configured production behavior rather than
-   reopening the old universal fail-open claim. Two separate unmerged
-   candidates remain: [PR 327](https://github.com/nfredmond/openplan/pull/327)
-   (Node worker process observations; migration 20261017000015 goes first under
-   the coordination file) and [PR 328](https://github.com/nfredmond/openplan/pull/328)
-   (previous integration secret for rotation). Finish each through its own
-   verification and the existing merge rules. A process observation does not
-   establish job completion. Keep Nathaniel's deferred operator actions and
-   required authorizations visible; this amendment sets no production values.
+   reopening the old universal fail-open claim. [PR 327](https://github.com/nfredmond/openplan/pull/327)
+   (Node worker process observations) and [PR 328](https://github.com/nfredmond/openplan/pull/328)
+   (previous integration secret for rotation) are merged. Their retained
+   exact-main delivery record keeps null per-process SHAs, unassessed job
+   completion and database-check limits explicit. It does not establish secret
+   rotation or complete Stage A operation. Each future main merge needs its own
+   applicable CI and identified delivery. Keep Nathaniel's deferred operator
+   actions and required authorizations visible; this update sets no production
+   values.
 2. **Finish the twelve first-week journeys against current main (A3).** In
    progress; retain partial and failed attempts, inspected artifacts and the
    identified build. Report Stage A outcomes, remaining operator actions and
