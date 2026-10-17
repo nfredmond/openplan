@@ -1,0 +1,59 @@
+{
+  "status": "PERMANENT_SANDBOX_PREFLIGHT_REFUSAL_EXIT1",
+  "failure": {
+    "status": "PERMANENT_SANDBOX_PREFLIGHT_REFUSAL_EXIT1",
+    "invocation": "ee1288f163cb445ba6c73f86c88e72e7",
+    "requestSHA256": "3380afbd5e2b15fcc20d726eca64c5fe03406458c41cecab089bea44099cc77d",
+    "serviceReportedRuntime": "296ms",
+    "serviceReportedCPU": "150ms",
+    "serviceRoundedMemoryPeak": "13.3M",
+    "serviceReportedSwap": "0B",
+    "parentTerminal": {
+      "backendDeath": "UNASSESSED",
+      "classification": "terminal-nonzero",
+      "deadlineSeconds": 75,
+      "elapsedSeconds": 0.3485399939818308,
+      "failure": null,
+      "parentPID": 4154376,
+      "returncode": 1,
+      "streams": {
+        "stderr": {
+          "limit": 131072,
+          "observedBytes": 1401,
+          "retainedBytes": 1401,
+          "sha256": "cf952ef423c8078c7be0068e9fc853f132985a820fafff24412cb9b16509b671"
+        },
+        "stdout": {
+          "limit": 1048576,
+          "observedBytes": 0,
+          "retainedBytes": 0,
+          "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+        }
+      },
+      "wrapperPID": 4154377
+    },
+    "guardMessage": "unexpected-writable-mount:/run/docker/netns/default",
+    "toolCalls": 0,
+    "archiveRead": false,
+    "controlsExecuted": false,
+    "actualResourceRecord": "ABSENT: failure precedes entry record; manager requested limits are not observed cgroup proof",
+    "rawMountinfoInsideUnit": "NOT_RETAINED: do not infer visibility of inherited raw mount record",
+    "compilerRelease": "Parent/manager terminal; subsequent exact inode read shows no holder",
+    "retry": false,
+    "sourceOnlyAssessmentAuthorized": true
+  },
+  "privateFailureSeal": {
+    "path": "/home/nathaniel/.local/state/openplan/m1-history-artifact-root-decision-20261016/FAILED_TRIAL_SEAL.json",
+    "sha256": "cafab56b5ec4bbc7fb644aa72952c1a2bebd7c6d20b642fe6fd15ed4513f13d7"
+  },
+  "sourceAssessment": {
+    "path": "/home/nathaniel/.t3/worktrees/openplan/t3-532d34c8/docs/reviews/2026-10-16-land-use-context-native-preparation/ARTIFACT01_SOURCE_DISPOSITION.md",
+    "sha256": "ee637627815be516cb035d48e38ca472a28185b1e6bd0cf5174599165fdc2773"
+  },
+  "nextEngineeringChoice": "SOURCE-ONLY empty-root explicit RO runtime/input whitelist, followed by separately granted guard-only preflight. No archive bind/read or tool call in that preflight.",
+  "nextGrantPublished": false,
+  "noRetryOfConsumedTrial": true,
+  "historyClassified": false,
+  "nativeDBAccepted": false,
+  "M1Complete": false
+}
