@@ -1,0 +1,22 @@
+{
+  "status": "MISSING_ACTUAL_CAPTURE_AND_ROOT_RECORDS_NOT_APPROVED",
+  "independentReviewCommit": "7d9875a25ea513fadc231fd402bb82caaf0d87da",
+  "metadataResponseCommit": "91fbccd5e52abad57713843d7477c8e4772bd749",
+  "requiredFields": [
+    "catalogSHA256",
+    "scopeSHA256",
+    "captureCompleteSHA256",
+    "captureManagerAckSHA256",
+    "captureCollectedSHA256",
+    "captureManagerTerminalSHA256",
+    "captureOuterTerminalSHA256",
+    "reviewSHA256",
+    "windowSHA256",
+    "publicationSHA256",
+    "inputSHA256",
+    "packageSHA256",
+    "planSHA256"
+  ],
+  "scopeSchema": "budget-protected-catalog-v2",
+  "nativeOperationGranted": false
+}

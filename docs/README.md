@@ -2,6 +2,8 @@
 
 Start here:
 
+- [October 16 reviewed preparation packets](reviews/2026-10-16-reviewed-proof-packets-root-integration/STATUS.md): joined engagement and budget source evidence, contrary reviews, failed trials and native-operation holds.
+
 - [Roadmap](ROADMAP.md): status of every milestone and the next three tasks.
 - [V1 product contract](product/V1_PRODUCT_CONTRACT.md): what v1 must deliver.
 - [Known issues](ops/KNOWN_ISSUES.md): open defects and limits, including the October 12 review findings.

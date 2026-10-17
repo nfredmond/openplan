@@ -1,0 +1,19 @@
+{
+  "argv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/engagement-summary-native-preparation-corrections-20261016/run.sh"
+  ],
+  "budgetOtherUnit": "TERMINAL1, no occupied rootwindow",
+  "parentDeadlineSeconds": 145,
+  "parentRecorder": "unchanged generic collect(folder) from exact05bc, no oldnative entry point",
+  "perStreamLimits": 1048576,
+  "requestSHA256": "acfc6da17425fbcd576a516f9a551c6c1152f5eb1e7c4ce3378b0acafbbef378",
+  "unitCaps": {
+    "cpuQuotaPercent": 50,
+    "innerSeconds": 100,
+    "memoryBytes": 536870912,
+    "swapBytes": 0,
+    "tasks": 64,
+    "wallSeconds": 120
+  }
+}

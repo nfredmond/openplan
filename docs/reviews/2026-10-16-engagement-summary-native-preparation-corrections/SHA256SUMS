@@ -1,0 +1,13 @@
+85862ef177093b34b3a8510ce044fd6ca41fa4f6202b3ea70dfb5561bb810738  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/CONTROL_REQUEST.md
+8e34df1a79481d10bb395392da4a66550635811d1437e505791fdf860b95be14  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/RESPONSE.md
+12b9f358bc9588e148e2d4e1894f30e5985fb467e71a606e3614555b547e9080  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/VALIDATION.md
+f28d87158202c771637cfe3d888c58850df72606577ae48f0cf8ce1bff46dc04  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/allocation.TEXT_ONLY.json
+80402be865d4033d907e67ab9381c2690291edc30f85956f9f92fdeaab838b8f  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/controller.py
+a6600b215a0af5bec58f6a6f789e2a8da7f2f1bcb9004691a8cf386c748ff020  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/emit_fixture.py
+152c561cb025c4992d752ad5cc2f33fc38face960d3bd266d746e9debd87c46d  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/input-modes.txt
+6e0e1b486782c3f26cb39d9404d0ba9c7ad0d9be1e78730c5fc49b56bf893731  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/inputs.sha256
+e7c1dbb70ca511a4ca8e5cbb38aa4958278db382587d9c43a727ac22039a9326  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/oracles.json
+c22d9c03664a9dd9f280d04b6911e89685b423cf7271f495c8974e59dbd2cdec  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/readback.py
+899b34cfa81c4acbf8b219623d56d71306d8b5a88cb1964e021b7c904681d86d  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/run.sh
+0e16c69de3b9c19ac3253b78debe6297601a99acd87db0bc01feccdf4fabdbf1  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/selections.sql
+acfc6da17425fbcd576a516f9a551c6c1152f5eb1e7c4ce3378b0acafbbef378  docs/reviews/2026-10-16-engagement-summary-native-preparation-corrections/window-request.json

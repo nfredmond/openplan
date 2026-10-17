@@ -1,0 +1,26 @@
+{
+  "acceptedFaults": [
+    "credential-absence-bypass",
+    "settings-row-omission"
+  ],
+  "actualFirstAssertion": "scope-all-setting-rows-covered",
+  "actualInvocationID": "cf41198ca3e943f699417db9a20804fb",
+  "actualPeakBytes": 49213440,
+  "all106InputsMatch": true,
+  "baseline": "PASS",
+  "cause": "raw-output mutant uses ORDER BY setrole while earlier row-coverage oracle requires ORDER BY s.setrole",
+  "classification": "HARNESS_MUTATION_ORACLE_MISMATCH",
+  "completeExists": false,
+  "elapsedSeconds": 8.297596669057384,
+  "exactRestoration": true,
+  "harmless": "SURVIVED",
+  "lockReleaseEvidence": "parent/wrapper terminal1; wrapper scoped FD9 closes, owned unit main terminal1; no reacquisition/probe",
+  "noRetryOrSuccessor": true,
+  "notAcceptedFault": "settings-raw-output",
+  "parentPID": 2472883,
+  "parentSession": 4414,
+  "preparedExpected": "scope-no-setting-values-on-wire",
+  "runtimeOrNativeFinding": false,
+  "wholeUnitExitCode": 1,
+  "wrapperPID": 2472885
+}

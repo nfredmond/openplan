@@ -1,0 +1,26 @@
+{
+  "schema": 1,
+  "subjectCommit": "e894f895c7f0e4a1a328a80d4ea8abeb5a8be9a9",
+  "disposition": "SCOPED_SOURCE_APPROVAL_NO_OPERATING_APPROVAL",
+  "files": {
+    "EVIDENCE_SEAL.json": {
+      "sha256": "060d372886f948e3073cceb7bba2af4da5580e750a96569562720d426eb1e49e",
+      "bytes": 29051
+    },
+    "REPORT.md": {
+      "sha256": "2a23742948648e479763bda6b29f1ab4a6d1abcaa7a78473adc47db45e96e7ed",
+      "bytes": 16170
+    },
+    "SOURCE_PINS.sha256": {
+      "sha256": "f96ed403b6eab9ab34e973d8cb988b8d7cf75f29e6860753a60dec91c25717cb",
+      "bytes": 14926
+    },
+    "VALIDATION.md": {
+      "sha256": "d9ce5d30777d8756c3d766eb2aea0f1ed09d75826cd3aa35c0d8c1edb784c226",
+      "bytes": 9857
+    }
+  },
+  "selfReference": "This manifest excludes itself. Git commit supplies its immutable identity.",
+  "runtimeOrNativeOperations": false,
+  "pushOrPR": false
+}

@@ -1,0 +1,142 @@
+{
+  "artifactsSHA256": "50094713f55658e2170df63ae91e49b2aa58609f51ef163cf252f6b8da077d77",
+  "exactAssertionErrors": 15,
+  "exactValueErrors": 4,
+  "faults": [
+    {
+      "message": "resource-memory.max",
+      "name": "supplied-resource-memory.max",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-memory.swap.max",
+      "name": "supplied-resource-memory.swap.max",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-cpu.max",
+      "name": "supplied-resource-cpu.max",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-pids.max",
+      "name": "supplied-resource-pids.max",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-root-ro",
+      "name": "supplied-resource-root-ro",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-private-rw",
+      "name": "supplied-resource-private-rw",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-unshared-net",
+      "name": "supplied-resource-unshared-net",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-old-ro",
+      "name": "supplied-resource-old-ro",
+      "type": "AssertionError"
+    },
+    {
+      "message": "resource-devnull",
+      "name": "supplied-resource-devnull",
+      "type": "AssertionError"
+    },
+    {
+      "message": "target-not-allocated:databaseOid",
+      "name": "boolean-oid",
+      "type": "ValueError"
+    },
+    {
+      "message": "target-protected-or-not-exclusive",
+      "name": "protected-oid",
+      "type": "ValueError"
+    },
+    {
+      "message": "target-not-allocated:clusterSystemId",
+      "name": "pending-system",
+      "type": "ValueError"
+    },
+    {
+      "message": "workspace-distinct",
+      "name": "equal-workspaces",
+      "type": "ValueError"
+    },
+    {
+      "message": "draft-parent-insert",
+      "name": "initial-sent-parent",
+      "type": "AssertionError"
+    },
+    {
+      "message": "one-line-per-parent",
+      "name": "premature-transition",
+      "type": "AssertionError"
+    },
+    {
+      "message": "line-parent-must-be-draft",
+      "name": "issued-extra-line",
+      "type": "AssertionError"
+    },
+    {
+      "message": "literal-billed-cents",
+      "name": "aggregate-loses-cent",
+      "type": "AssertionError"
+    },
+    {
+      "message": "scope-identities",
+      "name": "workspace-expected-set",
+      "type": "AssertionError"
+    },
+    {
+      "message": "ceiling-zero-absence",
+      "name": "absent-ceiling-becomes-zero",
+      "type": "AssertionError"
+    }
+  ],
+  "limits": [
+    "text/suppliedreadback only, no PG parse/RLS/SDK/Auth",
+    "resource-after peak is sample; manager fullpeak rounded",
+    "inheritedsubmounts unassessed",
+    "no currenttarget/rootallocation or financial authority"
+  ],
+  "managerIdentityTier": "start line only; unit completion and parent result separate",
+  "managerStartInvocationID": "8c2c826692b54e9b9444c3c33dcfde23",
+  "managerTerminalSuccess": true,
+  "noNative": true,
+  "parentExitCode": 0,
+  "parentPID": 2527100,
+  "parentToolSession": 34089,
+  "resourcesAfterSample": {
+    "cpu.max": "50000 100000",
+    "memory.events": "low 0\nhigh 0\nmax 0\noom 0\noom_kill 0\noom_group_kill 0\nsock_throttled 0",
+    "memory.max": "536870912",
+    "memory.peak": "32735232",
+    "memory.swap.max": "0",
+    "pids.max": "64"
+  },
+  "restoration": {
+    "sourceBytesAndModesUnchanged": true,
+    "sourceDrift": [],
+    "workingBytesAndModesRestored": true
+  },
+  "seconds": 3.0683121379697695,
+  "sourceMode": "subject unchanged; only privateworkingtemporarymutation and finallyrestore",
+  "subjectFaults": 10,
+  "suppliedResourceFaults": 9,
+  "survivors": [
+    "resource-annotation",
+    "ordinary501-baseline-and-row-order",
+    "maximum90-baseline-and-row-order",
+    "maximum1001-baseline-and-row-order",
+    "emitter-comment",
+    "restored-baseline"
+  ],
+  "textCases": 3,
+  "wrapperPID": 2527111
+}

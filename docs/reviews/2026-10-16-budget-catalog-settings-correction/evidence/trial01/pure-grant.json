@@ -1,0 +1,13 @@
+{
+  "exclusive": true,
+  "nativeOperationGranted": false,
+  "notAfter": 1792197577,
+  "notBefore": 1792197276,
+  "pureOperationGranted": true,
+  "requestSHA256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+  "rootSourceReview": "full SOURCE_PREPARATION, wrapper/runner/controls and106 pins read; PostgreSQL/live manager behavior remains unproved",
+  "scope": "ONE exact inert schema2 control window only, no Docker/SQL/manager subject/native capture/OBSERVE/target/allocation/browser/provider operations",
+  "successorGranted": false,
+  "uid": 1000,
+  "unitName": "openplan-budget-settings-v2-pure-20261016"
+}

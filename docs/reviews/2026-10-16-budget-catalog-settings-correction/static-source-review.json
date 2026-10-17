@@ -1,0 +1,286 @@
+{
+  "status": "STATIC_SOURCE_REVIEW_ONLY_NO_IMPORT_OR_TEST",
+  "preservationBeforeWrites": {
+    "selectedRecords": 45,
+    "failedSealEntries": 19,
+    "allMatched": true
+  },
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "migrations": 422,
+  "paths": [
+    {
+      "file": "runtime/sql.py",
+      "line": 35,
+      "anchor": "SETTINGS_SUMMARY =",
+      "intent": "One summary expression reused by SCOPE and PROPERTIES.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 57,
+      "anchor": "p.same('observe', stage, 'HELD_NON_OBSERVE_STAGE')",
+      "intent": "Ready rejects all later stages before admission-file reads.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 143,
+      "anchor": "query in (s.IDENTITY, s.SCOPE, s.CATALOG_NAMES)",
+      "intent": "SQL path admits only fixed maintenance catalog reads.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 147,
+      "anchor": "header = s.CATALOG_BEGIN",
+      "intent": "OBSERVE uses the exact shared READ ONLY/search-path header.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 170,
+      "anchor": "p.same_scope(self.scope, row, 'protected-original-scope')",
+      "intent": "Original scope uses complete typed schema2 equality.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 290,
+      "anchor": "p.same_scope(observed['originalScope'],scope,'allocation-scope-predecessor')",
+      "intent": "Held allocation predecessor has the same comparison.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 367,
+      "anchor": "p.same_scope(scope,self.original_scope(),'final-original-scope')",
+      "intent": "Final scope retains full equality.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 396,
+      "anchor": "j.manager_ack(controller.t",
+      "intent": "Manager read precedes Controller.run and native operations.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 278,
+      "anchor": "j.credential_absence(self.t)",
+      "intent": "One absence query precedes the first catalog SQL.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/controller.py",
+      "line": 370,
+      "anchor": "'managerAckSHA256':file_sha(self.path/'manager-ack.json')",
+      "intent": "Completion binds retained ACK hash and entry.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/policy.py",
+      "line": 112,
+      "anchor": "require(kind == 'sql' and database == 'postgres'",
+      "intent": "Other command kinds and database names refuse.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/journal.py",
+      "line": 62,
+      "anchor": "purpose == 'manager-self'",
+      "intent": "Manager environment is limited to exact command/limits.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/journal.py",
+      "line": 130,
+      "anchor": "p.same(0,counts['stderr'],'transport-unknown-stderr')",
+      "intent": "Strict stderr applies to native and self-manager request.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "runtime/journal.py",
+      "line": 193,
+      "anchor": "p.same(request_custody(path), ack['custody']",
+      "intent": "ACK validates raw intent/input/PID/streams/terminal hashes.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "capture_catalog.py",
+      "line": 115,
+      "anchor": "j.manager_ack(transport",
+      "intent": "Capture first request is independent manager identity.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "capture_catalog.py",
+      "line": 125,
+      "anchor": "j.credential_absence(transport)",
+      "intent": "Absence precedes fixed postgres SQL.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "capture_catalog.py",
+      "line": 63,
+      "anchor": "p.scope(row['originalScope'])",
+      "intent": "Capture accepts complete typed schema2 scope only.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "collector.py",
+      "line": 221,
+      "anchor": "j.verify_manager_ack",
+      "intent": "Collector independently consumes pinned ACK/raw custody.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "collector.py",
+      "line": 223,
+      "anchor": "start[1] is None or start[1] == invocation",
+      "intent": "Missing suffix needs ACK, present suffix must agree.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "collector.py",
+      "line": 247,
+      "anchor": "'postShow':'RAW_RETAINED_UNBOUND_FOR_IDENTITY_AND_LIMITS'",
+      "intent": "No post-show identity fallback.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "build_observe_proposal.py",
+      "line": 59,
+      "anchor": "j.verify_manager_ack",
+      "intent": "Builder requires retained independent ACK.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "build_observe_proposal.py",
+      "line": 81,
+      "anchor": "p.scope(scope)",
+      "intent": "Builder rejects old/subset/empty scopes.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "build_observe_proposal.py",
+      "line": 73,
+      "anchor": "p.same('terminal-success', receipt.get('status')",
+      "intent": "Both manager and parent receipts require terminal success.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    },
+    {
+      "file": "build_observe_proposal.py",
+      "line": 87,
+      "anchor": "'exclusive': False, 'nativeOperationGranted': False",
+      "intent": "Output stays a proposal.",
+      "status": "STATIC_SOURCE_READ_ONLY_NOT_EXECUTED"
+    }
+  ],
+  "mutationAnchors": [
+    {
+      "fault": "credential-absence-bypass",
+      "file": "runtime/journal.py",
+      "line": 238,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "credential-present-stops-before-query"
+      ]
+    },
+    {
+      "fault": "settings-row-omission",
+      "file": "runtime/sql.py",
+      "line": 42,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "scope-all-setting-rows-covered"
+      ]
+    },
+    {
+      "fault": "settings-raw-output",
+      "file": "runtime/sql.py",
+      "line": 35,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "scope-no-setting-values-on-wire"
+      ]
+    },
+    {
+      "fault": "scope-subset-comparison",
+      "file": "runtime/policy.py",
+      "line": 161,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "scope-full-v2-equality"
+      ]
+    },
+    {
+      "fault": "manager-self-binding-bypass",
+      "file": "runtime/policy.py",
+      "line": 230,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "manager-ack-independent-identity"
+      ]
+    },
+    {
+      "fault": "manager-ack-hash-bypass",
+      "file": "collector.py",
+      "line": 220,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "manager-ack-hash-bound-to-complete",
+        "proposal-manager-ack-hash-bound"
+      ]
+    },
+    {
+      "fault": "manager-ack-hash-bypass",
+      "file": "build_observe_proposal.py",
+      "line": 56,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "manager-ack-hash-bound-to-complete",
+        "proposal-manager-ack-hash-bound"
+      ]
+    },
+    {
+      "fault": "catalog-read-only-omission",
+      "file": "runtime/sql.py",
+      "line": 26,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "catalog-read-only-intent"
+      ]
+    },
+    {
+      "fault": "foreign-database-argv",
+      "file": "runtime/policy.py",
+      "line": 112,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "scope-fixed-maintenance"
+      ]
+    },
+    {
+      "fault": "proposal-terminal-correlation",
+      "file": "build_observe_proposal.py",
+      "line": 73,
+      "uniqueOccurrences": 1,
+      "exactAssertionReaders": [
+        "proposal-manager-terminal-correlated",
+        "proposal-outer-terminal-correlated"
+      ]
+    }
+  ],
+  "faults": 9,
+  "exactAssertionReasons": 11,
+  "syntaxParserRun": false,
+  "subjectImported": false,
+  "runtimeContact": false,
+  "limitations": [
+    "Static text checks do not establish Python syntax, executed guards, PostgreSQL digest semantics, live manager format or tool availability.",
+    "All supplied PID/invocation/catalog/scope/authority values in controls are inert fixtures.",
+    "Old source and failed evidence are referenced, not copied as a corpus."
+  ]
+}

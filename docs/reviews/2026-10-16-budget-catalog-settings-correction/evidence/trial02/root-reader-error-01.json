@@ -1,0 +1,11 @@
+{
+  "actual": "Running as unit: openplan-budget-settings-v2-pure-20261016-02.service without suffix",
+  "classification": "METADATA_READER_HEADER_ASSUMPTION_FAILURE",
+  "correction": "Match exact unit header; retain actual inner environment invocation and identity limit; no additional manager query or runtime repetition",
+  "exitCode": 1,
+  "expected": "manager start header includes invocation ID suffix",
+  "priorReadbackFileCreated": false,
+  "rawError": "Traceback (most recent call last): File <stdin>, line 16, in <module>; AssertionError",
+  "subjectOrRuntimeFailure": false,
+  "toolChunk": "3bc68d"
+}

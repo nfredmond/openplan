@@ -1,0 +1,346 @@
+{
+  "schema": 1,
+  "status": "SOURCE_ONLY_FIXED_PARTIAL_REUSE_PENDING_NEW_GRANT",
+  "originalRoot": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016",
+  "rootDecisionRoot": "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016",
+  "originalSealPath": "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/trial02/original-seal.json",
+  "originalSealSHA256": "31eaedab4ba52aaf7a0212a9a1e96d89740265320eb62d05e6ac1918954d6386",
+  "originalSealedFiles": 2050,
+  "originalPrivateFiles": 1966,
+  "originalPublicPreparedFiles": 29,
+  "rootDecisionFiles": 10,
+  "proofPins": {
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/controls.py": {
+      "sha256": "42eefe91d6d8c37d7d54c9205acfab736884515b7a6da69c9618731039d44ca1",
+      "bytes": 26594,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/mutations.json": {
+      "sha256": "a179119758d31d794f8a6dcc981f24026b10bfca9f719c6dbddbc30dfbe89594",
+      "bytes": 4735,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-window-request.json": {
+      "sha256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+      "bytes": 30480,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/SOURCE_MANIFEST.json": {
+      "sha256": "af76b8d7c32a82fc64a4c99b4e815ca5d233715d9a728b5edaa08e978d4f14a8",
+      "bytes": 25248,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.t3/worktrees/openplan/t3-e4106cfb/docs/reviews/2026-10-16-budget-catalog-settings-correction/SOURCE_MANIFEST.json": {
+      "sha256": "af76b8d7c32a82fc64a4c99b4e815ca5d233715d9a728b5edaa08e978d4f14a8",
+      "bytes": 25248,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/controls.json": {
+      "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd",
+      "bytes": 407,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/intent.json": {
+      "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf",
+      "bytes": 370,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/post-custody.json": {
+      "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68",
+      "bytes": 10337,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/resources-before.json": {
+      "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b",
+      "bytes": 948,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-pure-disposition.json": {
+      "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1",
+      "bytes": 983,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/intent.json": {
+      "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85",
+      "bytes": 567,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/returned-process.json": {
+      "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a",
+      "bytes": 73,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/source-final-readback.json": {
+      "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f",
+      "bytes": 19,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stderr.bin": {
+      "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d",
+      "bytes": 2402,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stdout.bin": {
+      "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490",
+      "bytes": 337,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/terminal.json": {
+      "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d",
+      "bytes": 494,
+      "mode": 384,
+      "uid": 1000
+    },
+    "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-terminal-seal.json": {
+      "sha256": "f70283a0c8fb1aa87d44c7436d9fb1216bebd35849d33689428a670aae583ebf",
+      "bytes": 2600,
+      "mode": 384,
+      "uid": 1000
+    }
+  },
+  "originalRequestSHA256": "e7ed74156793d8cc04dcaca5facb3ce78891ef4d56f38c2a99fcf84ebabfd1c4",
+  "originalReaderSHA256": "42eefe91d6d8c37d7d54c9205acfab736884515b7a6da69c9618731039d44ca1",
+  "trial02ReaderSHA256": "5bed90ce0f1848146613a2b81bf0e86972ab21a01a52dab7e24a9695e853b2d2",
+  "trial02RunnerSHA256": "14527ddca146377d226f234634d50cfa68fffa25df39ce137c8ab4f7ec8200f7",
+  "mutationCorrection": {
+    "index": 2,
+    "name": "settings-raw-output",
+    "field": "edits[0].new",
+    "old": "SETTINGS_SUMMARY = \"\"\"SELECT jsonb_agg(to_jsonb(s) ORDER BY setrole) FROM pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\"",
+    "new": "SETTINGS_SUMMARY = \"\"\"SELECT jsonb_agg(to_jsonb(s) ORDER BY s.setrole) FROM pg_db_role_setting s WHERE s.setdatabase=d.oid\"\"\"",
+    "otherTuplesExact": true,
+    "testsExact": true
+  },
+  "unchangedSubjectSourcePins": {
+    "runtime/controller.py": {
+      "sha256": "328b1f84a12925345f95aa6d52996f0b1d980bd7ac84de6571f44d8eb6e6788e",
+      "bytes": 24313,
+      "mode": 384,
+      "uid": 1000
+    },
+    "runtime/journal.py": {
+      "sha256": "18ea275bf28c931979af1ef774ab5e40ec8aca2277308f77695a6c9883905eb6",
+      "bytes": 11349,
+      "mode": 384,
+      "uid": 1000
+    },
+    "runtime/policy.py": {
+      "sha256": "87918149e6a20accac0fc5d7be2decbe7a75929c5ca7deb74a1f2caf4b4d2d4c",
+      "bytes": 11394,
+      "mode": 384,
+      "uid": 1000
+    },
+    "runtime/sql.py": {
+      "sha256": "f9f612ed9f411f4347566b0d0d0d442049e89be0af81882f5014c1e04352df90",
+      "bytes": 18278,
+      "mode": 384,
+      "uid": 1000
+    },
+    "capture_catalog.py": {
+      "sha256": "32e3c7de6844b4b76eb592975cf02b79edb9a00668d0a8a9d702ffe1410c832c",
+      "bytes": 7811,
+      "mode": 384,
+      "uid": 1000
+    },
+    "build_observe_proposal.py": {
+      "sha256": "65297e44c70366d6adaab3a8085e67f32a3747133ee696d1f94463eb9d894338",
+      "bytes": 7000,
+      "mode": 384,
+      "uid": 1000
+    },
+    "collector.py": {
+      "sha256": "aeff4a9f7a5420cbd0c47b99af379ae03e1b0c16258ea64e6504addb90e935a5",
+      "bytes": 13769,
+      "mode": 384,
+      "uid": 1000
+    }
+  },
+  "staticInspection": [
+    {
+      "index": 2,
+      "name": "settings-raw-output",
+      "edits": [
+        {
+          "file": "runtime/sql.py",
+          "uniqueOccurrences": 1,
+          "line": 35
+        }
+      ],
+      "tests": [
+        {
+          "mode": "baseline",
+          "reason": "scope-no-setting-values-on-wire"
+        }
+      ],
+      "firstFailureReasoning": "Earlier READ ONLY and row-coverage source gates remain satisfied; missing summary fields reaches the unchanged raw-output assertion.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 3,
+      "name": "scope-subset-comparison",
+      "edits": [
+        {
+          "file": "runtime/policy.py",
+          "uniqueOccurrences": 1,
+          "line": 161
+        }
+      ],
+      "tests": [
+        {
+          "mode": "scope-equality",
+          "reason": "scope-full-v2-equality"
+        }
+      ],
+      "firstFailureReasoning": "Projection remains unchanged; settings-only scope mismatch reaches full-equality assertion if the subset mutant returns.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 4,
+      "name": "manager-self-binding-bypass",
+      "edits": [
+        {
+          "file": "runtime/policy.py",
+          "uniqueOccurrences": 1,
+          "line": 230
+        }
+      ],
+      "tests": [
+        {
+          "mode": "manager-pid",
+          "reason": "manager-ack-independent-identity"
+        }
+      ],
+      "firstFailureReasoning": "Projection remains unchanged; supplied manager PID mismatch reaches independent-identity assertion if the exact PID guard is removed.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 5,
+      "name": "manager-ack-hash-bypass",
+      "edits": [
+        {
+          "file": "collector.py",
+          "uniqueOccurrences": 1,
+          "line": 220
+        },
+        {
+          "file": "build_observe_proposal.py",
+          "uniqueOccurrences": 1,
+          "line": 56
+        }
+      ],
+      "tests": [
+        {
+          "mode": "collector-ackhash",
+          "reason": "manager-ack-hash-bound-to-complete"
+        },
+        {
+          "mode": "builder-ackhash",
+          "reason": "proposal-manager-ack-hash-bound"
+        }
+      ],
+      "firstFailureReasoning": "Valid capture precedes mismatched ACK hash; collector and builder each reach their unchanged hash-refusal assertion if that consumer guard is removed.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 6,
+      "name": "catalog-read-only-omission",
+      "edits": [
+        {
+          "file": "runtime/sql.py",
+          "uniqueOccurrences": 1,
+          "line": 26
+        }
+      ],
+      "tests": [
+        {
+          "mode": "baseline",
+          "reason": "catalog-read-only-intent"
+        }
+      ],
+      "firstFailureReasoning": "Shared catalog header omission reaches the first READ ONLY projection assertion.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 7,
+      "name": "foreign-database-argv",
+      "edits": [
+        {
+          "file": "runtime/policy.py",
+          "uniqueOccurrences": 1,
+          "line": 112
+        }
+      ],
+      "tests": [
+        {
+          "mode": "baseline",
+          "reason": "scope-fixed-maintenance"
+        }
+      ],
+      "firstFailureReasoning": "Earlier projection checks remain unchanged; foreign argv acceptance reaches the fixed-maintenance assertion.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    },
+    {
+      "index": 8,
+      "name": "proposal-terminal-correlation",
+      "edits": [
+        {
+          "file": "build_observe_proposal.py",
+          "uniqueOccurrences": 1,
+          "line": 73
+        }
+      ],
+      "tests": [
+        {
+          "mode": "builder-manager",
+          "reason": "proposal-manager-terminal-correlated"
+        },
+        {
+          "mode": "builder-outer",
+          "reason": "proposal-outer-terminal-correlated"
+        }
+      ],
+      "firstFailureReasoning": "Valid prior custody precedes manager or parent status=unknown; each reaches its unchanged terminal-correlation assertion if that exact status guard is removed.",
+      "status": "STATIC_ONLY_NOT_EXECUTED"
+    }
+  ],
+  "unchangedFixtureAndAssertionPrefixAfterPathNormalization": true,
+  "reuseOnly": [
+    "baseline PASS",
+    "harmless SURVIVED",
+    "credential-absence-bypass exact named kill",
+    "settings-row-omission exact named kill"
+  ],
+  "runIndices": [
+    2,
+    3,
+    4,
+    5,
+    6,
+    7,
+    8
+  ],
+  "remainingFaults": 7,
+  "remainingNamedAssertions": 9,
+  "finalRestoredBaselineRuns": 1,
+  "initialBaselineRuns": 0,
+  "harmlessRuns": 0,
+  "oldFailureReclassified": false,
+  "oldRuntimeAndNativeFinding": false,
+  "nativeOperationGranted": false,
+  "testsExecutedDuringPreparation": false
+}

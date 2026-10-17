@@ -1,0 +1,82 @@
+{
+  "schema": 2,
+  "status": "PREPARED_SOURCE_ONLY_NO_NATIVE_GRANT",
+  "stage": "catalog-capture-v2",
+  "packageSHA256": "b9c0e7c418df4a295f44f1374a539e6e33dbd242a210c2840dd07831a6b1a35c",
+  "source": "3f3639f54243f40dfe7ff093dbb7f4e982a18cbc",
+  "app": "44e638d6d79378042343bf5b18408f09ee991d57",
+  "scopeSchema": "budget-protected-catalog-v2",
+  "unitName": "openplan-budget-catalog-settings-v2-20261016",
+  "inputs": {
+    "capture_catalog.py": {
+      "sha256": "32e3c7de6844b4b76eb592975cf02b79edb9a00668d0a8a9d702ffe1410c832c",
+      "bytes": 7811
+    },
+    "catalog-capture.sql": {
+      "sha256": "f5ed533bd42136ff7b7f5a1feb071d01004fc50bc712ca1ba83d41db7438a582",
+      "bytes": 2334
+    },
+    "run-capture-window.sh": {
+      "sha256": "30fa369b5978763754fca929343582f81c8cf843f676bb9497d6e221fcf3166b",
+      "bytes": 1090
+    },
+    "build_observe_proposal.py": {
+      "sha256": "65297e44c70366d6adaab3a8085e67f32a3747133ee696d1f94463eb9d894338",
+      "bytes": 7000
+    },
+    "observe-bindings.required.json": {
+      "sha256": "921e33efa84eb6a3e90a2cc75e614f3bcfa4760ddbf65db9b2b350b82adcc8e8",
+      "bytes": 648
+    },
+    "observe-input.json": {
+      "sha256": "1a31911a7072d2c2b8684f34e68dff464118deededa31df54798b0ab0b8469ca",
+      "bytes": 175
+    }
+  },
+  "outerArgv": [
+    "/bin/bash",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/run-capture-window.sh"
+  ],
+  "entryArgv": [
+    "/usr/bin/python3",
+    "-B",
+    "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/capture-v2/capture_catalog.py",
+    "--capture-once"
+  ],
+  "limits": {
+    "RuntimeMaxSec": 90,
+    "MemoryMax": 536870912,
+    "MemorySwapMax": 0,
+    "CPUQuota": "50%",
+    "TasksMax": 64
+  },
+  "fixedManagerRead": {
+    "beforeNative": true,
+    "timeoutSeconds": 5,
+    "streamLimit": 16384
+  },
+  "fixedAbsenceGuard": {
+    "timeoutSeconds": 5,
+    "streamLimit": 4096,
+    "requireCode": 0,
+    "requireStdoutBytes": 0,
+    "requireStderrBytes": 0
+  },
+  "query": {
+    "database": "postgres",
+    "readOnly": true,
+    "statementSeconds": 15,
+    "lockSeconds": 3,
+    "idleSeconds": 10,
+    "transportSeconds": 30,
+    "streamLimit": 1048576
+  },
+  "nativeOperationGranted": false,
+  "successorGranted": false,
+  "requiresActualNewRootFiles": [
+    "capture-grant.json",
+    "capture-review.md",
+    "capture-window.json"
+  ],
+  "fence": "NEW namespace only; original failed attempts and consumed grants remain fenced forever."
+}

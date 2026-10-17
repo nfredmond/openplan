@@ -1,0 +1,57 @@
+{
+  "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/controls.json": {
+    "bytes": 407,
+    "mode": 384,
+    "sha256": "41fc80e1d5b33e7c0a724e0c4c1c0170a9880aa3648185efaf7b16af74f640dd"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/intent.json": {
+    "bytes": 370,
+    "mode": 384,
+    "sha256": "3d597392f32b2a818ac43bf87ecbfc3b79d134cefdeca4f319ad49c62994fdaf"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/post-custody.json": {
+    "bytes": 10337,
+    "mode": 384,
+    "sha256": "863a7af500909f3199c92c958f71eb4ca22be07c8060d57b56c77809dcb50f68"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-catalog-settings-correction-20261016/pure-attempt/resources-before.json": {
+    "bytes": 948,
+    "mode": 384,
+    "sha256": "ebc069a00b48ee33d5991f3fecd3ba67e1bf8793b1d325c683030a60e2977d0b"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/failed-pure-disposition.json": {
+    "bytes": 983,
+    "mode": 384,
+    "sha256": "0df0f982ef97e9f046ff2357d70e64b516d35cd9104430634d983856f44443b1"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/intent.json": {
+    "bytes": 567,
+    "mode": 384,
+    "sha256": "6979416c6ddbd8f191a02b672dadfd844becc55a202630deb7e1c51bf0532e85"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/returned-process.json": {
+    "bytes": 73,
+    "mode": 384,
+    "sha256": "e2f3658631c85b86c4a78b78f6bdcfb349fe898bc1e22eb47d50bfe31302e81a"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/source-final-readback.json": {
+    "bytes": 19,
+    "mode": 384,
+    "sha256": "7b1091156e395cfd14143e1422db96bdd4af83edae5ef286f4f90f2a49480c8f"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stderr.bin": {
+    "bytes": 2402,
+    "mode": 384,
+    "sha256": "d9fab0ad0bb17fe986fb04b2320d6ad82db41c5a9d65516cea86474cee6b978d"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/stdout.bin": {
+    "bytes": 337,
+    "mode": 384,
+    "sha256": "3303b4f262ada6e1eaae9a422eba964c65d6214f40d1258a260c81a94ffe7490"
+  },
+  "/home/nathaniel/.local/state/openplan/budget-settings-pure-root-decision-20261016/parent/terminal.json": {
+    "bytes": 494,
+    "mode": 384,
+    "sha256": "e4203351d343e67c662b85ebd95d5d86355dead1d6e8ec53efeac681be3d706d"
+  }
+}
