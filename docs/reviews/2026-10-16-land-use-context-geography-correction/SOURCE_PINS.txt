@@ -1,0 +1,40 @@
+SOURCE PREPARATION ONLY. No runtime/test/compiler/generator/native claims.
+Assigned worktree /home/nathaniel/.t3/worktrees/openplan/t3-532d34c8
+Assigned branch t3/land-use-context-geography-correction
+T3 model gpt-6.1-sol, reasoningEffort high
+Initial clean HEAD 05dd3e8da4a4572437f06e771b0a2477873e681f
+Explicit ancestry exit 0; local ff-only exits 0
+Preparation base 0875f3f341eac90adc1463a59b6422f0212e5a90
+Preparation application tree 2b1916349d7379c96bf97b1708b3e4016d37384d
+423 baseline migration sources, latest 20261017000020
+Current assigned source inventory 424; root-generated/allocated NEW production file 20261017014010_land_use_plan_context_geography.sql, unapplied.
+The following identify uncommitted prepared bytes, not a clean implementation commit.
+
+SHA256  mode  source
+6b65912243a91795841d06d1e30ee5d4f697699f7855e30245d423968cbd6016  0664  openplan/src/app/api/land-use-plans/[planId]/route.ts
+a263b162cb346c116d1d45b5112584708c0482cd4851cc110a4792239f26e6d6  0664  openplan/src/test/land-use-plan-geography-patch.test.ts
+9871ff83aea93e5ada8639931776f81f6bda329bda2dc83ba0b1e0f78bb9877c  0664  openplan/src/test/land-use-plan-geography-source.test.ts
+1093f5a175882095b3892520654e1121f98fee05fa70f48924526145a0aff354  0664  openplan/src/test/fixtures/land-use-plans/context-persistence.sql
+24a76523f1da9333131b1a95d11da2c5bb33af7e903369d82c6638ddca25da9c  0664  openplan/src/test/fixtures/land-use-plans/draft-revision.sql
+07a78359bfe47c9846162cf35ba71f2bff2e3deed5c93ab675280a06c3b2dc21  0664  docs/reviews/2026-10-16-land-use-context-geography-correction/geography-guard.draft.sql
+b083241e879913afe93e848f4bb81191acf5439569c8226a86e14852bf3ee002  0664  openplan/supabase/migrations/20261017014010_land_use_plan_context_geography.sql
+a84d01d5d6ca2bc76667e85908ab865ad3302b6c8b5933c3aa7835764a2af220  0600  /home/nathaniel/.local/state/openplan/land-use-context-geography-correction-20261016/focused-controls.py
+
+Private sealed-subject manifest SUBJECT_PINS.sha256 uses absolute filenames.
+Private SUBJECT_MODES.txt records the corresponding modes.
+Private BASE_MIGRATION_BLOBS.txt records all 423 base Git blob entries.
+The harness source has not been imported, parsed or executed.
+The first harness seal 4c5f4f7b7ff40bbed6b30c57e64aed9f56a3267b754f938a95bf49ab2e2977e3 is preserved with its manifests in private source-audit-20261016; see SOURCE_AUDIT.md.
+The subsequent 2037a2c146bcf91cb99e4a1a652139b9dfad43c895cecd5ca8000490a14755d0 seal and the path-only intermediate are preserved in generation02-reader-bases.
+Root's reporter-schema instruction adds exact file/name inventories, suite-message refusal, no unexpected failure names, actual location capture and a 230-second campaign deadline; see FINITE_WINDOW.md.
+Production differs from the unchanged draft only by deletion of its obsolete first 77-byte comment line. All remaining bytes match.
+Current setup matcher closure is SETUP_CLOSURE.sha256, 372 files. Its manifest SHA256 is 60e2c3b51e83702f3a81a95c8a101e64d45fde93c8f4cc26e5b7ee3ef203687e.
+Private classifier/controller/configuration and selected tool pins are WINDOW_PINS.sha256. None has executed.
+WINDOW_PINS.sha256 SHA256 06f2729e64561a0e1454a9308fcb9305bfbf9993cd8e98193be55d89af6f4468
+SUBJECT_PINS.sha256 SHA256 066861e8394c3bf231dd56802cf39f46dde89a504bf11ddb5ba4060c5b4e02e4
+SUBJECT_MODES.txt SHA256 e1bbdaea8bcd0e474613e5741009add1b8a0a6d80325c2ddf47533d632e12a34
+Source-only envDir correction: vitest.focused.mjs adds only envDir pointing to new empty private vitest-empty-env-20261016 (directory mode 0700, zero observed initial entries).
+vitest.focused.mjs SHA256 34856aa1825ef9ce4f1140476705e040c4e950a4ac65629cc1be6965d2df5291, mode 0600.
+Original config and affected manifests/documents are preserved in private envdir-preparation-before. No production/test/fixture/assertion/controller/type changes and no runtime accompany this correction.
+No harmless/targeted mutation has run. Exact restoration is a prepared finally path, not observed runtime evidence.
+After migration generation or any source edit, root must reseal the actual subjects and obtain the matching finite window.
