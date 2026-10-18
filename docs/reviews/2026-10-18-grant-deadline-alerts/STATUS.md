@@ -47,3 +47,19 @@ event/date shapes as an unavailable read.
   acceptance, migration application, full suite, build, global TypeScript check,
   service, external message or browser operation occurred in this lane. Root owns
   independent migration/access review, CI/RLS and identified desktop/390px checks.
+
+## Return-projection test correction
+
+The independent review found no concrete P1/P2 source defect in `4bc24e866`,
+but identified a fake-client gap. Upsert returns now contain exactly the selected
+flat columns while stored fixture rows remain complete. The two-kind regression
+also asserts digest composition and duplicate suppression.
+
+One finite non-PTY window acquired the existing compiler lock without waiting.
+Its actual outer exit was 0. Harmless and restored runs each passed 58 tests;
+scoped lint exited 0. Removing only `kind` from the production return projection
+failed the intended digest assertion, expected 1 and received 0. Production and
+helper bytes/modes restored exactly before the final run. Production, component,
+migration and immutable review hashes match their original pins. The initial
+68-pass/one-fail run remains failed. This fake covers flat return projections,
+not full PostgREST grammar or native SQL behavior. Native/UI limits above remain.

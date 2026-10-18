@@ -92,6 +92,7 @@ describe("recorded grant deadline notifications", () => {
     const options = { now, horizonDays: 7, loadRoster: vi.fn(async () => ({ ok: true as const, members: [{ userId: creator, email: null, role: "member" }] })) };
     const first = await sweepWorkDeadlines(db as unknown as WorkSweepClient, options);
     expect(first.notificationsCreated).toBe(1);
+    expect(first.digestsComposed).toBe(1);
     const read = db.reads.find((r) => r.table === "funding_opportunities");
     expect(read).toBeTruthy();
     // Change pursuit state through the same fixture row, as after a saved decision.
@@ -100,8 +101,11 @@ describe("recorded grant deadline notifications", () => {
     secondDb.notifications.push(...db.notifications);
     const second = await sweepWorkDeadlines(secondDb as unknown as WorkSweepClient, options);
     expect(second.notificationsCreated).toBe(1);
+    expect(second.digestsComposed).toBe(1);
     expect(secondDb.notifications.map((r) => r.kind)).toEqual(["grant_decision_due", "grant_application_due"]);
-    expect((await sweepWorkDeadlines(secondDb as unknown as WorkSweepClient, options)).notificationsCreated).toBe(0);
+    const repeated = await sweepWorkDeadlines(secondDb as unknown as WorkSweepClient, options);
+    expect(repeated.notificationsCreated).toBe(0);
+    expect(repeated.digestsComposed).toBe(0);
     expect(secondDb.upsertCalls[0].onConflict).toBe("subject_table,subject_id,recipient_user_id,due_on,kind");
   });
 

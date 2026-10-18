@@ -190,7 +190,8 @@ export class FakeWorkDb {
       upsert: (rows: Row[], options: { onConflict: string; ignoreDuplicates: boolean }) => {
         this.upsertCalls.push({ rows, ...options });
         return {
-          select: async (_columns: string) => {
+          // Stored rows stay complete; callers receive the flat columns they requested.
+          select: async (columns: string) => {
             if (this.errors[table]) return { data: null, error: this.errors[table] };
             const created: Row[] = [];
             for (const row of rows) {
@@ -203,9 +204,11 @@ export class FakeWorkDb {
                   (existing) => this.uniqueKey.map((column) => String(existing[column])).join("::") === key
                 );
               if (exists && options.ignoreDuplicates) continue;
-              const stored = { id: `notification-${this.notifications.length + 1}`, ...row };
+              const stored: Row = { id: `notification-${this.notifications.length + 1}`, ...row };
               this.notifications.push(stored);
-              created.push(stored);
+              created.push(columns.trim() === "*" ? { ...stored } : Object.fromEntries(
+                columns.split(",").map((column) => column.trim()).map((column) => [column, stored[column]])
+              ));
             }
             return { data: created, error: null };
           },
