@@ -2,6 +2,7 @@ import Link from "next/link";
 import { formatMoney } from "@/lib/money/format";
 import { ArrowRight } from "lucide-react";
 import { FundingOpportunityDecisionControls } from "@/components/programs/funding-opportunity-decision-controls";
+import { FundingOpportunityDeadlineEditor } from "@/components/grants/funding-opportunity-deadline-editor";
 import {
   FundingOpportunityNarrativeDraftPanel,
   type FundingOpportunityNarrativeDraftRow,
@@ -330,6 +331,13 @@ export function GrantsOpportunityRegistryCard({
             ) : null}
           </div>
         ) : null}
+
+        <FundingOpportunityDeadlineEditor
+          opportunityId={opportunity.id}
+          workspaceId={opportunity.workspace_id}
+          closesAt={opportunity.closes_at}
+          decisionDueAt={opportunity.decision_due_at}
+        />
 
         <details className="mt-4" open={isFocused || undefined}>
           <summary className="cursor-pointer text-sm font-semibold text-foreground">Record a decision and notes</summary>

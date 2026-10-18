@@ -63,3 +63,13 @@ helper bytes/modes restored exactly before the final run. Production, component,
 migration and immutable review hashes match their original pins. The initial
 68-pass/one-fail run remains failed. This fake covers flat return projections,
 not full PostgREST grammar or native SQL behavior. Native/UI limits above remain.
+
+Root integration adds the five-file recorded-date editor from `610ae3d66`,
+byte-exact. Harmless and restored cohorts each pass 43 checks. Eleven targeted
+permission, workspace, refreshed-prop, unchanged-field, clear, timezone, DST,
+response, card-wiring, failure and cancel faults fail their intended assertions;
+exact bytes/modes restore and scoped lint passes. The ordinary non-PTY wrapper
+returns actual 0 before compiler-lock release. Backend, migration and prior
+independent-review pins stay unchanged. Private logs remain in
+`grant-deadline-editor-focused-20261018-01/`. Browser date widgets, normal
+navigation and the resulting My Work notices remain to be checked.
