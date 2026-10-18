@@ -30,3 +30,26 @@ across six search, registry, coverage and Safety files. The join preserves both
 dated ops notes. Product direction passes with existing review reminders.
 Desktop, phone and keyboard browser acceptance remain pending. Available memory
 is below the earlier preview reserve, so no new server or failed-run retry starts.
+
+## Identified browser check and mobile correction
+
+Build `4229c9cbb567` passes normal Dashboard-to-Grants navigation, search,
+keyboard clearing, empty-state and restore checks at desktop and 390 pixels.
+The catalog starts with 35 programs; HSIP narrows it to one; clearing restores
+35. The jurisdiction warning remains unchanged. Expanding the existing details
+shows the official program link. No opportunity is created or funding data edited.
+
+Root inspects the desktop, phone and focused-card images. A mobile correction
+gives program text the full row and places its action below. The real text
+column measures 274 of 274 available pixels. A harmless DOM annotation survives;
+removing the responsive class fails the named layout assertion, then restores.
+All 39 focused catalog and copy checks across six files pass, with scoped lint.
+
+No page error, console error, failed HTTP response or horizontal overflow is
+observed. One background aerial-catalog request is canceled during navigation,
+so the saved whole-journey classifier remains false. Earlier failed browser and
+OOM records remain unchanged; their hidden-link locator is corrected by checking
+visible program rows and opening details explicitly. The isolated 3 GiB preview
+stops normally after capture. Raw images, logs and resource observations remain
+private. New-head CI, hosted delivery, live grant discovery, deadline alerts and
+SS4A seeding remain separate requirements. No milestone or scientific claim closes.
