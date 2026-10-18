@@ -12,14 +12,16 @@ import path from "node:path";
  *    do what they say, and a fixture row that should have been filtered out is
  *    genuinely absent.
  *
- * 2. ITS UNIQUENESS COMES FROM THE MIGRATION. `work_notifications`' idempotency
- *    is a unique index in 20260811000007. A fake that de-duplicated on a
+ * 2. ITS UNIQUENESS COMES FROM THE MIGRATIONS. Stage one retains the index
+ *    from 20260811000007 and adds the kind-aware key in 20261018000001.
+ *    A fake that de-duplicated on a
  *    hardcoded key would keep the double-run test green with the index deleted,
  *    which is the exact shape of a guard that proves nothing. {@link
- *    workNotificationUniqueKey} reads the index out of the migration — SQL
+ *    workNotificationUniqueKey} reads each index out of the corpus, with SQL
  *    comments blanked first, because a `--` line describing the index is not
- *    the index — so removing the line from the SQL removes the de-duplication
- *    here and the double-run test fails.
+ *    the index. Legacy targeted upserts still model 42P10 and non-target
+ *    23505. The batch RPC instead models targetless insertion and explicitly
+ *    classifies each request. This does not execute PostgreSQL or PostgREST.
  */
 
 import { blankComments, migrationFiles, readMigration } from "../migrations/read-migrations";
@@ -31,12 +33,12 @@ export const WORK_NOTIFICATIONS_MIGRATION = "20260811000007_work_notifications.s
  * declares them. Empty when there is no such index — which is what makes the
  * mutation visible rather than absorbed.
  */
-export function workNotificationUniqueKey(): string[] {
+export function workNotificationUniqueKey(index = "ux_work_notifications_subject_recipient_kind"): string[] {
   let key: string[] = [];
   for (const file of migrationFiles()) {
     const sql = blankComments(readMigration(file));
-    if (/DROP\s+INDEX\s+(?:public\.)?ux_work_notifications_subject_recipient\b/i.test(sql)) key = [];
-    const match = sql.match(/CREATE\s+UNIQUE\s+INDEX(?:\s+IF\s+NOT\s+EXISTS)?\s+ux_work_notifications_subject_recipient\s+ON\s+(?:public\.)?work_notifications\s*\(([^)]*)\)/i);
+    if (new RegExp(`DROP\\s+INDEX\\s+(?:public\\.)?${index}\\b`, "i").test(sql)) key = [];
+    const match = sql.match(new RegExp(`CREATE\\s+UNIQUE\\s+INDEX(?:\\s+IF\\s+NOT\\s+EXISTS)?\\s+${index}\\s+ON\\s+(?:public\\.)?work_notifications\\s*\\(([^)]*)\\)`, "i"));
     if (match) key = match[1].split(",").map((column) => column.trim());
   }
   return key;
@@ -106,6 +108,11 @@ export function migrationExists(): boolean {
 
 type Row = Record<string, unknown>;
 
+/** Model only the relational row cap, not byte limits or real HTTP behavior. */
+export function capWorkRpcRows(data: unknown, maxRows: number): unknown {
+  return Array.isArray(data) ? data.slice(0, maxRows) : data;
+}
+
 type Filter =
   | { kind: "eq"; column: string; value: unknown }
   | { kind: "neq"; column: string; value: unknown }
@@ -151,8 +158,14 @@ export type FakeWorkDbOptions = {
   tables: Record<string, Row[]>;
   /** Per-table read errors, so a source can fail while the others succeed. */
   errors?: Record<string, { message: string }>;
-  /** Overrides the migration-derived key; only the guard-the-guard test uses it. */
+  /** Overrides all migration-derived keys for guard controls. */
   uniqueKey?: string[];
+  /** The corpus installs bridge. Active models the separate proposed migration. */
+  reminderStage?: "bridge" | "active";
+  activationResult?: { data: unknown; error: { message: string } | null };
+  reminderWriteResult?: (envelope: Row) => unknown;
+  activateBeforeWrite?: boolean;
+  rpcMaxRows?: number;
 };
 
 export class FakeWorkDb {
@@ -161,16 +174,71 @@ export class FakeWorkDb {
   readonly outbox: Row[] = [];
   /** Every upsert attempt, whether or not it created anything. */
   readonly upsertCalls: Array<{ rows: Row[]; onConflict: string; ignoreDuplicates: boolean }> = [];
+  readonly rpcCalls: string[] = [];
+  readonly reminderWriteCalls: Array<{ rows: readonly Row[] }> = [];
+  readonly reminderWriteResponses: unknown[] = [];
 
   private readonly tables: Record<string, Row[]>;
   private readonly errors: Record<string, { message: string }>;
-  private readonly uniqueKey: string[];
+  private readonly uniqueKeys: string[][];
+  private readonly activationResult: { data: unknown; error: { message: string } | null };
+  private readonly reminderWriteResult?: (envelope: Row) => unknown;
+  private readonly activateBeforeWrite: boolean;
+  private readonly rpcMaxRows: number;
   private outboxSequence = 0;
 
   constructor(options: FakeWorkDbOptions) {
     this.tables = options.tables;
     this.errors = options.errors ?? {};
-    this.uniqueKey = options.uniqueKey ?? workNotificationUniqueKey();
+    this.uniqueKeys = options.uniqueKey ? [options.uniqueKey] : [
+      workNotificationUniqueKey(),
+      ...(options.reminderStage === "active" ? [] : [workNotificationUniqueKey("ux_work_notifications_subject_recipient")]),
+    ];
+    this.activationResult = options.activationResult ?? { data: options.reminderStage === "active", error: null };
+    this.reminderWriteResult = options.reminderWriteResult;
+    this.activateBeforeWrite = options.activateBeforeWrite ?? false;
+    this.rpcMaxRows = options.rpcMaxRows ?? 1000;
+  }
+
+  async rpc(name: string, args?: { p_rows: readonly Row[] }) {
+    this.rpcCalls.push(name);
+    if (name === "work_notification_kind_activation") return this.activationResult;
+    if (name !== "insert_work_notification_reminders" || !args) throw new Error(`Unexpected RPC: ${name}`);
+    this.reminderWriteCalls.push({ rows: args.p_rows });
+    if (this.errors.work_notifications) return { data: null, error: this.errors.work_notifications };
+    const keys = this.activateBeforeWrite ? [workNotificationUniqueKey()] : this.uniqueKeys;
+    if (!keys.some((key) => key.length === 5 && key.includes("kind"))) {
+      return { data: null, error: { message: "work_reminder_kind_key_missing" } };
+    }
+    const staged: Row[] = [];
+    const inserted = new Set<Row>();
+    const equal = (left: Row, right: Row, key: readonly string[]) => key.length > 0 && key.every((field) =>
+      left[field] !== null && left[field] !== undefined && left[field] === right[field]);
+    // One targetless insert, then a separate classification read of current rows.
+    for (const row of args.p_rows) {
+      if ([...this.notifications, ...staged].some((existing) => keys.some((key) => equal(row, existing, key)))) continue;
+      staged.push({ id: `notification-${this.notifications.length + staged.length + 1}`, ...row });
+      inserted.add(row);
+    }
+    const outcomes: Row[] = [];
+    const full = ["workspace_id", "subject_table", "subject_id", "recipient_user_id", "due_on", "kind"];
+    const legacy = keys.find((key) => key.length === 4 && !key.includes("kind"));
+    for (const row of args.p_rows) {
+      const current = [...this.notifications, ...staged];
+      const same = current.find((stored) => equal(row, stored, full));
+      const opposite = legacy && current.find((stored) => stored.workspace_id === row.workspace_id && stored.kind !== row.kind && equal(row, stored, legacy));
+      const classification = inserted.has(row) ? "inserted" : same ? "duplicate" : opposite ? "deferred_old_key" : null;
+      if (!classification) return { data: null, error: { message: "work_reminder_classification_missing" } };
+      outcomes.push({ ...row, classification, blocking_kind: classification === "deferred_old_key" && opposite ? opposite.kind : null });
+    }
+    this.notifications.push(...staged);
+    const envelope = { protocol: "work_reminder_batch_v1", requested_count: args.p_rows.length,
+      inserted_count: outcomes.filter((row) => row.classification === "inserted").length,
+      duplicate_count: outcomes.filter((row) => row.classification === "duplicate").length,
+      deferred_count: outcomes.filter((row) => row.classification === "deferred_old_key").length, outcomes };
+    const data = capWorkRpcRows(this.reminderWriteResult ? this.reminderWriteResult(envelope) : envelope, this.rpcMaxRows);
+    this.reminderWriteResponses.push(data);
+    return { data, error: null };
   }
 
   /** The auth-admin surface the real roster helper resolves emails through. */
@@ -193,23 +261,26 @@ export class FakeWorkDb {
           // Stored rows stay complete; callers receive the flat columns they requested.
           select: async (columns: string) => {
             if (this.errors[table]) return { data: null, error: this.errors[table] };
+            const target = options.onConflict.split(",").map((column) => column.trim()).sort().join(",");
+            if (!this.uniqueKeys.some((key) => key.length > 0 && [...key].sort().join(",") === target)) {
+              return { data: null, error: { message: "42P10: no unique or exclusion constraint matching the ON CONFLICT specification" } };
+            }
             const created: Row[] = [];
+            const staged: Row[] = [];
             for (const row of rows) {
-              // No key columns (the index was removed) => nothing is a
-              // duplicate, which is precisely the regression.
-              const key = this.uniqueKey.map((column) => String(row[column])).join("::");
-              const exists =
-                this.uniqueKey.length > 0 &&
-                this.notifications.some(
-                  (existing) => this.uniqueKey.map((column) => String(existing[column])).join("::") === key
-                );
-              if (exists && options.ignoreDuplicates) continue;
-              const stored: Row = { id: `notification-${this.notifications.length + 1}`, ...row };
-              this.notifications.push(stored);
+              const conflicts = this.uniqueKeys.filter((key) => key.length > 0 &&
+                key.every((column) => row[column] !== null && row[column] !== undefined) &&
+                [...this.notifications, ...staged].some((existing) => key.every((column) => existing[column] === row[column])));
+              const targetConflict = conflicts.some((key) => [...key].sort().join(",") === target);
+              if (targetConflict && options.ignoreDuplicates) continue;
+              if (conflicts.length > 0) return { data: null, error: { message: "23505: conflict with a different unique index" } };
+              const stored: Row = { id: `notification-${this.notifications.length + staged.length + 1}`, ...row };
+              staged.push(stored);
               created.push(columns.trim() === "*" ? { ...stored } : Object.fromEntries(
                 columns.split(",").map((column) => column.trim()).map((column) => [column, stored[column]])
               ));
             }
+            this.notifications.push(...staged);
             return { data: created, error: null };
           },
         };

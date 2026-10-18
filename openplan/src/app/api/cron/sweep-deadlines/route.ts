@@ -97,6 +97,8 @@ export async function GET(request: NextRequest) {
 
     audit.info("cron_sweep_deadlines_completed", {
       notificationsCreated: result.notificationsCreated,
+      notificationsAlreadyPresent: result.notificationsAlreadyPresent,
+      notificationsDeferred: result.deferredByOldKey.length,
       digestsComposed: result.digestsComposed,
       emailsDelivered: result.emailsDelivered,
       emailsSkipped: result.emailsSkipped,
@@ -120,6 +122,8 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         notificationsCreated: result.notificationsCreated,
+        notificationsAlreadyPresent: result.notificationsAlreadyPresent,
+        deferredByOldKey: result.deferredByOldKey,
         digestsComposed: result.digestsComposed,
         emailsDelivered: result.emailsDelivered,
         emailsSkipped: result.emailsSkipped,

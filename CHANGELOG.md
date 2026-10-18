@@ -28,8 +28,10 @@ uses the existing authorized document download route. No migration is required.
 **Recorded grant deadline changes:** My Work retains notices when an opportunity's
 application or decision deadline is added, changed or cleared in OpenPlan. Each
 notice preserves the old and new dates and identifies an unknown actor when
-needed. Decision and application reminders can coexist. These notices describe
-OpenPlan edits, not verified changes to a funder's official notice. The existing
+needed. These notices describe OpenPlan edits, not verified changes to a funder's
+official notice. The initial rollout keeps the deployed reminder key and leaves
+application reminders explicitly pending. Complete decision/application reminder
+coexistence needs a separate activation after older writers retire. The existing
 opportunity card now edits or clears its recorded dates, shows the browser time
 zone, and sends only changed fields so untouched timestamp precision remains.
 Failed saves keep the draft visible. Apply

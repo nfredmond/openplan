@@ -94,3 +94,32 @@ loaded-page run completes the exact link and retained-clear check. Those failed
 attempts remain failed. This is agent-run local workflow evidence, not hosted,
 full Stage A, simultaneous-session or official-notice verification. Private
 receipts stay in v1-grant-combined-browser-20261018/preview03/browser04/.
+
+## Rollout compatibility correction, source only
+
+Independent r2 review rejects the targeted bridge: same-award obligation and
+expenditure reminders can abort unrelated inserts. The failed candidate and full
+objection remain private and immutable. The r3 source successor retains both
+indexes but uses a service-only invoker batch RPC with targetless insertion.
+Every request must classify as inserted, duplicate or explicitly deferred by
+the old key. Only inserted rows enter digests. Application reminders remain
+pending. Full kind coexistence requires separately admitted activation; proposed
+000004 stays outside migration inventory and the bridge remains the later
+rollback floor. All changed tests and SQL are UNRUN. Historical native targets,
+receipts and failures remain untouched. Private successor:
+`~/.local/state/openplan/v1-deadline-rollout-compatibility-20261018/r3/HANDOFF.md`.
+
+Root ordinary checks, October 18: the staged batch successor passes all 100
+affected tests and lint. A harmless edit survives. Nine targeted broken
+behaviors fail their intended assertions, then all 100 tests pass again with
+exact byte and mode restoration. These checks cover response validation,
+inserted-only mail, deferred reporting and SQL source composition. They do not
+prove PostgreSQL execution, locks, roles, concurrency or activation. New live
+cases are included in the existing RLS CI suite. Independent r3 review remains
+pending, so the PR stays draft and hosted migration remains held. Raw results
+remain private under v1-deadline-rollout-compatibility-20261018/root-checks-02.
+
+
+October 18, r4 source successor: the reminder RPC now returns one exact scalar JSONB envelope with complete nested outcomes. The r3 table-return cap finding remains accepted and its receipts remain historical. R4 ordinary checks, independent review and actual API/native rollout remain pending. Initial staged application reminders remain pending until a separate reviewed activation after old writers retire.
+
+October 18, r4 checks: one finite ordinary unit exited 0 after 54.667 seconds. Harmless and restored batches each pass 118 tests. Seven targeted failures cover protocol, envelope shape, request coverage, classification counts, nested projection, table-return regression and scalar SQL declaration; source bytes/modes restore exactly and scoped lint passes. Independent r4 source review finds no concrete P1/P2. The API cap cases are models, not installed HTTP evidence. Native/API/upgrade, hosted migration and later activation remain pending. All rejected r2/r3 evidence stays historical.
