@@ -20,6 +20,12 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Safety source restoration:** the current study area's retained crash acquisition
+loads independently of the eight most recent workspace imports. Newer pulls for
+other projects or extents no longer hide its source and coverage. A failed current
+lookup is disclosed and withholds the fallback map read; a history-only failure
+still permits the verified acquisition to load. No migration is required.
+
 **Evidence bundle file selection:** report candidates show their file format,
 generation time and artifact ID, including in checkbox labels. Files with the
 same report title can be distinguished before freezing a bundle. A missing

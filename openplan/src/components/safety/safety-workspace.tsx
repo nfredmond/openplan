@@ -565,8 +565,9 @@ export function SafetyWorkspace({
   );
 
   const loadCrashes = useCallback(async (signal: AbortSignal) => {
-    if (!bbox) {
+    if (!bbox || (ingestsReadFailed && !ingest?.id)) {
       setResponse(null);
+      setLoading(false);
       return;
     }
     setLoading(true);
@@ -606,7 +607,7 @@ export function SafetyWorkspace({
     } finally {
       if (!signal.aborted) setLoading(false);
     }
-  }, [workspaceId, filters, bbox, projectId, place, ingest?.id]);
+  }, [workspaceId, filters, bbox, projectId, place, ingest?.id, ingestsReadFailed]);
 
   useEffect(() => {
     const controller = new AbortController();
