@@ -20,6 +20,11 @@ stable enough to promise smooth upgrades indefinitely.
 
 ## Unreleased
 
+**Grant catalog search:** find programs by name, administering agency, project
+type or displayed catalog details. Results show a count, a clear control and an
+empty state. Jurisdiction coverage remains visible while filtering. A search
+match does not confirm eligibility or an open call. No migration is required.
+
 **Local model interpreter checks:** AequilibraE launchers check the repository's
 numerical dependency requirements before worker entry. Import success alone no
 longer admits an incompatible environment. `OPENPLAN_AEQUILIBRAE_PYTHON` binds an

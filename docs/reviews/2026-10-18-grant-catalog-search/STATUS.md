@@ -21,3 +21,12 @@ at `/tmp/openplan-catalog-search-20261018-7ekpijqz`.
 These checks establish pure and jsdom behavior. Root still owns identified-build
 navigation, desktop/390px, keyboard and browser console acceptance. No database,
 build, full suite, worker or model operation runs in this implementation task.
+
+## Root integration
+
+Root reviews the search implementation and joins the current-area Safety
+message correction plus the launcher/CI follow-up. All 62 focused checks pass
+across six search, registry, coverage and Safety files. The join preserves both
+dated ops notes. Product direction passes with existing review reminders.
+Desktop, phone and keyboard browser acceptance remain pending. Available memory
+is below the earlier preview reserve, so no new server or failed-run retry starts.
